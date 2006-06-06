@@ -1,0 +1,10 @@
+/** @mainpage
+
+@section Overview
+
+LibSLV2 is a host library to simply the use of LV2 plugins.
+
+It will have a lovely wordey description here once I get around to it.
+For now click on the "Modules" tab above to get at the beef.
+
+*/
