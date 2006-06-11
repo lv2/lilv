@@ -35,7 +35,7 @@ slv2_query_header(const SLV2Plugin* p)
 		  "PREFIX doap:   <http://usefulinc.com/ns/doap#> \n"
 		  "PREFIX lv2:    <http://lv2plug.in/ontology#> \n"
 		  "PREFIX plugin: <"), plugin_uri, U("> \n"),
-		U("PREFIX data:   <"), data_file_url, U("> \n\n"), 0);
+		U("PREFIX data:   <"), data_file_url, U("> \n\n"), NULL);
 
 	return query_string;
 }
@@ -51,7 +51,7 @@ slv2_query_lang_filter(const uchar* variable)
 		result = ustrjoin(
 			//U("FILTER (lang(?value) = \""), lang, U("\")\n"), 0);
 			U("FILTER( lang(?value) = \""), lang, 
-			U("\" || lang(?value) = \"\" )\n"), 0);
+			U("\" || lang(?value) = \"\" )\n"), NULL);
 	}
 
 	return result;
@@ -62,16 +62,17 @@ rasqal_query_results*
 slv2_plugin_run_query(const SLV2Plugin* p,
                       const uchar*        first, ...)
 {
-	va_list args_list;
-	va_start(args_list, first);
-	va_list args_copy;
-	va_copy(args_copy, args_list);
 
 	/* FIXME:  Too much unecessary allocation */
 	uchar* header = slv2_query_header(p);
-	uchar* args_str = vstrjoin(first, args_copy);
-	uchar* query_str = ustrjoin(header, args_str, 0);
 	
+	va_list args_list;
+	va_start(args_list, first);
+
+	uchar* args_str = vstrjoin(first, args_list);
+	uchar* query_str = ustrjoin(header, args_str, NULL);
+	va_end(args_list);
+
 	assert(p);
 	assert(query_str);
 

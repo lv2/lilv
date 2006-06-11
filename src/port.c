@@ -72,7 +72,7 @@ slv2_port_get_property(SLV2Plugin* p,
 	assert(property);
 
 	char index_str[4];
-	snprintf(index_str, 4, "%ld", index);
+	snprintf(index_str, (size_t)4, "%lu", index);
 	
 	rasqal_init();
 	
@@ -80,7 +80,7 @@ slv2_port_get_property(SLV2Plugin* p,
 		U("SELECT DISTINCT ?value FROM data: WHERE { \n"
 		  "plugin: lv2:port ?port \n"
 		  "?port lv2:index "), index_str, U(" \n"
-		  "?port "), property, U(" ?value . \n}\n"), 0);
+		  "?port "), property, U(" ?value . \n}\n"), NULL);
 	
 	SLV2Property result = slv2_query_get_results(results);
 

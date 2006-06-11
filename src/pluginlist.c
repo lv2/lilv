@@ -138,9 +138,12 @@ slv2_list_load_bundle(SLV2List             list,
 		rasqal_query_results_next(results);
 	}
 
-	rasqal_free_query_results(results);
-	rasqal_free_query(rq);
-	raptor_free_uri(base_uri);
+	// FIXME: leaks?  rasqal really doesn't handle missing files well..
+	if (results) {
+		rasqal_free_query_results(results);
+		rasqal_free_query(rq);
+		raptor_free_uri(base_uri); // FIXME: leak?
+	}
 	rasqal_finish();
 
 	free(manifest_uri);
@@ -162,8 +165,8 @@ add_plugins_from_dir(SLV2List list, const char* dir)
 		if (!strcmp(pfile->d_name, ".") || !strcmp(pfile->d_name, ".."))
 			continue;
 
-		char* bundle_path = (char*)ustrjoin(U(dir), U("/"), U(pfile->d_name), 0);
-		char* bundle_url = (char*)ustrjoin(U("file://"), U(dir), U("/"), U(pfile->d_name), 0);
+		char* bundle_path = (char*)ustrjoin(U(dir), U("/"), U(pfile->d_name), NULL);
+		char* bundle_url = (char*)ustrjoin(U("file://"), U(dir), U("/"), U(pfile->d_name), NULL);
 		DIR* bundle_dir = opendir(bundle_path);
 
 		if (bundle_dir != NULL) {
@@ -185,7 +188,7 @@ slv2_list_load_path(SLV2List  list,
                     const char* slv2_path)
 {
 	
-	char* path = (char*)ustrjoin(U(slv2_path), U(":"), 0);
+	char* path = (char*)ustrjoin(U(slv2_path), U(":"), NULL);
 
 	char* dir = path; // Pointer into path
 	

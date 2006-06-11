@@ -60,7 +60,7 @@ const unsigned char*
 slv2_plugin_get_data_path(const SLV2Plugin* p)
 {
 	assert(p);
-	if (!strncmp((char*)p->data_url, "file://", 7))
+	if (!strncmp((char*)p->data_url, "file://", (size_t)7))
 		return (p->data_url) + 7;
 	else
 		return NULL;
@@ -79,7 +79,7 @@ const unsigned char*
 slv2_plugin_get_library_path(const SLV2Plugin* p)
 {
 	assert(p);
-	if (!strncmp((char*)p->lib_url, "file://", 7))
+	if (!strncmp((char*)p->lib_url, "file://", (size_t)7))
 		return (p->lib_url) + 7;
 	else
 		return NULL;
@@ -152,7 +152,7 @@ slv2_plugin_get_property(const SLV2Plugin* p,
 	rasqal_query_results* results = slv2_plugin_run_query(p,
 		U("SELECT DISTINCT ?value FROM data: WHERE { \n"
 		  "plugin: "), property, U(" ?value . \n"
-		  "} \n"), 0);
+		  "} \n"), NULL);
 	
 	struct _Property* result = slv2_query_get_results(results);
 
@@ -175,7 +175,7 @@ slv2_plugin_get_num_ports(const SLV2Plugin* p)
 	rasqal_query_results* results = slv2_plugin_run_query(p,
 		U("SELECT DISTINCT ?value FROM data: WHERE { \n"
 		  "plugin: lv2:port ?value . \n"
-		  "} \n"), 0);
+		  "} \n"), NULL);
 	
 	while (!rasqal_query_results_finished(results)) {
 		++result;

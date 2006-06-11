@@ -1,4 +1,4 @@
-CFLAGS = -Wall -I../../../include
+CFLAGS = -Wall -I../../../include -fPIC
 
 all: amp.so
 

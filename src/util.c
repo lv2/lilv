@@ -50,49 +50,30 @@ ustrdup(const uchar* src)
 uchar*
 ustrjoin(const uchar* first, ...)
 {
-	// FIXME: this is horribly, awfully, disgracefully slow
-	
 	va_list args_list;
 	va_start(args_list, first);
 	
-	va_list args_copy;
-	va_copy(args_copy, args_list);
-	
-	uchar* result = vstrjoin(first, args_copy);
-	
-	//va_end(args_copy);
+	uchar* result = vstrjoin(first, args_list);
+
 	va_end(args_list);
 	
 	return result;
-
-	/*
-	va_list args_list;
-	uchar*  arg = NULL;
-	uchar*  result = ustrdup(first);
-	
-	va_start(args_list, first);
-	
-	while ((arg = va_arg(args_list, uchar*)) != (uchar*)0)
-		ustrappend(&result, arg);
-	
-	va_end(args_list);
-
-	return result;*/
 }
 
 
 uchar*
 vstrjoin(const uchar* first, va_list args_list)
 {
-	// FIXME: this is horribly, awfully, disgracefully slow
+	// FIXME: this is horribly, awfully, disgracefully slow.
+	// so I'm lazy.
 	
 	uchar* arg = NULL;
 	uchar* result = ustrdup(first);
-	
-	while ((arg = va_arg(args_list, uchar*)) != NULL)
+
+	while ((arg = va_arg(args_list, const uchar*)) != NULL)
 		ustrappend(&result, arg);
 	
-	va_end(args_list);
+	//va_end(args_list);
 
 	return result;
 }
@@ -112,7 +93,7 @@ url2path(const uchar* const url)
 	char* result = calloc(strlen((char*)url)-7+1, sizeof(char));
 	strcpy(result, (char*)url+7);
 	return result;*/
-	if (!strncmp((char*)url, "file://", 7))
+	if (!strncmp((char*)url, "file://", (size_t)7))
 		return (char*)url + 7;
 	else
 		return NULL;
