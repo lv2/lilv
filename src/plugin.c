@@ -171,7 +171,6 @@ slv2_plugin_get_num_ports(const SLV2Plugin* p)
 	
 	rasqal_init();
 	
-
 	rasqal_query_results* results = slv2_plugin_run_query(p,
 		U("SELECT DISTINCT ?value FROM data: WHERE { \n"
 		  "plugin: lv2:port ?value . \n"

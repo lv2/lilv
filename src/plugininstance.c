@@ -66,7 +66,7 @@ slv2_plugin_instantiate(const SLV2Plugin*        plugin,
 				dlclose(lib);
 				break; // return NULL
 			} else if (!strcmp(ld->URI, (char*)plugin->plugin_uri)) {
-				//printf("Found %s at index %ld in:\n\t%s\n\n", plugin->plugin_uri, i, lib_path);
+				printf("Found %s at index %ld in:\n\t%s\n\n", plugin->plugin_uri, i, lib_path);
 
 				assert(ld->instantiate);
 
@@ -82,6 +82,13 @@ slv2_plugin_instantiate(const SLV2Plugin*        plugin,
 		}
 	}
 
+	assert(result);
+	assert(slv2_plugin_get_num_ports(plugin) > 0);
+
+	// Connect all ports to NULL (catches bugs)
+	for (unsigned long i=0; i < slv2_plugin_get_num_ports(plugin); ++i)
+		result->descriptor->connect_port(result->lv2_handle, i, NULL);
+	
 	return result;
 }
 
