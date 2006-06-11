@@ -34,16 +34,18 @@ slv2_port_get_class(SLV2Plugin*   p,
 	assert(class->num_values == 1);
 	assert(class->values);
 
-	if (!strcmp((char*)class->values[0], "http://lv2plug.in/ontology#InputControlRatePort"))
+	if (!strcmp((char*)class->values[0], "http://lv2plug.in/ontology#ControlRateInputPort"))
 		return SLV2_CONTROL_RATE_INPUT;
-	else if (!strcmp((char*)class->values[0], "http://lv2plug.in/ontology#OutputControlRatePort"))
+	else if (!strcmp((char*)class->values[0], "http://lv2plug.in/ontology#ControlRateOutputPort"))
 		return SLV2_CONTROL_RATE_OUTPUT;
-	else if (!strcmp((char*)class->values[0], "http://lv2plug.in/ontology#InputAudioRatePort"))
+	else if (!strcmp((char*)class->values[0], "http://lv2plug.in/ontology#AudioRateInputPort"))
 		return SLV2_AUDIO_RATE_INPUT;
-	else if (!strcmp((char*)class->values[0], "http://lv2plug.in/ontology#OutputAudioRatePort"))
+	else if (!strcmp((char*)class->values[0], "http://lv2plug.in/ontology#AudioRateOutputPort"))
 		return SLV2_AUDIO_RATE_OUTPUT;
-	else
+	else {
+		fprintf(stderr, "Unknown port class: %s\n", class->values[0]);
 		return SLV2_UNKNOWN_PORT_CLASS;
+	}
 }
 
 
