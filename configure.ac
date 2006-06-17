@@ -57,7 +57,7 @@ AC_MSG_RESULT($lv2dir)
 AC_SUBST(lv2dir)
 
 # Check for RASQAL
-PKG_CHECK_MODULES(RASQAL, rasqal >= 0.20, build_rasqal="yes", build_rasqal="no")
+PKG_CHECK_MODULES(RASQAL, rasqal >= 0.9.11, build_rasqal="yes", build_rasqal="no")
 AC_SUBST(JACK_CFLAGS)
 AC_SUBST(JACK_LIBS)
 
