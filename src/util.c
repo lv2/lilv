@@ -67,8 +67,8 @@ vstrjoin(const uchar* first, va_list args_list)
 	// FIXME: this is horribly, awfully, disgracefully slow.
 	// so I'm lazy.
 	
-	uchar* arg = NULL;
-	uchar* result = ustrdup(first);
+	const uchar* arg    = NULL;
+	uchar*       result = ustrdup(first);
 
 	while ((arg = va_arg(args_list, const uchar*)) != NULL)
 		ustrappend(&result, arg);

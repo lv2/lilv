@@ -27,10 +27,8 @@ AC_ARG_ENABLE(debug,
 	[debug="$enableval"])
 if test "$debug" = "yes"; then
   CFLAGS="-O0 -g -DDEBUG"
-  CXXFLAGS="$CFLAGS"
 else
   CFLAGS="$CFLAGS -DNDEBUG"
-  CXXFLAGS="$CXXFLAGS -DNDEBUG"
 fi
 
 # Check for strict flag
@@ -39,12 +37,10 @@ AC_ARG_ENABLE(strict,
 	[AS_HELP_STRING(--enable-strict, [Enable strict compiler warnings and errors (false)])],
 	[strict="$enableval"])
 if test "$strict" = "yes"; then
-  CFLAGS="$CFLAGS -std=c99 -pedantic -Wall -Wconversion -Winit-self"
-  CXXFLAGS="$CXXFLAGS -ansi -pedantic -Wall -Wconversion -Winit-self -Woverloaded-virtual -Wsign-promo"
+  CFLAGS="$CFLAGS -std=c99 -pedantic -Wall -Wextra -Wconversion -Winit-self"
 fi
 
 # Bolt on a few specific flags to CXXFLAGS that should always be used
-#CXXFLAGS="$CXXFLAGS -pipe -Wall -fmessage-length=139 -fdiagnostics-show-location=every-line"
 #CFLAGS="$CFLAGS -pipe -Wall -fmessage-length=139 -fdiagnostics-show-location=every-line"
 
 # Check plugin install directory
