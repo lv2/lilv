@@ -51,11 +51,8 @@ enum SLV2PortClass {
 };
 
 
-/** Type contained in a port buffer. */
-enum SLV2DataType {
-	SLV2_DATA_TYPE_FLOAT,  /**< IEEE-754 32-bit floating point number */
-	SLV2_UNKNOWN_DATA_TYPE
-};
+/** lv2:float, IEEE-754 32-bit floating point number */
+#define SLV2_DATA_TYPE_FLOAT "http://lv2plug.in/ontology#float"
 
 
 #ifdef __cplusplus

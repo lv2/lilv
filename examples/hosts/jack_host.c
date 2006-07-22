@@ -149,10 +149,11 @@ create_port(struct JackHost* host,
             unsigned long    port_index)
 {
 	/* Make sure this is a float port */
-	enum SLV2DataType type = slv2_port_get_data_type(host->plugin, port_index);
-	if (type != SLV2_DATA_TYPE_FLOAT)
+	uchar* type = slv2_port_get_data_type(host->plugin, port_index);
+	if (strcmp(type, SLV2_DATA_TYPE_FLOAT))
 		die("Unrecognized data type, aborting.");
-	
+	free(type);
+
 	/* Get the port symbol (label) for console printing */
 	char* symbol = slv2_port_get_symbol(host->plugin, port_index);
 	

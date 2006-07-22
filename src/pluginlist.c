@@ -141,7 +141,7 @@ slv2_list_load_bundle(SLV2List             list,
 	// FIXME: leaks?  rasqal really doesn't handle missing files well..
 	if (results) {
 		rasqal_free_query_results(results);
-		rasqal_free_query(rq);
+		//rasqal_free_query(rq); // FIXME: crashes?  leak?
 		raptor_free_uri(base_uri); // FIXME: leak?
 	}
 	rasqal_finish();

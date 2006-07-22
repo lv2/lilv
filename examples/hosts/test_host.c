@@ -61,7 +61,7 @@ create_audio_output()
 void
 create_port(SLV2Plugin*   plugin,
             SLV2Instance* instance,
-            unsigned long   port_index)
+            unsigned long port_index)
 {
 	enum SLV2PortClass class = slv2_port_get_class(plugin, port_index);
 

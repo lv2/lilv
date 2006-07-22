@@ -90,23 +90,23 @@ bool
 slv2_plugin_verify(const SLV2Plugin* plugin)
 {
 	// FIXME: finish this (properly)
-	/*
+	
 	size_t num_values = 0;
 	
-	struct SLV2Property* prop = slv2_plugin_get_property(plugin, "doap:name");
+	struct _Property* prop = slv2_plugin_get_property(plugin, "doap:name");
 	if (prop) {
 		num_values = prop->num_values;
 		free(prop);
 	}
 	if (num_values < 1)
 		return false;
-
+/*
 	prop = slv2_plugin_get_property(plugin, "doap:license");
 	num_values = prop->num_values;
 	free(prop);
 	if (num_values < 1)
 		return false;
-*/
+*/	
 	return true;
 }
 

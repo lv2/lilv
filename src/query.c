@@ -50,8 +50,8 @@ slv2_query_lang_filter(const uchar* variable)
 		// FILTER( LANG(?value) = "en" || LANG(?value) = "" )
 		result = ustrjoin(
 			//U("FILTER (lang(?value) = \""), lang, U("\")\n"), 0);
-			U("FILTER( lang(?value) = \""), lang, 
-			U("\" || lang(?value) = \"\" )\n"), NULL);
+			U("FILTER( lang(?"), variable, U(") = \""), lang, 
+			U("\" || lang(?"), variable, U(") = \"\" )\n"), NULL);
 	}
 
 	return result;
@@ -120,5 +120,13 @@ slv2_query_get_results(rasqal_query_results* results)
 	}
 
 	return result;
+}
+
+void
+slv2_property_free(struct _Property* prop)
+{
+	//struct _Property* prop = (struct _Property*)property;
+	free(prop->values);
+	free(prop);
 }
 

@@ -46,7 +46,7 @@ extern "C" {
 
 /** Get a property of a port, by port index.
  *
- * Return value must be free()'d by caller.
+ * Return value must be freed by caller with slv2_property_free.
  */
 SLV2Property
 slv2_port_get_property(SLV2Plugin*   plugin,
@@ -73,9 +73,12 @@ slv2_port_get_class(SLV2Plugin*   plugin,
                     unsigned long index);
 
 
-/** Get the data type of a port.
+/** Get the data type of a port (as a URI).
+ *
+ * The only data type included in the core LV2 specification is lv2:float.
+ * Compare this return value with @ref SLV2_DATA_TYPE_FLOAT to check for it.
  */
-enum SLV2DataType
+uchar*
 slv2_port_get_data_type(SLV2Plugin*   plugin,
                         unsigned long index);
 

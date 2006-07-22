@@ -34,6 +34,8 @@ slv2_port_get_class(SLV2Plugin*   p,
 	assert(class->num_values == 1);
 	assert(class->values);
 
+	// FIXME FIXME FIXME: leak
+	
 	if (!strcmp((char*)class->values[0], "http://lv2plug.in/ontology#ControlRateInputPort"))
 		return SLV2_CONTROL_RATE_INPUT;
 	else if (!strcmp((char*)class->values[0], "http://lv2plug.in/ontology#ControlRateOutputPort"))
@@ -49,8 +51,8 @@ slv2_port_get_class(SLV2Plugin*   p,
 }
 
 
-enum SLV2DataType
-slv2_port_get_data_type(SLV2Plugin* p,
+uchar*
+slv2_port_get_data_type(SLV2Plugin*   p,
                         unsigned long index)
 {
 	SLV2Property type = slv2_port_get_property(p, index, U("lv2:datatype"));
@@ -58,15 +60,14 @@ slv2_port_get_data_type(SLV2Plugin* p,
 	assert(type->num_values == 1);
 	assert(type->values);
 
-	if (!strcmp((char*)type->values[0], "http://lv2plug.in/ontology#float"))
-		return SLV2_DATA_TYPE_FLOAT;
-	else
-		return SLV2_UNKNOWN_DATA_TYPE;
+	uchar* ret = type->values[0];
+	slv2_property_free(type);
+	return ret;
 }
 
 
 SLV2Property
-slv2_port_get_property(SLV2Plugin* p,
+slv2_port_get_property(SLV2Plugin*   p,
                        unsigned long index,
                        const uchar*  property)
 {
@@ -94,7 +95,8 @@ slv2_port_get_property(SLV2Plugin* p,
 
 
 uchar*
-slv2_port_get_symbol(SLV2Plugin* p, unsigned long index)
+slv2_port_get_symbol(SLV2Plugin*   p,
+                     unsigned long index)
 {
 	// FIXME: leaks
 	uchar* result = NULL;
@@ -104,7 +106,7 @@ slv2_port_get_symbol(SLV2Plugin* p, unsigned long index)
 
 	if (prop && prop->num_values == 1)
 		result = (uchar*)strdup((char*)prop->values[0]);
-	free(prop);
+	slv2_property_free(prop);
 
 	return result;
 }
@@ -124,12 +126,14 @@ slv2_port_get_default_value(SLV2Plugin* p,
 	if (prop && prop->num_values == 1)
 		result = atof((char*)prop->values[0]);
 	
+	slv2_property_free(prop);
+
 	return result;
 }
 
 
 float
-slv2_port_get_minimum_value(SLV2Plugin* p, 
+slv2_port_get_minimum_value(SLV2Plugin*   p, 
                             unsigned long index)
 {
 	// FIXME: do casting properly in the SPARQL query
@@ -142,12 +146,14 @@ slv2_port_get_minimum_value(SLV2Plugin* p,
 	if (prop && prop->num_values == 1)
 		result = atof((char*)prop->values[0]);
 	
+	slv2_property_free(prop);
+
 	return result;
 }
 
 
 float
-slv2_port_get_maximum_value(SLV2Plugin* p, 
+slv2_port_get_maximum_value(SLV2Plugin*   p, 
                             unsigned long index)
 {
 	// FIXME: do casting properly in the SPARQL query
@@ -160,6 +166,8 @@ slv2_port_get_maximum_value(SLV2Plugin* p,
 	if (prop && prop->num_values == 1)
 		result = atof((char*)prop->values[0]);
 	
+	slv2_property_free(prop);
+
 	return result;
 }
 
