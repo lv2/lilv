@@ -60,18 +60,10 @@ slv2_query_lang_filter(const char* variable)
 
 rasqal_query_results*
 slv2_plugin_run_query(const SLV2Plugin* p,
-                      const char*        first, ...)
+                      const char*       query)
 {
-
-	/* FIXME:  Too much unecessary allocation */
-	char* header = slv2_query_header(p);
-	
-	va_list args_list;
-	va_start(args_list, first);
-
-	char* args_str = vstrjoin(first, args_list);
-	char* query_str = strjoin(header, args_str, NULL);
-	va_end(args_list);
+	char* header    = slv2_query_header(p);
+	char* query_str = strjoin(header, query, NULL);
 
 	assert(p);
 	assert(query_str);
@@ -86,7 +78,6 @@ slv2_plugin_run_query(const SLV2Plugin* p,
 	rasqal_free_query(rq);
 	
 	free(query_str);
-	free(args_str);
 	free(header);
 	
 	return results;

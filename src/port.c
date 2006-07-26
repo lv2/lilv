@@ -79,17 +79,20 @@ slv2_port_get_property(SLV2Plugin* p,
 	
 	rasqal_init();
 	
-	rasqal_query_results* results = slv2_plugin_run_query(p,
+    char* query = strjoin(
 		"SELECT DISTINCT ?value FROM data: WHERE { \n"
-		  "plugin: lv2:port ?port \n"
-		  "?port lv2:index ", index_str, " \n"
-		  "?port ", property, " ?value . \n}\n", NULL);
+		"plugin: lv2:port ?port . \n"
+		"?port lv2:index ", index_str, " . \n"
+		"?port ", property, " ?value . \n}\n", NULL);
+
+	rasqal_query_results* results = slv2_plugin_run_query(p, query);
 	
 	SLV2Property result = slv2_query_get_results(results);
 
 	rasqal_free_query_results(results);
 	rasqal_finish();
-	
+	free(query);
+
 	return result;
 }
 

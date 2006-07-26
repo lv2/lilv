@@ -76,16 +76,15 @@ slv2_query_lang_filter(const char* variable);
 
 /** Run a SPARQL query on a plugin's data file.
  *
- * String arguments will be concatenated, allowing for variable substitution
- * etc. (without having to define a token syntax and search the string for
- * tokens, which would be slow).
+ * Header from slv2query_header will be prepended to passed query string (so
+ * the default prefixes will be already defined, you don't need to add them
+ * yourself).
  *
- * Header from slv2query_header will be prepended to passed query string.
  * rasqal_init() must be called by the caller before calling this function.
  */
 rasqal_query_results*
 slv2_plugin_run_query(const SLV2Plugin* p,
-                      const char*       query_string, ...);
+                      const char*       query_string);
 
 SLV2Property
 slv2_query_get_results(rasqal_query_results* results);

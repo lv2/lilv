@@ -149,16 +149,18 @@ slv2_plugin_get_property(const SLV2Plugin* p,
 
 	rasqal_init();
 	
-	rasqal_query_results* results = slv2_plugin_run_query(p,
+    char* query = strjoin(
 		"SELECT DISTINCT ?value FROM data: WHERE { \n"
-		  "plugin: ", property, " ?value . \n"
-		  "} \n", NULL);
+		"plugin: ", property, " ?value . \n"
+		"} \n", NULL);
+
+	rasqal_query_results* results = slv2_plugin_run_query(p, query);
 	
 	struct _Property* result = slv2_query_get_results(results);
 
-	//free(query_string);
 	rasqal_free_query_results(results);
 	rasqal_finish();
+	free(query);
 
 	return result;
 }
@@ -171,10 +173,12 @@ slv2_plugin_get_num_ports(const SLV2Plugin* p)
 	
 	rasqal_init();
 	
-	rasqal_query_results* results = slv2_plugin_run_query(p,
+    char* query = strjoin(
 		"SELECT DISTINCT ?value FROM data: WHERE { \n"
 		"plugin: lv2:port ?value . \n"
 		"} \n", NULL);
+
+	rasqal_query_results* results = slv2_plugin_run_query(p, query);
 	
 	while (!rasqal_query_results_finished(results)) {
 		++result;
@@ -183,6 +187,7 @@ slv2_plugin_get_num_ports(const SLV2Plugin* p)
 
 	rasqal_free_query_results(results);
 	rasqal_finish();
+    free(query);
 
 	return result;
 }

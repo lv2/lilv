@@ -42,34 +42,35 @@ strappend(char** dst, const char* suffix)
 char*
 strjoin(const char* first, ...)
 {
-	va_list args_list;
-	va_start(args_list, first);
-	
-	char* result = vstrjoin(first, args_list);
+	size_t  len    = strlen(first);
+	char*   result = NULL;
+	va_list args;
 
-	va_end(args_list);
-	
+	va_start(args, first);
+	while (1) {
+		const char* const s = va_arg(args, const char *);
+		if (s == NULL)
+			break;
+		len += strlen(s);
+	}
+	va_end(args);
+
+	result = malloc(len + 1);
+	if (!result)
+		return NULL;
+
+	strcpy(result, first);
+	va_start(args, first);
+	while (1) {
+		const char* const s = va_arg(args, const char *);
+		if (s == NULL)
+			break;
+		strcat(result, s);
+	}
+	va_end(args);
+
 	return result;
 }
-
-
-char*
-vstrjoin(const char* first, va_list args_list)
-{
-	// FIXME: this is horribly, awfully, disgracefully slow.
-	// so I'm lazy.
-	
-	const char* arg    = NULL;
-	char*       result = strdup(first);
-
-	while ((arg = va_arg(args_list, const char*)) != NULL)
-		strappend(&result, arg);
-	
-	//va_end(args_list);
-
-	return result;
-}
-
 
 
 /** Convert a URL to a local filesystem path (ie by chopping off the

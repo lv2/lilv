@@ -43,7 +43,7 @@ char*
 strjoin(const char* first, ...);
 
 char*
-vstrjoin(const char* first, va_list args_list);
+vstrjoin(const char** first, va_list args_list);
 
 const char*
 url2path(const char* const url);
