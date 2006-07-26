@@ -146,7 +146,7 @@ slv2_list_get_plugin_by_uri(const SLV2List list,
  */
 const SLV2Plugin*
 slv2_list_get_plugin_by_index(const SLV2List list,
-                              unsigned long  index);
+                              size_t         index);
 
 
 /** @} */

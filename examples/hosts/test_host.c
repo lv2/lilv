@@ -73,7 +73,6 @@ create_port(SLV2Plugin*   plugin,
 		create_control_output(port_index);
 		break;
 	case SLV2_AUDIO_RATE_INPUT:
-
 		create_audio_input(port_index);
 		break;
 	case SLV2_AUDIO_RATE_OUTPUT:
@@ -138,9 +137,9 @@ main()
 			const char* property = "a";
 			prop = slv2_port_get_property(p, i, property);
 			if (prop)
-				printf("Port %ld %s = %s\n", i, property, prop->values[0]);
+				printf("Port %u %s = %s\n", i, property, prop->values[0]);
 			else
-				printf("No port %ld %s.\n", i, property);
+				printf("No port %u %s.\n", i, property);
 			free(prop);
 		}
 		printf("\n");
