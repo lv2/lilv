@@ -116,7 +116,7 @@ slv2_list_load_bundle(SLV2List    list,
 
 /** Get the number of plugins in the list.
  */
-unsigned long
+size_t
 slv2_list_get_length(const SLV2List list);
 
 

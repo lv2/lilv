@@ -55,7 +55,7 @@ slv2_list_load_all(SLV2List list)
 {
 	assert(list != NULL);
 	
-	const char* slv2_path = getenv("LV2_PATH");
+	char* slv2_path = getenv("LV2_PATH");
 
 	if (slv2_path) {
 	    slv2_list_load_path(list, slv2_path);
