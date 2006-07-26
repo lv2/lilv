@@ -19,11 +19,12 @@
 #ifndef __UTIL_H
 #define __UTIL_H
 
+#define _XOPEN_SOURCE 500
+#include <string.h>
+
 #include <stdarg.h>
 #include <slv2/types.h>
 
-/* Cast a char* to an unsigned char* (Used for string literals) */
-#define U(x) (unsigned char*)(x)
 
 /** Append \a suffix to \a *dst, reallocating \a dst as necessary.
  *
@@ -31,23 +32,21 @@
  * or NULL.
  */
 void
-ustrappend(uchar** dst, const uchar* suffix);
+strappend(char** dst, const char* suffix);
 
-uchar*
-ustrdup(const uchar* src);
 
 /** Join all arguments into one string.
  *
  * Arguments are not modified, return value must be free()'d.
  */
-uchar*
-ustrjoin(const uchar* first, ...);
+char*
+strjoin(const char* first, ...);
 
-uchar*
-vstrjoin(const uchar* first, va_list args_list);
+char*
+vstrjoin(const char* first, va_list args_list);
 
 const char*
-url2path(const uchar* const url);
+url2path(const char* const url);
 
 
 #endif

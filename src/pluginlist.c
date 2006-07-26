@@ -70,8 +70,8 @@ slv2_list_load_all(SLV2List list)
 
 /* This is the parser for manifest.ttl */
 void
-slv2_list_load_bundle(SLV2List             list,
-                      const unsigned char* bundle_base_uri)
+slv2_list_load_bundle(SLV2List    list,
+                      const char* bundle_base_uri)
 {
 	// FIXME: ew
 	unsigned char* manifest_uri = malloc(
@@ -85,44 +85,41 @@ slv2_list_load_bundle(SLV2List             list,
 	rasqal_init();
 	rasqal_query_results *results;
 	raptor_uri *base_uri = raptor_new_uri(manifest_uri);
-	rasqal_query *rq = rasqal_new_query((const char*)"sparql", (const uchar*)base_uri);
+	rasqal_query *rq = rasqal_new_query("sparql", (unsigned char*)base_uri);
 
-	unsigned char* query_string =
-		U("PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> \n"
-		  "PREFIX :     <http://lv2plug.in/ontology#> \n\n"
-		 
-		  "SELECT DISTINCT $plugin_uri $data_url $lib_url FROM <> WHERE { \n"
-		  "$plugin_uri :binary       $lib_url ; \n"
-		  "            rdfs:seeAlso  $data_url . \n"
-		  "} \n");
+	char* query_string =
+	    "PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> \n"
+    	"PREFIX :     <http://lv2plug.in/ontology#> \n\n"
+    		 
+    	"SELECT DISTINCT $plugin_uri $data_url $lib_url FROM <> WHERE { \n"
+    	"$plugin_uri :binary       $lib_url ; \n"
+    	"            rdfs:seeAlso  $data_url . \n"
+	"} \n";
 
 	//printf("%s\n\n", query_string);  
 	
-	rasqal_query_prepare(rq, (const uchar*)query_string, base_uri);
+	rasqal_query_prepare(rq, (unsigned char*)query_string, base_uri);
 	results = rasqal_query_execute(rq);
 	
 	while (!rasqal_query_results_finished(results)) {
 
 		// Create a new plugin
 		struct _Plugin* new_plugin = malloc(sizeof(struct _Plugin));
-		new_plugin->bundle_url = ustrdup(bundle_base_uri);
+		new_plugin->bundle_url = strdup(bundle_base_uri);
 		
 		rasqal_literal* literal = NULL;
 	
-		literal = rasqal_query_results_get_binding_value_by_name(results,
-			U("plugin_uri"));
+		literal = rasqal_query_results_get_binding_value_by_name(results, "plugin_uri");
 		if (literal)
-			new_plugin->plugin_uri = ustrdup(rasqal_literal_as_string(literal));
+			new_plugin->plugin_uri = strdup(rasqal_literal_as_string(literal));
 		
-		literal = rasqal_query_results_get_binding_value_by_name(results,
-			U("data_url"));
+		literal = rasqal_query_results_get_binding_value_by_name(results, "data_url");
 		if (literal)
-			new_plugin->data_url = ustrdup(rasqal_literal_as_string(literal));
+			new_plugin->data_url = strdup(rasqal_literal_as_string(literal));
 		
-		literal = rasqal_query_results_get_binding_value_by_name(results,
-			U("lib_url"));
+		literal = rasqal_query_results_get_binding_value_by_name(results, "lib_url");
 		if (literal)
-			new_plugin->lib_url = ustrdup(rasqal_literal_as_string(literal));
+			new_plugin->lib_url = strdup(rasqal_literal_as_string(literal));
 		
 		/* Add the plugin if it's valid */
 		if (new_plugin->lib_url && new_plugin->data_url && new_plugin->plugin_uri
@@ -165,14 +162,14 @@ add_plugins_from_dir(SLV2List list, const char* dir)
 		if (!strcmp(pfile->d_name, ".") || !strcmp(pfile->d_name, ".."))
 			continue;
 
-		char* bundle_path = (char*)ustrjoin(U(dir), U("/"), U(pfile->d_name), NULL);
-		char* bundle_url = (char*)ustrjoin(U("file://"), U(dir), U("/"), U(pfile->d_name), NULL);
+		char* bundle_path = (char*)strjoin(dir, "/", pfile->d_name, NULL);
+		char* bundle_url = (char*)strjoin("file://", dir, "/", pfile->d_name, NULL);
 		DIR* bundle_dir = opendir(bundle_path);
 
 		if (bundle_dir != NULL) {
 			closedir(bundle_dir);
 			
-			slv2_list_load_bundle(list, U(bundle_url));
+			slv2_list_load_bundle(list, bundle_url);
 			//printf("Loaded bundle %s\n", bundle_url);
 		}
 		
@@ -188,7 +185,7 @@ slv2_list_load_path(SLV2List  list,
                     const char* slv2_path)
 {
 	
-	char* path = (char*)ustrjoin(U(slv2_path), U(":"), NULL);
+	char* path = (char*)strjoin(slv2_path, ":", NULL);
 
 	char* dir = path; // Pointer into path
 	
@@ -210,7 +207,7 @@ slv2_list_load_path(SLV2List  list,
 }
 
 
-unsigned long
+size_t
 slv2_list_get_length(const SLV2List list)
 {
 	assert(list != NULL);
@@ -219,12 +216,12 @@ slv2_list_get_length(const SLV2List list)
 
 
 SLV2Plugin*
-slv2_list_get_plugin_by_uri(const SLV2List list, const unsigned char* uri)
+slv2_list_get_plugin_by_uri(const SLV2List list, const char* uri)
 {
 	if (list->num_plugins > 0) {	
 		assert(list->plugins != NULL);
 		
-		for (unsigned long i=0; i < list->num_plugins; ++i)
+		for (size_t i=0; i < list->num_plugins; ++i)
 			if (!strcmp((char*)list->plugins[i]->plugin_uri, (char*)uri))
 				return list->plugins[i];
 	}
@@ -234,7 +231,7 @@ slv2_list_get_plugin_by_uri(const SLV2List list, const unsigned char* uri)
 
 
 SLV2Plugin*
-slv2_list_get_plugin_by_index(const SLV2List list, unsigned long index)
+slv2_list_get_plugin_by_index(const SLV2List list, size_t index)
 {
 	if (list->num_plugins == 0)
 		return NULL;

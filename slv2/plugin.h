@@ -22,7 +22,8 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-	
+
+#include <stdint.h>
 #include <stddef.h>
 #include <stdbool.h>
 #include "types.h"
@@ -82,7 +83,7 @@ slv2_plugin_duplicate(const SLV2Plugin* plugin);
  *
  * \return a shared string which must not be modified or free()'d.
  */
-const unsigned char*
+const char*
 slv2_plugin_get_uri(const SLV2Plugin* plugin);
 
 
@@ -93,7 +94,7 @@ slv2_plugin_get_uri(const SLV2Plugin* plugin);
  * \return a complete URL eg. "file:///usr/foo/SomeBundle.lv2/someplug.ttl",
  * which is shared and must not be modified or free()'d.
  */
-const unsigned char*
+const char*
 slv2_plugin_get_data_url(const SLV2Plugin* plugin);
 
 
@@ -103,7 +104,7 @@ slv2_plugin_get_data_url(const SLV2Plugin* plugin);
  * eg. "/usr/foo/SomeBundle.lv2/someplug.ttl" which is shared and must not
  * be free()'d; or NULL if URL is not a local filesystem path.
  */
-const unsigned char*
+const char*
 slv2_plugin_get_data_path(const SLV2Plugin* plugin);
 
 
@@ -111,7 +112,7 @@ slv2_plugin_get_data_path(const SLV2Plugin* plugin);
  *
  * \return a shared string which must not be modified or free()'d.
  */
-const unsigned char*
+const char*
 slv2_plugin_get_library_url(const SLV2Plugin* plugin);
 
 
@@ -121,7 +122,7 @@ slv2_plugin_get_library_url(const SLV2Plugin* plugin);
  * eg. "/usr/foo/SomeBundle.lv2/someplug.so" which is shared and must not
  * be free()'d; or NULL if URL is not a local filesystem path.
  */
-const unsigned char*
+const char*
 slv2_plugin_get_library_path(const SLV2Plugin* plugin);
 
 
@@ -131,7 +132,7 @@ slv2_plugin_get_library_path(const SLV2Plugin* plugin);
  * data file without a language tag).  Returned value must be free()'d by
  * the caller.
  */
-unsigned char*
+char*
 slv2_plugin_get_name(const SLV2Plugin* plugin);
 
 
@@ -154,7 +155,7 @@ slv2_plugin_get_property(const SLV2Plugin* p,
 
 /** Get the number of ports on this plugin.
  */
-unsigned long
+uint32_t
 slv2_plugin_get_num_ports(const SLV2Plugin* p);
 
 

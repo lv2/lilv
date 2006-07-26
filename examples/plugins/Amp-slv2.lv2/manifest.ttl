@@ -4,6 +4,8 @@
 @prefix lv2:  <http://lv2plug.in/ontology#> .
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
 
-<http://plugin.org.uk/swh-plugins/amp> lv2:binary   <amp.so>  ;
-                                       rdfs:seeAlso <amp.ttl> .
+<http://codeson.net/plugins/amp>
+    lv2:binary   <amp.so>  ;
+    rdfs:seeAlso <amp.ttl> .
+
 

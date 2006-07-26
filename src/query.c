@@ -23,35 +23,35 @@
 #include <slv2/query.h>
 
 
-unsigned char*
+char*
 slv2_query_header(const SLV2Plugin* p)
 {
-	const unsigned char* plugin_uri = slv2_plugin_get_uri(p);
-	const unsigned char* data_file_url = slv2_plugin_get_data_url(p);
+	const char* const plugin_uri = slv2_plugin_get_uri(p);
+	const char* const data_file_url = slv2_plugin_get_data_url(p);
 
-	unsigned char* query_string = ustrjoin(U(
-		  "PREFIX rdf:    <http://www.w3.org/1999/02/22-rdf-syntax-ns#> \n"
-		  "PREFIX rdfs:   <http://www.w3.org/2000/01/rdf-schema#> \n"
-		  "PREFIX doap:   <http://usefulinc.com/ns/doap#> \n"
-		  "PREFIX lv2:    <http://lv2plug.in/ontology#> \n"
-		  "PREFIX plugin: <"), plugin_uri, U("> \n"),
-		U("PREFIX data:   <"), data_file_url, U("> \n\n"), NULL);
+	char* query_string = strjoin(
+	  "PREFIX rdf:    <http://www.w3.org/1999/02/22-rdf-syntax-ns#> \n"
+	  "PREFIX rdfs:   <http://www.w3.org/2000/01/rdf-schema#> \n"
+	  "PREFIX doap:   <http://usefulinc.com/ns/doap#> \n"
+	  "PREFIX lv2:    <http://lv2plug.in/ontology#> \n"
+	  "PREFIX plugin: <", plugin_uri, "> \n",
+	  "PREFIX data:   <", data_file_url, "> \n\n", NULL);
 
 	return query_string;
 }
 
 
-unsigned char*
-slv2_query_lang_filter(const uchar* variable)
+char*
+slv2_query_lang_filter(const char* variable)
 {
-	uchar* result = NULL;
-	uchar* const lang = (uchar*)getenv("LANG");
+	char* result = NULL;
+	char* const lang = (char*)getenv("LANG");
 	if (lang) {
 		// FILTER( LANG(?value) = "en" || LANG(?value) = "" )
-		result = ustrjoin(
-			//U("FILTER (lang(?value) = \""), lang, U("\")\n"), 0);
-			U("FILTER( lang(?"), variable, U(") = \""), lang, 
-			U("\" || lang(?"), variable, U(") = \"\" )\n"), NULL);
+		result = strjoin(
+			//"FILTER (lang(?value) = \"", lang, "\"\n"), 0);
+			"FILTER( lang(?", variable, ") = \"", lang, 
+			"\" || lang(?", variable, ") = \"\" )\n", NULL);
 	}
 
 	return result;
@@ -60,17 +60,17 @@ slv2_query_lang_filter(const uchar* variable)
 
 rasqal_query_results*
 slv2_plugin_run_query(const SLV2Plugin* p,
-                      const uchar*        first, ...)
+                      const char*        first, ...)
 {
 
 	/* FIXME:  Too much unecessary allocation */
-	uchar* header = slv2_query_header(p);
+	char* header = slv2_query_header(p);
 	
 	va_list args_list;
 	va_start(args_list, first);
 
-	uchar* args_str = vstrjoin(first, args_list);
-	uchar* query_str = ustrjoin(header, args_str, NULL);
+	char* args_str = vstrjoin(first, args_list);
+	char* query_str = strjoin(header, args_str, NULL);
 	va_end(args_list);
 
 	assert(p);
@@ -80,7 +80,7 @@ slv2_plugin_run_query(const SLV2Plugin* p,
 
 	//printf("Query: \n%s\n\n", query_str);
 
-	rasqal_query_prepare(rq, query_str, NULL);
+	rasqal_query_prepare(rq, (unsigned char*)query_str, NULL);
 	rasqal_query_results* results = rasqal_query_execute(rq);
 	
 	rasqal_free_query(rq);
@@ -107,14 +107,14 @@ slv2_query_get_results(rasqal_query_results* results)
 	while (!rasqal_query_results_finished(results)) {
 		
 		rasqal_literal* literal =
-			rasqal_query_results_get_binding_value_by_name(results, U("value"));
+			rasqal_query_results_get_binding_value_by_name(results, "value");
 		assert(literal != NULL);
 		
 		// Add value on to the array.  Yes, this is disgusting.
 		result->num_values++;
 		// FIXME LEAK:
 		result->values = realloc(result->values, result->num_values * sizeof(char*));
-		result->values[result->num_values-1] = ustrdup(rasqal_literal_as_string(literal));
+		result->values[result->num_values-1] = strdup(rasqal_literal_as_string(literal));
 		
 		rasqal_query_results_next(results);
 	}

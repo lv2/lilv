@@ -27,16 +27,23 @@ extern "C" {
 #include <lv2.h>
 
 
+/* If you're a user of SLV2, stop reading this file RIGHT NOW.
+ * Unfortunately it needs to be exposed to allow inlining of some things that
+ * really need to be inlined, but these are opaque types.  Don't even think
+ * about writing code that depends on any information here....
+ */
+
+
 /** Record of an installed/available plugin.
  *
  * A simple reference to a plugin somewhere on the system. This just holds
  * paths of relevant files, the actual data therein isn't loaded into memory.
  */
 struct _Plugin {
-	unsigned char* plugin_uri;
-	unsigned char* bundle_url; // Bundle directory plugin was loaded from
-	unsigned char* data_url;   // rdfs::seeAlso
-	unsigned char* lib_url;    // lv2:binary
+	char* plugin_uri;
+	char* bundle_url; // Bundle directory plugin was loaded from
+	char* data_url;   // rdfs::seeAlso
+	char* lib_url;    // lv2:binary
 };
 
 

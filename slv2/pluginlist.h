@@ -110,8 +110,8 @@ slv2_list_load_path(SLV2List    list,
  * installed plugins.  Use \ref slv2_list_load_all.
  */
 void
-slv2_list_load_bundle(SLV2List             list,
-                      const unsigned char* bundle_base_url);
+slv2_list_load_bundle(SLV2List    list,
+                      const char* bundle_base_url);
 
 
 /** Get the number of plugins in the list.
@@ -128,8 +128,8 @@ slv2_list_get_length(const SLV2List list);
  * \return NULL if plugin with \a url not found in \a list.
  */
 const SLV2Plugin*
-slv2_list_get_plugin_by_uri(const SLV2List       list,
-                            const unsigned char* uri);
+slv2_list_get_plugin_by_uri(const SLV2List list,
+                            const char*    uri);
 
 
 /** Get a plugin from the list by index.

@@ -30,12 +30,12 @@
 
 SLV2Instance*
 slv2_plugin_instantiate(const SLV2Plugin*        plugin,
-                        unsigned long            sample_rate,
+                        uint32_t                 sample_rate,
                         const LV2_Host_Feature** host_features)
 {
 	struct _Instance* result = NULL;
 	
-	const unsigned char* const lib_path = slv2_plugin_get_library_path(plugin);
+	const char* const lib_path = slv2_plugin_get_library_path(plugin);
 	if (!lib_path)
 		return NULL;
 	
@@ -57,7 +57,7 @@ slv2_plugin_instantiate(const SLV2Plugin*        plugin,
 		
 		const char* const bundle_path = url2path(plugin->bundle_url);
 		
-		for (unsigned long i=0; 1; ++i) {
+		for (uint32_t i=0; 1; ++i) {
 			const LV2_Descriptor* ld = df(i);
 
 			if (!ld) {
@@ -66,7 +66,7 @@ slv2_plugin_instantiate(const SLV2Plugin*        plugin,
 				dlclose(lib);
 				break; // return NULL
 			} else if (!strcmp(ld->URI, (char*)plugin->plugin_uri)) {
-				printf("Found %s at index %ld in:\n\t%s\n\n", plugin->plugin_uri, i, lib_path);
+				printf("Found %s at index %u in:\n\t%s\n\n", plugin->plugin_uri, i, lib_path);
 
 				assert(ld->instantiate);
 
@@ -86,7 +86,7 @@ slv2_plugin_instantiate(const SLV2Plugin*        plugin,
 	assert(slv2_plugin_get_num_ports(plugin) > 0);
 
 	// Connect all ports to NULL (catches bugs)
-	for (unsigned long i=0; i < slv2_plugin_get_num_ports(plugin); ++i)
+	for (uint32_t i=0; i < slv2_plugin_get_num_ports(plugin); ++i)
 		result->descriptor->connect_port(result->lv2_handle, i, NULL);
 	
 	return result;

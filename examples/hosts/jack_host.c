@@ -18,6 +18,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <slv2/slv2.h>
 #include <jack/jack.h>
 
@@ -27,14 +28,14 @@ struct JackHost {
 	jack_client_t* jack_client; /**< Jack client */
 	SLV2Plugin*    plugin;      /**< Plugin "class" (actually just a few strings) */
 	SLV2Instance*  instance;    /**< Plugin "instance" (loaded shared lib) */
-	unsigned long  num_ports;   /**< Size of the two following arrays: */
+	size_t         num_ports;   /**< Size of the two following arrays: */
 	jack_port_t**  jack_ports;  /**< For audio ports, otherwise NULL */
 	float*         controls;    /**< For control ports, otherwise 0.0f */
 };
 
 
 void die(const char* msg);
-void create_port(struct JackHost* host, unsigned long port_index);
+void create_port(struct JackHost* host, uint32_t port_index);
 int  jack_process_cb(jack_nframes_t nframes, void* data);
 void list_plugins(SLV2List list);
 
@@ -99,7 +100,7 @@ main(int argc, char** argv)
 	host.jack_ports = calloc(host.num_ports, sizeof(jack_port_t*));
 	host.controls   = calloc(host.num_ports, sizeof(float*));
 	
-	for (unsigned long i=0; i < host.num_ports; ++i)
+	for (size_t i=0; i < host.num_ports; ++i)
 		create_port(&host, i);
 	
 	/* Activate plugin and JACK */
@@ -146,10 +147,10 @@ die(const char* msg)
  */
 void
 create_port(struct JackHost* host,
-            unsigned long    port_index)
+            uint32_t         port_index)
 {
 	/* Make sure this is a float port */
-	uchar* type = slv2_port_get_data_type(host->plugin, port_index);
+	char* type = slv2_port_get_data_type(host->plugin, port_index);
 	if (strcmp(type, SLV2_DATA_TYPE_FLOAT))
 		die("Unrecognized data type, aborting.");
 	free(type);
@@ -197,7 +198,7 @@ jack_process_cb(jack_nframes_t nframes, void* data)
 	struct JackHost* host = (struct JackHost*)data;
 
 	/* Connect plugin ports directly to JACK buffers */
-	for (unsigned long i=0; i < host->num_ports; ++i)
+	for (size_t i=0; i < host->num_ports; ++i)
 		if (host->jack_ports[i] != NULL)
 			slv2_instance_connect_port(host->instance, i,
 				jack_port_get_buffer(host->jack_ports[i], nframes));
@@ -212,7 +213,7 @@ jack_process_cb(jack_nframes_t nframes, void* data)
 void
 list_plugins(SLV2List list)
 {
-	for (int i=0; i < slv2_list_get_length(list); ++i) {
+	for (size_t i=0; i < slv2_list_get_length(list); ++i) {
 		const SLV2Plugin* const p = slv2_list_get_plugin_by_index(list, i);
 		printf("%s\n", slv2_plugin_get_uri(p));
 	}

@@ -56,7 +56,7 @@ extern "C" {
  *
  * \return an unsigned (UTF-8) string which must be free()'d.
  */
-unsigned char*
+char*
 slv2_query_header(const SLV2Plugin* p);
 
 
@@ -70,8 +70,8 @@ slv2_query_header(const SLV2Plugin* p);
  * 
  * eg. FILTER( LANG(?value) = "en" || LANG(?value) = "" )
  */
-unsigned char*
-slv2_query_lang_filter(const uchar* variable);
+char*
+slv2_query_lang_filter(const char* variable);
 
 
 /** Run a SPARQL query on a plugin's data file.
@@ -85,7 +85,7 @@ slv2_query_lang_filter(const uchar* variable);
  */
 rasqal_query_results*
 slv2_plugin_run_query(const SLV2Plugin* p,
-                      const uchar*        query_string, ...);
+                      const char*       query_string, ...);
 
 SLV2Property
 slv2_query_get_results(rasqal_query_results* results);

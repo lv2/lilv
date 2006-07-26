@@ -24,6 +24,8 @@
 #ifndef LV2_INCLUDED
 #define LV2_INCLUDED
 
+#include <stdint.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -153,7 +155,7 @@ typedef struct _LV2_Descriptor {
    * activate() rather than here.  If a host calls instantiate, it MUST
    * call cleanup() at some point in the future. */
   LV2_Handle (*instantiate)(const struct _LV2_Descriptor * Descriptor,
-                            unsigned long                  SampleRate,
+                            uint32_t                       SampleRate,
                             const char *                   BundlePath,
                             const LV2_Host_Feature**       HostFeatures);
 
@@ -184,7 +186,7 @@ typedef struct _LV2_Descriptor {
    * However, overlapped buffers or use of a single buffer for both
    * audio and control data may result in unexpected behaviour. */
   void (*connect_port)(LV2_Handle    Instance,
-                       unsigned long Port,
+                       uint32_t      Port,
                        void *        DataLocation);
 
   /** Function pointer that initialises a plugin instance and activates
@@ -226,7 +228,7 @@ typedef struct _LV2_Descriptor {
    * there are various things that the plugin MUST NOT do within the run()
    * function (see above). */
   void (*run)(LV2_Handle    Instance,
-              unsigned long SampleCount);
+              uint32_t      SampleCount);
 
   /** This is the counterpart to activate() (see above). If there is
    * nothing for deactivate() to do then the plugin writer may provide
@@ -287,12 +289,12 @@ typedef struct _LV2_Descriptor {
  * index that results in NULL being returned.  Index has no meaning,
  * hosts MUST NOT depend on it remaining constant (ie when serialising)
  * in any way. */
-const LV2_Descriptor * lv2_descriptor(unsigned long Index);
+const LV2_Descriptor * lv2_descriptor(uint32_t Index);
 
 
 /** Datatype corresponding to the lv2_descriptor() function. */
 typedef const LV2_Descriptor * 
-(*LV2_Descriptor_Function)(unsigned long Index);
+(*LV2_Descriptor_Function)(uint32_t Index);
 
 
 /* ******************************************************************** */

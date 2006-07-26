@@ -26,16 +26,13 @@ extern "C" {
 #include <stddef.h>
 
 
-typedef unsigned char uchar;
-
-
 /* A property, resulting from a query.
  *
  * Note that properties may have many values.
  */
 struct _Property {
-	size_t          num_values;
-	unsigned char** values;
+	size_t num_values;
+	char** values;
 };
 
 typedef struct _Property* SLV2Property;

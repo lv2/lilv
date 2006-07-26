@@ -26,7 +26,7 @@
 
 
 void
-ustrappend(uchar** dst, const uchar* suffix)
+strappend(char** dst, const char* suffix)
 {
 	assert(dst);
 	assert(*dst);
@@ -39,21 +39,13 @@ ustrappend(uchar** dst, const uchar* suffix)
 }
 
 
-uchar*
-ustrdup(const uchar* src)
-{
-	assert(src);
-	return (uchar*)strdup((char*)src);
-}
-
-
-uchar*
-ustrjoin(const uchar* first, ...)
+char*
+strjoin(const char* first, ...)
 {
 	va_list args_list;
 	va_start(args_list, first);
 	
-	uchar* result = vstrjoin(first, args_list);
+	char* result = vstrjoin(first, args_list);
 
 	va_end(args_list);
 	
@@ -61,17 +53,17 @@ ustrjoin(const uchar* first, ...)
 }
 
 
-uchar*
-vstrjoin(const uchar* first, va_list args_list)
+char*
+vstrjoin(const char* first, va_list args_list)
 {
 	// FIXME: this is horribly, awfully, disgracefully slow.
 	// so I'm lazy.
 	
-	const uchar* arg    = NULL;
-	uchar*       result = ustrdup(first);
+	const char* arg    = NULL;
+	char*       result = strdup(first);
 
-	while ((arg = va_arg(args_list, const uchar*)) != NULL)
-		ustrappend(&result, arg);
+	while ((arg = va_arg(args_list, const char*)) != NULL)
+		strappend(&result, arg);
 	
 	//va_end(args_list);
 
@@ -87,7 +79,7 @@ vstrjoin(const uchar* first, va_list args_list)
  * Result is simply a pointer in to \a url and must not be free()'d.
  */
 const char*
-url2path(const uchar* const url)
+url2path(const char* const url)
 {
 	/*assert(strlen((char*)url) > 8);
 	char* result = calloc(strlen((char*)url)-7+1, sizeof(char));

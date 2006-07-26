@@ -58,7 +58,7 @@ typedef const struct _Instance SLV2Instance;
  */
 SLV2Instance*
 slv2_plugin_instantiate(const SLV2Plugin*        plugin,
-                        unsigned long            sample_rate,
+                        uint32_t                 sample_rate,
                         const LV2_Host_Feature** host_features);
 
 
@@ -94,7 +94,7 @@ slv2_instance_get_uri(SLV2Instance* instance)
  */
 inline void
 slv2_instance_connect_port(SLV2Instance* instance,
-                           unsigned long port_index,
+                           uint32_t      port_index,
                            void*         data_location)
 {
 	assert(instance);
@@ -130,7 +130,7 @@ slv2_instance_activate(SLV2Instance* instance)
  */
 inline void
 slv2_instance_run(SLV2Instance* instance,
-                  unsigned long sample_count)
+                  uint32_t      sample_count)
 {
 	assert(instance);
 	assert(instance->descriptor);

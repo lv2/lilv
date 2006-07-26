@@ -40,7 +40,7 @@ slv2_plugin_duplicate(const SLV2Plugin* p)
 }
 
 
-const unsigned char*
+const char*
 slv2_plugin_get_uri(const SLV2Plugin* p)
 {
 	assert(p);
@@ -48,7 +48,7 @@ slv2_plugin_get_uri(const SLV2Plugin* p)
 }
 
 
-const unsigned char*
+const char*
 slv2_plugin_get_data_url(const SLV2Plugin* p)
 {
 	assert(p);
@@ -56,7 +56,7 @@ slv2_plugin_get_data_url(const SLV2Plugin* p)
 }
 
 
-const unsigned char*
+const char*
 slv2_plugin_get_data_path(const SLV2Plugin* p)
 {
 	assert(p);
@@ -67,7 +67,7 @@ slv2_plugin_get_data_path(const SLV2Plugin* p)
 }
 
 
-const unsigned char*
+const char*
 slv2_plugin_get_library_url(const SLV2Plugin* p)
 {
 	assert(p);
@@ -75,7 +75,7 @@ slv2_plugin_get_library_url(const SLV2Plugin* p)
 }
 
 
-const unsigned char*
+const char*
 slv2_plugin_get_library_path(const SLV2Plugin* p)
 {
 	assert(p);
@@ -111,11 +111,11 @@ slv2_plugin_verify(const SLV2Plugin* plugin)
 }
 
 
-unsigned char*
+char*
 slv2_plugin_get_name(const SLV2Plugin* plugin)
 {
 // FIXME: leak
-	unsigned char*    result = NULL;
+	char*    result = NULL;
 	struct _Property* prop   = slv2_plugin_get_property(plugin, "doap:name");
 	
 	// FIXME: guaranteed to be the untagged one?
@@ -134,14 +134,14 @@ slv2_plugin_get_property(const SLV2Plugin* p,
 	assert(property);
 
 	/*
-	uchar* header = slv2_query_header(p);
-	uchar* lang_filter = slv2_query_lang_filter(U("?value"));
+	char* header = slv2_query_header(p);
+	char* lang_filter = slv2_query_lang_filter("?value");
 	
-	uchar* query_string = ustrjoin(
+	char* query_string = strjoin(
 		header,
-		U("SELECT DISTINCT ?value FROM data: WHERE { \n"),
-		U("plugin: "), property, U(" ?value . \n"),
-		((lang_filter != NULL) ? lang_filter : U("")),
+		"SELECT DISTINCT ?value FROM data: WHERE { \n",
+		"plugin: ", property, " ?value . \n",
+		((lang_filter != NULL) ? lang_filter : ""),
 		"}", 0);
 	
 	free(header);
@@ -150,9 +150,9 @@ slv2_plugin_get_property(const SLV2Plugin* p,
 	rasqal_init();
 	
 	rasqal_query_results* results = slv2_plugin_run_query(p,
-		U("SELECT DISTINCT ?value FROM data: WHERE { \n"
-		  "plugin: "), property, U(" ?value . \n"
-		  "} \n"), NULL);
+		"SELECT DISTINCT ?value FROM data: WHERE { \n"
+		  "plugin: ", property, " ?value . \n"
+		  "} \n", NULL);
 	
 	struct _Property* result = slv2_query_get_results(results);
 
@@ -164,17 +164,17 @@ slv2_plugin_get_property(const SLV2Plugin* p,
 }
 
 
-unsigned long
+uint32_t
 slv2_plugin_get_num_ports(const SLV2Plugin* p)
 {
-	unsigned long result = 0;
+	uint32_t result = 0;
 	
 	rasqal_init();
 	
 	rasqal_query_results* results = slv2_plugin_run_query(p,
-		U("SELECT DISTINCT ?value FROM data: WHERE { \n"
-		  "plugin: lv2:port ?value . \n"
-		  "} \n"), NULL);
+		"SELECT DISTINCT ?value FROM data: WHERE { \n"
+		"plugin: lv2:port ?value . \n"
+		"} \n", NULL);
 	
 	while (!rasqal_query_results_finished(results)) {
 		++result;

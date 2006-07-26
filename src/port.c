@@ -26,10 +26,10 @@
 #include "util.h"
 
 enum SLV2PortClass
-slv2_port_get_class(SLV2Plugin*   p,
-                    unsigned long index)
+slv2_port_get_class(SLV2Plugin* p,
+                    uint32_t    index)
 {
-	struct _Property* class = slv2_port_get_property(p, index, U("rdf:type"));
+	struct _Property* class = slv2_port_get_property(p, index, "rdf:type");
 	assert(class);
 	assert(class->num_values == 1);
 	assert(class->values);
@@ -51,39 +51,39 @@ slv2_port_get_class(SLV2Plugin*   p,
 }
 
 
-uchar*
-slv2_port_get_data_type(SLV2Plugin*   p,
-                        unsigned long index)
+char*
+slv2_port_get_data_type(SLV2Plugin* p,
+                        uint32_t    index)
 {
-	SLV2Property type = slv2_port_get_property(p, index, U("lv2:datatype"));
+	SLV2Property type = slv2_port_get_property(p, index, "lv2:datatype");
 	assert(type);
 	assert(type->num_values == 1);
 	assert(type->values);
 
-	uchar* ret = type->values[0];
+	char* ret = type->values[0];
 	slv2_property_free(type);
 	return ret;
 }
 
 
 SLV2Property
-slv2_port_get_property(SLV2Plugin*   p,
-                       unsigned long index,
-                       const uchar*  property)
+slv2_port_get_property(SLV2Plugin* p,
+                       uint32_t    index,
+                       const char* property)
 {
 	assert(p);
 	assert(property);
 
 	char index_str[4];
-	snprintf(index_str, (size_t)4, "%lu", index);
+	snprintf(index_str, (size_t)4, "%u", index);
 	
 	rasqal_init();
 	
 	rasqal_query_results* results = slv2_plugin_run_query(p,
-		U("SELECT DISTINCT ?value FROM data: WHERE { \n"
+		"SELECT DISTINCT ?value FROM data: WHERE { \n"
 		  "plugin: lv2:port ?port \n"
-		  "?port lv2:index "), index_str, U(" \n"
-		  "?port "), property, U(" ?value . \n}\n"), NULL);
+		  "?port lv2:index ", index_str, " \n"
+		  "?port ", property, " ?value . \n}\n", NULL);
 	
 	SLV2Property result = slv2_query_get_results(results);
 
@@ -94,18 +94,18 @@ slv2_port_get_property(SLV2Plugin*   p,
 }
 
 
-uchar*
-slv2_port_get_symbol(SLV2Plugin*   p,
-                     unsigned long index)
+char*
+slv2_port_get_symbol(SLV2Plugin* p,
+                     uint32_t    index)
 {
 	// FIXME: leaks
-	uchar* result = NULL;
+	char* result = NULL;
 	
 	SLV2Property prop
-		= slv2_port_get_property(p, index, U("lv2:symbol"));
+		= slv2_port_get_property(p, index, "lv2:symbol");
 
 	if (prop && prop->num_values == 1)
-		result = (uchar*)strdup((char*)prop->values[0]);
+		result = strdup(prop->values[0]);
 	slv2_property_free(prop);
 
 	return result;
@@ -114,14 +114,14 @@ slv2_port_get_symbol(SLV2Plugin*   p,
 
 float
 slv2_port_get_default_value(SLV2Plugin* p, 
-                            unsigned long index)
+                            uint32_t    index)
 {
 	// FIXME: do casting properly in the SPARQL query
 	
 	float result = 0.0f;
 	
 	SLV2Property prop
-		= slv2_port_get_property(p, index, U("lv2:default"));
+		= slv2_port_get_property(p, index, "lv2:default");
 
 	if (prop && prop->num_values == 1)
 		result = atof((char*)prop->values[0]);
@@ -133,15 +133,15 @@ slv2_port_get_default_value(SLV2Plugin* p,
 
 
 float
-slv2_port_get_minimum_value(SLV2Plugin*   p, 
-                            unsigned long index)
+slv2_port_get_minimum_value(SLV2Plugin* p, 
+                            uint32_t    index)
 {
 	// FIXME: do casting properly in the SPARQL query
 	
 	float result = 0.0f;
 	
 	SLV2Property prop
-		= slv2_port_get_property(p, index, U("lv2:minimum"));
+		= slv2_port_get_property(p, index, "lv2:minimum");
 
 	if (prop && prop->num_values == 1)
 		result = atof((char*)prop->values[0]);
@@ -153,15 +153,15 @@ slv2_port_get_minimum_value(SLV2Plugin*   p,
 
 
 float
-slv2_port_get_maximum_value(SLV2Plugin*   p, 
-                            unsigned long index)
+slv2_port_get_maximum_value(SLV2Plugin* p, 
+                            uint32_t    index)
 {
 	// FIXME: do casting properly in the SPARQL query
 	
 	float result = 0.0f;
 	
 	SLV2Property prop
-		= slv2_port_get_property(p, index, U("lv2:maximum"));
+		= slv2_port_get_property(p, index, "lv2:maximum");
 
 	if (prop && prop->num_values == 1)
 		result = atof((char*)prop->values[0]);

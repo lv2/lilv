@@ -11,7 +11,7 @@
 #define SYMBOL_EXPORT
 #endif
 
-#define AMP_URI       "http://plugin.org.uk/swh-plugins/amp";
+#define AMP_URI       "http://codeson.net/plugins/amp"
 #define AMP_GAIN      0
 #define AMP_INPUT     1
 #define AMP_OUTPUT    2
@@ -24,11 +24,15 @@ typedef struct {
 	float *output;
 } Amp;
 
-static void cleanupAmp(LV2_Handle instance) {
+
+static void
+cleanupAmp(LV2_Handle instance) {
 	free(instance);
 }
 
-static void connectPortAmp(LV2_Handle instance, unsigned long port,
+
+static void
+connectPortAmp(LV2_Handle instance, unsigned long port,
 			   void *data) {
 	Amp *plugin = (Amp *)instance;
 
@@ -45,16 +49,20 @@ static void connectPortAmp(LV2_Handle instance, unsigned long port,
 	}
 }
 
-static LV2_Handle instantiateAmp(const LV2_Descriptor *descriptor,
+
+static LV2_Handle
+instantiateAmp(const LV2_Descriptor *descriptor,
 	    unsigned long s_rate, const char *path , const LV2_Host_Feature **features) {
 	Amp *plugin_data = (Amp *)malloc(sizeof(Amp));
 
 	return (LV2_Handle)plugin_data;
 }
 
+
 #define DB_CO(g) ((g) > -90.0f ? powf(10.0f, (g) * 0.05f) : 0.0f)
 
-static void runAmp(LV2_Handle instance, unsigned long sample_count) {
+static void
+runAmp(LV2_Handle instance, unsigned long sample_count) {
 	Amp *plugin_data = (Amp *)instance;
 
 	const float gain = *(plugin_data->gain);
@@ -69,7 +77,9 @@ static void runAmp(LV2_Handle instance, unsigned long sample_count) {
 	}
 }
 
-static void init() {
+
+static void
+init() {
 	ampDescriptor =
 	 (LV2_Descriptor *)malloc(sizeof(LV2_Descriptor));
 
@@ -82,8 +92,10 @@ static void init() {
 	ampDescriptor->run = runAmp;
 }
 
+
 SYMBOL_EXPORT
-const LV2_Descriptor *lv2_descriptor(unsigned long index) {
+const LV2_Descriptor*
+lv2_descriptor(unsigned long index) {
 	if (!ampDescriptor) init();
 
 	switch (index) {
