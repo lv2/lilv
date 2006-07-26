@@ -62,7 +62,7 @@ slv2_list_load_all(SLV2List list)
     } else {
         const char* const home = getenv("HOME");
         const char* const suffix = "/.lv2:/usr/local/lib/lv2:usr/lib/lv2";
-        slv2_path = strjoin(home, suffix);
+        slv2_path = strjoin(home, suffix, NULL);
 		
 		printf("$LV2_PATH is unset.  Using default path %s\n", slv2_path);
 	    slv2_list_load_path(list, slv2_path);
