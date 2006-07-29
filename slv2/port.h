@@ -63,7 +63,7 @@ slv2_port_get_class(SLV2Plugin*   plugin,
 /** Get the data type of a port (as a URI).
  *
  * The only data type included in the core LV2 specification is lv2:float.
- * Compare this return value with @ref SLV2_DATA_TYPE_FLOAT to check for it.
+ * Compare this return value with SLV2_DATA_TYPE_FLOAT to check for it.
  */
 char*
 slv2_port_get_data_type(SLV2Plugin*   plugin,
