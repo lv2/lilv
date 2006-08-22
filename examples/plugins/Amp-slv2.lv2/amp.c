@@ -32,7 +32,7 @@ cleanupAmp(LV2_Handle instance) {
 
 
 static void
-connectPortAmp(LV2_Handle instance, unsigned long port,
+connectPortAmp(LV2_Handle instance, uint32_t port,
 			   void *data) {
 	Amp *plugin = (Amp *)instance;
 
@@ -52,7 +52,7 @@ connectPortAmp(LV2_Handle instance, unsigned long port,
 
 static LV2_Handle
 instantiateAmp(const LV2_Descriptor *descriptor,
-	    unsigned long s_rate, const char *path , const LV2_Host_Feature **features) {
+	    uint32_t s_rate, const char *path , const LV2_Host_Feature **features) {
 	Amp *plugin_data = (Amp *)malloc(sizeof(Amp));
 
 	return (LV2_Handle)plugin_data;
@@ -62,14 +62,14 @@ instantiateAmp(const LV2_Descriptor *descriptor,
 #define DB_CO(g) ((g) > -90.0f ? powf(10.0f, (g) * 0.05f) : 0.0f)
 
 static void
-runAmp(LV2_Handle instance, unsigned long sample_count) {
+runAmp(LV2_Handle instance, uint32_t sample_count) {
 	Amp *plugin_data = (Amp *)instance;
 
 	const float gain = *(plugin_data->gain);
 	const float * const input = plugin_data->input;
 	float * const output = plugin_data->output;
 
-	unsigned long pos;
+	uint32_t pos;
 	float coef = DB_CO(gain);
 
 	for (pos = 0; pos < sample_count; pos++) {
@@ -95,7 +95,7 @@ init() {
 
 SYMBOL_EXPORT
 const LV2_Descriptor*
-lv2_descriptor(unsigned long index) {
+lv2_descriptor(uint32_t index) {
 	if (!ampDescriptor) init();
 
 	switch (index) {

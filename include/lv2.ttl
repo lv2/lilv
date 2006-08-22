@@ -72,8 +72,8 @@ The class that represents an LV2 port
 In order for it to be used by a host it must have at least 
 the following properties:
     rdf:type (where object is exactly one of
-       :InputControlRatePort, :OutputControlRatePort,
-       :InputAudioRatePort,   :OututAudioRatePort)
+       :ControlRateInputPort, :ControlRateOutputPort,
+       :AudioRateInputPort,   :AudioRateOutputPort)
     :dataType
     :index
     :symbol

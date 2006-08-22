@@ -21,8 +21,8 @@
  * USA.
  */
 
-#ifndef LV2_INCLUDED
-#define LV2_INCLUDED
+#ifndef LV2_H_INCLUDED
+#define LV2_H_INCLUDED
 
 #include <stdint.h>
 
@@ -32,6 +32,7 @@ extern "C" {
 
 
 /* ************************************************************************* */
+
 
 /* Overview: 
  *
@@ -70,6 +71,7 @@ extern "C" {
  * This API contains very limited error-handling.
  */
 
+
 /* ************************************************************************* */
 
     
@@ -83,6 +85,7 @@ typedef void * LV2_Handle;
 
 
 /* ************************************************************************* */
+
 
 /** Host feature.
  * 
@@ -300,8 +303,19 @@ typedef const LV2_Descriptor *
 /* ******************************************************************** */
 
 
+/* Put this (LV2_SYMBOL_EXPORT) before any functions that are to be loaded
+ * by the host as a symbol from the dynamic library.
+ */
+#ifdef WIN32
+#define LV2_SYMBOL_EXPORT __declspec(dllexport)
+#else
+#define LV2_SYMBOL_EXPORT
+#endif
+
+
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* LV2_INCLUDED */
+#endif /* LV2_H_INCLUDED */
+
