@@ -55,7 +55,7 @@ To be used by a host a Plugin must have at least the following properties:
     rdf:type (with object :Plugin)
     doap:name (one without language tag)
     doap:licence
-    lv2:port
+    :port
 """ .
 
 
@@ -147,7 +147,7 @@ Plugins will write values to this array during their run method.
 
 :dataType a rdf:Property ;
     rdfs:domain  :Port ;
-    rdfs:range   lv2:DataType ;
+    rdfs:range   :DataType ;
     rdfs:label   "Port Data type" ;
     rdfs:comment """
 Relates a Port to the data type(s) it can accept.  Hosts that do not support

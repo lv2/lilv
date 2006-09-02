@@ -156,7 +156,7 @@ slv2_plugin_get_property(const SLV2Plugin* p,
 
 	rasqal_query_results* results = slv2_plugin_run_query(p, query);
 	
-	struct _Property* result = slv2_query_get_results(results);
+	SLV2Property result = slv2_query_get_results(results, "value");
 
 	rasqal_free_query_results(results);
 	rasqal_finish();
@@ -169,8 +169,6 @@ slv2_plugin_get_property(const SLV2Plugin* p,
 uint32_t
 slv2_plugin_get_num_ports(const SLV2Plugin* p)
 {
-	uint32_t result = 0;
-	
 	rasqal_init();
 	
     char* query = strjoin(
@@ -179,16 +177,67 @@ slv2_plugin_get_num_ports(const SLV2Plugin* p)
 		"} \n", NULL);
 
 	rasqal_query_results* results = slv2_plugin_run_query(p, query);
+	const size_t result = slv2_query_get_num_results(results, "value");
 	
-	while (!rasqal_query_results_finished(results)) {
-		++result;
-		rasqal_query_results_next(results);
-	}
+	rasqal_free_query_results(results);
+	rasqal_finish();
+	free(query);
 
+	return result;
+}
+
+
+bool
+slv2_plugin_has_latency(const SLV2Plugin* p)
+{
+	assert(p);
+
+	rasqal_init();
+	
+    char* query = 
+		"SELECT DISTINCT ?value FROM data: WHERE { \n"
+		"	plugin: lv2:port     ?port . \n"
+		"	?port   lv2:portHint lv2:reportsLatency . \n"
+		"}\n";
+
+	rasqal_query_results* results = slv2_plugin_run_query(p, query);
+	bool result = ( rasqal_query_results_get_bindings_count(results) > 0 );
+	
 	rasqal_free_query_results(results);
 	rasqal_finish();
     free(query);
 
 	return result;
+}
+
+uint32_t
+slv2_plugin_get_latency_port(const SLV2Plugin* p)
+{
+	assert(p);
+
+	rasqal_init();
+	
+    char* query = 
+		"SELECT DISTINCT ?value FROM data: WHERE { \n"
+		"	plugin: lv2:port     ?port . \n"
+		"	?port   lv2:portHint lv2:reportsLatency ; \n"
+		"           lv2:index    ?index . \n"
+		"}\n";
+
+	rasqal_query_results* results = slv2_plugin_run_query(p, query);
+	
+	struct _Property* result = slv2_query_get_results(results, "index");
+	
+	// FIXME: need a sane error handling strategy
+	assert(result->num_values == 1);
+	char* endptr = 0;
+	uint32_t index = strtol(result->values[0], &endptr, 10);
+	// FIXME: check.. stuff..
+	
+	rasqal_free_query_results(results);
+	rasqal_finish();
+	free(query);
+
+	return index;
 }
 

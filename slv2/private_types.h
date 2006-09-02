@@ -23,6 +23,7 @@
 extern "C" {
 #endif
 
+#include <stdbool.h>
 #include <stddef.h>
 #include <lv2.h>
 
@@ -30,7 +31,7 @@ extern "C" {
 /* If you're a user of SLV2, stop reading this file RIGHT NOW.
  * Unfortunately it needs to be exposed to allow inlining of some things that
  * really need to be inlined, but these are opaque types.  Don't even think
- * about writing code that depends on any information here....
+ * about writing code that depends on any information here :)
  */
 
 

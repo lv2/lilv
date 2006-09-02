@@ -86,8 +86,11 @@ rasqal_query_results*
 slv2_plugin_run_query(const SLV2Plugin* p,
                       const char*       query_string);
 
+size_t
+slv2_query_get_num_results(rasqal_query_results* results, const char* var_name);
+
 SLV2Property
-slv2_query_get_results(rasqal_query_results* results);
+slv2_query_get_results(rasqal_query_results* results, const char* var_name);
 
 /** Free an SLV2Property. */
 void

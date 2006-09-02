@@ -61,6 +61,8 @@ slv2_port_get_data_type(SLV2Plugin* p,
 	assert(type->values);
 
 	char* ret = type->values[0];
+	type->values[0] = NULL; // prevent deletion
+
 	slv2_property_free(type);
 	return ret;
 }
@@ -87,7 +89,7 @@ slv2_port_get_property(SLV2Plugin* p,
 
 	rasqal_query_results* results = slv2_plugin_run_query(p, query);
 	
-	SLV2Property result = slv2_query_get_results(results);
+	SLV2Property result = slv2_query_get_results(results, "value");
 
 	rasqal_free_query_results(results);
 	rasqal_finish();
@@ -107,8 +109,11 @@ slv2_port_get_symbol(SLV2Plugin* p,
 	SLV2Property prop
 		= slv2_port_get_property(p, index, "lv2:symbol");
 
-	if (prop && prop->num_values == 1)
-		result = strdup(prop->values[0]);
+	if (prop && prop->num_values == 1) {
+		result = prop->values[0];
+		prop->values[0] = NULL; // prevent deletion
+	}
+	
 	slv2_property_free(prop);
 
 	return result;

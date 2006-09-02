@@ -83,40 +83,57 @@ slv2_plugin_run_query(const SLV2Plugin* p,
 	return results;
 }
 
-
-SLV2Property
-slv2_query_get_results(rasqal_query_results* results)
+size_t
+slv2_query_get_num_results(rasqal_query_results* results, const char* var_name)
 {
-	struct _Property* result = NULL;
-	
-	if (rasqal_query_results_get_count(results) > 0) {
-		result = malloc(sizeof(struct _Property));
-		result->num_values = 0;
-		result->values = NULL;
-	}
-	
-	while (!rasqal_query_results_finished(results)) {
-		
-		rasqal_literal* literal =
-			rasqal_query_results_get_binding_value_by_name(results, "value");
-		assert(literal != NULL);
-		
-		// Add value on to the array.  Yes, this is disgusting.
-		result->num_values++;
-		// FIXME LEAK:
-		result->values = realloc(result->values, result->num_values * sizeof(char*));
-		result->values[result->num_values-1] = strdup(rasqal_literal_as_string(literal));
-		
-		rasqal_query_results_next(results);
+	size_t result = 0;
+
+    while (!rasqal_query_results_finished(results)) {
+		if (!strcmp(rasqal_query_results_get_binding_name(results, 0), var_name)) {
+			++result;
+		}
+        rasqal_query_results_next(results);
 	}
 
 	return result;
 }
 
+SLV2Property
+slv2_query_get_results(rasqal_query_results* results, const char* var_name)
+{
+	struct _Property* result = NULL;
+
+    if (rasqal_query_results_get_bindings_count(results) > 0) {
+        result = malloc(sizeof(struct _Property));
+        result->num_values = 0;
+        result->values = NULL;
+    }
+
+    while (!rasqal_query_results_finished(results)) {
+
+        rasqal_literal* literal =
+            rasqal_query_results_get_binding_value_by_name(results, var_name);
+        assert(literal != NULL);
+
+        // Add value on to the array, reallocing all the way.
+		// Yes, this is disgusting.  Roughly as disgusting as the rasqal query
+		// results API.  coincidentally.
+        result->num_values++;
+        result->values = realloc(result->values, result->num_values * sizeof(char*));
+        result->values[result->num_values-1] = strdup(rasqal_literal_as_string(literal));
+
+        rasqal_query_results_next(results);
+    }
+
+    return result;
+}
+
 void
 slv2_property_free(struct _Property* prop)
 {
-	//struct _Property* prop = (struct _Property*)property;
+	for (size_t i=0; i < prop->num_values; ++i)
+		free(prop->values[i]);
+
 	free(prop->values);
 	free(prop);
 }

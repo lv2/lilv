@@ -85,7 +85,7 @@ slv2_plugin_instantiate(const SLV2Plugin*        plugin,
 	assert(result);
 	assert(slv2_plugin_get_num_ports(plugin) > 0);
 
-	// Connect all ports to NULL (catches bugs)
+	// "Connect" all ports to NULL (catches bugs)
 	for (uint32_t i=0; i < slv2_plugin_get_num_ports(plugin); ++i)
 		result->descriptor->connect_port(result->lv2_handle, i, NULL);
 	

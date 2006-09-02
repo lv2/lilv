@@ -158,6 +158,27 @@ slv2_plugin_get_property(const SLV2Plugin* p,
 uint32_t
 slv2_plugin_get_num_ports(const SLV2Plugin* p);
 
+/** Return whether or not the plugin introduces (and reports) latency.
+ *
+ * The index of the latency port can be found with slv2_plugin_get_latency_port
+ * ONLY if this function returns true.
+ */
+bool
+slv2_plugin_has_latency(const SLV2Plugin* p);
+
+/** Return the index of the plugin's latency port, or the empty string if the
+ * plugin has no latency.
+ *
+ * It is a fatal error to call this on a plugin without checking if the port
+ * exists by first calling slv2_plugin_has_latency.
+ *
+ * Any plugin that introduces unwanted latency that should be compensated for
+ * (by hosts with the ability/need) MUST provide this port, which is a control
+ * rate output port that reports the latency for each cycle in frames.
+ */
+uint32_t
+slv2_plugin_get_latency_port(const SLV2Plugin* p);
+
 
 /** @} */
 
