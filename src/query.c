@@ -89,7 +89,7 @@ slv2_query_get_num_results(rasqal_query_results* results, const char* var_name)
 	size_t result = 0;
 
     while (!rasqal_query_results_finished(results)) {
-		if (!strcmp(rasqal_query_results_get_binding_name(results, 0), var_name)) {
+		if (!strcmp((const char*)rasqal_query_results_get_binding_name(results, 0), var_name)) {
 			++result;
 		}
         rasqal_query_results_next(results);
@@ -112,7 +112,7 @@ slv2_query_get_results(rasqal_query_results* results, const char* var_name)
     while (!rasqal_query_results_finished(results)) {
 
         rasqal_literal* literal =
-            rasqal_query_results_get_binding_value_by_name(results, var_name);
+            rasqal_query_results_get_binding_value_by_name(results, (const unsigned char*)var_name);
         assert(literal != NULL);
 
         // Add value on to the array, reallocing all the way.
@@ -120,7 +120,7 @@ slv2_query_get_results(rasqal_query_results* results, const char* var_name)
 		// results API.  coincidentally.
         result->num_values++;
         result->values = realloc(result->values, result->num_values * sizeof(char*));
-        result->values[result->num_values-1] = strdup(rasqal_literal_as_string(literal));
+        result->values[result->num_values-1] = strdup((const char*)rasqal_literal_as_string(literal));
 
         rasqal_query_results_next(results);
     }

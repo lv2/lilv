@@ -77,8 +77,8 @@ slv2_list_free(SLV2List list);
  * like to be visible in apps (or conversely a blacklist of plugins they do
  * not wish to use).
  *
- * Use of any of the other functions for locating plugins is highly
- * discouraged without specific reason to do so.  Use this one.
+ * Use of any functions for locating plugins other than this one is \em highly
+ * discouraged without a special reason to do so - use this one.
  */
 void
 slv2_list_load_all(SLV2List list);
@@ -88,9 +88,7 @@ slv2_list_load_all(SLV2List list);
  *
  * If \a search_path is NULL, \a list will be unmodified.
  *
- * Use of this function is not recommended.  Use \ref slv2_list_load_all.
- *
- * Returned value must be cleaned up by slv2list_free.
+ * Use of this function is \b not recommended.  Use \ref slv2_list_load_all.
  */
 void
 slv2_list_load_path(SLV2List    list,
@@ -102,12 +100,12 @@ slv2_list_load_path(SLV2List    list,
  * \arg bundle_base_url is a fully qualified path to the bundle directory, eg.
  * "file:///usr/lib/lv2/someBundle"
  *
- * Use of this function is <b>strongly</b> discouraged, hosts should not attach
- * any significance to bundle paths as there are no guarantees they will
+ * Use of this function is \b strongly discouraged - hosts should not attach
+ * \em any significance to bundle paths as there are no guarantees they will
  * remain consistent whatsoever.  This function should only be used by apps
  * which ship with a special bundle (which it knows exists at some path).
- * It is <b>not</b> to be used by normal hosts that want to load system
- * installed plugins.  Use \ref slv2_list_load_all.
+ * It is \b not to be used by normal hosts that want to load system
+ * installed plugins.  Use \ref slv2_list_load_all for that.
  */
 void
 slv2_list_load_bundle(SLV2List    list,

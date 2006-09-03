@@ -63,7 +63,7 @@ slv2_plugin_verify(const SLV2Plugin* plugin);
  * Use this if you want to keep an SLV2Plugin around but free the list it came
  * from.
  *
- * \return a newly allocated SLV2Plugin identical to \a plugin (a deep copy).
+ * \return a newly allocated deep copy of \a plugin.
  */
 SLV2Plugin*
 slv2_plugin_duplicate(const SLV2Plugin* plugin);

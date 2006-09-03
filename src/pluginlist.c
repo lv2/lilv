@@ -77,14 +77,13 @@ void
 slv2_list_load_bundle(SLV2List    list,
                       const char* bundle_base_uri)
 {
-	// FIXME: ew
 	unsigned char* manifest_uri = malloc(
 		(strlen((char*)bundle_base_uri) + strlen("manifest.ttl") + 2) * sizeof(unsigned char));
 	memcpy(manifest_uri, bundle_base_uri, strlen((char*)bundle_base_uri)+1 * sizeof(unsigned char));
-	if (bundle_base_uri[strlen((char*)bundle_base_uri)-1] == '/')
-		strcat((char*)manifest_uri, (char*)"manifest.ttl");
+	if (bundle_base_uri[strlen(bundle_base_uri)-1] == '/')
+		strcat((char*)manifest_uri, "manifest.ttl");
 	else
-		strcat((char*)manifest_uri, (char*)"/manifest.ttl");
+		strcat((char*)manifest_uri, "/manifest.ttl");
 	
 	rasqal_init();
 	rasqal_query_results *results;
@@ -113,17 +112,17 @@ slv2_list_load_bundle(SLV2List    list,
 		
 		rasqal_literal* literal = NULL;
 	
-		literal = rasqal_query_results_get_binding_value_by_name(results, "plugin_uri");
+		literal = rasqal_query_results_get_binding_value_by_name(results, (const unsigned char*)"plugin_uri");
 		if (literal)
-			new_plugin->plugin_uri = strdup(rasqal_literal_as_string(literal));
+			new_plugin->plugin_uri = strdup((const char*)rasqal_literal_as_string(literal));
 		
-		literal = rasqal_query_results_get_binding_value_by_name(results, "data_url");
+		literal = rasqal_query_results_get_binding_value_by_name(results, (const unsigned char*)"data_url");
 		if (literal)
-			new_plugin->data_url = strdup(rasqal_literal_as_string(literal));
+			new_plugin->data_url = strdup((const char*)rasqal_literal_as_string(literal));
 		
-		literal = rasqal_query_results_get_binding_value_by_name(results, "lib_url");
+		literal = rasqal_query_results_get_binding_value_by_name(results, (const unsigned char*)"lib_url");
 		if (literal)
-			new_plugin->lib_url = strdup(rasqal_literal_as_string(literal));
+			new_plugin->lib_url = strdup((const char*)rasqal_literal_as_string(literal));
 		
 		/* Add the plugin if it's valid */
 		if (new_plugin->lib_url && new_plugin->data_url && new_plugin->plugin_uri
