@@ -75,54 +75,56 @@ slv2_list_load_all(SLV2List list)
 /* This is the parser for manifest.ttl */
 void
 slv2_list_load_bundle(SLV2List    list,
-                      const char* bundle_base_uri)
+                      const char* bundle_base_url)
 {
-	unsigned char* manifest_uri = malloc(
-		(strlen((char*)bundle_base_uri) + strlen("manifest.ttl") + 2) * sizeof(unsigned char));
-	memcpy(manifest_uri, bundle_base_uri, strlen((char*)bundle_base_uri)+1 * sizeof(unsigned char));
-	if (bundle_base_uri[strlen(bundle_base_uri)-1] == '/')
-		strcat((char*)manifest_uri, "manifest.ttl");
+	unsigned char* manifest_url = malloc(
+		(strlen((char*)bundle_base_url) + strlen("manifest.ttl") + 2) * sizeof(unsigned char));
+	memcpy(manifest_url, bundle_base_url, strlen((char*)bundle_base_url)+1 * sizeof(unsigned char));
+	if (bundle_base_url[strlen(bundle_base_url)-1] == '/')
+		strcat((char*)manifest_url, "manifest.ttl");
 	else
-		strcat((char*)manifest_uri, "/manifest.ttl");
+		strcat((char*)manifest_url, "/manifest.ttl");
 	
 	rasqal_init();
 	rasqal_query_results *results;
-	raptor_uri *base_uri = raptor_new_uri(manifest_uri);
-	rasqal_query *rq = rasqal_new_query("sparql", (unsigned char*)base_uri);
+	raptor_uri *base_url = raptor_new_uri(manifest_url);
+	rasqal_query *rq = rasqal_new_query("sparql", (unsigned char*)base_url);
 
 	char* query_string =
 	    "PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> \n"
     	"PREFIX :     <http://lv2plug.in/ontology#> \n\n"
     		 
     	"SELECT DISTINCT $plugin_uri $data_url $lib_url FROM <> WHERE { \n"
-    	"$plugin_uri :binary       $lib_url ; \n"
-    	"            rdfs:seeAlso  $data_url . \n"
+    	"$plugin_uri  :binary  $lib_url . \n"
+    	"OPTIONAL { $plugin_uri  rdfs:seeAlso  $data_url } \n"
 	"} \n";
 
 	//printf("%s\n\n", query_string);  
 	
-	rasqal_query_prepare(rq, (unsigned char*)query_string, base_uri);
+	rasqal_query_prepare(rq, (unsigned char*)query_string, base_url);
 	results = rasqal_query_execute(rq);
 	
 	while (!rasqal_query_results_finished(results)) {
 
 		// Create a new plugin
 		struct _Plugin* new_plugin = malloc(sizeof(struct _Plugin));
-		new_plugin->bundle_url = strdup(bundle_base_uri);
+		new_plugin->bundle_url = strdup(bundle_base_url);
 		
 		rasqal_literal* literal = NULL;
 	
 		literal = rasqal_query_results_get_binding_value_by_name(results, (const unsigned char*)"plugin_uri");
-		if (literal)
-			new_plugin->plugin_uri = strdup((const char*)rasqal_literal_as_string(literal));
+		assert(literal);
+		new_plugin->plugin_uri = strdup((const char*)rasqal_literal_as_string(literal));
+		
+		literal = rasqal_query_results_get_binding_value_by_name(results, (const unsigned char*)"lib_url");
+		assert(literal);
+		new_plugin->lib_url = strdup((const char*)rasqal_literal_as_string(literal));
 		
 		literal = rasqal_query_results_get_binding_value_by_name(results, (const unsigned char*)"data_url");
 		if (literal)
 			new_plugin->data_url = strdup((const char*)rasqal_literal_as_string(literal));
-		
-		literal = rasqal_query_results_get_binding_value_by_name(results, (const unsigned char*)"lib_url");
-		if (literal)
-			new_plugin->lib_url = strdup((const char*)rasqal_literal_as_string(literal));
+		else
+			new_plugin->data_url = strdup((const char*)manifest_url);
 		
 		/* Add the plugin if it's valid */
 		if (new_plugin->lib_url && new_plugin->data_url && new_plugin->plugin_uri
@@ -142,11 +144,11 @@ slv2_list_load_bundle(SLV2List    list,
 	if (results) {
 		rasqal_free_query_results(results);
 		//rasqal_free_query(rq); // FIXME: crashes?  leak?
-		raptor_free_uri(base_uri); // FIXME: leak?
+		raptor_free_uri(base_url);
 	}
 	rasqal_finish();
 
-	free(manifest_uri);
+	free(manifest_url);
 }
 
 
