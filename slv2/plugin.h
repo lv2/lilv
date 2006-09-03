@@ -179,6 +179,50 @@ slv2_plugin_has_latency(const SLV2Plugin* p);
 uint32_t
 slv2_plugin_get_latency_port(const SLV2Plugin* p);
 
+#if 0
+/** Return whether or not a plugin supports the given host feature / extension.
+ *
+ * This will return true for both supported and required host features.
+ */
+bool
+slv2_plugin_supports_feature(const SLV2Plugin* p, const char* feature_uri);
+
+
+/** Return whether or not a plugin requires the given host feature / extension.
+ *
+ * If a plugin requires a feature, that feature MUST be passed to the plugin's
+ * instantiate method or the plugin will fail to instantiate.
+ */
+bool
+slv2_plugin_requires_features(const SLV2Plugin* p, const char* feature_uri);
+#endif
+
+/** Get a plugin's supported host features / extensions.
+ *
+ * This returns a list of all supported features (both required and optional).
+ */
+SLV2Property
+slv2_plugin_get_supported_features(const SLV2Plugin* p);
+
+
+/** Get a plugin's requires host features / extensions.
+ *
+ * All feature URI's returned by this call MUST be passed to the plugin's
+ * instantiate method for the plugin to instantiate successfully.
+ */
+SLV2Property
+slv2_plugin_get_required_features(const SLV2Plugin* p);
+
+
+/** Get a plugin's optional host features / extensions.
+ *
+ * If the feature URI's returned by this method are passed to the plugin's
+ * instantiate method, those features will be used by the function, otherwise
+ * the plugin will act as it would if it did not support that feature at all.
+ */
+SLV2Property
+slv2_plugin_get_optional_features(const SLV2Plugin* p);
+
 
 /** @} */
 

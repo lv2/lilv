@@ -74,23 +74,32 @@ char*
 slv2_query_lang_filter(const char* variable);
 
 
-/** Run a SPARQL query on a plugin's data file.
+/** Run a SPARQL query on a plugin's data file and return variable matches.
  *
  * Header from slv2query_header will be prepended to passed query string (so
  * the default prefixes will be already defined, you don't need to add them
  * yourself).
  *
- * rasqal_init() must be called by the caller before calling this function.
+ * Returned is a list of all matches for the query variable \a var_name.
  */
-rasqal_query_results*
-slv2_plugin_run_query(const SLV2Plugin* p,
-                      const char*       query_string);
-
-size_t
-slv2_query_get_num_results(rasqal_query_results* results, const char* var_name);
-
 SLV2Property
-slv2_query_get_results(rasqal_query_results* results, const char* var_name);
+slv2_query_get_results(const SLV2Plugin* p,
+                       const char*       query_string,
+                       const char*       var_name);
+
+
+/** Run a SPARQL query on a plugin's data file and just count the matches.
+ *
+ * Header from slv2query_header will be prepended to passed query string (so
+ * the default prefixes will be already defined, you don't need to add them
+ * yourself).
+ *
+ * Returned is the total of all variable matches resulting from the query.
+ */
+size_t
+slv2_query_count_results(const SLV2Plugin* p,
+                         const char*       query_string);
+
 
 /** Free an SLV2Property. */
 void

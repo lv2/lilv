@@ -58,48 +58,8 @@ slv2_query_lang_filter(const char* variable)
 }
 
 
-rasqal_query_results*
-slv2_plugin_run_query(const SLV2Plugin* p,
-                      const char*       query)
-{
-	char* header    = slv2_query_header(p);
-	char* query_str = strjoin(header, query, NULL);
-
-	assert(p);
-	assert(query_str);
-
-	rasqal_query *rq = rasqal_new_query("sparql", NULL);
-
-	//printf("Query: \n%s\n\n", query_str);
-
-	rasqal_query_prepare(rq, (unsigned char*)query_str, NULL);
-	rasqal_query_results* results = rasqal_query_execute(rq);
-	
-	rasqal_free_query(rq);
-	
-	free(query_str);
-	free(header);
-	
-	return results;
-}
-
-size_t
-slv2_query_get_num_results(rasqal_query_results* results, const char* var_name)
-{
-	size_t result = 0;
-
-    while (!rasqal_query_results_finished(results)) {
-		if (!strcmp((const char*)rasqal_query_results_get_binding_name(results, 0), var_name)) {
-			++result;
-		}
-        rasqal_query_results_next(results);
-	}
-
-	return result;
-}
-
 SLV2Property
-slv2_query_get_results(rasqal_query_results* results, const char* var_name)
+slv2_query_get_variable_bindings(rasqal_query_results* results, const char* var_name)
 {
 	struct _Property* result = NULL;
 
@@ -127,6 +87,105 @@ slv2_query_get_results(rasqal_query_results* results, const char* var_name)
 
     return result;
 }
+
+
+size_t
+slv2_query_count_variable_bindings(rasqal_query_results* results)
+{
+	size_t count = 0;
+
+    while (!rasqal_query_results_finished(results)) {
+		++count;
+        rasqal_query_results_next(results);
+    }
+
+    return count;
+}
+
+
+SLV2Property
+slv2_query_get_results(const SLV2Plugin* p,
+                       const char*       query,
+                       const char*       var_name)
+{
+	char* header    = slv2_query_header(p);
+	char* query_str = strjoin(header, query, NULL);
+
+	assert(p);
+	assert(query_str);
+
+	rasqal_init();
+
+	rasqal_query *rq = rasqal_new_query("sparql", NULL);
+
+	//printf("Query: \n%s\n\n", query_str);
+
+	rasqal_query_prepare(rq, (unsigned char*)query_str, NULL);
+	rasqal_query_results* results = rasqal_query_execute(rq);
+	assert(results);
+	
+	SLV2Property ret = slv2_query_get_variable_bindings(results, var_name);
+	rasqal_free_query_results(results);
+	rasqal_free_query(rq);
+	
+	rasqal_finish();
+	
+	free(query_str);
+	free(header);
+
+	return ret;
+}
+
+
+size_t
+slv2_query_count_results(const SLV2Plugin* p,
+                         const char*       query)
+{
+	char* header    = slv2_query_header(p);
+	char* query_str = strjoin(header, query, NULL);
+
+	assert(p);
+	assert(query_str);
+
+	rasqal_init();
+
+	rasqal_query *rq = rasqal_new_query("sparql", NULL);
+
+	//printf("Query: \n%s\n\n", query_str);
+
+	rasqal_query_prepare(rq, (unsigned char*)query_str, NULL);
+	rasqal_query_results* results = rasqal_query_execute(rq);
+	assert(results);
+	
+	size_t count = slv2_query_count_variable_bindings(results);
+	
+	rasqal_free_query_results(results);
+	rasqal_free_query(rq);
+	
+	rasqal_finish();
+	
+	free(query_str);
+	free(header);
+
+	return count;
+}
+
+/*
+size_t
+slv2_query_get_num_results(rasqal_query_results* results, const char* var_name)
+{
+	size_t result = 0;
+
+    while (!rasqal_query_results_finished(results)) {
+		if (!strcmp((const char*)rasqal_query_results_get_binding_name(results, 0), var_name)) {
+			++result;
+		}
+        rasqal_query_results_next(results);
+	}
+
+	return result;
+}
+*/
 
 void
 slv2_property_free(struct _Property* prop)

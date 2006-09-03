@@ -130,7 +130,6 @@ SLV2Property
 slv2_plugin_get_property(const SLV2Plugin* p,
                          const char*      property)
 {
-	assert(p);
 	assert(property);
 
 	/*
@@ -147,19 +146,13 @@ slv2_plugin_get_property(const SLV2Plugin* p,
 	free(header);
 	free(lang_filter);*/
 
-	rasqal_init();
-	
     char* query = strjoin(
 		"SELECT DISTINCT ?value FROM data: WHERE { \n"
 		"plugin: ", property, " ?value . \n"
 		"} \n", NULL);
 
-	rasqal_query_results* results = slv2_plugin_run_query(p, query);
+	SLV2Property result = slv2_query_get_results(p, query, "value");
 	
-	SLV2Property result = slv2_query_get_results(results, "value");
-
-	rasqal_free_query_results(results);
-	rasqal_finish();
 	free(query);
 
 	return result;
@@ -169,54 +162,45 @@ slv2_plugin_get_property(const SLV2Plugin* p,
 uint32_t
 slv2_plugin_get_num_ports(const SLV2Plugin* p)
 {
-	rasqal_init();
-	
     char* query = strjoin(
 		"SELECT DISTINCT ?value FROM data: WHERE { \n"
 		"plugin: lv2:port ?value . \n"
 		"} \n", NULL);
 
-	rasqal_query_results* results = slv2_plugin_run_query(p, query);
-	const size_t result = slv2_query_get_num_results(results, "value");
+	SLV2Property results = slv2_query_get_results(p, query, "value");
 	
-	rasqal_free_query_results(results);
-	rasqal_finish();
+	size_t count = results->num_values;
+	
 	free(query);
+	slv2_property_free(results);
 
-	return result;
+	return count;
 }
 
 
 bool
 slv2_plugin_has_latency(const SLV2Plugin* p)
 {
-	assert(p);
-
-	rasqal_init();
-	
     char* query = 
 		"SELECT DISTINCT ?value FROM data: WHERE { \n"
 		"	plugin: lv2:port     ?port . \n"
 		"	?port   lv2:portHint lv2:reportsLatency . \n"
 		"}\n";
 
-	rasqal_query_results* results = slv2_plugin_run_query(p, query);
-	bool result = ( rasqal_query_results_get_bindings_count(results) > 0 );
+	SLV2Property results = slv2_query_get_results(p, query, "port");
 	
-	rasqal_free_query_results(results);
-	rasqal_finish();
-    free(query);
+	bool exists = (results->num_values > 0);
+	
+	free(query);
+	slv2_property_free(results);
 
-	return result;
+	return exists;
 }
+
 
 uint32_t
 slv2_plugin_get_latency_port(const SLV2Plugin* p)
 {
-	assert(p);
-
-	rasqal_init();
-	
     char* query = 
 		"SELECT DISTINCT ?value FROM data: WHERE { \n"
 		"	plugin: lv2:port     ?port . \n"
@@ -224,9 +208,7 @@ slv2_plugin_get_latency_port(const SLV2Plugin* p)
 		"           lv2:index    ?index . \n"
 		"}\n";
 
-	rasqal_query_results* results = slv2_plugin_run_query(p, query);
-	
-	struct _Property* result = slv2_query_get_results(results, "index");
+	SLV2Property result = slv2_query_get_results(p, query, "index");
 	
 	// FIXME: need a sane error handling strategy
 	assert(result->num_values == 1);
@@ -234,10 +216,70 @@ slv2_plugin_get_latency_port(const SLV2Plugin* p)
 	uint32_t index = strtol(result->values[0], &endptr, 10);
 	// FIXME: check.. stuff..
 	
-	rasqal_free_query_results(results);
-	rasqal_finish();
 	free(query);
 
 	return index;
+}
+
+/*
+bool
+slv2_plugin_supports_feature(const SLV2Plugin* p, const char* feature_uri)
+{
+}
+
+
+bool
+slv2_plugin_requires_feature(const SLV2Plugin* p, const char* feature_uri)
+{
+}
+*/
+
+SLV2Property
+slv2_plugin_get_supported_features(const SLV2Plugin* p)
+{
+    char* query = 
+		"SELECT DISTINCT ?feature FROM data: WHERE { \n"
+		"	{ plugin:  lv2:requiredHostFeature  ?feature } \n"
+		"		UNION \n"
+		"	{ plugin:  lv2:supportedHostFeature  ?feature } \n"
+		"}\n";
+
+	SLV2Property result = slv2_query_get_results(p, query, "feature");
+	
+	free(query);
+
+	return result;
+}
+
+
+SLV2Property
+slv2_plugin_get_optional_features(const SLV2Plugin* p)
+{
+    char* query = 
+		"SELECT DISTINCT ?feature FROM data: WHERE { \n"
+		"	plugin:  lv2:supportedHostFeature  ?feature . \n"
+		"}\n";
+
+	SLV2Property result = slv2_query_get_results(p, query, "feature");
+	
+	free(query);
+
+	return result;
+}
+
+
+SLV2Property
+slv2_plugin_get_required_features(const SLV2Plugin* p)
+{
+    char* query = 
+		"SELECT DISTINCT ?feature FROM data: WHERE { \n"
+		"	plugin:  lv2:requiredHostFeature  ?feature . \n"
+		"}\n";
+
+	SLV2Property result = slv2_query_get_results(p, query, "feature");
+	
+	free(query);
+
+	return result;
 }
 

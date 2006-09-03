@@ -73,13 +73,10 @@ slv2_port_get_property(SLV2Plugin* p,
                        uint32_t    index,
                        const char* property)
 {
-	assert(p);
 	assert(property);
 
-	char index_str[4];
-	snprintf(index_str, (size_t)4, "%u", index);
-	
-	rasqal_init();
+	char index_str[16];
+	snprintf(index_str, (size_t)16, "%u", index);
 	
     char* query = strjoin(
 		"SELECT DISTINCT ?value FROM data: WHERE { \n"
@@ -87,12 +84,8 @@ slv2_port_get_property(SLV2Plugin* p,
 		"?port lv2:index ", index_str, " . \n"
 		"?port ", property, " ?value . \n}\n", NULL);
 
-	rasqal_query_results* results = slv2_plugin_run_query(p, query);
+	SLV2Property result = slv2_query_get_results(p, query, "value");
 	
-	SLV2Property result = slv2_query_get_results(results, "value");
-
-	rasqal_free_query_results(results);
-	rasqal_finish();
 	free(query);
 
 	return result;
@@ -103,7 +96,6 @@ char*
 slv2_port_get_symbol(SLV2Plugin* p,
                      uint32_t    index)
 {
-	// FIXME: leaks
 	char* result = NULL;
 	
 	SLV2Property prop
