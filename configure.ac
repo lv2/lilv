@@ -54,8 +54,8 @@ AC_SUBST(lv2dir)
 
 # Check for RASQAL
 PKG_CHECK_MODULES(RASQAL, rasqal >= 0.9.11, build_rasqal="yes", build_rasqal="no")
-AC_SUBST(JACK_CFLAGS)
-AC_SUBST(JACK_LIBS)
+AC_SUBST(RASQAL_CFLAGS)
+AC_SUBST(RASQAL_LIBS)
 
 # Check for JACK
 build_jack="yes"
