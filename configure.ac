@@ -54,8 +54,6 @@ AC_SUBST(lv2dir)
 
 # Check for RASQAL
 PKG_CHECK_MODULES(RASQAL, rasqal >= 0.9.11, build_rasqal="yes", build_rasqal="no")
-AC_SUBST(RASQAL_CFLAGS)
-AC_SUBST(RASQAL_LIBS)
 
 # Check for JACK
 build_jack="yes"
@@ -67,8 +65,6 @@ if test "$build_jack" = "yes"; then
 fi
 if test "$build_jack" = "yes"; then
 	AC_DEFINE(HAVE_JACK, 1, [Has JACK])
-	AC_SUBST(JACK_CFLAGS)
-	AC_SUBST(JACK_LIBS)
 else
 	AC_MSG_WARN([JACK not found, JACK clients will not be built.])
 fi
@@ -86,11 +82,14 @@ AC_CONFIG_FILES([examples/hosts/Makefile])
 AC_CONFIG_FILES([libslv2.pc])
 AC_CONFIG_FILES([doc/Makefile])
 AC_CONFIG_FILES([doc/reference.doxygen])
+
 AC_OUTPUT
 
-
-# Display summary message
+AC_MSG_RESULT([])
+AC_MSG_RESULT([**********************************************************************])
+AC_MSG_RESULT([SLV2 build configuration:])
 AC_MSG_RESULT([])
 AC_MSG_RESULT([Building JACK client: $build_jack])
+AC_MSG_RESULT([**********************************************************************])
 AC_MSG_RESULT([])
 
