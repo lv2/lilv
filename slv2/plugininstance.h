@@ -25,7 +25,7 @@ extern "C" {
 
 #include <assert.h>
 #include <dlfcn.h>
-#include <lv2.h>
+#include <slv2/lv2.h>
 #include <slv2/private_types.h>
 #include <slv2/plugininstance.h>
 #include <slv2/plugin.h>

@@ -25,7 +25,7 @@ extern "C" {
 
 #include <stdbool.h>
 #include <stddef.h>
-#include <lv2.h>
+#include <slv2/lv2.h>
 
 
 /* If you're a user of SLV2, stop reading this file RIGHT NOW.

@@ -142,7 +142,7 @@ Plugins will write values to this array during their run method.
 # Mandatory Port RDF:Properties #
 #################################
 
-:Datatype a rdfs:Class ;
+:DataType a rdfs:Class ;
     rdfs:comment "A data type that can be stored in an LV2 port." .
 
 :dataType a rdf:Property ;
@@ -151,11 +151,11 @@ Plugins will write values to this array during their run method.
     rdfs:label   "Port Data type" ;
     rdfs:comment """
 Relates a Port to the data type(s) it can accept.  Hosts that do not support
-a specfied datatype MUST NOT instantiate the plugin, unless that port has
+a specified datatype MUST NOT instantiate the plugin, unless that port has
 the connectionOptional hint set (in which case the host can simply "connect"
 that port to NULL).
 
-If multiple datatypes are specfied the plugin must have some way to distinguish
+If multiple datatypes are specified the plugin must have some way to distinguish
 the values (any extension that defines a new data-type which wishes to allow
 this must deal with this issue somehow).
 """ .
