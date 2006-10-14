@@ -39,9 +39,10 @@ slv2_plugin_instantiate(const SLV2Plugin*        plugin,
 	if (!lib_path)
 		return NULL;
 	
+	dlerror();
 	void* lib = dlopen((char*)lib_path, RTLD_NOW);
 	if (!lib) {
-		printf("Unable to open library %s\n", lib_path);
+		printf("Unable to open library %s (%s)\n", lib_path, dlerror());
 		return NULL;
 	}
 
