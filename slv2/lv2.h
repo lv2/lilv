@@ -260,6 +260,31 @@ typedef struct _LV2_Descriptor {
    * Hosts MUST NOT call cleanup() unless instantiate() was previously
    * called. */
   void (*cleanup)(LV2_Handle Instance);
+    
+  /** Function pointer that can be used to return additional instance data for
+   * a plugin defined by some extenion (e.g. a struct containing additional
+   * function pointers).
+   *
+   * The actual type and meaning of the returned object MUST be specified 
+   * precisely by the extension if it defines any extra data.  If a particular
+   * extension does not define extra instance data, this function MUST return
+   * NULL for that extension's URI.  If a plugin does not support any
+   * extensions that define extra instance data, this function pointer may be
+   * set to NULL rather than providing an empty function.
+   * 
+   * The only parameter is the URI of the extension. The plugin MUST return
+   * NULL if it does not support the extension, but hosts SHOULD NOT use this
+   * as a discovery method (e.g. hosts should only call this function for
+   * extensions known to be supported by the plugin from the data file).
+   * 
+   * NOTE: It is highly recommended that this function returns a struct, and
+   * NOT a direct function pointer.  Standard C++ (for real reasons) does not
+   * allow type casts from void* to a function pointer type.  To provide
+   * additional functions a struct should be returned containing the extra
+   * function pointers (which is valid standard C++, and a much better idea
+   * for extensibility anyway).
+   */
+  void* (*extension_data)(const char * URI); 
 
 } LV2_Descriptor;
 
