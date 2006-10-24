@@ -424,7 +424,8 @@ INPUT = @top_srcdir@/doc/mainpage.dox \
         @top_srcdir@/slv2/pluginlist.h \
         @top_srcdir@/slv2/plugin.h \
         @top_srcdir@/slv2/port.h \
-        @top_srcdir@/slv2/plugininstance.h #\
+        @top_srcdir@/slv2/plugininstance.h \
+		@top_srcdir@/slv2/lv2.h #\
         #@top_srcdir@/slv2/query.h #\
 		#@top_srcdir@/include
 
