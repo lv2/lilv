@@ -54,6 +54,10 @@ typedef const struct _Instance SLV2Instance;
  * \a plugin is not modified or directly referenced by the returned object
  * (instances store only a copy of the plugin's URI).
  * 
+ * \a host_features NULL-terminated array of features the host supports.
+ * NULL may be passed if the host supports no additional features (unlike
+ * the LV2 specification - SLV2 takes care of it).
+ *
  * \return NULL if instantiation failed.
  */
 SLV2Instance*

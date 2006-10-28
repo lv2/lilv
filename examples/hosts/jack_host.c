@@ -28,7 +28,7 @@ struct JackHost {
 	jack_client_t* jack_client; /**< Jack client */
 	SLV2Plugin*    plugin;      /**< Plugin "class" (actually just a few strings) */
 	SLV2Instance*  instance;    /**< Plugin "instance" (loaded shared lib) */
-	size_t         num_ports;   /**< Size of the two following arrays: */
+	uint32_t       num_ports;   /**< Size of the two following arrays: */
 	jack_port_t**  jack_ports;  /**< For audio ports, otherwise NULL */
 	float*         controls;    /**< For control ports, otherwise 0.0f */
 };
@@ -97,10 +97,10 @@ main(int argc, char** argv)
 	
 	/* Create ports */
 	host.num_ports  = slv2_plugin_get_num_ports(host.plugin);
-	host.jack_ports = calloc(host.num_ports, sizeof(jack_port_t*));
-	host.controls   = calloc(host.num_ports, sizeof(float*));
+	host.jack_ports = calloc((size_t)host.num_ports, sizeof(jack_port_t*));
+	host.controls   = calloc((size_t)host.num_ports, sizeof(float*));
 	
-	for (size_t i=0; i < host.num_ports; ++i)
+	for (uint32_t i=0; i < host.num_ports; ++i)
 		create_port(&host, i);
 	
 	/* Activate plugin and JACK */
@@ -198,7 +198,7 @@ jack_process_cb(jack_nframes_t nframes, void* data)
 	struct JackHost* host = (struct JackHost*)data;
 
 	/* Connect plugin ports directly to JACK buffers */
-	for (size_t i=0; i < host->num_ports; ++i)
+	for (uint32_t i=0; i < host->num_ports; ++i)
 		if (host->jack_ports[i] != NULL)
 			slv2_instance_connect_port(host->instance, i,
 				jack_port_get_buffer(host->jack_ports[i], nframes));

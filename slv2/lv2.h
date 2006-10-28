@@ -146,13 +146,15 @@ typedef struct _LV2_Descriptor {
    * found. This function must return NULL if instantiation fails.
    *
    * BundlePath is a string of the path to the plugin's .lv2 bundle
-   * directory, it MUST not include the trailing /.
+   * directory, it MUST NOT include the trailing /.
    *
    * HostFeatures is a NULL terminated array of the URIs of the LV2
    * features that the host supports. Plugins may refuse to instantiate
    * if required features are not found here (however hosts SHOULD NOT use
    * this as a discovery mechanism, instead reading the data file before
-   * attempting to instantiate the plugin).
+   * attempting to instantiate the plugin).  This array must always exist;
+   * if a host has no features, it MUST pass a single element array
+   * containing NULL (to simplify plugins).
    *
    * Note that instance initialisation should generally occur in
    * activate() rather than here.  If a host calls instantiate, it MUST

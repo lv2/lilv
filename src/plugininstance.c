@@ -35,6 +35,12 @@ slv2_plugin_instantiate(const SLV2Plugin*        plugin,
 {
 	struct _Instance* result = NULL;
 	
+	bool local_host_features = (host_features == NULL);
+	if (local_host_features) {
+		host_features = malloc(sizeof(LV2_Host_Feature));
+		host_features[0] = NULL;
+	}
+	
 	const char* const lib_path = slv2_plugin_get_library_path(plugin);
 	if (!lib_path)
 		return NULL;
@@ -90,6 +96,9 @@ slv2_plugin_instantiate(const SLV2Plugin*        plugin,
 	for (uint32_t i=0; i < slv2_plugin_get_num_ports(plugin); ++i)
 		result->descriptor->connect_port(result->lv2_handle, i, NULL);
 	
+	if (local_host_features)
+		free(host_features);
+
 	return result;
 }
 
