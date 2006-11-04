@@ -81,7 +81,7 @@ slv2_instance_free(SLV2Instance* instance);
  *
  * Returned string is shared and must not be modified or deleted.
  */
-inline const char*
+static inline const char*
 slv2_instance_get_uri(SLV2Instance* instance)
 {
 	assert(instance);
@@ -96,7 +96,7 @@ slv2_instance_get_uri(SLV2Instance* instance)
  * This may be called regardless of whether the plugin is activated,
  * activation and deactivation does not destroy port connections.
  */
-inline void
+static inline void
 slv2_instance_connect_port(SLV2Instance* instance,
                            uint32_t      port_index,
                            void*         data_location)
@@ -116,7 +116,7 @@ slv2_instance_connect_port(SLV2Instance* instance,
  * locations (as set by slv2instance_connect_port).  This MUST be called
  * before calling slv2instance_run.
  */
-inline void
+static inline void
 slv2_instance_activate(SLV2Instance* instance)
 {
 	assert(instance);
@@ -132,7 +132,7 @@ slv2_instance_activate(SLV2Instance* instance)
  * If the hint lv2:realtimeSafe is set for this plugin, this function is
  * guaranteed not to block.
  */
-inline void
+static inline void
 slv2_instance_run(SLV2Instance* instance,
                   uint32_t      sample_count)
 {
@@ -150,7 +150,7 @@ slv2_instance_run(SLV2Instance* instance,
  * Note that to run the plugin after this you must activate it, which will
  * reset all state information (except port connections).
  */
-inline void
+static inline void
 slv2_instance_deactivate(SLV2Instance* instance)
 {
 	assert(instance);
@@ -169,7 +169,7 @@ slv2_instance_deactivate(SLV2Instance* instance)
  *
  * The returned descriptor is shared and must not be deleted.
  */
-inline const LV2_Descriptor*
+static inline const LV2_Descriptor*
 slv2_instance_get_descriptor(SLV2Instance* instance)
 {
 	assert(instance);
@@ -186,7 +186,7 @@ slv2_instance_get_descriptor(SLV2Instance* instance)
  * 
  * The returned handle is shared and must not be deleted.
  */
-inline LV2_Handle
+static inline LV2_Handle
 slv2_instance_get_handle(SLV2Instance* instance)
 {
 	assert(instance);
