@@ -69,6 +69,34 @@ extern "C" {
  * as 'plugin instances') that can be connected together to perform tasks.
  *
  * This API contains very limited error-handling.
+ *
+ * Threading rules:
+ *
+ * Certain hosts may need to call the functions provided by a plugin from
+ * multiple threads. For this to be safe, the plugin must be written so that
+ * those functions can be executed simultaneously without problems.
+ * To facilitate this, the functions provided by a plugin are divided into
+ * classes:
+ *
+ * Audio class:           run(), connect_port()
+ * Instantiation class:   instantiate(), cleanup(), 
+ *                        activate(), deactivate()
+ *
+ * Extensions to this specification which add new functions MUST declare in
+ * which of these classes the functions belong, or define new classes for them.
+ * The rules that hosts must follow are these:
+ * 
+ *  - When a function from the Instantiation class is running for a plugin 
+ *    instance, no other functions for that instance may run.
+ *  - When a function is running for a plugin instance, no other 
+ *    function in the same class may run for that instance.
+ *
+ * Any simultaneous calls that are not explicitly forbidden by these rules
+ * are allowed. For example, a host may call run() for two different plugin 
+ * instances simultaneously.
+ *
+ * The extension_data() function and the lv2_descriptor() function are never 
+ * associated with any plugin instances and may be called at any time.
  */
 
 
