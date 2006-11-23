@@ -217,7 +217,11 @@ typedef struct _LV2_Descriptor {
    * same buffer for more than one port and even use the same buffer for
    * both input and output (see LV2_PROPERTY_INPLACE_BROKEN (FIXME)).
    * However, overlapped buffers or use of a single buffer for both
-   * audio and control data may result in unexpected behaviour. */
+   * audio and control data may result in unexpected behaviour.
+   *
+   * If the plugin has the property lv2:hardRTCapable then there are 
+   * various things that the plugin MUST NOT do within the connect_port()
+   * function (see lv2.ttl). */
   void (*connect_port)(LV2_Handle    Instance,
                        uint32_t      Port,
                        void *        DataLocation);
@@ -257,9 +261,9 @@ typedef struct _LV2_Descriptor {
    * the plugin instance may not be reused until activate() has been
    * called again.
    *
-   * If the plugin has the property LV2_PROPERTY_HARD_RT_CAPABLE then
-   * there are various things that the plugin MUST NOT do within the run()
-   * function (see above). */
+   * If the plugin has the property lv2:hardRTCapable then there are 
+   * various things that the plugin MUST NOT do within the run()
+   * function (see lv2.ttl). */
   void (*run)(LV2_Handle    Instance,
               uint32_t      SampleCount);
 

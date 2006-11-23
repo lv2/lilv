@@ -385,9 +385,9 @@ but also in a "hard real-time" environment. To qualify for this the plugin must
 satisfy all of the following:
 
     (1) The plugin must not use malloc(), free() or other heap memory
-    management within its run() or run_adding() functions. All new
-    memory used in run() must be managed via the stack. These
-    restrictions only apply to the run() function.
+    management within its run() or connect_port() functions. All new
+    memory used in run() and connect_port() must be managed via the stack. 
+    These restrictions only apply to the run() and connect_port() functions.
 
     (2) The plugin will not attempt to make use of any library
     functions with the exceptions of functions in the ANSI standard C
@@ -397,12 +397,12 @@ satisfy all of the following:
     or any other mechanism that might result in process or thread
     blocking.
       
-    (4) The plugin will take an amount of time to execute a run() or
-    run_adding() call approximately of form (A+B*SampleCount) where A
-    and B depend on the machine and host in use. This amount of time
-    may not depend on input signals or plugin state. The host is left
-    the responsibility to perform timings to estimate upper bounds for
-    A and B.
+    (4) The plugin will take an amount of time to execute a run() call 
+    approximately of form (A+B*SampleCount) where A and B depend on the 
+    machine and host in use. This amount of time may not depend on input
+    signals or plugin state. The host is left the responsibility to perform 
+    timings to estimate upper bounds for A and B. The plugin will also take an
+    approximately constant amount of time to execute a connect_port() call.
 """ .
 
 :inplaceBroken a :PluginProperty ;
