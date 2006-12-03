@@ -162,16 +162,15 @@ slv2_plugin_get_property(const SLV2Plugin* p,
 uint32_t
 slv2_plugin_get_num_ports(const SLV2Plugin* p)
 {
-    char* query = strjoin(
+    const char* const query =
 		"SELECT DISTINCT ?value FROM data: WHERE { \n"
 		"plugin: lv2:port ?value . \n"
-		"} \n", NULL);
+		"} \n";
 
 	SLV2Property results = slv2_query_get_results(p, query, "value");
 	
 	size_t count = results->num_values;
 	
-	free(query);
 	slv2_property_free(results);
 
 	return count;
@@ -181,7 +180,7 @@ slv2_plugin_get_num_ports(const SLV2Plugin* p)
 bool
 slv2_plugin_has_latency(const SLV2Plugin* p)
 {
-    char* query = 
+    const char* const query = 
 		"SELECT DISTINCT ?value FROM data: WHERE { \n"
 		"	plugin: lv2:port     ?port . \n"
 		"	?port   lv2:portHint lv2:reportsLatency . \n"
@@ -191,7 +190,6 @@ slv2_plugin_has_latency(const SLV2Plugin* p)
 	
 	bool exists = (results->num_values > 0);
 	
-	free(query);
 	slv2_property_free(results);
 
 	return exists;
@@ -201,7 +199,7 @@ slv2_plugin_has_latency(const SLV2Plugin* p)
 uint32_t
 slv2_plugin_get_latency_port(const SLV2Plugin* p)
 {
-    char* query = 
+    const char* const query = 
 		"SELECT DISTINCT ?value FROM data: WHERE { \n"
 		"	plugin: lv2:port     ?port . \n"
 		"	?port   lv2:portHint lv2:reportsLatency ; \n"
@@ -215,8 +213,6 @@ slv2_plugin_get_latency_port(const SLV2Plugin* p)
 	char* endptr = 0;
 	uint32_t index = strtol(result->values[0], &endptr, 10);
 	// FIXME: check.. stuff..
-	
-	free(query);
 
 	return index;
 }
@@ -237,7 +233,7 @@ slv2_plugin_requires_feature(const SLV2Plugin* p, const char* feature_uri)
 SLV2Property
 slv2_plugin_get_supported_features(const SLV2Plugin* p)
 {
-    char* query = 
+    const char* const query = 
 		"SELECT DISTINCT ?feature FROM data: WHERE { \n"
 		"	{ plugin:  lv2:requiredHostFeature  ?feature } \n"
 		"		UNION \n"
@@ -253,7 +249,7 @@ slv2_plugin_get_supported_features(const SLV2Plugin* p)
 SLV2Property
 slv2_plugin_get_optional_features(const SLV2Plugin* p)
 {
-    char* query = 
+    const char* const query = 
 		"SELECT DISTINCT ?feature FROM data: WHERE { \n"
 		"	plugin:  lv2:supportedHostFeature  ?feature . \n"
 		"}\n";
@@ -267,7 +263,7 @@ slv2_plugin_get_optional_features(const SLV2Plugin* p)
 SLV2Property
 slv2_plugin_get_required_features(const SLV2Plugin* p)
 {
-    char* query = 
+    const char* const query = 
 		"SELECT DISTINCT ?feature FROM data: WHERE { \n"
 		"	plugin:  lv2:requiredHostFeature  ?feature . \n"
 		"}\n";
