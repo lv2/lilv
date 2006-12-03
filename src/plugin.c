@@ -246,8 +246,6 @@ slv2_plugin_get_supported_features(const SLV2Plugin* p)
 
 	SLV2Property result = slv2_query_get_results(p, query, "feature");
 	
-	free(query);
-
 	return result;
 }
 
@@ -262,8 +260,6 @@ slv2_plugin_get_optional_features(const SLV2Plugin* p)
 
 	SLV2Property result = slv2_query_get_results(p, query, "feature");
 	
-	free(query);
-
 	return result;
 }
 
@@ -278,8 +274,6 @@ slv2_plugin_get_required_features(const SLV2Plugin* p)
 
 	SLV2Property result = slv2_query_get_results(p, query, "feature");
 	
-	free(query);
-
 	return result;
 }
 
