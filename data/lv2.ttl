@@ -31,16 +31,27 @@
 @prefix doap: <http://usefulinc.com/ns/doap#> .
 @prefix foaf: <http://xmlns.com/foaf/0.1/> .
 
-<> doap:license <http://usefulinc.com/doap/licenses/mit> .
-
-<> doap:release [ doap:Version
-    [ doap:revision "0.9" ; doap:created "2006-07-24" ] ] .
-
-<> doap:maintainer [ foaf:Person
-    [ foaf:name    "Steve Harris" ;
-      rdfs:seeAlso "http://inanna.ecs.soton.ac.uk/swh.xrdf" ] ] .
-
-
+<> a doap:Project ;
+   doap:license <http://usefulinc.com/doap/licenses/mit> ;
+   doap:name "LV2" ;
+   doap:homepage <http://lv2plug.in/> ;
+   doap:created "2004-04-21" ;
+   doap:shortdesc "LV2 is an audio processing plugin specification" ;
+   doap:programming-language "C" ;
+   doap:release [
+       doap:revision "0.9" ;
+       doap:created "2006-07-24"
+   ] ;
+   doap:maintainer [
+       a foaf:Person ;
+       foaf:name "Steve Harris" ;
+       foaf:homepage <http://inanna.ecs.soton.ac.uk> ;
+       rdfs:seeAlso <http://inanna.ecs.soton.ac.uk/swh.xrdf>
+   ] , [
+       a foaf:Person ;
+       foaf:name "Dave Robillard" ;
+       rdfs:seeAlso <http://codeson.net/dave.xrdf>
+   ].
 
 ##################
 ## Plugin Class ##
@@ -184,7 +195,6 @@ A language tag MUST NOT be used on this property.  The plugin author MUST change
 the plugin URI if a port symbol is changed.
 """ .
 
-# FIXME: This isn't really fundamental like :index and :symbol
 :name a rdf:Property ;
     rdfs:domain  :Port ;
     rdfs:label   "name" ;
@@ -269,14 +279,14 @@ Value conforming to the 32bit IEEE-754 floating point specification.""".
     rdfs:label   "Host feature" ;
     rdfs:comment "A host feature which a plugin may use (possibly require).".
 
-:supportedHostFeature a rdf:Property ;
+:optionalHostFeature a rdf:Property ;
     rdfs:domain  :Plugin ;
     rdfs:range   :HostFeature ;
-    rdfs:label   "Supported (optional) host feature" ;
+    rdfs:label   "Optional host feature" ;
     rdfs:comment """
 Signifies that a plugin is able to make use of a certain host feature.
-The plugin MUST NOT fail to instantiate if a supported (but not required)
-host feature is not present.""" .
+The plugin MUST NOT fail to instantiate if an optional host feature is
+not present.""" .
 
 :requiredHostFeature a rdf:Property ;
     rdfs:domain  :Plugin ;
