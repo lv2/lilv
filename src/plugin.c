@@ -235,9 +235,9 @@ slv2_plugin_get_supported_features(const SLV2Plugin* p)
 {
     const char* const query = 
 		"SELECT DISTINCT ?feature FROM data: WHERE { \n"
-		"	{ plugin:  lv2:requiredHostFeature  ?feature } \n"
+		"	{ plugin:  lv2:optionalHostFeature  ?feature } \n"
 		"		UNION \n"
-		"	{ plugin:  lv2:supportedHostFeature  ?feature } \n"
+		"	{ plugin:  lv2:requiredHostFeature  ?feature } \n"
 		"}\n";
 
 	SLV2Property result = slv2_query_get_results(p, query, "feature");
@@ -251,7 +251,7 @@ slv2_plugin_get_optional_features(const SLV2Plugin* p)
 {
     const char* const query = 
 		"SELECT DISTINCT ?feature FROM data: WHERE { \n"
-		"	plugin:  lv2:supportedHostFeature  ?feature . \n"
+		"	plugin:  lv2:optionalHostFeature  ?feature . \n"
 		"}\n";
 
 	SLV2Property result = slv2_query_get_results(p, query, "feature");
