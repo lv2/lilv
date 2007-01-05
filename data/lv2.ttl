@@ -500,6 +500,13 @@ Includes things like mathematical functions and non-musical delays.
 Any plugin that generates sound internally, rather than processing its input.
 """ .
 
+:InstrumentPlugin a rdfs:Class ;
+    rdfs:subClassOf :GeneratorPlugin ;
+    rdfs:label "Instruments" ;
+    rdfs:comment """
+Any plugin that is intended to be played as a musical instrument.
+""" .
+
 :OscillatorPlugin a rdfs:Class ;
     rdfs:subClassOf :GeneratorPlugin ;
     rdfs:label "Oscillators" .

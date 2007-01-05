@@ -34,7 +34,9 @@ extern "C" {
 /* ************************************************************************* */
 
 
-/* Overview: 
+/** @file lv2.h
+ *
+ * == Overview ==
  *
  * There are a large number of open source and free software synthesis
  * packages in use or development at this time. This API ('LV2')
@@ -67,10 +69,12 @@ extern "C" {
  * by dlopen() and family. The file will provide a number of 'plugin
  * types' that can be used to instantiate actual plugins (sometimes known
  * as 'plugin instances') that can be connected together to perform tasks.
+ * The host can access these plugin types using the lv2_descriptor() 
+ * function.
  *
  * This API contains very limited error-handling.
  *
- * Threading rules:
+ * == Threading rules ==
  *
  * Certain hosts may need to call the functions provided by a plugin from
  * multiple threads. For this to be safe, the plugin must be written so that
@@ -78,9 +82,9 @@ extern "C" {
  * To facilitate this, the functions provided by a plugin are divided into
  * classes:
  *
- * Audio class:           run(), connect_port()
- * Instantiation class:   instantiate(), cleanup(), 
- *                        activate(), deactivate()
+ *  - Audio class:           run(), connect_port()
+ *  - Instantiation class:   instantiate(), cleanup(), 
+ *                           activate(), deactivate()
  *
  * Extensions to this specification which add new functions MUST declare in
  * which of these classes the functions belong, or define new classes for them.
@@ -326,7 +330,7 @@ typedef struct _LV2_Descriptor {
 /* ****************************************************************** */
 
 
-/** Accessing a Plugin:
+/** Accessing Plugin Types.
  *
  * The exact mechanism by which plugins are loaded is host-dependent,
  * however all most hosts will need to know is the URI of the plugin they
