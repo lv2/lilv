@@ -18,9 +18,9 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <raptor.h>
 #include <ladspa.h>
 #include <dlfcn.h>
+#include "raul/RDFWriter.h"
 
 #define U(x) ((const unsigned char*)(x))
 
@@ -45,7 +45,7 @@ load_ladspa_plugin(const char* lib_path, unsigned long index)
 	return descriptor;
 }
 
-
+#if 0
 void
 write_resource(raptor_serializer* serializer,
                const char* subject_uri,
@@ -71,11 +71,12 @@ write_resource(raptor_serializer* serializer,
 	
 	raptor_serialize_statement(serializer, &triple);
 }
-
+#endif
 
 void
 write_lv2_turtle(LADSPA_Descriptor* descriptor, const char* uri, const char* filename)
 {
+#if 0
 	raptor_init();
 	raptor_serializer* serializer = raptor_new_serializer("turtle");
 
@@ -109,6 +110,53 @@ write_lv2_turtle(LADSPA_Descriptor* descriptor, const char* uri, const char* fil
 	raptor_serialize_end(serializer);
 	raptor_free_serializer(serializer);
 	raptor_finish();
+#endif
+	RDFWriter writer;
+
+	writer.add_prefix("lv2", "http://lv2plug.in/ontology#");
+	writer.add_prefix("doap", "http://usefulinc.com/ns/doap#");
+
+	writer.start_to_filename(filename);
+
+	RdfId plugin_id = RdfId(RdfId::RESOURCE, uri);
+
+	writer.write(plugin_id,
+		RdfId(RdfId::RESOURCE, "rdf:type"),
+		RdfId(RdfId::RESOURCE, "lv2:Plugin"));
+	
+	writer.write(plugin_id,
+		RdfId(RdfId::RESOURCE, "doap:name"),
+		Atom(descriptor->Name));
+
+	if (LADSPA_IS_HARD_RT_CAPABLE(descriptor->Properties))
+		writer.write(plugin_id,
+			RdfId(RdfId::RESOURCE, "lv2:property"),
+		 	RdfId(RdfId::RESOURCE, "lv2:hardRTCapable"));
+	
+	for (uint32_t i=0; i < descriptor->PortCount; ++i) {
+		char index_str[32];
+		snprintf(index_str, 32, "%u", i);
+
+		RdfId port_id(RdfId::ANONYMOUS, index_str);
+
+		writer.write(plugin_id,
+			RdfId(RdfId::RESOURCE, "lv2:port"),
+			port_id);
+
+		writer.write(port_id,
+			RdfId(RdfId::RESOURCE, "lv2:index"),
+		 	Atom((int32_t)i));
+		
+		writer.write(port_id,
+			RdfId(RdfId::RESOURCE, "lv2:dataType"),
+			RdfId(RdfId::RESOURCE, "lv2:float"));
+		
+		writer.write(port_id,
+			RdfId(RdfId::RESOURCE, "lv2:name"),
+		 	Atom(descriptor->PortNames[i]));
+	}
+
+	writer.finish();
 }
 
 
