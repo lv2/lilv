@@ -395,17 +395,18 @@ but also in a "hard real-time" environment. To qualify for this the plugin must
 satisfy all of the following:
 
     (1) The plugin must not use malloc(), free() or other heap memory
-    management within its run() or connect_port() functions. All new
-    memory used in run() and connect_port() must be managed via the stack. 
-    These restrictions only apply to the run() and connect_port() functions.
+    management within its Audio class functions. All new memory used in 
+    Audio class functions must be managed via the stack. These restrictions 
+    only apply to the Audio class functions.
 
     (2) The plugin will not attempt to make use of any library
-    functions with the exceptions of functions in the ANSI standard C
-    and C maths libraries, which the host is expected to provide.
+    functions in its Audio class functions, with the exceptions of functions 
+    in the ANSI standard C and C maths libraries, which the host is expected to
+    provide.
 
     (3) The plugin will not access files, devices, pipes, sockets, IPC
     or any other mechanism that might result in process or thread
-    blocking.
+    blocking within its Audio class functions.
       
     (4) The plugin will take an amount of time to execute a run() call 
     approximately of form (A+B*SampleCount) where A and B depend on the 
