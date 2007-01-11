@@ -219,7 +219,7 @@ typedef struct _LV2_Descriptor {
    *
    * Plugin writers should be aware that the host may elect to use the
    * same buffer for more than one port and even use the same buffer for
-   * both input and output (see LV2_PROPERTY_INPLACE_BROKEN (FIXME)).
+   * both input and output (see lv2:inplaceBroken in lv2.ttl).
    * However, overlapped buffers or use of a single buffer for both
    * audio and control data may result in unexpected behaviour.
    *
