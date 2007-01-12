@@ -56,10 +56,10 @@ AC_ARG_ENABLE(jack,
 	[AS_HELP_STRING(--enable-jack, [Build JACK clients (true)])],
 	[ if test x$enable_jack = xno ; then build_jack=no ; fi ])
 if test "$build_jack" = "yes"; then
-	PKG_CHECK_MODULES(JACK, jack >= 0.102.20, build_jack="yes", build_jack="no")
+	PKG_CHECK_MODULES(JACK, jack >= 0.102.29, build_jack="yes", build_jack="no")
 	AC_DEFINE(HAVE_JACK, 1, [Has JACK])
 else
-	AC_MSG_WARN("JACK not found, JACK clients will not be built.")
+	AC_MSG_WARN("Sufficiently recent JACK not found, JACK clients will not be built.")
 fi
 AM_CONDITIONAL(WITH_JACK, [test "$build_jack" = "yes"])
 
