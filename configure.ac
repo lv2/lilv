@@ -43,28 +43,6 @@ if test "$strict" = "yes"; then
   CXXFLAGS="$CFLAGS -ansi -pedantic -Wall -Wextra -Wconversion -Winit-self"
 fi
 
-# Build utilities?
-build_utilities="no"
-AC_ARG_ENABLE(utilities,
-	[AS_HELP_STRING(--enable-utilities, [Build utilities (no) - EXPERIMENTAL])],
-	[build_utilities="$enableval"])
-if test "$build_utilities" = "yes"; then
-  AC_PROG_CXX
-  PKG_CHECK_MODULES(RAUL, raul >= 0.0.0)
-fi
-AM_CONDITIONAL(BUILD_UTILITIES, [test "$build_utilities" = "yes"])
-
-# Bolt on a few specific flags to CXXFLAGS that should always be used
-#CFLAGS="$CFLAGS -pipe -Wall -fmessage-length=139 -fdiagnostics-show-location=every-line"
-
-# Check plugin install directory
-AC_MSG_CHECKING([where to install LV2 plugins])
-AC_ARG_WITH(lv2-dir,
-	AS_HELP_STRING([--with-lv2-dir=DIR],
-		[directory that LV2 plugins should be installed in ($libdir/lv2)]),
-	[lv2dir=$withval], [lv2dir=$libdir/lv2])
-AC_MSG_RESULT($lv2dir)
-AC_SUBST(lv2dir)
 
 # Check for RAPTOR
 PKG_CHECK_MODULES(RAPTOR, raptor >= 0.21, build_raptor="yes", build_raptor="no")
@@ -75,18 +53,35 @@ PKG_CHECK_MODULES(RASQAL, rasqal >= 0.9.11, build_rasqal="yes", build_rasqal="no
 # Check for JACK
 build_jack="yes"
 AC_ARG_ENABLE(jack,
-	[AS_HELP_STRING(--with-jack, [Build JACK clients (true)])],
-	[ if test x$with_jack = xno ; then build_jack=no ; fi ])
+	[AS_HELP_STRING(--enable-jack, [Build JACK clients (true)])],
+	[ if test x$enable_jack = xno ; then build_jack=no ; fi ])
 if test "$build_jack" = "yes"; then
-	PKG_CHECK_MODULES(JACK, jack >= 0.99.0, build_jack="yes", build_jack="no")
-fi
-if test "$build_jack" = "yes"; then
+	PKG_CHECK_MODULES(JACK, jack >= 0.102.20, build_jack="yes", build_jack="no")
 	AC_DEFINE(HAVE_JACK, 1, [Has JACK])
 else
-	AC_MSG_WARN([JACK not found, JACK clients will not be built.])
+	AC_MSG_WARN("JACK not found, JACK clients will not be built.")
 fi
 AM_CONDITIONAL(WITH_JACK, [test "$build_jack" = "yes"])
 
+# Check plugin install directory
+AC_MSG_CHECKING([where to install LV2 plugins])
+AC_ARG_WITH(lv2-dir,
+	AS_HELP_STRING([--with-lv2-dir=DIR],
+		[directory that LV2 plugins should be installed in ($libdir/lv2)]),
+	[lv2dir=$withval], [lv2dir=$libdir/lv2])
+AC_MSG_RESULT($lv2dir)
+AC_SUBST(lv2dir)
+
+# Build utilities?
+build_utilities="no"
+AC_ARG_ENABLE(utilities,
+	[AS_HELP_STRING(--enable-utilities, [Build utilities (no) - EXPERIMENTAL])],
+	[build_utilities="$enableval"])
+if test "$build_utilities" = "yes"; then
+  AC_PROG_CXX
+  PKG_CHECK_MODULES(RAUL, raul >= 0.0.0)
+fi
+AM_CONDITIONAL(BUILD_UTILITIES, [test "$build_utilities" = "yes"])
 
 # Write output files
 AC_CONFIG_FILES([Makefile])
@@ -107,7 +102,7 @@ AC_MSG_RESULT([])
 AC_MSG_RESULT([**********************************************************************])
 AC_MSG_RESULT([SLV2 build configuration:])
 AC_MSG_RESULT([])
-AC_MSG_RESULT([Building JACK client: $build_jack])
+AC_MSG_RESULT([Building JACK clients: $build_jack])
 AC_MSG_RESULT([**********************************************************************])
 AC_MSG_RESULT([])
 

@@ -1,7 +1,10 @@
-AM_CFLAGS = -std=c99 -I. -I$(top_srcdir)/include -I$(top_srcdir) `pkg-config --cflags rasqal`
-AM_LDFLAGS = `pkg-config --libs rasqal`
+AM_CFLAGS = -std=c99 -I$(top_srcdir) @RASQAL_CFLAGS@
 
-bin_PROGRAMS = slv2_test_host slv2_simple_jack_host slv2_host
+bin_PROGRAMS = slv2_test_host
+
+if WITH_JACK
+bin_PROGRAMS += slv2_simple_jack_host slv2_host
+endif
 
 slv2_test_host_DEPENDENCIES = ../../src/libslv2.la
 slv2_test_host_LDADD        = ../../src/libslv2.la
@@ -13,20 +16,19 @@ slv2_test_host_SOURCES = \
 if WITH_JACK
 
 slv2_simple_jack_host_CFLAGS = @JACK_CFLAGS@ $(AM_CFLAGS)
-#simple_jack_host_LIBS = @JACK_LIBS@
 
 slv2_simple_jack_host_DEPENDENCIES = ../../src/libslv2.la
-slv2_simple_jack_host_LDADD        = ../../src/libslv2.la @JACK_LIBS@
+slv2_simple_jack_host_LDADD        = ../../src/libslv2.la @JACK_LIBS@ @RASQAL_LIBS@
 
 slv2_simple_jack_host_SOURCES = \
 	simple_jack_host.c
 
 
 slv2_host_CFLAGS = @JACK_CFLAGS@ $(AM_CFLAGS)
-#host_LIBS = @JACK_LIBS@
+
 
 slv2_host_DEPENDENCIES = ../../src/libslv2.la
-slv2_host_LDADD        = ../../src/libslv2.la @JACK_LIBS@
+slv2_host_LDADD        = ../../src/libslv2.la @JACK_LIBS@ @RASQAL_LIBS@
 
 slv2_host_SOURCES = \
 	host.c
