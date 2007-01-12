@@ -51,6 +51,9 @@ enum SLV2PortClass {
 /** lv2:float, IEEE-754 32-bit floating point number */
 #define SLV2_DATA_TYPE_FLOAT "http://lv2plug.in/ontology#float"
 
+/** MIDI buffer, as defined by lv2-miditype.h */
+#define SLV2_DATA_TYPE_MIDI "http://ll-plugins.nongnu.org/lv2/ext/miditype"
+
 
 #ifdef __cplusplus
 }
