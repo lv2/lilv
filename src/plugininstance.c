@@ -92,6 +92,13 @@ slv2_plugin_instantiate(const SLV2Plugin*        plugin,
 	assert(result);
 	assert(slv2_plugin_get_num_ports(plugin) > 0);
 
+	// Failed to instantiate
+	if (result->lv2_handle == NULL) {
+		//printf("Failed to instantiate %s\n", plugin->plugin_uri);
+		free(result);
+		return NULL;
+	}
+
 	// "Connect" all ports to NULL (catches bugs)
 	for (uint32_t i=0; i < slv2_plugin_get_num_ports(plugin); ++i)
 		result->descriptor->connect_port(result->lv2_handle, i, NULL);
