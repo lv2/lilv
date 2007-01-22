@@ -24,6 +24,9 @@
 
 #define U(x) ((const unsigned char*)(x))
 
+using Raul::RDFWriter;
+using Raul::RdfId;
+using Raul::Atom;
 
 LADSPA_Descriptor*
 load_ladspa_plugin(const char* lib_path, unsigned long index)
