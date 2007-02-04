@@ -1,10 +1,12 @@
 # RDF Schema for LV2 plugins
 # *** PROVISIONAL ***
 #
+# Revision 2007-01-03
+#
 # This document describes the classes and properties that are defined by the
 # core LV2 specification.  See <http://lv2plug.in> for more information.
 # 
-# Copyright (C) 2006 Steve Harris, Dave Robillard
+# Copyright (C) 2006-2007 Steve Harris, Dave Robillard
 # 
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),
@@ -34,13 +36,13 @@
 <> a doap:Project ;
    doap:license <http://usefulinc.com/doap/licenses/mit> ;
    doap:name "LV2" ;
-   doap:homepage <http://lv2plug.in/> ;
+   doap:homepage <http://lv2plug.in> ;
    doap:created "2004-04-21" ;
-   doap:shortdesc "LV2 is an audio processing plugin specification" ;
+   doap:shortdesc "An audio processing plugin specification" ;
    doap:programming-language "C" ;
    doap:release [
-       doap:revision "0.9" ;
-       doap:created "2006-07-24"
+       doap:revision "1.0beta1" ;
+       doap:created "2007-02-03"
    ] ;
    doap:maintainer [
        a foaf:Person ;
@@ -50,8 +52,10 @@
    ] , [
        a foaf:Person ;
        foaf:name "Dave Robillard" ;
-       rdfs:seeAlso <http://codeson.net/dave.xrdf>
+       rdfs:seeAlso <http://drobilla.net/dave.ttl>
    ].
+
+
 
 ##################
 ## Plugin Class ##
@@ -208,9 +212,9 @@ property without changing the Plugin URI.
 
 
 
-#############################################
-# Port Additional RDF:Properties (Optional) #
-#############################################
+################################
+# Optional Port RDF:Properties #
+################################
 
 :Point a rdfs:Class ;
    rdfs:label   "Port value point" ;
@@ -224,7 +228,7 @@ minimum, and maximum), though future extensions may define more.
 
 :ScalePoint a rdfs:Class ;
     rdfs:subClassOf :Point ;
-    rdfs:comment "A single :float Point (for control inputs)" .
+    rdfs:comment "A single :Float Point (for control inputs)" .
 
 :scalePoint a rdf:Property ;
    rdfs:domain  :Port ;
@@ -335,6 +339,12 @@ plugin can still function correctly, it is NOT a Property, it is a Hint.
     rdfs:range   :PortProperty ;
     rdfs:label   "hint" ;
     rdfs:comment "Relates Ports to PortProperties." .
+
+:documentation a rdf:Property ;
+    rdfs:domain  :Plugin ;
+    rdfs:label   "documentation" ;
+    rdfs:comment "Relates a Plugin to some text/audio/video documentation either online or included with the plugin package" .
+
 
 
 ###############

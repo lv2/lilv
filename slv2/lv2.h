@@ -36,6 +36,8 @@ extern "C" {
 
 /** @file lv2.h
  *
+ * Revision: 1.0beta1
+ *
  * == Overview ==
  *
  * There are a large number of open source and free software synthesis
