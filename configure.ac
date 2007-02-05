@@ -43,10 +43,10 @@ fi
 
 
 # Check for RAPTOR
-PKG_CHECK_MODULES(RAPTOR, raptor >= 0.21, build_raptor="yes", build_raptor="no")
+PKG_CHECK_MODULES(RAPTOR, raptor >= 0.21)
 
 # Check for RASQAL
-PKG_CHECK_MODULES(RASQAL, rasqal >= 0.9.11, build_rasqal="yes", build_rasqal="no")
+PKG_CHECK_MODULES(RASQAL, rasqal >= 0.9.11)
 
 # Check for JACK
 build_jack="yes"
