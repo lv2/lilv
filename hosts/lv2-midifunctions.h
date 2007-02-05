@@ -148,7 +148,7 @@ static int lv2midi_put_event(LV2_MIDIState* state,
   state->midi->size += sizeof(double);
   *(size_t*)(state->midi->data + state->midi->size) = size;
   state->midi->size += sizeof(size_t);
-  memcpy(state->midi->data + state->midi->size, data, size);
+  memcpy(state->midi->data + state->midi->size, data, (size_t)size);
   state->midi->size += size;
   
   ++state->midi->event_count;

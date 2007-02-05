@@ -1,10 +1,8 @@
 AC_PREREQ(2.59)
-AC_INIT([libslv2],[0.0.1],[drobilla@connect.carleton.ca])
+AC_INIT([libslv2],[0.0.1],[dave@drobilla.net])
 AC_CONFIG_SRCDIR([src/plugin.c])
 AC_CONFIG_SRCDIR([slv2/plugin.h])
-AC_CONFIG_SRCDIR([utils/ladspa2lv2.cc])
-AC_CONFIG_SRCDIR([examples/plugins/Amp-swh.lv2/amp.c])
-AC_CONFIG_SRCDIR([examples/hosts/test_host.c])
+AC_CONFIG_SRCDIR([utils/lv2_list.c])
 AC_CONFIG_HEADER([config.h])
 AM_INIT_AUTOMAKE
 
@@ -72,25 +70,23 @@ AC_ARG_WITH(lv2-dir,
 AC_MSG_RESULT($lv2dir)
 AC_SUBST(lv2dir)
 
-# Build utilities?
-build_utilities="no"
-AC_ARG_ENABLE(utilities,
-	[AS_HELP_STRING(--enable-utilities, [Build utilities (no) - EXPERIMENTAL])],
-	[build_utilities="$enableval"])
-if test "$build_utilities" = "yes"; then
+# Build ladspa converter?
+build_ladspa2lv2="no"
+AC_ARG_ENABLE(ladspa2lv2,
+	[AS_HELP_STRING(--enable-ladspa2lv2, [Build ladspa2lv2 (no) - BROKEN])],
+	[build_ladspa2lv2="$enableval"])
+if test "$build_ladspa2lv2" = "yes"; then
   AC_PROG_CXX
   PKG_CHECK_MODULES(RAUL, raul >= 0.0.0)
 fi
-AM_CONDITIONAL(BUILD_UTILITIES, [test "$build_utilities" = "yes"])
+AM_CONDITIONAL(BUILD_LADSPA2SLV2, [test "$build_ladspa2lv2" = "yes"])
 
 # Write output files
 AC_CONFIG_FILES([Makefile])
 AC_CONFIG_FILES([src/Makefile])
 AC_CONFIG_FILES([slv2/Makefile])
 AC_CONFIG_FILES([utils/Makefile])
-AC_CONFIG_FILES([examples/Makefile])
-AC_CONFIG_FILES([examples/plugins/Makefile])
-AC_CONFIG_FILES([examples/hosts/Makefile])
+AC_CONFIG_FILES([hosts/Makefile])
 AC_CONFIG_FILES([data/Makefile])
 AC_CONFIG_FILES([libslv2.pc])
 AC_CONFIG_FILES([doc/Makefile])

@@ -1,5 +1,5 @@
-/* LibSLV2 Jack Example Host
- * Copyright (C) 2006 Dave Robillard <drobilla@connect.carleton.ca>
+/* jack_host - SLV2 Jack Host
+ * Copyright (C) 2007 Dave Robillard <drobilla.net>
  *  
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -204,13 +204,11 @@ create_port(struct JackHost* host,
 			slv2_instance_connect_port(host->instance, port_index, &port->control);
 			break;
 		case SLV2_AUDIO_RATE_INPUT:
-			printf("AI!\n");
 			port->direction = INPUT;
 			port->jack_port = jack_port_register(host->jack_client,
 				symbol, JACK_DEFAULT_AUDIO_TYPE, JackPortIsInput, 0);
 			break;
 		case SLV2_AUDIO_RATE_OUTPUT:
-			printf("AO!\n");
 			port->direction = OUTPUT;
 			port->jack_port = jack_port_register(host->jack_client,
 				symbol, JACK_DEFAULT_AUDIO_TYPE, JackPortIsOutput, 0);
@@ -221,7 +219,6 @@ create_port(struct JackHost* host,
 	
 	} else if (port->type == MIDI) {
 
-		printf("MIDI! %s\n", symbol);
 		if (class == SLV2_CONTROL_RATE_INPUT) {
 			port->direction = INPUT;
 			port->jack_port = jack_port_register(host->jack_client,

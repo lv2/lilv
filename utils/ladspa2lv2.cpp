@@ -166,7 +166,10 @@ write_lv2_turtle(LADSPA_Descriptor* descriptor, const char* uri, const char* fil
 void
 print_usage()
 {
-	printf("Usage: ladspa2slv2 /path/to/laddspalib.so index lv2_uri\n\n");
+	printf("Usage: ladspa2slv2 /path/to/laddspalib.so ladspa_index lv2_uri\n");
+	printf("Partially convert a LADSPA plugin to an LV2 plugin.");
+	printf("(This is a utility for developers, it will not generate a usable\n");
+	printf("LV2 plugin directly).\n\n");
 }
 
 

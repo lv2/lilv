@@ -1,5 +1,5 @@
-/* LibSLV2 Jack Example Host
- * Copyright (C) 2006 Dave Robillard <drobilla@connect.carleton.ca>
+/* SLV2 Simple Jack Host Example
+ * Copyright (C) 2007 Dave Robillard <drobilla.net>
  *  
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
