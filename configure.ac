@@ -62,13 +62,13 @@ fi
 AM_CONDITIONAL(WITH_JACK, [test "$build_jack" = "yes"])
 
 # Check plugin install directory
-AC_MSG_CHECKING([where to install LV2 plugins])
-AC_ARG_WITH(lv2-dir,
-	AS_HELP_STRING([--with-lv2-dir=DIR],
-		[directory that LV2 plugins should be installed in ($libdir/lv2)]),
-	[lv2dir=$withval], [lv2dir=$libdir/lv2])
-AC_MSG_RESULT($lv2dir)
-AC_SUBST(lv2dir)
+#AC_MSG_CHECKING([where to install LV2 plugins])
+#AC_ARG_WITH(lv2-dir,
+#	AS_HELP_STRING([--with-lv2-dir=DIR],
+#		[directory that LV2 plugins should be installed in ($libdir/lv2)]),
+#	[lv2dir=$withval], [lv2dir=$libdir/lv2])
+#AC_MSG_RESULT($lv2dir)
+#AC_SUBST(lv2dir)
 
 # Build ladspa converter?
 build_ladspa2lv2="no"

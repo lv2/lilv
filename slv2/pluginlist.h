@@ -1,5 +1,5 @@
-/* LibSLV2
- * Copyright (C) 2006 Dave Robillard <drobilla@connect.carleton.ca>
+/* SLV2
+ * Copyright (C) 2007 Dave Robillard <http://drobilla.net>
  *  
  * This library is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -27,7 +27,7 @@ extern "C" {
 typedef struct _PluginList* SLV2List;
 
 
-/** \defgroup lists Plugin lists
+/** \defgroup lists Plugin discovery
  *
  * These functions are for locating plugins installed on the system.
  *
