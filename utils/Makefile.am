@@ -2,6 +2,7 @@ AM_CFLAGS = -I$(top_srcdir) @RASQAL_CFLAGS@
 
 bin_PROGRAMS = lv2_list
 
+lv2_list_CFLAGS = "-std=c99"
 lv2_list_SOURCES = lv2_list.c
 lv2_list_LDADD = ../src/libslv2.la 
 
