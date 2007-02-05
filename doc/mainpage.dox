@@ -2,7 +2,7 @@
 
 @section Overview
 
-SLV2 is a host library to simply the discovery, loading, and use of LV2
+SLV2 is a host library to simplify the discovery, loading, and use of LV2
 plugins.
 
 

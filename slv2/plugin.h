@@ -48,8 +48,8 @@ typedef const struct _Plugin SLV2Plugin;
  * and will not work with libslv2 (eg plugins missing required fields, or
  * having multiple values for mandatory single-valued fields, etc.
  * 
- * Note that normal hosts do not need to worry about list - libslv2 does not
- * load invalid plugins in to plugin lists.  This is included for plugin
+ * Note that normal hosts do not need to worry about this - libslv2 does not
+ * load invalid plugins into plugin lists.  This is included for plugin
  * testing utilities, etc.
  *
  * \return True if \a plugin is valid.

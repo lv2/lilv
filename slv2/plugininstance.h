@@ -27,7 +27,6 @@ extern "C" {
 #include <dlfcn.h>
 #include <slv2/lv2.h>
 #include <slv2/private_types.h>
-#include <slv2/plugininstance.h>
 #include <slv2/plugin.h>
 #include <slv2/port.h>
 
@@ -196,7 +195,6 @@ slv2_instance_get_handle(SLV2Instance* instance)
 }
 
 #endif /* LIBSLV2_SOURCE */
-
 
 /** @} */
 
