@@ -1,0 +1,106 @@
+/* lv2_inspect - Display information about an LV2 plugin.
+ * Copyright (C) 2007 Dave Robillard <drobilla.net>
+ *  
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by the Free
+ * Software Foundation; either version 2 of the License, or (at your option)
+ * any later version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+ * for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
+ */
+
+#include <stdlib.h>
+#include <stdio.h>
+#include <slv2/slv2.h>
+
+
+void
+print_port(SLV2Plugin* p, uint32_t index)
+{
+	SLV2PortID id = slv2_port_by_index(index);
+
+	char* str = NULL;
+
+	printf("\n\tPort %d:\n", index);
+	
+	str = slv2_port_get_symbol(p, id);
+	printf("\t\tSymbol: %s\n", str);
+	free(str);
+	
+	str = slv2_port_get_name(p, id);
+	printf("\t\tName: %s\n", str);
+	free(str);
+}
+
+
+void
+print_plugin(SLV2Plugin* p)
+{
+	char* str = NULL;
+
+	printf("<%s>\n", slv2_plugin_get_uri(p));
+
+	printf("\tData    URL: %s\n", slv2_plugin_get_data_url(p));
+	printf("\tLibrary URL: %s\n\n", slv2_plugin_get_library_url(p));
+
+	str = slv2_plugin_get_name(p);
+	printf("\tName: %s\n", str);
+	free(str);
+
+	if (slv2_plugin_has_latency(p))
+		printf("\tHas latency: yes\n");
+	else
+		printf("\tHas latency: no\n");
+
+	printf("\tProperties:\n");
+	SLV2Value v = slv2_plugin_get_properties(p);
+	for (size_t i=0; i < v->num_values; ++i)
+		printf("\t\t%s\n", v->values[i]);
+	slv2_value_free(v);
+	
+	printf("\tHints:\n");
+	v = slv2_plugin_get_hints(p);
+	for (size_t i=0; i < v->num_values; ++i)
+		printf("\t\t%s\n", v->values[i]);
+	slv2_value_free(v);
+
+	uint32_t num_ports = slv2_plugin_get_num_ports(p);
+	for (uint32_t i=0; i < num_ports; ++i)
+		print_port(p, i);
+}
+
+
+	
+int
+main(int argc, char** argv)
+{
+	slv2_init();
+
+	if (argc != 2) {
+		fprintf(stderr, "Usage: %s PLUGIN_URI\n", argv[0]);
+		return -1;
+	}
+
+	SLV2List plugins = slv2_list_new();
+	slv2_list_load_all(plugins);
+
+	SLV2Plugin* p = slv2_list_get_plugin_by_uri(plugins, argv[1]);
+
+	if (!p) {
+		fprintf(stderr, "Plugin not found.\n");
+		return -1;
+	}
+
+	print_plugin(p);
+
+	slv2_finish();
+
+	return 0;
+}

@@ -16,25 +16,29 @@
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef __SLV2_H
-#define __SLV2_H
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-#include <rasqal.h>
-
-#include <slv2/library.h>
-#include <slv2/types.h>
-#include <slv2/plugin.h>
-#include <slv2/plugininstance.h>
-#include <slv2/pluginlist.h>
-#include <slv2/port.h>
+#include "config.h"
+#include <slv2/slv2.h>
 
 
-#ifdef __cplusplus
+raptor_uri* slv2_ontology_uri = NULL;
+
+
+void
+slv2_init()
+{
+	rasqal_init();
+
+	slv2_ontology_uri = raptor_new_uri((const unsigned char*)
+		"file://" LV2_TTL_PATH);
 }
-#endif
 
-#endif /* __SLV2_H */
+
+void
+slv2_finish()
+{
+	rasqal_finish();
+
+	raptor_free_uri(slv2_ontology_uri);
+	slv2_ontology_uri = NULL;
+}
+

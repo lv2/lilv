@@ -1,7 +1,7 @@
 # RDF Schema for LV2 plugins
 # *** PROVISIONAL ***
 #
-# Revision 2007-01-03
+# Revision 2007-02-06
 #
 # This document describes the classes and properties that are defined by the
 # core LV2 specification.  See <http://lv2plug.in> for more information.
@@ -153,6 +153,17 @@ Plugins will write values to this array during their run method.
 
 
 
+##################################
+# Optional Plugin RDF:Properties #
+##################################
+
+:documentation a rdf:Property ;
+    rdfs:domain  :Plugin ;
+    rdfs:label   "documentation" ;
+    rdfs:comment "Relates a Plugin to some text/audio/video documentation either online or included with the plugin package" .
+
+
+
 #################################
 # Mandatory Port RDF:Properties #
 #################################
@@ -228,7 +239,7 @@ minimum, and maximum), though future extensions may define more.
 
 :ScalePoint a rdfs:Class ;
     rdfs:subClassOf :Point ;
-    rdfs:comment "A single :Float Point (for control inputs)" .
+    rdfs:comment "A single :float Point (for control inputs)" .
 
 :scalePoint a rdf:Property ;
    rdfs:domain  :Port ;
@@ -250,7 +261,7 @@ information available.
     rdfs:comment """
 A hint to the host for the minimum useful value that the port will use.
 This is a "soft" limit - the plugin is required to gracefully accept all
-values in the range of :Float.
+values in the range of :float.
 """ .
 
 :maximum a rdf:Property ;
@@ -259,7 +270,7 @@ values in the range of :Float.
     rdfs:comment """
 A hint to the host for the maximum useful value that the port will use.
 This is a "soft" limit - the plugin is required to gracefully accept all
-values in the range of :Float.
+values in the range of :float.
 """ .
 
 
@@ -268,8 +279,8 @@ values in the range of :Float.
 # Data Type #
 #############
 
-:Float a rdfs:DataType ;
-    rdfs:label   "32-bit Floating Point" ;
+:float a :DataType ;
+    rdfs:label   "32-bit floating point" ;
     rdfs:comment """
 Value conforming to the 32bit IEEE-754 floating point specification.""".
 
@@ -339,11 +350,6 @@ plugin can still function correctly, it is NOT a Property, it is a Hint.
     rdfs:range   :PortProperty ;
     rdfs:label   "hint" ;
     rdfs:comment "Relates Ports to PortProperties." .
-
-:documentation a rdf:Property ;
-    rdfs:domain  :Plugin ;
-    rdfs:label   "documentation" ;
-    rdfs:comment "Relates a Plugin to some text/audio/video documentation either online or included with the plugin package" .
 
 
 

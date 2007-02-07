@@ -21,6 +21,7 @@
 #include <assert.h>
 #include <slv2/plugin.h>
 #include <slv2/query.h>
+#include <slv2/library.h>
 
 
 char*
@@ -30,12 +31,12 @@ slv2_query_header(const SLV2Plugin* p)
 	const char* const data_file_url = slv2_plugin_get_data_url(p);
 
 	char* query_string = strjoin(
-	  "PREFIX rdf:    <http://www.w3.org/1999/02/22-rdf-syntax-ns#> \n"
-	  "PREFIX rdfs:   <http://www.w3.org/2000/01/rdf-schema#> \n"
-	  "PREFIX doap:   <http://usefulinc.com/ns/doap#> \n"
-	  "PREFIX lv2:    <http://lv2plug.in/ontology#> \n"
-	  "PREFIX plugin: <", plugin_uri, "> \n",
-	  "PREFIX data:   <", data_file_url, "> \n\n", NULL);
+	  "PREFIX rdf:    <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n"
+	  "PREFIX rdfs:   <http://www.w3.org/2000/01/rdf-schema#>\n"
+	  "PREFIX doap:   <http://usefulinc.com/ns/doap#>\n"
+	  "PREFIX lv2:    <http://lv2plug.in/ontology#>\n"
+	  "PREFIX plugin: <", plugin_uri, ">\n",
+	  "PREFIX data:   <", data_file_url, ">\n\n", NULL);
 
 	return query_string;
 }
@@ -58,13 +59,14 @@ slv2_query_lang_filter(const char* variable)
 }
 
 
-SLV2Property
-slv2_query_get_variable_bindings(rasqal_query_results* results, const char* var_name)
+SLV2Value
+slv2_query_get_variable_bindings(rasqal_query_results* results,
+                                 const char*           variable)
 {
-	struct _Property* result = NULL;
+	struct _Value* result = NULL;
 
     if (rasqal_query_results_get_bindings_count(results) > 0) {
-        result = malloc(sizeof(struct _Property));
+        result = malloc(sizeof(struct _Value));
         result->num_values = 0;
         result->values = NULL;
     }
@@ -72,7 +74,7 @@ slv2_query_get_variable_bindings(rasqal_query_results* results, const char* var_
     while (!rasqal_query_results_finished(results)) {
 
         rasqal_literal* literal =
-            rasqal_query_results_get_binding_value_by_name(results, (const unsigned char*)var_name);
+            rasqal_query_results_get_binding_value_by_name(results, (const unsigned char*)variable);
         assert(literal != NULL);
 
         // Add value on to the array, reallocing all the way.
@@ -102,41 +104,60 @@ slv2_query_count_variable_bindings(rasqal_query_results* results)
     return count;
 }
 
-
-SLV2Property
-slv2_query_get_results(const SLV2Plugin* p,
-                       const char*       query,
-                       const char*       var_name)
+	
+rasqal_query_results*
+slv2_plugin_query(SLV2Plugin* plugin,
+                  const char* sparql_str)
 {
-	char* header    = slv2_query_header(p);
-	char* query_str = strjoin(header, query, NULL);
-
-	assert(p);
-	assert(query_str);
-
-	rasqal_init();
+	raptor_uri* base_uri = raptor_new_uri((unsigned char*)slv2_plugin_get_uri(plugin));
 
 	rasqal_query *rq = rasqal_new_query("sparql", NULL);
+	
+	char* header    = slv2_query_header(plugin);
+	char* query_str = strjoin(header, sparql_str, NULL);
 
 	//printf("Query: \n%s\n\n", query_str);
 
-	rasqal_query_prepare(rq, (unsigned char*)query_str, NULL);
+	rasqal_query_prepare(rq, (unsigned char*)query_str, base_uri);
+	
+	// Add LV2 ontology to query sources
+	rasqal_query_add_data_graph(rq, slv2_ontology_uri, 
+		NULL, RASQAL_DATA_GRAPH_BACKGROUND);
+
 	rasqal_query_results* results = rasqal_query_execute(rq);
 	assert(results);
 	
-	SLV2Property ret = slv2_query_get_variable_bindings(results, var_name);
+	rasqal_free_query(rq);
+	raptor_free_uri(base_uri);
+
+	// FIXME: results leaked?
+	return results;
+
+	/*
+	SLV2Value ret = slv2_query_get_variable_bindings(results, var_name);
+	
 	rasqal_free_query_results(results);
 	rasqal_free_query(rq);
-	
-	rasqal_finish();
-	
-	free(query_str);
-	free(header);
+
+	return ret;*/
+}
+
+
+/** Query a single variable */
+SLV2Value
+slv2_plugin_simple_query(SLV2Plugin* plugin,
+                         const char* sparql_str,
+                         const char* variable)
+{
+	rasqal_query_results* results = slv2_plugin_query(plugin, sparql_str);
+	SLV2Value ret = slv2_query_get_variable_bindings(results, variable);
+	rasqal_free_query_results(results);
 
 	return ret;
 }
 
 
+// FIXME: stupid interface
 size_t
 slv2_query_count_results(const SLV2Plugin* p,
                          const char*       query)
@@ -147,13 +168,16 @@ slv2_query_count_results(const SLV2Plugin* p,
 	assert(p);
 	assert(query_str);
 
-	rasqal_init();
-
 	rasqal_query *rq = rasqal_new_query("sparql", NULL);
 
 	//printf("Query: \n%s\n\n", query_str);
 
 	rasqal_query_prepare(rq, (unsigned char*)query_str, NULL);
+	
+	// Add LV2 ontology to query sources
+	rasqal_query_add_data_graph(rq, slv2_ontology_uri,
+		NULL, RASQAL_DATA_GRAPH_BACKGROUND);
+	
 	rasqal_query_results* results = rasqal_query_execute(rq);
 	assert(results);
 	
@@ -169,6 +193,7 @@ slv2_query_count_results(const SLV2Plugin* p,
 
 	return count;
 }
+
 
 /*
 size_t
@@ -188,7 +213,7 @@ slv2_query_get_num_results(rasqal_query_results* results, const char* var_name)
 */
 
 void
-slv2_property_free(struct _Property* prop)
+slv2_value_free(struct _Value* prop)
 {
 	for (size_t i=0; i < prop->num_values; ++i)
 		free(prop->values[i]);

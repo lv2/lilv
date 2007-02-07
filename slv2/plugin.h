@@ -136,21 +136,45 @@ char*
 slv2_plugin_get_name(const SLV2Plugin* plugin);
 
 
-/** Request some property of the plugin.
+/** Request some arbitrary RDF object of the plugin.
  *
  * May return NULL if the property was not found (ie is not defined in the
- * data file).
+ * data file), or if object is not sensibly represented as an SLV2Value
+ * (e.g. blank nodes).
  *
- * Return value must be free()'d by caller.
+ * Return value must be freed by caller with slv2_value_free.
  *
- * Note that some properties may have multiple values. If the property is a
+ * Note that this may return multiple values. If the property is a
  * string with multiple languages defined, the translation according to
  * $LANG will be returned if it is set.  Otherwise all values will be
  * returned.
  */
-SLV2Property
-slv2_plugin_get_property(const SLV2Plugin* p,
-                         const char*       property);
+SLV2Value
+slv2_plugin_get_value(const SLV2Plugin* p,
+                      const char*       predicate);
+
+
+/** Get the LV2 Properties of a plugin.
+ *
+ * LV2 Properties are mandatory.  Hosts MUST NOT use a plugin if they do not
+ * understand all the LV2 Properties associated with that plugin (if this is
+ * not what you want, see slv2_plugin_get_hints).
+ *
+ * Return value must be freed by caller with slv2_value_free.
+ */
+SLV2Value
+slv2_plugin_get_properties(const SLV2Plugin* p);
+
+
+/** Get the LV2 Hints of a plugin.
+ *
+ * LV2 Hints are suggestions that may be useful for a host.  LV2 Hints may be
+ * ignored and the plugin will still function correctly.
+ *
+ * Return value must be freed by caller with slv2_value_free.
+ */
+SLV2Value
+slv2_plugin_get_hints(const SLV2Plugin* p);
 
 
 /** Get the number of ports on this plugin.
@@ -179,29 +203,12 @@ slv2_plugin_has_latency(const SLV2Plugin* p);
 uint32_t
 slv2_plugin_get_latency_port(const SLV2Plugin* p);
 
-#if 0
-/** Return whether or not a plugin supports the given host feature / extension.
- *
- * This will return true for both supported and required host features.
- */
-bool
-slv2_plugin_supports_feature(const SLV2Plugin* p, const char* feature_uri);
-
-
-/** Return whether or not a plugin requires the given host feature / extension.
- *
- * If a plugin requires a feature, that feature MUST be passed to the plugin's
- * instantiate method or the plugin will fail to instantiate.
- */
-bool
-slv2_plugin_requires_features(const SLV2Plugin* p, const char* feature_uri);
-#endif
 
 /** Get a plugin's supported host features / extensions.
  *
  * This returns a list of all supported features (both required and optional).
  */
-SLV2Property
+SLV2Value
 slv2_plugin_get_supported_features(const SLV2Plugin* p);
 
 
@@ -210,7 +217,7 @@ slv2_plugin_get_supported_features(const SLV2Plugin* p);
  * All feature URI's returned by this call MUST be passed to the plugin's
  * instantiate method for the plugin to instantiate successfully.
  */
-SLV2Property
+SLV2Value
 slv2_plugin_get_required_features(const SLV2Plugin* p);
 
 
@@ -220,7 +227,7 @@ slv2_plugin_get_required_features(const SLV2Plugin* p);
  * instantiate method, those features will be used by the function, otherwise
  * the plugin will act as it would if it did not support that feature at all.
  */
-SLV2Property
+SLV2Value
 slv2_plugin_get_optional_features(const SLV2Plugin* p);
 
 

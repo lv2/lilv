@@ -81,6 +81,17 @@ if test "$build_ladspa2lv2" = "yes"; then
 fi
 AM_CONDITIONAL(BUILD_LADSPA2SLV2, [test "$build_ladspa2lv2" = "yes"])
 
+
+# Check ontology install directory
+AC_MSG_CHECKING([where to install lv2.ttl])
+AC_ARG_WITH(lv2-ttl-dir,
+	AS_HELP_STRING([--with-lv2-ttl-dir=DIR],
+		[directory where lv2.ttl should be installed ($datadir/lv2)]),
+	[lv2ttldir=$withval], [lv2ttldir=$datadir/lv2])
+AC_MSG_RESULT($lv2ttldir)
+lv2ttlpath="$lv2ttldir/lv2.ttl"
+AC_SUBST(lv2ttlpath)
+
 # Write output files
 AC_CONFIG_FILES([Makefile])
 AC_CONFIG_FILES([src/Makefile])
@@ -98,7 +109,8 @@ AC_MSG_RESULT([])
 AC_MSG_RESULT([**********************************************************************])
 AC_MSG_RESULT([SLV2 build configuration:])
 AC_MSG_RESULT([])
-AC_MSG_RESULT([Building JACK clients: $build_jack])
+AC_MSG_RESULT([Building JACK clients:     $build_jack])
+AC_MSG_RESULT([Ontology install location: $lv2ttlpath])
 AC_MSG_RESULT([**********************************************************************])
 AC_MSG_RESULT([])
 

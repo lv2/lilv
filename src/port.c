@@ -20,42 +20,70 @@
 #include <assert.h>
 #include <stdlib.h>
 #include <string.h>
+#include <limits.h>
 #include <slv2/port.h>
 #include <slv2/types.h>
 #include <slv2/query.h>
 #include "util.h"
 
+
+SLV2PortID
+slv2_port_by_index(uint32_t index)
+{
+	SLV2PortID ret;
+	ret.is_index = true;
+	ret.index = index;
+	ret.symbol = NULL;
+	return ret;
+}
+
+
+SLV2PortID
+slv2_port_by_symbol(const char* symbol)
+{
+	SLV2PortID ret;
+	ret.is_index = false;
+	ret.index = UINT_MAX;
+	ret.symbol = symbol;
+	return ret;
+}
+
+
 enum SLV2PortClass
 slv2_port_get_class(SLV2Plugin* p,
-                    uint32_t    index)
+                    SLV2PortID  id)
 {
-	struct _Property* class = slv2_port_get_property(p, index, "rdf:type");
+	struct _Value* class = slv2_port_get_value(p, id, "rdf:type");
 	assert(class);
-	assert(class->num_values == 1);
+	assert(class->num_values > 0);
 	assert(class->values);
-
-	// FIXME FIXME FIXME: leak
+	
+	enum SLV2PortClass ret;
 	
 	if (!strcmp((char*)class->values[0], "http://lv2plug.in/ontology#ControlRateInputPort"))
-		return SLV2_CONTROL_RATE_INPUT;
+		ret = SLV2_CONTROL_RATE_INPUT;
 	else if (!strcmp((char*)class->values[0], "http://lv2plug.in/ontology#ControlRateOutputPort"))
-		return SLV2_CONTROL_RATE_OUTPUT;
+		ret = SLV2_CONTROL_RATE_OUTPUT;
 	else if (!strcmp((char*)class->values[0], "http://lv2plug.in/ontology#AudioRateInputPort"))
-		return SLV2_AUDIO_RATE_INPUT;
+		ret = SLV2_AUDIO_RATE_INPUT;
 	else if (!strcmp((char*)class->values[0], "http://lv2plug.in/ontology#AudioRateOutputPort"))
-		return SLV2_AUDIO_RATE_OUTPUT;
+		ret = SLV2_AUDIO_RATE_OUTPUT;
 	else {
 		fprintf(stderr, "Unknown port class: %s\n", class->values[0]);
-		return SLV2_UNKNOWN_PORT_CLASS;
+		ret = SLV2_UNKNOWN_PORT_CLASS;
 	}
+
+	slv2_value_free(class);
+
+	return ret;
 }
 
 
 char*
 slv2_port_get_data_type(SLV2Plugin* p,
-                        uint32_t    index)
+                        SLV2PortID  id)
 {
-	SLV2Property type = slv2_port_get_property(p, index, "lv2:datatype");
+	SLV2Value type = slv2_port_get_value(p, id, "lv2:datatype");
 	assert(type);
 	assert(type->num_values == 1);
 	assert(type->values);
@@ -63,30 +91,45 @@ slv2_port_get_data_type(SLV2Plugin* p,
 	char* ret = type->values[0];
 	type->values[0] = NULL; // prevent deletion
 
-	slv2_property_free(type);
+	slv2_value_free(type);
 	return ret;
 }
 
 
-SLV2Property
-slv2_port_get_property(SLV2Plugin* p,
-                       uint32_t    index,
-                       const char* property)
+SLV2Value
+slv2_port_get_value(SLV2Plugin* p,
+                    SLV2PortID  id,
+                    const char* property)
 {
 	assert(property);
 
-	char index_str[16];
-	snprintf(index_str, (size_t)16, "%u", index);
-	
-    char* query = strjoin(
-		"SELECT DISTINCT ?value FROM data: WHERE { \n"
-		"plugin: lv2:port ?port . \n"
-		"?port lv2:index ", index_str, " . \n"
-		"?port ", property, " ?value . \n}\n", NULL);
+	SLV2Value result = NULL;
 
-	SLV2Property result = slv2_query_get_results(p, query, "value");
-	
-	free(query);
+	if (id.is_index) {
+		char index_str[16];
+		snprintf(index_str, (size_t)16, "%u", id.index);
+
+		char* query = strjoin(
+				"SELECT DISTINCT ?value FROM data: WHERE { \n"
+				"plugin: lv2:port ?port . \n"
+				"?port lv2:index ", index_str, " ;\n\t",
+				property, "  ?value . \n}\n", NULL);
+
+		result = slv2_plugin_simple_query(p, query, "value");
+
+		free(query);
+	} else {
+
+		char* query = strjoin(
+				"SELECT DISTINCT ?value FROM data: WHERE { \n"
+				"plugin: lv2:port ?port . \n"
+				"?port lv2:symbol ", id.symbol, " ;\n\t",
+				       property, "   ?value . \n}\n", NULL);
+		
+		result = slv2_plugin_simple_query(p, query, "value");
+
+		free(query);
+	}
 
 	return result;
 }
@@ -94,19 +137,39 @@ slv2_port_get_property(SLV2Plugin* p,
 
 char*
 slv2_port_get_symbol(SLV2Plugin* p,
-                     uint32_t    index)
+                     SLV2PortID  id)
 {
 	char* result = NULL;
 	
-	SLV2Property prop
-		= slv2_port_get_property(p, index, "lv2:symbol");
+	SLV2Value prop
+		= slv2_port_get_value(p, id, "lv2:symbol");
 
 	if (prop && prop->num_values == 1) {
 		result = prop->values[0];
 		prop->values[0] = NULL; // prevent deletion
 	}
 	
-	slv2_property_free(prop);
+	slv2_value_free(prop);
+
+	return result;
+}
+
+	
+char*
+slv2_port_get_name(SLV2Plugin* p,
+                   SLV2PortID  id)
+{
+	char* result = NULL;
+	
+	SLV2Value prop
+		= slv2_port_get_value(p, id, "lv2:name");
+
+	if (prop && prop->num_values == 1) {
+		result = prop->values[0];
+		prop->values[0] = NULL; // prevent deletion
+	}
+	
+	slv2_value_free(prop);
 
 	return result;
 }
@@ -114,19 +177,19 @@ slv2_port_get_symbol(SLV2Plugin* p,
 
 float
 slv2_port_get_default_value(SLV2Plugin* p, 
-                            uint32_t    index)
+                            SLV2PortID  id)
 {
 	// FIXME: do casting properly in the SPARQL query
 	
 	float result = 0.0f;
 	
-	SLV2Property prop
-		= slv2_port_get_property(p, index, "lv2:default");
+	SLV2Value prop
+		= slv2_port_get_value(p, id, "lv2:default");
 
 	if (prop && prop->num_values == 1)
 		result = atof((char*)prop->values[0]);
 	
-	slv2_property_free(prop);
+	slv2_value_free(prop);
 
 	return result;
 }
@@ -134,19 +197,19 @@ slv2_port_get_default_value(SLV2Plugin* p,
 
 float
 slv2_port_get_minimum_value(SLV2Plugin* p, 
-                            uint32_t    index)
+                            SLV2PortID  id)
 {
 	// FIXME: do casting properly in the SPARQL query
 	
 	float result = 0.0f;
 	
-	SLV2Property prop
-		= slv2_port_get_property(p, index, "lv2:minimum");
+	SLV2Value prop
+		= slv2_port_get_value(p, id, "lv2:minimum");
 
 	if (prop && prop->num_values == 1)
 		result = atof((char*)prop->values[0]);
 	
-	slv2_property_free(prop);
+	slv2_value_free(prop);
 
 	return result;
 }
@@ -154,20 +217,36 @@ slv2_port_get_minimum_value(SLV2Plugin* p,
 
 float
 slv2_port_get_maximum_value(SLV2Plugin* p, 
-                            uint32_t    index)
+                            SLV2PortID  id)
 {
 	// FIXME: do casting properly in the SPARQL query
 	
 	float result = 0.0f;
 	
-	SLV2Property prop
-		= slv2_port_get_property(p, index, "lv2:maximum");
+	SLV2Value prop
+		= slv2_port_get_value(p, id, "lv2:maximum");
 
 	if (prop && prop->num_values == 1)
 		result = atof((char*)prop->values[0]);
 	
-	slv2_property_free(prop);
+	slv2_value_free(prop);
 
 	return result;
+}
+
+
+SLV2Value
+slv2_port_get_properties(const SLV2Plugin* p,
+                         SLV2PortID        id)
+{
+	return slv2_port_get_value(p, id, "lv2:portProperty");
+}
+
+
+SLV2Value
+slv2_port_get_hints(const SLV2Plugin* p,
+                    SLV2PortID        id)
+{
+	return slv2_port_get_value(p, id, "lv2:portHint");
 }
 

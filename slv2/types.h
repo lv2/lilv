@@ -19,23 +19,42 @@
 #ifndef __SLV2_TYPES_H__
 #define __SLV2_TYPES_H__
 
+#include <stddef.h>
+#include <stdbool.h>
+#include <stdint.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-#include <stddef.h>
 
 
 /* A property, resulting from a query.
  *
  * Note that properties may have many values.
  */
-struct _Property {
+struct _Value {
 	size_t num_values;
 	char** values;
 };
 
-typedef struct _Property* SLV2Property;
+typedef struct _Value* SLV2Value;
+
+
+/** Free an SLV2Value. */
+void
+slv2_value_free(SLV2Value);
+
+
+/** Port ID type, to allow passing either symbol or index
+ * to port related functions.
+ */
+struct _PortID {
+	bool        is_index; /**< Otherwise, symbol */
+	uint32_t    index;
+	const char* symbol;
+};
+
+typedef struct _PortID SLV2PortID;
 
 
 /** Class (direction and rate) of a port */

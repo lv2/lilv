@@ -33,11 +33,15 @@ list_plugins(SLV2List list)
 int
 main()//int argc, char** argv)
 {
+	slv2_init();
+
 	SLV2List plugins = slv2_list_new();
 	slv2_list_load_all(plugins);
 
 	list_plugins(plugins);
 	
+	slv2_finish();
+
 	return 0;
 }
 

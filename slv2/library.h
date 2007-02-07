@@ -16,25 +16,38 @@
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef __SLV2_H
-#define __SLV2_H
+#ifndef __SLV2_LIBRARY_H
+#define __SLV2_LIBRARY_H
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#include <rasqal.h>
 
-#include <slv2/library.h>
-#include <slv2/types.h>
-#include <slv2/plugin.h>
-#include <slv2/plugininstance.h>
-#include <slv2/pluginlist.h>
-#include <slv2/port.h>
+/** Initialize SLV2.
+ *
+ * This MUST be called before calling any other SLV2 functions, or fatal
+ * errors will likely occur.
+ */
+void
+slv2_init();
+
+
+/** Finialize SLV2.
+ *
+ * Frees any resources allocated by slv2_init().
+ */
+void
+slv2_finish();
+
+
+/** The URI of the lv2.ttl file.
+ */
+extern raptor_uri* slv2_ontology_uri;
 
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* __SLV2_H */
+#endif /* __SLV2_LIBRARY_H */

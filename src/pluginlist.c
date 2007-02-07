@@ -85,10 +85,9 @@ slv2_list_load_bundle(SLV2List    list,
 	else
 		strcat((char*)manifest_url, "/manifest.ttl");
 	
-	rasqal_init();
 	rasqal_query_results *results;
 	raptor_uri *base_url = raptor_new_uri(manifest_url);
-	rasqal_query *rq = rasqal_new_query("sparql", (unsigned char*)base_url);
+	rasqal_query *rq = rasqal_new_query("sparql", NULL);
 
 	char* query_string =
 	    "PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> \n"
@@ -146,7 +145,6 @@ slv2_list_load_bundle(SLV2List    list,
 		//rasqal_free_query(rq); // FIXME: crashes?  leak?
 		raptor_free_uri(base_url);
 	}
-	rasqal_finish();
 
 	free(manifest_url);
 }

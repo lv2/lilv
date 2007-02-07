@@ -27,6 +27,10 @@ extern "C" {
 #include "plugin.h"
 #include "types.h"
 
+
+// FIXME: much of this should not be exposed
+
+
 /** \defgroup query SPARQL query helpers
  *
  * This part is in progress, incomplete, a random mishmash of crap that
@@ -74,6 +78,16 @@ char*
 slv2_query_lang_filter(const char* variable);
 
 
+rasqal_query_results*
+slv2_plugin_query(SLV2Plugin* plugin,
+                  const char* sparql_str);
+
+SLV2Value
+slv2_plugin_simple_query(SLV2Plugin* plugin,
+                         const char* sparql_str,
+                         const char* variable);
+
+#if 0
 /** Run a SPARQL query on a plugin's data file and return variable matches.
  *
  * Header from slv2query_header will be prepended to passed query string (so
@@ -82,11 +96,10 @@ slv2_query_lang_filter(const char* variable);
  *
  * Returned is a list of all matches for the query variable \a var_name.
  */
-SLV2Property
+SLV2Value
 slv2_query_get_results(const SLV2Plugin* p,
                        const char*       query_string,
                        const char*       var_name);
-
 
 /** Run a SPARQL query on a plugin's data file and just count the matches.
  *
@@ -99,11 +112,8 @@ slv2_query_get_results(const SLV2Plugin* p,
 size_t
 slv2_query_count_results(const SLV2Plugin* p,
                          const char*       query_string);
+#endif
 
-
-/** Free an SLV2Property. */
-void
-slv2_property_free(SLV2Property);
 
 /** @} */
 
