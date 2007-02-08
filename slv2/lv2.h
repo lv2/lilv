@@ -1,9 +1,9 @@
 /* LV2 - LADSPA (Linux Audio Developer's Simple Plugin API) Version 2.0
  * *** PROVISIONAL ***
  *
- * Copyright (C) 2000-2002 Richard W.E. Furse, Paul Barton-Davis, Stefan
- * Westerfeld
- * Copyright (C) 2006 Steve Harris, Dave Robillard.
+ * Copyright (C) 2000-2002 Richard W.E. Furse, Paul Barton-Davis,
+ *                         Stefan Westerfeld
+ * Copyright (C) 2006-2007 Steve Harris, Dave Robillard.
  *
  * This header is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published
@@ -193,10 +193,10 @@ typedef struct _LV2_Descriptor {
    * Note that instance initialisation should generally occur in
    * activate() rather than here.  If a host calls instantiate, it MUST
    * call cleanup() at some point in the future. */
-  LV2_Handle (*instantiate)(const struct _LV2_Descriptor * Descriptor,
-                            uint32_t                       SampleRate,
-                            const char *                   BundlePath,
-                            const LV2_Host_Feature**       HostFeatures);
+  LV2_Handle (*instantiate)(const struct _LV2_Descriptor *  Descriptor,
+                            uint32_t                        SampleRate,
+                            const char *                    BundlePath,
+                            const LV2_Host_Feature *const * HostFeatures);
 
   /** Function pointer that connects a port on a plugin instance to a memory
    * location where the block of data for the port will be read/written.
@@ -228,9 +228,9 @@ typedef struct _LV2_Descriptor {
    * If the plugin has the property lv2:hardRTCapable then there are 
    * various things that the plugin MUST NOT do within the connect_port()
    * function (see lv2.ttl). */
-  void (*connect_port)(LV2_Handle    Instance,
-                       uint32_t      Port,
-                       void *        DataLocation);
+  void (*connect_port)(LV2_Handle Instance,
+                       uint32_t   Port,
+                       void *     DataLocation);
 
   /** Function pointer that initialises a plugin instance and activates
    * it for use.
@@ -270,8 +270,8 @@ typedef struct _LV2_Descriptor {
    * If the plugin has the property lv2:hardRTCapable then there are 
    * various things that the plugin MUST NOT do within the run()
    * function (see lv2.ttl). */
-  void (*run)(LV2_Handle    Instance,
-              uint32_t      SampleCount);
+  void (*run)(LV2_Handle Instance,
+              uint32_t   SampleCount);
 
   /** This is the counterpart to activate() (see above). If there is
    * nothing for deactivate() to do then the plugin writer may provide

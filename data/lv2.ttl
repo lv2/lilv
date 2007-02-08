@@ -1,7 +1,7 @@
 # RDF Schema for LV2 plugins
 # *** PROVISIONAL ***
 #
-# Revision 2007-02-06
+# *** PROPOSED Revision 2007-02-07 ***
 #
 # This document describes the classes and properties that are defined by the
 # core LV2 specification.  See <http://lv2plug.in> for more information.
@@ -52,7 +52,7 @@
    ] , [
        a foaf:Person ;
        foaf:name "Dave Robillard" ;
-       rdfs:seeAlso <http://drobilla.net/dave.ttl>
+       rdfs:seeAlso <http://drobilla.net/drobilla.ttl>
    ].
 
 
@@ -82,74 +82,57 @@ To be used by a host a Plugin must have at least the following properties:
 :Port a rdfs:Class ;
     rdfs:label   "Port" ;
     rdfs:comment """
-The class that represents an LV2 port
+The class which represents an LV2 port.
 
 In order for it to be used by a host it must have at least 
 the following properties:
-    rdf:type (where object is exactly one of
-       :ControlRateInputPort, :ControlRateOutputPort,
-       :AudioRateInputPort,   :AudioRateOutputPort)
-    :dataType
+    rdf:type (with object one of :Port, :InputPort, :OutputPort)
+	rdf:type (more specific port class, see below)
     :index
     :symbol
     :name
+
+All LV2 port descriptions MUST have a property rdf:type where the object
+is one of :Port :InputPort or :OutputPort.  Additionally there MUST be
+at least one other rdf:type property which more specifically describes
+type of the port (e.g. :AudioPort).
+
+Hosts that do not support a specific port class MUST NOT instantiate the
+plugin, unless that port has the connectionOptional hint set (in which case
+the host can simply "connect" that port to NULL).
 """ .
 
 :InputPort a rdfs:Class ;
-    rdfs:subClassOf :Port .
+    rdfs:label      "Input port" ;
+    rdfs:subClassOf :Port ;
+	rdfs:comment    """
+Ports of this type will be connected to a pointer to some value, which will
+be read by the plugin during their run method.
+""" .
 
 :OutputPort a rdfs:Class ;
-    rdfs:subClassOf :Port .
-
-:ControlRatePort a rdfs:Class ;
-    rdfs:subClassOf :Port .
-
-:AudioRatePort a rdfs:Class ;
-    rdfs:subClassOf :Port .
-
-:ControlRateInputPort a rdfs:Class ;
-    rdfs:label      "Control-rate input port" ;
-    rdfs:subClassOf :ControlRatePort ;
-    rdfs:subClassOf :InputPort ;
-    rdfs:comment    """
-Ports of this type will be connected to a pointer to a single value of the type
-defined by the :dataType property.
-
-Plugins will read values from this pointer during their run method.
+    rdfs:label      "Output port" ;
+    rdfs:subClassOf :Port ;
+	rdfs:comment    """
+Ports of this type will be connected to a pointer to some value, which will
+be written to by the plugin during their run method.
 """ .
 
-:ControlRateOutputPort a rdfs:Class ;
-    rdfs:label      "Control-rate output port" ;
-    rdfs:subClassOf :ControlRatePort ;
-    rdfs:subClassOf :OutputPort ;
+:ControlPort a rdfs:Class ;
+    rdfs:label      "Control port" ;
+    rdfs:subClassOf :Port ;
     rdfs:comment    """
-Ports of this type will be connected to a pointer to a single value of the type
-defined by the :dataType property.
-
-Plugins will write values to this pointer during their run method.
+Ports of this type will be connected to a pointer to a single value conforming
+to the 32bit IEEE-754 floating point specification.
 """ .
 
-:AudioRateInputPort a rdfs:Class ;
-    rdfs:label      "Audio-rate input port" ;
-    rdfs:subClassOf :AudioRatePort ;
-    rdfs:subClassOf :InputPort ;
+:AudioPort a rdfs:Class ;
+    rdfs:label      "Audio port" ;
+    rdfs:subClassOf :Port ;
     rdfs:comment    """
-Ports of this type will be connected to an array of values of length
-SampleCount and of the type defined by the :dataType property.
-
-Plugins will read values from this array during their run method.
-""" .
-
-:AudioRateOutputPort a rdfs:Class ;
-    rdfs:label      "Audio-rate output port" ;
-    rdfs:subClassOf :AudioRatePort ;
-    rdfs:subClassOf :OutputPort ;
-    rdfs:comment    """
-Ports of this type will be connected to an array of values of length
-SampleCount and of the type defined by the :dataType property.
-
-Plugins will write values to this array during their run method.
-""" .
+Ports of this type will be connected to an array of length SampleCount
+conforming to the 32bit IEEE-754 floating point specification,
+representing an audio waveform (i.e. suitable for speaker playback). """ .
 
 
 
@@ -167,24 +150,6 @@ Plugins will write values to this array during their run method.
 #################################
 # Mandatory Port RDF:Properties #
 #################################
-
-:DataType a rdfs:Class ;
-    rdfs:comment "A data type that can be stored in an LV2 port." .
-
-:dataType a rdf:Property ;
-    rdfs:domain  :Port ;
-    rdfs:range   :DataType ;
-    rdfs:label   "Port Data type" ;
-    rdfs:comment """
-Relates a Port to the data type(s) it can accept.  Hosts that do not support
-a specified datatype MUST NOT instantiate the plugin, unless that port has
-the connectionOptional hint set (in which case the host can simply "connect"
-that port to NULL).
-
-If multiple datatypes are specified the plugin must have some way to distinguish
-the values (any extension that defines a new data-type which wishes to allow
-this must deal with this issue somehow).
-""" .
 
 :index a rdf:Property ;
     rdfs:domain  :Port ;
@@ -272,17 +237,6 @@ A hint to the host for the maximum useful value that the port will use.
 This is a "soft" limit - the plugin is required to gracefully accept all
 values in the range of :float.
 """ .
-
-
-
-#############
-# Data Type #
-#############
-
-:float a :DataType ;
-    rdfs:label   "32-bit floating point" ;
-    rdfs:comment """
-Value conforming to the 32bit IEEE-754 floating point specification.""".
 
 
 
