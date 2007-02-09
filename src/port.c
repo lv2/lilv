@@ -98,23 +98,6 @@ slv2_port_get_class(SLV2Plugin* p,
 }
 
 
-char*
-slv2_port_get_data_type(SLV2Plugin* p,
-                        SLV2PortID  id)
-{
-	SLV2Value type = slv2_port_get_value(p, id, "lv2:datatype");
-	assert(type);
-	assert(type->num_values == 1);
-	assert(type->values);
-
-	char* ret = type->values[0];
-	type->values[0] = NULL; // prevent deletion
-
-	slv2_value_free(type);
-	return ret;
-}
-
-
 SLV2Value
 slv2_port_get_value(SLV2Plugin* p,
                     SLV2PortID  id,

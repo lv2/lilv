@@ -87,23 +87,11 @@ slv2_port_get_name(SLV2Plugin* plugin,
                    SLV2PortID  id);
 
 
-/** Get the class (direction and rate) of a port.
+/** Get the class (input/output, data type, rate...) of a port.
  */
 SLV2PortClass
 slv2_port_get_class(SLV2Plugin* plugin,
                     SLV2PortID  id);
-
-
-/** Get the data type of a port (as a URI).
- *
- * The only data type included in the core LV2 specification is lv2:float.
- * Compare this return value with SLV2_DATA_TYPE_FLOAT to check for it.
- *
- * Returned string must be free()'d by caller.
- */
-char*
-slv2_port_get_data_type(SLV2Plugin* plugin,
-                        SLV2PortID  id);
 
 
 /** Get the default value of a port.

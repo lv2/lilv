@@ -181,8 +181,6 @@ create_port(struct JackHost* host,
 
 	slv2_instance_connect_port(host->instance, port_index, NULL);
 
-	char* type_str = slv2_port_get_data_type(host->plugin, port->id);
-
 	/* Get the port symbol (label) for console printing */
 	char* symbol = slv2_port_get_symbol(host->plugin, port->id);
 
@@ -224,7 +222,6 @@ create_port(struct JackHost* host,
 	}
 
 	free(symbol);
-	free(type_str);
 }
 
 
