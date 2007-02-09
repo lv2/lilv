@@ -201,19 +201,20 @@ typedef struct _LV2_Descriptor {
   /** Function pointer that connects a port on a plugin instance to a memory
    * location where the block of data for the port will be read/written.
    *
-   * The data location is expected to be an array of void * (typically
-   * float *) for audio ports or a single void * value for control
-   * ports. Memory issues are managed by the host. The plugin must
-   * read/write the data at these locations every time run() is called
-   * and the data present at the time of this connection call MUST NOT
-   * be considered meaningful.
+   * The data location is expected to be of the type defined in the
+   * plugin's data file (e.g. an array of float for an lv2:AudioPort).
+   * Memory issues are managed by the host. The plugin must read/write
+   * the data at these locations every time run() is called, data
+   * present at the time of this connection call MUST NOT be
+   * considered meaningful.
    *
    * connect_port() may be called more than once for a plugin instance
    * to allow the host to change the buffers that the plugin is reading
    * or writing. These calls may be made before or after activate()
-   * or deactivate() calls.
+   * or deactivate() calls.  Note that there may be realtime constraints
+   * on connect_port (see lv2:hardRTCapable in lv2.ttl).
    *
-   * connect_port() must be called at least once for each port before
+   * connect_port() MUST be called at least once for each port before
    * run() is called.  The plugin must pay careful attention to the block
    * size passed to the run function as the block allocated may only just
    * be large enough to contain the block of data (typically samples), and
@@ -221,7 +222,7 @@ typedef struct _LV2_Descriptor {
    *
    * Plugin writers should be aware that the host may elect to use the
    * same buffer for more than one port and even use the same buffer for
-   * both input and output (see lv2:inplaceBroken in lv2.ttl).
+   * both input and output (see lv2:inPlaceBroken in lv2.ttl).
    * However, overlapped buffers or use of a single buffer for both
    * audio and control data may result in unexpected behaviour.
    *

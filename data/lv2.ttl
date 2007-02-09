@@ -47,8 +47,8 @@
    doap:maintainer [
        a foaf:Person ;
        foaf:name "Steve Harris" ;
-       foaf:homepage <http://inanna.ecs.soton.ac.uk> ;
-       rdfs:seeAlso <http://inanna.ecs.soton.ac.uk/swh.xrdf>
+       foaf:homepage <http://plugin.org.uk/> ;
+       rdfs:seeAlso <http://plugin.org.uk/swh.xrdf>
    ] , [
        a foaf:Person ;
        foaf:name "Dave Robillard" ;
@@ -99,7 +99,11 @@ type of the port (e.g. :AudioPort).
 
 Hosts that do not support a specific port class MUST NOT instantiate the
 plugin, unless that port has the connectionOptional hint set (in which case
-the host can simply "connect" that port to NULL).
+the host can simply "connect" that port to NULL).  If a host is interested
+in plugins to insert in a certain signal path (e.g. stereo audio), it SHOULD
+consider all the classes of a port to determine which ports are most suitable
+for connection (e.g. by ignoring ports with additional classes the host does
+not recognize).
 """ .
 
 :InputPort a rdfs:Class ;
@@ -131,8 +135,8 @@ to the 32bit IEEE-754 floating point specification.
     rdfs:subClassOf :Port ;
     rdfs:comment    """
 Ports of this type will be connected to an array of length SampleCount
-conforming to the 32bit IEEE-754 floating point specification,
-representing an audio waveform (i.e. suitable for speaker playback). """ .
+conforming to the 32bit IEEE-754 floating point specification.
+""" .
 
 
 
@@ -357,7 +361,24 @@ socket) and so its output must not be cached or subject to significant latency,
 and calls to the run method should be done in rapid succession.
 """ .
 
-:hardRTCapable a :PluginProperty ;
+:inPlaceBroken a :PluginProperty ;
+    rdfs:label   "in-place broken" ;
+    rdfs:comment """
+Indicates that the plugin may cease to work correctly if the host elects to use
+the same data location for both input and output.  Plugins that will fail to
+work correctly if ANY input buffer is set to the same location as ANY output
+buffer (with connect_port()) MUST set this property.  Doing so should be
+avoided as enabling this flag makes it impossible for hosts to use the plugin
+to process audio "in-place".
+""" .
+
+
+
+########################
+# Standard PluginHints #
+########################
+
+:hardRTCapable a :PluginHint ;
     rdfs:label   "Hard realtime capable" ;
     rdfs:comment """
 Indicates that the plugin is capable of running not only in a conventional host
@@ -384,17 +405,6 @@ satisfy all of the following:
     signals or plugin state. The host is left the responsibility to perform 
     timings to estimate upper bounds for A and B. The plugin will also take an
     approximately constant amount of time to execute a connect_port() call.
-""" .
-
-:inplaceBroken a :PluginProperty ;
-    rdfs:label   "in-place broken" ;
-    rdfs:comment """
-Indicates that the plugin may cease to work correctly if the host elects to use
-the same data location for both input and output.  Plugins that will fail to
-work correctly if ANY input buffer is set to the same location as ANY output
-buffer (with connect_port()) MUST set this property.  Doing so should be
-avoided as enabling this flag makes it impossible for hosts to use the plugin
-to process audio "in-place".
 """ .
 
 
