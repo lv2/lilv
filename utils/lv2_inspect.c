@@ -27,9 +27,37 @@ print_port(SLV2Plugin* p, uint32_t index)
 	SLV2PortID id = slv2_port_by_index(index);
 
 	char* str = NULL;
+	SLV2PortClass cl = SLV2_UNKNOWN_PORT_CLASS;
 
 	printf("\n\tPort %d:\n", index);
 	
+	cl = slv2_port_get_class(p, id);
+	printf("\t\tClass: ");
+	switch (cl) {
+	case SLV2_CONTROL_INPUT:
+		printf("Control input");
+		break;
+	case SLV2_CONTROL_OUTPUT:
+		printf("Control output");
+		break;
+	case SLV2_AUDIO_INPUT:
+		printf("Audio input");
+		break;
+	case SLV2_AUDIO_OUTPUT:
+		printf("Audio output");
+		break;
+	case SLV2_MIDI_INPUT:
+		printf("MIDI input");
+		break;
+	case SLV2_MIDI_OUTPUT:
+		printf("MIDI output");
+		break;
+	case SLV2_UNKNOWN_PORT_CLASS:
+		printf("Unknown");
+		break;
+	}
+
+	printf("\n");
 	str = slv2_port_get_symbol(p, id);
 	printf("\t\tSymbol: %s\n", str);
 	free(str);
@@ -37,6 +65,13 @@ print_port(SLV2Plugin* p, uint32_t index)
 	str = slv2_port_get_name(p, id);
 	printf("\t\tName: %s\n", str);
 	free(str);
+
+	if (cl == SLV2_CONTROL_INPUT ||
+	    cl == SLV2_CONTROL_OUTPUT) {
+		printf("\t\tMinimum: %f\n", slv2_port_get_minimum_value(p, id));
+		printf("\t\tMaximum: %f\n", slv2_port_get_maximum_value(p, id));
+		printf("\t\tDefault: %f\n", slv2_port_get_default_value(p, id));
+	}
 }
 
 

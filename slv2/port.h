@@ -89,7 +89,7 @@ slv2_port_get_name(SLV2Plugin* plugin,
 
 /** Get the class (direction and rate) of a port.
  */
-enum SLV2PortClass
+SLV2PortClass
 slv2_port_get_class(SLV2Plugin* plugin,
                     SLV2PortID  id);
 

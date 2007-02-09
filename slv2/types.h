@@ -48,30 +48,28 @@ slv2_value_free(SLV2Value);
 /** Port ID type, to allow passing either symbol or index
  * to port related functions.
  */
-struct _PortID {
+typedef struct _PortID {
 	bool        is_index; /**< Otherwise, symbol */
 	uint32_t    index;
 	const char* symbol;
-};
-
-typedef struct _PortID SLV2PortID;
+} SLV2PortID;
 
 
-/** Class (direction and rate) of a port */
-enum SLV2PortClass {
+/** Class (direction and type) of a port
+ *
+ * Note that ports may be of other classes not listed here, this is just
+ * to make the most common case simple.  Use slv2_port_get_value(p, "rdf:type")
+ * if you need further class information.
+ */
+typedef enum _PortClass {
 	SLV2_UNKNOWN_PORT_CLASS,
-	SLV2_CONTROL_RATE_INPUT,  /**< One input value per block */
-	SLV2_CONTROL_RATE_OUTPUT, /**< One output value per block */
-	SLV2_AUDIO_RATE_INPUT,    /**< One input value per frame */
-	SLV2_AUDIO_RATE_OUTPUT    /**< One output value per frame */
-};
-
-
-/** lv2:float, IEEE-754 32-bit floating point number */
-#define SLV2_DATA_TYPE_FLOAT "http://lv2plug.in/ontology#float"
-
-/** MIDI buffer, as defined by lv2-miditype.h */
-#define SLV2_DATA_TYPE_MIDI "http://ll-plugins.nongnu.org/lv2/ext/miditype"
+	SLV2_CONTROL_INPUT,  /**< One input float per block */
+	SLV2_CONTROL_OUTPUT, /**< One output float per block */
+	SLV2_AUDIO_INPUT,    /**< One input float per frame */
+	SLV2_AUDIO_OUTPUT,   /**< One output float per frame */
+	SLV2_MIDI_INPUT,     /**< MIDI input (LL extension) */
+	SLV2_MIDI_OUTPUT     /**< MIDI output (LL extension) */
+} SLV2PortClass;
 
 
 #ifdef __cplusplus

@@ -155,12 +155,6 @@ create_port(struct JackHost* host,
 {
 	SLV2PortID id = slv2_port_by_index(index);
 
-	/* Make sure this is a float port */
-	char* type = slv2_port_get_data_type(host->plugin, id);
-	if (strcmp(type, SLV2_DATA_TYPE_FLOAT))
-		die("Unrecognized data type, aborting.");
-	free(type);
-
 	/* Get the port symbol (label) for console printing */
 	char* symbol = slv2_port_get_symbol(host->plugin, id);
 	
@@ -169,27 +163,28 @@ create_port(struct JackHost* host,
 	host->controls[index]   = 0.0f;
 	
 	/* Get the 'class' of the port (control input, audio output, etc) */
-	enum SLV2PortClass class = slv2_port_get_class(host->plugin, id);
+	SLV2PortClass class = slv2_port_get_class(host->plugin, id);
 	
 	/* Connect the port based on it's 'class' */
 	switch (class) {
-	case SLV2_CONTROL_RATE_INPUT:
+	case SLV2_CONTROL_INPUT:
 		host->controls[index] = slv2_port_get_default_value(host->plugin, id);
 		slv2_instance_connect_port(host->instance, index, &host->controls[index]);
 		printf("Set %s to %f\n", symbol, host->controls[index]);
 		break;
-	case SLV2_CONTROL_RATE_OUTPUT:
+	case SLV2_CONTROL_OUTPUT:
 		slv2_instance_connect_port(host->instance, index, &host->controls[index]);
 		break;
-	case SLV2_AUDIO_RATE_INPUT:
+	case SLV2_AUDIO_INPUT:
 		host->jack_ports[index] = jack_port_register(host->jack_client,
 			symbol, JACK_DEFAULT_AUDIO_TYPE, JackPortIsInput, 0);
 		break;
-	case SLV2_AUDIO_RATE_OUTPUT:
+	case SLV2_AUDIO_OUTPUT:
 		host->jack_ports[index] = jack_port_register(host->jack_client,
 			symbol, JACK_DEFAULT_AUDIO_TYPE, JackPortIsOutput, 0);
 		break;
 	default:
+		// Simple examples don't have to be robust :)
 		die("ERROR: Unknown port type, aborting messily!");
 	}
 

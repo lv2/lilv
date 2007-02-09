@@ -49,7 +49,7 @@ slv2_port_by_symbol(const char* symbol)
 }
 
 
-enum SLV2PortClass
+SLV2PortClass
 slv2_port_get_class(SLV2Plugin* p,
                     SLV2PortID  id)
 {
@@ -57,20 +57,39 @@ slv2_port_get_class(SLV2Plugin* p,
 	assert(class);
 	assert(class->num_values > 0);
 	assert(class->values);
-	
-	enum SLV2PortClass ret;
-	
-	if (!strcmp((char*)class->values[0], "http://lv2plug.in/ontology#ControlRateInputPort"))
-		ret = SLV2_CONTROL_RATE_INPUT;
-	else if (!strcmp((char*)class->values[0], "http://lv2plug.in/ontology#ControlRateOutputPort"))
-		ret = SLV2_CONTROL_RATE_OUTPUT;
-	else if (!strcmp((char*)class->values[0], "http://lv2plug.in/ontology#AudioRateInputPort"))
-		ret = SLV2_AUDIO_RATE_INPUT;
-	else if (!strcmp((char*)class->values[0], "http://lv2plug.in/ontology#AudioRateOutputPort"))
-		ret = SLV2_AUDIO_RATE_OUTPUT;
-	else {
-		fprintf(stderr, "Unknown port class: %s\n", class->values[0]);
-		ret = SLV2_UNKNOWN_PORT_CLASS;
+
+	SLV2PortClass ret = SLV2_UNKNOWN_PORT_CLASS;
+
+	int io = -1; // 0 = in, 1 = out
+	enum { UNKNOWN, AUDIO, CONTROL, MIDI } type = UNKNOWN;
+
+	for (size_t i=0; i < class->num_values; ++i) {
+		if (!strcmp((char*)class->values[i], "http://lv2plug.in/ontology#InputPort"))
+			io = 0;
+		else if (!strcmp((char*)class->values[i], "http://lv2plug.in/ontology#OutputPort"))
+			io = 1;
+		else if (!strcmp((char*)class->values[i], "http://lv2plug.in/ontology#ControlPort"))
+			type = CONTROL;
+		else if (!strcmp((char*)class->values[i], "http://lv2plug.in/ontology#AudioPort"))
+			type = AUDIO;
+		else if (!strcmp((char*)class->values[i], "http://ll-plugins.nongnu.org/lv2/ext/MidiPort"))
+			type = MIDI;
+	}
+
+	if (io == 0) {
+		if (type == AUDIO)
+			ret = SLV2_AUDIO_INPUT;
+		else if (type == CONTROL)
+			ret = SLV2_CONTROL_INPUT;
+		else if (type == MIDI)
+			ret = SLV2_MIDI_INPUT;
+	} else if (io == 1) {
+		if (type == AUDIO)
+			ret = SLV2_AUDIO_OUTPUT;
+		else if (type == CONTROL)
+			ret = SLV2_CONTROL_OUTPUT;
+		else if (type == MIDI)
+			ret = SLV2_MIDI_OUTPUT;
 	}
 
 	slv2_value_free(class);
