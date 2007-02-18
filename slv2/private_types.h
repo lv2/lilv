@@ -25,13 +25,17 @@ extern "C" {
 
 #include <stdbool.h>
 #include <stddef.h>
+#include <raptor.h>
 #include <slv2/lv2.h>
 
 
-/* If you're a user of SLV2, stop reading this file RIGHT NOW.
+/* @file private_types.h
+ *
+ * If you're a user of SLV2, stop reading this RIGHT NOW :)
  * Unfortunately it needs to be exposed to allow inlining of some things that
- * really need to be inlined, but these are opaque types.  Don't even think
- * about writing code that depends on any information here :)
+ * really need to be inlined, but these are opaque types.
+ *
+ * DO NOT WRITE CODE THAT DEPENDS ON DEFINITIONS IN THIS FILE
  */
 
 
@@ -41,10 +45,10 @@ extern "C" {
  * paths of relevant files, the actual data therein isn't loaded into memory.
  */
 struct _Plugin {
-	char* plugin_uri;
-	char* bundle_url; // Bundle directory plugin was loaded from
-	char* data_url;   // rdfs::seeAlso
-	char* lib_url;    // lv2:binary
+	char*            plugin_uri;
+	char*            bundle_url; // Bundle directory plugin was loaded from
+	raptor_sequence* data_uris;   // rdfs::seeAlso
+	char*            lib_uri;    // lv2:binary
 };
 
 
@@ -63,6 +67,11 @@ struct _PluginList {
 	size_t           num_plugins;
 	struct _Plugin** plugins;
 };
+
+
+typedef raptor_sequence* SLV2URIList;
+
+SLV2URIList slv2_uri_list_new();
 
 
 #ifdef __cplusplus

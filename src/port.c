@@ -24,7 +24,7 @@
 #include <slv2/port.h>
 #include <slv2/types.h>
 #include <slv2/query.h>
-#include "util.h"
+#include <slv2/util.h>
 
 
 SLV2PortID
@@ -111,8 +111,8 @@ slv2_port_get_value(SLV2Plugin* p,
 		char index_str[16];
 		snprintf(index_str, (size_t)16, "%u", id.index);
 
-		char* query = strjoin(
-				"SELECT DISTINCT ?value FROM data: WHERE { \n"
+		char* query = slv2_strjoin(
+				"SELECT DISTINCT ?value WHERE { \n"
 				"plugin: lv2:port ?port . \n"
 				"?port lv2:index ", index_str, " ;\n\t",
 				property, "  ?value . \n}\n", NULL);
@@ -122,8 +122,8 @@ slv2_port_get_value(SLV2Plugin* p,
 		free(query);
 	} else {
 
-		char* query = strjoin(
-				"SELECT DISTINCT ?value FROM data: WHERE { \n"
+		char* query = slv2_strjoin(
+				"SELECT DISTINCT ?value WHERE { \n"
 				"plugin: lv2:port ?port . \n"
 				"?port lv2:symbol ", id.symbol, " ;\n\t",
 				       property, "   ?value . \n}\n", NULL);

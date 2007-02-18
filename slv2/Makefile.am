@@ -10,4 +10,5 @@ slv2include_HEADERS = \
 	query.h \
 	port.h \
 	pluginlist.h \
-	plugininstance.h
+	plugininstance.h \
+	util.h

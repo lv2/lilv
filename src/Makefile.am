@@ -12,4 +12,5 @@ libslv2_la_SOURCES = \
 	pluginlist.c \
 	util.c \
 	plugininstance.c  \
-	library.c
+	library.c \
+	types.c

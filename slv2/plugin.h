@@ -48,11 +48,11 @@ typedef const struct _Plugin SLV2Plugin;
  * and will not work with libslv2 (eg plugins missing required fields, or
  * having multiple values for mandatory single-valued fields, etc.
  * 
- * Note that normal hosts do not need to worry about this - libslv2 does not
+ * Note that normal hosts do NOT need to use this - slv2 does not
  * load invalid plugins into plugin lists.  This is included for plugin
  * testing utilities, etc.
  *
- * \return True if \a plugin is valid.
+ * \return true if \a plugin is valid.
  */
 bool
 slv2_plugin_verify(const SLV2Plugin* plugin);
@@ -87,43 +87,28 @@ const char*
 slv2_plugin_get_uri(const SLV2Plugin* plugin);
 
 
-/** Get the URL of the RDF data file plugin information is located in.
+/** Get the (resolvable) URIs of the RDF data files that define a plugin.
  *
- * Only file: URL's are supported at this time.
+ * Note this always returns fully qualified URIs.  If you want local
+ * filesystem paths, use slv2_uri_to_path.
  *
  * \return a complete URL eg. "file:///usr/foo/SomeBundle.lv2/someplug.ttl",
  * which is shared and must not be modified or free()'d.
  */
-const char*
-slv2_plugin_get_data_url(const SLV2Plugin* plugin);
+SLV2URIList
+slv2_plugin_get_data_uris(const SLV2Plugin* plugin);
 
 
-/** Get the local filesystem path of the RDF data file for \a plugin.
+/** Get the (resolvable) URI of the shared library for \a plugin.
  *
- * \return a valid path on the local filesystem
- * eg. "/usr/foo/SomeBundle.lv2/someplug.ttl" which is shared and must not
- * be free()'d; or NULL if URL is not a local filesystem path.
- */
-const char*
-slv2_plugin_get_data_path(const SLV2Plugin* plugin);
-
-
-/** Get the URL of the shared library for \a plugin.
+ * Note this always returns a fully qualified URI.  If you want a local
+ * filesystem path, use slv2_uri_to_path.
  *
  * \return a shared string which must not be modified or free()'d.
  */
 const char*
-slv2_plugin_get_library_url(const SLV2Plugin* plugin);
+slv2_plugin_get_library_uri(const SLV2Plugin* plugin);
 
-
-/** Get the local filesystem path of the shared library for \a plugin.
- *
- * \return a valid path on the local filesystem
- * eg. "/usr/foo/SomeBundle.lv2/someplug.so" which is shared and must not
- * be free()'d; or NULL if URL is not a local filesystem path.
- */
-const char*
-slv2_plugin_get_library_path(const SLV2Plugin* plugin);
 
 
 /** Get the name of \a plugin.

@@ -16,27 +16,36 @@
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include <util.h>
+#define _XOPEN_SOURCE 500
 #include <stdlib.h>
 #include <assert.h>
 #include <slv2/plugin.h>
 #include <slv2/query.h>
 #include <slv2/library.h>
+#include <slv2/util.h>
 
 
 char*
 slv2_query_header(const SLV2Plugin* p)
 {
 	const char* const plugin_uri = slv2_plugin_get_uri(p);
-	const char* const data_file_url = slv2_plugin_get_data_url(p);
+	//SLV2URIList files = slv2_plugin_get_data_uris(p);
 
-	char* query_string = strjoin(
+	char* query_string = slv2_strjoin(
 	  "PREFIX rdf:    <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n"
 	  "PREFIX rdfs:   <http://www.w3.org/2000/01/rdf-schema#>\n"
 	  "PREFIX doap:   <http://usefulinc.com/ns/doap#>\n"
 	  "PREFIX lv2:    <http://lv2plug.in/ontology#>\n"
-	  "PREFIX plugin: <", plugin_uri, ">\n",
-	  "PREFIX data:   <", data_file_url, ">\n\n", NULL);
+	  "PREFIX plugin: <", plugin_uri, ">\n", NULL);
+
+	/*for (int i=0; i < slv2_uri_list_size(files); ++i) {
+		const char* file_uri = slv2_uri_list_get_at(files, i);
+		slv2_strappend(&query_string, "PREFIX data: <");
+		slv2_strappend(&query_string, file_uri);
+		slv2_strappend(&query_string, ">\n");
+	}*/
+
+	slv2_strappend(&query_string, "\n");
 
 	return query_string;
 }
@@ -49,7 +58,7 @@ slv2_query_lang_filter(const char* variable)
 	char* const lang = (char*)getenv("LANG");
 	if (lang) {
 		// FILTER( LANG(?value) = "en" || LANG(?value) = "" )
-		result = strjoin(
+		result = slv2_strjoin(
 			//"FILTER (lang(?value) = \"", lang, "\"\n"), 0);
 			"FILTER( lang(?", variable, ") = \"", lang, 
 			"\" || lang(?", variable, ") = \"\" )\n", NULL);
@@ -114,7 +123,7 @@ slv2_plugin_query(SLV2Plugin* plugin,
 	rasqal_query *rq = rasqal_new_query("sparql", NULL);
 	
 	char* header    = slv2_query_header(plugin);
-	char* query_str = strjoin(header, sparql_str, NULL);
+	char* query_str = slv2_strjoin(header, sparql_str, NULL);
 
 	//printf("Query: \n%s\n\n", query_str);
 
@@ -123,6 +132,14 @@ slv2_plugin_query(SLV2Plugin* plugin,
 	// Add LV2 ontology to query sources
 	rasqal_query_add_data_graph(rq, slv2_ontology_uri, 
 		NULL, RASQAL_DATA_GRAPH_BACKGROUND);
+	
+	// Add all plugin data files to query sources
+	for (int i=0; i < slv2_uri_list_size(plugin->data_uris); ++i) {
+		const char* file_uri_str = slv2_uri_list_get_at(plugin->data_uris, i);
+		raptor_uri* file_uri = raptor_new_uri((const unsigned char*)file_uri_str);
+		rasqal_query_add_data_graph(rq, file_uri,
+			NULL, RASQAL_DATA_GRAPH_BACKGROUND);
+	}
 
 	rasqal_query_results* results = rasqal_query_execute(rq);
 	assert(results);
@@ -163,7 +180,7 @@ slv2_query_count_results(const SLV2Plugin* p,
                          const char*       query)
 {
 	char* header    = slv2_query_header(p);
-	char* query_str = strjoin(header, query, NULL);
+	char* query_str = slv2_strjoin(header, query, NULL);
 
 	assert(p);
 	assert(query_str);

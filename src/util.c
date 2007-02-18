@@ -18,15 +18,15 @@
 
 #define _XOPEN_SOURCE 500
 
-#include <util.h>
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
 #include <stdarg.h>
+#include <slv2/util.h>
 
 
 void
-strappend(char** dst, const char* suffix)
+slv2_strappend(char** dst, const char* suffix)
 {
 	assert(dst);
 	assert(*dst);
@@ -40,7 +40,7 @@ strappend(char** dst, const char* suffix)
 
 
 char*
-strjoin(const char* first, ...)
+slv2_strjoin(const char* first, ...)
 {
 	size_t  len    = strlen(first);
 	char*   result = NULL;
@@ -73,23 +73,14 @@ strjoin(const char* first, ...)
 }
 
 
-/** Convert a URL to a local filesystem path (ie by chopping off the
- * leading "file://".
- *
- * Returns NULL if URL is not a valid URL on the local filesystem.
- * Result is simply a pointer in to \a url and must not be free()'d.
- */
 const char*
-url2path(const char* const url)
+slv2_uri_to_path(const char* uri)
 {
-	/*assert(strlen((char*)url) > 8);
-	char* result = calloc(strlen((char*)url)-7+1, sizeof(char));
-	strcpy(result, (char*)url+7);
-	return result;*/
-	if (!strncmp((char*)url, "file://", (size_t)7))
-		return (char*)url + 7;
+	if (!strncmp(uri, "file://", (size_t)7))
+		return (char*)(uri + 7);
 	else
 		return NULL;
 }
+
 
 

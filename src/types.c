@@ -16,37 +16,39 @@
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef __UTIL_H
-#define __UTIL_H
-
-#define _XOPEN_SOURCE 500
 #include <string.h>
-
-#include <stdarg.h>
+#include <stdlib.h>
+#include <raptor.h>
 #include <slv2/types.h>
 
 
-/** Append \a suffix to \a *dst, reallocating \a dst as necessary.
- *
- * \a dst will (possibly) be freed, it must be dynamically allocated with malloc
- * or NULL.
- */
-void
-strappend(char** dst, const char* suffix);
+SLV2URIList
+slv2_uri_list_new()
+{
+	return raptor_new_sequence(&free, NULL);
+}
 
 
-/** Join all arguments into one string.
- *
- * Arguments are not modified, return value must be free()'d.
- */
-char*
-strjoin(const char* first, ...);
+int
+slv2_uri_list_size(const SLV2URIList list)
+{
+	return raptor_sequence_size(list);
+}
+
 
 char*
-vstrjoin(const char** first, va_list args_list);
+slv2_uri_list_get_at(const SLV2URIList list, int index)
+{
+	return (char*)raptor_sequence_get_at(list, index);
+}
 
-const char*
-url2path(const char* const url);
 
-
-#endif
+bool
+slv2_uri_list_contains(const SLV2URIList list, const char* uri)
+{
+	for (int i=0; i < slv2_uri_list_size(list); ++i)
+		if (!strcmp(slv2_uri_list_get_at(list, i), uri))
+			return true;
+	
+	return false;
+}

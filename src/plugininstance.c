@@ -25,7 +25,7 @@
 #include <slv2/types.h>
 #include <slv2/plugin.h>
 #include <slv2/plugininstance.h>
-#include "util.h"
+#include <slv2/util.h>
 
 
 SLV2Instance*
@@ -41,14 +41,14 @@ slv2_plugin_instantiate(const SLV2Plugin*        plugin,
 		host_features[0] = NULL;
 	}
 	
-	const char* const lib_path = slv2_plugin_get_library_path(plugin);
-	if (!lib_path)
+	const char* const lib_uri = slv2_plugin_get_library_uri(plugin);
+	if (!lib_uri || slv2_uri_to_path(lib_uri) == NULL)
 		return NULL;
 	
 	dlerror();
-	void* lib = dlopen((char*)lib_path, RTLD_NOW);
+	void* lib = dlopen(slv2_uri_to_path(lib_uri), RTLD_NOW);
 	if (!lib) {
-		fprintf(stderr, "Unable to open library %s (%s)\n", lib_path, dlerror());
+		fprintf(stderr, "Unable to open library %s (%s)\n", lib_uri, dlerror());
 		return NULL;
 	}
 
@@ -56,20 +56,20 @@ slv2_plugin_instantiate(const SLV2Plugin*        plugin,
 
 	if (!df) {
 		fprintf(stderr, "Could not find symbol 'lv2_descriptor', "
-				"%s is not a LV2 plugin.\n", lib_path);
+				"%s is not a LV2 plugin.\n", lib_uri);
 		dlclose(lib);
 		return NULL;
 	} else {
 		// Search for plugin by URI
 		
-		const char* const bundle_path = url2path(plugin->bundle_url);
+		const char* const bundle_path = slv2_uri_to_path(plugin->bundle_url);
 		
 		for (uint32_t i=0; 1; ++i) {
 			const LV2_Descriptor* ld = df(i);
 
 			if (!ld) {
 				fprintf(stderr, "Did not find plugin %s in %s\n",
-						plugin->plugin_uri, plugin->lib_url);
+						plugin->plugin_uri, plugin->lib_uri);
 				dlclose(lib);
 				break; // return NULL
 			} else if (!strcmp(ld->URI, (char*)plugin->plugin_uri)) {

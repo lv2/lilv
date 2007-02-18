@@ -28,9 +28,24 @@
 #include <slv2/types.h>
 #include <slv2/plugin.h>
 #include <slv2/pluginlist.h>
-#include "util.h"
+#include <slv2/util.h>
 
 
+/* not exposed */
+struct _Plugin*
+slv2_plugin_new()
+{
+	struct _Plugin* result = malloc(sizeof(struct _Plugin));
+	result->plugin_uri = NULL;
+	result->bundle_url = NULL;
+	result->lib_uri    = NULL;
+	
+	result->data_uris = slv2_uri_list_new();
+
+	return result;
+}
+
+	
 struct _PluginList*
 slv2_list_new()
 {
@@ -62,17 +77,24 @@ slv2_list_load_all(SLV2List list)
     } else {
         const char* const home = getenv("HOME");
         const char* const suffix = "/.lv2:/usr/local/lib/lv2:usr/lib/lv2";
-        slv2_path = strjoin(home, suffix, NULL);
+        slv2_path = slv2_strjoin(home, suffix, NULL);
 		
 		fprintf(stderr, "$LV2_PATH is unset.  Using default path %s\n", slv2_path);
-	    slv2_list_load_path(list, slv2_path);
+	    
+		/* pass 1: find all plugins */
+		slv2_list_load_path(list, slv2_path);
+		
+		/* pass 2: find all data files for plugins */
+		slv2_list_load_path(list, slv2_path);
 
         free(slv2_path);
 	}
 }
 
 
-/* This is the parser for manifest.ttl */
+/* This is the parser for manifest.ttl
+ * This is called twice on each bundle in the discovery process, which is (much) less
+ * efficient than it could be.... */
 void
 slv2_list_load_bundle(SLV2List    list,
                       const char* bundle_base_url)
@@ -89,14 +111,11 @@ slv2_list_load_bundle(SLV2List    list,
 	raptor_uri *base_url = raptor_new_uri(manifest_url);
 	rasqal_query *rq = rasqal_new_query("sparql", NULL);
 
+	/* Get all plugins explicitly mentioned in the manifest (discovery pass 1) */
 	char* query_string =
-	    "PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> \n"
-    	"PREFIX :     <http://lv2plug.in/ontology#> \n\n"
-    		 
-    	"SELECT DISTINCT $plugin_uri $data_url $lib_url FROM <> WHERE { \n"
-    	"$plugin_uri  :binary  $lib_url . \n"
-    	"OPTIONAL { $plugin_uri  rdfs:seeAlso  $data_url } \n"
-	"} \n";
+    	"PREFIX :     <http://lv2plug.in/ontology#>\n\n"
+		"SELECT DISTINCT ?plugin_uri FROM <>\n"
+		"WHERE { ?plugin_uri a :Plugin }\n";
 
 	//printf("%s\n\n", query_string);  
 	
@@ -104,48 +123,80 @@ slv2_list_load_bundle(SLV2List    list,
 	results = rasqal_query_execute(rq);
 	
 	while (!rasqal_query_results_finished(results)) {
+		
+		rasqal_literal* literal = rasqal_query_results_get_binding_value(results, 0);
+		assert(literal);
 
-		// Create a new plugin
-		struct _Plugin* new_plugin = malloc(sizeof(struct _Plugin));
-		new_plugin->bundle_url = strdup(bundle_base_url);
-		
-		rasqal_literal* literal = NULL;
-	
-		literal = rasqal_query_results_get_binding_value_by_name(results, (const unsigned char*)"plugin_uri");
-		assert(literal);
-		new_plugin->plugin_uri = strdup((const char*)rasqal_literal_as_string(literal));
-		
-		literal = rasqal_query_results_get_binding_value_by_name(results, (const unsigned char*)"lib_url");
-		assert(literal);
-		new_plugin->lib_url = strdup((const char*)rasqal_literal_as_string(literal));
-		
-		literal = rasqal_query_results_get_binding_value_by_name(results, (const unsigned char*)"data_url");
-		if (literal)
-			new_plugin->data_url = strdup((const char*)rasqal_literal_as_string(literal));
-		else
-			new_plugin->data_url = strdup((const char*)manifest_url);
-		
-		/* Add the plugin if it's valid */
-		if (new_plugin->lib_url && new_plugin->data_url && new_plugin->plugin_uri
-				&& slv2_plugin_verify(new_plugin)) {
-			/* Yes, this is disgusting, but it doesn't seem there's a way to know
-			 * how many matches there are before iterating over them */
+		if (!slv2_list_get_plugin_by_uri(list, (const char*)rasqal_literal_as_string(literal))) {
+			/* Create a new plugin */
+			struct _Plugin* new_plugin = slv2_plugin_new();
+			new_plugin->plugin_uri = strdup((const char*)rasqal_literal_as_string(literal));
+			new_plugin->bundle_url = strdup(bundle_base_url);
+			raptor_sequence_push(new_plugin->data_uris, strdup((const char*)manifest_url));
+
+			/* And add it to the list
+			 * Yes, this is disgusting, but it doesn't seem there's a way to know
+			 * how many matches there are before iterating over them.. */
 			list->num_plugins++;
 			list->plugins = realloc(list->plugins,
 				list->num_plugins * sizeof(struct _Plugin*));
 			list->plugins[list->num_plugins-1] = new_plugin;
+
 		}
-
+		
 		rasqal_query_results_next(results);
-	}
-
-	// FIXME: leaks?  rasqal really doesn't handle missing files well..
-	if (results) {
+	}	
+	
+	if (results)
 		rasqal_free_query_results(results);
-		//rasqal_free_query(rq); // FIXME: crashes?  leak?
-		raptor_free_uri(base_url);
+	
+	rasqal_free_query(rq);
+	
+	rq = rasqal_new_query("sparql", NULL);
+	
+	/* Get all data files linked to plugins (discovery pass 2) */
+	query_string =
+		"PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>\n"
+    	"PREFIX :     <http://lv2plug.in/ontology#>\n\n"
+    	"SELECT DISTINCT ?subject ?data_uri ?binary FROM <>\n"
+    	"WHERE { ?subject  rdfs:seeAlso  ?data_uri\n"
+		"OPTIONAL { ?subject :binary ?binary } }\n";
+
+	//printf("%s\n\n", query_string);  
+	
+	rasqal_query_prepare(rq, (unsigned char*)query_string, base_url);
+	results = rasqal_query_execute(rq);
+
+	while (!rasqal_query_results_finished(results)) {
+
+		const char* subject = (const char*)rasqal_literal_as_string(
+				rasqal_query_results_get_binding_value(results, 0));
+
+		const char* data_uri = (const char*)rasqal_literal_as_string(
+				rasqal_query_results_get_binding_value(results, 1));
+
+		const char* binary = (const char*)rasqal_literal_as_string(
+				rasqal_query_results_get_binding_value(results, 2));
+
+		struct _Plugin* plugin = slv2_list_get_plugin_by_uri(list, subject);
+
+		if (plugin && data_uri && !slv2_uri_list_contains(plugin->data_uris, data_uri))
+			raptor_sequence_push(plugin->data_uris, strdup(data_uri));
+		
+		if (plugin && binary && !plugin->lib_uri)
+			plugin->lib_uri = strdup(binary);
+		 
+		rasqal_query_results_next(results);
+
 	}
 
+	if (results)
+		rasqal_free_query_results(results);
+	
+	rasqal_free_query(rq);
+		
+
+	raptor_free_uri(base_url);
 	free(manifest_url);
 }
 
@@ -154,7 +205,7 @@ slv2_list_load_bundle(SLV2List    list,
  * (Private helper function, not exposed in public API)
  */
 void
-add_plugins_from_dir(SLV2List list, const char* dir)
+slv2_list_load_dir(SLV2List list, const char* dir)
 {
 	DIR* pdir = opendir(dir);
 	if (!pdir)
@@ -165,8 +216,8 @@ add_plugins_from_dir(SLV2List list, const char* dir)
 		if (!strcmp(pfile->d_name, ".") || !strcmp(pfile->d_name, ".."))
 			continue;
 
-		char* bundle_path = (char*)strjoin(dir, "/", pfile->d_name, NULL);
-		char* bundle_url = (char*)strjoin("file://", dir, "/", pfile->d_name, NULL);
+		char* bundle_path = slv2_strjoin(dir, "/", pfile->d_name, NULL);
+		char* bundle_url = slv2_strjoin("file://", dir, "/", pfile->d_name, NULL);
 		DIR* bundle_dir = opendir(bundle_path);
 
 		if (bundle_dir != NULL) {
@@ -184,21 +235,20 @@ add_plugins_from_dir(SLV2List list, const char* dir)
 
 
 void
-slv2_list_load_path(SLV2List  list,
-                    const char* slv2_path)
+slv2_list_load_path(SLV2List    list,
+                    const char* lv2_path)
 {
-	
-	char* path = (char*)strjoin(slv2_path, ":", NULL);
+	char* path = slv2_strjoin(lv2_path, ":", NULL);
 
 	char* dir = path; // Pointer into path
 	
 	// Go through string replacing ':' with '\0', using the substring,
-	// then replacing it with 'X' and moving on.  eg strtok on crack.
+	// then replacing it with 'X' and moving on.  i.e. strtok on crack.
 	while (strchr(path, ':') != NULL) {
 		char* delim = strchr(path, ':');
 		*delim = '\0';
 		
-		add_plugins_from_dir(list, dir);
+		slv2_list_load_dir(list, dir);
 		
 		*delim = 'X';
 		dir = delim + 1;

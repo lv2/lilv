@@ -22,6 +22,7 @@
 #include <stddef.h>
 #include <stdbool.h>
 #include <stdint.h>
+#include <slv2/private_types.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -72,9 +73,29 @@ typedef enum _PortClass {
 } SLV2PortClass;
 
 
+/** Get the number of elements in a URI list.
+ */
+int
+slv2_uri_list_size(const SLV2URIList list);
+
+
+/** Get a URI from a URI list at the given index.
+ *
+ * @return the element at @index, or NULL if index is out of range.
+ */
+char*
+slv2_uri_list_get_at(const SLV2URIList list, int index);
+
+
+/** Return whether @list contains @uri.
+ */
+bool
+slv2_uri_list_contains(const SLV2URIList list, const char* uri);
+
 #ifdef __cplusplus
 }
 #endif
+
 
 #endif /* __SLV2_TYPES_H__ */
 

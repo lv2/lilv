@@ -82,8 +82,12 @@ print_plugin(SLV2Plugin* p)
 
 	printf("<%s>\n", slv2_plugin_get_uri(p));
 
-	printf("\tData    URL: %s\n", slv2_plugin_get_data_url(p));
-	printf("\tLibrary URL: %s\n\n", slv2_plugin_get_library_url(p));
+	printf("\tData URIs:\n");
+	SLV2URIList data_uris = slv2_plugin_get_data_uris(p);
+	for (int i=0; i < slv2_uri_list_size(data_uris); ++i)
+		printf("\t\t%s\n", slv2_uri_list_get_at(data_uris, i));
+
+	printf("\n\tLibrary URI: %s\n\n", slv2_plugin_get_library_uri(p));
 
 	str = slv2_plugin_get_name(p);
 	printf("\tName: %s\n", str);

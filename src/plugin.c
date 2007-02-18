@@ -16,6 +16,8 @@
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+#define _XOPEN_SOURCE 500
+
 #include <string.h>
 #include <stdlib.h>
 #include <assert.h>
@@ -24,7 +26,7 @@
 #include <slv2/plugin.h>
 #include <slv2/types.h>
 #include <slv2/query.h>
-#include "util.h"
+#include <slv2/util.h>
 
 
 SLV2Plugin*
@@ -34,8 +36,11 @@ slv2_plugin_duplicate(const SLV2Plugin* p)
 	struct _Plugin* result = malloc(sizeof(struct _Plugin));
 	result->plugin_uri = p->plugin_uri;
 	result->bundle_url = p->bundle_url;
-	result->data_url = p->data_url;
-	result->lib_url = p->lib_url;
+	result->lib_uri = p->lib_uri;
+	
+	result->data_uris = slv2_uri_list_new();
+	for (int i=0; i < slv2_uri_list_size(p->data_uris); ++i)
+		raptor_sequence_push(result->data_uris, strdup(slv2_uri_list_get_at(p->data_uris, i)));
 	return result;
 }
 
@@ -48,41 +53,19 @@ slv2_plugin_get_uri(const SLV2Plugin* p)
 }
 
 
-const char*
-slv2_plugin_get_data_url(const SLV2Plugin* p)
+SLV2URIList
+slv2_plugin_get_data_uris(const SLV2Plugin* p)
 {
 	assert(p);
-	return p->data_url;
+	return p->data_uris;
 }
 
 
 const char*
-slv2_plugin_get_data_path(const SLV2Plugin* p)
+slv2_plugin_get_library_uri(const SLV2Plugin* p)
 {
 	assert(p);
-	if (!strncmp((char*)p->data_url, "file://", (size_t)7))
-		return (p->data_url) + 7;
-	else
-		return NULL;
-}
-
-
-const char*
-slv2_plugin_get_library_url(const SLV2Plugin* p)
-{
-	assert(p);
-	return p->lib_url;
-}
-
-
-const char*
-slv2_plugin_get_library_path(const SLV2Plugin* p)
-{
-	assert(p);
-	if (!strncmp((char*)p->lib_url, "file://", (size_t)7))
-		return (p->lib_url) + 7;
-	else
-		return NULL;
+	return p->lib_uri;
 }
 
 
@@ -136,9 +119,9 @@ slv2_plugin_get_value(const SLV2Plugin* p,
 	char* header = slv2_query_header(p);
 	char* lang_filter = slv2_query_lang_filter("?value");
 	
-	char* query_string = strjoin(
+	char* query_string = slv2_strjoin(
 		header,
-		"SELECT DISTINCT ?value FROM data: WHERE { \n",
+		"SELECT DISTINCT ?value WHERE { \n",
 		"plugin: ", property, " ?value . \n",
 		((lang_filter != NULL) ? lang_filter : ""),
 		"}", 0);
@@ -146,8 +129,8 @@ slv2_plugin_get_value(const SLV2Plugin* p,
 	free(header);
 	free(lang_filter);*/
 
-    char* query = strjoin(
-		"SELECT DISTINCT ?value FROM data: WHERE {\n"
+    char* query = slv2_strjoin(
+		"SELECT DISTINCT ?value WHERE {\n"
 		"plugin: ", predicate, " ?value .\n"
 		"}\n", NULL);
 
@@ -177,9 +160,8 @@ uint32_t
 slv2_plugin_get_num_ports(const SLV2Plugin* p)
 {
     const char* const query =
-		"SELECT DISTINCT ?value FROM data: WHERE {\n"
-		"plugin: lv2:port ?value .\n"
-		"}\n";
+		"SELECT DISTINCT ?value\n"
+		"WHERE { plugin: lv2:port ?value }\n";
 
 	SLV2Value results = slv2_plugin_simple_query(p, query, "value");
 	
@@ -195,7 +177,7 @@ bool
 slv2_plugin_has_latency(const SLV2Plugin* p)
 {
     const char* const query = 
-		"SELECT DISTINCT ?port FROM data: WHERE {\n"
+		"SELECT DISTINCT ?port WHERE {\n"
 		"	plugin: lv2:port     ?port .\n"
 		"	?port   lv2:portHint lv2:reportsLatency .\n"
 		"}\n";
@@ -214,7 +196,7 @@ uint32_t
 slv2_plugin_get_latency_port(const SLV2Plugin* p)
 {
     const char* const query = 
-		"SELECT DISTINCT ?value FROM data: WHERE {\n"
+		"SELECT DISTINCT ?value WHERE {\n"
 		"	plugin: lv2:port     ?port .\n"
 		"	?port   lv2:portHint lv2:reportsLatency ;\n"
 		"           lv2:index    ?index .\n"
@@ -236,7 +218,7 @@ SLV2Value
 slv2_plugin_get_supported_features(const SLV2Plugin* p)
 {
     const char* const query = 
-		"SELECT DISTINCT ?feature FROM data: WHERE {\n"
+		"SELECT DISTINCT ?feature WHERE {\n"
 		"	{ plugin:  lv2:optionalHostFeature  ?feature }\n"
 		"		UNION\n"
 		"	{ plugin:  lv2:requiredHostFeature  ?feature }\n"
@@ -252,7 +234,7 @@ SLV2Value
 slv2_plugin_get_optional_features(const SLV2Plugin* p)
 {
     const char* const query = 
-		"SELECT DISTINCT ?feature FROM data: WHERE {\n"
+		"SELECT DISTINCT ?feature WHERE {\n"
 		"	plugin:  lv2:optionalHostFeature  ?feature .\n"
 		"}\n";
 
@@ -266,7 +248,7 @@ SLV2Value
 slv2_plugin_get_required_features(const SLV2Plugin* p)
 {
     const char* const query = 
-		"SELECT DISTINCT ?feature FROM data: WHERE {\n"
+		"SELECT DISTINCT ?feature WHERE {\n"
 		"	plugin:  lv2:requiredHostFeature  ?feature .\n"
 		"}\n";
 
