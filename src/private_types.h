@@ -29,16 +29,6 @@ extern "C" {
 #include <slv2/lv2.h>
 
 
-/* @file private_types.h
- *
- * If you're a user of SLV2, stop reading this RIGHT NOW :)
- * Unfortunately it needs to be exposed to allow inlining of some things that
- * really need to be inlined, but these are opaque types.
- *
- * DO NOT WRITE CODE THAT DEPENDS ON DEFINITIONS IN THIS FILE
- */
-
-
 /** Record of an installed/available plugin.
  *
  * A simple reference to a plugin somewhere on the system. This just holds
@@ -52,13 +42,9 @@ struct _Plugin {
 };
 
 
-/** Instance of a plugin (private type) */
-struct _Instance {
-	// FIXME: copy plugin here for convenience?
-	//struct LV2Plugin*   plugin;
-	const LV2_Descriptor* descriptor;
-	void*                 lib_handle;
-	LV2_Handle            lv2_handle;
+/** Pimpl portion of SLV2Instance */
+struct _InstanceImpl {
+	void* lib_handle;
 };
 
 

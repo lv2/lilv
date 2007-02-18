@@ -5,6 +5,7 @@ lib_LTLIBRARIES = libslv2.la
 libslv2_la_LIBADD = @RASQAL_LIBS@
 
 libslv2_la_SOURCES = \
+	private_types.h \
 	util.h \
 	plugin.c \
 	query.c \

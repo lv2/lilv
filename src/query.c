@@ -24,7 +24,7 @@
 #include <slv2/library.h>
 #include <slv2/util.h>
 #include <slv2/stringlist.h>
-#include <slv2/private_types.h>
+#include "private_types.h"
 
 
 char*

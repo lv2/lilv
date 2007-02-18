@@ -21,11 +21,11 @@
 #include <string.h>
 #include <assert.h>
 #include <dlfcn.h>
-#include <slv2/private_types.h>
 #include <slv2/types.h>
 #include <slv2/plugin.h>
 #include <slv2/plugininstance.h>
 #include <slv2/util.h>
+#include "private_types.h"
 
 
 SLV2Instance*
@@ -81,9 +81,12 @@ slv2_plugin_instantiate(const SLV2Plugin*        plugin,
 				result = malloc(sizeof(struct _Instance));
 				/*result->plugin = malloc(sizeof(struct _Plugin));
 				memcpy(result->plugin, plugin, sizeof(struct _Plugin));*/
-				result->descriptor = ld;
-				result->lib_handle = lib;
+				result->lv2_descriptor = ld;
 				result->lv2_handle = ld->instantiate(ld, sample_rate, (char*)bundle_path, host_features);
+				struct _InstanceImpl* impl = malloc(sizeof(struct _InstanceImpl));
+				impl->lib_handle = lib;
+				result->pimpl = impl;
+
 				break;
 			}
 		}
@@ -101,7 +104,7 @@ slv2_plugin_instantiate(const SLV2Plugin*        plugin,
 
 	// "Connect" all ports to NULL (catches bugs)
 	for (uint32_t i=0; i < slv2_plugin_get_num_ports(plugin); ++i)
-		result->descriptor->connect_port(result->lv2_handle, i, NULL);
+		result->lv2_descriptor->connect_port(result->lv2_handle, i, NULL);
 	
 	if (local_host_features)
 		free(host_features);
@@ -114,10 +117,12 @@ void
 slv2_instance_free(SLV2Instance* instance)
 {
 	struct _Instance* i = (struct _Instance*)instance;
-	i->descriptor->cleanup(i->lv2_handle);
-	i->descriptor = NULL;
-	dlclose(i->lib_handle);
-	i->lib_handle = NULL;
+	i->lv2_descriptor->cleanup(i->lv2_handle);
+	i->lv2_descriptor = NULL;
+	dlclose(i->pimpl->lib_handle);
+	i->pimpl->lib_handle = NULL;
+	free(i->pimpl);
+	i->pimpl = NULL;
 	free(i);
 }
 

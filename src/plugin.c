@@ -22,12 +22,12 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <rasqal.h>
-#include <slv2/private_types.h>
 #include <slv2/plugin.h>
 #include <slv2/types.h>
 #include <slv2/query.h>
 #include <slv2/util.h>
 #include <slv2/stringlist.h>
+#include "private_types.h"
 
 
 SLV2Plugin*

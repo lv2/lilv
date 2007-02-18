@@ -22,7 +22,6 @@
 #include <stddef.h>
 #include <stdbool.h>
 #include <stdint.h>
-//#include <slv2/private_types.h>
 
 #ifdef __cplusplus
 extern "C" {
