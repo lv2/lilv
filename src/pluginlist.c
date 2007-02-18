@@ -261,7 +261,7 @@ slv2_plugins_load_path(SLV2Plugins    list,
 }
 
 
-size_t
+unsigned
 slv2_plugins_size(const SLV2Plugins list)
 {
 	assert(list != NULL);
@@ -275,7 +275,7 @@ slv2_plugins_get_by_uri(const SLV2Plugins list, const char* uri)
 	if (list->num_plugins > 0) {	
 		assert(list->plugins != NULL);
 		
-		for (size_t i=0; i < list->num_plugins; ++i)
+		for (unsigned i=0; i < list->num_plugins; ++i)
 			if (!strcmp((char*)list->plugins[i]->plugin_uri, (char*)uri))
 				return list->plugins[i];
 	}
@@ -285,7 +285,7 @@ slv2_plugins_get_by_uri(const SLV2Plugins list, const char* uri)
 
 
 SLV2Plugin*
-slv2_plugins_get_at(const SLV2Plugins list, size_t index)
+slv2_plugins_get_at(const SLV2Plugins list, unsigned index)
 {
 	if (list->num_plugins == 0)
 		return NULL;

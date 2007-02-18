@@ -60,7 +60,7 @@ slv2_port_get_class(SLV2Plugin* p,
 	int io = -1; // 0 = in, 1 = out
 	enum { UNKNOWN, AUDIO, CONTROL, MIDI } type = UNKNOWN;
 
-	for (int i=0; i < slv2_strings_size(class); ++i) {
+	for (unsigned i=0; i < slv2_strings_size(class); ++i) {
 		char* value = slv2_strings_get_at(class, i);
 		if (!strcmp(value, "http://lv2plug.in/ontology#InputPort"))
 			io = 0;

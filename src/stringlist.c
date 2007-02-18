@@ -18,6 +18,7 @@
 
 #include <string.h>
 #include <stdlib.h>
+#include <limits.h>
 #include <raptor.h>
 #include <slv2/stringlist.h>
 
@@ -29,7 +30,7 @@ slv2_strings_new()
 }
 
 
-int
+unsigned
 slv2_strings_size(const SLV2Strings list)
 {
 	return raptor_sequence_size(list);
@@ -37,16 +38,19 @@ slv2_strings_size(const SLV2Strings list)
 
 
 char*
-slv2_strings_get_at(const SLV2Strings list, int index)
+slv2_strings_get_at(const SLV2Strings list, unsigned index)
 {
-	return (char*)raptor_sequence_get_at(list, index);
+	if (index > INT_MAX)
+		return NULL;
+	else
+		return (char*)raptor_sequence_get_at(list, (int)index);
 }
 
 
 bool
 slv2_strings_contains(const SLV2Strings list, const char* uri)
 {
-	for (int i=0; i < slv2_strings_size(list); ++i)
+	for (unsigned i=0; i < slv2_strings_size(list); ++i)
 		if (!strcmp(slv2_strings_get_at(list, i), uri))
 			return true;
 	

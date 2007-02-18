@@ -40,7 +40,7 @@ slv2_plugin_duplicate(const SLV2Plugin* p)
 	result->lib_uri = p->lib_uri;
 	
 	result->data_uris = slv2_strings_new();
-	for (int i=0; i < slv2_strings_size(p->data_uris); ++i)
+	for (unsigned i=0; i < slv2_strings_size(p->data_uris); ++i)
 		raptor_sequence_push(result->data_uris, strdup(slv2_strings_get_at(p->data_uris, i)));
 	return result;
 }

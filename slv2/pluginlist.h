@@ -91,7 +91,7 @@ slv2_plugins_load_all(SLV2Plugins list);
  * Use of this function is \b not recommended.  Use \ref slv2_plugins_load_all.
  */
 void
-slv2_plugins_load_path(SLV2Plugins    list,
+slv2_plugins_load_path(SLV2Plugins list,
                        const char* search_path);
 
 
@@ -108,13 +108,13 @@ slv2_plugins_load_path(SLV2Plugins    list,
  * installed plugins.  Use \ref slv2_plugins_load_all for that.
  */
 void
-slv2_plugins_load_bundle(SLV2Plugins    list,
-                         const char* bundle_base_url);
+slv2_plugins_load_bundle(SLV2Plugins list,
+                         const char* bundle_base_uri);
 
 
 /** Get the number of plugins in the list.
  */
-size_t
+unsigned
 slv2_plugins_size(const SLV2Plugins list);
 
 
@@ -129,7 +129,7 @@ slv2_plugins_size(const SLV2Plugins list);
  */
 const SLV2Plugin*
 slv2_plugins_get_by_uri(const SLV2Plugins list,
-                               const char*    uri);
+                        const char*       uri);
 
 
 /** Get a plugin from the list by index.
@@ -146,7 +146,7 @@ slv2_plugins_get_by_uri(const SLV2Plugins list,
  */
 const SLV2Plugin*
 slv2_plugins_get_at(const SLV2Plugins list,
-                                 size_t         index);
+                    unsigned          index);
 
 
 /** @} */

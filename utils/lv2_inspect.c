@@ -84,7 +84,7 @@ print_plugin(SLV2Plugin* p)
 
 	printf("\tData URIs:\n");
 	SLV2Strings data_uris = slv2_plugin_get_data_uris(p);
-	for (int i=0; i < slv2_strings_size(data_uris); ++i)
+	for (unsigned i=0; i < slv2_strings_size(data_uris); ++i)
 		printf("\t\t%s\n", slv2_strings_get_at(data_uris, i));
 
 	printf("\n\tLibrary URI: %s\n\n", slv2_plugin_get_library_uri(p));
@@ -100,13 +100,13 @@ print_plugin(SLV2Plugin* p)
 
 	printf("\tProperties:\n");
 	SLV2Strings v = slv2_plugin_get_properties(p);
-	for (int i=0; i < slv2_strings_size(v); ++i)
+	for (unsigned i=0; i < slv2_strings_size(v); ++i)
 		printf("\t\t%s\n", slv2_strings_get_at(v, i));
 	slv2_strings_free(v);
 	
 	printf("\tHints:\n");
 	v = slv2_plugin_get_hints(p);
-	for (int i=0; i < slv2_strings_size(v); ++i)
+	for (unsigned i=0; i < slv2_strings_size(v); ++i)
 		printf("\t\t%s\n", slv2_strings_get_at(v, i));
 	slv2_strings_free(v);
 

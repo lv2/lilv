@@ -19,7 +19,10 @@
 #ifndef __SLV2_STRINGLIST_H__
 #define __SLV2_STRINGLIST_H__
 
-#include <slv2/private_types.h>
+#include <stdbool.h>
+
+typedef void* SLV2Strings;
+
 
 #ifdef __cplusplus
 extern "C" {
@@ -34,9 +37,16 @@ extern "C" {
  * @{
  */
 
+
+/** Allocate a new, empty SLV2Strings
+ */
+SLV2Strings
+slv2_strings_new();
+
+
 /** Get the number of elements in a string list.
  */
-int
+unsigned
 slv2_strings_size(const SLV2Strings list);
 
 
@@ -45,7 +55,7 @@ slv2_strings_size(const SLV2Strings list);
  * @return the element at @a index, or NULL if index is out of range.
  */
 char*
-slv2_strings_get_at(const SLV2Strings list, int index);
+slv2_strings_get_at(const SLV2Strings list, unsigned index);
 
 
 /** Return whether @a list contains @a uri.

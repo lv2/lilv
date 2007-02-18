@@ -47,7 +47,7 @@ extern "C" {
 struct _Plugin {
 	char*            plugin_uri;
 	char*            bundle_url; // Bundle directory plugin was loaded from
-	raptor_sequence* data_uris;   // rdfs::seeAlso
+	raptor_sequence* data_uris;  // rdfs::seeAlso
 	char*            lib_uri;    // lv2:binary
 };
 
@@ -70,9 +70,7 @@ struct _PluginList {
 
 
 /** An ordered, indexable collection of strings. */
-typedef raptor_sequence* SLV2Strings;
-
-SLV2Strings slv2_strings_new();
+//typedef raptor_sequence* SLV2Strings;
 
 
 #ifdef __cplusplus

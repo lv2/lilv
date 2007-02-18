@@ -26,7 +26,8 @@ extern "C" {
 #include <stdint.h>
 #include <stddef.h>
 #include <stdbool.h>
-#include "types.h"
+#include <slv2/types.h>
+#include <slv2/stringlist.h>
 
 
 typedef const struct _Plugin SLV2Plugin;

@@ -24,6 +24,7 @@
 #include <slv2/library.h>
 #include <slv2/util.h>
 #include <slv2/stringlist.h>
+#include <slv2/private_types.h>
 
 
 char*
@@ -127,7 +128,7 @@ slv2_plugin_query(SLV2Plugin* plugin,
 		NULL, RASQAL_DATA_GRAPH_BACKGROUND);
 	
 	// Add all plugin data files to query sources
-	for (int i=0; i < slv2_strings_size(plugin->data_uris); ++i) {
+	for (unsigned i=0; i < slv2_strings_size(plugin->data_uris); ++i) {
 		const char* file_uri_str = slv2_strings_get_at(plugin->data_uris, i);
 		raptor_uri* file_uri = raptor_new_uri((const unsigned char*)file_uri_str);
 		rasqal_query_add_data_graph(rq, file_uri,
