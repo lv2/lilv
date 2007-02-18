@@ -28,6 +28,7 @@
 #include <slv2/types.h>
 #include <slv2/plugin.h>
 #include <slv2/pluginlist.h>
+#include <slv2/stringlist.h>
 #include <slv2/util.h>
 
 
@@ -40,14 +41,14 @@ slv2_plugin_new()
 	result->bundle_url = NULL;
 	result->lib_uri    = NULL;
 	
-	result->data_uris = slv2_uri_list_new();
+	result->data_uris = slv2_strings_new();
 
 	return result;
 }
 
 	
 struct _PluginList*
-slv2_list_new()
+slv2_plugins_new()
 {
 	struct _PluginList* result = malloc(sizeof(struct _PluginList));
 	result->num_plugins = 0;
@@ -57,7 +58,7 @@ slv2_list_new()
 
 
 void
-slv2_list_free(SLV2List list)
+slv2_plugins_free(SLV2Plugins list)
 {
 	list->num_plugins = 0;
 	free(list->plugins);
@@ -66,14 +67,14 @@ slv2_list_free(SLV2List list)
 
 
 void
-slv2_list_load_all(SLV2List list)
+slv2_plugins_load_all(SLV2Plugins list)
 {
 	assert(list != NULL);
 	
 	char* slv2_path = getenv("LV2_PATH");
 
 	if (slv2_path) {
-	    slv2_list_load_path(list, slv2_path);
+	    slv2_plugins_load_path(list, slv2_path);
     } else {
         const char* const home = getenv("HOME");
         const char* const suffix = "/.lv2:/usr/local/lib/lv2:usr/lib/lv2";
@@ -82,10 +83,10 @@ slv2_list_load_all(SLV2List list)
 		fprintf(stderr, "$LV2_PATH is unset.  Using default path %s\n", slv2_path);
 	    
 		/* pass 1: find all plugins */
-		slv2_list_load_path(list, slv2_path);
+		slv2_plugins_load_path(list, slv2_path);
 		
 		/* pass 2: find all data files for plugins */
-		slv2_list_load_path(list, slv2_path);
+		slv2_plugins_load_path(list, slv2_path);
 
         free(slv2_path);
 	}
@@ -96,7 +97,7 @@ slv2_list_load_all(SLV2List list)
  * This is called twice on each bundle in the discovery process, which is (much) less
  * efficient than it could be.... */
 void
-slv2_list_load_bundle(SLV2List    list,
+slv2_plugins_load_bundle(SLV2Plugins    list,
                       const char* bundle_base_url)
 {
 	unsigned char* manifest_url = malloc(
@@ -127,7 +128,7 @@ slv2_list_load_bundle(SLV2List    list,
 		rasqal_literal* literal = rasqal_query_results_get_binding_value(results, 0);
 		assert(literal);
 
-		if (!slv2_list_get_plugin_by_uri(list, (const char*)rasqal_literal_as_string(literal))) {
+		if (!slv2_plugins_get_by_uri(list, (const char*)rasqal_literal_as_string(literal))) {
 			/* Create a new plugin */
 			struct _Plugin* new_plugin = slv2_plugin_new();
 			new_plugin->plugin_uri = strdup((const char*)rasqal_literal_as_string(literal));
@@ -178,13 +179,13 @@ slv2_list_load_bundle(SLV2List    list,
 		const char* binary = (const char*)rasqal_literal_as_string(
 				rasqal_query_results_get_binding_value(results, 2));
 
-		struct _Plugin* plugin = slv2_list_get_plugin_by_uri(list, subject);
+		SLV2Plugin* plugin = slv2_plugins_get_by_uri(list, subject);
 
-		if (plugin && data_uri && !slv2_uri_list_contains(plugin->data_uris, data_uri))
+		if (plugin && data_uri && !slv2_strings_contains(plugin->data_uris, data_uri))
 			raptor_sequence_push(plugin->data_uris, strdup(data_uri));
 		
 		if (plugin && binary && !plugin->lib_uri)
-			plugin->lib_uri = strdup(binary);
+			((struct _Plugin*)plugin)->lib_uri = strdup(binary);
 		 
 		rasqal_query_results_next(results);
 
@@ -205,7 +206,7 @@ slv2_list_load_bundle(SLV2List    list,
  * (Private helper function, not exposed in public API)
  */
 void
-slv2_list_load_dir(SLV2List list, const char* dir)
+slv2_plugins_load_dir(SLV2Plugins list, const char* dir)
 {
 	DIR* pdir = opendir(dir);
 	if (!pdir)
@@ -223,7 +224,7 @@ slv2_list_load_dir(SLV2List list, const char* dir)
 		if (bundle_dir != NULL) {
 			closedir(bundle_dir);
 			
-			slv2_list_load_bundle(list, bundle_url);
+			slv2_plugins_load_bundle(list, bundle_url);
 			//printf("Loaded bundle %s\n", bundle_url);
 		}
 		
@@ -235,7 +236,7 @@ slv2_list_load_dir(SLV2List list, const char* dir)
 
 
 void
-slv2_list_load_path(SLV2List    list,
+slv2_plugins_load_path(SLV2Plugins    list,
                     const char* lv2_path)
 {
 	char* path = slv2_strjoin(lv2_path, ":", NULL);
@@ -248,7 +249,7 @@ slv2_list_load_path(SLV2List    list,
 		char* delim = strchr(path, ':');
 		*delim = '\0';
 		
-		slv2_list_load_dir(list, dir);
+		slv2_plugins_load_dir(list, dir);
 		
 		*delim = 'X';
 		dir = delim + 1;
@@ -261,7 +262,7 @@ slv2_list_load_path(SLV2List    list,
 
 
 size_t
-slv2_list_get_length(const SLV2List list)
+slv2_plugins_size(const SLV2Plugins list)
 {
 	assert(list != NULL);
 	return list->num_plugins;
@@ -269,7 +270,7 @@ slv2_list_get_length(const SLV2List list)
 
 
 SLV2Plugin*
-slv2_list_get_plugin_by_uri(const SLV2List list, const char* uri)
+slv2_plugins_get_by_uri(const SLV2Plugins list, const char* uri)
 {
 	if (list->num_plugins > 0) {	
 		assert(list->plugins != NULL);
@@ -284,7 +285,7 @@ slv2_list_get_plugin_by_uri(const SLV2List list, const char* uri)
 
 
 SLV2Plugin*
-slv2_list_get_plugin_by_index(const SLV2List list, size_t index)
+slv2_plugins_get_at(const SLV2Plugins list, size_t index)
 {
 	if (list->num_plugins == 0)
 		return NULL;

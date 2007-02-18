@@ -21,10 +21,10 @@
 
 
 void
-list_plugins(SLV2List list)
+list_plugins(SLV2Plugins list)
 {
-	for (size_t i=0; i < slv2_list_get_length(list); ++i) {
-		const SLV2Plugin* const p = slv2_list_get_plugin_by_index(list, i);
+	for (size_t i=0; i < slv2_plugins_size(list); ++i) {
+		const SLV2Plugin* const p = slv2_plugins_get_at(list, i);
 		printf("%s\n", slv2_plugin_get_uri(p));
 	}
 }
@@ -35,8 +35,8 @@ main()//int argc, char** argv)
 {
 	slv2_init();
 
-	SLV2List plugins = slv2_list_new();
-	slv2_list_load_all(plugins);
+	SLV2Plugins plugins = slv2_plugins_new();
+	slv2_plugins_load_all(plugins);
 
 	list_plugins(plugins);
 	

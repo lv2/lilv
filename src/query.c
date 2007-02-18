@@ -23,13 +23,14 @@
 #include <slv2/query.h>
 #include <slv2/library.h>
 #include <slv2/util.h>
+#include <slv2/stringlist.h>
 
 
 char*
 slv2_query_header(const SLV2Plugin* p)
 {
 	const char* const plugin_uri = slv2_plugin_get_uri(p);
-	//SLV2URIList files = slv2_plugin_get_data_uris(p);
+	//SLV2Strings files = slv2_plugin_get_data_uris(p);
 
 	char* query_string = slv2_strjoin(
 	  "PREFIX rdf:    <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n"
@@ -38,8 +39,8 @@ slv2_query_header(const SLV2Plugin* p)
 	  "PREFIX lv2:    <http://lv2plug.in/ontology#>\n"
 	  "PREFIX plugin: <", plugin_uri, ">\n", NULL);
 
-	/*for (int i=0; i < slv2_uri_list_size(files); ++i) {
-		const char* file_uri = slv2_uri_list_get_at(files, i);
+	/*for (int i=0; i < slv2_strings_size(files); ++i) {
+		const char* file_uri = slv2_strings_get_at(files, i);
 		slv2_strappend(&query_string, "PREFIX data: <");
 		slv2_strappend(&query_string, file_uri);
 		slv2_strappend(&query_string, ">\n");
@@ -68,17 +69,14 @@ slv2_query_lang_filter(const char* variable)
 }
 
 
-SLV2Value
+SLV2Strings
 slv2_query_get_variable_bindings(rasqal_query_results* results,
                                  const char*           variable)
 {
-	struct _Value* result = NULL;
+	SLV2Strings result = NULL;
 
-    if (rasqal_query_results_get_bindings_count(results) > 0) {
-        result = malloc(sizeof(struct _Value));
-        result->num_values = 0;
-        result->values = NULL;
-    }
+    if (rasqal_query_results_get_bindings_count(results) > 0)
+		result = slv2_strings_new();
 
     while (!rasqal_query_results_finished(results)) {
 
@@ -86,12 +84,7 @@ slv2_query_get_variable_bindings(rasqal_query_results* results,
             rasqal_query_results_get_binding_value_by_name(results, (const unsigned char*)variable);
         assert(literal != NULL);
 
-        // Add value on to the array, reallocing all the way.
-		// Yes, this is disgusting.  Roughly as disgusting as the rasqal query
-		// results API.  coincidentally.
-        result->num_values++;
-        result->values = realloc(result->values, result->num_values * sizeof(char*));
-        result->values[result->num_values-1] = strdup((const char*)rasqal_literal_as_string(literal));
+		raptor_sequence_push(result, strdup((const char*)rasqal_literal_as_string(literal)));
 
         rasqal_query_results_next(results);
     }
@@ -101,7 +94,7 @@ slv2_query_get_variable_bindings(rasqal_query_results* results,
 
 
 size_t
-slv2_query_count_variable_bindings(rasqal_query_results* results)
+slv2_query_count_bindings(rasqal_query_results* results)
 {
 	size_t count = 0;
 
@@ -134,8 +127,8 @@ slv2_plugin_query(SLV2Plugin* plugin,
 		NULL, RASQAL_DATA_GRAPH_BACKGROUND);
 	
 	// Add all plugin data files to query sources
-	for (int i=0; i < slv2_uri_list_size(plugin->data_uris); ++i) {
-		const char* file_uri_str = slv2_uri_list_get_at(plugin->data_uris, i);
+	for (int i=0; i < slv2_strings_size(plugin->data_uris); ++i) {
+		const char* file_uri_str = slv2_strings_get_at(plugin->data_uris, i);
 		raptor_uri* file_uri = raptor_new_uri((const unsigned char*)file_uri_str);
 		rasqal_query_add_data_graph(rq, file_uri,
 			NULL, RASQAL_DATA_GRAPH_BACKGROUND);
@@ -151,7 +144,7 @@ slv2_plugin_query(SLV2Plugin* plugin,
 	return results;
 
 	/*
-	SLV2Value ret = slv2_query_get_variable_bindings(results, var_name);
+	SLV2Strings ret = slv2_query_get_variable_bindings(results, var_name);
 	
 	rasqal_free_query_results(results);
 	rasqal_free_query(rq);
@@ -161,13 +154,30 @@ slv2_plugin_query(SLV2Plugin* plugin,
 
 
 /** Query a single variable */
-SLV2Value
+SLV2Strings
 slv2_plugin_simple_query(SLV2Plugin* plugin,
                          const char* sparql_str,
                          const char* variable)
 {
 	rasqal_query_results* results = slv2_plugin_query(plugin, sparql_str);
-	SLV2Value ret = slv2_query_get_variable_bindings(results, variable);
+	SLV2Strings ret = slv2_query_get_variable_bindings(results, variable);
+	rasqal_free_query_results(results);
+
+	return ret;
+}
+
+
+/** Run a query and count number of matches.
+ *
+ * More efficient than slv2_plugin_simple_query if you're only interested
+ * in the number of results (ie slv2_plugin_num_ports).
+ */
+unsigned
+slv2_plugin_query_count(SLV2Plugin* plugin,
+                        const char* sparql_str)
+{
+	rasqal_query_results* results = slv2_plugin_query(plugin, sparql_str);
+	unsigned ret = slv2_query_count_bindings(results);
 	rasqal_free_query_results(results);
 
 	return ret;
@@ -198,7 +208,7 @@ slv2_query_count_results(const SLV2Plugin* p,
 	rasqal_query_results* results = rasqal_query_execute(rq);
 	assert(results);
 	
-	size_t count = slv2_query_count_variable_bindings(results);
+	size_t count = slv2_query_count_bindings(results);
 	
 	rasqal_free_query_results(results);
 	rasqal_free_query(rq);
@@ -230,12 +240,8 @@ slv2_query_get_num_results(rasqal_query_results* results, const char* var_name)
 */
 
 void
-slv2_value_free(struct _Value* prop)
+slv2_strings_free(SLV2Strings list)
 {
-	for (size_t i=0; i < prop->num_values; ++i)
-		free(prop->values[i]);
-
-	free(prop->values);
-	free(prop);
+	raptor_free_sequence(list);
 }
 

@@ -29,22 +29,6 @@ extern "C" {
 #endif
 
 
-/* A property, resulting from a query.
- *
- * Note that properties may have many values.
- */
-struct _Value {
-	size_t num_values;
-	char** values;
-};
-
-typedef struct _Value* SLV2Value;
-
-
-/** Free an SLV2Value. */
-void
-slv2_value_free(SLV2Value);
-
 
 /** Port ID type, to allow passing either symbol or index
  * to port related functions.
@@ -72,25 +56,6 @@ typedef enum _PortClass {
 	SLV2_MIDI_OUTPUT     /**< MIDI output (LL extension) */
 } SLV2PortClass;
 
-
-/** Get the number of elements in a URI list.
- */
-int
-slv2_uri_list_size(const SLV2URIList list);
-
-
-/** Get a URI from a URI list at the given index.
- *
- * @return the element at @index, or NULL if index is out of range.
- */
-char*
-slv2_uri_list_get_at(const SLV2URIList list, int index);
-
-
-/** Return whether @list contains @uri.
- */
-bool
-slv2_uri_list_contains(const SLV2URIList list, const char* uri);
 
 #ifdef __cplusplus
 }

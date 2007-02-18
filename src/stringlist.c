@@ -19,35 +19,35 @@
 #include <string.h>
 #include <stdlib.h>
 #include <raptor.h>
-#include <slv2/types.h>
+#include <slv2/stringlist.h>
 
 
-SLV2URIList
-slv2_uri_list_new()
+SLV2Strings
+slv2_strings_new()
 {
 	return raptor_new_sequence(&free, NULL);
 }
 
 
 int
-slv2_uri_list_size(const SLV2URIList list)
+slv2_strings_size(const SLV2Strings list)
 {
 	return raptor_sequence_size(list);
 }
 
 
 char*
-slv2_uri_list_get_at(const SLV2URIList list, int index)
+slv2_strings_get_at(const SLV2Strings list, int index)
 {
 	return (char*)raptor_sequence_get_at(list, index);
 }
 
 
 bool
-slv2_uri_list_contains(const SLV2URIList list, const char* uri)
+slv2_strings_contains(const SLV2Strings list, const char* uri)
 {
-	for (int i=0; i < slv2_uri_list_size(list); ++i)
-		if (!strcmp(slv2_uri_list_get_at(list, i), uri))
+	for (int i=0; i < slv2_strings_size(list); ++i)
+		if (!strcmp(slv2_strings_get_at(list, i), uri))
 			return true;
 	
 	return false;

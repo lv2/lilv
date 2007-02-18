@@ -16,26 +16,54 @@
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef __SLV2_H
-#define __SLV2_H
+#ifndef __SLV2_STRINGLIST_H__
+#define __SLV2_STRINGLIST_H__
+
+#include <slv2/private_types.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#include <rasqal.h>
 
-#include <slv2/library.h>
-#include <slv2/types.h>
-#include <slv2/plugin.h>
-#include <slv2/plugininstance.h>
-#include <slv2/pluginlist.h>
-#include <slv2/stringlist.h>
-#include <slv2/port.h>
+/** \defgroup strings Strings - Collection of strings
+ *
+ * SLV2Strings is an ordered collection of strings which is fast for random
+ * access by index (i.e. a fancy array).
+ *
+ * @{
+ */
 
+/** Get the number of elements in a string list.
+ */
+int
+slv2_strings_size(const SLV2Strings list);
+
+
+/** Get a string from a string list at the given index.
+ *
+ * @return the element at @a index, or NULL if index is out of range.
+ */
+char*
+slv2_strings_get_at(const SLV2Strings list, int index);
+
+
+/** Return whether @a list contains @a uri.
+ */
+bool
+slv2_strings_contains(const SLV2Strings list, const char* uri);
+
+
+/** Free a string list. */
+void
+slv2_strings_free(SLV2Strings);
+
+
+/** @} */
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* __SLV2_H */
+#endif /* __SLV2_STRINGLIST_H__ */
+

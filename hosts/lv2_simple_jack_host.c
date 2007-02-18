@@ -37,7 +37,7 @@ struct JackHost {
 void die(const char* msg);
 void create_port(struct JackHost* host, uint32_t port_index);
 int  jack_process_cb(jack_nframes_t nframes, void* data);
-void list_plugins(SLV2List list);
+void list_plugins(SLV2Plugins list);
 
 
 int
@@ -52,9 +52,9 @@ main(int argc, char** argv)
 	slv2_init();
 
 	/* Find all installed plugins */
-	SLV2List plugins = slv2_list_new();
-	slv2_list_load_all(plugins);
-	//slv2_list_load_bundle(plugins, "http://www.scs.carleton.ca/~drobilla/files/Amp-swh.lv2");
+	SLV2Plugins plugins = slv2_plugins_new();
+	slv2_plugins_load_all(plugins);
+	//slv2_plugins_load_bundle(plugins, "http://www.scs.carleton.ca/~drobilla/files/Amp-swh.lv2");
 
 	/* Find the plugin to run */
 	const char* plugin_uri = (argc == 2) ? argv[1] : NULL;
@@ -67,11 +67,11 @@ main(int argc, char** argv)
 	}
 
 	printf("URI:\t%s\n", plugin_uri);
-	host.plugin = slv2_list_get_plugin_by_uri(plugins, plugin_uri);
+	host.plugin = slv2_plugins_get_by_uri(plugins, plugin_uri);
 	
 	if (!host.plugin) {
 		fprintf(stderr, "Failed to find plugin %s.\n", plugin_uri);
-		slv2_list_free(plugins);
+		slv2_plugins_free(plugins);
 		return EXIT_FAILURE;
 	}
 
@@ -116,7 +116,7 @@ main(int argc, char** argv)
 	
 	/* Deactivate plugin and JACK */
 	slv2_instance_free(host.instance);
-	slv2_list_free(plugins);
+	slv2_plugins_free(plugins);
 	
 	printf("Shutting down JACK.\n");
 	for (unsigned long i=0; i < host.num_ports; ++i) {
@@ -212,10 +212,10 @@ jack_process_cb(jack_nframes_t nframes, void* data)
 
 
 void
-list_plugins(SLV2List list)
+list_plugins(SLV2Plugins list)
 {
-	for (size_t i=0; i < slv2_list_get_length(list); ++i) {
-		const SLV2Plugin* const p = slv2_list_get_plugin_by_index(list, i);
+	for (size_t i=0; i < slv2_plugins_size(list); ++i) {
+		const SLV2Plugin* const p = slv2_plugins_get_at(list, i);
 		printf("%s\n", slv2_plugin_get_uri(p));
 	}
 }

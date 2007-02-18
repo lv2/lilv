@@ -83,9 +83,9 @@ print_plugin(SLV2Plugin* p)
 	printf("<%s>\n", slv2_plugin_get_uri(p));
 
 	printf("\tData URIs:\n");
-	SLV2URIList data_uris = slv2_plugin_get_data_uris(p);
-	for (int i=0; i < slv2_uri_list_size(data_uris); ++i)
-		printf("\t\t%s\n", slv2_uri_list_get_at(data_uris, i));
+	SLV2Strings data_uris = slv2_plugin_get_data_uris(p);
+	for (int i=0; i < slv2_strings_size(data_uris); ++i)
+		printf("\t\t%s\n", slv2_strings_get_at(data_uris, i));
 
 	printf("\n\tLibrary URI: %s\n\n", slv2_plugin_get_library_uri(p));
 
@@ -99,16 +99,16 @@ print_plugin(SLV2Plugin* p)
 		printf("\tHas latency: no\n");
 
 	printf("\tProperties:\n");
-	SLV2Value v = slv2_plugin_get_properties(p);
-	for (size_t i=0; i < v->num_values; ++i)
-		printf("\t\t%s\n", v->values[i]);
-	slv2_value_free(v);
+	SLV2Strings v = slv2_plugin_get_properties(p);
+	for (int i=0; i < slv2_strings_size(v); ++i)
+		printf("\t\t%s\n", slv2_strings_get_at(v, i));
+	slv2_strings_free(v);
 	
 	printf("\tHints:\n");
 	v = slv2_plugin_get_hints(p);
-	for (size_t i=0; i < v->num_values; ++i)
-		printf("\t\t%s\n", v->values[i]);
-	slv2_value_free(v);
+	for (int i=0; i < slv2_strings_size(v); ++i)
+		printf("\t\t%s\n", slv2_strings_get_at(v, i));
+	slv2_strings_free(v);
 
 	uint32_t num_ports = slv2_plugin_get_num_ports(p);
 	for (uint32_t i=0; i < num_ports; ++i)
@@ -127,10 +127,10 @@ main(int argc, char** argv)
 		return -1;
 	}
 
-	SLV2List plugins = slv2_list_new();
-	slv2_list_load_all(plugins);
+	SLV2Plugins plugins = slv2_plugins_new();
+	slv2_plugins_load_all(plugins);
 
-	SLV2Plugin* p = slv2_list_get_plugin_by_uri(plugins, argv[1]);
+	SLV2Plugin* p = slv2_plugins_get_by_uri(plugins, argv[1]);
 
 	if (!p) {
 		fprintf(stderr, "Plugin not found.\n");

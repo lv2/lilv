@@ -23,8 +23,9 @@
 extern "C" {
 #endif
 
-#include "types.h"
-#include "plugin.h"
+#include <slv2/types.h>
+#include <slv2/plugin.h>
+#include <slv2/stringlist.h>
 
 /** \addtogroup data
  * @{
@@ -45,7 +46,7 @@ slv2_port_by_symbol(const char* symbol);
 
 /** Port equivalent to slv2_plugin_get_value.
  */
-SLV2Value
+SLV2Strings
 slv2_port_get_value(SLV2Plugin* plugin,
                     SLV2PortID  id,
                     const char* property);
@@ -53,14 +54,14 @@ slv2_port_get_value(SLV2Plugin* plugin,
 
 /** Port equivalent to slv2_plugin_get_properties.
  */
-SLV2Value
+SLV2Strings
 slv2_port_get_properties(const SLV2Plugin* p,
                          SLV2PortID        id);
 
 
 /** Port equivalent to slv2_plugin_get_hints.
  */
-SLV2Value
+SLV2Strings
 slv2_port_get_hints(const SLV2Plugin* p,
                     SLV2PortID        id);
 

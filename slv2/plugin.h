@@ -32,7 +32,7 @@ extern "C" {
 typedef const struct _Plugin SLV2Plugin;
 
 
-/** \defgroup data Plugin data file access
+/** \defgroup data Plugin - RDF data access
  *
  * These functions work exclusively with the plugin's RDF data file.  They do
  * not load the plugin dynamic library (or access
@@ -95,7 +95,7 @@ slv2_plugin_get_uri(const SLV2Plugin* plugin);
  * \return a complete URL eg. "file:///usr/foo/SomeBundle.lv2/someplug.ttl",
  * which is shared and must not be modified or free()'d.
  */
-SLV2URIList
+SLV2Strings
 slv2_plugin_get_data_uris(const SLV2Plugin* plugin);
 
 
@@ -124,7 +124,7 @@ slv2_plugin_get_name(const SLV2Plugin* plugin);
 /** Request some arbitrary RDF object of the plugin.
  *
  * May return NULL if the property was not found (ie is not defined in the
- * data file), or if object is not sensibly represented as an SLV2Value
+ * data file), or if object is not sensibly represented as an SLV2Strings
  * (e.g. blank nodes).
  *
  * Return value must be freed by caller with slv2_value_free.
@@ -134,7 +134,7 @@ slv2_plugin_get_name(const SLV2Plugin* plugin);
  * $LANG will be returned if it is set.  Otherwise all values will be
  * returned.
  */
-SLV2Value
+SLV2Strings
 slv2_plugin_get_value(const SLV2Plugin* p,
                       const char*       predicate);
 
@@ -147,7 +147,7 @@ slv2_plugin_get_value(const SLV2Plugin* p,
  *
  * Return value must be freed by caller with slv2_value_free.
  */
-SLV2Value
+SLV2Strings
 slv2_plugin_get_properties(const SLV2Plugin* p);
 
 
@@ -158,7 +158,7 @@ slv2_plugin_get_properties(const SLV2Plugin* p);
  *
  * Return value must be freed by caller with slv2_value_free.
  */
-SLV2Value
+SLV2Strings
 slv2_plugin_get_hints(const SLV2Plugin* p);
 
 
@@ -193,7 +193,7 @@ slv2_plugin_get_latency_port(const SLV2Plugin* p);
  *
  * This returns a list of all supported features (both required and optional).
  */
-SLV2Value
+SLV2Strings
 slv2_plugin_get_supported_features(const SLV2Plugin* p);
 
 
@@ -202,7 +202,7 @@ slv2_plugin_get_supported_features(const SLV2Plugin* p);
  * All feature URI's returned by this call MUST be passed to the plugin's
  * instantiate method for the plugin to instantiate successfully.
  */
-SLV2Value
+SLV2Strings
 slv2_plugin_get_required_features(const SLV2Plugin* p);
 
 
@@ -212,7 +212,7 @@ slv2_plugin_get_required_features(const SLV2Plugin* p);
  * instantiate method, those features will be used by the function, otherwise
  * the plugin will act as it would if it did not support that feature at all.
  */
-SLV2Value
+SLV2Strings
 slv2_plugin_get_optional_features(const SLV2Plugin* p);
 
 

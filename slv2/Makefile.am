@@ -11,4 +11,5 @@ slv2include_HEADERS = \
 	port.h \
 	pluginlist.h \
 	plugininstance.h \
-	util.h
+	util.h \
+	stringlist.h

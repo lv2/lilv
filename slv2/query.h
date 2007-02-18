@@ -82,10 +82,14 @@ rasqal_query_results*
 slv2_plugin_query(SLV2Plugin* plugin,
                   const char* sparql_str);
 
-SLV2Value
+SLV2Strings
 slv2_plugin_simple_query(SLV2Plugin* plugin,
                          const char* sparql_str,
                          const char* variable);
+
+unsigned
+slv2_plugin_query_count(SLV2Plugin* plugin,
+                        const char* sparql_str);
 
 #if 0
 /** Run a SPARQL query on a plugin's data file and return variable matches.
@@ -96,7 +100,7 @@ slv2_plugin_simple_query(SLV2Plugin* plugin,
  *
  * Returned is a list of all matches for the query variable \a var_name.
  */
-SLV2Value
+SLV2Strings
 slv2_query_get_results(const SLV2Plugin* p,
                        const char*       query_string,
                        const char*       var_name);

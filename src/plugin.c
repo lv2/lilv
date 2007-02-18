@@ -27,6 +27,7 @@
 #include <slv2/types.h>
 #include <slv2/query.h>
 #include <slv2/util.h>
+#include <slv2/stringlist.h>
 
 
 SLV2Plugin*
@@ -38,9 +39,9 @@ slv2_plugin_duplicate(const SLV2Plugin* p)
 	result->bundle_url = p->bundle_url;
 	result->lib_uri = p->lib_uri;
 	
-	result->data_uris = slv2_uri_list_new();
-	for (int i=0; i < slv2_uri_list_size(p->data_uris); ++i)
-		raptor_sequence_push(result->data_uris, strdup(slv2_uri_list_get_at(p->data_uris, i)));
+	result->data_uris = slv2_strings_new();
+	for (int i=0; i < slv2_strings_size(p->data_uris); ++i)
+		raptor_sequence_push(result->data_uris, strdup(slv2_strings_get_at(p->data_uris, i)));
 	return result;
 }
 
@@ -53,7 +54,7 @@ slv2_plugin_get_uri(const SLV2Plugin* p)
 }
 
 
-SLV2URIList
+SLV2Strings
 slv2_plugin_get_data_uris(const SLV2Plugin* p)
 {
 	assert(p);
@@ -76,10 +77,10 @@ slv2_plugin_verify(const SLV2Plugin* plugin)
 	
 	size_t num_values = 0;
 	
-	struct _Value* prop = slv2_plugin_get_value(plugin, "doap:name");
+	SLV2Strings prop = slv2_plugin_get_value(plugin, "doap:name");
 	if (prop) {
-		num_values = prop->num_values;
-		free(prop);
+		num_values = slv2_strings_size(prop);
+		slv2_strings_free(prop);
 	}
 	if (num_values < 1)
 		return false;
@@ -97,19 +98,21 @@ slv2_plugin_verify(const SLV2Plugin* plugin)
 char*
 slv2_plugin_get_name(const SLV2Plugin* plugin)
 {
-// FIXME: leak
-	char*    result = NULL;
-	struct _Value* prop   = slv2_plugin_get_value(plugin, "doap:name");
+	char*          result = NULL;
+	SLV2Strings prop   = slv2_plugin_get_value(plugin, "doap:name");
 	
 	// FIXME: guaranteed to be the untagged one?
-	if (prop && prop->num_values >= 1)
-		result = prop->values[0];
+	if (prop && slv2_strings_size(prop) >= 1)
+		result = strdup(slv2_strings_get_at(prop, 0));
+
+	if (prop)
+		slv2_strings_free(prop);
 
 	return result;
 }
 
 
-SLV2Value
+SLV2Strings
 slv2_plugin_get_value(const SLV2Plugin* p,
                       const char*       predicate)
 {
@@ -134,7 +137,7 @@ slv2_plugin_get_value(const SLV2Plugin* p,
 		"plugin: ", predicate, " ?value .\n"
 		"}\n", NULL);
 
-	SLV2Value result = slv2_plugin_simple_query(p, query, "value");
+	SLV2Strings result = slv2_plugin_simple_query(p, query, "value");
 	
 	free(query);
 
@@ -142,14 +145,14 @@ slv2_plugin_get_value(const SLV2Plugin* p,
 }
 
 
-SLV2Value
+SLV2Strings
 slv2_plugin_get_properties(const SLV2Plugin* p)
 {
 	return slv2_plugin_get_value(p, "lv2:pluginProperty");
 }
 
 
-SLV2Value
+SLV2Strings
 slv2_plugin_get_hints(const SLV2Plugin* p)
 {
 	return slv2_plugin_get_value(p, "lv2:pluginHint");
@@ -160,16 +163,10 @@ uint32_t
 slv2_plugin_get_num_ports(const SLV2Plugin* p)
 {
     const char* const query =
-		"SELECT DISTINCT ?value\n"
-		"WHERE { plugin: lv2:port ?value }\n";
+		"SELECT DISTINCT ?port\n"
+		"WHERE { plugin: lv2:port ?port }\n";
 
-	SLV2Value results = slv2_plugin_simple_query(p, query, "value");
-	
-	size_t count = results->num_values;
-	
-	slv2_value_free(results);
-
-	return count;
+	return (uint32_t)slv2_plugin_query_count(p, query);
 }
 
 
@@ -182,11 +179,11 @@ slv2_plugin_has_latency(const SLV2Plugin* p)
 		"	?port   lv2:portHint lv2:reportsLatency .\n"
 		"}\n";
 
-	SLV2Value results = slv2_plugin_simple_query(p, query, "port");
+	SLV2Strings results = slv2_plugin_simple_query(p, query, "port");
 	
-	bool exists = (results->num_values > 0);
+	bool exists = (slv2_strings_size(results) > 0);
 	
-	slv2_value_free(results);
+	slv2_strings_free(results);
 
 	return exists;
 }
@@ -202,19 +199,19 @@ slv2_plugin_get_latency_port(const SLV2Plugin* p)
 		"           lv2:index    ?index .\n"
 		"}\n";
 
-	SLV2Value result = slv2_plugin_simple_query(p, query, "index");
+	SLV2Strings result = slv2_plugin_simple_query(p, query, "index");
 	
 	// FIXME: need a sane error handling strategy
-	assert(result->num_values == 1);
+	assert(slv2_strings_size(result) == 1);
 	char* endptr = 0;
-	uint32_t index = strtol(result->values[0], &endptr, 10);
+	uint32_t index = strtol(slv2_strings_get_at(result, 0), &endptr, 10);
 	// FIXME: check.. stuff..
 
 	return index;
 }
 
 
-SLV2Value
+SLV2Strings
 slv2_plugin_get_supported_features(const SLV2Plugin* p)
 {
     const char* const query = 
@@ -224,13 +221,13 @@ slv2_plugin_get_supported_features(const SLV2Plugin* p)
 		"	{ plugin:  lv2:requiredHostFeature  ?feature }\n"
 		"}\n";
 
-	SLV2Value result = slv2_plugin_simple_query(p, query, "feature");
+	SLV2Strings result = slv2_plugin_simple_query(p, query, "feature");
 	
 	return result;
 }
 
 
-SLV2Value
+SLV2Strings
 slv2_plugin_get_optional_features(const SLV2Plugin* p)
 {
     const char* const query = 
@@ -238,13 +235,13 @@ slv2_plugin_get_optional_features(const SLV2Plugin* p)
 		"	plugin:  lv2:optionalHostFeature  ?feature .\n"
 		"}\n";
 
-	SLV2Value result = slv2_plugin_simple_query(p, query, "feature");
+	SLV2Strings result = slv2_plugin_simple_query(p, query, "feature");
 	
 	return result;
 }
 
 
-SLV2Value
+SLV2Strings
 slv2_plugin_get_required_features(const SLV2Plugin* p)
 {
     const char* const query = 
@@ -252,7 +249,7 @@ slv2_plugin_get_required_features(const SLV2Plugin* p)
 		"	plugin:  lv2:requiredHostFeature  ?feature .\n"
 		"}\n";
 
-	SLV2Value result = slv2_plugin_simple_query(p, query, "feature");
+	SLV2Strings result = slv2_plugin_simple_query(p, query, "feature");
 	
 	return result;
 }

@@ -69,9 +69,10 @@ struct _PluginList {
 };
 
 
-typedef raptor_sequence* SLV2URIList;
+/** An ordered, indexable collection of strings. */
+typedef raptor_sequence* SLV2Strings;
 
-SLV2URIList slv2_uri_list_new();
+SLV2Strings slv2_strings_new();
 
 
 #ifdef __cplusplus

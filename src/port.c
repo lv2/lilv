@@ -53,26 +53,24 @@ SLV2PortClass
 slv2_port_get_class(SLV2Plugin* p,
                     SLV2PortID  id)
 {
-	struct _Value* class = slv2_port_get_value(p, id, "rdf:type");
-	assert(class);
-	assert(class->num_values > 0);
-	assert(class->values);
+	SLV2Strings class = slv2_port_get_value(p, id, "rdf:type");
 
 	SLV2PortClass ret = SLV2_UNKNOWN_PORT_CLASS;
 
 	int io = -1; // 0 = in, 1 = out
 	enum { UNKNOWN, AUDIO, CONTROL, MIDI } type = UNKNOWN;
 
-	for (size_t i=0; i < class->num_values; ++i) {
-		if (!strcmp((char*)class->values[i], "http://lv2plug.in/ontology#InputPort"))
+	for (int i=0; i < slv2_strings_size(class); ++i) {
+		char* value = slv2_strings_get_at(class, i);
+		if (!strcmp(value, "http://lv2plug.in/ontology#InputPort"))
 			io = 0;
-		else if (!strcmp((char*)class->values[i], "http://lv2plug.in/ontology#OutputPort"))
+		else if (!strcmp(value, "http://lv2plug.in/ontology#OutputPort"))
 			io = 1;
-		else if (!strcmp((char*)class->values[i], "http://lv2plug.in/ontology#ControlPort"))
+		else if (!strcmp(value, "http://lv2plug.in/ontology#ControlPort"))
 			type = CONTROL;
-		else if (!strcmp((char*)class->values[i], "http://lv2plug.in/ontology#AudioPort"))
+		else if (!strcmp(value, "http://lv2plug.in/ontology#AudioPort"))
 			type = AUDIO;
-		else if (!strcmp((char*)class->values[i], "http://ll-plugins.nongnu.org/lv2/ext/MidiPort"))
+		else if (!strcmp(value, "http://ll-plugins.nongnu.org/lv2/ext/MidiPort"))
 			type = MIDI;
 	}
 
@@ -92,20 +90,20 @@ slv2_port_get_class(SLV2Plugin* p,
 			ret = SLV2_MIDI_OUTPUT;
 	}
 
-	slv2_value_free(class);
+	slv2_strings_free(class);
 
 	return ret;
 }
 
 
-SLV2Value
+SLV2Strings
 slv2_port_get_value(SLV2Plugin* p,
                     SLV2PortID  id,
                     const char* property)
 {
 	assert(property);
 
-	SLV2Value result = NULL;
+	SLV2Strings result = NULL;
 
 	if (id.is_index) {
 		char index_str[16];
@@ -143,15 +141,13 @@ slv2_port_get_symbol(SLV2Plugin* p,
 {
 	char* result = NULL;
 	
-	SLV2Value prop
+	SLV2Strings prop
 		= slv2_port_get_value(p, id, "lv2:symbol");
 
-	if (prop && prop->num_values == 1) {
-		result = prop->values[0];
-		prop->values[0] = NULL; // prevent deletion
-	}
+	if (prop && slv2_strings_size(prop) == 1)
+		result = strdup(slv2_strings_get_at(prop, 0));
 	
-	slv2_value_free(prop);
+	slv2_strings_free(prop);
 
 	return result;
 }
@@ -163,15 +159,13 @@ slv2_port_get_name(SLV2Plugin* p,
 {
 	char* result = NULL;
 	
-	SLV2Value prop
+	SLV2Strings prop
 		= slv2_port_get_value(p, id, "lv2:name");
 
-	if (prop && prop->num_values == 1) {
-		result = prop->values[0];
-		prop->values[0] = NULL; // prevent deletion
-	}
+	if (prop && slv2_strings_size(prop) == 1)
+		result = strdup(slv2_strings_get_at(prop, 0));
 	
-	slv2_value_free(prop);
+	slv2_strings_free(prop);
 
 	return result;
 }
@@ -185,13 +179,13 @@ slv2_port_get_default_value(SLV2Plugin* p,
 	
 	float result = 0.0f;
 	
-	SLV2Value prop
+	SLV2Strings prop
 		= slv2_port_get_value(p, id, "lv2:default");
 
-	if (prop && prop->num_values == 1)
-		result = atof((char*)prop->values[0]);
+	if (prop && slv2_strings_size(prop) == 1)
+		result = atof(slv2_strings_get_at(prop, 0));
 	
-	slv2_value_free(prop);
+	slv2_strings_free(prop);
 
 	return result;
 }
@@ -205,13 +199,13 @@ slv2_port_get_minimum_value(SLV2Plugin* p,
 	
 	float result = 0.0f;
 	
-	SLV2Value prop
+	SLV2Strings prop
 		= slv2_port_get_value(p, id, "lv2:minimum");
 
-	if (prop && prop->num_values == 1)
-		result = atof((char*)prop->values[0]);
+	if (prop && slv2_strings_size(prop) == 1)
+		result = atof(slv2_strings_get_at(prop, 0));
 	
-	slv2_value_free(prop);
+	slv2_strings_free(prop);
 
 	return result;
 }
@@ -225,19 +219,19 @@ slv2_port_get_maximum_value(SLV2Plugin* p,
 	
 	float result = 0.0f;
 	
-	SLV2Value prop
+	SLV2Strings prop
 		= slv2_port_get_value(p, id, "lv2:maximum");
 
-	if (prop && prop->num_values == 1)
-		result = atof((char*)prop->values[0]);
+	if (prop && slv2_strings_size(prop) == 1)
+		result = atof(slv2_strings_get_at(prop, 0));
 	
-	slv2_value_free(prop);
+	slv2_strings_free(prop);
 
 	return result;
 }
 
 
-SLV2Value
+SLV2Strings
 slv2_port_get_properties(const SLV2Plugin* p,
                          SLV2PortID        id)
 {
@@ -245,7 +239,7 @@ slv2_port_get_properties(const SLV2Plugin* p,
 }
 
 
-SLV2Value
+SLV2Strings
 slv2_port_get_hints(const SLV2Plugin* p,
                     SLV2PortID        id)
 {

@@ -32,6 +32,12 @@ extern "C" {
 #endif
 
 
+/** \defgroup util Utility functions
+ *
+ * @{
+ */
+
+
 /** Convert a full URI (eg file://foo/bar/baz.ttl) to a local path (e.g. /foo/bar/baz.ttl).
  *
  * Return value is shared and must not be deleted by caller.
@@ -61,9 +67,7 @@ char*
 slv2_vstrjoin(const char** first, va_list args_list);
 
 
-const char*
-slv2_url2path(const char* const url);
-
+/** @} */
 
 #ifdef __cplusplus
 }
