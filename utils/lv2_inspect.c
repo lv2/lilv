@@ -139,6 +139,7 @@ main(int argc, char** argv)
 
 	print_plugin(p);
 
+	slv2_plugins_free(plugins);
 	slv2_finish();
 
 	return 0;

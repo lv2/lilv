@@ -126,11 +126,10 @@ slv2_plugin_verify(SLV2Plugin plugin)
 		rasqal_query_results_next(results);
 	}
 
-	free(query_str);
 	rasqal_free_query_results(results);
 
 	if ( ! (has_type && has_name && has_license && has_port) ) {
-		fprintf(stderr, "Invalid LV2 Plugin %s:\n", slv2_plugin_get_uri(plugin));
+		fprintf(stderr, "Invalid LV2 Plugin %s\n", slv2_plugin_get_uri(plugin));
 		return false;
 	} else {
 		return true;

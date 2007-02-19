@@ -36,9 +36,9 @@ slv2_init()
 void
 slv2_finish()
 {
-	rasqal_finish();
-
 	raptor_free_uri(slv2_ontology_uri);
 	slv2_ontology_uri = NULL;
+	
+	rasqal_finish();
 }
 
