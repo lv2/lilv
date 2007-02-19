@@ -134,15 +134,18 @@ slv2_plugin_query(SLV2Plugin plugin,
 		raptor_uri* file_uri = raptor_new_uri((const unsigned char*)file_uri_str);
 		rasqal_query_add_data_graph(rq, file_uri,
 			NULL, RASQAL_DATA_GRAPH_BACKGROUND);
+		raptor_free_uri(file_uri);
 	}
 
 	rasqal_query_results* results = rasqal_query_execute(rq);
-	assert(results);
 	
 	rasqal_free_query(rq);
 	raptor_free_uri(base_uri);
 
-	// FIXME: results leaked?
+	free(header);
+	free(query_str);
+
+	// FIXME: results leaked internally in places?
 	return results;
 
 	/*

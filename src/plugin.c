@@ -29,19 +29,36 @@
 #include "private_types.h"
 
 
+// FIXME: ew
+rasqal_query_results*
+slv2_plugin_query(SLV2Plugin plugin,
+                  const char* sparql_str);
+
+
 SLV2Plugin
 slv2_plugin_duplicate(SLV2Plugin p)
 {
 	assert(p);
 	struct _Plugin* result = malloc(sizeof(struct _Plugin));
-	result->plugin_uri = p->plugin_uri;
-	result->bundle_url = p->bundle_url;
-	result->lib_uri = p->lib_uri;
+	result->plugin_uri = strdup(p->plugin_uri);
+	result->bundle_url = strdup(p->bundle_url);
+	result->lib_uri = strdup(p->lib_uri);
 	
 	result->data_uris = slv2_strings_new();
 	for (unsigned i=0; i < slv2_strings_size(p->data_uris); ++i)
 		raptor_sequence_push(result->data_uris, strdup(slv2_strings_get_at(p->data_uris, i)));
 	return result;
+}
+
+
+void
+slv2_plugin_free(SLV2Plugin p)
+{
+	free(p->plugin_uri);
+	free(p->bundle_url);
+	free(p->lib_uri);
+	slv2_strings_free(p->data_uris);
+	free(p);
 }
 
 
@@ -72,33 +89,60 @@ slv2_plugin_get_library_uri(SLV2Plugin p)
 bool
 slv2_plugin_verify(SLV2Plugin plugin)
 {
-	// FIXME: finish this (properly)
-	
-	size_t num_values = 0;
-	
-	SLV2Strings prop = slv2_plugin_get_value(plugin, "doap:name");
-	if (prop) {
-		num_values = slv2_strings_size(prop);
-		slv2_strings_free(prop);
+	char* query_str = 
+		"SELECT DISTINCT ?type ?name ?license ?port WHERE {\n"
+		"plugin: a ?type ;\n"
+		"doap:name    ?name ;\n"
+		"doap:license ?license ;\n"
+		"lv2:port     [ lv2:index ?port ] .\n}";
+
+	rasqal_query_results* results = slv2_plugin_query(plugin, query_str);
+
+	bool has_type    = false;
+	bool has_name    = false;
+	bool has_license = false;
+	bool has_port    = false;
+
+	while (!rasqal_query_results_finished(results)) {
+		rasqal_literal* literal = rasqal_query_results_get_binding_value(results, 0);
+		const char* const type = (const char*)rasqal_literal_as_string(literal);
+		literal = rasqal_query_results_get_binding_value(results, 1);
+		const char* const name = (const char*)rasqal_literal_as_string(literal);
+		rasqal_literal* license = rasqal_query_results_get_binding_value(results, 2);
+		rasqal_literal* port = rasqal_query_results_get_binding_value(results, 3);
+
+		if (!strcmp(type, "http://lv2plug.in/ontology#Plugin"))
+			has_type = true;
+		
+		if (name)
+			has_name = true;
+		
+		if (license)
+			has_license = true;
+		
+		if (port)
+			has_port = true;
+
+		rasqal_query_results_next(results);
 	}
-	if (num_values < 1)
+
+	free(query_str);
+	rasqal_free_query_results(results);
+
+	if ( ! (has_type && has_name && has_license && has_port) ) {
+		fprintf(stderr, "Invalid LV2 Plugin %s:\n", slv2_plugin_get_uri(plugin));
 		return false;
-/*
-	prop = slv2_plugin_get_value(plugin, "doap:license");
-	num_values = prop->num_values;
-	free(prop);
-	if (num_values < 1)
-		return false;
-*/	
-	return true;
+	} else {
+		return true;
+	}
 }
 
 
 char*
 slv2_plugin_get_name(SLV2Plugin plugin)
 {
-	char*          result = NULL;
-	SLV2Strings prop   = slv2_plugin_get_value(plugin, "doap:name");
+	char* result     = NULL;
+	SLV2Strings prop = slv2_plugin_get_value(plugin, "doap:name");
 	
 	// FIXME: guaranteed to be the untagged one?
 	if (prop && slv2_strings_size(prop) >= 1)

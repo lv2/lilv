@@ -40,6 +40,8 @@ main()//int argc, char** argv)
 
 	list_plugins(plugins);
 	
+	slv2_plugins_free(plugins);
+
 	slv2_finish();
 
 	return 0;

@@ -1,7 +1,7 @@
 # RDF Schema for LV2 plugins
 # *** PROVISIONAL ***
 #
-# *** PROPOSED Revision 2007-02-07 ***
+# *** PROPOSED Revision 2007-02-19 ***
 #
 # This document describes the classes and properties that are defined by the
 # core LV2 specification.  See <http://lv2plug.in> for more information.
@@ -69,7 +69,7 @@ The class that represents an LV2 plugin.
 To be used by a host a Plugin must have at least the following properties:
     rdf:type (with object :Plugin)
     doap:name (one without language tag)
-    doap:licence
+    doap:license
     :port
 """ .
 

@@ -61,12 +61,22 @@ slv2_plugin_verify(SLV2Plugin plugin);
 /** Duplicate a plugin.
  *
  * Use this if you want to keep an SLV2Plugin around but free the list it came
- * from.
+ * from.  Freeing the returned plugin with slv2_plugin_free is the caller's
+ * responsibility.
  *
  * \return a newly allocated deep copy of \a plugin.
  */
 SLV2Plugin
 slv2_plugin_duplicate(SLV2Plugin plugin);
+
+
+/** Free an SLV2Plugin.
+ *
+ * This should NEVER be used on a plugin contained in a Plugins.  Use this
+ * only with plugins created with slv2_plugin_duplicate.
+ */
+void
+slv2_plugin_free(SLV2Plugin plugin);
 
 
 /** Get the URI of \a plugin.

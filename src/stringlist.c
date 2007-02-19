@@ -55,10 +55,10 @@ slv2_strings_get_at(SLV2Strings list, unsigned index)
 
 
 bool
-slv2_strings_contains(SLV2Strings list, const char* uri)
+slv2_strings_contains(SLV2Strings list, const char* str)
 {
 	for (unsigned i=0; i < slv2_strings_size(list); ++i)
-		if (!strcmp(slv2_strings_get_at(list, i), uri))
+		if (!strcmp(slv2_strings_get_at(list, i), str))
 			return true;
 	
 	return false;

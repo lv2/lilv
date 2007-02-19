@@ -24,7 +24,7 @@ extern "C" {
 #endif
 
 
-typedef struct _PluginList* SLV2Plugins;
+typedef void* SLV2Plugins;
 
 
 /** \defgroup plugins Plugins - Collection of plugins, plugin discovery
@@ -67,18 +67,29 @@ void
 slv2_plugins_free(SLV2Plugins list);
 
 
+/** Filter plugins from one list into another.
+ *
+ * All plugins in @a source that return true when passed to @a include
+ * (a pointer to a function that takes an SLV2Plugin and returns a bool)
+ * will be added to @a dest.  Plugins are duplicated into dest, it is safe
+ * to destroy source and continue to use dest after this call.
+ */
+void
+slv2_plugins_filter(SLV2Plugins dest,
+                    SLV2Plugins source, 
+                    bool (*include)(SLV2Plugin));
+
+
 /** Add all plugins installed on the system to \a list.
  *
- * This is the recommended way for hosts to access plugins.  It finds all
- * plugins on the system using the recommended mechanism.  At the time, this
- * is by searching the path defined in the environment variable LADSPA2_PATH,
- * though this is subject to change in the future.  Future versions may, for
- * example, allow users to specify a plugin whitelist of plugins they would
- * like to be visible in apps (or conversely a blacklist of plugins they do
- * not wish to use).
+ * This is the recommended way for hosts to access plugins.  It does the most
+ * reasonable thing to find all installed plugins on a system.  The environment
+ * variable LV2_PATH may be set to control the locations this function will
+ * look for plugins.
  *
  * Use of any functions for locating plugins other than this one is \em highly
- * discouraged without a special reason to do so - use this one.
+ * discouraged without a special reason to do so (and is just more work for the
+ * host author) - use this one.
  */
 void
 slv2_plugins_load_all(SLV2Plugins list);
@@ -115,7 +126,7 @@ slv2_plugins_load_bundle(SLV2Plugins list,
 /** Get the number of plugins in the list.
  */
 unsigned
-slv2_plugins_size(const SLV2Plugins list);
+slv2_plugins_size(SLV2Plugins list);
 
 
 /** Get a plugin from the list by URI.
@@ -128,8 +139,8 @@ slv2_plugins_size(const SLV2Plugins list);
  * \return NULL if plugin with \a url not found in \a list.
  */
 SLV2Plugin
-slv2_plugins_get_by_uri(const SLV2Plugins list,
-                        const char*       uri);
+slv2_plugins_get_by_uri(SLV2Plugins list,
+                        const char* uri);
 
 
 /** Get a plugin from the list by index.
@@ -145,9 +156,8 @@ slv2_plugins_get_by_uri(const SLV2Plugins list,
  * \return NULL if \a index out of range.
  */
 SLV2Plugin
-slv2_plugins_get_at(const SLV2Plugins list,
-                    unsigned          index);
-
+slv2_plugins_get_at(SLV2Plugins list,
+                    unsigned    index);
 
 /** @} */
 
