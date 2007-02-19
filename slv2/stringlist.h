@@ -21,9 +21,6 @@
 
 #include <stdbool.h>
 
-typedef void* SLV2Strings;
-
-
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -38,6 +35,9 @@ extern "C" {
  */
 
 
+typedef void* SLV2Strings;
+
+
 /** Allocate a new, empty SLV2Strings
  */
 SLV2Strings
@@ -47,21 +47,21 @@ slv2_strings_new();
 /** Get the number of elements in a string list.
  */
 unsigned
-slv2_strings_size(const SLV2Strings list);
+slv2_strings_size(SLV2Strings list);
 
 
 /** Get a string from a string list at the given index.
  *
  * @return the element at @a index, or NULL if index is out of range.
  */
-char*
-slv2_strings_get_at(const SLV2Strings list, unsigned index);
+const char*
+slv2_strings_get_at(SLV2Strings list, unsigned index);
 
 
 /** Return whether @a list contains @a uri.
  */
 bool
-slv2_strings_contains(const SLV2Strings list, const char* uri);
+slv2_strings_contains(SLV2Strings list, const char* uri);
 
 
 /** Free a string list. */

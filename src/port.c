@@ -19,11 +19,11 @@
 #define _XOPEN_SOURCE 500
 #include <assert.h>
 #include <stdlib.h>
+#include <stdio.h>
 #include <string.h>
 #include <limits.h>
 #include <slv2/port.h>
 #include <slv2/types.h>
-#include <slv2/query.h>
 #include <slv2/util.h>
 
 
@@ -50,8 +50,8 @@ slv2_port_by_symbol(const char* symbol)
 
 
 SLV2PortClass
-slv2_port_get_class(SLV2Plugin* p,
-                    SLV2PortID  id)
+slv2_port_get_class(SLV2Plugin p,
+                    SLV2PortID id)
 {
 	SLV2Strings class = slv2_port_get_value(p, id, "rdf:type");
 
@@ -61,7 +61,7 @@ slv2_port_get_class(SLV2Plugin* p,
 	enum { UNKNOWN, AUDIO, CONTROL, MIDI } type = UNKNOWN;
 
 	for (unsigned i=0; i < slv2_strings_size(class); ++i) {
-		char* value = slv2_strings_get_at(class, i);
+		const char* value = slv2_strings_get_at(class, i);
 		if (!strcmp(value, "http://lv2plug.in/ontology#InputPort"))
 			io = 0;
 		else if (!strcmp(value, "http://lv2plug.in/ontology#OutputPort"))
@@ -97,7 +97,7 @@ slv2_port_get_class(SLV2Plugin* p,
 
 
 SLV2Strings
-slv2_port_get_value(SLV2Plugin* p,
+slv2_port_get_value(SLV2Plugin  p,
                     SLV2PortID  id,
                     const char* property)
 {
@@ -136,8 +136,8 @@ slv2_port_get_value(SLV2Plugin* p,
 
 
 char*
-slv2_port_get_symbol(SLV2Plugin* p,
-                     SLV2PortID  id)
+slv2_port_get_symbol(SLV2Plugin p,
+                     SLV2PortID id)
 {
 	char* result = NULL;
 	
@@ -154,8 +154,8 @@ slv2_port_get_symbol(SLV2Plugin* p,
 
 	
 char*
-slv2_port_get_name(SLV2Plugin* p,
-                   SLV2PortID  id)
+slv2_port_get_name(SLV2Plugin p,
+                   SLV2PortID id)
 {
 	char* result = NULL;
 	
@@ -172,8 +172,8 @@ slv2_port_get_name(SLV2Plugin* p,
 
 
 float
-slv2_port_get_default_value(SLV2Plugin* p, 
-                            SLV2PortID  id)
+slv2_port_get_default_value(SLV2Plugin p, 
+                            SLV2PortID id)
 {
 	// FIXME: do casting properly in the SPARQL query
 	
@@ -192,8 +192,8 @@ slv2_port_get_default_value(SLV2Plugin* p,
 
 
 float
-slv2_port_get_minimum_value(SLV2Plugin* p, 
-                            SLV2PortID  id)
+slv2_port_get_minimum_value(SLV2Plugin p, 
+                            SLV2PortID id)
 {
 	// FIXME: do casting properly in the SPARQL query
 	
@@ -212,8 +212,8 @@ slv2_port_get_minimum_value(SLV2Plugin* p,
 
 
 float
-slv2_port_get_maximum_value(SLV2Plugin* p, 
-                            SLV2PortID  id)
+slv2_port_get_maximum_value(SLV2Plugin p, 
+                            SLV2PortID id)
 {
 	// FIXME: do casting properly in the SPARQL query
 	
@@ -232,16 +232,16 @@ slv2_port_get_maximum_value(SLV2Plugin* p,
 
 
 SLV2Strings
-slv2_port_get_properties(const SLV2Plugin* p,
-                         SLV2PortID        id)
+slv2_port_get_properties(SLV2Plugin p,
+                         SLV2PortID id)
 {
 	return slv2_port_get_value(p, id, "lv2:portProperty");
 }
 
 
 SLV2Strings
-slv2_port_get_hints(const SLV2Plugin* p,
-                    SLV2PortID        id)
+slv2_port_get_hints(SLV2Plugin p,
+                    SLV2PortID id)
 {
 	return slv2_port_get_value(p, id, "lv2:portHint");
 }

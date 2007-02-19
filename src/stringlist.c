@@ -30,25 +30,32 @@ slv2_strings_new()
 }
 
 
+void
+slv2_strings_free(SLV2Strings list)
+{
+	raptor_free_sequence(list);
+}
+
+
 unsigned
-slv2_strings_size(const SLV2Strings list)
+slv2_strings_size(SLV2Strings list)
 {
 	return raptor_sequence_size(list);
 }
 
 
-char*
-slv2_strings_get_at(const SLV2Strings list, unsigned index)
+const char*
+slv2_strings_get_at(SLV2Strings list, unsigned index)
 {
 	if (index > INT_MAX)
 		return NULL;
 	else
-		return (char*)raptor_sequence_get_at(list, (int)index);
+		return (const char*)raptor_sequence_get_at(list, (int)index);
 }
 
 
 bool
-slv2_strings_contains(const SLV2Strings list, const char* uri)
+slv2_strings_contains(SLV2Strings list, const char* uri)
 {
 	for (unsigned i=0; i < slv2_strings_size(list); ++i)
 		if (!strcmp(slv2_strings_get_at(list, i), uri))

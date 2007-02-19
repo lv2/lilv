@@ -41,11 +41,6 @@ void
 slv2_finish();
 
 
-/** The URI of the lv2.ttl file.
- */
-extern raptor_uri* slv2_ontology_uri;
-
-
 #ifdef __cplusplus
 }
 #endif

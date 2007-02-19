@@ -19,13 +19,7 @@
 #ifndef __SLV2_UTIL_H__
 #define __SLV2_UTIL_H__
 
-#define _XOPEN_SOURCE 500
-#include <string.h>
 #include <stdarg.h>
-#include <stddef.h>
-#include <stdbool.h>
-#include <stdint.h>
-#include <slv2/types.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -41,7 +35,7 @@ extern "C" {
 /** Convert a full URI (eg file://foo/bar/baz.ttl) to a local path (e.g. /foo/bar/baz.ttl).
  *
  * Return value is shared and must not be deleted by caller.
- * @return @uri converted to a path, or NULL on failure (URI is not local).
+ * @return @a uri converted to a path, or NULL on failure (URI is not local).
  */
 const char* slv2_uri_to_path(const char* uri);
 

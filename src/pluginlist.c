@@ -114,7 +114,7 @@ slv2_plugins_load_bundle(SLV2Plugins    list,
 
 	/* Get all plugins explicitly mentioned in the manifest (discovery pass 1) */
 	char* query_string =
-    	"PREFIX :     <http://lv2plug.in/ontology#>\n\n"
+    	"PREFIX : <http://lv2plug.in/ontology#>\n\n"
 		"SELECT DISTINCT ?plugin_uri FROM <>\n"
 		"WHERE { ?plugin_uri a :Plugin }\n";
 
@@ -179,7 +179,7 @@ slv2_plugins_load_bundle(SLV2Plugins    list,
 		const char* binary = (const char*)rasqal_literal_as_string(
 				rasqal_query_results_get_binding_value(results, 2));
 
-		SLV2Plugin* plugin = slv2_plugins_get_by_uri(list, subject);
+		SLV2Plugin plugin = slv2_plugins_get_by_uri(list, subject);
 
 		if (plugin && data_uri && !slv2_strings_contains(plugin->data_uris, data_uri))
 			raptor_sequence_push(plugin->data_uris, strdup(data_uri));
@@ -269,7 +269,7 @@ slv2_plugins_size(const SLV2Plugins list)
 }
 
 
-SLV2Plugin*
+SLV2Plugin
 slv2_plugins_get_by_uri(const SLV2Plugins list, const char* uri)
 {
 	if (list->num_plugins > 0) {	
@@ -284,7 +284,7 @@ slv2_plugins_get_by_uri(const SLV2Plugins list, const char* uri)
 }
 
 
-SLV2Plugin*
+SLV2Plugin
 slv2_plugins_get_at(const SLV2Plugins list, unsigned index)
 {
 	if (list->num_plugins == 0)

@@ -47,7 +47,7 @@ slv2_port_by_symbol(const char* symbol);
 /** Port equivalent to slv2_plugin_get_value.
  */
 SLV2Strings
-slv2_port_get_value(SLV2Plugin* plugin,
+slv2_port_get_value(SLV2Plugin  plugin,
                     SLV2PortID  id,
                     const char* property);
 
@@ -55,14 +55,14 @@ slv2_port_get_value(SLV2Plugin* plugin,
 /** Port equivalent to slv2_plugin_get_properties.
  */
 SLV2Strings
-slv2_port_get_properties(const SLV2Plugin* p,
+slv2_port_get_properties(SLV2Plugin p,
                          SLV2PortID        id);
 
 
 /** Port equivalent to slv2_plugin_get_hints.
  */
 SLV2Strings
-slv2_port_get_hints(const SLV2Plugin* p,
+slv2_port_get_hints(SLV2Plugin p,
                     SLV2PortID        id);
 
 
@@ -74,7 +74,7 @@ slv2_port_get_hints(const SLV2Plugin* p,
  * \return NULL when index is out of range
  */
 char*
-slv2_port_get_symbol(SLV2Plugin* plugin,
+slv2_port_get_symbol(SLV2Plugin plugin,
                      SLV2PortID  id);
 
 /** Get the name of a port.
@@ -84,14 +84,14 @@ slv2_port_get_symbol(SLV2Plugin* plugin,
  * the caller.
  */
 char*
-slv2_port_get_name(SLV2Plugin* plugin,
+slv2_port_get_name(SLV2Plugin plugin,
                    SLV2PortID  id);
 
 
 /** Get the class (input/output, data type, rate...) of a port.
  */
 SLV2PortClass
-slv2_port_get_class(SLV2Plugin* plugin,
+slv2_port_get_class(SLV2Plugin plugin,
                     SLV2PortID  id);
 
 
@@ -100,7 +100,7 @@ slv2_port_get_class(SLV2Plugin* plugin,
  * Only valid for ports with a data type of lv2:float.
  */
 float
-slv2_port_get_default_value(SLV2Plugin* plugin, 
+slv2_port_get_default_value(SLV2Plugin plugin, 
                             SLV2PortID  id);
 
 
@@ -109,7 +109,7 @@ slv2_port_get_default_value(SLV2Plugin* plugin,
  * Only valid for ports with a data type of lv2:float.
  */
 float
-slv2_port_get_minimum_value(SLV2Plugin* plugin, 
+slv2_port_get_minimum_value(SLV2Plugin plugin, 
                             SLV2PortID  id);
 
 
@@ -118,7 +118,7 @@ slv2_port_get_minimum_value(SLV2Plugin* plugin,
  * Only valid for ports with a data type of lv2:float.
  */
 float
-slv2_port_get_maximum_value(SLV2Plugin* plugin, 
+slv2_port_get_maximum_value(SLV2Plugin plugin, 
                             SLV2PortID  id);
 
 

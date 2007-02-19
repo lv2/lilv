@@ -127,7 +127,7 @@ slv2_plugins_size(const SLV2Plugins list);
  * 
  * \return NULL if plugin with \a url not found in \a list.
  */
-const SLV2Plugin*
+SLV2Plugin
 slv2_plugins_get_by_uri(const SLV2Plugins list,
                         const char*       uri);
 
@@ -144,7 +144,7 @@ slv2_plugins_get_by_uri(const SLV2Plugins list,
  *
  * \return NULL if \a index out of range.
  */
-const SLV2Plugin*
+SLV2Plugin
 slv2_plugins_get_at(const SLV2Plugins list,
                     unsigned          index);
 

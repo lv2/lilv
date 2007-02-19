@@ -17,8 +17,8 @@
  */
 
 #include "config.h"
+#include <rasqal.h>
 #include <slv2/slv2.h>
-
 
 raptor_uri* slv2_ontology_uri = NULL;
 

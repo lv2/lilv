@@ -24,7 +24,7 @@ void
 list_plugins(SLV2Plugins list)
 {
 	for (unsigned i=0; i < slv2_plugins_size(list); ++i) {
-		const SLV2Plugin* const p = slv2_plugins_get_at(list, i);
+		SLV2Plugin p = slv2_plugins_get_at(list, i);
 		printf("%s\n", slv2_plugin_get_uri(p));
 	}
 }

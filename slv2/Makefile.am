@@ -6,7 +6,6 @@ slv2include_HEADERS = \
 	slv2.h \
 	library.h \
 	plugin.h \
-	query.h \
 	port.h \
 	pluginlist.h \
 	plugininstance.h \

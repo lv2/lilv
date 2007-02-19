@@ -17,10 +17,11 @@
  */
 
 #define _XOPEN_SOURCE 500
+#include <string.h>
 #include <stdlib.h>
 #include <assert.h>
+#include <rasqal.h>
 #include <slv2/plugin.h>
-#include <slv2/query.h>
 #include <slv2/library.h>
 #include <slv2/util.h>
 #include <slv2/stringlist.h>
@@ -28,7 +29,7 @@
 
 
 char*
-slv2_query_header(const SLV2Plugin* p)
+slv2_query_header(SLV2Plugin p)
 {
 	const char* const plugin_uri = slv2_plugin_get_uri(p);
 	//SLV2Strings files = slv2_plugin_get_data_uris(p);
@@ -109,7 +110,7 @@ slv2_query_count_bindings(rasqal_query_results* results)
 
 	
 rasqal_query_results*
-slv2_plugin_query(SLV2Plugin* plugin,
+slv2_plugin_query(SLV2Plugin plugin,
                   const char* sparql_str)
 {
 	raptor_uri* base_uri = raptor_new_uri((unsigned char*)slv2_plugin_get_uri(plugin));
@@ -156,7 +157,7 @@ slv2_plugin_query(SLV2Plugin* plugin,
 
 /** Query a single variable */
 SLV2Strings
-slv2_plugin_simple_query(SLV2Plugin* plugin,
+slv2_plugin_simple_query(SLV2Plugin  plugin,
                          const char* sparql_str,
                          const char* variable)
 {
@@ -174,7 +175,7 @@ slv2_plugin_simple_query(SLV2Plugin* plugin,
  * in the number of results (ie slv2_plugin_num_ports).
  */
 unsigned
-slv2_plugin_query_count(SLV2Plugin* plugin,
+slv2_plugin_query_count(SLV2Plugin  plugin,
                         const char* sparql_str)
 {
 	rasqal_query_results* results = slv2_plugin_query(plugin, sparql_str);
@@ -185,10 +186,9 @@ slv2_plugin_query_count(SLV2Plugin* plugin,
 }
 
 
-// FIXME: stupid interface
 size_t
-slv2_query_count_results(const SLV2Plugin* p,
-                         const char*       query)
+slv2_query_count_results(SLV2Plugin  p,
+                         const char* query)
 {
 	char* header    = slv2_query_header(p);
 	char* query_str = slv2_strjoin(header, query, NULL);
@@ -220,29 +220,5 @@ slv2_query_count_results(const SLV2Plugin* p,
 	free(header);
 
 	return count;
-}
-
-
-/*
-size_t
-slv2_query_get_num_results(rasqal_query_results* results, const char* var_name)
-{
-	size_t result = 0;
-
-    while (!rasqal_query_results_finished(results)) {
-		if (!strcmp((const char*)rasqal_query_results_get_binding_name(results, 0), var_name)) {
-			++result;
-		}
-        rasqal_query_results_next(results);
-	}
-
-	return result;
-}
-*/
-
-void
-slv2_strings_free(SLV2Strings list)
-{
-	raptor_free_sequence(list);
 }
 

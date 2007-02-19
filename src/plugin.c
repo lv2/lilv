@@ -24,14 +24,13 @@
 #include <rasqal.h>
 #include <slv2/plugin.h>
 #include <slv2/types.h>
-#include <slv2/query.h>
 #include <slv2/util.h>
 #include <slv2/stringlist.h>
 #include "private_types.h"
 
 
-SLV2Plugin*
-slv2_plugin_duplicate(const SLV2Plugin* p)
+SLV2Plugin
+slv2_plugin_duplicate(SLV2Plugin p)
 {
 	assert(p);
 	struct _Plugin* result = malloc(sizeof(struct _Plugin));
@@ -47,7 +46,7 @@ slv2_plugin_duplicate(const SLV2Plugin* p)
 
 
 const char*
-slv2_plugin_get_uri(const SLV2Plugin* p)
+slv2_plugin_get_uri(SLV2Plugin p)
 {
 	assert(p);
 	return p->plugin_uri;
@@ -55,7 +54,7 @@ slv2_plugin_get_uri(const SLV2Plugin* p)
 
 
 SLV2Strings
-slv2_plugin_get_data_uris(const SLV2Plugin* p)
+slv2_plugin_get_data_uris(SLV2Plugin p)
 {
 	assert(p);
 	return p->data_uris;
@@ -63,7 +62,7 @@ slv2_plugin_get_data_uris(const SLV2Plugin* p)
 
 
 const char*
-slv2_plugin_get_library_uri(const SLV2Plugin* p)
+slv2_plugin_get_library_uri(SLV2Plugin p)
 {
 	assert(p);
 	return p->lib_uri;
@@ -71,7 +70,7 @@ slv2_plugin_get_library_uri(const SLV2Plugin* p)
 
 
 bool
-slv2_plugin_verify(const SLV2Plugin* plugin)
+slv2_plugin_verify(SLV2Plugin plugin)
 {
 	// FIXME: finish this (properly)
 	
@@ -96,7 +95,7 @@ slv2_plugin_verify(const SLV2Plugin* plugin)
 
 
 char*
-slv2_plugin_get_name(const SLV2Plugin* plugin)
+slv2_plugin_get_name(SLV2Plugin plugin)
 {
 	char*          result = NULL;
 	SLV2Strings prop   = slv2_plugin_get_value(plugin, "doap:name");
@@ -113,24 +112,10 @@ slv2_plugin_get_name(const SLV2Plugin* plugin)
 
 
 SLV2Strings
-slv2_plugin_get_value(const SLV2Plugin* p,
-                      const char*       predicate)
+slv2_plugin_get_value(SLV2Plugin  p,
+                      const char* predicate)
 {
 	assert(predicate);
-
-	/*
-	char* header = slv2_query_header(p);
-	char* lang_filter = slv2_query_lang_filter("?value");
-	
-	char* query_string = slv2_strjoin(
-		header,
-		"SELECT DISTINCT ?value WHERE { \n",
-		"plugin: ", property, " ?value . \n",
-		((lang_filter != NULL) ? lang_filter : ""),
-		"}", 0);
-	
-	free(header);
-	free(lang_filter);*/
 
     char* query = slv2_strjoin(
 		"SELECT DISTINCT ?value WHERE {\n"
@@ -146,21 +131,21 @@ slv2_plugin_get_value(const SLV2Plugin* p,
 
 
 SLV2Strings
-slv2_plugin_get_properties(const SLV2Plugin* p)
+slv2_plugin_get_properties(SLV2Plugin p)
 {
 	return slv2_plugin_get_value(p, "lv2:pluginProperty");
 }
 
 
 SLV2Strings
-slv2_plugin_get_hints(const SLV2Plugin* p)
+slv2_plugin_get_hints(SLV2Plugin p)
 {
 	return slv2_plugin_get_value(p, "lv2:pluginHint");
 }
 
 
 uint32_t
-slv2_plugin_get_num_ports(const SLV2Plugin* p)
+slv2_plugin_get_num_ports(SLV2Plugin p)
 {
     const char* const query =
 		"SELECT DISTINCT ?port\n"
@@ -171,7 +156,7 @@ slv2_plugin_get_num_ports(const SLV2Plugin* p)
 
 
 bool
-slv2_plugin_has_latency(const SLV2Plugin* p)
+slv2_plugin_has_latency(SLV2Plugin p)
 {
     const char* const query = 
 		"SELECT DISTINCT ?port WHERE {\n"
@@ -190,7 +175,7 @@ slv2_plugin_has_latency(const SLV2Plugin* p)
 
 
 uint32_t
-slv2_plugin_get_latency_port(const SLV2Plugin* p)
+slv2_plugin_get_latency_port(SLV2Plugin p)
 {
     const char* const query = 
 		"SELECT DISTINCT ?value WHERE {\n"
@@ -212,7 +197,7 @@ slv2_plugin_get_latency_port(const SLV2Plugin* p)
 
 
 SLV2Strings
-slv2_plugin_get_supported_features(const SLV2Plugin* p)
+slv2_plugin_get_supported_features(SLV2Plugin p)
 {
     const char* const query = 
 		"SELECT DISTINCT ?feature WHERE {\n"
@@ -228,7 +213,7 @@ slv2_plugin_get_supported_features(const SLV2Plugin* p)
 
 
 SLV2Strings
-slv2_plugin_get_optional_features(const SLV2Plugin* p)
+slv2_plugin_get_optional_features(SLV2Plugin p)
 {
     const char* const query = 
 		"SELECT DISTINCT ?feature WHERE {\n"
@@ -242,7 +227,7 @@ slv2_plugin_get_optional_features(const SLV2Plugin* p)
 
 
 SLV2Strings
-slv2_plugin_get_required_features(const SLV2Plugin* p)
+slv2_plugin_get_required_features(SLV2Plugin p)
 {
     const char* const query = 
 		"SELECT DISTINCT ?feature WHERE {\n"

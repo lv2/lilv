@@ -24,20 +24,11 @@ extern "C" {
 #endif
 
 #include <assert.h>
-#include <dlfcn.h>
 #include <slv2/lv2.h>
 #include <slv2/plugin.h>
 #include <slv2/port.h>
 
 typedef struct _InstanceImpl* SLV2InstanceImpl;
-
-/** Instance of a plugin */
-typedef struct _Instance {
-	const LV2_Descriptor* lv2_descriptor;
-	LV2_Handle            lv2_handle;
-	SLV2InstanceImpl      pimpl; ///< Opaque
-} SLV2Instance;
-
 
 /** \defgroup lib Plugin Instance - Shared library access
  *
@@ -47,6 +38,21 @@ typedef struct _Instance {
  * 
  * @{
  */
+
+
+/** Instance of a plugin.
+ *
+ * The LV2 descriptor and handle of this are exposed to allow inlining of
+ * performance critical functions like slv2_instance_run (hiding things in
+ * lv2.h is pointless anyway).  The remaining implementation details are
+ * in the opaque pimpl member.
+ */
+typedef struct _Instance {
+	const LV2_Descriptor* lv2_descriptor;
+	LV2_Handle            lv2_handle;
+	SLV2InstanceImpl      pimpl; ///< Move along now, nothing to see here
+}* SLV2Instance;
+
 
 
 /** Instantiate a plugin.
@@ -64,8 +70,8 @@ typedef struct _Instance {
  *
  * \return NULL if instantiation failed.
  */
-SLV2Instance*
-slv2_plugin_instantiate(const SLV2Plugin*        plugin,
+SLV2Instance
+slv2_plugin_instantiate(SLV2Plugin               plugin,
                         uint32_t                 sample_rate,
                         const LV2_Host_Feature** host_features);
 
@@ -75,7 +81,7 @@ slv2_plugin_instantiate(const SLV2Plugin*        plugin,
  * \a instance is invalid after this call.
  */
 void
-slv2_instance_free(SLV2Instance* instance);
+slv2_instance_free(SLV2Instance instance);
 
 
 #ifndef LIBSLV2_SOURCE
@@ -86,7 +92,7 @@ slv2_instance_free(SLV2Instance* instance);
  * Returned string is shared and must not be modified or deleted.
  */
 static inline const char*
-slv2_instance_get_uri(SLV2Instance* instance)
+slv2_instance_get_uri(SLV2Instance instance)
 {
 	assert(instance);
 	assert(instance->lv2_descriptor);
@@ -101,9 +107,9 @@ slv2_instance_get_uri(SLV2Instance* instance)
  * activation and deactivation does not destroy port connections.
  */
 static inline void
-slv2_instance_connect_port(SLV2Instance* instance,
-                           uint32_t      port_index,
-                           void*         data_location)
+slv2_instance_connect_port(SLV2Instance instance,
+                           uint32_t     port_index,
+                           void*        data_location)
 {
 	assert(instance);
 	assert(instance->lv2_descriptor);
@@ -121,7 +127,7 @@ slv2_instance_connect_port(SLV2Instance* instance,
  * before calling slv2_instance_run.
  */
 static inline void
-slv2_instance_activate(SLV2Instance* instance)
+slv2_instance_activate(SLV2Instance instance)
 {
 	assert(instance);
 	assert(instance->lv2_descriptor);
@@ -137,8 +143,8 @@ slv2_instance_activate(SLV2Instance* instance)
  * guaranteed not to block.
  */
 static inline void
-slv2_instance_run(SLV2Instance* instance,
-                  uint32_t      sample_count)
+slv2_instance_run(SLV2Instance instance,
+                  uint32_t     sample_count)
 {
 	assert(instance);
 	assert(instance->lv2_descriptor);
@@ -155,7 +161,7 @@ slv2_instance_run(SLV2Instance* instance,
  * reset all state information (except port connections).
  */
 static inline void
-slv2_instance_deactivate(SLV2Instance* instance)
+slv2_instance_deactivate(SLV2Instance instance)
 {
 	assert(instance);
 	assert(instance->lv2_descriptor);
@@ -174,7 +180,7 @@ slv2_instance_deactivate(SLV2Instance* instance)
  * The returned descriptor is shared and must not be deleted.
  */
 static inline const LV2_Descriptor*
-slv2_instance_get_descriptor(SLV2Instance* instance)
+slv2_instance_get_descriptor(SLV2Instance instance)
 {
 	assert(instance);
 	assert(instance->lv2_descriptor);
@@ -191,7 +197,7 @@ slv2_instance_get_descriptor(SLV2Instance* instance)
  * The returned handle is shared and must not be deleted.
  */
 static inline LV2_Handle
-slv2_instance_get_handle(SLV2Instance* instance)
+slv2_instance_get_handle(SLV2Instance instance)
 {
 	assert(instance);
 	assert(instance->lv2_descriptor);

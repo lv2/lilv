@@ -28,8 +28,8 @@
 #include "private_types.h"
 
 
-SLV2Instance*
-slv2_plugin_instantiate(const SLV2Plugin*        plugin,
+SLV2Instance
+slv2_plugin_instantiate(SLV2Plugin               plugin,
                         uint32_t                 sample_rate,
                         const LV2_Host_Feature** host_features)
 {
@@ -114,7 +114,7 @@ slv2_plugin_instantiate(const SLV2Plugin*        plugin,
 
 
 void
-slv2_instance_free(SLV2Instance* instance)
+slv2_instance_free(SLV2Instance instance)
 {
 	struct _Instance* i = (struct _Instance*)instance;
 	i->lv2_descriptor->cleanup(i->lv2_handle);

@@ -19,7 +19,6 @@
 #ifndef __SLV2_TYPES_H__
 #define __SLV2_TYPES_H__
 
-#include <stddef.h>
 #include <stdbool.h>
 #include <stdint.h>
 

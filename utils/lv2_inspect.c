@@ -22,7 +22,7 @@
 
 
 void
-print_port(SLV2Plugin* p, uint32_t index)
+print_port(SLV2Plugin p, uint32_t index)
 {
 	SLV2PortID id = slv2_port_by_index(index);
 
@@ -76,7 +76,7 @@ print_port(SLV2Plugin* p, uint32_t index)
 
 
 void
-print_plugin(SLV2Plugin* p)
+print_plugin(SLV2Plugin p)
 {
 	char* str = NULL;
 
@@ -130,7 +130,7 @@ main(int argc, char** argv)
 	SLV2Plugins plugins = slv2_plugins_new();
 	slv2_plugins_load_all(plugins);
 
-	SLV2Plugin* p = slv2_plugins_get_by_uri(plugins, argv[1]);
+	SLV2Plugin p = slv2_plugins_get_by_uri(plugins, argv[1]);
 
 	if (!p) {
 		fprintf(stderr, "Plugin not found.\n");

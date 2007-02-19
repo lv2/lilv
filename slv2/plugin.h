@@ -24,13 +24,12 @@ extern "C" {
 #endif
 
 #include <stdint.h>
-#include <stddef.h>
 #include <stdbool.h>
 #include <slv2/types.h>
 #include <slv2/stringlist.h>
 
 
-typedef const struct _Plugin SLV2Plugin;
+typedef struct _Plugin* SLV2Plugin;
 
 
 /** \defgroup data Plugin - RDF data access
@@ -56,7 +55,7 @@ typedef const struct _Plugin SLV2Plugin;
  * \return true if \a plugin is valid.
  */
 bool
-slv2_plugin_verify(const SLV2Plugin* plugin);
+slv2_plugin_verify(SLV2Plugin plugin);
 
 
 /** Duplicate a plugin.
@@ -66,8 +65,8 @@ slv2_plugin_verify(const SLV2Plugin* plugin);
  *
  * \return a newly allocated deep copy of \a plugin.
  */
-SLV2Plugin*
-slv2_plugin_duplicate(const SLV2Plugin* plugin);
+SLV2Plugin
+slv2_plugin_duplicate(SLV2Plugin plugin);
 
 
 /** Get the URI of \a plugin.
@@ -85,7 +84,7 @@ slv2_plugin_duplicate(const SLV2Plugin* plugin);
  * \return a shared string which must not be modified or free()'d.
  */
 const char*
-slv2_plugin_get_uri(const SLV2Plugin* plugin);
+slv2_plugin_get_uri(SLV2Plugin plugin);
 
 
 /** Get the (resolvable) URIs of the RDF data files that define a plugin.
@@ -97,7 +96,7 @@ slv2_plugin_get_uri(const SLV2Plugin* plugin);
  * which is shared and must not be modified or free()'d.
  */
 SLV2Strings
-slv2_plugin_get_data_uris(const SLV2Plugin* plugin);
+slv2_plugin_get_data_uris(SLV2Plugin plugin);
 
 
 /** Get the (resolvable) URI of the shared library for \a plugin.
@@ -108,7 +107,7 @@ slv2_plugin_get_data_uris(const SLV2Plugin* plugin);
  * \return a shared string which must not be modified or free()'d.
  */
 const char*
-slv2_plugin_get_library_uri(const SLV2Plugin* plugin);
+slv2_plugin_get_library_uri(SLV2Plugin plugin);
 
 
 
@@ -119,7 +118,7 @@ slv2_plugin_get_library_uri(const SLV2Plugin* plugin);
  * the caller.
  */
 char*
-slv2_plugin_get_name(const SLV2Plugin* plugin);
+slv2_plugin_get_name(SLV2Plugin plugin);
 
 
 /** Request some arbitrary RDF object of the plugin.
@@ -136,8 +135,8 @@ slv2_plugin_get_name(const SLV2Plugin* plugin);
  * returned.
  */
 SLV2Strings
-slv2_plugin_get_value(const SLV2Plugin* p,
-                      const char*       predicate);
+slv2_plugin_get_value(SLV2Plugin  p,
+                      const char* predicate);
 
 
 /** Get the LV2 Properties of a plugin.
@@ -149,7 +148,7 @@ slv2_plugin_get_value(const SLV2Plugin* p,
  * Return value must be freed by caller with slv2_value_free.
  */
 SLV2Strings
-slv2_plugin_get_properties(const SLV2Plugin* p);
+slv2_plugin_get_properties(SLV2Plugin p);
 
 
 /** Get the LV2 Hints of a plugin.
@@ -160,13 +159,14 @@ slv2_plugin_get_properties(const SLV2Plugin* p);
  * Return value must be freed by caller with slv2_value_free.
  */
 SLV2Strings
-slv2_plugin_get_hints(const SLV2Plugin* p);
+slv2_plugin_get_hints(SLV2Plugin p);
 
 
 /** Get the number of ports on this plugin.
  */
 uint32_t
-slv2_plugin_get_num_ports(const SLV2Plugin* p);
+slv2_plugin_get_num_ports(SLV2Plugin p);
+
 
 /** Return whether or not the plugin introduces (and reports) latency.
  *
@@ -174,7 +174,8 @@ slv2_plugin_get_num_ports(const SLV2Plugin* p);
  * ONLY if this function returns true.
  */
 bool
-slv2_plugin_has_latency(const SLV2Plugin* p);
+slv2_plugin_has_latency(SLV2Plugin p);
+
 
 /** Return the index of the plugin's latency port, or the empty string if the
  * plugin has no latency.
@@ -187,7 +188,7 @@ slv2_plugin_has_latency(const SLV2Plugin* p);
  * rate output port that reports the latency for each cycle in frames.
  */
 uint32_t
-slv2_plugin_get_latency_port(const SLV2Plugin* p);
+slv2_plugin_get_latency_port(SLV2Plugin p);
 
 
 /** Get a plugin's supported host features / extensions.
@@ -195,7 +196,7 @@ slv2_plugin_get_latency_port(const SLV2Plugin* p);
  * This returns a list of all supported features (both required and optional).
  */
 SLV2Strings
-slv2_plugin_get_supported_features(const SLV2Plugin* p);
+slv2_plugin_get_supported_features(SLV2Plugin p);
 
 
 /** Get a plugin's requires host features / extensions.
@@ -204,7 +205,7 @@ slv2_plugin_get_supported_features(const SLV2Plugin* p);
  * instantiate method for the plugin to instantiate successfully.
  */
 SLV2Strings
-slv2_plugin_get_required_features(const SLV2Plugin* p);
+slv2_plugin_get_required_features(SLV2Plugin p);
 
 
 /** Get a plugin's optional host features / extensions.
@@ -214,7 +215,22 @@ slv2_plugin_get_required_features(const SLV2Plugin* p);
  * the plugin will act as it would if it did not support that feature at all.
  */
 SLV2Strings
-slv2_plugin_get_optional_features(const SLV2Plugin* p);
+slv2_plugin_get_optional_features(SLV2Plugin p);
+
+
+/** Query a plugin for a single variable.
+ */
+SLV2Strings
+slv2_plugin_simple_query(SLV2Plugin  plugin,
+                         const char* sparql_str,
+                         const char* variable);
+
+
+/** Query a plugin and return the number of results found.
+ */
+unsigned
+slv2_plugin_query_count(SLV2Plugin  plugin,
+                        const char* sparql_str);
 
 
 /** @} */

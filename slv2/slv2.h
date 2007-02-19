@@ -23,8 +23,6 @@
 extern "C" {
 #endif
 
-#include <rasqal.h>
-
 #include <slv2/library.h>
 #include <slv2/types.h>
 #include <slv2/plugin.h>
@@ -32,7 +30,6 @@ extern "C" {
 #include <slv2/pluginlist.h>
 #include <slv2/stringlist.h>
 #include <slv2/port.h>
-
 
 #ifdef __cplusplus
 }

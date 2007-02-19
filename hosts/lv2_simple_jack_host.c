@@ -26,8 +26,8 @@
 /** This program's data */
 struct JackHost {
 	jack_client_t* jack_client; /**< Jack client */
-	SLV2Plugin*    plugin;      /**< Plugin "class" (actually just a few strings) */
-	SLV2Instance*  instance;    /**< Plugin "instance" (loaded shared lib) */
+	SLV2Plugin     plugin;      /**< Plugin "class" (actually just a few strings) */
+	SLV2Instance   instance;    /**< Plugin "instance" (loaded shared lib) */
 	uint32_t       num_ports;   /**< Size of the two following arrays: */
 	jack_port_t**  jack_ports;  /**< For audio ports, otherwise NULL */
 	float*         controls;    /**< For control ports, otherwise 0.0f */
@@ -215,7 +215,7 @@ void
 list_plugins(SLV2Plugins list)
 {
 	for (unsigned i=0; i < slv2_plugins_size(list); ++i) {
-		const SLV2Plugin* const p = slv2_plugins_get_at(list, i);
+		SLV2Plugin p = slv2_plugins_get_at(list, i);
 		printf("%s\n", slv2_plugin_get_uri(p));
 	}
 }

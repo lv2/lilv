@@ -29,6 +29,11 @@ extern "C" {
 #include <slv2/lv2.h>
 
 
+/** The URI of the lv2.ttl file.
+ */
+extern raptor_uri* slv2_ontology_uri;
+
+
 /** Record of an installed/available plugin.
  *
  * A simple reference to a plugin somewhere on the system. This just holds
