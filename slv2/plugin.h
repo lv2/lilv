@@ -131,22 +131,40 @@ char*
 slv2_plugin_get_name(SLV2Plugin plugin);
 
 
-/** Request some arbitrary RDF object of the plugin.
+/** Get a value associated with the plugin in a plugin's data files.
  *
- * May return NULL if the property was not found (ie is not defined in the
- * data file), or if object is not sensibly represented as an SLV2Strings
- * (e.g. blank nodes).
+ * Returns the ?object of all triples found of the form:
  *
- * Return value must be freed by caller with slv2_value_free.
+ * <code>&lt;plugin-uri&gt; predicate ?object</code>
+ * 
+ * May return NULL if the property was not found, or if object is not
+ * sensibly represented as an SLV2Strings (e.g. blank nodes).
  *
- * Note that this may return multiple values. If the property is a
- * string with multiple languages defined, the translation according to
- * $LANG will be returned if it is set.  Otherwise all values will be
- * returned.
+ * Return value must be freed by caller with slv2_strings_free.
  */
 SLV2Strings
 slv2_plugin_get_value(SLV2Plugin  p,
                       const char* predicate);
+
+
+/** Get a value associated with some subject in a plugin's data files.
+ *
+ * Returns the ?object of all triples found of the form:
+ *
+ * <code>subject predicate ?object</code>
+ *
+ * This can be used to investigate URIs returned by slv2_plugin_get_value
+ * (if information about it is contained in the plugin's data files).
+ *
+ * May return NULL if the property was not found, or if object is not
+ * sensibly represented as an SLV2Strings (e.g. blank nodes).
+ *
+ * Return value must be freed by caller with slv2_strings_free.
+ */
+SLV2Strings
+slv2_plugin_get_value_for_subject(SLV2Plugin  p,
+                                 const char* subject,
+                                 const char* predicate);
 
 
 /** Get the LV2 Properties of a plugin.

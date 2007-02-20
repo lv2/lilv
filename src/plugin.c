@@ -172,6 +172,26 @@ slv2_plugin_get_value(SLV2Plugin  p,
 	return result;
 }
 
+	
+SLV2Strings
+slv2_plugin_get_value_for_subject(SLV2Plugin  p,
+                                  const char* subject,
+                                  const char* predicate)
+{
+	assert(predicate);
+
+    char* query = slv2_strjoin(
+		"SELECT DISTINCT ?value WHERE {\n",
+		subject, " ", predicate, " ?value .\n"
+		"}\n", NULL);
+
+	SLV2Strings result = slv2_plugin_simple_query(p, query, "value");
+	
+	free(query);
+
+	return result;
+}
+
 
 SLV2Strings
 slv2_plugin_get_properties(SLV2Plugin p)
