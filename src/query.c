@@ -117,6 +117,11 @@ slv2_plugin_query(SLV2Plugin plugin,
 
 	rasqal_query *rq = rasqal_new_query("sparql", NULL);
 	
+	if (!rq) {
+		fprintf(stderr, "ERROR: Could not create Rasqal query\n");
+		return NULL;
+	}
+
 	char* header    = slv2_query_header(plugin);
 	char* query_str = slv2_strjoin(header, sparql_str, NULL);
 
@@ -182,10 +187,14 @@ slv2_plugin_query_count(SLV2Plugin  plugin,
                         const char* sparql_str)
 {
 	rasqal_query_results* results = slv2_plugin_query(plugin, sparql_str);
-	unsigned ret = slv2_query_count_bindings(results);
-	rasqal_free_query_results(results);
 
-	return ret;
+	if (results) {
+		unsigned ret = slv2_query_count_bindings(results);
+		rasqal_free_query_results(results);
+		return ret;
+	} else {
+		return 0;
+	}
 }
 
 
