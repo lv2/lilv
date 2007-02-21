@@ -1,4 +1,3 @@
-You should not be reading this.
-
-Tell no one!
+SLV2 is a library for LV2 hosts intended to make using LV2 Plugins as simple
+as possible (without sacrificing capabilities).
 
