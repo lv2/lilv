@@ -179,8 +179,10 @@ typedef struct _LV2_Descriptor {
    * as the plugin descriptor from which this instantiate function was
    * found. This function must return NULL if instantiation fails.
    *
-   * BundlePath is a string of the path to the plugin's .lv2 bundle
-   * directory, it MUST NOT include the trailing /.
+   * BundlePath is a string of the path to the LV2 bundle which contains
+   * this plugin binary.  It MUST include the trailing directory separator
+   * (e.g. '/') so that BundlePath + filename gives the path to a file
+   * in the bundle.
    *
    * HostFeatures is a NULL terminated array of the URIs of the LV2
    * features that the host supports. Plugins may refuse to instantiate
