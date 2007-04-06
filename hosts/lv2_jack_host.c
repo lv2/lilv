@@ -69,7 +69,6 @@ main(int argc, char** argv)
 	/* Find all installed plugins */
 	SLV2Plugins plugins = slv2_plugins_new();
 	slv2_plugins_load_all(plugins);
-	//slv2_plugins_load_bundle(plugins, "http://www.scs.carleton.ca/~drobilla/files/Amp-swh.lv2");
 
 	/* Find the plugin to run */
 	const char* plugin_uri = (argc == 2) ? argv[1] : NULL;
