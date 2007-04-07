@@ -249,11 +249,11 @@ jack_process_cb(jack_nframes_t nframes, void* data)
 			jack_midi_event_t ev;
 
 			const jack_nframes_t event_count
-				= jack_midi_get_event_count(jack_buffer, nframes);
+				= jack_midi_get_event_count(jack_buffer);
 
 			for (jack_nframes_t e=0; e < event_count; ++e) {
 
-				jack_midi_event_get(&ev, jack_buffer, e, nframes);
+				jack_midi_event_get(&ev, jack_buffer, e);
 
 				state.midi = host->ports[p].midi_buffer;
 				lv2midi_put_event(&state, (double)ev.time, ev.size, ev.buffer);
@@ -278,7 +278,7 @@ jack_process_cb(jack_nframes_t nframes, void* data)
 
 			void* jack_buffer = jack_port_get_buffer(host->ports[p].jack_port, nframes);
 
-			jack_midi_clear_buffer(jack_buffer, nframes);
+			jack_midi_clear_buffer(jack_buffer);
 
 			LV2_MIDIState state;
 			lv2midi_reset_state(&state, host->ports[p].midi_buffer, nframes);
@@ -293,7 +293,7 @@ jack_process_cb(jack_nframes_t nframes, void* data)
 				lv2midi_get_event(&state, &timestamp, &size, &data);
 
 				jack_midi_event_write(jack_buffer,
-						(jack_nframes_t)timestamp, data, size, nframes);
+						(jack_nframes_t)timestamp, data, size);
 
 				lv2midi_increment(&state);
 			}
