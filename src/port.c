@@ -118,12 +118,13 @@ slv2_port_get_value(SLV2Plugin  p,
 		result = slv2_plugin_simple_query(p, query, "value");
 
 		free(query);
+	
 	} else {
 
 		char* query = slv2_strjoin(
 				"SELECT DISTINCT ?value WHERE { \n"
 				"plugin: lv2:port ?port . \n"
-				"?port lv2:symbol ", id.symbol, " ;\n\t",
+				"?port lv2:symbol \"", id.symbol, "\" ;\n\t",
 				       property, "   ?value . \n}\n", NULL);
 		
 		result = slv2_plugin_simple_query(p, query, "value");
