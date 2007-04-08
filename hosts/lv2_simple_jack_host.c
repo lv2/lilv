@@ -21,6 +21,7 @@
 #include <string.h>
 #include <slv2/slv2.h>
 #include <jack/jack.h>
+#include "jack_compat.h"
 
 
 /** This program's data */

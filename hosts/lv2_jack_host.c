@@ -21,6 +21,7 @@
 #include <string.h>
 #include <slv2/slv2.h>
 #include <jack/jack.h>
+#include "jack_compat.h"
 
 #define WITH_MIDI 1
 #define MIDI_BUFFER_SIZE 1024
