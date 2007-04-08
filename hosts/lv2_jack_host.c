@@ -294,8 +294,13 @@ jack_process_cb(jack_nframes_t nframes, void* data)
 			for (uint32_t i=0; i < event_count; ++i) {
 				lv2midi_get_event(&state, &timestamp, &size, &data);
 
+#if defined(JACK_MIDI_NEEDS_NFRAMES)
+				jack_midi_event_write(jack_buffer,
+                              (jack_nframes_t)timestamp, data, size, nframes);
+#else
 				jack_midi_event_write(jack_buffer,
 						(jack_nframes_t)timestamp, data, size);
+#endif
 
 				lv2midi_increment(&state);
 			}

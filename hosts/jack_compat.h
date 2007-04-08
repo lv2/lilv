@@ -45,6 +45,15 @@ jack_midi_event_get_compat(
 
 #define jack_midi_event_get jack_midi_event_get_compat
 
+void
+jack_midi_clear_buffer_compat(
+  void * port_buffer)
+{
+  jack_midi_clear_buffer(port_buffer, 0);
+}
+
+#define jack_midi_clear_buffer jack_midi_clear_buffer_compat
+
 #else
 
 #if defined(HAVE_OLD_JACK_MIDI)
