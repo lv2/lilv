@@ -56,6 +56,10 @@ AC_ARG_ENABLE(jack,
 if test "$build_jack" = "yes"; then
 	PKG_CHECK_MODULES(JACK, jack >= 0.102.29, build_jack="yes", build_jack="no")
 	AC_DEFINE(HAVE_JACK, 1, [Has JACK])
+	AC_JACK_MIDI_NFRAMES_CHECK()  	   	
+	if test "$jackmidi_nframes" == "yes"; then 	  	
+		AC_DEFINE([JACK_MIDI_NEEDS_NFRAMES], 1, [Defined if we JACK MIDI functions need nframes parameter.]) 	  	
+	fi
 else
 	AC_MSG_WARN("Sufficiently recent JACK not found, JACK clients will not be built.")
 fi

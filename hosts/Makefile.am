@@ -14,7 +14,12 @@ lv2_jack_host_LDADD        = ../src/libslv2.la @JACK_LIBS@ @RASQAL_LIBS@
 lv2_simple_jack_host_LDADD = ../src/libslv2.la @JACK_LIBS@ @RASQAL_LIBS@
 
 lv2_jack_host_SOURCES = \
+	jack_compat.c \
 	lv2_jack_host.c
+
+lv2_simple_jack_host_SOURCES = \
+	jack_compat.c \
+	lv2_simple_jack_host.c
 
 endif
 
