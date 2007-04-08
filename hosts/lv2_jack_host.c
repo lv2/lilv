@@ -21,9 +21,7 @@
 #include <string.h>
 #include <slv2/slv2.h>
 #include <jack/jack.h>
-
 #include "../config.h"
-#include "jack_compat.h"
 
 #define WITH_MIDI 1
 #define MIDI_BUFFER_SIZE 1024
@@ -32,6 +30,7 @@
 #include <jack/midiport.h>
 #include "lv2-miditype.h"
 #include "lv2-midifunctions.h"
+#include "jack_compat.h"
 #endif // WITH_MIDI
 
 struct Port {
