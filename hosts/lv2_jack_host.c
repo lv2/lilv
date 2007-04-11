@@ -21,17 +21,13 @@
 #include <string.h>
 #include <slv2/slv2.h>
 #include <jack/jack.h>
-#include "../config.h"
-
-#define WITH_MIDI 1
-#define MIDI_BUFFER_SIZE 1024
-
-#ifdef WITH_MIDI
 #include <jack/midiport.h>
+#include "../config.h"
 #include "lv2-miditype.h"
 #include "lv2-midifunctions.h"
 #include "jack_compat.h"
-#endif // WITH_MIDI
+
+#define MIDI_BUFFER_SIZE 1024
 
 struct Port {
 	SLV2PortID    id;
@@ -244,27 +240,25 @@ jack_process_cb(jack_nframes_t nframes, void* data)
 		} else if (host->ports[p].class == SLV2_MIDI_INPUT) {
 			void* jack_buffer = jack_port_get_buffer(host->ports[p].jack_port, nframes);
 
+			lv2midi_reset_buffer(host->ports[p].midi_buffer);
+			
 			LV2_MIDIState state;
 			lv2midi_reset_state(&state, host->ports[p].midi_buffer, nframes);
-			lv2midi_reset_buffer(state.midi);
-
-			jack_midi_event_t ev;
 
 			const jack_nframes_t event_count
 				= jack_midi_get_event_count(jack_buffer);
+			
+			jack_midi_event_t ev;
 
 			for (jack_nframes_t e=0; e < event_count; ++e) {
-
 				jack_midi_event_get(&ev, jack_buffer, e);
-
-				state.midi = host->ports[p].midi_buffer;
 				lv2midi_put_event(&state, (double)ev.time, ev.size, ev.buffer);
 			}
+
 		} else if (host->ports[p].class == SLV2_MIDI_OUTPUT) {
 
-			LV2_MIDIState state;
-			lv2midi_reset_state(&state, host->ports[p].midi_buffer, nframes);
-			lv2midi_reset_buffer(state.midi);
+			lv2midi_reset_buffer(host->ports[p].midi_buffer);
+		
 		}
 	}
 	
