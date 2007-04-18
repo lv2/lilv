@@ -32,11 +32,10 @@ extern "C" {
 typedef struct _Plugin* SLV2Plugin;
 
 
-/** \defgroup data Plugin - RDF data access
+/** \defgroup data Data file access
  *
- * These functions work exclusively with the plugin's RDF data file.  They do
- * not load the plugin dynamic library (or access
- * it in any way).
+ * These functions work exclusively with the plugin's RDF data file.
+ * They do not load or access the plugin dynamic library in any way.
  *
  * @{
  */
@@ -247,6 +246,10 @@ slv2_plugin_get_optional_features(SLV2Plugin p);
 
 
 /** Query a plugin for a single variable.
+ *
+ * \param sparql_str A SPARQL SELECT query.
+ * \param variable The variable to return results for.
+ * \return All matches for \a variable.
  */
 SLV2Strings
 slv2_plugin_simple_query(SLV2Plugin  plugin,
@@ -255,6 +258,8 @@ slv2_plugin_simple_query(SLV2Plugin  plugin,
 
 
 /** Query a plugin and return the number of results found.
+ *
+ * \param sparql_str A SPARQL SELECT query.
  */
 unsigned
 slv2_plugin_query_count(SLV2Plugin  plugin,

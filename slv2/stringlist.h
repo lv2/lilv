@@ -26,7 +26,7 @@ extern "C" {
 #endif
 
 
-/** \defgroup strings Strings - Collection of strings
+/** \defgroup strings Collections of strings
  *
  * SLV2Strings is an ordered collection of strings which is fast for random
  * access by index (i.e. a fancy array).
@@ -52,13 +52,13 @@ slv2_strings_size(SLV2Strings list);
 
 /** Get a string from a string list at the given index.
  *
- * @return the element at @a index, or NULL if index is out of range.
+ * @return the element at \a index, or NULL if index is out of range.
  */
 const char*
 slv2_strings_get_at(SLV2Strings list, unsigned index);
 
 
-/** Return whether @a list contains @a uri.
+/** Return whether \a list contains \a uri.
  */
 bool
 slv2_strings_contains(SLV2Strings list, const char* uri);

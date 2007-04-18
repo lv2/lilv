@@ -35,7 +35,7 @@ extern "C" {
 /** Convert a full URI (eg file://foo/bar/baz.ttl) to a local path (e.g. /foo/bar/baz.ttl).
  *
  * Return value is shared and must not be deleted by caller.
- * @return @a uri converted to a path, or NULL on failure (URI is not local).
+ * \return \a uri converted to a path, or NULL on failure (URI is not local).
  */
 const char* slv2_uri_to_path(const char* uri);
 

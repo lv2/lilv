@@ -27,7 +27,7 @@ extern "C" {
 typedef void* SLV2Plugins;
 
 
-/** \defgroup plugins Plugins - Collection of plugins, plugin discovery
+/** \defgroup plugins Discovery and lists of plugins
  * 
  * These functions are for locating plugins installed on the system.
  *
@@ -69,10 +69,10 @@ slv2_plugins_free(SLV2Plugins list);
 
 /** Filter plugins from one list into another.
  *
- * All plugins in @a source that return true when passed to @a include
+ * All plugins in \a source that return true when passed to \a include
  * (a pointer to a function that takes an SLV2Plugin and returns a bool)
- * will be added to @a dest.  Plugins are duplicated into dest, it is safe
- * to destroy source and continue to use dest after this call.
+ * will be added to \a dest.  Plugins are duplicated into \a dest, it is safe
+ * to destroy \a source and continue to use \a dest after this call.
  */
 void
 slv2_plugins_filter(SLV2Plugins dest,

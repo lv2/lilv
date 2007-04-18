@@ -30,11 +30,11 @@ extern "C" {
 
 typedef struct _InstanceImpl* SLV2InstanceImpl;
 
-/** \defgroup lib Plugin Instance - Shared library access
+/** \defgroup lib Shared library access
  *
  * An SLV2Instance is an instantiated SLV2Plugin (eg a loaded dynamic
  * library).  These functions interact with the binary library code only,
- * they do not read any RDF data files whatsoever.
+ * they do not read data files in any way.
  * 
  * @{
  */
@@ -137,7 +137,7 @@ slv2_instance_activate(SLV2Instance instance)
 }
 
 
-/** Run @a instance for @a sample_count frames.
+/** Run \a instance for \a sample_count frames.
  *
  * If the hint lv2:hardRtCapable is set for this plugin, this function is
  * guaranteed not to block.
