@@ -8,6 +8,7 @@ AM_INIT_AUTOMAKE
 
 # Checks for compiler
 AC_PROG_CC
+AM_PROG_CC_C_O
 
 # Check pedantic other stuff autoscan says we should :)
 AC_C_CONST
