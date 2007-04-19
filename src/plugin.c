@@ -31,10 +31,10 @@
 
 /* private */
 SLV2Plugin
-slv2_plugin_new(SLV2Model model, librdf_uri* uri, const char* binary_uri)
+slv2_plugin_new(SLV2World world, librdf_uri* uri, const char* binary_uri)
 {
 	struct _Plugin* plugin = malloc(sizeof(struct _Plugin));
-	plugin->model = model;
+	plugin->world = world;
 	plugin->plugin_uri = librdf_new_uri_from_uri(uri);
 	plugin->binary_uri = strdup(binary_uri);
 	plugin->data_uris = raptor_new_sequence((void (*)(void*))&raptor_free_uri, NULL);
@@ -84,11 +84,9 @@ slv2_plugin_query(SLV2Plugin plugin,
 SLV2Plugin
 slv2_plugin_duplicate(SLV2Plugin p)
 {
-	fprintf(stderr, "FIXME: duplicate\n");
-
 	assert(p);
 	struct _Plugin* result = malloc(sizeof(struct _Plugin));
-	result->model = p->model;
+	result->world = p->world;
 	result->plugin_uri = librdf_new_uri_from_uri(p->plugin_uri);
 
 	//result->bundle_url = strdup(p->bundle_url);
@@ -102,7 +100,6 @@ slv2_plugin_duplicate(SLV2Plugin p)
 	for (int i=0; i < raptor_sequence_size(p->ports); ++i)
 		raptor_sequence_push(result->ports, slv2_port_duplicate(raptor_sequence_get_at(p->ports, i)));
 
-	result->ports = NULL;
 	result->storage = NULL;
 	result->rdf = NULL;
 
@@ -133,15 +130,15 @@ slv2_plugin_load(SLV2Plugin p)
 
 	if (!p->storage) {
 		assert(!p->rdf);
-		p->storage = librdf_new_storage(p->model->world, "hashes", NULL,
+		p->storage = librdf_new_storage(p->world->world, "hashes", NULL,
 				"hash-type='memory'");
-		p->rdf = librdf_new_model(p->model->world, p->storage, NULL);
+		p->rdf = librdf_new_model(p->world->world, p->storage, NULL);
 	}
 
 	// Parse all the plugin's data files into RDF model
 	for (int i=0; i < raptor_sequence_size(p->data_uris); ++i) {
 		librdf_uri* data_uri = raptor_sequence_get_at(p->data_uris, i);
-		librdf_parser_parse_into_model(p->model->parser, data_uri, NULL, p->rdf);
+		librdf_parser_parse_into_model(p->world->parser, data_uri, NULL, p->rdf);
 	}
 
 	// Load ports
@@ -153,7 +150,7 @@ slv2_plugin_load(SLV2Plugin p)
 		"      :index  ?index .\n"
 		"}";
 	
-	librdf_query* q = librdf_new_query(p->model->world, "sparql",
+	librdf_query* q = librdf_new_query(p->world->world, "sparql",
 		NULL, query, p->plugin_uri);
 	
 	librdf_query_results* results = librdf_query_execute(q, p->rdf);

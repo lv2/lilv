@@ -63,9 +63,9 @@ main(int argc, char** argv)
 	host.ports       = NULL;
 	
 	/* Find all installed plugins */
-	SLV2Model model = slv2_model_new();
-	slv2_model_load_all(model);
-	SLV2Plugins plugins = slv2_model_get_all_plugins(model);
+	SLV2World world = slv2_world_new();
+	slv2_world_load_all(world);
+	SLV2Plugins plugins = slv2_world_get_all_plugins(world);
 
 	/* Find the plugin to run */
 	const char* plugin_uri = (argc == 2) ? argv[1] : NULL;
@@ -140,7 +140,7 @@ main(int argc, char** argv)
 	}
 	jack_client_close(host.jack_client);
 	
-	slv2_model_free(model);
+	slv2_world_free(world);
 
 	return 0;
 }

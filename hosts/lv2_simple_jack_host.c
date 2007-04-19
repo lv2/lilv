@@ -24,8 +24,8 @@
 int
 main(/*int argc, char** argv*/)
 {
-	SLV2Model model = slv2_model_new();
-	slv2_model_load_all(model);
+	SLV2World world = slv2_world_new();
+	slv2_world_load_all(world);
 	
 
 	/*printf("********** All plugins **********\n");
@@ -62,7 +62,7 @@ main(/*int argc, char** argv*/)
 	slv2_plugins_free(plugins);
 	*/
 
-	slv2_model_free(model);
+	slv2_world_free(world);
 	
 	return 0;
 }

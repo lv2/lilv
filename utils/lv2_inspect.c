@@ -138,15 +138,15 @@ print_plugin(SLV2Plugin p)
 int
 main(int argc, char** argv)
 {
-	SLV2Model model = slv2_model_new();
-	slv2_model_load_all(model);
+	SLV2World world = slv2_world_new();
+	slv2_world_load_all(world);
 
 	if (argc != 2) {
 		fprintf(stderr, "Usage: %s PLUGIN_URI\n", argv[0]);
 		return -1;
 	}
 
-	SLV2Plugins plugins = slv2_model_get_all_plugins(model);
+	SLV2Plugins plugins = slv2_world_get_all_plugins(world);
 
 	SLV2Plugin p = slv2_plugins_get_by_uri(plugins, argv[1]);
 
@@ -158,7 +158,7 @@ main(int argc, char** argv)
 	}
 
 	slv2_plugins_free(plugins);
-	slv2_model_free(model);
+	slv2_world_free(world);
 
 	return (p != NULL ? 0 : -1);
 }

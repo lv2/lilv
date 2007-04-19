@@ -124,7 +124,7 @@ slv2_plugin_query(SLV2Plugin  plugin,
 
 	//printf("******** Query \n%s********\n", query_str);
 	
-	librdf_query *rq = librdf_new_query(plugin->model->world, "sparql", NULL,
+	librdf_query *rq = librdf_new_query(plugin->world->world, "sparql", NULL,
 			(const unsigned char*)query_str, base_uri);
 	
 	if (!rq) {
@@ -200,7 +200,7 @@ slv2_query_count_results(SLV2Plugin  p,
 	assert(p);
 	assert(query_str);
 
-	librdf_query *rq = librdf_new_query(p->model->world, "sparql", NULL,
+	librdf_query *rq = librdf_new_query(p->world->world, "sparql", NULL,
 			(unsigned char*)query_str, NULL);
 
 	//printf("Query: \n%s\n\n", query_str);
@@ -209,7 +209,7 @@ slv2_query_count_results(SLV2Plugin  p,
 	//librdf_query_add_data_graph(rq, slv2_ontology_uri,
 	//	NULL, RASQAL_DATA_GRAPH_BACKGROUND);
 	
-	librdf_query_results* results = librdf_query_execute(rq, p->model->model);
+	librdf_query_results* results = librdf_query_execute(rq, p->world->model);
 	assert(results);
 	
 	size_t count = slv2_query_count_bindings(results);

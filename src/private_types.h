@@ -48,8 +48,7 @@ void     slv2_port_free(SLV2Port port);
  * paths of relevant files, the actual data therein isn't loaded into memory.
  */
 struct _Plugin {
-	int              deletable;
-	struct _Model*   model;
+	struct _World*   world;
 	librdf_uri*      plugin_uri;
 //	char*            bundle_url; // Bundle directory plugin was loaded from
 	char*            binary_uri; // lv2:binary
@@ -59,7 +58,7 @@ struct _Plugin {
 	librdf_model*    rdf;
 };
 
-SLV2Plugin slv2_plugin_new(SLV2Model model, librdf_uri* uri, const char* binary_uri);
+SLV2Plugin slv2_plugin_new(SLV2World world, librdf_uri* uri, const char* binary_uri);
 void       slv2_plugin_load(SLV2Plugin p);
 
 
@@ -77,7 +76,7 @@ struct _InstanceImpl {
 
 /** Model of LV2 (RDF) data loaded from bundles.
  */
-struct _Model {
+struct _World {
 	librdf_world*       world;
 	librdf_storage*     storage;
 	librdf_model*       model;

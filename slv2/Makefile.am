@@ -4,7 +4,7 @@ slv2include_HEADERS = \
 	lv2.h \
 	types.h \
 	slv2.h \
-	model.h \
+	world.h \
 	plugin.h \
 	port.h \
 	pluginlist.h \

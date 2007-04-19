@@ -32,7 +32,7 @@ typedef void* SLV2Plugins;
 /** \defgroup plugins Plugin lists
  * 
  * These functions work with lists of plugins which come from an
- * SLV2Model.  These lists contain only a weak reference to an LV2 plugin
+ * SLV2World.  These lists contain only a weak reference to an LV2 plugin
  * in the Model.
  *
  * @{

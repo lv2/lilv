@@ -47,7 +47,7 @@ typedef struct _Port* SLV2Port;
 
 typedef struct _Plugin* SLV2Plugin;
 
-typedef struct _Model* SLV2Model;
+typedef struct _World* SLV2World;
 
 #ifdef __cplusplus
 }

@@ -31,12 +31,12 @@ extern "C" {
 
 /** \defgroup data Plugin data access
  *
- * These functions work exclusively with the plugin's RDF data file.
+ * These functions work exclusively with the plugin's RDF data.
  * They do not load or access the plugin dynamic library in any way.
  *
- * An SLV2Plugin is a weak reference (ie URIs) to an LV2 plugin in the
- * Model.  Most functions which operate on an SLV2Plugin actually query
- * the data in the model.
+ * An SLV2Plugin contains an in-memory cache of the plugin data, loaded
+ * on demand.  Duplicating plugins should be avoided when possible for
+ * performance reasons.
  *
  * @{
  */
