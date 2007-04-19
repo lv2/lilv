@@ -20,40 +20,20 @@
 #include <string.h>
 #include <stdlib.h>
 #include <assert.h>
-#include <rasqal.h>
+#include <librdf.h>
 #include <slv2/plugin.h>
-#include <slv2/library.h>
 #include <slv2/util.h>
 #include <slv2/stringlist.h>
 #include "private_types.h"
 
 
-char*
-slv2_query_header(SLV2Plugin p)
-{
-	const char* const plugin_uri = slv2_plugin_get_uri(p);
-	//SLV2Strings files = slv2_plugin_get_data_uris(p);
+static const char* slv2_query_prefixes =
+	"PREFIX rdf:    <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n"
+	"PREFIX rdfs:   <http://www.w3.org/2000/01/rdf-schema#>\n"
+	"PREFIX doap:   <http://usefulinc.com/ns/doap#>\n"
+	"PREFIX lv2:    <http://lv2plug.in/ontology#>\n";
 
-	char* query_string = slv2_strjoin(
-	  "PREFIX rdf:    <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n"
-	  "PREFIX rdfs:   <http://www.w3.org/2000/01/rdf-schema#>\n"
-	  "PREFIX doap:   <http://usefulinc.com/ns/doap#>\n"
-	  "PREFIX lv2:    <http://lv2plug.in/ontology#>\n"
-	  "PREFIX plugin: <", plugin_uri, ">\n", NULL);
-
-	/*for (int i=0; i < slv2_strings_size(files); ++i) {
-		const char* file_uri = slv2_strings_get_at(files, i);
-		slv2_strappend(&query_string, "PREFIX data: <");
-		slv2_strappend(&query_string, file_uri);
-		slv2_strappend(&query_string, ">\n");
-	}*/
-
-	slv2_strappend(&query_string, "\n");
-
-	return query_string;
-}
-
-
+#if 0
 char*
 slv2_query_lang_filter(const char* variable)
 {
@@ -69,26 +49,48 @@ slv2_query_lang_filter(const char* variable)
 
 	return result;
 }
-
+#endif
 
 SLV2Strings
-slv2_query_get_variable_bindings(rasqal_query_results* results,
+slv2_query_get_variable_bindings(librdf_query_results* results,
                                  const char*           variable)
 {
 	SLV2Strings result = NULL;
 
-    if (rasqal_query_results_get_bindings_count(results) > 0)
+    if (librdf_query_results_get_bindings_count(results) > 0)
 		result = slv2_strings_new();
 
-    while (!rasqal_query_results_finished(results)) {
+    while (!librdf_query_results_finished(results)) {
 
-        rasqal_literal* literal =
-            rasqal_query_results_get_binding_value_by_name(results, (const unsigned char*)variable);
-        assert(literal != NULL);
+        librdf_node* node =
+            librdf_query_results_get_binding_value_by_name(results, variable);
+		
+		char* str = NULL;
 
-		raptor_sequence_push(result, strdup((const char*)rasqal_literal_as_string(literal)));
+		switch (librdf_node_get_type(node)) {
+		case LIBRDF_NODE_TYPE_RESOURCE:
+			str = strdup((const char*)librdf_uri_as_string(librdf_node_get_uri(node)));
+			break;
+		case LIBRDF_NODE_TYPE_LITERAL:
+			str = strdup((const char*)librdf_node_get_literal_value(node));
+			break;
+		case LIBRDF_NODE_TYPE_BLANK:
+			str = strdup((const char*)librdf_node_get_blank_identifier(node));
+			break;
+		case LIBRDF_NODE_TYPE_UNKNOWN:
+		default:
+			fprintf(stderr, "Unknown variable binding type for ?%s\n", variable);
+			break;
+		}
+			
+		if (str) {
+			//printf("?%s = %s\n", variable, str);
+			raptor_sequence_push(result, str);
+		}
 
-        rasqal_query_results_next(results);
+		librdf_free_node(node);
+
+        librdf_query_results_next(results);
     }
 
     return result;
@@ -96,70 +98,61 @@ slv2_query_get_variable_bindings(rasqal_query_results* results,
 
 
 size_t
-slv2_query_count_bindings(rasqal_query_results* results)
+slv2_query_count_bindings(librdf_query_results* results)
 {
 	size_t count = 0;
 
-    while (!rasqal_query_results_finished(results)) {
+    while (!librdf_query_results_finished(results)) {
 		++count;
-        rasqal_query_results_next(results);
+        librdf_query_results_next(results);
     }
 
     return count;
 }
 
 	
-rasqal_query_results*
-slv2_plugin_query(SLV2Plugin plugin,
+librdf_query_results*
+slv2_plugin_query(SLV2Plugin  plugin,
                   const char* sparql_str)
 {
-	raptor_uri* base_uri = raptor_new_uri((unsigned char*)slv2_plugin_get_uri(plugin));
+	if (!plugin->rdf)
+		slv2_plugin_load(plugin);
 
-	rasqal_query *rq = rasqal_new_query("sparql", NULL);
+	librdf_uri* base_uri = plugin->plugin_uri;
+
+	char* query_str = slv2_strjoin(slv2_query_prefixes, sparql_str, NULL);
+
+	//printf("******** Query \n%s********\n", query_str);
+	
+	librdf_query *rq = librdf_new_query(plugin->model->world, "sparql", NULL,
+			(const unsigned char*)query_str, base_uri);
 	
 	if (!rq) {
-		fprintf(stderr, "ERROR: Could not create Rasqal query\n");
+		fprintf(stderr, "ERROR: Could not create query\n");
 		return NULL;
 	}
-
-	char* header    = slv2_query_header(plugin);
-	char* query_str = slv2_strjoin(header, sparql_str, NULL);
-
-	//printf("Query: \n%s\n\n", query_str);
-
-	rasqal_query_prepare(rq, (unsigned char*)query_str, base_uri);
 	
 	// Add LV2 ontology to query sources
-	rasqal_query_add_data_graph(rq, slv2_ontology_uri, 
-		NULL, RASQAL_DATA_GRAPH_BACKGROUND);
+	//librdf_query_add_data_graph(rq, slv2_ontology_uri, 
+	//	NULL, RASQAL_DATA_GRAPH_BACKGROUND);
 	
 	// Add all plugin data files to query sources
-	for (unsigned i=0; i < slv2_strings_size(plugin->data_uris); ++i) {
+	/*for (unsigned i=0; i < slv2_strings_size(plugin->data_uris); ++i) {
 		const char* file_uri_str = slv2_strings_get_at(plugin->data_uris, i);
 		raptor_uri* file_uri = raptor_new_uri((const unsigned char*)file_uri_str);
-		rasqal_query_add_data_graph(rq, file_uri,
+		librdf_query_add_data_graph(rq, file_uri,
 			NULL, RASQAL_DATA_GRAPH_BACKGROUND);
 		raptor_free_uri(file_uri);
-	}
+	}*/
 
-	rasqal_query_results* results = rasqal_query_execute(rq);
+	librdf_query_results* results = librdf_query_execute(rq, plugin->rdf);
 	
-	rasqal_free_query(rq);
-	raptor_free_uri(base_uri);
+	librdf_free_query(rq);
 
-	free(header);
 	free(query_str);
 
 	// FIXME: results leaked internally in places?
 	return results;
-
-	/*
-	SLV2Strings ret = slv2_query_get_variable_bindings(results, var_name);
-	
-	rasqal_free_query_results(results);
-	rasqal_free_query(rq);
-
-	return ret;*/
 }
 
 
@@ -169,9 +162,9 @@ slv2_plugin_simple_query(SLV2Plugin  plugin,
                          const char* sparql_str,
                          const char* variable)
 {
-	rasqal_query_results* results = slv2_plugin_query(plugin, sparql_str);
+	librdf_query_results* results = slv2_plugin_query(plugin, sparql_str);
 	SLV2Strings ret = slv2_query_get_variable_bindings(results, variable);
-	rasqal_free_query_results(results);
+	librdf_free_query_results(results);
 
 	return ret;
 }
@@ -186,11 +179,11 @@ unsigned
 slv2_plugin_query_count(SLV2Plugin  plugin,
                         const char* sparql_str)
 {
-	rasqal_query_results* results = slv2_plugin_query(plugin, sparql_str);
+	librdf_query_results* results = slv2_plugin_query(plugin, sparql_str);
 
 	if (results) {
 		unsigned ret = slv2_query_count_bindings(results);
-		rasqal_free_query_results(results);
+		librdf_free_query_results(results);
 		return ret;
 	} else {
 		return 0;
@@ -202,34 +195,29 @@ size_t
 slv2_query_count_results(SLV2Plugin  p,
                          const char* query)
 {
-	char* header    = slv2_query_header(p);
-	char* query_str = slv2_strjoin(header, query, NULL);
+	char* query_str = slv2_strjoin(slv2_query_prefixes, query, NULL);
 
 	assert(p);
 	assert(query_str);
 
-	rasqal_query *rq = rasqal_new_query("sparql", NULL);
+	librdf_query *rq = librdf_new_query(p->model->world, "sparql", NULL,
+			(unsigned char*)query_str, NULL);
 
 	//printf("Query: \n%s\n\n", query_str);
 
-	rasqal_query_prepare(rq, (unsigned char*)query_str, NULL);
-	
 	// Add LV2 ontology to query sources
-	rasqal_query_add_data_graph(rq, slv2_ontology_uri,
-		NULL, RASQAL_DATA_GRAPH_BACKGROUND);
+	//librdf_query_add_data_graph(rq, slv2_ontology_uri,
+	//	NULL, RASQAL_DATA_GRAPH_BACKGROUND);
 	
-	rasqal_query_results* results = rasqal_query_execute(rq);
+	librdf_query_results* results = librdf_query_execute(rq, p->model->model);
 	assert(results);
 	
 	size_t count = slv2_query_count_bindings(results);
 	
-	rasqal_free_query_results(results);
-	rasqal_free_query(rq);
-	
-	rasqal_finish();
+	librdf_free_query_results(results);
+	librdf_free_query(rq);
 	
 	free(query_str);
-	free(header);
 
 	return count;
 }

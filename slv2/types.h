@@ -27,17 +27,6 @@ extern "C" {
 #endif
 
 
-
-/** Port ID type, to allow passing either symbol or index
- * to port related functions.
- */
-typedef struct _PortID {
-	bool        is_index; /**< Otherwise, symbol */
-	uint32_t    index;
-	const char* symbol;
-} SLV2PortID;
-
-
 /** Class (direction and type) of a port
  *
  * Note that ports may be of other classes not listed here, this is just
@@ -54,6 +43,11 @@ typedef enum _PortClass {
 	SLV2_MIDI_OUTPUT     /**< MIDI output (LL extension) */
 } SLV2PortClass;
 
+typedef struct _Port* SLV2Port;
+
+typedef struct _Plugin* SLV2Plugin;
+
+typedef struct _Model* SLV2Model;
 
 #ifdef __cplusplus
 }

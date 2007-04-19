@@ -1,4 +1,4 @@
-AM_CFLAGS = -I$(top_srcdir) @RASQAL_CFLAGS@
+AM_CFLAGS = -I$(top_srcdir) @REDLAND_CFLAGS@
 
 bin_PROGRAMS = lv2_list lv2_inspect
 

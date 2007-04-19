@@ -30,8 +30,8 @@
 #define MIDI_BUFFER_SIZE 1024
 
 struct Port {
-	SLV2PortID    id;
 	SLV2PortClass class;
+	SLV2Port      slv2_port;
 	jack_port_t*  jack_port;   /**< For audio and MIDI ports, otherwise NULL */
 	float         control;     /**< For control ports, otherwise 0.0f */
 	LV2_MIDI*     midi_buffer; /**< For midi ports, otherwise NULL */
@@ -62,11 +62,10 @@ main(int argc, char** argv)
 	host.num_ports   = 0;
 	host.ports       = NULL;
 	
-	slv2_init();
-
 	/* Find all installed plugins */
-	SLV2Plugins plugins = slv2_plugins_new();
-	slv2_plugins_load_all(plugins);
+	SLV2Model model = slv2_model_new();
+	slv2_model_load_all(model);
+	SLV2Plugins plugins = slv2_model_get_all_plugins(model);
 
 	/* Find the plugin to run */
 	const char* plugin_uri = (argc == 2) ? argv[1] : NULL;
@@ -141,7 +140,7 @@ main(int argc, char** argv)
 	}
 	jack_client_close(host.jack_client);
 	
-	slv2_finish();
+	slv2_model_free(model);
 
 	return 0;
 }
@@ -170,8 +169,8 @@ create_port(struct JackHost* host,
 	//struct Port* port = (Port*)malloc(sizeof(Port));
 	struct Port* const port = &host->ports[port_index];
 
-	port->id          = slv2_port_by_index(port_index);
 	port->class       = SLV2_UNKNOWN_PORT_CLASS;
+	port->slv2_port   = slv2_plugin_get_port_by_index(host->plugin, port_index);
 	port->jack_port   = NULL;
 	port->control     = 0.0f;
 	port->midi_buffer = NULL;
@@ -179,15 +178,15 @@ create_port(struct JackHost* host,
 	slv2_instance_connect_port(host->instance, port_index, NULL);
 
 	/* Get the port symbol (label) for console printing */
-	char* symbol = slv2_port_get_symbol(host->plugin, port->id);
+	char* symbol = slv2_port_get_symbol(host->plugin, port->slv2_port);
 
 	/* Get the 'class' (not data type) of the port (control input, audio output, etc) */
-	port->class = slv2_port_get_class(host->plugin, port->id);
+	port->class = slv2_port_get_class(host->plugin, port->slv2_port);
 
 	/* Connect the port based on it's 'class' */
 	switch (port->class) {
 		case SLV2_CONTROL_INPUT:
-			port->control = slv2_port_get_default_value(host->plugin, port->id);
+			port->control = slv2_port_get_default_value(host->plugin, port->slv2_port);
 			slv2_instance_connect_port(host->instance, port_index, &port->control);
 			printf("Set %s to %f\n", symbol, host->ports[port_index].control);
 			break;

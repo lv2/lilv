@@ -17,7 +17,6 @@
  */
 
 #define _XOPEN_SOURCE 500
-#include <rasqal.h>
 #include <limits.h>
 #include <string.h>
 #include <stdio.h>
@@ -25,27 +24,13 @@
 #include <sys/types.h>
 #include <assert.h>
 #include <dirent.h>
+#include <librdf.h>
 #include <slv2/types.h>
 #include <slv2/plugin.h>
 #include <slv2/pluginlist.h>
 #include <slv2/stringlist.h>
 #include <slv2/util.h>
 #include "private_types.h"
-
-
-/* not exposed */
-struct _Plugin*
-slv2_plugin_new()
-{
-	struct _Plugin* result = malloc(sizeof(struct _Plugin));
-	result->plugin_uri = NULL;
-	result->bundle_url = NULL;
-	result->lib_uri    = NULL;
-	
-	result->data_uris = slv2_strings_new();
-
-	return result;
-}
 
 	
 SLV2Plugins
@@ -61,7 +46,7 @@ slv2_plugins_free(SLV2Plugins list)
 	raptor_free_sequence(list);
 }
 
-
+#if 0
 void
 slv2_plugins_filter(SLV2Plugins dest, SLV2Plugins source, bool (*include)(SLV2Plugin))
 {
@@ -127,30 +112,33 @@ slv2_plugins_load_bundle(SLV2Plugins list,
 	else
 		strcat((char*)manifest_url, "/manifest.ttl");
 	
-	rasqal_query_results *results;
-	raptor_uri *base_url = raptor_new_uri(manifest_url);
-	rasqal_query *rq = rasqal_new_query("sparql", NULL);
-
+	librdf_query_results *results;
+	librdf_uri *base_uri = librdf_new_uri(slv2_rdf_world, manifest_url);
+	
 	/* Get all plugins explicitly mentioned in the manifest (discovery pass 1) */
 	char* query_string =
     	"PREFIX : <http://lv2plug.in/ontology#>\n\n"
 		"SELECT DISTINCT ?plugin_uri FROM <>\n"
 		"WHERE { ?plugin_uri a :Plugin }\n";
+	
+	librdf_query *rq = librdf_new_query(slv2_rdf_world, "sparql", NULL,
+		(unsigned char*)query_string, base_uri);
+
+
 
 	//printf("%s\n\n", query_string);  
 	
-	rasqal_query_prepare(rq, (unsigned char*)query_string, base_url);
-	results = rasqal_query_execute(rq);
+	results = librdf_query_execute(rq, model->model);
 	
-	while (!rasqal_query_results_finished(results)) {
+	while (!librdf_query_results_finished(results)) {
 		
-		rasqal_literal* literal = rasqal_query_results_get_binding_value(results, 0);
+		librdf_node* literal = librdf_query_results_get_binding_value(results, 0);
 		assert(literal);
 
-		if (!slv2_plugins_get_by_uri(list, (const char*)rasqal_literal_as_string(literal))) {
+		if (!slv2_plugins_get_by_uri(list, (const char*)librdf_node_get_literal_value(literal))) {
 			/* Create a new plugin */
 			struct _Plugin* new_plugin = slv2_plugin_new();
-			new_plugin->plugin_uri = strdup((const char*)rasqal_literal_as_string(literal));
+			new_plugin->plugin_uri = strdup((const char*)librdf_node_get_literal_value(literal));
 			new_plugin->bundle_url = strdup(bundle_base_url);
 			raptor_sequence_push(new_plugin->data_uris, strdup((const char*)manifest_url));
 
@@ -158,15 +146,13 @@ slv2_plugins_load_bundle(SLV2Plugins list,
 
 		}
 		
-		rasqal_query_results_next(results);
+		librdf_query_results_next(results);
 	}	
 	
 	if (results)
-		rasqal_free_query_results(results);
+		librdf_free_query_results(results);
 	
-	rasqal_free_query(rq);
-	
-	rq = rasqal_new_query("sparql", NULL);
+	librdf_free_query(rq);
 	
 	/* Get all data files linked to plugins (discovery pass 2) */
 	query_string =
@@ -175,22 +161,24 @@ slv2_plugins_load_bundle(SLV2Plugins list,
     	"SELECT DISTINCT ?subject ?data_uri ?binary FROM <>\n"
     	"WHERE { ?subject  rdfs:seeAlso  ?data_uri\n"
 		"OPTIONAL { ?subject :binary ?binary } }\n";
+	
+	rq = librdf_new_query(slv2_rdf_world, "sparql", NULL,
+			(unsigned char*)query_string, base_uri);
 
 	//printf("%s\n\n", query_string);  
 	
-	rasqal_query_prepare(rq, (unsigned char*)query_string, base_url);
-	results = rasqal_query_execute(rq);
+	results = librdf_query_execute(rq, slv2_model);
 
-	while (!rasqal_query_results_finished(results)) {
+	while (!librdf_query_results_finished(results)) {
 
-		const char* subject = (const char*)rasqal_literal_as_string(
-				rasqal_query_results_get_binding_value(results, 0));
+		const char* subject = (const char*)librdf_node_get_literal_value(
+				librdf_query_results_get_binding_value(results, 0));
 
-		const char* data_uri = (const char*)rasqal_literal_as_string(
-				rasqal_query_results_get_binding_value(results, 1));
+		const char* data_uri = (const char*)librdf_node_get_literal_value(
+				librdf_query_results_get_binding_value(results, 1));
 
-		const char* binary = (const char*)rasqal_literal_as_string(
-				rasqal_query_results_get_binding_value(results, 2));
+		const char* binary = (const char*)librdf_node_get_literal_value(
+				librdf_query_results_get_binding_value(results, 2));
 
 		SLV2Plugin plugin = slv2_plugins_get_by_uri(list, subject);
 
@@ -200,16 +188,16 @@ slv2_plugins_load_bundle(SLV2Plugins list,
 		if (plugin && binary && !plugin->lib_uri)
 			((struct _Plugin*)plugin)->lib_uri = strdup(binary);
 		 
-		rasqal_query_results_next(results);
+		librdf_query_results_next(results);
 
 	}
 
 	if (results)
-		rasqal_free_query_results(results);
+		librdf_free_query_results(results);
 	
-	rasqal_free_query(rq);
+	librdf_free_query(rq);
 
-	raptor_free_uri(base_url);
+	librdf_free_uri(base_uri);
 	free(manifest_url);
 }
 
@@ -275,7 +263,7 @@ slv2_plugins_load_path(SLV2Plugins list,
 
 	free(path);
 }
-
+#endif
 
 unsigned
 slv2_plugins_size(SLV2Plugins list)
@@ -287,10 +275,28 @@ slv2_plugins_size(SLV2Plugins list)
 SLV2Plugin
 slv2_plugins_get_by_uri(SLV2Plugins list, const char* uri)
 {
-	for (int i=0; i < raptor_sequence_size(list); ++i) {
+	// good old fashioned binary search
+	
+	int lower = 0;
+	int upper = raptor_sequence_size(list) - 1;
+	int i;
+	
+	if (upper == 0)
+		return NULL;
+
+	while (upper >= lower) {
+		i = lower + ((upper - lower) / 2);
+
 		SLV2Plugin p = raptor_sequence_get_at(list, i);
-		if (!strcmp(p->plugin_uri, uri))
+
+		int cmp = strcmp(slv2_plugin_get_uri(p), uri);
+
+		if (cmp == 0)
 			return p;
+		else if (cmp > 0)
+			upper = i - 1;
+		else
+			lower = i + 1;
 	}
 
 	return NULL;

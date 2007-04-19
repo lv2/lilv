@@ -42,13 +42,15 @@ slv2_plugin_instantiate(SLV2Plugin               plugin,
 	}
 	
 	const char* const lib_uri = slv2_plugin_get_library_uri(plugin);
-	if (!lib_uri || slv2_uri_to_path(lib_uri) == NULL)
+	const char* const lib_path = slv2_uri_to_path(lib_uri);
+	
+	if (!lib_path)
 		return NULL;
 	
 	dlerror();
-	void* lib = dlopen(slv2_uri_to_path(lib_uri), RTLD_NOW);
+	void* lib = dlopen(lib_path, RTLD_NOW);
 	if (!lib) {
-		fprintf(stderr, "Unable to open library %s (%s)\n", lib_uri, dlerror());
+		fprintf(stderr, "Unable to open library %s (%s)\n", lib_path, dlerror());
 		return NULL;
 	}
 
@@ -56,31 +58,34 @@ slv2_plugin_instantiate(SLV2Plugin               plugin,
 
 	if (!df) {
 		fprintf(stderr, "Could not find symbol 'lv2_descriptor', "
-				"%s is not a LV2 plugin.\n", lib_uri);
+				"%s is not a LV2 plugin.\n", lib_path);
 		dlclose(lib);
 		return NULL;
 	} else {
 		// Search for plugin by URI
 		
-		const char* const bundle_path = slv2_uri_to_path(plugin->bundle_url);
+		// FIXME: Kluge to get bundle path (containing directory of binary)
+		const char* const bundle_path = strrchr(plugin->binary_uri, '/') + 1;
+		printf("Bundle path: %s\n", bundle_path);
 		
 		for (uint32_t i=0; 1; ++i) {
+			
 			const LV2_Descriptor* ld = df(i);
-
+				
 			if (!ld) {
 				fprintf(stderr, "Did not find plugin %s in %s\n",
-						plugin->plugin_uri, plugin->lib_uri);
+						slv2_plugin_get_uri(plugin), lib_path);
 				dlclose(lib);
 				break; // return NULL
-			} else if (!strcmp(ld->URI, (char*)plugin->plugin_uri)) {
-				//printf("Found %s at index %u in:\n\t%s\n\n", plugin->plugin_uri, i, lib_path);
+			} else if (!strcmp(ld->URI, slv2_plugin_get_uri(plugin))) {
+
+				printf("Found %s at index %u in:\n\t%s\n\n",
+						librdf_uri_as_string(plugin->plugin_uri), i, lib_path);
 
 				assert(ld->instantiate);
 
 				// Create SLV2Instance to return
 				result = malloc(sizeof(struct _Instance));
-				/*result->plugin = malloc(sizeof(struct _Plugin));
-				memcpy(result->plugin, plugin, sizeof(struct _Plugin));*/
 				result->lv2_descriptor = ld;
 				result->lv2_handle = ld->instantiate(ld, sample_rate, (char*)bundle_path, host_features);
 				struct _InstanceImpl* impl = malloc(sizeof(struct _InstanceImpl));

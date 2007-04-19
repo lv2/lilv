@@ -25,13 +25,21 @@ extern "C" {
 
 #include <stdbool.h>
 #include <stddef.h>
-#include <raptor.h>
-#include <slv2/lv2.h>
+#include <librdf.h>
+#include <slv2/pluginlist.h>
 
 
-/** The URI of the lv2.ttl file.
+/** Reference to a port on some plugin.
  */
-extern raptor_uri* slv2_ontology_uri;
+struct _Port {
+	uint32_t index;   ///< LV2 index
+	char*    symbol;  ///< LV2 symbol
+	//char*    node_id; ///< RDF Node ID
+};
+
+SLV2Port slv2_port_new(uint32_t index, const char* symbol/*, const char* node_id*/);
+SLV2Port slv2_port_duplicate(SLV2Port port);
+void     slv2_port_free(SLV2Port port);
 
 
 /** Record of an installed/available plugin.
@@ -40,12 +48,26 @@ extern raptor_uri* slv2_ontology_uri;
  * paths of relevant files, the actual data therein isn't loaded into memory.
  */
 struct _Plugin {
-	char*            plugin_uri;
-	char*            bundle_url; // Bundle directory plugin was loaded from
+	int              deletable;
+	struct _Model*   model;
+	librdf_uri*      plugin_uri;
+//	char*            bundle_url; // Bundle directory plugin was loaded from
+	char*            binary_uri; // lv2:binary
 	raptor_sequence* data_uris;  // rdfs::seeAlso
-	char*            lib_uri;    // lv2:binary
+	raptor_sequence* ports;
+	librdf_storage*  storage;
+	librdf_model*    rdf;
 };
 
+SLV2Plugin slv2_plugin_new(SLV2Model model, librdf_uri* uri, const char* binary_uri);
+void       slv2_plugin_load(SLV2Plugin p);
+
+
+/** List of references to plugins available for loading */
+struct _PluginList {
+	size_t           num_plugins;
+	struct _Plugin** plugins;
+};
 
 /** Pimpl portion of SLV2Instance */
 struct _InstanceImpl {
@@ -53,15 +75,15 @@ struct _InstanceImpl {
 };
 
 
-/** List of references to plugins available for loading (private type) */
-struct _PluginList {
-	size_t           num_plugins;
-	struct _Plugin** plugins;
+/** Model of LV2 (RDF) data loaded from bundles.
+ */
+struct _Model {
+	librdf_world*       world;
+	librdf_storage*     storage;
+	librdf_model*       model;
+	librdf_parser*      parser;
+	SLV2Plugins plugins;
 };
-
-
-/** An ordered, indexable collection of strings. */
-//typedef raptor_sequence* SLV2Strings;
 
 
 #ifdef __cplusplus

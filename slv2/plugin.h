@@ -26,16 +26,17 @@ extern "C" {
 #include <stdint.h>
 #include <stdbool.h>
 #include <slv2/types.h>
+#include <slv2/port.h>
 #include <slv2/stringlist.h>
 
-
-typedef struct _Plugin* SLV2Plugin;
-
-
-/** \defgroup data Data file access
+/** \defgroup data Plugin data access
  *
  * These functions work exclusively with the plugin's RDF data file.
  * They do not load or access the plugin dynamic library in any way.
+ *
+ * An SLV2Plugin is a weak reference (ie URIs) to an LV2 plugin in the
+ * Model.  Most functions which operate on an SLV2Plugin actually query
+ * the data in the model.
  *
  * @{
  */
@@ -162,8 +163,8 @@ slv2_plugin_get_value(SLV2Plugin  p,
  */
 SLV2Strings
 slv2_plugin_get_value_for_subject(SLV2Plugin  p,
-                                 const char* subject,
-                                 const char* predicate);
+                                  const char* subject,
+                                  const char* predicate);
 
 
 /** Get the LV2 Properties of a plugin.
@@ -264,6 +265,31 @@ slv2_plugin_simple_query(SLV2Plugin  plugin,
 unsigned
 slv2_plugin_query_count(SLV2Plugin  plugin,
                         const char* sparql_str);
+
+
+/** Get a port on this plugin by \a index.
+ *
+ * To perform multiple calls on a port, the returned value should
+ * be cached and used repeatedly.
+ *
+ * O(1)
+ */
+SLV2Port
+slv2_plugin_get_port_by_index(SLV2Plugin plugin,
+                              uint32_t   index);
+
+
+/** Get a port on this plugin by \a symbol.
+ *
+ * To perform multiple calls on a port, the returned value should
+ * be cached and used repeatedly.
+ *
+ * O(num_ports)
+ */
+SLV2Port
+slv2_plugin_get_port_by_symbol(SLV2Plugin  plugin,
+                               const char* symbol);
+
 
 
 /** @} */

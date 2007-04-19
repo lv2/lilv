@@ -33,15 +33,15 @@ list_plugins(SLV2Plugins list)
 int
 main()//int argc, char** argv)
 {
-	slv2_init();
+	SLV2Model model = slv2_model_new();
+	slv2_model_load_all(model);
 
-	SLV2Plugins plugins = slv2_plugins_new();
-	slv2_plugins_load_all(plugins);
+	SLV2Plugins plugins = slv2_model_get_all_plugins(model);
 
 	list_plugins(plugins);
 	
 	slv2_plugins_free(plugins);
-	slv2_finish();
+	slv2_model_free(model);
 
 	return 0;
 }

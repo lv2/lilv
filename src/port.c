@@ -25,35 +25,49 @@
 #include <slv2/port.h>
 #include <slv2/types.h>
 #include <slv2/util.h>
+#include "private_types.h"
 
 
-SLV2PortID
-slv2_port_by_index(uint32_t index)
+/* private */
+SLV2Port
+slv2_port_new(uint32_t index, const char* symbol/*, const char* node_id*/)
 {
-	SLV2PortID ret;
-	ret.is_index = true;
-	ret.index = index;
-	ret.symbol = NULL;
-	return ret;
+	struct _Port* port = malloc(sizeof(struct _Port));
+	port->index = index;
+	port->symbol = strdup(symbol);
+	//port->node_id = strdup(node_id);
+	return port;
 }
 
 
-SLV2PortID
-slv2_port_by_symbol(const char* symbol)
+/* private */
+void
+slv2_port_free(SLV2Port port)
 {
-	SLV2PortID ret;
-	ret.is_index = false;
-	ret.index = UINT_MAX;
-	ret.symbol = symbol;
-	return ret;
+	free(port->symbol);
+	//free(port->node_id);
+	free(port);
+}
+
+
+/* private */
+SLV2Port
+slv2_port_duplicate(SLV2Port port)
+{
+	struct _Port* result = malloc(sizeof(struct _Port));
+	result->index = port->index;
+	result->symbol = strdup(port->symbol);
+	//result->node_id = strdup(port->node_id);
+	return result;
 }
 
 
 SLV2PortClass
 slv2_port_get_class(SLV2Plugin p,
-                    SLV2PortID id)
+                    SLV2Port   port)
 {
-	SLV2Strings class = slv2_port_get_value(p, id, "rdf:type");
+	SLV2Strings class = slv2_port_get_value(p, port, "rdf:type");
+	assert(class);
 
 	SLV2PortClass ret = SLV2_UNKNOWN_PORT_CLASS;
 
@@ -98,152 +112,129 @@ slv2_port_get_class(SLV2Plugin p,
 
 SLV2Strings
 slv2_port_get_value(SLV2Plugin  p,
-                    SLV2PortID  id,
+                    SLV2Port    port,
                     const char* property)
 {
 	assert(property);
 
 	SLV2Strings result = NULL;
 
-	if (id.is_index) {
-		char index_str[16];
-		snprintf(index_str, (size_t)16, "%u", id.index);
+	char* query = slv2_strjoin(
+			"SELECT DISTINCT ?value WHERE {\n"
+			"?port lv2:symbol \"", port->symbol, "\";\n\t",
+			       property, " ?value .\n}", 0);
+			
+	result = slv2_plugin_simple_query(p, query, "value");
 
-		char* query = slv2_strjoin(
-				"SELECT DISTINCT ?value WHERE { \n"
-				"plugin: lv2:port ?port . \n"
-				"?port lv2:index ", index_str, " ;\n\t",
-				property, "  ?value . \n}\n", NULL);
-
-		result = slv2_plugin_simple_query(p, query, "value");
-
-		free(query);
+	free(query);
 	
-	} else {
-
-		char* query = slv2_strjoin(
-				"SELECT DISTINCT ?value WHERE { \n"
-				"plugin: lv2:port ?port . \n"
-				"?port lv2:symbol \"", id.symbol, "\" ;\n\t",
-				       property, "   ?value . \n}\n", NULL);
-		
-		result = slv2_plugin_simple_query(p, query, "value");
-
-		free(query);
-	}
-
 	return result;
 }
 
 
 char*
 slv2_port_get_symbol(SLV2Plugin p,
-                     SLV2PortID id)
+                     SLV2Port   port)
 {
-	char* result = NULL;
+	char* symbol = NULL;
 	
-	SLV2Strings prop
-		= slv2_port_get_value(p, id, "lv2:symbol");
+	SLV2Strings result = slv2_port_get_value(p, port, "lv2:symbol");
 
-	if (prop && slv2_strings_size(prop) == 1)
-		result = strdup(slv2_strings_get_at(prop, 0));
+	if (result && slv2_strings_size(result) == 1)
+		symbol = strdup(slv2_strings_get_at(result, 0));
 	
-	slv2_strings_free(prop);
+	slv2_strings_free(result);
 
-	return result;
+	return symbol;
 }
 
 	
 char*
 slv2_port_get_name(SLV2Plugin p,
-                   SLV2PortID id)
+                   SLV2Port   port)
 {
-	char* result = NULL;
+	char* name = NULL;
 	
-	SLV2Strings prop
-		= slv2_port_get_value(p, id, "lv2:name");
+	SLV2Strings result = slv2_port_get_value(p, port, "lv2:name");
 
-	if (prop && slv2_strings_size(prop) == 1)
-		result = strdup(slv2_strings_get_at(prop, 0));
+	if (result && slv2_strings_size(result) == 1)
+		name = strdup(slv2_strings_get_at(result, 0));
 	
-	slv2_strings_free(prop);
+	slv2_strings_free(result);
 
-	return result;
+	return name;
 }
 
 
 float
 slv2_port_get_default_value(SLV2Plugin p, 
-                            SLV2PortID id)
+                            SLV2Port   port)
 {
 	// FIXME: do casting properly in the SPARQL query
 	
-	float result = 0.0f;
+	float value = 0.0f;
 	
-	SLV2Strings prop
-		= slv2_port_get_value(p, id, "lv2:default");
+	SLV2Strings result = slv2_port_get_value(p, port, "lv2:default");
 
-	if (prop && slv2_strings_size(prop) == 1)
-		result = atof(slv2_strings_get_at(prop, 0));
+	if (result && slv2_strings_size(result) == 1)
+		value = atof(slv2_strings_get_at(result, 0));
 	
-	slv2_strings_free(prop);
+	slv2_strings_free(result);
 
-	return result;
+	return value;
 }
 
 
 float
 slv2_port_get_minimum_value(SLV2Plugin p, 
-                            SLV2PortID id)
+                            SLV2Port   port)
 {
-	// FIXME: do casting properly in the SPARQL query
+	// FIXME: need better access to literal types
 	
-	float result = 0.0f;
+	float value = 0.0f;
 	
-	SLV2Strings prop
-		= slv2_port_get_value(p, id, "lv2:minimum");
+	SLV2Strings result = slv2_port_get_value(p, port, "lv2:minimum");
 
-	if (prop && slv2_strings_size(prop) == 1)
-		result = atof(slv2_strings_get_at(prop, 0));
+	if (result && slv2_strings_size(result) == 1)
+		value = atof(slv2_strings_get_at(result, 0));
 	
-	slv2_strings_free(prop);
+	slv2_strings_free(result);
 
-	return result;
+	return value;
 }
 
 
 float
 slv2_port_get_maximum_value(SLV2Plugin p, 
-                            SLV2PortID id)
+                            SLV2Port   port)
 {
-	// FIXME: do casting properly in the SPARQL query
+	// FIXME: need better access to literal types
 	
-	float result = 0.0f;
+	float value = 0.0f;
 	
-	SLV2Strings prop
-		= slv2_port_get_value(p, id, "lv2:maximum");
+	SLV2Strings result = slv2_port_get_value(p, port, "lv2:maximum");
 
-	if (prop && slv2_strings_size(prop) == 1)
-		result = atof(slv2_strings_get_at(prop, 0));
+	if (result && slv2_strings_size(result) == 1)
+		value = atof(slv2_strings_get_at(result, 0));
 	
-	slv2_strings_free(prop);
+	slv2_strings_free(result);
 
-	return result;
+	return value;
 }
 
 
 SLV2Strings
 slv2_port_get_properties(SLV2Plugin p,
-                         SLV2PortID id)
+                         SLV2Port   port)
 {
-	return slv2_port_get_value(p, id, "lv2:portProperty");
+	return slv2_port_get_value(p, port, "lv2:portProperty");
 }
 
 
 SLV2Strings
 slv2_port_get_hints(SLV2Plugin p,
-                    SLV2PortID id)
+                    SLV2Port   port)
 {
-	return slv2_port_get_value(p, id, "lv2:portHint");
+	return slv2_port_get_value(p, port, "lv2:portHint");
 }
 

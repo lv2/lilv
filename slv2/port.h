@@ -25,6 +25,7 @@ extern "C" {
 
 #include <slv2/types.h>
 #include <slv2/plugin.h>
+#include <slv2/port.h>
 #include <slv2/stringlist.h>
 
 /** \addtogroup data
@@ -32,38 +33,26 @@ extern "C" {
  */
 
 
-/** Create an ID to reference a port by index.
- */
-SLV2PortID
-slv2_port_by_index(uint32_t index);
-
-
-/** Create an ID to reference a port by symbol.
- */
-SLV2PortID
-slv2_port_by_symbol(const char* symbol);
-
-
 /** Port equivalent to slv2_plugin_get_value.
  */
 SLV2Strings
 slv2_port_get_value(SLV2Plugin  plugin,
-                    SLV2PortID  id,
+                    SLV2Port    port,
                     const char* property);
 
 
 /** Port equivalent to slv2_plugin_get_properties.
  */
 SLV2Strings
-slv2_port_get_properties(SLV2Plugin p,
-                         SLV2PortID        id);
+slv2_port_get_properties(SLV2Plugin plugin,
+                         SLV2Port   port);
 
 
 /** Port equivalent to slv2_plugin_get_hints.
  */
 SLV2Strings
-slv2_port_get_hints(SLV2Plugin p,
-                    SLV2PortID        id);
+slv2_port_get_hints(SLV2Plugin plugin,
+                    SLV2Port   port);
 
 
 /** Get the symbol of a port given the index.
@@ -75,7 +64,7 @@ slv2_port_get_hints(SLV2Plugin p,
  */
 char*
 slv2_port_get_symbol(SLV2Plugin plugin,
-                     SLV2PortID  id);
+                     SLV2Port   port);
 
 /** Get the name of a port.
  *
@@ -85,14 +74,14 @@ slv2_port_get_symbol(SLV2Plugin plugin,
  */
 char*
 slv2_port_get_name(SLV2Plugin plugin,
-                   SLV2PortID  id);
+                   SLV2Port   port);
 
 
 /** Get the class (input/output, data type, rate...) of a port.
  */
 SLV2PortClass
 slv2_port_get_class(SLV2Plugin plugin,
-                    SLV2PortID  id);
+                    SLV2Port   port);
 
 
 /** Get the default value of a port.
@@ -101,7 +90,7 @@ slv2_port_get_class(SLV2Plugin plugin,
  */
 float
 slv2_port_get_default_value(SLV2Plugin plugin, 
-                            SLV2PortID  id);
+                            SLV2Port   port);
 
 
 /** Get the minimum value of a port.
@@ -110,7 +99,7 @@ slv2_port_get_default_value(SLV2Plugin plugin,
  */
 float
 slv2_port_get_minimum_value(SLV2Plugin plugin, 
-                            SLV2PortID  id);
+                            SLV2Port   port);
 
 
 /** Get the maximum value of a port.
@@ -119,7 +108,7 @@ slv2_port_get_minimum_value(SLV2Plugin plugin,
  */
 float
 slv2_port_get_maximum_value(SLV2Plugin plugin, 
-                            SLV2PortID  id);
+                            SLV2Port   port);
 
 
 /** @} */

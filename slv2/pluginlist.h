@@ -19,6 +19,8 @@
 #ifndef __SLV2_PLUGINLIST_H__
 #define __SLV2_PLUGINLIST_H__
 
+#include <slv2/plugin.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -27,18 +29,11 @@ extern "C" {
 typedef void* SLV2Plugins;
 
 
-/** \defgroup plugins Discovery and lists of plugins
+/** \defgroup plugins Plugin lists
  * 
- * These functions are for locating plugins installed on the system.
- *
- * Normal hosts which just want to easily load plugins by URI are strongly
- * recommended to simply find all installed plugins with
- * \ref slv2_plugins_load_all rather than find and load bundles manually.
- * 
- * Functions are provided for hosts that wish to access bundles explicitly and
- * individually for some reason, as well as make custom lists of plugins from
- * a selection of bundles.  This is mostly intended for hosts which are
- * tied to a specific (bundled with the application) bundle.
+ * These functions work with lists of plugins which come from an
+ * SLV2Model.  These lists contain only a weak reference to an LV2 plugin
+ * in the Model.
  *
  * @{
  */
@@ -67,62 +62,6 @@ void
 slv2_plugins_free(SLV2Plugins list);
 
 
-/** Filter plugins from one list into another.
- *
- * All plugins in \a source that return true when passed to \a include
- * (a pointer to a function that takes an SLV2Plugin and returns a bool)
- * will be added to \a dest.  Plugins are duplicated into \a dest, it is safe
- * to destroy \a source and continue to use \a dest after this call.
- */
-void
-slv2_plugins_filter(SLV2Plugins dest,
-                    SLV2Plugins source, 
-                    bool (*include)(SLV2Plugin));
-
-
-/** Add all plugins installed on the system to \a list.
- *
- * This is the recommended way for hosts to access plugins.  It does the most
- * reasonable thing to find all installed plugins on a system.  The environment
- * variable LV2_PATH may be set to control the locations this function will
- * look for plugins.
- *
- * Use of any functions for locating plugins other than this one is \em highly
- * discouraged without a special reason to do so (and is just more work for the
- * host author) - use this one.
- */
-void
-slv2_plugins_load_all(SLV2Plugins list);
-
-
-/** Add all plugins found in \a search_path to \a list.
- *
- * If \a search_path is NULL, \a list will be unmodified.
- *
- * Use of this function is \b not recommended.  Use \ref slv2_plugins_load_all.
- */
-void
-slv2_plugins_load_path(SLV2Plugins list,
-                       const char* search_path);
-
-
-/** Add all plugins found in the bundle at \a bundle_base_url to \a list.
- *
- * \arg bundle_base_url is a fully qualified path to the bundle directory, eg.
- * "file:///usr/lib/lv2/someBundle"
- *
- * Use of this function is \b strongly discouraged - hosts should not attach
- * \em any significance to bundle paths as there are no guarantees they will
- * remain consistent whatsoever.  This function should only be used by apps
- * which ship with a special bundle (which it knows exists at some path).
- * It is \b not to be used by normal hosts that want to load system
- * installed plugins.  Use \ref slv2_plugins_load_all for that.
- */
-void
-slv2_plugins_load_bundle(SLV2Plugins list,
-                         const char* bundle_base_uri);
-
-
 /** Get the number of plugins in the list.
  */
 unsigned
@@ -133,8 +72,8 @@ slv2_plugins_size(SLV2Plugins list);
  *
  * Return value is shared (stored in \a list) and must not be freed or
  * modified by the caller in any way.
- * This functions is a search, slv2_plugins_get_at is
- * significantly faster.
+ *
+ * O(log2(n))
  * 
  * \return NULL if plugin with \a url not found in \a list.
  */
@@ -153,11 +92,14 @@ slv2_plugins_get_by_uri(SLV2Plugins list,
  * Return value is shared (stored in \a list) and must not be freed or
  * modified by the caller in any way.
  *
+ * O(1)
+ *
  * \return NULL if \a index out of range.
  */
 SLV2Plugin
 slv2_plugins_get_at(SLV2Plugins list,
                     unsigned    index);
+
 
 /** @} */
 
