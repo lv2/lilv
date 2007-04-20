@@ -5,6 +5,8 @@ slv2include_HEADERS = \
 	types.h \
 	slv2.h \
 	world.h \
+	category.h \
+	categories.h \
 	plugin.h \
 	port.h \
 	pluginlist.h \

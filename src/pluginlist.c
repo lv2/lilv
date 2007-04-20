@@ -17,13 +17,11 @@
  */
 
 #define _XOPEN_SOURCE 500
-#include <limits.h>
 #include <string.h>
+#include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <sys/types.h>
 #include <assert.h>
-#include <dirent.h>
 #include <librdf.h>
 #include <slv2/types.h>
 #include <slv2/plugin.h>
@@ -308,8 +306,6 @@ slv2_plugins_get_by_uri(SLV2Plugins list, const char* uri)
 SLV2Plugin
 slv2_plugins_get_at(SLV2Plugins list, unsigned index)
 {	
-	assert(list);
-
 	if (index > INT_MAX)
 		return NULL;
 	else

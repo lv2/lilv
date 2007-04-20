@@ -1,7 +1,7 @@
 # RDF Schema for LV2 plugins
 # *** PROVISIONAL ***
 #
-# *** PROPOSED Revision 2007-02-19 ***
+# *** PROPOSED Revision 2007-04-20 ***
 #
 # This document describes the classes and properties that are defined by the
 # core LV2 specification.  See <http://lv2plug.in> for more information.
@@ -41,8 +41,8 @@
    doap:shortdesc "An audio processing plugin specification" ;
    doap:programming-language "C" ;
    doap:release [
-       doap:revision "1.0beta1" ;
-       doap:created "2007-02-03"
+       doap:revision "1.0beta2" ;
+       doap:created "2007-04-20"
    ] ;
    doap:maintainer [
        a foaf:Person ;
@@ -52,7 +52,8 @@
    ] , [
        a foaf:Person ;
        foaf:name "Dave Robillard" ;
-       rdfs:seeAlso <http://drobilla.net/drobilla.ttl>
+       foaf:homepage <http://drobilla.net/> ;
+       rdfs:seeAlso <http://drobilla.net/drobilla.xrdf>
    ].
 
 
@@ -468,32 +469,32 @@ A plugin MUST operate reasonably even if such a port has a non-integer input.
 
 :UtilityPlugin a rdfs:Class ;
     rdfs:subClassOf :Plugin ;
-    rdfs:label "Utilities" ;
+    rdfs:label "Utility" ;
     rdfs:comment """
 Includes things like mathematical functions and non-musical delays.
 """ .
 
 :GeneratorPlugin a rdfs:Class ;
     rdfs:subClassOf :Plugin ;
-    rdfs:label "Generators" ;
+    rdfs:label "Generator" ;
     rdfs:comment """
 Any plugin that generates sound internally, rather than processing its input.
 """ .
 
 :InstrumentPlugin a rdfs:Class ;
     rdfs:subClassOf :GeneratorPlugin ;
-    rdfs:label "Instruments" ;
+    rdfs:label "Instrument" ;
     rdfs:comment """
 Any plugin that is intended to be played as a musical instrument.
 """ .
 
 :OscillatorPlugin a rdfs:Class ;
     rdfs:subClassOf :GeneratorPlugin ;
-    rdfs:label "Oscillators" .
+    rdfs:label "Oscillator" .
 
 :SimulatorPlugin a rdfs:Class ;
     rdfs:subClassOf :Plugin ;
-    rdfs:label "Simulators" ;
+    rdfs:label "Simulator" ;
     rdfs:comment """
 Plugins that aim to duplicate the effect of some environmental effect or
 musical equipment.
@@ -501,18 +502,18 @@ musical equipment.
 
 :DelayPlugin a rdfs:Class ;
     rdfs:subClassOf :Plugin ;
-    rdfs:label "Delays" ;
+    rdfs:label "Delay" ;
     rdfs:comment """
 Plugins that intentionally delay their input signal as an effect.
 """ .
 
 :PhaserPlugin a rdfs:Class ;
     rdfs:subClassOf :Plugin ;
-    rdfs:label "Phasers" .
+    rdfs:label "Phaser" .
 
 :FlangerPlugin a rdfs:Class ;
     rdfs:subClassOf :Plugin ;
-    rdfs:label "Flangers" .
+    rdfs:label "Flanger" .
 
 :ChorusPlugin a rdfs:Class ;
     rdfs:subClassOf :Plugin ;
@@ -526,7 +527,7 @@ Plugins that intentionally delay their input signal as an effect.
 
 :FilterPlugin a rdfs:Class ;
     rdfs:subClassOf :Plugin ;
-    rdfs:label "Filters" .
+    rdfs:label "Filter" .
 
 :LowpassPlugin a rdfs:Class ;
     rdfs:subClassOf :FilterPlugin ;
@@ -542,7 +543,7 @@ Plugins that intentionally delay their input signal as an effect.
 
 :CombPlugin a rdfs:Class ;
     rdfs:subClassOf :FilterPlugin ;
-    rdfs:label "Combs" .
+    rdfs:label "Comb" .
 
 :AllpassPlugin a rdfs:Class ;
     rdfs:subClassOf :FilterPlugin ;
@@ -550,55 +551,55 @@ Plugins that intentionally delay their input signal as an effect.
 
 :EQPlugin a rdfs:Class ;
     rdfs:subClassOf :FilterPlugin ;
-    rdfs:label "Equalisers" .
+    rdfs:label "Equaliser" .
 
 :ParaEQPlugin a rdfs:Class ;
     rdfs:subClassOf :EQPlugin ;
-    rdfs:label "Parametrics" .
+    rdfs:label "Parametric" .
 
 :MultiEQPlugin a rdfs:Class ;
     rdfs:subClassOf :EQPlugin ;
-    rdfs:label "Multibands" .
+    rdfs:label "Multiband" .
 
 :PitchPlugin a rdfs:Class ;
     rdfs:subClassOf :Plugin ;
-    rdfs:label "Pitch Shifters" .
+    rdfs:label "Pitch Shifter" .
 
 :AmplifierPlugin a rdfs:Class ;
     rdfs:subClassOf :Plugin ;
-    rdfs:label "Amplifiers" .
+    rdfs:label "Amplifier" .
 
 :WaveshaperPlugin a rdfs:Class ;
     rdfs:subClassOf :Plugin ;
-    rdfs:label "Waveshapers" .
+    rdfs:label "Waveshaper" .
 
 :ModulatorPlugin a rdfs:Class ;
     rdfs:subClassOf :Plugin ;
-    rdfs:label "Modulators" .
+    rdfs:label "Modulator" .
 
 :DistortionPlugin a rdfs:Class ;
     rdfs:subClassOf :Plugin ;
-    rdfs:label "Distortions" .
+    rdfs:label "Distortion" .
 
 :DynamicsPlugin a rdfs:Class ;
     rdfs:subClassOf :Plugin ;
-    rdfs:label "Dynamics processors" ;
+    rdfs:label "Dynamics processor" ;
     rdfs:comment """
 Plugins that alter the envelope or dynamic range of the processed audio.
 """ .
 
 :CompressorPlugin a rdfs:Class ;
     rdfs:subClassOf :DynamicsPlugin ;
-    rdfs:label "Compressors" .
+    rdfs:label "Compressor" .
 
 :ExpanderPlugin a rdfs:Class ;
     rdfs:subClassOf :DynamicsPlugin ;
-    rdfs:label "Expanders" .
+    rdfs:label "Expander" .
 
 :LimiterPlugin a rdfs:Class ;
     rdfs:subClassOf :DynamicsPlugin ;
-    rdfs:label "Limiters" .
+    rdfs:label "Limiter" .
 
 :GatePlugin a rdfs:Class ;
     rdfs:subClassOf :DynamicsPlugin ;
-    rdfs:label "Gates" .
+    rdfs:label "Gate" .

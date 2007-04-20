@@ -37,6 +37,7 @@ slv2_plugin_new(SLV2World world, librdf_uri* uri, const char* binary_uri)
 	plugin->world = world;
 	plugin->plugin_uri = librdf_new_uri_from_uri(uri);
 	plugin->binary_uri = strdup(binary_uri);
+	plugin->category = NULL;
 	plugin->data_uris = slv2_strings_new();
 	plugin->ports = raptor_new_sequence((void (*)(void*))&slv2_port_free, NULL);
 	plugin->storage = NULL;
@@ -145,8 +146,32 @@ slv2_plugin_load(SLV2Plugin p)
 		librdf_free_uri(data_uri);
 	}
 
-	// Load ports
+	// Load category
 	const unsigned char* query = (const unsigned char*)
+		"SELECT DISTINCT ?class WHERE { <> a ?class }";
+	
+	librdf_query* q = librdf_new_query(p->world->world, "sparql",
+		NULL, query, p->plugin_uri);
+	
+	librdf_query_results* results = librdf_query_execute(q, p->rdf);
+
+	while (!librdf_query_results_finished(results)) {
+		librdf_node* class_node    = librdf_query_results_get_binding_value(results, 0);
+		librdf_uri*  class_uri     = librdf_node_get_uri(class_node);
+		const char*  class_uri_str = (const char*)librdf_uri_as_string(class_uri);
+		
+		SLV2Category category = slv2_categories_get_by_uri(p->world->categories, class_uri_str);
+
+		if (category) {
+			p->category = category;
+			break;
+		}
+
+		librdf_query_results_next(results);
+	}
+	
+	// Load ports
+	query = (const unsigned char*)
 		"PREFIX : <http://lv2plug.in/ontology#>\n"
 		"SELECT DISTINCT ?port ?symbol ?index WHERE {\n"
 		"<>    :port   ?port .\n"
@@ -154,10 +179,10 @@ slv2_plugin_load(SLV2Plugin p)
 		"      :index  ?index .\n"
 		"}";
 	
-	librdf_query* q = librdf_new_query(p->world->world, "sparql",
+	q = librdf_new_query(p->world->world, "sparql",
 		NULL, query, p->plugin_uri);
 	
-	librdf_query_results* results = librdf_query_execute(q, p->rdf);
+	results = librdf_query_execute(q, p->rdf);
 
 	while (!librdf_query_results_finished(results)) {
 	
@@ -214,6 +239,16 @@ const char*
 slv2_plugin_get_library_uri(SLV2Plugin p)
 {
 	return p->binary_uri;
+}
+
+
+SLV2Category
+slv2_plugin_get_category(SLV2Plugin p)
+{
+	if (!p->category)
+		slv2_plugin_load(p);
+
+	return p->category;
 }
 
 

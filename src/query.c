@@ -132,19 +132,6 @@ slv2_plugin_query(SLV2Plugin  plugin,
 		return NULL;
 	}
 	
-	// Add LV2 ontology to query sources
-	//librdf_query_add_data_graph(rq, slv2_ontology_uri, 
-	//	NULL, RASQAL_DATA_GRAPH_BACKGROUND);
-	
-	// Add all plugin data files to query sources
-	/*for (unsigned i=0; i < slv2_strings_size(plugin->data_uris); ++i) {
-		const char* file_uri_str = slv2_strings_get_at(plugin->data_uris, i);
-		raptor_uri* file_uri = raptor_new_uri((const unsigned char*)file_uri_str);
-		librdf_query_add_data_graph(rq, file_uri,
-			NULL, RASQAL_DATA_GRAPH_BACKGROUND);
-		raptor_free_uri(file_uri);
-	}*/
-
 	librdf_query_results* results = librdf_query_execute(rq, plugin->rdf);
 	
 	librdf_free_query(rq);
@@ -190,7 +177,7 @@ slv2_plugin_query_count(SLV2Plugin  plugin,
 	}
 }
 
-
+/*
 size_t
 slv2_query_count_results(SLV2Plugin  p,
                          const char* query)
@@ -205,10 +192,6 @@ slv2_query_count_results(SLV2Plugin  p,
 
 	//printf("Query: \n%s\n\n", query_str);
 
-	// Add LV2 ontology to query sources
-	//librdf_query_add_data_graph(rq, slv2_ontology_uri,
-	//	NULL, RASQAL_DATA_GRAPH_BACKGROUND);
-	
 	librdf_query_results* results = librdf_query_execute(rq, p->world->model);
 	assert(results);
 	
@@ -221,4 +204,4 @@ slv2_query_count_results(SLV2Plugin  p,
 
 	return count;
 }
-
+*/

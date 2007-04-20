@@ -56,6 +56,10 @@ typedef struct _Plugin* SLV2Plugin;
 typedef struct _World* SLV2World;
 
 
+/** A plugin category.  Opaque, but valid to compare to NULL. */
+typedef struct _Category* SLV2Category;
+
+
 #ifdef __cplusplus
 }
 #endif

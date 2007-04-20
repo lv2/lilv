@@ -134,6 +134,12 @@ char*
 slv2_plugin_get_name(SLV2Plugin plugin);
 
 
+/** Get the category this plugin belongs to.
+ */
+SLV2Category
+slv2_plugin_get_category(SLV2Plugin plugin);
+
+
 /** Get a value associated with the plugin in a plugin's data files.
  *
  * Returns the ?object of all triples found of the form:

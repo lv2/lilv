@@ -16,25 +16,42 @@
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef __SLV2_H
-#define __SLV2_H
+#define _XOPEN_SOURCE 500
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-#include <slv2/types.h>
-#include <slv2/world.h>
+#include <stdlib.h>
+#include <string.h>
 #include <slv2/category.h>
-#include <slv2/plugin.h>
-#include <slv2/port.h>
-#include <slv2/pluginlist.h>
-#include <slv2/plugininstance.h>
-#include <slv2/stringlist.h>
+#include "private_types.h"
 
 
-#ifdef __cplusplus
+SLV2Category
+slv2_category_new(const char* uri, const char* label)
+{
+	SLV2Category category = (SLV2Category)malloc(sizeof(struct _Category));
+	category->uri = strdup(uri);
+	category->label = strdup(label);
+	return category;
 }
-#endif
 
-#endif /* __SLV2_H */
+
+void
+slv2_category_free(SLV2Category category)
+{
+	free(category->uri);
+	free(category->label);
+	free(category);
+}
+
+
+const char*
+slv2_category_get_uri(SLV2Category category)
+{
+	return category->uri;
+}
+
+
+const char*
+slv2_category_get_label(SLV2Category category)
+{
+	return category->label;
+}

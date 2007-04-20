@@ -44,10 +44,9 @@ slv2_world_new()
 
 	world->parser = librdf_new_parser(world->world, "turtle", NULL, NULL);
 
+	world->categories = slv2_categories_new();
+	
 	world->plugins = slv2_plugins_new();
-
-	/*slv2_ontology_uri = raptor_new_uri((const unsigned char*)
-		"file://" LV2_TTL_PATH);*/
 
 	return world;
 }
@@ -56,13 +55,13 @@ slv2_world_new()
 void
 slv2_world_free(SLV2World world)
 {
-	/*raptor_free_uri(slv2_ontology_uri);
-	slv2_ontology_uri = NULL;*/
-
 	for (int i=0; i < raptor_sequence_size(world->plugins); ++i)
 		slv2_plugin_free(raptor_sequence_get_at(world->plugins, i));
 	raptor_free_sequence(world->plugins);
 	world->plugins = NULL;
+	
+	slv2_categories_free(world->categories);
+	world->categories = NULL;
 	
 	librdf_free_parser(world->parser);
 	world->parser = NULL;
@@ -163,21 +162,63 @@ slv2_plugin_compare_by_uri(const void* a, const void* b)
 }
 */
 
+
+void
+slv2_world_load_categories(SLV2World world)
+{
+	// FIXME: This will need to be a bit more clever when more data is around
+	// then the ontology (ie classes which aren't LV2 categories)
+	
+	unsigned char* query_string = (unsigned char*)
+    	"PREFIX : <http://lv2plug.in/ontology#>\n"
+		"PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>\n"
+		"SELECT DISTINCT ?category ?label\n"
+		"WHERE { ?category a rdfs:Class; rdfs:label ?label }\n"
+		"ORDER BY ?category\n";
+	
+	librdf_query* q = librdf_new_query(world->world, "sparql",
+		NULL, query_string, NULL);
+	
+	librdf_query_results* results = librdf_query_execute(q, world->model);
+
+	while (!librdf_query_results_finished(results)) {
+		librdf_node* category_node = librdf_query_results_get_binding_value(results, 0);
+		librdf_uri*  category_uri  = librdf_node_get_uri(category_node);
+		librdf_node* label_node    = librdf_query_results_get_binding_value(results, 1);
+		const char*  label         = (const char*)librdf_node_get_literal_value(label_node);
+
+		//printf("CATEGORY: %s (%s)\n", librdf_uri_as_string(category_uri), label);
+		SLV2Category category = slv2_category_new(
+				(const char*)librdf_uri_as_string(category_uri),
+				label);
+		raptor_sequence_push(world->categories, category);
+
+		librdf_query_results_next(results);
+	}
+		
+}
+
+
 void
 slv2_world_load_all(SLV2World world)
 {
 	char* lv2_path = getenv("LV2_PATH");
 
-	/* 1. Read all manifest files into model */
+	/* 1. Read LV2 ontology into model */
+	librdf_uri* ontology_uri = librdf_new_uri(world->world,
+			(const unsigned char*)"file://" LV2_TTL_PATH);
+	librdf_parser_parse_into_model(world->parser, ontology_uri, NULL, world->model);
+	librdf_free_uri(ontology_uri);
+
+
+	/* 2. Read all manifest files into model */
 
 	if (lv2_path) {
 		slv2_world_load_path(world, lv2_path);
 	} else {
 		const char* const home = getenv("HOME");
-		const char* const suffix = "/.lv2:/usr/local/lib/lv2:usr/lib/lv2";
+		const char* const suffix = "/.lv2:/usr/local/lib/lv2:/usr/lib/lv2";
 		lv2_path = slv2_strjoin(home, suffix, NULL);
-
-		//fprintf(stderr, "$LV2_PATH is unset.  Using default path %s\n", lv2_path);
 
 		slv2_world_load_path(world, lv2_path);
 
@@ -185,7 +226,9 @@ slv2_world_load_all(SLV2World world)
 	}
 
 	
-	/* 2. Query out things to cache */
+	/* 3. Query out things to cache */
+
+	slv2_world_load_categories(world);
 
 	// Find all plugins and associated data files
 	unsigned char* query_string = (unsigned char*)
@@ -233,7 +276,7 @@ slv2_world_load_all(SLV2World world)
 		librdf_query_results_next(results);
 	}
 
-	// ORDER BY should (and appears to actually) guarantee this
+	// 'ORDER BY ?plugin' guarantees this
 	//raptor_sequence_sort(world->plugins, slv2_plugin_compare_by_uri);
 
 	if (results)
