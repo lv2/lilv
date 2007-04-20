@@ -28,17 +28,19 @@ extern "C" {
 
 /** \defgroup world Library context, data loading, etc.
  * 
- * These functions deal with the data model which other SLV2 methods
- * operate with.  The world contains an in-memory cache of all bundles
- * manifest.ttl files, from which you can quickly query plugins, etc.
+ * The "world" represents all library state, and the data found in bundles'
+ * manifest.ttl (ie it is an in-memory index of all things LV2 found).
+ * Plugins (and plugin extensions) and the LV2 specification (and LV2
+ * extensions) itself can be queried from the world for use.
  *
  * Normal hosts which just want to easily load plugins by URI are strongly
- * recommended to simply find all installed data in the recommended way with
- * \ref slv2_world_load_all rather than find and load bundles manually.
- * 
- * Functions are provided for hosts that wish to access bundles explicitly and
- * individually for some reason, this is intended for hosts which are tied to
- * a specific bundle (shipped with the application).
+ * recommended to simply call \ref slv2_world_load_all to find all installed
+ * data in the recommended way.
+ *
+ * Normal hosts should NOT have to refer to bundles directly under normal
+ * circumstances.  However, functions are provided to load individual bundles
+ * explicitly, intended for hosts which depend on a specific bundle
+ * (which is shipped with the application).
  *
  * @{
  */
@@ -60,7 +62,7 @@ void
 slv2_world_free(SLV2World world);
 
 
-/** Load all installed LV2 bundles on the system
+/** Load all installed LV2 bundles on the system.
  *
  * This is the recommended way for hosts to load LV2 data.  It does the most
  * reasonable thing to find all installed plugins, extensions, etc. on the
@@ -70,60 +72,63 @@ slv2_world_free(SLV2World world);
  *
  * Use of other functions for loading bundles is \em highly discouraged
  * without a special reason to do so - use this one.
+ *
+ * Time = Query
  */
 void
 slv2_world_load_all(SLV2World world);
 
 
-/** Load all bundles found in \a search_path.
+/** Load a specific bundle.
  *
- * \param search_path A colon-delimited list of directories.  These directories
- * should contain LV2 bundle directories (ie the search path is a list of
- * parent directories of bundles, not a list of bundle directories).
- *
- * If \a search_path is NULL, \a world will be unmodified.
- * Use of this function is \b not recommended.  Use \ref slv2_world_load_all.
- */
-void
-slv2_world_load_path(SLV2World   world,
-                     const char* search_path);
-
-
-/** Load a specific bundle into \a world.
- *
- * \arg bundle_base_uri is a fully qualified URI to the bundle directory,
+ * \arg bundle_uri A fully qualified URI to the bundle directory,
  * with the trailing slash, eg. file:///usr/lib/lv2/someBundle/
  *
  * Normal hosts should not use this function.
  *
- * Hosts should not attach \em any long-term significance to bundle paths
+ * Hosts should \b never attach any long-term significance to bundle paths
  * as there are no guarantees they will remain consistent whatsoever.
+ * Plugins (and other things) are identified by URIs, \b not bundle or
+ * file names.
+ *
  * This function should only be used by apps which ship with a special
- * bundle (which it knows exists at some path because they are part of
- * the same package).
+ * bundle (which it knows exists at some path because the bundle is
+ * shipped with the application).
+ *
+ * Time = Query
  */
 void
 slv2_world_load_bundle(SLV2World   world,
-                       const char* bundle_base_uri);
+                       const char* bundle_uri);
 
 
-/** Add all plugins present in \a world to \a list.
+/** Return a list of all found plugins.
+ *
+ * The returned list contains just enough references to query
+ * or instantiate plugins.  The data for a particular plugin will not be
+ * loaded into memory until a call to an slv2_plugin_* function results in
+ * a query (at which time the data is cached with the SLV2Plugin so future
+ * queries are very fast).
  *
  * Returned plugins contain a reference to this world, world must not be
  * destroyed until plugins are finished with.
+ *
+ * Time = O(1)
  */
 SLV2Plugins
 slv2_world_get_all_plugins(SLV2World world);
 
 
-/** Get plugins filtered by a user-defined filter function.
+/** Return a list of found plugins filtered by a user-defined filter function.
  *
- * All plugins in \a world that return true when passed to \a include
- * (a pointer to a function that takes an SLV2Plugin and returns a bool)
- * will be added to \a list.
+ * All plugins currently found in \a world that return true when passed to
+ * \a include (a pointer to a function which takes an SLV2Plugin and returns
+ * a bool) will be in the returned list.
  *
  * Returned plugins contain a reference to this world, world must not be
  * destroyed until plugins are finished with.
+ *
+ * Time = O(n * Time(include))
  */
 SLV2Plugins
 slv2_world_get_plugins_by_filter(SLV2World world,

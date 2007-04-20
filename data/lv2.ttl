@@ -167,10 +167,9 @@ The plugin author MUST change the plugin URI if a port index is changed.
 """ .
 
 :symbol a rdf:Property ;
-    rdfs:domain  :Port ;
     rdfs:label   "symbol" ;
     rdfs:comment """
-A short name used to identify the port in an easily machine and human readable way.
+A short name used as a machine and human readable identifier.
 
 The first character must be one of _, a-z or A-Z and subsequenct characters can
 be from _, a-z, A-Z and 0-9.

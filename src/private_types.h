@@ -37,6 +37,7 @@ struct _Port {
 	//char*    node_id; ///< RDF Node ID
 };
 
+
 SLV2Port slv2_port_new(uint32_t index, const char* symbol/*, const char* node_id*/);
 SLV2Port slv2_port_duplicate(SLV2Port port);
 void     slv2_port_free(SLV2Port port);
@@ -60,13 +61,16 @@ struct _Plugin {
 
 SLV2Plugin slv2_plugin_new(SLV2World world, librdf_uri* uri, const char* binary_uri);
 void       slv2_plugin_load(SLV2Plugin p);
+void       slv2_plugin_free(SLV2Plugin plugin);
 
 
-/** List of references to plugins available for loading */
-struct _PluginList {
-	size_t           num_plugins;
-	struct _Plugin** plugins;
-};
+/** Create a new, empty plugin list.
+ *
+ * Returned object must be freed with slv2_plugins_free.
+ */
+SLV2Plugins
+slv2_plugins_new();
+
 
 /** Pimpl portion of SLV2Instance */
 struct _InstanceImpl {
@@ -83,6 +87,19 @@ struct _World {
 	librdf_parser*      parser;
 	SLV2Plugins plugins;
 };
+
+/** Load all bundles found in \a search_path.
+ *
+ * \param search_path A colon-delimited list of directories.  These directories
+ * should contain LV2 bundle directories (ie the search path is a list of
+ * parent directories of bundles, not a list of bundle directories).
+ *
+ * If \a search_path is NULL, \a world will be unmodified.
+ * Use of this function is \b not recommended.  Use \ref slv2_world_load_all.
+ */
+void
+slv2_world_load_path(SLV2World   world,
+                     const char* search_path);
 
 
 #ifdef __cplusplus

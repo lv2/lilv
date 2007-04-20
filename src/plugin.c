@@ -37,7 +37,7 @@ slv2_plugin_new(SLV2World world, librdf_uri* uri, const char* binary_uri)
 	plugin->world = world;
 	plugin->plugin_uri = librdf_new_uri_from_uri(uri);
 	plugin->binary_uri = strdup(binary_uri);
-	plugin->data_uris = raptor_new_sequence((void (*)(void*))&raptor_free_uri, NULL);
+	plugin->data_uris = slv2_strings_new();
 	plugin->ports = raptor_new_sequence((void (*)(void*))&slv2_port_free, NULL);
 	plugin->storage = NULL;
 	plugin->rdf = NULL;
@@ -69,7 +69,7 @@ slv2_plugin_free(SLV2Plugin p)
 		p->storage = NULL;
 	}
 	
-	raptor_free_sequence(p->data_uris);
+	slv2_strings_free(p->data_uris);
 
 	free(p);
 }
@@ -81,6 +81,7 @@ slv2_plugin_query(SLV2Plugin plugin,
                   const char* sparql_str);
 
 
+/*
 SLV2Plugin
 slv2_plugin_duplicate(SLV2Plugin p)
 {
@@ -105,6 +106,7 @@ slv2_plugin_duplicate(SLV2Plugin p)
 
 	return result;
 }
+*/
 
 
 /** comparator for sorting */
@@ -136,9 +138,11 @@ slv2_plugin_load(SLV2Plugin p)
 	}
 
 	// Parse all the plugin's data files into RDF model
-	for (int i=0; i < raptor_sequence_size(p->data_uris); ++i) {
-		librdf_uri* data_uri = raptor_sequence_get_at(p->data_uris, i);
+	for (unsigned i=0; i < slv2_strings_size(p->data_uris); ++i) {
+		const char* data_uri_str = slv2_strings_get_at(p->data_uris, i);
+		librdf_uri* data_uri = librdf_new_uri(p->world->world, (const unsigned char*)data_uri_str);
 		librdf_parser_parse_into_model(p->world->parser, data_uri, NULL, p->rdf);
+		librdf_free_uri(data_uri);
 	}
 
 	// Load ports

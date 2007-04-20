@@ -59,7 +59,9 @@ slv2_world_free(SLV2World world)
 	/*raptor_free_uri(slv2_ontology_uri);
 	slv2_ontology_uri = NULL;*/
 
-	slv2_plugins_free(world->plugins);
+	for (int i=0; i < raptor_sequence_size(world->plugins); ++i)
+		slv2_plugin_free(raptor_sequence_get_at(world->plugins, i));
+	raptor_free_sequence(world->plugins);
 	world->plugins = NULL;
 	
 	librdf_free_parser(world->parser);
@@ -78,7 +80,25 @@ slv2_world_free(SLV2World world)
 }
 
 
-/* private */
+void
+slv2_world_load_bundle(SLV2World world, const char* bundle_uri_str)
+{
+	librdf_uri* bundle_uri = librdf_new_uri(world->world,
+			(const unsigned char*)bundle_uri_str);
+
+	librdf_uri* manifest_uri = librdf_new_uri_relative_to_base(
+			bundle_uri, (const unsigned char*)"manifest.ttl");
+
+	librdf_parser_parse_into_model(world->parser, manifest_uri, NULL, world->model);
+
+	librdf_free_uri(manifest_uri);
+	librdf_free_uri(bundle_uri);
+}
+
+
+/** Load all bundles under a directory.
+ * Private.
+ */
 void
 slv2_world_load_directory(SLV2World world, const char* dir)
 {
@@ -91,24 +111,17 @@ slv2_world_load_directory(SLV2World world, const char* dir)
 		if (!strcmp(pfile->d_name, ".") || !strcmp(pfile->d_name, ".."))
 			continue;
 
-		char* bundle_uri_str = slv2_strjoin("file://", dir, "/", pfile->d_name, "/", NULL);
-		librdf_uri* bundle_uri = librdf_new_uri(world->world, (unsigned char*)bundle_uri_str);
+		char* uri = slv2_strjoin("file://", dir, "/", pfile->d_name, "/", NULL);
 
-		DIR* bundle_dir = opendir(bundle_uri_str + 7);
+		// FIXME: Probably a better way to check if a dir exists
+		DIR* bundle_dir = opendir(uri + 7);
 
 		if (bundle_dir != NULL) {
 			closedir(bundle_dir);
-
-			librdf_uri* manifest_uri = librdf_new_uri_relative_to_base(
-					bundle_uri, (const unsigned char*)"manifest.ttl");
-
-			librdf_parser_parse_into_model(world->parser, manifest_uri, NULL, world->model);
-			
-			librdf_free_uri(manifest_uri);
+			slv2_world_load_bundle(world, uri);
 		}
 		
-		free(bundle_uri_str);
-		librdf_free_uri(bundle_uri);
+		free(uri);
 	}
 
 	closedir(pdir);
@@ -155,7 +168,8 @@ slv2_world_load_all(SLV2World world)
 {
 	char* lv2_path = getenv("LV2_PATH");
 
-	// Read all manifest files
+	/* 1. Read all manifest files into model */
+
 	if (lv2_path) {
 		slv2_world_load_path(world, lv2_path);
 	} else {
@@ -171,6 +185,8 @@ slv2_world_load_all(SLV2World world)
 	}
 
 	
+	/* 2. Query out things to cache */
+
 	// Find all plugins and associated data files
 	unsigned char* query_string = (unsigned char*)
     	"PREFIX : <http://lv2plug.in/ontology#>\n"
@@ -205,7 +221,8 @@ slv2_world_load_all(SLV2World world)
 		plugin->world = world;
 
 		// FIXME: check for duplicates
-		raptor_sequence_push(plugin->data_uris, librdf_new_uri_from_uri(data_uri));
+		raptor_sequence_push(plugin->data_uris,
+				strdup((const char*)librdf_uri_as_string(data_uri)));
 		
 		raptor_sequence_push(world->plugins, plugin);
 		
@@ -267,16 +284,14 @@ slv2_world_get_all_plugins(SLV2World world)
 SLV2Plugins
 slv2_world_get_plugins_by_filter(SLV2World world, bool (*include)(SLV2Plugin))
 {
-	SLV2Plugins all = slv2_world_get_all_plugins(world);
 	SLV2Plugins result = slv2_plugins_new();
 
-	for (int i=0; i < raptor_sequence_size(all); ++i) {
-		SLV2Plugin p = raptor_sequence_get_at(all, i);
+	for (int i=0; i < raptor_sequence_size(world->plugins); ++i) {
+		SLV2Plugin p = raptor_sequence_get_at(world->plugins, i);
 		if (include(p))
-			raptor_sequence_push(result, slv2_plugin_duplicate(p));
+			raptor_sequence_push(result, p);
 	}
 
-	slv2_plugins_free(all);
 	return result;
 }
 

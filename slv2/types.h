@@ -43,11 +43,18 @@ typedef enum _PortClass {
 	SLV2_MIDI_OUTPUT     /**< MIDI output (LL extension) */
 } SLV2PortClass;
 
+
+/** A port on a plugin.  Opaque, but valid to compare to NULL. */
 typedef struct _Port* SLV2Port;
 
+
+/** A plugin.  Opaque, but valid to compare to NULL. */
 typedef struct _Plugin* SLV2Plugin;
 
+
+/** The world.  Opaque, but valid to compare to NULL. */
 typedef struct _World* SLV2World;
+
 
 #ifdef __cplusplus
 }

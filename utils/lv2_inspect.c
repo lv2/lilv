@@ -20,8 +20,6 @@
 #include <stdio.h>
 #include <slv2/slv2.h>
 
-// FIXME: remove
-#include "../src/private_types.h"
 
 void
 print_port(SLV2Plugin p, uint32_t index)
@@ -93,41 +91,53 @@ print_plugin(SLV2Plugin p)
 {
 	char* str = NULL;
 
-	printf("<%s>\n", slv2_plugin_get_uri(p));
-
-	printf("FIXME: Data URIs\n");
-	/*printf("\tData URIs:\n");
-	SLV2Strings data_uris = slv2_plugin_get_data_uris(p);
-	for (unsigned i=0; i < slv2_strings_size(data_uris); ++i)
-		printf("\t\t%s\n", slv2_strings_get_at(data_uris, i));
-	*/
-
-	printf("\n\tLibrary URI: %s\n\n", slv2_plugin_get_library_uri(p));
-
+	printf("<%s>\n\n", slv2_plugin_get_uri(p));
+	
 	str = slv2_plugin_get_name(p);
-	printf("\tName: %s\n", str);
+	printf("\tName: %s\n\n", str);
 	free(str);
 
 	if (slv2_plugin_has_latency(p))
-		printf("\tHas latency: yes\n");
+		printf("\tHas latency: yes\n\n");
 	else
-		printf("\tHas latency: no\n");
+		printf("\tHas latency: no\n\n");
+	
+	printf("\tBinary: %s\n\n", slv2_plugin_get_library_uri(p));
 
-	printf("\tProperties:\n");
+	printf("\tData URIs:\n");
+	SLV2Strings data_uris = slv2_plugin_get_data_uris(p);
+	for (unsigned i=0; i < slv2_strings_size(data_uris); ++i)
+		printf("\t\t%s\n", slv2_strings_get_at(data_uris, i));
+
+	/* Properties */
+
 	SLV2Strings v = slv2_plugin_get_properties(p);
+	
+	if (slv2_strings_size(v) > 0)
+		printf("\n\tProperties:\n");
+
 	for (unsigned i=0; i < slv2_strings_size(v); ++i)
 		printf("\t\t%s\n", slv2_strings_get_at(v, i));
 	slv2_strings_free(v);
 	
-	printf("\tHints:\n");
+
+	/* Hints */
+
 	v = slv2_plugin_get_hints(p);
+
+	if (slv2_strings_size(v) > 0)
+		printf("\n\tHints:\n");
+
 	for (unsigned i=0; i < slv2_strings_size(v); ++i)
 		printf("\t\t%s\n", slv2_strings_get_at(v, i));
 	slv2_strings_free(v);
+
+
+	/* Ports */
 
 	uint32_t num_ports = slv2_plugin_get_num_ports(p);
 	
-	printf("\n\t# Ports: %d\n", num_ports);
+	//printf("\n\t# Ports: %d\n", num_ports);
 	
 	for (uint32_t i=0; i < num_ports; ++i)
 		print_port(p, i);
@@ -157,7 +167,7 @@ main(int argc, char** argv)
 		return -1;
 	}
 
-	slv2_plugins_free(plugins);
+	slv2_plugins_free(world, plugins);
 	slv2_world_free(world);
 
 	return (p != NULL ? 0 : -1);

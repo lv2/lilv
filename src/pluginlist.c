@@ -36,14 +36,16 @@
 SLV2Plugins
 slv2_plugins_new()
 {
-	return raptor_new_sequence((void (*)(void*))&slv2_plugin_free, NULL);
+	//return raptor_new_sequence((void (*)(void*))&slv2_plugin_free, NULL);
+	return raptor_new_sequence(NULL, NULL);
 }
 
 
 void
-slv2_plugins_free(SLV2Plugins list)
+slv2_plugins_free(SLV2World world, SLV2Plugins list)
 {
-	raptor_free_sequence(list);
+	if (list != world->plugins)
+		raptor_free_sequence(list);
 }
 
 #if 0

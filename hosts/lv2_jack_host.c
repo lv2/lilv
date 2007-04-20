@@ -74,6 +74,7 @@ main(int argc, char** argv)
 		fprintf(stderr, "\nYou must specify a plugin URI to load.\n");
 		fprintf(stderr, "\nKnown plugins:\n\n");
 		list_plugins(plugins);
+		slv2_world_free(world);
 		return EXIT_FAILURE;
 	}
 
@@ -82,7 +83,7 @@ main(int argc, char** argv)
 	
 	if (!host.plugin) {
 		fprintf(stderr, "Failed to find plugin %s.\n", plugin_uri);
-		slv2_plugins_free(plugins);
+		slv2_world_free(world);
 		return EXIT_FAILURE;
 	}
 
@@ -126,7 +127,7 @@ main(int argc, char** argv)
 	
 	/* Deactivate plugin and JACK */
 	slv2_instance_free(host.instance);
-	slv2_plugins_free(plugins);
+	slv2_plugins_free(world, plugins);
 	
 	printf("Shutting down JACK.\n");
 	for (unsigned long i=0; i < host.num_ports; ++i) {
@@ -140,6 +141,7 @@ main(int argc, char** argv)
 	}
 	jack_client_close(host.jack_client);
 	
+	slv2_plugins_free(world, plugins);
 	slv2_world_free(world);
 
 	return 0;
@@ -166,7 +168,6 @@ void
 create_port(struct JackHost* host,
             uint32_t         port_index)
 {
-	//struct Port* port = (Port*)malloc(sizeof(Port));
 	struct Port* const port = &host->ports[port_index];
 
 	port->class       = SLV2_UNKNOWN_PORT_CLASS;

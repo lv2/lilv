@@ -53,18 +53,23 @@ slv2_strings_size(SLV2Strings list);
 /** Get a string from a string list at the given index.
  *
  * @return the element at \a index, or NULL if index is out of range.
+ *
+ * Time = O(1)
  */
 const char*
 slv2_strings_get_at(SLV2Strings list, unsigned index);
 
 
-/** Return whether \a list contains \a uri.
+/** Return whether \a list contains \a string.
+ *
+ * Time = O(n)
  */
 bool
-slv2_strings_contains(SLV2Strings list, const char* uri);
+slv2_strings_contains(SLV2Strings list, const char* string);
 
 
-/** Free a string list. */
+/** Free a string list.
+ */
 void
 slv2_strings_free(SLV2Strings);
 

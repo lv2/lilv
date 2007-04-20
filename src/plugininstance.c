@@ -16,6 +16,8 @@
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+#define _XOPEN_SOURCE 500
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -65,7 +67,10 @@ slv2_plugin_instantiate(SLV2Plugin               plugin,
 		// Search for plugin by URI
 		
 		// FIXME: Kluge to get bundle path (containing directory of binary)
-		const char* const bundle_path = strrchr(plugin->binary_uri, '/') + 1;
+		char* bundle_path = strdup(plugin->binary_uri);
+		char* const bundle_path_end = strrchr(bundle_path, '/');
+		if (bundle_path_end)
+		*(bundle_path_end+1) = '\0';
 		printf("Bundle path: %s\n", bundle_path);
 		
 		for (uint32_t i=0; 1; ++i) {
@@ -95,6 +100,8 @@ slv2_plugin_instantiate(SLV2Plugin               plugin,
 				break;
 			}
 		}
+
+		free(bundle_path);
 	}
 
 	assert(result);

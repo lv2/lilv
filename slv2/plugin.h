@@ -53,11 +53,14 @@ extern "C" {
  * testing utilities, etc.
  *
  * \return true if \a plugin is valid.
+ *
+ * Time = Query
  */
 bool
 slv2_plugin_verify(SLV2Plugin plugin);
 
 
+#if 0
 /** Duplicate a plugin.
  *
  * Use this if you want to keep an SLV2Plugin around but free the list it came
@@ -68,15 +71,7 @@ slv2_plugin_verify(SLV2Plugin plugin);
  */
 SLV2Plugin
 slv2_plugin_duplicate(SLV2Plugin plugin);
-
-
-/** Free an SLV2Plugin.
- *
- * This should NEVER be used on a plugin contained in a Plugins.  Use this
- * only with plugins created with slv2_plugin_duplicate.
- */
-void
-slv2_plugin_free(SLV2Plugin plugin);
+#endif
 
 
 /** Get the URI of \a plugin.
@@ -92,6 +87,8 @@ slv2_plugin_free(SLV2Plugin plugin);
  * MUST have a different URI than it's predecessor.
  *
  * \return a shared string which must not be modified or free()'d.
+ *
+ * Time = O(1)
  */
 const char*
 slv2_plugin_get_uri(SLV2Plugin plugin);
@@ -102,8 +99,10 @@ slv2_plugin_get_uri(SLV2Plugin plugin);
  * Note this always returns fully qualified URIs.  If you want local
  * filesystem paths, use slv2_uri_to_path.
  *
- * \return a complete URL eg. "file:///usr/foo/SomeBundle.lv2/someplug.ttl",
- * which is shared and must not be modified or free()'d.
+ * \return a list of complete URLs eg. "file:///foo/ABundle.lv2/aplug.ttl",
+ * which is shared and must not be modified or freed.
+ *
+ * Time = O(1)
  */
 SLV2Strings
 slv2_plugin_get_data_uris(SLV2Plugin plugin);
@@ -113,8 +112,10 @@ slv2_plugin_get_data_uris(SLV2Plugin plugin);
  *
  * Note this always returns a fully qualified URI.  If you want a local
  * filesystem path, use slv2_uri_to_path.
+ * 
+ * \return a shared string which must not be modified or freed.
  *
- * \return a shared string which must not be modified or free()'d.
+ * Time = O(1)
  */
 const char*
 slv2_plugin_get_library_uri(SLV2Plugin plugin);
@@ -124,8 +125,10 @@ slv2_plugin_get_library_uri(SLV2Plugin plugin);
 /** Get the name of \a plugin.
  *
  * This is guaranteed to return the untranslated name (the doap:name in the
- * data file without a language tag).  Returned value must be free()'d by
+ * data file without a language tag).  Returned value must be freed by
  * the caller.
+ *
+ * Time = Query
  */
 char*
 slv2_plugin_get_name(SLV2Plugin plugin);
@@ -141,6 +144,8 @@ slv2_plugin_get_name(SLV2Plugin plugin);
  * sensibly represented as an SLV2Strings (e.g. blank nodes).
  *
  * Return value must be freed by caller with slv2_strings_free.
+ *
+ * Time = Query
  */
 SLV2Strings
 slv2_plugin_get_value(SLV2Plugin  p,
@@ -160,6 +165,8 @@ slv2_plugin_get_value(SLV2Plugin  p,
  * sensibly represented as an SLV2Strings (e.g. blank nodes).
  *
  * Return value must be freed by caller with slv2_strings_free.
+ *
+ * Time = Query
  */
 SLV2Strings
 slv2_plugin_get_value_for_subject(SLV2Plugin  p,
@@ -174,6 +181,8 @@ slv2_plugin_get_value_for_subject(SLV2Plugin  p,
  * not what you want, see slv2_plugin_get_hints).
  *
  * Return value must be freed by caller with slv2_value_free.
+ *
+ * Time = Query
  */
 SLV2Strings
 slv2_plugin_get_properties(SLV2Plugin p);
@@ -185,12 +194,16 @@ slv2_plugin_get_properties(SLV2Plugin p);
  * ignored and the plugin will still function correctly.
  *
  * Return value must be freed by caller with slv2_value_free.
+ *
+ * Time = Query
  */
 SLV2Strings
 slv2_plugin_get_hints(SLV2Plugin p);
 
 
 /** Get the number of ports on this plugin.
+ *
+ * Time = O(1)
  */
 uint32_t
 slv2_plugin_get_num_ports(SLV2Plugin p);
@@ -200,6 +213,8 @@ slv2_plugin_get_num_ports(SLV2Plugin p);
  *
  * The index of the latency port can be found with slv2_plugin_get_latency_port
  * ONLY if this function returns true.
+ *
+ * Time = Query
  */
 bool
 slv2_plugin_has_latency(SLV2Plugin p);
@@ -214,6 +229,8 @@ slv2_plugin_has_latency(SLV2Plugin p);
  * Any plugin that introduces unwanted latency that should be compensated for
  * (by hosts with the ability/need) MUST provide this port, which is a control
  * rate output port that reports the latency for each cycle in frames.
+ *
+ * Time = Query
  */
 uint32_t
 slv2_plugin_get_latency_port(SLV2Plugin p);
@@ -222,6 +239,8 @@ slv2_plugin_get_latency_port(SLV2Plugin p);
 /** Get a plugin's supported host features / extensions.
  *
  * This returns a list of all supported features (both required and optional).
+ *
+ * Time = Query
  */
 SLV2Strings
 slv2_plugin_get_supported_features(SLV2Plugin p);
@@ -231,6 +250,8 @@ slv2_plugin_get_supported_features(SLV2Plugin p);
  *
  * All feature URI's returned by this call MUST be passed to the plugin's
  * instantiate method for the plugin to instantiate successfully.
+ *
+ * Time = Query
  */
 SLV2Strings
 slv2_plugin_get_required_features(SLV2Plugin p);
@@ -241,6 +262,8 @@ slv2_plugin_get_required_features(SLV2Plugin p);
  * If the feature URI's returned by this method are passed to the plugin's
  * instantiate method, those features will be used by the function, otherwise
  * the plugin will act as it would if it did not support that feature at all.
+ *
+ * Time = Query
  */
 SLV2Strings
 slv2_plugin_get_optional_features(SLV2Plugin p);
@@ -248,9 +271,12 @@ slv2_plugin_get_optional_features(SLV2Plugin p);
 
 /** Query a plugin for a single variable.
  *
+ * \param plugin The plugin to query.
  * \param sparql_str A SPARQL SELECT query.
  * \param variable The variable to return results for.
  * \return All matches for \a variable.
+ *
+ * Time = Query
  */
 SLV2Strings
 slv2_plugin_simple_query(SLV2Plugin  plugin,
@@ -260,7 +286,10 @@ slv2_plugin_simple_query(SLV2Plugin  plugin,
 
 /** Query a plugin and return the number of results found.
  *
+ * \param plugin The plugin to query.
  * \param sparql_str A SPARQL SELECT query.
+ *
+ * Time = Query
  */
 unsigned
 slv2_plugin_query_count(SLV2Plugin  plugin,
@@ -272,7 +301,7 @@ slv2_plugin_query_count(SLV2Plugin  plugin,
  * To perform multiple calls on a port, the returned value should
  * be cached and used repeatedly.
  *
- * O(1)
+ * Time = O(1)
  */
 SLV2Port
 slv2_plugin_get_port_by_index(SLV2Plugin plugin,
@@ -284,12 +313,11 @@ slv2_plugin_get_port_by_index(SLV2Plugin plugin,
  * To perform multiple calls on a port, the returned value should
  * be cached and used repeatedly.
  *
- * O(num_ports)
+ * Time = O(n)
  */
 SLV2Port
 slv2_plugin_get_port_by_symbol(SLV2Plugin  plugin,
                                const char* symbol);
-
 
 
 /** @} */

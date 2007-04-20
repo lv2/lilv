@@ -40,7 +40,7 @@ main()//int argc, char** argv)
 
 	list_plugins(plugins);
 	
-	slv2_plugins_free(plugins);
+	slv2_plugins_free(world, plugins);
 	slv2_world_free(world);
 
 	return 0;

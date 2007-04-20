@@ -34,6 +34,8 @@ extern "C" {
 
 
 /** Port equivalent to slv2_plugin_get_value.
+ *
+ * Time = Query
  */
 SLV2Strings
 slv2_port_get_value(SLV2Plugin  plugin,
@@ -42,6 +44,8 @@ slv2_port_get_value(SLV2Plugin  plugin,
 
 
 /** Port equivalent to slv2_plugin_get_properties.
+ *
+ * Time = Query
  */
 SLV2Strings
 slv2_port_get_properties(SLV2Plugin plugin,
@@ -49,6 +53,8 @@ slv2_port_get_properties(SLV2Plugin plugin,
 
 
 /** Port equivalent to slv2_plugin_get_hints.
+ *
+ * Time = Query
  */
 SLV2Strings
 slv2_port_get_hints(SLV2Plugin plugin,
@@ -61,6 +67,8 @@ slv2_port_get_hints(SLV2Plugin plugin,
  * Returned string must be free()'d by caller.
  *
  * \return NULL when index is out of range
+ *
+ * Time = Query
  */
 char*
 slv2_port_get_symbol(SLV2Plugin plugin,
@@ -71,6 +79,8 @@ slv2_port_get_symbol(SLV2Plugin plugin,
  * This is guaranteed to return the untranslated name (the doap:name in the
  * data file without a language tag).  Returned value must be free()'d by
  * the caller.
+ *
+ * Time = Query
  */
 char*
 slv2_port_get_name(SLV2Plugin plugin,
@@ -78,6 +88,8 @@ slv2_port_get_name(SLV2Plugin plugin,
 
 
 /** Get the class (input/output, data type, rate...) of a port.
+ *
+ * Time = Query
  */
 SLV2PortClass
 slv2_port_get_class(SLV2Plugin plugin,
@@ -87,6 +99,8 @@ slv2_port_get_class(SLV2Plugin plugin,
 /** Get the default value of a port.
  *
  * Only valid for ports with a data type of lv2:float.
+ *
+ * Time = Query
  */
 float
 slv2_port_get_default_value(SLV2Plugin plugin, 
@@ -96,6 +110,8 @@ slv2_port_get_default_value(SLV2Plugin plugin,
 /** Get the minimum value of a port.
  *
  * Only valid for ports with a data type of lv2:float.
+ *
+ * Time = Query
  */
 float
 slv2_port_get_minimum_value(SLV2Plugin plugin, 
@@ -105,6 +121,8 @@ slv2_port_get_minimum_value(SLV2Plugin plugin,
 /** Get the maximum value of a port.
  *
  * Only valid for ports with a data type of lv2:float.
+ *
+ * Time = Query
  */
 float
 slv2_port_get_maximum_value(SLV2Plugin plugin, 

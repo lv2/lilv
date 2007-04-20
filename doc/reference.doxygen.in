@@ -421,7 +421,7 @@ WARN_LOGFILE           =
 
 INPUT = @top_srcdir@/doc/mainpage.dox \
 		@top_srcdir@/slv2/types.h \
-		@top_srcdir@/slv2/model.h \
+		@top_srcdir@/slv2/world.h \
         @top_srcdir@/slv2/pluginlist.h \
 		@top_srcdir@/slv2/stringlist.h \
         @top_srcdir@/slv2/plugin.h \

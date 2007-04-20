@@ -39,27 +39,14 @@ typedef void* SLV2Plugins;
  */
 
 
-/** Create a new, empty plugin list.
- *
- * Returned object must be freed with slv2_plugins_free.
- */
-SLV2Plugins
-slv2_plugins_new();
-
-
 /** Free a plugin list.
  *
- * Note that all plugins in the list (eg those returned by the get_plugin
- * functions) will be deleted as well.  It is expected that hosts will
- * keep the plugin list allocated until they are done with their plugins.
- * If you want to keep a plugin around, but free the list it came from, you
- * will have to copy it with slv2_plugin_duplicate().
- *
- * \a list is invalid after this call (though it may be used again after a
- * "list = slv2_plugins_new()")
+ * Freeing a plugin list does not destroy the plugins it contains (plugins
+ * are owned by the world).  \a list is invalid after this call.
  */
 void
-slv2_plugins_free(SLV2Plugins list);
+slv2_plugins_free(SLV2World   world,
+                  SLV2Plugins list);
 
 
 /** Get the number of plugins in the list.
@@ -73,7 +60,7 @@ slv2_plugins_size(SLV2Plugins list);
  * Return value is shared (stored in \a list) and must not be freed or
  * modified by the caller in any way.
  *
- * O(log2(n))
+ * Time = O(log2(n))
  * 
  * \return NULL if plugin with \a url not found in \a list.
  */
@@ -84,15 +71,12 @@ slv2_plugins_get_by_uri(SLV2Plugins list,
 
 /** Get a plugin from the list by index.
  *
- * \a index has no significance.  Any \a index not less than
- * slv2list_get_length(list) will return NULL.  All plugins in a list can
- * thus be easily enumerated by repeated calls to this function starting
- * with \a index 0.
+ * \a index has no significance other than as an index into this list.
+ * Any \a index not less than slv2_list_get_length(list) will return NULL,
+ * so all plugins in a list can be enumerated by repeated calls
+ * to this function starting with \a index = 0.
  *
- * Return value is shared (stored in \a list) and must not be freed or
- * modified by the caller in any way.
- *
- * O(1)
+ * Time = O(1)
  *
  * \return NULL if \a index out of range.
  */

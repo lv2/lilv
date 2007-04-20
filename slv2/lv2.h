@@ -113,7 +113,7 @@ extern "C" {
  *
  * This plugin handle indicates a particular instance of the plugin
  * concerned. It is valid to compare this to NULL (0 for C++) but
- * otherwise the host MUST not attempt to interpret it. The plugin
+ * otherwise the host MUST NOT attempt to interpret it. The plugin
  * may use it to reference internal instance data. */
 typedef void * LV2_Handle;
 
