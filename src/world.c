@@ -228,6 +228,7 @@ slv2_world_load_all(SLV2World world)
 		
 		librdf_free_node(plugin_node);
 		librdf_free_node(data_node);
+		librdf_free_node(binary_node);
 
 		librdf_query_results_next(results);
 	}
@@ -266,18 +267,7 @@ slv2_world_serialize(const char* filename)
 SLV2Plugins
 slv2_world_get_all_plugins(SLV2World world)
 {
-	// FIXME: Slow..
-	
-	// NULL deleter so user can free returned sequence without nuking
-	// our locally stored plugins
-	raptor_sequence* result = raptor_new_sequence(NULL, NULL);
-
-	for (int i=0; i < raptor_sequence_size(world->plugins); ++i)
-		raptor_sequence_push(result, raptor_sequence_get_at(world->plugins, i));
-
-	// sorted?
-	
-	return result;
+	return world->plugins;
 }
 
 
