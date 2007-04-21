@@ -60,20 +60,6 @@ bool
 slv2_plugin_verify(SLV2Plugin plugin);
 
 
-#if 0
-/** Duplicate a plugin.
- *
- * Use this if you want to keep an SLV2Plugin around but free the list it came
- * from.  Freeing the returned plugin with slv2_plugin_free is the caller's
- * responsibility.
- *
- * \return a newly allocated deep copy of \a plugin.
- */
-SLV2Plugin
-slv2_plugin_duplicate(SLV2Plugin plugin);
-#endif
-
-
 /** Get the URI of \a plugin.
  *
  * Any serialization that refers to plugins should refer to them by this.

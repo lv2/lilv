@@ -67,20 +67,6 @@ SLV2PluginClasses
 slv2_plugin_class_get_children(SLV2PluginClass plugin_class);
 
 
-#if 0
-/** Get the path of this plugin_class, ie "Plugins/Generators/Oscillators".
- *
- * SLV2 automatically generates an ideal plugin_class heirarchy given the plugins
- * present.  The last fragment of the path is the plugin_class's label,
- * as returned by slv2_plugin_class_get_label.
- *
- * Returned value is owned by \a plugin_class and must not be freed by caller.
- *
- * Time = O(1)
- */
-const char* slv2_plugin_class_get_path(SLV2PluginClass plugin_class);
-#endif
-
 /** @} */
 
 #ifdef __cplusplus

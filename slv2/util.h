@@ -25,7 +25,6 @@
 extern "C" {
 #endif
 
-
 /** \defgroup util Utility functions
  *
  * @{

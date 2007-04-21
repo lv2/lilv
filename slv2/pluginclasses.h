@@ -25,11 +25,11 @@
 extern "C" {
 #endif
 
-
 /** \defgroup plugin_classes Plugin classes (categories)
  * 
  * @{
  */
+
 
 /** Get the number of plugins in the list.
  */

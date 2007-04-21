@@ -5,7 +5,7 @@ lib_LTLIBRARIES = libslv2.la
 libslv2_la_LIBADD = @REDLAND_LIBS@
 
 libslv2_la_SOURCES = \
-	private_types.h \
+	slv2_internal.h \
 	world.c \
 	pluginclass.c \
 	pluginclasses.c \

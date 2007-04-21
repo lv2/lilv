@@ -25,7 +25,7 @@
 #include <slv2/port.h>
 #include <slv2/types.h>
 #include <slv2/util.h>
-#include "private_types.h"
+#include "slv2_internal.h"
 
 
 /* private */

@@ -24,7 +24,7 @@
 #include <slv2/plugin.h>
 #include <slv2/util.h>
 #include <slv2/strings.h>
-#include "private_types.h"
+#include "slv2_internal.h"
 
 
 static const char* slv2_query_prefixes =

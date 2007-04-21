@@ -28,8 +28,6 @@ extern "C" {
 #include <slv2/plugin.h>
 #include <slv2/port.h>
 
-typedef struct _InstanceImpl* SLV2InstanceImpl;
-
 /** \defgroup lib Shared library access
  *
  * An SLV2Instance is an instantiated SLV2Plugin (eg a loaded dynamic
@@ -40,17 +38,20 @@ typedef struct _InstanceImpl* SLV2InstanceImpl;
  */
 
 
+typedef struct _InstanceImpl* SLV2InstanceImpl;
+
+
 /** Instance of a plugin.
  *
  * The LV2 descriptor and handle of this are exposed to allow inlining of
- * performance critical functions like slv2_instance_run (hiding things in
- * lv2.h is pointless anyway).  The remaining implementation details are
+ * performance critical functions like slv2_instance_run (which are exposed
+ * in lv2.h anyway).  The remaining implementation details are
  * in the opaque pimpl member.
  */
 typedef struct _Instance {
 	const LV2_Descriptor* lv2_descriptor;
 	LV2_Handle            lv2_handle;
-	SLV2InstanceImpl      pimpl; ///< Move along now, nothing to see here
+	SLV2InstanceImpl      pimpl; ///< Private implementation
 }* SLV2Instance;
 
 
@@ -83,9 +84,7 @@ slv2_plugin_instantiate(SLV2Plugin               plugin,
 void
 slv2_instance_free(SLV2Instance instance);
 
-
 #ifndef LIBSLV2_SOURCE
-
 
 /** Get the URI of the plugin which \a instance is an instance of.
  *

@@ -25,10 +25,6 @@
 extern "C" {
 #endif
 
-
-typedef void* SLV2Plugins;
-
-
 /** \defgroup plugins Plugin lists
  * 
  * These functions work with lists of plugins which come from an
@@ -37,6 +33,9 @@ typedef void* SLV2Plugins;
  *
  * @{
  */
+
+
+typedef void* SLV2Plugins;
 
 
 /** Free a plugin list.

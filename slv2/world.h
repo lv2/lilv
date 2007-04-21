@@ -26,7 +26,6 @@
 extern "C" {
 #endif
 
-
 /** \defgroup world Library context, data loading, etc.
  * 
  * The "world" represents all library state, and the data found in bundles'

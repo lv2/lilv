@@ -28,7 +28,7 @@
 #include <slv2/pluginlist.h>
 #include <slv2/strings.h>
 #include <slv2/util.h>
-#include "private_types.h"
+#include "slv2_internal.h"
 
 	
 SLV2Plugins

@@ -23,7 +23,7 @@
 #include <librdf.h>
 #include <slv2/pluginclass.h>
 #include <slv2/pluginclasses.h>
-#include "private_types.h"
+#include "slv2_internal.h"
 
 	
 SLV2PluginClasses

@@ -25,7 +25,6 @@
 extern "C" {
 #endif
 
-
 /** \defgroup strings Collections of strings
  *
  * SLV2Strings is an ordered collection of strings which is fast for random
