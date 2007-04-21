@@ -72,6 +72,10 @@ To be used by a host a Plugin must have at least the following properties:
     doap:name (one without language tag)
     doap:license
     :port
+
+The doap:name property should be at most a few words in length using title
+capitalization, e.g. "Tape Delay Unit".  Use doap:shortdesc or
+doap:description for more detailed descriptions.
 """ .
 
 
@@ -507,16 +511,20 @@ musical equipment.
 Plugins that intentionally delay their input signal as an effect.
 """ .
 
-:PhaserPlugin a rdfs:Class ;
+:ModulatorPlugin a rdfs:Class ;
     rdfs:subClassOf :Plugin ;
+    rdfs:label "Modulator" .
+
+:PhaserPlugin a rdfs:Class ;
+    rdfs:subClassOf :ModulatorPlugin ;
     rdfs:label "Phaser" .
 
 :FlangerPlugin a rdfs:Class ;
-    rdfs:subClassOf :Plugin ;
+    rdfs:subClassOf :ModulatorPlugin ;
     rdfs:label "Flanger" .
 
 :ChorusPlugin a rdfs:Class ;
-    rdfs:subClassOf :Plugin ;
+    rdfs:subClassOf :ModulatorPlugin ;
     rdfs:label "Chorus" .
 
 :ReverbPlugin a rdfs:Class ;
@@ -573,17 +581,13 @@ Plugins that intentionally delay their input signal as an effect.
     rdfs:subClassOf :Plugin ;
     rdfs:label "Waveshaper" .
 
-:ModulatorPlugin a rdfs:Class ;
-    rdfs:subClassOf :Plugin ;
-    rdfs:label "Modulator" .
-
 :DistortionPlugin a rdfs:Class ;
     rdfs:subClassOf :Plugin ;
     rdfs:label "Distortion" .
 
 :DynamicsPlugin a rdfs:Class ;
     rdfs:subClassOf :Plugin ;
-    rdfs:label "Dynamics processor" ;
+    rdfs:label "Dynamics Processor" ;
     rdfs:comment """
 Plugins that alter the envelope or dynamic range of the processed audio.
 """ .
