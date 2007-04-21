@@ -16,8 +16,8 @@
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef __SLV2_PLUGINLIST_H__
-#define __SLV2_PLUGINLIST_H__
+#ifndef __SLV2_PLUGINS_H__
+#define __SLV2_PLUGINS_H__
 
 #include <slv2/plugin.h>
 
@@ -91,5 +91,5 @@ slv2_plugins_get_at(SLV2Plugins list,
 }
 #endif
 
-#endif /* __SLV2_PLUGINLIST_H__ */
+#endif /* __SLV2_PLUGINS_H__ */
 

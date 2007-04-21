@@ -16,8 +16,8 @@
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef __SLV2_STRINGLIST_H__
-#define __SLV2_STRINGLIST_H__
+#ifndef __SLV2_STRINGS_H__
+#define __SLV2_STRINGS_H__
 
 #include <stdbool.h>
 
@@ -80,5 +80,5 @@ slv2_strings_free(SLV2Strings);
 }
 #endif
 
-#endif /* __SLV2_STRINGLIST_H__ */
+#endif /* __SLV2_STRINGS_H__ */
 

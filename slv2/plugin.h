@@ -27,7 +27,7 @@ extern "C" {
 #include <stdbool.h>
 #include <slv2/types.h>
 #include <slv2/port.h>
-#include <slv2/stringlist.h>
+#include <slv2/strings.h>
 
 /** \defgroup data Plugin data access
  *
@@ -134,10 +134,10 @@ char*
 slv2_plugin_get_name(SLV2Plugin plugin);
 
 
-/** Get the category this plugin belongs to.
+/** Get the class this plugin belongs to (ie Filters).
  */
-SLV2Category
-slv2_plugin_get_category(SLV2Plugin plugin);
+SLV2PluginClass
+slv2_plugin_get_class(SLV2Plugin plugin);
 
 
 /** Get a value associated with the plugin in a plugin's data files.

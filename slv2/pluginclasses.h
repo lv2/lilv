@@ -16,20 +16,20 @@
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef __SLV2_CATEGORIES_H__
-#define __SLV2_CATEGORIES_H__
+#ifndef __SLV2_PLUGIN_CLASSES_H__
+#define __SLV2_PLUGIN_CLASSES_H__
 
-#include <slv2/category.h>
+#include <slv2/pluginclass.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 
-typedef void* SLV2Categories;
+typedef void* SLV2PluginClasses;
 
 
-/** \defgroup categories Categories
+/** \defgroup plugin_classes Plugin classes (categories)
  * 
  * @{
  */
@@ -37,10 +37,10 @@ typedef void* SLV2Categories;
 /** Get the number of plugins in the list.
  */
 unsigned
-slv2_categories_size(SLV2Categories list);
+slv2_plugin_classes_size(SLV2PluginClasses list);
 
 
-/** Get a category from the list by URI.
+/** Get a plugin class from the list by URI.
  *
  * Return value is shared (stored in \a list) and must not be freed or
  * modified by the caller in any way.
@@ -49,25 +49,25 @@ slv2_categories_size(SLV2Categories list);
  * 
  * \return NULL if plugin with \a url not found in \a list.
  */
-SLV2Category
-slv2_categories_get_by_uri(SLV2Categories list,
-                           const char*    uri);
+SLV2PluginClass
+slv2_plugin_classes_get_by_uri(SLV2PluginClasses list,
+                               const char*       uri);
 
 
 /** Get a plugin from the list by index.
  *
  * \a index has no significance other than as an index into this list.
- * Any \a index not less than slv2_categories_get_length(list) will return NULL,
- * so all categories in a list can be enumerated by repeated calls
+ * Any \a index not less than slv2_plugin_classes_get_length(list) will return NULL,
+ * so all plugin_classes in a list can be enumerated by repeated calls
  * to this function starting with \a index = 0.
  *
  * Time = O(1)
  *
  * \return NULL if \a index out of range.
  */
-SLV2Category
-slv2_categories_get_at(SLV2Categories list,
-                       unsigned       index);
+SLV2PluginClass
+slv2_plugin_classes_get_at(SLV2PluginClasses list,
+                           unsigned          index);
 
 
 /** @} */
@@ -76,5 +76,5 @@ slv2_categories_get_at(SLV2Categories list,
 }
 #endif
 
-#endif /* __SLV2_CATEGORIES_H__ */
+#endif /* __SLV2_PLUGIN_CLASSES_H__ */
 

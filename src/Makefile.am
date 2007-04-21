@@ -7,12 +7,12 @@ libslv2_la_LIBADD = @REDLAND_LIBS@
 libslv2_la_SOURCES = \
 	private_types.h \
 	world.c \
-	category.c \
-	categories.c \
+	pluginclass.c \
+	pluginclasses.c \
 	plugin.c \
 	query.c \
 	port.c \
-	pluginlist.c \
+	plugins.c \
 	plugininstance.c \
-	stringlist.c \
+	strings.c \
 	util.c

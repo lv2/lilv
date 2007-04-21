@@ -5,12 +5,12 @@ slv2include_HEADERS = \
 	types.h \
 	slv2.h \
 	world.h \
-	category.h \
-	categories.h \
+	pluginclass.h \
+	pluginclasses.h \
 	plugin.h \
 	port.h \
-	pluginlist.h \
+	plugins.h \
 	plugininstance.h \
-	stringlist.h \
+	strings.h \
 	util.h
 

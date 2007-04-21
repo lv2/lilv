@@ -16,50 +16,42 @@
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include <string.h>
+#define _XOPEN_SOURCE 500
+
 #include <stdlib.h>
-#include <limits.h>
-#include <raptor.h>
-#include <slv2/stringlist.h>
+#include <string.h>
+#include <slv2/pluginclass.h>
+#include "private_types.h"
 
 
-SLV2Strings
-slv2_strings_new()
+SLV2PluginClass
+slv2_plugin_class_new(const char* uri, const char* label)
 {
-	return raptor_new_sequence(&free, NULL);
+	SLV2PluginClass plugin_class = (SLV2PluginClass)malloc(sizeof(struct _PluginClass));
+	plugin_class->uri = strdup(uri);
+	plugin_class->label = strdup(label);
+	return plugin_class;
 }
 
 
 void
-slv2_strings_free(SLV2Strings list)
+slv2_plugin_class_free(SLV2PluginClass plugin_class)
 {
-	raptor_free_sequence(list);
-}
-
-
-unsigned
-slv2_strings_size(SLV2Strings list)
-{
-	return raptor_sequence_size(list);
+	free(plugin_class->uri);
+	free(plugin_class->label);
+	free(plugin_class);
 }
 
 
 const char*
-slv2_strings_get_at(SLV2Strings list, unsigned index)
+slv2_plugin_class_get_uri(SLV2PluginClass plugin_class)
 {
-	if (index > INT_MAX)
-		return NULL;
-	else
-		return (const char*)raptor_sequence_get_at(list, (int)index);
+	return plugin_class->uri;
 }
 
 
-bool
-slv2_strings_contains(SLV2Strings list, const char* str)
+const char*
+slv2_plugin_class_get_label(SLV2PluginClass plugin_class)
 {
-	for (unsigned i=0; i < slv2_strings_size(list); ++i)
-		if (!strcmp(slv2_strings_get_at(list, i), str))
-			return true;
-	
-	return false;
+	return plugin_class->label;
 }

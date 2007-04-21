@@ -25,12 +25,12 @@ extern "C" {
 
 #include <slv2/types.h>
 #include <slv2/world.h>
-#include <slv2/category.h>
+#include <slv2/pluginclass.h>
 #include <slv2/plugin.h>
 #include <slv2/port.h>
-#include <slv2/pluginlist.h>
+#include <slv2/plugins.h>
 #include <slv2/plugininstance.h>
-#include <slv2/stringlist.h>
+#include <slv2/strings.h>
 
 
 #ifdef __cplusplus

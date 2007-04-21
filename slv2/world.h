@@ -19,7 +19,8 @@
 #ifndef __SLV2_WORLD_H__
 #define __SLV2_WORLD_H__
 
-#include <slv2/pluginlist.h>
+#include <slv2/plugins.h>
+#include <slv2/pluginclasses.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -102,6 +103,16 @@ slv2_world_load_bundle(SLV2World   world,
                        const char* bundle_uri);
 
 
+/** Return a list of all found plugin classes.
+ *
+ * Returned list is owned by world and must not be freed by the caller.
+ * 
+ * Time = O(1)
+ */
+SLV2PluginClasses
+slv2_world_get_plugin_classes(SLV2World world);
+
+
 /** Return a list of all found plugins.
  *
  * The returned list contains just enough references to query
@@ -110,8 +121,8 @@ slv2_world_load_bundle(SLV2World   world,
  * a query (at which time the data is cached with the SLV2Plugin so future
  * queries are very fast).
  *
- * Returned plugins contain a reference to this world, world must not be
- * destroyed until plugins are finished with.
+ * Returned list must be freed by user with slv2_plugins_free.  The contained
+ * plugins are owned by \a world and must not be freed by caller.
  *
  * Time = O(1)
  */
@@ -125,14 +136,26 @@ slv2_world_get_all_plugins(SLV2World world);
  * \a include (a pointer to a function which takes an SLV2Plugin and returns
  * a bool) will be in the returned list.
  *
- * Returned plugins contain a reference to this world, world must not be
- * destroyed until plugins are finished with.
+ * Returned list must be freed by user with slv2_plugins_free.  The contained
+ * plugins are owned by \a world and must not be freed by caller.
  *
  * Time = O(n * Time(include))
  */
 SLV2Plugins
 slv2_world_get_plugins_by_filter(SLV2World world,
                                  bool (*include)(SLV2Plugin));
+
+
+/** Return a list of found plugins in a given class.
+ *
+ * Returned list must be freed by user with slv2_plugins_free.  The contained
+ * plugins are owned by \a world and must not be freed by caller.
+ *
+ * Time = O(n)
+ */
+SLV2Plugins
+slv2_world_get_plugins_by_class(SLV2World       world,
+                                SLV2PluginClass plugin_class);
 
 
 #if 0

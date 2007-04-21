@@ -97,7 +97,7 @@ print_plugin(SLV2Plugin p)
 	printf("\tName: %s\n\n", str);
 	free(str);
 	
-	const char* class_label = slv2_category_get_label(slv2_plugin_get_category(p));
+	const char* class_label = slv2_plugin_class_get_label(slv2_plugin_get_class(p));
 	printf("\tClass: %s\n\n", class_label);
 
 	if (slv2_plugin_has_latency(p))

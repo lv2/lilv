@@ -25,7 +25,7 @@
 #include <slv2/plugin.h>
 #include <slv2/types.h>
 #include <slv2/util.h>
-#include <slv2/stringlist.h>
+#include <slv2/strings.h>
 #include "private_types.h"
 
 
@@ -37,7 +37,7 @@ slv2_plugin_new(SLV2World world, librdf_uri* uri, const char* binary_uri)
 	plugin->world = world;
 	plugin->plugin_uri = librdf_new_uri_from_uri(uri);
 	plugin->binary_uri = strdup(binary_uri);
-	plugin->category = NULL;
+	plugin->plugin_class = NULL;
 	plugin->data_uris = slv2_strings_new();
 	plugin->ports = raptor_new_sequence((void (*)(void*))&slv2_port_free, NULL);
 	plugin->storage = NULL;
@@ -146,7 +146,7 @@ slv2_plugin_load(SLV2Plugin p)
 		librdf_free_uri(data_uri);
 	}
 
-	// Load category
+	// Load plugin_class
 	const unsigned char* query = (const unsigned char*)
 		"SELECT DISTINCT ?class WHERE { <> a ?class }";
 	
@@ -160,15 +160,19 @@ slv2_plugin_load(SLV2Plugin p)
 		librdf_uri*  class_uri     = librdf_node_get_uri(class_node);
 		const char*  class_uri_str = (const char*)librdf_uri_as_string(class_uri);
 		
-		SLV2Category category = slv2_categories_get_by_uri(p->world->categories, class_uri_str);
+		SLV2PluginClass plugin_class = slv2_plugin_classes_get_by_uri(
+				p->world->plugin_classes, class_uri_str);
 
-		if (category) {
-			p->category = category;
+		if (plugin_class) {
+			p->plugin_class = plugin_class;
 			break;
 		}
 
 		librdf_query_results_next(results);
 	}
+	
+	if (p->plugin_class == NULL)
+		fprintf(stderr, "Warning: Unclassy plugin: %s\n", slv2_plugin_get_uri(p));
 	
 	// Load ports
 	query = (const unsigned char*)
@@ -242,13 +246,13 @@ slv2_plugin_get_library_uri(SLV2Plugin p)
 }
 
 
-SLV2Category
-slv2_plugin_get_category(SLV2Plugin p)
+SLV2PluginClass
+slv2_plugin_get_plugin_class(SLV2Plugin p)
 {
-	if (!p->category)
+	if (!p->plugin_class)
 		slv2_plugin_load(p);
 
-	return p->category;
+	return p->plugin_class;
 }
 
 
@@ -322,6 +326,15 @@ slv2_plugin_get_name(SLV2Plugin plugin)
 		slv2_strings_free(prop);
 
 	return result;
+}
+
+
+/** Get the class this plugin belongs to (ie Filters).
+ */
+SLV2PluginClass
+slv2_plugin_get_class(SLV2Plugin plugin)
+{
+	return plugin->plugin_class;
 }
 
 

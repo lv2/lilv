@@ -26,7 +26,7 @@ extern "C" {
 #include <slv2/types.h>
 #include <slv2/plugin.h>
 #include <slv2/port.h>
-#include <slv2/stringlist.h>
+#include <slv2/strings.h>
 
 /** \addtogroup data
  * @{

@@ -44,7 +44,7 @@ slv2_world_new()
 
 	world->parser = librdf_new_parser(world->world, "turtle", NULL, NULL);
 
-	world->categories = slv2_categories_new();
+	world->plugin_classes = slv2_plugin_classes_new();
 	
 	world->plugins = slv2_plugins_new();
 
@@ -60,8 +60,8 @@ slv2_world_free(SLV2World world)
 	raptor_free_sequence(world->plugins);
 	world->plugins = NULL;
 	
-	slv2_categories_free(world->categories);
-	world->categories = NULL;
+	slv2_plugin_classes_free(world->plugin_classes);
+	world->plugin_classes = NULL;
 	
 	librdf_free_parser(world->parser);
 	world->parser = NULL;
@@ -164,17 +164,18 @@ slv2_plugin_compare_by_uri(const void* a, const void* b)
 
 
 void
-slv2_world_load_categories(SLV2World world)
+slv2_world_load_plugin_classes(SLV2World world)
 {
 	// FIXME: This will need to be a bit more clever when more data is around
-	// then the ontology (ie classes which aren't LV2 categories)
+	// then the ontology (ie classes which aren't LV2 plugin_classes)
 	
 	unsigned char* query_string = (unsigned char*)
     	"PREFIX : <http://lv2plug.in/ontology#>\n"
 		"PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>\n"
-		"SELECT DISTINCT ?category ?label\n"
-		"WHERE { ?category a rdfs:Class; rdfs:label ?label }\n"
-		"ORDER BY ?category\n";
+		"SELECT DISTINCT ?class ?label WHERE {\n"
+		//"	?plugin a :Plugin; a ?class .\n"
+		"	?class a rdfs:Class; rdfs:label ?label\n"
+		"} ORDER BY ?class\n";
 	
 	librdf_query* q = librdf_new_query(world->world, "sparql",
 		NULL, query_string, NULL);
@@ -182,16 +183,17 @@ slv2_world_load_categories(SLV2World world)
 	librdf_query_results* results = librdf_query_execute(q, world->model);
 
 	while (!librdf_query_results_finished(results)) {
-		librdf_node* category_node = librdf_query_results_get_binding_value(results, 0);
-		librdf_uri*  category_uri  = librdf_node_get_uri(category_node);
+		librdf_node* class_node = librdf_query_results_get_binding_value(results, 0);
+		librdf_uri*  class_uri  = librdf_node_get_uri(class_node);
 		librdf_node* label_node    = librdf_query_results_get_binding_value(results, 1);
 		const char*  label         = (const char*)librdf_node_get_literal_value(label_node);
 
-		//printf("CATEGORY: %s (%s)\n", librdf_uri_as_string(category_uri), label);
-		SLV2Category category = slv2_category_new(
-				(const char*)librdf_uri_as_string(category_uri),
+		//printf("CLASS: %s (%s)\n", librdf_uri_as_string(class_uri), label);
+		
+		SLV2PluginClass plugin_class = slv2_plugin_class_new(
+				(const char*)librdf_uri_as_string(class_uri),
 				label);
-		raptor_sequence_push(world->categories, category);
+		raptor_sequence_push(world->plugin_classes, plugin_class);
 
 		librdf_query_results_next(results);
 	}
@@ -228,7 +230,7 @@ slv2_world_load_all(SLV2World world)
 	
 	/* 3. Query out things to cache */
 
-	slv2_world_load_categories(world);
+	slv2_world_load_plugin_classes(world);
 
 	// Find all plugins and associated data files
 	unsigned char* query_string = (unsigned char*)
@@ -305,6 +307,13 @@ slv2_world_serialize(const char* filename)
 	librdf_free_serializer(serializer);
 }
 #endif
+
+
+SLV2PluginClasses
+slv2_world_get_plugin_classes(SLV2World world)
+{
+	return world->plugin_classes;
+}
 
 
 SLV2Plugins

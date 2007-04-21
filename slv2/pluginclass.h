@@ -16,8 +16,8 @@
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef __SLV2_CATEGORY_H__
-#define __SLV2_CATEGORY_H__
+#ifndef __SLV2_PLUGIN_CLASS_H__
+#define __SLV2_PLUGIN_CLASS_H__
 
 #ifdef __cplusplus
 extern "C" {
@@ -30,35 +30,35 @@ extern "C" {
  */
 
 
-/** Get the URI of this category.
+/** Get the URI of this plugin class.
  *
- * Returned value is owned by \a category and must not be freed by caller.
- *
- * Time = O(1)
- */
-const char* slv2_category_get_uri(SLV2Category category);
-
-
-/** Get the label of this category, ie "Oscillators".
- *
- * Returned value is owned by \a category and must not be freed by caller.
+ * Returned value is owned by \a plugin_class and must not be freed by caller.
  *
  * Time = O(1)
  */
-const char* slv2_category_get_label(SLV2Category category);
+const char* slv2_plugin_class_get_uri(SLV2PluginClass plugin_class);
+
+
+/** Get the label of this plugin_class, ie "Oscillators".
+ *
+ * Returned value is owned by \a plugin_class and must not be freed by caller.
+ *
+ * Time = O(1)
+ */
+const char* slv2_plugin_class_get_label(SLV2PluginClass plugin_class);
 
 #if 0
-/** Get the path of this category, ie "Plugins/Generators/Oscillators".
+/** Get the path of this plugin_class, ie "Plugins/Generators/Oscillators".
  *
- * SLV2 automatically generates an ideal category heirarchy given the plugins
- * present.  The last fragment of the path is the category's label,
- * as returned by slv2_category_get_label.
+ * SLV2 automatically generates an ideal plugin_class heirarchy given the plugins
+ * present.  The last fragment of the path is the plugin_class's label,
+ * as returned by slv2_plugin_class_get_label.
  *
- * Returned value is owned by \a category and must not be freed by caller.
+ * Returned value is owned by \a plugin_class and must not be freed by caller.
  *
  * Time = O(1)
  */
-const char* slv2_category_get_path(SLV2Category category);
+const char* slv2_plugin_class_get_path(SLV2PluginClass plugin_class);
 #endif
 
 /** @} */
@@ -67,4 +67,4 @@ const char* slv2_category_get_path(SLV2Category category);
 }
 #endif
 
-#endif /* __SLV2_CATEGORY_H__ */
+#endif /* __SLV2_PLUGIN_CLASS_H__ */

@@ -27,7 +27,7 @@ extern "C" {
 #include <stddef.h>
 #include <librdf.h>
 #include <slv2/pluginlist.h>
-#include <slv2/categories.h>
+#include <slv2/pluginclasses.h>
 
 
 /** Reference to a port on some plugin.
@@ -54,7 +54,7 @@ struct _Plugin {
 	librdf_uri*      plugin_uri;
 //	char*            bundle_url; // Bundle directory plugin was loaded from
 	char*            binary_uri; // lv2:binary
-	SLV2Category     category;
+	SLV2PluginClass  plugin_class;
 	raptor_sequence* data_uris;  // rdfs::seeAlso
 	raptor_sequence* ports;
 	librdf_storage*  storage;
@@ -80,26 +80,26 @@ struct _InstanceImpl {
 };
 
 
-struct _Category {
+struct _PluginClass {
 	char* uri;
 	char* label;
 };
 
-SLV2Category slv2_category_new(const char* uri, const char* label);
-void         slv2_category_free(SLV2Category category);
+SLV2PluginClass slv2_plugin_class_new(const char* uri, const char* label);
+void            slv2_plugin_class_free(SLV2PluginClass class);
 
-SLV2Categories slv2_categories_new();
-void           slv2_categories_free();
+SLV2PluginClasses slv2_plugin_classes_new();
+void              slv2_plugin_classes_free();
 
 /** Model of LV2 (RDF) data loaded from bundles.
  */
 struct _World {
-	librdf_world*   world;
-	librdf_storage* storage;
-	librdf_model*   model;
-	librdf_parser*  parser;
-	SLV2Categories  categories;
-	SLV2Plugins     plugins;
+	librdf_world*     world;
+	librdf_storage*   storage;
+	librdf_model*     model;
+	librdf_parser*    parser;
+	SLV2PluginClasses plugin_classes;
+	SLV2Plugins       plugins;
 };
 
 /** Load all bundles found in \a search_path.

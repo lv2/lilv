@@ -16,42 +16,50 @@
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#define _XOPEN_SOURCE 500
-
-#include <stdlib.h>
 #include <string.h>
-#include <slv2/category.h>
-#include "private_types.h"
+#include <stdlib.h>
+#include <limits.h>
+#include <raptor.h>
+#include <slv2/strings.h>
 
 
-SLV2Category
-slv2_category_new(const char* uri, const char* label)
+SLV2Strings
+slv2_strings_new()
 {
-	SLV2Category category = (SLV2Category)malloc(sizeof(struct _Category));
-	category->uri = strdup(uri);
-	category->label = strdup(label);
-	return category;
+	return raptor_new_sequence(&free, NULL);
 }
 
 
 void
-slv2_category_free(SLV2Category category)
+slv2_strings_free(SLV2Strings list)
 {
-	free(category->uri);
-	free(category->label);
-	free(category);
+	raptor_free_sequence(list);
+}
+
+
+unsigned
+slv2_strings_size(SLV2Strings list)
+{
+	return raptor_sequence_size(list);
 }
 
 
 const char*
-slv2_category_get_uri(SLV2Category category)
+slv2_strings_get_at(SLV2Strings list, unsigned index)
 {
-	return category->uri;
+	if (index > INT_MAX)
+		return NULL;
+	else
+		return (const char*)raptor_sequence_get_at(list, (int)index);
 }
 
 
-const char*
-slv2_category_get_label(SLV2Category category)
+bool
+slv2_strings_contains(SLV2Strings list, const char* str)
 {
-	return category->label;
+	for (unsigned i=0; i < slv2_strings_size(list); ++i)
+		if (!strcmp(slv2_strings_get_at(list, i), str))
+			return true;
+	
+	return false;
 }

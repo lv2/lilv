@@ -21,35 +21,35 @@
 #include <string.h>
 #include <limits.h>
 #include <librdf.h>
-#include <slv2/category.h>
-#include <slv2/categories.h>
+#include <slv2/pluginclass.h>
+#include <slv2/pluginclasses.h>
 #include "private_types.h"
 
 	
-SLV2Categories
-slv2_categories_new()
+SLV2PluginClasses
+slv2_plugin_classes_new()
 {
-	return raptor_new_sequence((void (*)(void*))&slv2_category_free, NULL);
+	return raptor_new_sequence((void (*)(void*))&slv2_plugin_class_free, NULL);
 }
 
 
 void
-slv2_categories_free(SLV2Categories list)
+slv2_plugin_classes_free(SLV2PluginClasses list)
 {
-	//if (list != world->categories)
+	//if (list != world->plugin_classes)
 		raptor_free_sequence(list);
 }
 
 
 unsigned
-slv2_categories_size(SLV2Categories list)
+slv2_plugin_classes_size(SLV2PluginClasses list)
 {
 	return raptor_sequence_size(list);
 }
 
 
-SLV2Category
-slv2_categories_get_by_uri(SLV2Categories list, const char* uri)
+SLV2PluginClass
+slv2_plugin_classes_get_by_uri(SLV2PluginClasses list, const char* uri)
 {
 	// good old fashioned binary search
 	
@@ -63,9 +63,9 @@ slv2_categories_get_by_uri(SLV2Categories list, const char* uri)
 	while (upper >= lower) {
 		i = lower + ((upper - lower) / 2);
 
-		SLV2Category p = raptor_sequence_get_at(list, i);
+		SLV2PluginClass p = raptor_sequence_get_at(list, i);
 
-		int cmp = strcmp(slv2_category_get_uri(p), uri);
+		int cmp = strcmp(slv2_plugin_class_get_uri(p), uri);
 
 		if (cmp == 0)
 			return p;
@@ -79,12 +79,12 @@ slv2_categories_get_by_uri(SLV2Categories list, const char* uri)
 }
 
 
-SLV2Category
-slv2_categories_get_at(SLV2Categories list, unsigned index)
+SLV2PluginClass
+slv2_plugin_classes_get_at(SLV2PluginClasses list, unsigned index)
 {	
 	if (index > INT_MAX)
 		return NULL;
 	else
-		return (SLV2Category)raptor_sequence_get_at(list, (int)index);
+		return (SLV2PluginClass)raptor_sequence_get_at(list, (int)index);
 }
 
