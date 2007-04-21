@@ -25,9 +25,14 @@
 
 
 SLV2PluginClass
-slv2_plugin_class_new(const char* uri, const char* label)
+slv2_plugin_class_new(SLV2World world, const char* parent_uri,  const char* uri, const char* label)
 {
 	SLV2PluginClass plugin_class = (SLV2PluginClass)malloc(sizeof(struct _PluginClass));
+	plugin_class->world = world;
+	if (parent_uri)
+		plugin_class->parent_uri = strdup(parent_uri);
+	else
+		plugin_class->parent_uri = NULL;
 	plugin_class->uri = strdup(uri);
 	plugin_class->label = strdup(label);
 	return plugin_class;
@@ -44,6 +49,13 @@ slv2_plugin_class_free(SLV2PluginClass plugin_class)
 
 
 const char*
+slv2_plugin_class_get_parent_uri(SLV2PluginClass plugin_class)
+{
+	return plugin_class->parent_uri;
+}
+
+
+const char*
 slv2_plugin_class_get_uri(SLV2PluginClass plugin_class)
 {
 	return plugin_class->uri;
@@ -54,4 +66,21 @@ const char*
 slv2_plugin_class_get_label(SLV2PluginClass plugin_class)
 {
 	return plugin_class->label;
+}
+
+
+SLV2PluginClasses
+slv2_plugin_class_get_children(SLV2PluginClass plugin_class)
+{
+	// Returned list doesn't own categories
+	SLV2PluginClasses result = raptor_new_sequence(NULL, NULL);
+
+	for (int i=0; i < raptor_sequence_size(plugin_class->world->plugin_classes); ++i) {
+		SLV2PluginClass c = raptor_sequence_get_at(plugin_class->world->plugin_classes, i);
+		const char* parent = slv2_plugin_class_get_parent_uri(c);
+		if (parent && !strcmp(slv2_plugin_class_get_uri(plugin_class), parent))
+			raptor_sequence_push(result, c);
+	}
+
+	return result;
 }

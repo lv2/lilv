@@ -81,11 +81,14 @@ struct _InstanceImpl {
 
 
 struct _PluginClass {
-	char* uri;
-	char* label;
+	struct _World* world;
+	char*          parent_uri;
+	char*          uri;
+	char*          label;
 };
 
-SLV2PluginClass slv2_plugin_class_new(const char* uri, const char* label);
+SLV2PluginClass slv2_plugin_class_new(SLV2World world, 
+		const char* parent_uri, const char* uri, const char* label);
 void            slv2_plugin_class_free(SLV2PluginClass class);
 
 SLV2PluginClasses slv2_plugin_classes_new();

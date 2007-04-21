@@ -103,6 +103,14 @@ slv2_world_load_bundle(SLV2World   world,
                        const char* bundle_uri);
 
 
+/** Get the parent of all other plugin classes, lv2:Plugin.
+ *
+ * Time = O(1)
+ */
+SLV2PluginClass
+slv2_world_get_plugin_class(SLV2World world);
+
+
 /** Return a list of all found plugin classes.
  *
  * Returned list is owned by world and must not be freed by the caller.

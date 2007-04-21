@@ -30,6 +30,15 @@ extern "C" {
  */
 
 
+/** Get the URI of this class' superclass.
+ *
+ * Returned value is owned by \a plugin_class and must not be freed by caller.
+ *
+ * Time = O(1)
+ */
+const char* slv2_plugin_class_get_parent_uri(SLV2PluginClass plugin_class);
+
+
 /** Get the URI of this plugin class.
  *
  * Returned value is owned by \a plugin_class and must not be freed by caller.
@@ -39,13 +48,24 @@ extern "C" {
 const char* slv2_plugin_class_get_uri(SLV2PluginClass plugin_class);
 
 
-/** Get the label of this plugin_class, ie "Oscillators".
+/** Get the label of this plugin class, ie "Oscillators".
  *
  * Returned value is owned by \a plugin_class and must not be freed by caller.
  *
  * Time = O(1)
  */
 const char* slv2_plugin_class_get_label(SLV2PluginClass plugin_class);
+
+
+/** Get the subclasses of this plugin class.
+ *
+ * Returned value must be freed by caller with slv2_plugin_classes_free.
+ *
+ * Time = O(nclasses)
+ */
+SLV2PluginClasses
+slv2_plugin_class_get_children(SLV2PluginClass plugin_class);
+
 
 #if 0
 /** Get the path of this plugin_class, ie "Plugins/Generators/Oscillators".

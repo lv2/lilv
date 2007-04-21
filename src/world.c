@@ -46,6 +46,11 @@ slv2_world_new()
 
 	world->plugin_classes = slv2_plugin_classes_new();
 	
+	// Add the ever-present lv2:Plugin to classes
+	static const char* lv2_plugin_uri = "http://lv2plug.in/ontology#Plugin";
+	raptor_sequence_push(world->plugin_classes, slv2_plugin_class_new(
+				world, NULL, lv2_plugin_uri, "Plugin"));
+	
 	world->plugins = slv2_plugins_new();
 
 	return world;
@@ -169,12 +174,14 @@ slv2_world_load_plugin_classes(SLV2World world)
 	// FIXME: This will need to be a bit more clever when more data is around
 	// then the ontology (ie classes which aren't LV2 plugin_classes)
 	
+	// FIXME: This loads things that aren't plugin categories
+	
 	unsigned char* query_string = (unsigned char*)
     	"PREFIX : <http://lv2plug.in/ontology#>\n"
 		"PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>\n"
-		"SELECT DISTINCT ?class ?label WHERE {\n"
+		"SELECT DISTINCT ?class ?parent ?label WHERE {\n"
 		//"	?plugin a :Plugin; a ?class .\n"
-		"	?class a rdfs:Class; rdfs:label ?label\n"
+		"	?class a rdfs:Class; rdfs:subClassOf ?parent; rdfs:label ?label\n"
 		"} ORDER BY ?class\n";
 	
 	librdf_query* q = librdf_new_query(world->world, "sparql",
@@ -183,21 +190,25 @@ slv2_world_load_plugin_classes(SLV2World world)
 	librdf_query_results* results = librdf_query_execute(q, world->model);
 
 	while (!librdf_query_results_finished(results)) {
-		librdf_node* class_node = librdf_query_results_get_binding_value(results, 0);
-		librdf_uri*  class_uri  = librdf_node_get_uri(class_node);
-		librdf_node* label_node    = librdf_query_results_get_binding_value(results, 1);
-		const char*  label         = (const char*)librdf_node_get_literal_value(label_node);
+		librdf_node* class_node  = librdf_query_results_get_binding_value(results, 0);
+		librdf_uri*  class_uri   = librdf_node_get_uri(class_node);
+		librdf_node* parent_node = librdf_query_results_get_binding_value(results, 1);
+		librdf_uri*  parent_uri  = librdf_node_get_uri(parent_node);
+		librdf_node* label_node  = librdf_query_results_get_binding_value(results, 2);
+		const char*  label       = (const char*)librdf_node_get_literal_value(label_node);
 
-		//printf("CLASS: %s (%s)\n", librdf_uri_as_string(class_uri), label);
+		printf("CLASS: %s / %s\n", librdf_uri_as_string(parent_uri), librdf_uri_as_string(class_uri));
 		
-		SLV2PluginClass plugin_class = slv2_plugin_class_new(
+		SLV2PluginClass plugin_class = slv2_plugin_class_new(world,
+				(const char*)librdf_uri_as_string(parent_uri),
 				(const char*)librdf_uri_as_string(class_uri),
 				label);
 		raptor_sequence_push(world->plugin_classes, plugin_class);
 
 		librdf_query_results_next(results);
 	}
-		
+
+	// FIXME: filter list here
 }
 
 
@@ -307,6 +318,13 @@ slv2_world_serialize(const char* filename)
 	librdf_free_serializer(serializer);
 }
 #endif
+
+
+SLV2PluginClass
+slv2_world_get_plugin_class(SLV2World world)
+{
+	return raptor_sequence_get_at(world->plugin_classes, 0);
+}
 
 
 SLV2PluginClasses

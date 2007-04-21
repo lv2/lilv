@@ -60,6 +60,10 @@ typedef struct _World* SLV2World;
 typedef struct _PluginClass* SLV2PluginClass;
 
 
+/** A collection of plugin classes.  Opaque, but valid to compare to NULL. */
+typedef void* SLV2PluginClasses;
+
+
 #ifdef __cplusplus
 }
 #endif

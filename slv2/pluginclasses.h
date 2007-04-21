@@ -26,9 +26,6 @@ extern "C" {
 #endif
 
 
-typedef void* SLV2PluginClasses;
-
-
 /** \defgroup plugin_classes Plugin classes (categories)
  * 
  * @{

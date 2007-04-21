@@ -172,7 +172,7 @@ slv2_plugin_load(SLV2Plugin p)
 	}
 	
 	if (p->plugin_class == NULL)
-		fprintf(stderr, "Warning: Unclassy plugin: %s\n", slv2_plugin_get_uri(p));
+		p->plugin_class = raptor_sequence_get_at(p->world->plugin_classes, 0); // lv2:Plugin
 	
 	// Load ports
 	query = (const unsigned char*)
@@ -247,9 +247,12 @@ slv2_plugin_get_library_uri(SLV2Plugin p)
 
 
 SLV2PluginClass
-slv2_plugin_get_plugin_class(SLV2Plugin p)
+slv2_plugin_get_class(SLV2Plugin p)
 {
-	if (!p->plugin_class)
+	// FIXME: Typical use case this will bring every single plugin model
+	// into memory
+	
+	if (!p->rdf)
 		slv2_plugin_load(p);
 
 	return p->plugin_class;
@@ -326,15 +329,6 @@ slv2_plugin_get_name(SLV2Plugin plugin)
 		slv2_strings_free(prop);
 
 	return result;
-}
-
-
-/** Get the class this plugin belongs to (ie Filters).
- */
-SLV2PluginClass
-slv2_plugin_get_class(SLV2Plugin plugin)
-{
-	return plugin->plugin_class;
 }
 
 
