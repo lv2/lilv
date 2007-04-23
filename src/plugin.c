@@ -162,6 +162,8 @@ slv2_plugin_load(SLV2Plugin p)
 		
 		SLV2PluginClass plugin_class = slv2_plugin_classes_get_by_uri(
 				p->world->plugin_classes, class_uri_str);
+		
+		librdf_free_node(class_node);
 
 		if (plugin_class) {
 			p->plugin_class = plugin_class;
@@ -173,6 +175,9 @@ slv2_plugin_load(SLV2Plugin p)
 	
 	if (p->plugin_class == NULL)
 		p->plugin_class = raptor_sequence_get_at(p->world->plugin_classes, 0); // lv2:Plugin
+
+	librdf_free_query_results(results);
+	librdf_free_query(q);
 	
 	// Load ports
 	query = (const unsigned char*)
@@ -216,9 +221,7 @@ slv2_plugin_load(SLV2Plugin p)
 	
 	raptor_sequence_sort(p->ports, slv2_port_compare_by_index);
 	
-	if (results)
-		librdf_free_query_results(results);
-	
+	librdf_free_query_results(results);
 	librdf_free_query(q);
 
 	//printf("%p %s: NUM PORTS: %d\n", (void*)p, p->plugin_uri, slv2_plugin_get_num_ports(p));

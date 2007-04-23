@@ -43,6 +43,7 @@ void
 slv2_plugin_class_free(SLV2PluginClass plugin_class)
 {
 	free(plugin_class->uri);
+	free(plugin_class->parent_uri);
 	free(plugin_class->label);
 	free(plugin_class);
 }

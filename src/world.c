@@ -93,8 +93,50 @@ slv2_world_load_bundle(SLV2World world, const char* bundle_uri_str)
 	librdf_uri* manifest_uri = librdf_new_uri_relative_to_base(
 			bundle_uri, (const unsigned char*)"manifest.ttl");
 
-	librdf_parser_parse_into_model(world->parser, manifest_uri, NULL, world->model);
+	/* Parse the manifest into a temporary model */
+	librdf_storage* manifest_storage = librdf_new_storage(world->world, 
+			"hashes", NULL, "hash-type='memory'");
+	librdf_model* manifest_model = librdf_new_model(world->world,
+			manifest_storage, NULL);
+	librdf_parser_parse_into_model(world->parser, manifest_uri, NULL, 
+			manifest_model);
+	
+	/* Find any plugins declared in the manifest and add references
+	 * to their manifest files as one of their data files */
+	unsigned char* query_string = (unsigned char*)
+		"PREFIX : <http://lv2plug.in/ontology#>\n"
+		"SELECT DISTINCT ?plugin\n"
+		"WHERE { ?plugin a :Plugin }\n";
 
+	librdf_query* q = librdf_new_query(world->world, "sparql",
+			NULL, query_string, NULL);
+
+	librdf_query_results* results = librdf_query_execute(q, manifest_model);
+
+	while (!librdf_query_results_finished(results)) {
+
+		librdf_node* plugin_node = librdf_query_results_get_binding_value(results, 0);
+
+		librdf_node* subject = plugin_node;
+		librdf_node* predicate = librdf_new_node_from_uri_string(world->world, 
+				(unsigned char*)"http://www.w3.org/2000/01/rdf-schema#seeAlso");
+		librdf_node* object = librdf_new_node_from_uri(world->world,
+				manifest_uri);
+
+		librdf_model_add(world->model, subject, predicate, object);
+
+		librdf_query_results_next(results);
+	}
+	
+	/* Join the temporary model to the main model */
+	librdf_stream* manifest_stream = librdf_model_as_stream(manifest_model);
+	librdf_model_add_statements(world->model, manifest_stream);
+	librdf_free_stream(manifest_stream);
+
+	librdf_free_query(q);
+	librdf_free_query_results(results);
+	librdf_free_model(manifest_model);
+	librdf_free_storage(manifest_storage);
 	librdf_free_uri(manifest_uri);
 	librdf_free_uri(bundle_uri);
 }
@@ -205,10 +247,17 @@ slv2_world_load_plugin_classes(SLV2World world)
 				label);
 		raptor_sequence_push(world->plugin_classes, plugin_class);
 
+		librdf_free_node(class_node);
+		librdf_free_node(parent_node);
+		librdf_free_node(label_node);
+
 		librdf_query_results_next(results);
 	}
 
 	// FIXME: filter list here
+	
+	librdf_free_query_results(results);
+	librdf_free_query(q);
 }
 
 
@@ -270,17 +319,17 @@ slv2_world_load_all(SLV2World world)
 				(const char*)librdf_uri_as_string(plugin_uri));
 		
 		// Create a new SLV2Plugin
-		if (!plugin)
+		if (!plugin) {
 			plugin = slv2_plugin_new(world, plugin_uri,
 					(const char*)librdf_uri_as_string(binary_uri));
+			raptor_sequence_push(world->plugins, plugin);
+		}
 		
 		plugin->world = world;
 
 		// FIXME: check for duplicates
 		raptor_sequence_push(plugin->data_uris,
 				strdup((const char*)librdf_uri_as_string(data_uri)));
-		
-		raptor_sequence_push(world->plugins, plugin);
 		
 		librdf_free_node(plugin_node);
 		librdf_free_node(data_node);
