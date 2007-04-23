@@ -26,7 +26,7 @@ extern "C" {
 #include <stdbool.h>
 #include <stddef.h>
 #include <librdf.h>
-#include <slv2/pluginlist.h>
+#include <slv2/plugins.h>
 #include <slv2/pluginclasses.h>
 
 

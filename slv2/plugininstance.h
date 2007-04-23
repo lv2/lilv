@@ -30,7 +30,7 @@ extern "C" {
 
 /** \defgroup lib Plugin library access
  *
- * An SLV2Instance is an instantiated SLV2Plugin (eg a loaded dynamic
+ * An SLV2Instance is an instantiated SLV2Plugin (ie a loaded dynamic
  * library).  These functions interact with the binary library code only,
  * they do not read data files in any way.
  * 
