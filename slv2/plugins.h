@@ -25,7 +25,7 @@
 extern "C" {
 #endif
 
-/** \defgroup plugins Plugin lists
+/** \defgroup plugins Collections of plugins
  * 
  * These functions work with lists of plugins which come from an
  * SLV2World.  These lists contain only a weak reference to an LV2 plugin

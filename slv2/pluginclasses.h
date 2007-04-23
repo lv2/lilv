@@ -25,7 +25,7 @@
 extern "C" {
 #endif
 
-/** \defgroup plugin_classes Plugin classes (categories)
+/** \defgroup plugin_classes Plugin classes
  * 
  * @{
  */

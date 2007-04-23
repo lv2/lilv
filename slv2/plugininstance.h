@@ -28,7 +28,7 @@ extern "C" {
 #include <slv2/plugin.h>
 #include <slv2/port.h>
 
-/** \defgroup lib Shared library access
+/** \defgroup lib Plugin library access
  *
  * An SLV2Instance is an instantiated SLV2Plugin (eg a loaded dynamic
  * library).  These functions interact with the binary library code only,

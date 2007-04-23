@@ -26,7 +26,7 @@
 extern "C" {
 #endif
 
-/** \defgroup world Library context, data loading, etc.
+/** \defgroup world Library
  * 
  * The "world" represents all library state, and the data found in bundles'
  * manifest.ttl (ie it is an in-memory index of all things LV2 found).
