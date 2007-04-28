@@ -24,6 +24,9 @@
 #include <librdf.h>
 
 #define U(x) ((const unsigned char*)(x))
+#define NS_RDF(x) "http://www.w3.org/1999/02/22-rdf-syntax-ns#" x
+#define NS_LV2(x) "http://lv2plug.in/ontology#" x
+#define NS_DOAP(x) "http://usefulinc.com/ns/doap#" x
 
 librdf_world* world = NULL;
 
@@ -61,7 +64,7 @@ add_resource(librdf_model* model,
 	
 	librdf_model_add_statement(model, triple);
 
-	librdf_free_statement(triple);
+	//librdf_free_statement(triple);
 }
 
 
@@ -77,7 +80,7 @@ add_node(librdf_model* model,
 	
 	librdf_model_add_statement(model, triple);
 
-	librdf_free_statement(triple);
+	//librdf_free_statement(triple);
 }
 
 
@@ -94,7 +97,7 @@ add_string(librdf_model* model,
 	
 	librdf_model_add_statement(model, triple);
 
-	librdf_free_statement(triple);
+	//librdf_free_statement(triple);
 }
 
 
@@ -117,7 +120,7 @@ add_int(librdf_model* model,
 	
 	librdf_model_add_statement(model, triple);
 
-	librdf_free_statement(triple);
+	//librdf_free_statement(triple);
 	librdf_free_uri(type);
 }
 
@@ -141,7 +144,7 @@ add_float(librdf_model* model,
 	
 	librdf_model_add_statement(model, triple);
 
-	librdf_free_statement(triple);
+	//librdf_free_statement(triple);
 	librdf_free_uri(type);
 }
 
@@ -171,38 +174,59 @@ write_lv2_turtle(LADSPA_Descriptor* descriptor, const char* plugin_uri, const ch
 			U("http://lv2plug.in/ontology#")), "lv2");
 	
 	add_resource(model, plugin,
-		"rdf:type",
-		"lv2:Plugin");
+		NS_RDF("type"),
+		NS_LV2("Plugin"));
 	
 	add_string(model, plugin,
-		"doap:name",
+		NS_DOAP("name"),
 		descriptor->Name);
 
 	if (LADSPA_IS_HARD_RT_CAPABLE(descriptor->Properties))
 		add_resource(model, plugin,
-			"lv2:property",
-		 	"lv2:hardRTCapable");
+			NS_LV2("property"),
+		 	NS_LV2("hardRTCapable"));
 	
 	for (uint32_t i=0; i < descriptor->PortCount; ++i) {
 		char index_str[32];
 		snprintf(index_str, (size_t)32, "%u", i);
 
+		const LADSPA_PortDescriptor port_descriptor
+			= descriptor->PortDescriptors[i];
+
 		librdf_node* port_node = librdf_new_node(world);
 
 		add_node(model, plugin,
-			"lv2:port",
+			NS_LV2("port"),
 			port_node);
 
 		add_int(model, port_node,
-			"lv2:index",
+			NS_LV2("index"),
 		 	(int)i);
-		
+	
 		add_resource(model, port_node,
-			"lv2:dataType",
-			"lv2:float");
+			NS_RDF("type"),
+			NS_LV2("Port"));
+		
+		if (LADSPA_IS_PORT_INPUT(port_descriptor))
+			add_resource(model, port_node,
+				NS_RDF("type"),
+				NS_LV2("InputPort"));
+		else
+			add_resource(model, port_node,
+				NS_RDF("type"),
+				NS_LV2("OutputPort"));
+		
+		if (LADSPA_IS_PORT_AUDIO(port_descriptor))
+			add_resource(model, port_node,
+				NS_RDF("type"),
+				NS_LV2("ControlPort"));
+		else
+			add_resource(model, port_node,
+				NS_RDF("type"),
+				NS_LV2("AudioPort"));
 		
 		add_string(model, port_node,
-			"lv2:name",
+			NS_LV2("name"),
 		 	descriptor->PortNames[i]);
 	}
 
@@ -214,9 +238,9 @@ void
 print_usage()
 {
 	printf("Usage: ladspa2slv2 /path/to/laddspalib.so ladspa_index lv2_uri\n");
-	printf("Partially convert a LADSPA plugin to an LV2 plugin.");
-	printf("(This is a utility for developers, it will not generate a usable\n");
-	printf("LV2 plugin directly).\n\n");
+	printf("Partially convert a LADSPA plugin to an LV2 plugin.\n");
+	printf("This utility is for developers, it will not generate a usable\n");
+	printf("LV2 plugin directly.\n\n");
 }
 
 
