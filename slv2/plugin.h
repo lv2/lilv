@@ -265,7 +265,8 @@ slv2_plugin_get_optional_features(SLV2Plugin p);
  *
  * \param plugin The plugin to query.
  * \param sparql_str A SPARQL SELECT query.
- * \param variable The variable to return results for.
+ * \param variable The index of the variable to return results for
+ *     (i.e. with "<code>SELECT ?foo ?bar</code>" foo is 0, and bar is 1).
  * \return All matches for \a variable.
  *
  * Time = Query
@@ -273,7 +274,7 @@ slv2_plugin_get_optional_features(SLV2Plugin p);
 SLV2Values
 slv2_plugin_simple_query(SLV2Plugin  plugin,
                          const char* sparql_str,
-                         const char* variable);
+                         unsigned    variable);
 
 
 /** Query a plugin and return the number of results found.

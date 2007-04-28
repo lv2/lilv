@@ -66,6 +66,9 @@ SLV2Plugin slv2_plugin_new(SLV2World world, librdf_uri* uri, const char* binary_
 void       slv2_plugin_load(SLV2Plugin p);
 void       slv2_plugin_free(SLV2Plugin plugin);
 
+librdf_query_results* slv2_plugin_query(SLV2Plugin  plugin,
+                                        const char* sparql_str);
+
 
 /** Create a new, empty plugin list.
  *

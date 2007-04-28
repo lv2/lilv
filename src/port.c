@@ -128,7 +128,7 @@ slv2_port_get_value(SLV2Plugin  p,
 			"?port lv2:symbol \"", port->symbol, "\";\n\t",
 			       property, " ?value .\n}", 0);
 			
-	result = slv2_plugin_simple_query(p, query, "value");
+	result = slv2_plugin_simple_query(p, query, 0);
 
 	free(query);
 	

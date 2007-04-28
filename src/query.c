@@ -53,7 +53,7 @@ slv2_query_lang_filter(const char* variable)
 
 SLV2Values
 slv2_query_get_variable_bindings(librdf_query_results* results,
-                                 const char*           variable)
+                                 int                   variable)
 {
 	SLV2Values result = NULL;
 
@@ -63,7 +63,7 @@ slv2_query_get_variable_bindings(librdf_query_results* results,
     while (!librdf_query_results_finished(results)) {
 
         librdf_node* node =
-            librdf_query_results_get_binding_value_by_name(results, variable);
+            librdf_query_results_get_binding_value(results, variable);
 		
 		librdf_uri* datatype_uri = NULL;
 		SLV2ValueType type = SLV2_VALUE_STRING;
@@ -94,7 +94,7 @@ slv2_query_get_variable_bindings(librdf_query_results* results,
 			break;
 		case LIBRDF_NODE_TYPE_UNKNOWN:
 		default:
-			fprintf(stderr, "Unknown variable binding type for ?%s\n", variable);
+			fprintf(stderr, "Unknown variable binding type %d\n", variable);
 			break;
 		}
 			
@@ -158,7 +158,7 @@ slv2_plugin_query(SLV2Plugin  plugin,
 SLV2Values
 slv2_plugin_simple_query(SLV2Plugin  plugin,
                          const char* sparql_str,
-                         const char* variable)
+                         unsigned    variable)
 {
 	librdf_query_results* results = slv2_plugin_query(plugin, sparql_str);
 

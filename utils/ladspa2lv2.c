@@ -16,9 +16,13 @@
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+#include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <inttypes.h>
+#include <stdbool.h>
+#include <float.h>
+#include <math.h>
 #include <ladspa.h>
 #include <dlfcn.h>
 #include <librdf.h>
@@ -29,26 +33,6 @@
 #define NS_DOAP(x) "http://usefulinc.com/ns/doap#" x
 
 librdf_world* world = NULL;
-
-LADSPA_Descriptor*
-load_ladspa_plugin(const char* lib_path, unsigned long index)
-{
-	void* const handle = dlopen(lib_path, RTLD_LAZY);
-	if (handle == NULL)
-		return NULL;
-
-	LADSPA_Descriptor_Function df
-		= (LADSPA_Descriptor_Function)dlsym(handle, "ladspa_descriptor");
-
-	if (df == NULL) {
-		dlclose(handle);
-		return NULL;
-	}	
-
-	LADSPA_Descriptor* const descriptor = (LADSPA_Descriptor*)df(index);
-
-	return descriptor;
-}
 
 
 void
@@ -149,6 +133,126 @@ add_float(librdf_model* model,
 }
 
 
+LADSPA_Descriptor*
+load_ladspa_plugin(const char* lib_path, unsigned long index)
+{
+	void* const handle = dlopen(lib_path, RTLD_LAZY);
+	if (handle == NULL)
+		return NULL;
+
+	LADSPA_Descriptor_Function df
+		= (LADSPA_Descriptor_Function)dlsym(handle, "ladspa_descriptor");
+
+	if (df == NULL) {
+		dlclose(handle);
+		return NULL;
+	}	
+
+	LADSPA_Descriptor* const descriptor = (LADSPA_Descriptor*)df(index);
+
+	return descriptor;
+}
+
+
+void
+add_port_range(LADSPA_Descriptor* plugin,
+               unsigned long      port_index,
+			   librdf_model*      model,
+			   librdf_node*       port)
+{
+	LADSPA_PortRangeHintDescriptor hint_descriptor
+		= plugin->PortRangeHints[port_index].HintDescriptor;
+
+	bool range_valid = false;
+	float upper, lower, normal;
+
+	/* Convert hints */
+
+	if (LADSPA_IS_HINT_SAMPLE_RATE(hint_descriptor)) {
+		add_resource(model, port, NS_LV2("portHint"), NS_LV2("sampleRate"));
+		upper = plugin->PortRangeHints[port_index].UpperBound;
+		lower = plugin->PortRangeHints[port_index].LowerBound;
+		range_valid = true;
+	}
+	
+	if (LADSPA_IS_HINT_INTEGER(hint_descriptor)) {
+		add_resource(model, port, NS_LV2("portHint"), NS_LV2("integer"));
+		upper = plugin->PortRangeHints[port_index].UpperBound;
+		lower = plugin->PortRangeHints[port_index].LowerBound;
+		range_valid = true;
+	}
+	
+	if (LADSPA_IS_HINT_TOGGLED(hint_descriptor)) {
+		add_resource(model, port, NS_LV2("portHint"), NS_LV2("toggled"));
+		upper = 1.0;
+		lower = 0.0;
+		range_valid = true;
+	}
+
+	if (LADSPA_IS_HINT_LOGARITHMIC(hint_descriptor)) {
+		/* FLT_EPSILON is defined as the different between 1.0 and the minimum
+		 * float greater than 1.0.  So, if lower is < FLT_EPSILON, it will be 1.0
+		 * and the logarithmic control will have a base of 1 and thus not change
+		 */
+		if (range_valid && lower < FLT_EPSILON)
+			lower = FLT_EPSILON;
+	}
+
+
+	if (LADSPA_IS_HINT_HAS_DEFAULT(hint_descriptor)) {
+
+		bool valid = true;
+
+		if (range_valid && LADSPA_IS_HINT_DEFAULT_MINIMUM(hint_descriptor)) {
+			normal = lower;
+		} else if (range_valid && LADSPA_IS_HINT_DEFAULT_LOW(hint_descriptor)) {
+			if (LADSPA_IS_HINT_LOGARITHMIC(hint_descriptor)) {
+				normal = exp(log(lower) * 0.75 + log(upper) * 0.25);
+			} else {
+				normal = lower * 0.75 + upper * 0.25;
+			}
+		} else if (range_valid && LADSPA_IS_HINT_DEFAULT_MIDDLE(hint_descriptor)) {
+			if (LADSPA_IS_HINT_LOGARITHMIC(hint_descriptor)) {
+				normal = exp(log(lower) * 0.5 + log(upper) * 0.5);
+			} else {
+				normal = lower * 0.5 + upper * 0.5;
+			}
+		} else if (range_valid && LADSPA_IS_HINT_DEFAULT_HIGH(hint_descriptor)) {
+			if (LADSPA_IS_HINT_LOGARITHMIC(hint_descriptor)) {
+				normal = exp(log(lower) * 0.25 + log(upper) * 0.75);
+			} else {
+				normal = lower * 0.25 + upper * 0.75;
+			}
+		} else if (range_valid && LADSPA_IS_HINT_DEFAULT_MAXIMUM(hint_descriptor)) {
+			normal = upper;
+		} else if (LADSPA_IS_HINT_DEFAULT_0(hint_descriptor)) {
+			normal = 0.0;
+		} else if (LADSPA_IS_HINT_DEFAULT_1(hint_descriptor)) {
+			normal = 1.0;
+		} else if (LADSPA_IS_HINT_DEFAULT_100(hint_descriptor)) {
+			normal = 100.0;
+		} else if (LADSPA_IS_HINT_DEFAULT_440(hint_descriptor)) {
+			normal = 440.0;
+		} else {
+			valid = false;
+		}
+		
+		if (valid)
+			add_float(model, port, NS_LV2("default"), normal);
+
+	} else {  // No default hint
+	
+		if (range_valid && LADSPA_IS_HINT_BOUNDED_BELOW(hint_descriptor)) {
+			normal = lower;
+			add_float(model, port, NS_LV2("default"), normal);
+		} else if (range_valid && LADSPA_IS_HINT_BOUNDED_ABOVE(hint_descriptor)) {
+			normal = upper;
+			add_float(model, port, NS_LV2("default"), normal);
+		}
+	}
+}
+
+
 void
 write_lv2_turtle(LADSPA_Descriptor* descriptor, const char* plugin_uri, const char* filename)
 {
@@ -203,10 +307,6 @@ write_lv2_turtle(LADSPA_Descriptor* descriptor, const char* plugin_uri, const ch
 			NS_LV2("index"),
 		 	(int)i);
 	
-		add_resource(model, port_node,
-			NS_RDF("type"),
-			NS_LV2("Port"));
-		
 		if (LADSPA_IS_PORT_INPUT(port_descriptor))
 			add_resource(model, port_node,
 				NS_RDF("type"),
@@ -219,15 +319,17 @@ write_lv2_turtle(LADSPA_Descriptor* descriptor, const char* plugin_uri, const ch
 		if (LADSPA_IS_PORT_AUDIO(port_descriptor))
 			add_resource(model, port_node,
 				NS_RDF("type"),
-				NS_LV2("ControlPort"));
+				NS_LV2("AudioPort"));
 		else
 			add_resource(model, port_node,
 				NS_RDF("type"),
-				NS_LV2("AudioPort"));
+				NS_LV2("ControlPort"));
 		
 		add_string(model, port_node,
 			NS_LV2("name"),
 		 	descriptor->PortNames[i]);
+
+		add_port_range(descriptor, i, model, port_node);
 	}
 
 	librdf_serializer_serialize_model_to_file(serializer, filename, NULL, model);

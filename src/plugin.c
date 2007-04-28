@@ -350,7 +350,7 @@ slv2_plugin_get_value(SLV2Plugin  p,
 		"<> ", predicate, " ?value .\n"
 		"}\n", NULL);
 
-	SLV2Values result = slv2_plugin_simple_query(p, query, "value");
+	SLV2Values result = slv2_plugin_simple_query(p, query, 0);
 	
 	free(query);
 
@@ -370,7 +370,7 @@ slv2_plugin_get_value_for_subject(SLV2Plugin  p,
 		subject, " ", predicate, " ?value .\n"
 		"}\n", NULL);
 
-	SLV2Values result = slv2_plugin_simple_query(p, query, "value");
+	SLV2Values result = slv2_plugin_simple_query(p, query, 0);
 	
 	free(query);
 
@@ -404,20 +404,19 @@ slv2_plugin_has_latency(SLV2Plugin p)
 {
     const char* const query = 
 		"ASK WHERE {\n"
-		"	<> lv2:port     ?port .\n"
+		"	<>      lv2:port     ?port .\n"
 		"	?port   lv2:portHint lv2:reportsLatency ;\n"
 		"           lv2:index    ?index .\n"
 		"}\n";
 
-	SLV2Values results = slv2_plugin_simple_query(p, query, "port");
+	librdf_query_results* results = slv2_plugin_query(p, query);
+	assert(librdf_query_results_is_boolean(results));
 	
-	if (results) {
-		bool exists = (results && slv2_values_size(results) > 0);
-		slv2_values_free(results);
-		return exists;
-	} else {
-		return false;
-	}
+	bool ret = (librdf_query_results_get_boolean(results) > 0);
+	
+	librdf_free_query_results(results);
+
+	return ret;
 }
 
 
@@ -431,7 +430,7 @@ slv2_plugin_get_latency_port(SLV2Plugin p)
 		"           lv2:index    ?index .\n"
 		"}\n";
 
-	SLV2Values result = slv2_plugin_simple_query(p, query, "index");
+	SLV2Values result = slv2_plugin_simple_query(p, query, 0);
 	
 	// FIXME: need a sane error handling strategy
 	assert(slv2_values_size(result) > 0);
@@ -452,7 +451,7 @@ slv2_plugin_get_supported_features(SLV2Plugin p)
 		"	{ <>  lv2:requiredHostFeature  ?feature }\n"
 		"}\n";
 
-	SLV2Values result = slv2_plugin_simple_query(p, query, "feature");
+	SLV2Values result = slv2_plugin_simple_query(p, query, 0);
 	
 	return result;
 }
@@ -466,7 +465,7 @@ slv2_plugin_get_optional_features(SLV2Plugin p)
 		"	<>  lv2:optionalHostFeature  ?feature .\n"
 		"}\n";
 
-	SLV2Values result = slv2_plugin_simple_query(p, query, "feature");
+	SLV2Values result = slv2_plugin_simple_query(p, query, 0);
 	
 	return result;
 }
@@ -480,7 +479,7 @@ slv2_plugin_get_required_features(SLV2Plugin p)
 		"	<>  lv2:requiredHostFeature  ?feature .\n"
 		"}\n";
 
-	SLV2Values result = slv2_plugin_simple_query(p, query, "feature");
+	SLV2Values result = slv2_plugin_simple_query(p, query, 0);
 	
 	return result;
 }
