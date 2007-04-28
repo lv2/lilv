@@ -88,17 +88,6 @@ AM_CONDITIONAL(WITH_JACK, [test "$build_jack" = "yes"])
 #AC_MSG_RESULT($lv2dir)
 #AC_SUBST(lv2dir)
 
-# Build ladspa converter?
-build_ladspa2lv2="no"
-AC_ARG_ENABLE(ladspa2lv2,
-	[AS_HELP_STRING(--enable-ladspa2lv2, [Build ladspa2lv2 (no) - BROKEN])],
-	[build_ladspa2lv2="$enableval"])
-if test "$build_ladspa2lv2" = "yes"; then
-  AC_PROG_CXX
-  PKG_CHECK_MODULES(RAUL, raul >= 0.0.0)
-fi
-AM_CONDITIONAL(BUILD_LADSPA2SLV2, [test "$build_ladspa2lv2" = "yes"])
-
 
 # Check ontology install directory
 AC_MSG_CHECKING([where to install lv2.ttl])

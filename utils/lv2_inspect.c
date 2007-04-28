@@ -74,13 +74,13 @@ print_port(SLV2Plugin p, uint32_t index)
 	}
 
 	printf("\t\tProperties:\n");
-	SLV2Strings properties = slv2_port_get_properties(p, port);
+	SLV2Values properties = slv2_port_get_properties(p, port);
 	for (unsigned i=0; i < slv2_values_size(properties); ++i)
 		printf("\t\t\t%s\n", slv2_value_as_uri(slv2_values_get_at(properties, i)));
 	slv2_values_free(properties);
 	
 	printf("\t\tHints:\n");
-	SLV2Strings hints = slv2_port_get_hints(p, port);
+	SLV2Values hints = slv2_port_get_hints(p, port);
 	for (unsigned i=0; i < slv2_values_size(hints); ++i)
 		printf("\t\t\t%s\n", slv2_value_as_uri(slv2_values_get_at(hints, i)));
 	slv2_values_free(hints);
@@ -110,13 +110,13 @@ print_plugin(SLV2Plugin p)
 	printf("\tBinary: %s\n\n", slv2_plugin_get_library_uri(p));
 
 	printf("\tData URIs:\n");
-	SLV2Strings data_uris = slv2_plugin_get_data_uris(p);
+	SLV2Values data_uris = slv2_plugin_get_data_uris(p);
 	for (unsigned i=0; i < slv2_values_size(data_uris); ++i)
 		printf("\t\t%s\n", slv2_value_as_uri(slv2_values_get_at(data_uris, i)));
 
 	/* Properties */
 
-	SLV2Strings v = slv2_plugin_get_properties(p);
+	SLV2Values v = slv2_plugin_get_properties(p);
 	
 	if (slv2_values_size(v) > 0)
 		printf("\n\tProperties:\n");
