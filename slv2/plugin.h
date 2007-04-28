@@ -90,7 +90,7 @@ slv2_plugin_get_uri(SLV2Plugin plugin);
  *
  * Time = O(1)
  */
-SLV2Strings
+SLV2Values
 slv2_plugin_get_data_uris(SLV2Plugin plugin);
 
 
@@ -133,13 +133,13 @@ slv2_plugin_get_class(SLV2Plugin plugin);
  * <code>&lt;plugin-uri&gt; predicate ?object</code>
  * 
  * May return NULL if the property was not found, or if object is not
- * sensibly represented as an SLV2Strings (e.g. blank nodes).
+ * sensibly represented as an SLV2Values (e.g. blank nodes).
  *
- * Return value must be freed by caller with slv2_strings_free.
+ * Return value must be freed by caller with slv2_values_free.
  *
  * Time = Query
  */
-SLV2Strings
+SLV2Values
 slv2_plugin_get_value(SLV2Plugin  p,
                       const char* predicate);
 
@@ -154,13 +154,13 @@ slv2_plugin_get_value(SLV2Plugin  p,
  * (if information about it is contained in the plugin's data files).
  *
  * May return NULL if the property was not found, or if object is not
- * sensibly represented as an SLV2Strings (e.g. blank nodes).
+ * sensibly represented as an SLV2Values (e.g. blank nodes).
  *
- * Return value must be freed by caller with slv2_strings_free.
+ * Return value must be freed by caller with slv2_values_free.
  *
  * Time = Query
  */
-SLV2Strings
+SLV2Values
 slv2_plugin_get_value_for_subject(SLV2Plugin  p,
                                   const char* subject,
                                   const char* predicate);
@@ -176,7 +176,7 @@ slv2_plugin_get_value_for_subject(SLV2Plugin  p,
  *
  * Time = Query
  */
-SLV2Strings
+SLV2Values
 slv2_plugin_get_properties(SLV2Plugin p);
 
 
@@ -189,7 +189,7 @@ slv2_plugin_get_properties(SLV2Plugin p);
  *
  * Time = Query
  */
-SLV2Strings
+SLV2Values
 slv2_plugin_get_hints(SLV2Plugin p);
 
 
@@ -234,7 +234,7 @@ slv2_plugin_get_latency_port(SLV2Plugin p);
  *
  * Time = Query
  */
-SLV2Strings
+SLV2Values
 slv2_plugin_get_supported_features(SLV2Plugin p);
 
 
@@ -245,7 +245,7 @@ slv2_plugin_get_supported_features(SLV2Plugin p);
  *
  * Time = Query
  */
-SLV2Strings
+SLV2Values
 slv2_plugin_get_required_features(SLV2Plugin p);
 
 
@@ -257,7 +257,7 @@ slv2_plugin_get_required_features(SLV2Plugin p);
  *
  * Time = Query
  */
-SLV2Strings
+SLV2Values
 slv2_plugin_get_optional_features(SLV2Plugin p);
 
 
@@ -270,7 +270,7 @@ slv2_plugin_get_optional_features(SLV2Plugin p);
  *
  * Time = Query
  */
-SLV2Strings
+SLV2Values
 slv2_plugin_simple_query(SLV2Plugin  plugin,
                          const char* sparql_str,
                          const char* variable);

@@ -30,6 +30,7 @@ extern "C" {
 #include <slv2/pluginclasses.h>
 
 
+
 /** Reference to a port on some plugin.
  */
 struct _Port {
@@ -117,6 +118,26 @@ struct _World {
 void
 slv2_world_load_path(SLV2World   world,
                      const char* search_path);
+
+
+typedef enum _ValueType {
+	SLV2_VALUE_URI,
+	SLV2_VALUE_STRING,
+	SLV2_VALUE_INT,
+	SLV2_VALUE_FLOAT
+} SLV2ValueType;
+
+struct _Value {
+	SLV2ValueType type;
+	char*         str_val; ///< always present
+	union {
+		int       int_val;
+		float     float_val;
+	} val;
+};
+
+SLV2Value slv2_value_new(SLV2ValueType type, const char* val);
+void      slv2_value_free(SLV2Value val);
 
 
 #ifdef __cplusplus

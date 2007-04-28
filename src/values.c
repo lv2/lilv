@@ -20,46 +20,48 @@
 #include <stdlib.h>
 #include <limits.h>
 #include <raptor.h>
-#include <slv2/strings.h>
+#include <slv2/values.h>
+#include "slv2_internal.h"
 
 
-SLV2Strings
-slv2_strings_new()
+SLV2Values
+slv2_values_new()
 {
-	return raptor_new_sequence(&free, NULL);
+	return raptor_new_sequence((void (*)(void*))&slv2_value_free, NULL);
 }
 
 
 void
-slv2_strings_free(SLV2Strings list)
+slv2_values_free(SLV2Values list)
 {
 	raptor_free_sequence(list);
 }
 
 
 unsigned
-slv2_strings_size(SLV2Strings list)
+slv2_values_size(SLV2Values list)
 {
 	return raptor_sequence_size(list);
 }
 
 
-const char*
-slv2_strings_get_at(SLV2Strings list, unsigned index)
+SLV2Value
+slv2_values_get_at(SLV2Values list, unsigned index)
 {
 	if (index > INT_MAX)
 		return NULL;
 	else
-		return (const char*)raptor_sequence_get_at(list, (int)index);
+		return (SLV2Value)raptor_sequence_get_at(list, (int)index);
 }
 
 
 bool
-slv2_strings_contains(SLV2Strings list, const char* str)
+slv2_values_contains(SLV2Values list, SLV2Value value)
 {
-	for (unsigned i=0; i < slv2_strings_size(list); ++i)
-		if (!strcmp(slv2_strings_get_at(list, i), str))
+	for (unsigned i=0; i < slv2_values_size(list); ++i)
+		if (slv2_value_equals(slv2_values_get_at(list, i), value))
 			return true;
 	
 	return false;
 }
+

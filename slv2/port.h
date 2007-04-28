@@ -37,7 +37,7 @@ extern "C" {
  *
  * Time = Query
  */
-SLV2Strings
+SLV2Values
 slv2_port_get_value(SLV2Plugin  plugin,
                     SLV2Port    port,
                     const char* property);
@@ -47,7 +47,7 @@ slv2_port_get_value(SLV2Plugin  plugin,
  *
  * Time = Query
  */
-SLV2Strings
+SLV2Values
 slv2_port_get_properties(SLV2Plugin plugin,
                          SLV2Port   port);
 
@@ -56,7 +56,7 @@ slv2_port_get_properties(SLV2Plugin plugin,
  *
  * Time = Query
  */
-SLV2Strings
+SLV2Values
 slv2_port_get_hints(SLV2Plugin plugin,
                     SLV2Port   port);
 

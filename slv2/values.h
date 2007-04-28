@@ -16,10 +16,11 @@
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef __SLV2_STRINGS_H__
-#define __SLV2_STRINGS_H__
+#ifndef __SLV2_VALUES_H__
+#define __SLV2_VALUES_H__
 
 #include <stdbool.h>
+#include <slv2/value.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -27,26 +28,23 @@ extern "C" {
 
 /** \defgroup strings Collections of strings
  *
- * SLV2Strings is an ordered collection of strings which is fast for random
+ * SLV2Values is an ordered collection of strings which is fast for random
  * access by index (i.e. a fancy array).
  *
  * @{
  */
 
 
-typedef void* SLV2Strings;
-
-
-/** Allocate a new, empty SLV2Strings
+/** Allocate a new, empty SLV2Values
  */
-SLV2Strings
-slv2_strings_new();
+SLV2Values
+slv2_values_new();
 
 
 /** Get the number of elements in a string list.
  */
 unsigned
-slv2_strings_size(SLV2Strings list);
+slv2_values_size(SLV2Values list);
 
 
 /** Get a string from a string list at the given index.
@@ -55,8 +53,8 @@ slv2_strings_size(SLV2Strings list);
  *
  * Time = O(1)
  */
-const char*
-slv2_strings_get_at(SLV2Strings list, unsigned index);
+SLV2Value
+slv2_values_get_at(SLV2Values list, unsigned index);
 
 
 /** Return whether \a list contains \a string.
@@ -64,13 +62,13 @@ slv2_strings_get_at(SLV2Strings list, unsigned index);
  * Time = O(n)
  */
 bool
-slv2_strings_contains(SLV2Strings list, const char* string);
+slv2_values_contains(SLV2Values list, SLV2Value value);
 
 
 /** Free a string list.
  */
 void
-slv2_strings_free(SLV2Strings);
+slv2_values_free(SLV2Values);
 
 
 /** @} */
@@ -79,5 +77,5 @@ slv2_strings_free(SLV2Strings);
 }
 #endif
 
-#endif /* __SLV2_STRINGS_H__ */
+#endif /* __SLV2_VALUES_H__ */
 

@@ -329,7 +329,7 @@ slv2_world_load_all(SLV2World world)
 
 		// FIXME: check for duplicates
 		raptor_sequence_push(plugin->data_uris,
-				strdup((const char*)librdf_uri_as_string(data_uri)));
+				slv2_value_new(SLV2_VALUE_URI, (const char*)librdf_uri_as_string(data_uri)));
 		
 		librdf_free_node(plugin_node);
 		librdf_free_node(data_node);

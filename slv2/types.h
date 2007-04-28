@@ -64,6 +64,14 @@ typedef struct _PluginClass* SLV2PluginClass;
 typedef void* SLV2PluginClasses;
 
 
+/** A typed value */
+typedef struct _Value* SLV2Value;
+
+
+/** A collection of typed values. */
+typedef void* SLV2Values;
+
+
 #ifdef __cplusplus
 }
 #endif

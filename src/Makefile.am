@@ -5,14 +5,15 @@ lib_LTLIBRARIES = libslv2.la
 libslv2_la_LIBADD = @REDLAND_LIBS@
 
 libslv2_la_SOURCES = \
-	slv2_internal.h \
-	world.c \
+	plugin.c \
 	pluginclass.c \
 	pluginclasses.c \
-	plugin.c \
-	query.c \
-	port.c \
-	plugins.c \
 	plugininstance.c \
-	strings.c \
-	util.c
+	plugins.c \
+	port.c \
+	query.c \
+	slv2_internal.h \
+	util.c \
+	value.c \
+	values.c \
+	world.c

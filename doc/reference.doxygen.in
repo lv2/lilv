@@ -420,19 +420,18 @@ WARN_LOGFILE           =
 # with spaces.
 
 INPUT = @top_srcdir@/doc/mainpage.dox \
+		@top_srcdir@/slv2/lv2.h \
 		@top_srcdir@/slv2/types.h \
+		@top_srcdir@/slv2/util.h \
+		@top_srcdir@/slv2/value.h \
+		@top_srcdir@/slv2/values.h \
 		@top_srcdir@/slv2/world.h \
-        @top_srcdir@/slv2/plugins.h \
-		@top_srcdir@/slv2/strings.h \
+        @top_srcdir@/slv2/plugin.h \
         @top_srcdir@/slv2/pluginclass.h \
         @top_srcdir@/slv2/pluginclasses.h \
-        @top_srcdir@/slv2/plugin.h \
-        @top_srcdir@/slv2/port.h \
         @top_srcdir@/slv2/plugininstance.h \
-		@top_srcdir@/slv2/util.h \
-		@top_srcdir@/slv2/lv2.h #\
-        #@top_srcdir@/slv2/query.h #\
-		#@top_srcdir@/include
+        @top_srcdir@/slv2/plugins.h \
+        @top_srcdir@/slv2/port.h
 
 
 # If the value of the INPUT tag contains directories, you can use the 

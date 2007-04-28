@@ -2,15 +2,15 @@ slv2includedir = $(includedir)/slv2
 
 slv2include_HEADERS = \
 	lv2.h \
-	types.h \
-	slv2.h \
-	world.h \
+	plugin.h \
 	pluginclass.h \
 	pluginclasses.h \
-	plugin.h \
-	port.h \
-	plugins.h \
 	plugininstance.h \
-	strings.h \
-	util.h
-
+	plugins.h \
+	port.h \
+	slv2.h \
+	types.h \
+	util.h \
+	value.h \
+	values.h \
+	world.h

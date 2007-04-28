@@ -23,7 +23,7 @@
 #include <librdf.h>
 #include <slv2/plugin.h>
 #include <slv2/util.h>
-#include <slv2/strings.h>
+#include <slv2/values.h>
 #include "slv2_internal.h"
 
 
@@ -51,31 +51,46 @@ slv2_query_lang_filter(const char* variable)
 }
 #endif
 
-SLV2Strings
+SLV2Values
 slv2_query_get_variable_bindings(librdf_query_results* results,
                                  const char*           variable)
 {
-	SLV2Strings result = NULL;
+	SLV2Values result = NULL;
 
     if (librdf_query_results_get_bindings_count(results) > 0)
-		result = slv2_strings_new();
+		result = slv2_values_new();
 
     while (!librdf_query_results_finished(results)) {
 
         librdf_node* node =
             librdf_query_results_get_binding_value_by_name(results, variable);
 		
-		char* str = NULL;
+		librdf_uri* datatype_uri = NULL;
+		SLV2ValueType type = SLV2_VALUE_STRING;
+		
+		const char* str_val = NULL;
 
 		switch (librdf_node_get_type(node)) {
 		case LIBRDF_NODE_TYPE_RESOURCE:
-			str = strdup((const char*)librdf_uri_as_string(librdf_node_get_uri(node)));
+			type = SLV2_VALUE_URI;
+			str_val = (const char*)librdf_uri_as_string(librdf_node_get_uri(node));
 			break;
 		case LIBRDF_NODE_TYPE_LITERAL:
-			str = strdup((const char*)librdf_node_get_literal_value(node));
+			datatype_uri = librdf_node_get_literal_value_datatype_uri(node);
+			if (datatype_uri) {
+				if (!strcmp((const char*)librdf_uri_as_string(datatype_uri),
+							"http://www.w3.org/2001/XMLSchema#integer"))
+					type = SLV2_VALUE_INT;
+				else if (!strcmp((const char*)librdf_uri_as_string(datatype_uri),
+							"http://www.w3.org/2001/XMLSchema#decimal"))
+					type = SLV2_VALUE_FLOAT;
+				else
+					fprintf(stderr, "Unknown datatype %s\n", librdf_uri_as_string(datatype_uri));
+			}
+			str_val = (const char*)librdf_node_get_literal_value(node);
 			break;
 		case LIBRDF_NODE_TYPE_BLANK:
-			str = strdup((const char*)librdf_node_get_blank_identifier(node));
+			str_val = (const char*)librdf_node_get_blank_identifier(node);
 			break;
 		case LIBRDF_NODE_TYPE_UNKNOWN:
 		default:
@@ -83,10 +98,8 @@ slv2_query_get_variable_bindings(librdf_query_results* results,
 			break;
 		}
 			
-		if (str) {
-			//printf("?%s = %s\n", variable, str);
-			raptor_sequence_push(result, str);
-		}
+		if (str_val)
+			raptor_sequence_push(result, slv2_value_new(type, str_val));
 
 		librdf_free_node(node);
 
@@ -124,33 +137,33 @@ slv2_plugin_query(SLV2Plugin  plugin,
 
 	//printf("******** Query \n%s********\n", query_str);
 	
-	librdf_query *rq = librdf_new_query(plugin->world->world, "sparql", NULL,
+	librdf_query* query = librdf_new_query(plugin->world->world, "sparql", NULL,
 			(const unsigned char*)query_str, base_uri);
 	
-	if (!rq) {
+	if (!query) {
 		fprintf(stderr, "ERROR: Could not create query\n");
 		return NULL;
 	}
 	
-	librdf_query_results* results = librdf_query_execute(rq, plugin->rdf);
+	librdf_query_results* results = librdf_query_execute(query, plugin->rdf);
 	
-	librdf_free_query(rq);
-
+	librdf_free_query(query);
 	free(query_str);
 
-	// FIXME: results leaked internally in places?
 	return results;
 }
 
 
 /** Query a single variable */
-SLV2Strings
+SLV2Values
 slv2_plugin_simple_query(SLV2Plugin  plugin,
                          const char* sparql_str,
                          const char* variable)
 {
 	librdf_query_results* results = slv2_plugin_query(plugin, sparql_str);
-	SLV2Strings ret = slv2_query_get_variable_bindings(results, variable);
+
+	SLV2Values ret = slv2_query_get_variable_bindings(results, variable);
+	
 	librdf_free_query_results(results);
 
 	return ret;
@@ -168,13 +181,14 @@ slv2_plugin_query_count(SLV2Plugin  plugin,
 {
 	librdf_query_results* results = slv2_plugin_query(plugin, sparql_str);
 
+	unsigned ret = 0;
+
 	if (results) {
-		unsigned ret = slv2_query_count_bindings(results);
+		ret = slv2_query_count_bindings(results);
 		librdf_free_query_results(results);
-		return ret;
-	} else {
-		return 0;
 	}
+
+	return ret;
 }
 
 /*

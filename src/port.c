@@ -25,6 +25,7 @@
 #include <slv2/port.h>
 #include <slv2/types.h>
 #include <slv2/util.h>
+#include <slv2/values.h>
 #include "slv2_internal.h"
 
 
@@ -66,7 +67,7 @@ SLV2PortClass
 slv2_port_get_class(SLV2Plugin p,
                     SLV2Port   port)
 {
-	SLV2Strings class = slv2_port_get_value(p, port, "rdf:type");
+	SLV2Values class = slv2_port_get_value(p, port, "rdf:type");
 	assert(class);
 
 	SLV2PortClass ret = SLV2_UNKNOWN_PORT_CLASS;
@@ -74,18 +75,21 @@ slv2_port_get_class(SLV2Plugin p,
 	int io = -1; // 0 = in, 1 = out
 	enum { UNKNOWN, AUDIO, CONTROL, MIDI } type = UNKNOWN;
 
-	for (unsigned i=0; i < slv2_strings_size(class); ++i) {
-		const char* value = slv2_strings_get_at(class, i);
-		if (!strcmp(value, "http://lv2plug.in/ontology#InputPort"))
-			io = 0;
-		else if (!strcmp(value, "http://lv2plug.in/ontology#OutputPort"))
-			io = 1;
-		else if (!strcmp(value, "http://lv2plug.in/ontology#ControlPort"))
-			type = CONTROL;
-		else if (!strcmp(value, "http://lv2plug.in/ontology#AudioPort"))
-			type = AUDIO;
-		else if (!strcmp(value, "http://ll-plugins.nongnu.org/lv2/ext/MidiPort"))
-			type = MIDI;
+	for (unsigned i=0; i < slv2_values_size(class); ++i) {
+		SLV2Value val = slv2_values_get_at(class, i);
+		if (slv2_value_is_uri(val)) {
+			const char* uri = slv2_value_as_uri(val);
+			if (!strcmp(uri, "http://lv2plug.in/ontology#InputPort"))
+				io = 0;
+			else if (!strcmp(uri, "http://lv2plug.in/ontology#OutputPort"))
+				io = 1;
+			else if (!strcmp(uri, "http://lv2plug.in/ontology#ControlPort"))
+				type = CONTROL;
+			else if (!strcmp(uri, "http://lv2plug.in/ontology#AudioPort"))
+				type = AUDIO;
+			else if (!strcmp(uri, "http://ll-plugins.nongnu.org/lv2/ext/MidiPort"))
+				type = MIDI;
+		}
 	}
 
 	if (io == 0) {
@@ -104,20 +108,20 @@ slv2_port_get_class(SLV2Plugin p,
 			ret = SLV2_MIDI_OUTPUT;
 	}
 
-	slv2_strings_free(class);
+	slv2_values_free(class);
 
 	return ret;
 }
 
 
-SLV2Strings
+SLV2Values
 slv2_port_get_value(SLV2Plugin  p,
                     SLV2Port    port,
                     const char* property)
 {
 	assert(property);
 
-	SLV2Strings result = NULL;
+	SLV2Values result = NULL;
 
 	char* query = slv2_strjoin(
 			"SELECT DISTINCT ?value WHERE {\n"
@@ -138,12 +142,12 @@ slv2_port_get_symbol(SLV2Plugin p,
 {
 	char* symbol = NULL;
 	
-	SLV2Strings result = slv2_port_get_value(p, port, "lv2:symbol");
+	SLV2Values result = slv2_port_get_value(p, port, "lv2:symbol");
 
-	if (result && slv2_strings_size(result) == 1)
-		symbol = strdup(slv2_strings_get_at(result, 0));
+	if (result && slv2_values_size(result) == 1)
+		symbol = strdup(slv2_value_as_string(slv2_values_get_at(result, 0)));
 	
-	slv2_strings_free(result);
+	slv2_values_free(result);
 
 	return symbol;
 }
@@ -155,12 +159,12 @@ slv2_port_get_name(SLV2Plugin p,
 {
 	char* name = NULL;
 	
-	SLV2Strings result = slv2_port_get_value(p, port, "lv2:name");
+	SLV2Values result = slv2_port_get_value(p, port, "lv2:name");
 
-	if (result && slv2_strings_size(result) == 1)
-		name = strdup(slv2_strings_get_at(result, 0));
+	if (result && slv2_values_size(result) == 1)
+		name = strdup(slv2_value_as_string(slv2_values_get_at(result, 0)));
 	
-	slv2_strings_free(result);
+	slv2_values_free(result);
 
 	return name;
 }
@@ -170,16 +174,14 @@ float
 slv2_port_get_default_value(SLV2Plugin p, 
                             SLV2Port   port)
 {
-	// FIXME: do casting properly in the SPARQL query
-	
 	float value = 0.0f;
 	
-	SLV2Strings result = slv2_port_get_value(p, port, "lv2:default");
+	SLV2Values result = slv2_port_get_value(p, port, "lv2:default");
 
-	if (result && slv2_strings_size(result) == 1)
-		value = atof(slv2_strings_get_at(result, 0));
+	if (result && slv2_values_size(result) == 1)
+		value = slv2_value_as_float(slv2_values_get_at(result, 0));
 	
-	slv2_strings_free(result);
+	slv2_values_free(result);
 
 	return value;
 }
@@ -189,16 +191,14 @@ float
 slv2_port_get_minimum_value(SLV2Plugin p, 
                             SLV2Port   port)
 {
-	// FIXME: need better access to literal types
-	
 	float value = 0.0f;
 	
-	SLV2Strings result = slv2_port_get_value(p, port, "lv2:minimum");
+	SLV2Values result = slv2_port_get_value(p, port, "lv2:minimum");
 
-	if (result && slv2_strings_size(result) == 1)
-		value = atof(slv2_strings_get_at(result, 0));
+	if (result && slv2_values_size(result) == 1)
+		value = slv2_value_as_float(slv2_values_get_at(result, 0));
 	
-	slv2_strings_free(result);
+	slv2_values_free(result);
 
 	return value;
 }
@@ -208,22 +208,20 @@ float
 slv2_port_get_maximum_value(SLV2Plugin p, 
                             SLV2Port   port)
 {
-	// FIXME: need better access to literal types
-	
 	float value = 0.0f;
 	
-	SLV2Strings result = slv2_port_get_value(p, port, "lv2:maximum");
+	SLV2Values result = slv2_port_get_value(p, port, "lv2:maximum");
 
-	if (result && slv2_strings_size(result) == 1)
-		value = atof(slv2_strings_get_at(result, 0));
+	if (result && slv2_values_size(result) == 1)
+		value = slv2_value_as_float(slv2_values_get_at(result, 0));
 	
-	slv2_strings_free(result);
+	slv2_values_free(result);
 
 	return value;
 }
 
 
-SLV2Strings
+SLV2Values
 slv2_port_get_properties(SLV2Plugin p,
                          SLV2Port   port)
 {
@@ -231,7 +229,7 @@ slv2_port_get_properties(SLV2Plugin p,
 }
 
 
-SLV2Strings
+SLV2Values
 slv2_port_get_hints(SLV2Plugin p,
                     SLV2Port   port)
 {

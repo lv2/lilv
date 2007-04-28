@@ -26,7 +26,7 @@
 #include <slv2/types.h>
 #include <slv2/plugin.h>
 #include <slv2/plugins.h>
-#include <slv2/strings.h>
+#include <slv2/values.h>
 #include <slv2/util.h>
 #include "slv2_internal.h"
 
@@ -182,7 +182,7 @@ slv2_plugins_load_bundle(SLV2Plugins list,
 
 		SLV2Plugin plugin = slv2_plugins_get_by_uri(list, subject);
 
-		if (plugin && data_uri && !slv2_strings_contains(plugin->data_uris, data_uri))
+		if (plugin && data_uri && !slv2_values_contains(plugin->data_uris, data_uri))
 			raptor_sequence_push(plugin->data_uris, strdup(data_uri));
 		
 		if (plugin && binary && !plugin->lib_uri)

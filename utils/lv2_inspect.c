@@ -75,15 +75,15 @@ print_port(SLV2Plugin p, uint32_t index)
 
 	printf("\t\tProperties:\n");
 	SLV2Strings properties = slv2_port_get_properties(p, port);
-	for (unsigned i=0; i < slv2_strings_size(properties); ++i)
-		printf("\t\t\t%s\n", slv2_strings_get_at(properties, i));
-	slv2_strings_free(properties);
+	for (unsigned i=0; i < slv2_values_size(properties); ++i)
+		printf("\t\t\t%s\n", slv2_value_as_uri(slv2_values_get_at(properties, i)));
+	slv2_values_free(properties);
 	
 	printf("\t\tHints:\n");
 	SLV2Strings hints = slv2_port_get_hints(p, port);
-	for (unsigned i=0; i < slv2_strings_size(hints); ++i)
-		printf("\t\t\t%s\n", slv2_strings_get_at(hints, i));
-	slv2_strings_free(hints);
+	for (unsigned i=0; i < slv2_values_size(hints); ++i)
+		printf("\t\t\t%s\n", slv2_value_as_uri(slv2_values_get_at(hints, i)));
+	slv2_values_free(hints);
 }
 
 void
@@ -100,40 +100,42 @@ print_plugin(SLV2Plugin p)
 	const char* class_label = slv2_plugin_class_get_label(slv2_plugin_get_class(p));
 	printf("\tClass: %s\n\n", class_label);
 
-	if (slv2_plugin_has_latency(p))
-		printf("\tHas latency: yes\n\n");
-	else
+	if (slv2_plugin_has_latency(p)) {
+		uint32_t latency_port = slv2_plugin_get_latency_port(p);
+		printf("\tHas latency: yes, reported by port %d\n\n", latency_port);
+	} else {
 		printf("\tHas latency: no\n\n");
-	
+	}
+
 	printf("\tBinary: %s\n\n", slv2_plugin_get_library_uri(p));
 
 	printf("\tData URIs:\n");
 	SLV2Strings data_uris = slv2_plugin_get_data_uris(p);
-	for (unsigned i=0; i < slv2_strings_size(data_uris); ++i)
-		printf("\t\t%s\n", slv2_strings_get_at(data_uris, i));
+	for (unsigned i=0; i < slv2_values_size(data_uris); ++i)
+		printf("\t\t%s\n", slv2_value_as_uri(slv2_values_get_at(data_uris, i)));
 
 	/* Properties */
 
 	SLV2Strings v = slv2_plugin_get_properties(p);
 	
-	if (slv2_strings_size(v) > 0)
+	if (slv2_values_size(v) > 0)
 		printf("\n\tProperties:\n");
 
-	for (unsigned i=0; i < slv2_strings_size(v); ++i)
-		printf("\t\t%s\n", slv2_strings_get_at(v, i));
-	slv2_strings_free(v);
+	for (unsigned i=0; i < slv2_values_size(v); ++i)
+		printf("\t\t%s\n", slv2_value_as_uri(slv2_values_get_at(v, i)));
+	slv2_values_free(v);
 	
 
 	/* Hints */
 
 	v = slv2_plugin_get_hints(p);
 
-	if (slv2_strings_size(v) > 0)
+	if (slv2_values_size(v) > 0)
 		printf("\n\tHints:\n");
 
-	for (unsigned i=0; i < slv2_strings_size(v); ++i)
-		printf("\t\t%s\n", slv2_strings_get_at(v, i));
-	slv2_strings_free(v);
+	for (unsigned i=0; i < slv2_values_size(v); ++i)
+		printf("\t\t%s\n", slv2_value_as_uri(slv2_values_get_at(v, i)));
+	slv2_values_free(v);
 
 
 	/* Ports */
