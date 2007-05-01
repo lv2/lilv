@@ -57,6 +57,33 @@ slv2_world_new()
 }
 
 
+SLV2World
+slv2_world_new_using_rdf_world(librdf_world* rdf_world)
+{
+	struct _World* world = (struct _World*)malloc(sizeof(struct _World));
+
+	world->world = rdf_world;
+
+	world->storage = librdf_new_storage(world->world, "hashes", NULL,
+			"hash-type='memory'");
+
+	world->model = librdf_new_model(world->world, world->storage, NULL);
+
+	world->parser = librdf_new_parser(world->world, "turtle", NULL, NULL);
+
+	world->plugin_classes = slv2_plugin_classes_new();
+	
+	// Add the ever-present lv2:Plugin to classes
+	static const char* lv2_plugin_uri = "http://lv2plug.in/ontology#Plugin";
+	raptor_sequence_push(world->plugin_classes, slv2_plugin_class_new(
+				world, NULL, lv2_plugin_uri, "Plugin"));
+	
+	world->plugins = slv2_plugins_new();
+
+	return world;
+}
+
+
 void
 slv2_world_free(SLV2World world)
 {

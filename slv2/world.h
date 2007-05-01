@@ -21,6 +21,7 @@
 
 #include <slv2/plugins.h>
 #include <slv2/pluginclasses.h>
+#include <librdf.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -50,6 +51,12 @@ extern "C" {
  */
 SLV2World
 slv2_world_new();
+
+
+/** Initialize a new, empty world, using an existing Redland context.
+ */
+SLV2World
+slv2_world_new_using_rdf_world(librdf_world* world);
 
 
 /** Destroy the world, mwahaha.
