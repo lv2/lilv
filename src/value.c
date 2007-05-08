@@ -59,27 +59,6 @@ slv2_value_free(SLV2Value val)
 }
 
 
-/*
-SLV2Value
-slv2_uri(const char* uri)
-{
-	struct _SLV2Value val;
-	val->str_val = (char*)uri; // const cast FTW!
-	val->type = SLV2_VALUE_URI;
-	return val;
-}
-
-
-SLV2Value
-slv2_qname(const char* qname)
-{
-	SLV2Value val;
-	val->str_val = (char*)qname; // const cast FTW!
-	val->type = SLV2_VALUE_QNAME;
-	return val;
-}
-*/
-
 bool
 slv2_value_equals(SLV2Value value, SLV2Value other)
 {
@@ -102,7 +81,6 @@ slv2_value_get_turtle_token(SLV2Value value)
 		result = calloc(len, sizeof(char));
 		snprintf(result, len, "<%s>", value->str_val);
 		break;
-	case SLV2_VALUE_QNAME:
 	case SLV2_VALUE_STRING:
 		result = strdup(value->str_val);
 		break;

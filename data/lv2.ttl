@@ -1,7 +1,5 @@
 # RDF Schema for LV2 plugins
-# *** PROVISIONAL ***
-#
-# *** PROPOSED Revision 2007-04-20 ***
+# *** PROVISIONAL Revision 2007-05-08 ***
 #
 # This document describes the classes and properties that are defined by the
 # core LV2 specification.  See <http://lv2plug.in> for more information.
@@ -42,7 +40,7 @@
    doap:programming-language "C" ;
    doap:release [
        doap:revision "1.0beta2" ;
-       doap:created "2007-04-20"
+       doap:created "2007-05-08"
    ] ;
    doap:maintainer [
        a foaf:Person ;

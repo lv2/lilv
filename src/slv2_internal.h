@@ -30,18 +30,24 @@ extern "C" {
 #include <slv2/types.h>
 
 
-/** Reference to a port on some plugin.
- */
+
+/* ********* PORT ********* */
+
+
+/** Reference to a port on some plugin. */
 struct _SLV2Port {
-	uint32_t index;   ///< LV2 index
-	char*    symbol;  ///< LV2 symbol
-	//char*    node_id; ///< RDF Node ID
+	uint32_t index;  ///< LV2 index
+	char*    symbol; ///< LV2 symbol
 };
 
 
-SLV2Port slv2_port_new(uint32_t index, const char* symbol/*, const char* node_id*/);
+SLV2Port slv2_port_new(uint32_t index, const char* symbol);
 SLV2Port slv2_port_duplicate(SLV2Port port);
 void     slv2_port_free(SLV2Port port);
+
+
+
+/* ********* Plugin ********* */
 
 
 /** Record of an installed/available plugin.
@@ -52,10 +58,10 @@ void     slv2_port_free(SLV2Port port);
 struct _SLV2Plugin {
 	struct _SLV2World*   world;
 	librdf_uri*      plugin_uri;
-//	char*            bundle_url; // Bundle directory plugin was loaded from
-	char*            binary_uri; // lv2:binary
+//	char*            bundle_url; ///< Bundle directory plugin was loaded from
+	char*            binary_uri; ///< lv2:binary
 	SLV2PluginClass  plugin_class;
-	raptor_sequence* data_uris;  // rdfs::seeAlso
+	raptor_sequence* data_uris;  ///< rdfs::seeAlso
 	raptor_sequence* ports;
 	librdf_storage*  storage;
 	librdf_model*    rdf;
@@ -69,6 +75,10 @@ librdf_query_results* slv2_plugin_query(SLV2Plugin  plugin,
                                         const char* sparql_str);
 
 
+
+/* ********* Plugins ********* */
+
+
 /** Create a new, empty plugin list.
  *
  * Returned object must be freed with slv2_plugins_free.
@@ -77,10 +87,18 @@ SLV2Plugins
 slv2_plugins_new();
 
 
+
+/* ********* Instance ********* */
+
+
 /** Pimpl portion of SLV2Instance */
 struct _InstanceImpl {
 	void* lib_handle;
 };
+
+
+
+/* ********* Plugin Class ********* */
 
 
 struct _SLV2PluginClass {
@@ -90,12 +108,22 @@ struct _SLV2PluginClass {
 	char*              label;
 };
 
-SLV2PluginClass slv2_plugin_class_new(SLV2World world, 
-		const char* parent_uri, const char* uri, const char* label);
-void            slv2_plugin_class_free(SLV2PluginClass class);
+SLV2PluginClass slv2_plugin_class_new(SLV2World world, const char* parent_uri,
+                                      const char* uri, const char* label);
+void slv2_plugin_class_free(SLV2PluginClass class);
+
+
+
+/* ********* Plugin Classes ********* */
+
 
 SLV2PluginClasses slv2_plugin_classes_new();
 void              slv2_plugin_classes_free();
+
+
+
+/* ********* World ********* */
+
 
 /** Model of LV2 (RDF) data loaded from bundles.
  */
@@ -122,9 +150,12 @@ slv2_world_load_path(SLV2World   world,
                      const char* search_path);
 
 
+
+/* ********* Value ********* */
+
+
 typedef enum _SLV2ValueType {
 	SLV2_VALUE_URI,
-	SLV2_VALUE_QNAME,
 	SLV2_VALUE_STRING,
 	SLV2_VALUE_INT,
 	SLV2_VALUE_FLOAT

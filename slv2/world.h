@@ -160,6 +160,7 @@ slv2_world_get_plugins_by_filter(SLV2World world,
                                  bool (*include)(SLV2Plugin));
 
 
+#if 0
 /** Return a list of found plugins in a given class.
  *
  * Returned list must be freed by user with slv2_plugins_free.  The contained
@@ -170,7 +171,7 @@ slv2_world_get_plugins_by_filter(SLV2World world,
 SLV2Plugins
 slv2_world_get_plugins_by_class(SLV2World       world,
                                 SLV2PluginClass plugin_class);
-
+#endif
 
 #if 0
 /** Get plugins filtered by a user-defined SPARQL query.

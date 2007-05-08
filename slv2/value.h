@@ -31,27 +31,6 @@ extern "C" {
  */
 
 
-#if 0
-/** Wrap a URI string (e.g. "http://example.org/foo") as an SLV2Value.
- *
- * The result is returned by value and refers directly to \a uri, it
- * does not need to be freed by the caller - calling slv2_value_free
- * on the returned value will destroy \a uri.
- */
-SLV2Value
-slv2_uri(const char* uri);
-
-
-/** Wrap a QName string (e.g. "lv2:Plugin") as an SLV2Value.
- *
- * The result is returned by value and refers directly to \a uri, it
- * does not need to be freed by the caller - calling slv2_value_free
- * on the returned value will destroy \a qname.
- */
-SLV2Value
-slv2_qname(const char* qname);
-#endif
-
 
 /** Return whether two values are equivalent.
  */

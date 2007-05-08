@@ -21,6 +21,7 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <librdf.h>
+#include <limits.h>
 #include <slv2/plugin.h>
 #include <slv2/util.h>
 #include <slv2/values.h>
@@ -160,9 +161,11 @@ slv2_plugin_simple_query(SLV2Plugin  plugin,
                          const char* sparql_str,
                          unsigned    variable)
 {
+	assert(variable < INT_MAX);
+
 	librdf_query_results* results = slv2_plugin_query(plugin, sparql_str);
 
-	SLV2Values ret = slv2_query_get_variable_bindings(results, variable);
+	SLV2Values ret = slv2_query_get_variable_bindings(results, (int)variable);
 	
 	librdf_free_query_results(results);
 
