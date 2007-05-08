@@ -23,9 +23,9 @@
 #include <stdbool.h>
 #include <float.h>
 #include <math.h>
-#include <ladspa.h>
 #include <dlfcn.h>
 #include <librdf.h>
+#include "ladspa.h"
 
 #define U(x) ((const unsigned char*)(x))
 #define NS_RDF(x) "http://www.w3.org/1999/02/22-rdf-syntax-ns#" x

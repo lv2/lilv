@@ -171,7 +171,6 @@ struct _SLV2Value {
 };
 
 SLV2Value slv2_value_new(SLV2ValueType type, const char* val);
-void      slv2_value_free(SLV2Value val);
 
 
 #ifdef __cplusplus

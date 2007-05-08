@@ -31,6 +31,11 @@ extern "C" {
  */
 
 
+/** Free an SLV2Value.
+ */
+void
+slv2_value_free(SLV2Value val);
+
 
 /** Return whether two values are equivalent.
  */

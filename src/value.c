@@ -50,7 +50,6 @@ slv2_value_new(SLV2ValueType type, const char* str)
 }
 
 
-/* private */
 void
 slv2_value_free(SLV2Value val)
 {
