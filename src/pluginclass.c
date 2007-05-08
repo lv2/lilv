@@ -27,7 +27,7 @@
 SLV2PluginClass
 slv2_plugin_class_new(SLV2World world, const char* parent_uri,  const char* uri, const char* label)
 {
-	SLV2PluginClass plugin_class = (SLV2PluginClass)malloc(sizeof(struct _PluginClass));
+	SLV2PluginClass plugin_class = (SLV2PluginClass)malloc(sizeof(struct _SLV2PluginClass));
 	plugin_class->world = world;
 	if (parent_uri)
 		plugin_class->parent_uri = strdup(parent_uri);

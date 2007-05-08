@@ -109,7 +109,26 @@ print_plugin(SLV2Plugin p)
 
 	printf("\tBinary: %s\n\n", slv2_plugin_get_library_uri(p));
 
-	printf("\tData URIs:\n");
+	SLV2Values gui = slv2_plugin_get_value(p, SLV2_URI,
+			"http://ll-plugins.nongnu.org/lv2/ext/gtk2gui#gui");
+	if (slv2_values_size(gui) > 0) {
+		printf("\tGUI:\n");
+		for (unsigned i=0; i < slv2_values_size(gui); ++i) {
+			printf("\t\t%s\n", slv2_value_as_string(slv2_values_get_at(gui, i)));
+			SLV2Values binary = slv2_plugin_get_value_for_subject(p,
+					slv2_values_get_at(gui, i),
+					SLV2_URI,
+					"http://ll-plugins.nongnu.org/lv2/ext/gtk2gui#binary");
+	
+			if (slv2_values_size(binary) > 0)
+				printf("\t\t\tBinary: %s\n", slv2_value_as_uri(slv2_values_get_at(binary, 0)));
+		}
+	}
+
+	//SLV2Values gui = slv2_plugin_get_value_for_subject(p,
+	//		"<http://ll-plugins.nongnu.org/lv2/ext/gtk2gui#gui>");
+
+	printf("\n\tData URIs:\n");
 	SLV2Values data_uris = slv2_plugin_get_data_uris(p);
 	for (unsigned i=0; i < slv2_values_size(data_uris); ++i)
 		printf("\t\t%s\n", slv2_value_as_uri(slv2_values_get_at(data_uris, i)));

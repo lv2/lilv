@@ -31,10 +31,46 @@ extern "C" {
  */
 
 
+#if 0
+/** Wrap a URI string (e.g. "http://example.org/foo") as an SLV2Value.
+ *
+ * The result is returned by value and refers directly to \a uri, it
+ * does not need to be freed by the caller - calling slv2_value_free
+ * on the returned value will destroy \a uri.
+ */
+SLV2Value
+slv2_uri(const char* uri);
+
+
+/** Wrap a QName string (e.g. "lv2:Plugin") as an SLV2Value.
+ *
+ * The result is returned by value and refers directly to \a uri, it
+ * does not need to be freed by the caller - calling slv2_value_free
+ * on the returned value will destroy \a qname.
+ */
+SLV2Value
+slv2_qname(const char* qname);
+#endif
+
+
 /** Return whether two values are equivalent.
  */
 bool
 slv2_value_equals(SLV2Value value, SLV2Value other);
+
+
+/** Return this value as a Turtle/SPARQL token.
+ * Examples:
+ * 	<http://example.org/foo>
+ * 	doap:name
+ * 	"this is a string"
+ * 	1.0
+ * 	1
+ *
+ * 	Returned string is newly allocation and must be freed by caller.
+ */
+char*
+slv2_value_get_turtle_token(SLV2Value value);
 
 
 /** Return whether the value is a URI (resource).
@@ -47,13 +83,38 @@ slv2_value_is_uri(SLV2Value value);
 
 /** Return this value as a URI string, e.g. "http://example.org/foo".
  * 
- * Valid to call only if slv2_value_is_uri(\a value) returns true.
+ * Valid to call only if slv2_value_is_uri(\a value) or
+ * slv2_value_is_qname(\a value) returns true.
  * Returned value is owned by \a value and must not be freed by caller.
  * 
  * Time = O(1)
  */
 const char*
 slv2_value_as_uri(SLV2Value value);
+
+
+#if 0
+/** Return whether the value is a QName ("qualified name", a prefixed URI).
+ *
+ * A QName will return true for both this, and slv2_value_is_uri.
+ * slv2_value_as_uri and slv2_value_as_qname will both return appropriately.
+ *
+ * Time = O(1)
+ */
+bool
+slv2_value_is_qname(SLV2Value value);
+
+
+/** Return this value as a QName string, e.g. "lv2:Plugin".
+ * 
+ * Valid to call only if slv2_value_is_qname(\a value) returns true.
+ * Returned value is owned by \a value and must not be freed by caller.
+ * 
+ * Time = O(1)
+ */
+const char*
+slv2_value_as_qname(SLV2Value value);
+#endif
 
 
 /** Return whether this value is a literal (i.e. not a URI).

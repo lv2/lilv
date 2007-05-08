@@ -137,10 +137,14 @@ slv2_plugin_get_class(SLV2Plugin plugin);
  *
  * Return value must be freed by caller with slv2_values_free.
  *
+ * \a predicate must be either a URI or a QName.
+ * See \ref SLV2URIType documentation for examples.
+ *
  * Time = Query
  */
 SLV2Values
 slv2_plugin_get_value(SLV2Plugin  p,
+                      SLV2URIType predicate_type,
                       const char* predicate);
 
 
@@ -156,13 +160,17 @@ slv2_plugin_get_value(SLV2Plugin  p,
  * May return NULL if the property was not found, or if object is not
  * sensibly represented as an SLV2Values (e.g. blank nodes).
  *
+ * \a predicate must be either a URI or a QName.
+ * See \ref SLV2URIType documentation for examples.
+ *
  * Return value must be freed by caller with slv2_values_free.
  *
  * Time = Query
  */
 SLV2Values
 slv2_plugin_get_value_for_subject(SLV2Plugin  p,
-                                  const char* subject,
+                                  SLV2Value   subject,
+                                  SLV2URIType predicate_type,
                                   const char* predicate);
 
 

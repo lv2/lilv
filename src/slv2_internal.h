@@ -16,8 +16,8 @@
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef __SLV2_PRIVATE_TYPES_H__
-#define __SLV2_PRIVATE_TYPES_H__
+#ifndef __SLV2_INTERNAL_H__
+#define __SLV2_INTERNAL_H__
 
 #ifdef __cplusplus
 extern "C" {
@@ -25,15 +25,14 @@ extern "C" {
 
 #include <stdbool.h>
 #include <stddef.h>
+#include <inttypes.h>
 #include <librdf.h>
-#include <slv2/plugins.h>
-#include <slv2/pluginclasses.h>
-
+#include <slv2/types.h>
 
 
 /** Reference to a port on some plugin.
  */
-struct _Port {
+struct _SLV2Port {
 	uint32_t index;   ///< LV2 index
 	char*    symbol;  ///< LV2 symbol
 	//char*    node_id; ///< RDF Node ID
@@ -50,8 +49,8 @@ void     slv2_port_free(SLV2Port port);
  * A simple reference to a plugin somewhere on the system. This just holds
  * paths of relevant files, the actual data therein isn't loaded into memory.
  */
-struct _Plugin {
-	struct _World*   world;
+struct _SLV2Plugin {
+	struct _SLV2World*   world;
 	librdf_uri*      plugin_uri;
 //	char*            bundle_url; // Bundle directory plugin was loaded from
 	char*            binary_uri; // lv2:binary
@@ -84,11 +83,11 @@ struct _InstanceImpl {
 };
 
 
-struct _PluginClass {
-	struct _World* world;
-	char*          parent_uri;
-	char*          uri;
-	char*          label;
+struct _SLV2PluginClass {
+	struct _SLV2World* world;
+	char*              parent_uri;
+	char*              uri;
+	char*              label;
 };
 
 SLV2PluginClass slv2_plugin_class_new(SLV2World world, 
@@ -100,7 +99,7 @@ void              slv2_plugin_classes_free();
 
 /** Model of LV2 (RDF) data loaded from bundles.
  */
-struct _World {
+struct _SLV2World {
 	librdf_world*     world;
 	librdf_storage*   storage;
 	librdf_model*     model;
@@ -123,14 +122,15 @@ slv2_world_load_path(SLV2World   world,
                      const char* search_path);
 
 
-typedef enum _ValueType {
+typedef enum _SLV2ValueType {
 	SLV2_VALUE_URI,
+	SLV2_VALUE_QNAME,
 	SLV2_VALUE_STRING,
 	SLV2_VALUE_INT,
 	SLV2_VALUE_FLOAT
 } SLV2ValueType;
 
-struct _Value {
+struct _SLV2Value {
 	SLV2ValueType type;
 	char*         str_val; ///< always present
 	union {
@@ -147,5 +147,5 @@ void      slv2_value_free(SLV2Value val);
 }
 #endif
 
-#endif /* __SLV2_PRIVATE_TYPES_H__ */
+#endif /* __SLV2_INTERNAL_H__ */
 

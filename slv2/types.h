@@ -33,7 +33,7 @@ extern "C" {
  * to make the most common case simple.  Use slv2_port_get_value(p, "rdf:type")
  * if you need further class information.
  */
-typedef enum _PortClass {
+typedef enum _SLV2PortClass {
 	SLV2_UNKNOWN_PORT_CLASS,
 	SLV2_CONTROL_INPUT,  /**< One input float per block */
 	SLV2_CONTROL_OUTPUT, /**< One output float per block */
@@ -44,20 +44,35 @@ typedef enum _PortClass {
 } SLV2PortClass;
 
 
+/** The format of a URI string.
+ *
+ * Full URI: http://example.org/foo
+ * QName: lv2:Plugin
+ */
+typedef enum _SLV2URIType {
+	SLV2_URI,
+	SLV2_QNAME
+} SLV2URIType;
+
+
 /** A port on a plugin.  Opaque, but valid to compare to NULL. */
-typedef struct _Port* SLV2Port;
+typedef struct _SLV2Port* SLV2Port;
 
 
 /** A plugin.  Opaque, but valid to compare to NULL. */
-typedef struct _Plugin* SLV2Plugin;
+typedef struct _SLV2Plugin* SLV2Plugin;
+
+
+/** A collection of plugins.  Opaque, but valid to compare to NULL. */
+typedef void* SLV2Plugins;
 
 
 /** The world.  Opaque, but valid to compare to NULL. */
-typedef struct _World* SLV2World;
+typedef struct _SLV2World* SLV2World;
 
 
 /** A plugin class.  Opaque, but valid to compare to NULL. */
-typedef struct _PluginClass* SLV2PluginClass;
+typedef struct _SLV2PluginClass* SLV2PluginClass;
 
 
 /** A collection of plugin classes.  Opaque, but valid to compare to NULL. */
@@ -65,7 +80,7 @@ typedef void* SLV2PluginClasses;
 
 
 /** A typed value */
-typedef struct _Value* SLV2Value;
+typedef struct _SLV2Value* SLV2Value;
 
 
 /** A collection of typed values. */

@@ -22,18 +22,20 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <librdf.h>
+#include "slv2_internal.h"
 #include <slv2/plugin.h>
 #include <slv2/types.h>
 #include <slv2/util.h>
 #include <slv2/values.h>
-#include "slv2_internal.h"
+#include <slv2/pluginclass.h>
+#include <slv2/pluginclasses.h>
 
 
 /* private */
 SLV2Plugin
 slv2_plugin_new(SLV2World world, librdf_uri* uri, const char* binary_uri)
 {
-	struct _Plugin* plugin = malloc(sizeof(struct _Plugin));
+	struct _SLV2Plugin* plugin = malloc(sizeof(struct _SLV2Plugin));
 	plugin->world = world;
 	plugin->plugin_uri = librdf_new_uri_from_uri(uri);
 	plugin->binary_uri = strdup(binary_uri);
@@ -323,7 +325,7 @@ char*
 slv2_plugin_get_name(SLV2Plugin plugin)
 {
 	char* result     = NULL;
-	SLV2Values prop = slv2_plugin_get_value(plugin, "doap:name");
+	SLV2Values prop = slv2_plugin_get_value(plugin, SLV2_QNAME, "doap:name");
 	
 	// FIXME: lang? guaranteed to be the untagged one?
 	if (prop && slv2_values_size(prop) > 0) {
@@ -341,14 +343,25 @@ slv2_plugin_get_name(SLV2Plugin plugin)
 
 SLV2Values
 slv2_plugin_get_value(SLV2Plugin  p,
+                      SLV2URIType predicate_type,
                       const char* predicate)
 {
-	assert(predicate);
+	char* query = NULL;
 
-    char* query = slv2_strjoin(
-		"SELECT DISTINCT ?value WHERE {"
-		"<> ", predicate, " ?value .\n"
-		"}\n", NULL);
+	/* Hack around broken RASQAL, full URI predicates don't work :/ */
+
+	if (predicate_type == SLV2_URI) {
+		query = slv2_strjoin(
+			"PREFIX slv2predicate: <", predicate, ">",
+			"SELECT DISTINCT ?value WHERE { \n"
+			"<> slv2predicate: ?value \n"
+			"}\n", NULL);
+	} else {
+    	query = slv2_strjoin(
+			"SELECT DISTINCT ?value WHERE { \n"
+			"<> ", predicate, " ?value \n"
+			"}\n", NULL);
+	}
 
 	SLV2Values result = slv2_plugin_simple_query(p, query, 0);
 	
@@ -360,15 +373,32 @@ slv2_plugin_get_value(SLV2Plugin  p,
 	
 SLV2Values
 slv2_plugin_get_value_for_subject(SLV2Plugin  p,
-                                  const char* subject,
+                                  SLV2Value   subject,
+                                  SLV2URIType predicate_type,
                                   const char* predicate)
 {
-	assert(predicate);
+	if (subject->type != SLV2_VALUE_URI) {
+		fprintf(stderr, "slv2_plugin_get_value_for_subject error: "
+				"passed non-URI subject\n");
+		return NULL;
+	}
 
-    char* query = slv2_strjoin(
-		"SELECT DISTINCT ?value WHERE {\n",
-		subject, " ", predicate, " ?value .\n"
-		"}\n", NULL);
+	char* query = NULL;
+
+	/* Hack around broken RASQAL, full URI predicates don't work :/ */
+
+	if (predicate_type == SLV2_URI) {
+		query = slv2_strjoin(
+			"PREFIX slv2predicate: <", predicate, ">",
+			"SELECT DISTINCT ?value WHERE { \n",
+			slv2_value_get_turtle_token(subject), " slv2predicate: ?value \n"
+			"}\n", NULL);
+	} else {
+    	query = slv2_strjoin(
+			"SELECT DISTINCT ?value WHERE { \n",
+			slv2_value_get_turtle_token(subject), " ", predicate, " ?value \n"
+			"}\n", NULL);
+	}
 
 	SLV2Values result = slv2_plugin_simple_query(p, query, 0);
 	
@@ -381,14 +411,14 @@ slv2_plugin_get_value_for_subject(SLV2Plugin  p,
 SLV2Values
 slv2_plugin_get_properties(SLV2Plugin p)
 {
-	return slv2_plugin_get_value(p, "lv2:pluginProperty");
+	return slv2_plugin_get_value(p, SLV2_QNAME, "lv2:pluginProperty");
 }
 
 
 SLV2Values
 slv2_plugin_get_hints(SLV2Plugin p)
 {
-	return slv2_plugin_get_value(p, "lv2:pluginHint");
+	return slv2_plugin_get_value(p, SLV2_QNAME, "lv2:pluginHint");
 }
 
 
@@ -462,7 +492,7 @@ slv2_plugin_get_optional_features(SLV2Plugin p)
 {
     const char* const query = 
 		"SELECT DISTINCT ?feature WHERE {\n"
-		"	<>  lv2:optionalHostFeature  ?feature .\n"
+		"	<>  lv2:optionalHostFeature  ?feature\n"
 		"}\n";
 
 	SLV2Values result = slv2_plugin_simple_query(p, query, 0);
@@ -476,7 +506,7 @@ slv2_plugin_get_required_features(SLV2Plugin p)
 {
     const char* const query = 
 		"SELECT DISTINCT ?feature WHERE {\n"
-		"	<>  lv2:requiredHostFeature  ?feature .\n"
+		"	<>  lv2:requiredHostFeature  ?feature\n"
 		"}\n";
 
 	SLV2Values result = slv2_plugin_simple_query(p, query, 0);

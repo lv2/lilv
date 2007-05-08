@@ -32,7 +32,7 @@
 SLV2World
 slv2_world_new()
 {
-	struct _World* world = (struct _World*)malloc(sizeof(struct _World));
+	SLV2World world = (SLV2World)malloc(sizeof(struct _SLV2World));
 
 	world->world = librdf_new_world();
 	librdf_world_open(world->world);
@@ -60,7 +60,7 @@ slv2_world_new()
 SLV2World
 slv2_world_new_using_rdf_world(librdf_world* rdf_world)
 {
-	struct _World* world = (struct _World*)malloc(sizeof(struct _World));
+	SLV2World world = (SLV2World)malloc(sizeof(struct _SLV2World));
 
 	world->world = rdf_world;
 

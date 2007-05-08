@@ -30,7 +30,7 @@
 SLV2Value
 slv2_value_new(SLV2ValueType type, const char* str)
 {
-	SLV2Value val = (SLV2Value)malloc(sizeof(struct _Value));
+	SLV2Value val = (SLV2Value)malloc(sizeof(struct _SLV2Value));
 	val->str_val = strdup(str);
 	val->type = type;
 
@@ -59,6 +59,27 @@ slv2_value_free(SLV2Value val)
 }
 
 
+/*
+SLV2Value
+slv2_uri(const char* uri)
+{
+	struct _SLV2Value val;
+	val->str_val = (char*)uri; // const cast FTW!
+	val->type = SLV2_VALUE_URI;
+	return val;
+}
+
+
+SLV2Value
+slv2_qname(const char* qname)
+{
+	SLV2Value val;
+	val->str_val = (char*)qname; // const cast FTW!
+	val->type = SLV2_VALUE_QNAME;
+	return val;
+}
+*/
+
 bool
 slv2_value_equals(SLV2Value value, SLV2Value other)
 {
@@ -66,6 +87,39 @@ slv2_value_equals(SLV2Value value, SLV2Value other)
 		return false;
 	else
 		return ! strcmp(value->str_val, other->str_val);
+}
+
+
+char*
+slv2_value_get_turtle_token(SLV2Value value)
+{
+	size_t len    = 0;
+	char*  result = NULL;
+
+	switch (value->type) {
+	case SLV2_VALUE_URI:
+		len = strlen(value->str_val) + 3;
+		result = calloc(len, sizeof(char));
+		snprintf(result, len, "<%s>", value->str_val);
+		break;
+	case SLV2_VALUE_QNAME:
+	case SLV2_VALUE_STRING:
+		result = strdup(value->str_val);
+		break;
+	case SLV2_VALUE_INT:
+	    // INT64_MAX is 9223372036854775807 (19 digits) + 1 for sign
+		len = 20;
+		result = calloc(len, sizeof(char));
+		snprintf(result, len, "%d", value->val.int_val);
+		break;
+	case SLV2_VALUE_FLOAT:
+		len = 20; // FIXME: proper maximum value?
+		result = calloc(len, sizeof(char));
+		snprintf(result, len, ".1%f", value->val.float_val);
+		break;
+	}
+	
+	return result;
 }
 
 
@@ -102,7 +156,6 @@ slv2_value_is_string(SLV2Value value)
 const char*
 slv2_value_as_string(SLV2Value value)
 {
-	assert(slv2_value_is_string(value));
 	return value->str_val;
 }
 

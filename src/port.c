@@ -33,7 +33,7 @@
 SLV2Port
 slv2_port_new(uint32_t index, const char* symbol/*, const char* node_id*/)
 {
-	struct _Port* port = malloc(sizeof(struct _Port));
+	struct _SLV2Port* port = malloc(sizeof(struct _SLV2Port));
 	port->index = index;
 	port->symbol = strdup(symbol);
 	//port->node_id = strdup(node_id);
@@ -55,7 +55,7 @@ slv2_port_free(SLV2Port port)
 SLV2Port
 slv2_port_duplicate(SLV2Port port)
 {
-	struct _Port* result = malloc(sizeof(struct _Port));
+	SLV2Port result = malloc(sizeof(struct _SLV2Port));
 	result->index = port->index;
 	result->symbol = strdup(port->symbol);
 	//result->node_id = strdup(port->node_id);

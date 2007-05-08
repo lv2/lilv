@@ -19,6 +19,7 @@
 #ifndef __SLV2_PLUGINS_H__
 #define __SLV2_PLUGINS_H__
 
+#include <slv2/types.h>
 #include <slv2/plugin.h>
 
 #ifdef __cplusplus
@@ -33,9 +34,6 @@ extern "C" {
  *
  * @{
  */
-
-
-typedef void* SLV2Plugins;
 
 
 /** Free a plugin list.
