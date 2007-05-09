@@ -1,4 +1,0 @@
-- Rewrite all the realloc nightmare stuff
-
-<remon> drobilla: slv2_port_get_default_value checks if a property is returned,and creates the result. But it calls slv2_property_free() even if the property == 0 !!
-<remon> drobilla: (which causes a segfault)

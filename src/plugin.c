@@ -433,20 +433,15 @@ bool
 slv2_plugin_has_latency(SLV2Plugin p)
 {
     const char* const query = 
-		"ASK WHERE {\n"
-		"	<>      lv2:port     ?port .\n"
+		"SELECT DISTINCT ?index WHERE {\n"
+		"	<> lv2:port     ?port .\n"
 		"	?port   lv2:portHint lv2:reportsLatency ;\n"
 		"           lv2:index    ?index .\n"
 		"}\n";
 
-	librdf_query_results* results = slv2_plugin_query(p, query);
-	assert(librdf_query_results_is_boolean(results));
+	SLV2Values result = slv2_plugin_simple_query(p, query, 0);
 	
-	bool ret = (librdf_query_results_get_boolean(results) > 0);
-	
-	librdf_free_query_results(results);
-
-	return ret;
+	return (slv2_values_size(result) > 0);
 }
 
 

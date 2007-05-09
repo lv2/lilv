@@ -1,4 +1,4 @@
-AM_CFLAGS = -std=c99 -I$(top_srcdir)/include -I$(top_srcdir) @REDLAND_CFLAGS@ -DLIBSLV2_SOURCE -DLV2_TTL_PATH=\"@lv2ttlpath@\"
+AM_CFLAGS = -std=c99 -I$(top_srcdir)/include -I$(top_srcdir) @REDLAND_CFLAGS@ -DLIBSLV2_SOURCE
 AM_LDFLAGS = `pkg-config --libs rasqal`
 
 lib_LTLIBRARIES = libslv2.la

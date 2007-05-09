@@ -1,5 +1,21 @@
-SUBDIRS = src slv2 utils hosts data doc
+AUTOMAKE_OPTIONS = foreign
+
+if HAVE_DOXYGEN
+DOC_DIR = doc
+dist-check-doxygen:
+else
+DOC_DIR =
+dist-check-doxygen:
+	@echo
+	@echo ' ******' You need doxygen installed to make dist.' ******'
+	@echo
+	@false
+endif
+
+SUBDIRS      = src slv2 utils hosts data $(DOC_DIR)
+DIST_SUBDIRS = src slv2 utils hosts data doc
 
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = libslv2.pc
 
+dist-hook: dist-check-doxygen

@@ -1,10 +1,26 @@
 AC_PREREQ(2.59)
-AC_INIT([libslv2],[0.0.1],[dave@drobilla.net])
+
+# SLV2 interface version (libtool shared library versioning)
+#
+# current = incremented whenever the public slv2 API is changed 
+# revision = incremented when the slv2 implementation is changed
+# age = current libjack is both source and binary compatible with
+#       libjack interfaces current,current-1,...,current-age
+#
+# See libtool documentation for detailed documentation
+SLV2_API_CURRENT=0
+SLV2_API_REVISION=0
+SLV2_API_AGE=0
+
+AC_INIT([slv2],[0.0.1],[dave@drobilla.net])
 AC_CONFIG_SRCDIR([src/plugin.c])
 AC_CONFIG_SRCDIR([slv2/plugin.h])
 AC_CONFIG_SRCDIR([utils/lv2_list.c])
 AC_CONFIG_HEADER([config.h])
 AM_INIT_AUTOMAKE
+
+SLV2_SO_VERSION=${SLV2_API_CURRENT}:${SLV2_API_REVISION}:${SLV2_API_AGE}
+AC_SUBST(SLV2_SO_VERSION)
 
 # Checks for compiler
 AC_PROG_CC
@@ -79,25 +95,12 @@ else
 fi
 AM_CONDITIONAL(WITH_JACK, [test "$build_jack" = "yes"])
 
-# Check plugin install directory
-#AC_MSG_CHECKING([where to install LV2 plugins])
-#AC_ARG_WITH(lv2-dir,
-#	AS_HELP_STRING([--with-lv2-dir=DIR],
-#		[directory that LV2 plugins should be installed in ($libdir/lv2)]),
-#	[lv2dir=$withval], [lv2dir=$libdir/lv2])
-#AC_MSG_RESULT($lv2dir)
-#AC_SUBST(lv2dir)
-
-
-# Check ontology install directory
-AC_MSG_CHECKING([where to install lv2.ttl])
-AC_ARG_WITH(lv2-ttl-dir,
-	AS_HELP_STRING([--with-lv2-ttl-dir=DIR],
-		[directory where lv2.ttl should be installed ($datadir/lv2)]),
-	[lv2ttldir=$withval], [lv2ttldir=$datadir/lv2])
-AC_MSG_RESULT($lv2ttldir)
-lv2ttlpath="$lv2ttldir/lv2.ttl"
-AC_SUBST(lv2ttlpath)
+# Doxygen is required to make dist
+AC_CHECK_PROG(HAVE_DOXYGEN, doxygen, true, false)
+if test $HAVE_DOXYGEN = "false"; then
+	AC_MSG_WARN([Doxygen not found, documentation will not be built])
+fi
+AM_CONDITIONAL(HAVE_DOXYGEN, $HAVE_DOXYGEN)
 
 # Write output files
 AC_CONFIG_FILES([Makefile])
@@ -117,7 +120,6 @@ AC_MSG_RESULT([*****************************************************************
 AC_MSG_RESULT([SLV2 build configuration:])
 AC_MSG_RESULT([])
 AC_MSG_RESULT([Building JACK clients:     $build_jack])
-AC_MSG_RESULT([Ontology install location: $lv2ttlpath])
 AC_MSG_RESULT([**********************************************************************])
 AC_MSG_RESULT([])
 

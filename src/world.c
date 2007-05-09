@@ -294,11 +294,20 @@ slv2_world_load_all(SLV2World world)
 	char* lv2_path = getenv("LV2_PATH");
 
 	/* 1. Read LV2 ontology into model */
-	librdf_uri* ontology_uri = librdf_new_uri(world->world,
-			(const unsigned char*)"file://" LV2_TTL_PATH);
-	librdf_parser_parse_into_model(world->parser, ontology_uri, NULL, world->model);
-	librdf_free_uri(ontology_uri);
+	const char* ontology_path = "/usr/local/share/slv2/lv2.ttl";
+	FILE* ontology = fopen(ontology_path, "r");
+	if (ontology == NULL) {
+		ontology_path = "/usr/share/slv2/lv2.ttl";
+		ontology = fopen(ontology_path, "r");
+	}
 
+	if (ontology) {
+		fclose(ontology);
+		librdf_uri* ontology_uri = librdf_new_uri_from_filename(world->world,
+				ontology_path);
+		librdf_parser_parse_into_model(world->parser, ontology_uri, NULL, world->model);
+		librdf_free_uri(ontology_uri);
+	}
 
 	/* 2. Read all manifest files into model */
 

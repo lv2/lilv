@@ -32,7 +32,7 @@ PROJECT_NUMBER         = @PACKAGE_VERSION@
 # If a relative path is entered, it will be relative to the location 
 # where doxygen was started. If left blank the current directory will be used.
 
-OUTPUT_DIRECTORY       = @top_srcdir@/doc
+OUTPUT_DIRECTORY       = @abs_top_srcdir@/doc
 
 # If the CREATE_SUBDIRS tag is set to YES, then doxygen will create 
 # 4096 sub-directories (in 2 levels) under the output directory of each output 
@@ -419,19 +419,19 @@ WARN_LOGFILE           =
 # directories like "/usr/src/myproject". Separate the files or directories 
 # with spaces.
 
-INPUT = @top_srcdir@/doc/mainpage.dox \
-		@top_srcdir@/slv2/lv2.h \
-		@top_srcdir@/slv2/types.h \
-		@top_srcdir@/slv2/util.h \
-		@top_srcdir@/slv2/value.h \
-		@top_srcdir@/slv2/values.h \
-		@top_srcdir@/slv2/world.h \
-        @top_srcdir@/slv2/plugin.h \
-        @top_srcdir@/slv2/pluginclass.h \
-        @top_srcdir@/slv2/pluginclasses.h \
-        @top_srcdir@/slv2/plugininstance.h \
-        @top_srcdir@/slv2/plugins.h \
-        @top_srcdir@/slv2/port.h
+INPUT = @abs_top_srcdir@/doc/mainpage.dox \
+		@abs_top_srcdir@/slv2/lv2.h \
+		@abs_top_srcdir@/slv2/types.h \
+		@abs_top_srcdir@/slv2/util.h \
+		@abs_top_srcdir@/slv2/value.h \
+		@abs_top_srcdir@/slv2/values.h \
+		@abs_top_srcdir@/slv2/world.h \
+        @abs_top_srcdir@/slv2/plugin.h \
+        @abs_top_srcdir@/slv2/pluginclass.h \
+        @abs_top_srcdir@/slv2/pluginclasses.h \
+        @abs_top_srcdir@/slv2/plugininstance.h \
+        @abs_top_srcdir@/slv2/plugins.h \
+        @abs_top_srcdir@/slv2/port.h
 
 
 # If the value of the INPUT tag contains directories, you can use the 
