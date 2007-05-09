@@ -39,7 +39,7 @@
    doap:shortdesc "An audio processing plugin specification" ;
    doap:programming-language "C" ;
    doap:release [
-       doap:revision "1.0beta2" ;
+       doap:revision "1.0beta3" ;
        doap:created "2007-05-08"
    ] ;
    doap:maintainer [

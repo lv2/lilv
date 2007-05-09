@@ -36,7 +36,7 @@ extern "C" {
 
 /** @file lv2.h
  *
- * Revision: 1.0beta1
+ * Revision: 1.0beta3
  *
  * == Overview ==
  *
