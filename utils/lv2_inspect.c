@@ -126,7 +126,7 @@ print_plugin(SLV2Plugin p)
 			slv2_value_free(binary);
 		}
 	}
-	slv2_value_free(gui);
+	slv2_values_free(gui);
 
 	//SLV2Values gui = slv2_plugin_get_value_for_subject(p,
 	//		"<http://ll-plugins.nongnu.org/lv2/ext/gtk2gui#gui>");
