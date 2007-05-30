@@ -123,7 +123,7 @@ print_plugin(SLV2Plugin p)
 			if (slv2_values_size(binary) > 0)
 				printf("\t\t\tBinary: %s\n", slv2_value_as_uri(slv2_values_get_at(binary, 0)));
 	
-			slv2_value_free(binary);
+			slv2_values_free(binary);
 		}
 	}
 	slv2_values_free(gui);
