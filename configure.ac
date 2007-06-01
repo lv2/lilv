@@ -4,15 +4,15 @@ AC_PREREQ(2.59)
 #
 # current = incremented whenever the public slv2 API is changed 
 # revision = incremented when the slv2 implementation is changed
-# age = current libjack is both source and binary compatible with
-#       libjack interfaces current,current-1,...,current-age
+# age = current library is both source and binary compatible with
+#       interfaces current,current-1,...,current-age
 #
 # See libtool documentation for detailed documentation
 SLV2_API_CURRENT=0
-SLV2_API_REVISION=0
+SLV2_API_REVISION=1
 SLV2_API_AGE=0
 
-AC_INIT([slv2],[0.0.1],[dave@drobilla.net])
+AC_INIT([slv2],[0.0.2pre],[dave@drobilla.net])
 AC_CONFIG_SRCDIR([src/plugin.c])
 AC_CONFIG_SRCDIR([slv2/plugin.h])
 AC_CONFIG_SRCDIR([utils/lv2_list.c])

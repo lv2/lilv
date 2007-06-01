@@ -347,7 +347,7 @@ slv2_plugin_get_value(SLV2Plugin  p,
                       const char* predicate)
 {
 	char* query = NULL;
-
+	
 	/* Hack around broken RASQAL, full URI predicates don't work :/ */
 
 	if (predicate_type == SLV2_URI) {
@@ -425,6 +425,9 @@ slv2_plugin_get_hints(SLV2Plugin p)
 uint32_t
 slv2_plugin_get_num_ports(SLV2Plugin p)
 {
+	if (!p->rdf)
+		slv2_plugin_load(p);
+	
 	return raptor_sequence_size(p->ports);
 }
 
@@ -514,6 +517,9 @@ SLV2Port
 slv2_plugin_get_port_by_index(SLV2Plugin p,
                               uint32_t   index)
 {
+	if (!p->rdf)
+		slv2_plugin_load(p);
+	
 	return raptor_sequence_get_at(p->ports, (int)index);
 }
 
@@ -522,6 +528,9 @@ SLV2Port
 slv2_plugin_get_port_by_symbol(SLV2Plugin  p,
                                const char* symbol)
 {
+	if (!p->rdf)
+		slv2_plugin_load(p);
+	
 	// FIXME: sort plugins and do a binary search
 	for (int i=0; i < raptor_sequence_size(p->ports); ++i) {
 		SLV2Port port = raptor_sequence_get_at(p->ports, i);
