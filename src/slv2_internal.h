@@ -134,6 +134,8 @@ struct _SLV2World {
 	librdf_parser*    parser;
 	SLV2PluginClasses plugin_classes;
 	SLV2Plugins       plugins;
+	librdf_node*      lv2_plugin_node;
+	librdf_node*      rdf_a_node;
 };
 
 /** Load all bundles found in \a search_path.
