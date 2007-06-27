@@ -50,6 +50,17 @@ slv2_value_new(SLV2ValueType type, const char* str)
 }
 
 
+SLV2Value
+slv2_value_duplicate(SLV2Value val)
+{
+	SLV2Value result = (SLV2Value)malloc(sizeof(struct _SLV2Value));
+	result->str_val = strdup(val->str_val);
+	result->type = val->type;
+	result->val = val->val;
+	return result;
+}
+
+
 void
 slv2_value_free(SLV2Value val)
 {

@@ -37,6 +37,12 @@ void
 slv2_value_free(SLV2Value val);
 
 
+/** Duplicate an SLV2Value.
+ */
+SLV2Value
+slv2_value_duplicate(SLV2Value val);
+
+
 /** Return whether two values are equivalent.
  */
 bool
