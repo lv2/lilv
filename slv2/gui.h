@@ -46,13 +46,8 @@ extern "C" {
  *
  * Time = O(1)
  */
-static const char*
-slv2_gui_type_get_uri(SLV2GUIType type)
-{
-	// Only one for now...
-	assert(type == SLV2_GTK2_GUI);
-	return "http://ll-plugins.nongnu.org/lv2/ext/gtk2gui";
-}
+const char*
+slv2_gui_type_get_uri(SLV2GUIType type);
 
 
 /** @} */
