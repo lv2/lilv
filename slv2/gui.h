@@ -46,7 +46,7 @@ extern "C" {
  *
  * Time = O(1)
  */
-const char*
+static const char*
 slv2_gui_type_get_uri(SLV2GUIType type)
 {
 	// Only one for now...
