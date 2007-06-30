@@ -45,7 +45,7 @@ slv2_plugin_gui_instantiate(SLV2Plugin                 plugin,
 		host_features[0] = NULL;
 	}
 	
-	const char* const lib_uri = slv2_value_as_uri(slv2_plugin_gui_get_library_uri(plugin, gui));
+	const char* const lib_uri = slv2_value_as_uri(slv2_plugin_get_gui_library_uri(plugin, gui));
 	const char* const lib_path = slv2_uri_to_path(lib_uri);
 	
 	if (!lib_path)

@@ -8,9 +8,9 @@ AC_PREREQ(2.59)
 #       interfaces current,current-1,...,current-age
 #
 # See libtool documentation for detailed documentation
-SLV2_API_CURRENT=0
-SLV2_API_REVISION=1
-SLV2_API_AGE=0
+SLV2_API_CURRENT=1
+SLV2_API_REVISION=0
+SLV2_API_AGE=1
 
 AC_INIT([slv2],[0.0.2pre],[dave@drobilla.net])
 AC_CONFIG_SRCDIR([src/plugin.c])

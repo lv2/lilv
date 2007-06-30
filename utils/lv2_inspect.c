@@ -113,9 +113,12 @@ print_plugin(SLV2Plugin p)
 	if (slv2_values_size(gui) > 0) {
 		printf("\tGUI:\n");
 		for (unsigned i=0; i < slv2_values_size(gui); ++i) {
-			printf("\t\t%s\n", slv2_value_as_string(slv2_values_get_at(gui, i)));
-			SLV2Value binary = slv2_plugin_gui_get_library_uri(p, 
-									   slv2_values_get_at(gui, i));
+			printf("\t\t%s\n", slv2_value_as_uri(slv2_values_get_at(gui, i)));
+			
+			SLV2Value binary = slv2_plugin_get_gui_library_uri(p, slv2_values_get_at(gui, i));
+			
+			printf("\t\t\tType: %s\n", slv2_gui_type_get_uri(slv2_value_as_gui_type(
+						slv2_values_get_at(gui, i))));
 	
 			if (binary)
 			  printf("\t\t\tBinary: %s\n", slv2_value_as_uri(binary));

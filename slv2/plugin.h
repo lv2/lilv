@@ -338,12 +338,12 @@ slv2_plugin_get_guis(SLV2Plugin plugin);
 /** Get the URI for a GUI library.
  *
  * \param plugin The plugin that the GUI is for.
- * \param gui    A GUI identifier as returned by slv2_plugin_get_guis().
+ * \param gui    A GUI identifier as returned by slv2_plugin_get_guis() (with type SLV2_VALUE_GUI).
  *
  * Time = Query
  */
 SLV2Value
-slv2_plugin_gui_get_library_uri(SLV2Plugin plugin, 
+slv2_plugin_get_gui_library_uri(SLV2Plugin plugin, 
                                 SLV2Value  gui);
 
 

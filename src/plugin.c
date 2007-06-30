@@ -377,7 +377,7 @@ slv2_plugin_get_value_for_subject(SLV2Plugin  p,
                                   SLV2URIType predicate_type,
                                   const char* predicate)
 {
-	if (subject->type != SLV2_VALUE_URI) {
+	if ( ! slv2_value_is_uri(subject)) {
 		fprintf(stderr, "slv2_plugin_get_value_for_subject error: "
 				"passed non-URI subject\n");
 		return NULL;
@@ -548,15 +548,25 @@ slv2_plugin_get_guis(SLV2Plugin plugin)
 	if (!plugin->rdf)
 		slv2_plugin_load(plugin);
 
-	return slv2_plugin_get_value(plugin, SLV2_URI, 
+	SLV2Values result = slv2_plugin_get_value(plugin, SLV2_URI, 
 			"http://ll-plugins.nongnu.org/lv2/ext/gtk2gui#gui");
+
+	for (int i=0; i < raptor_sequence_size(result); ++i) {
+		SLV2Value val = (SLV2Value)raptor_sequence_get_at(result, i);
+		val->type = SLV2_VALUE_GUI;
+		val->val.gui_type_val = SLV2_GTK2_GUI;
+	}
+
+	return result;
 }
 
 
 SLV2Value
-slv2_plugin_gui_get_library_uri(SLV2Plugin plugin, 
+slv2_plugin_get_gui_library_uri(SLV2Plugin plugin, 
                                 SLV2Value  gui)
 {
+	assert(gui->type == SLV2_VALUE_GUI);
+	
 	if (!plugin->rdf)
 		slv2_plugin_load(plugin);
 

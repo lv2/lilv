@@ -161,6 +161,14 @@ slv2_world_load_path(SLV2World   world,
                      const char* search_path);
 
 
+/* ********* GUI ********* */
+
+struct _SLV2GUI {
+	SLV2GUIType type;
+	char*       uri;
+};
+
+
 
 /* ********* Value ********* */
 
@@ -169,19 +177,22 @@ typedef enum _SLV2ValueType {
 	SLV2_VALUE_URI,
 	SLV2_VALUE_STRING,
 	SLV2_VALUE_INT,
-	SLV2_VALUE_FLOAT
+	SLV2_VALUE_FLOAT,
+	SLV2_VALUE_GUI
 } SLV2ValueType;
 
 struct _SLV2Value {
 	SLV2ValueType type;
 	char*         str_val; ///< always present
 	union {
-		int       int_val;
-		float     float_val;
+		int         int_val;
+		float       float_val;
+		SLV2GUIType gui_type_val;
 	} val;
 };
 
 SLV2Value slv2_value_new(SLV2ValueType type, const char* val);
+
 
 
 #ifdef __cplusplus
