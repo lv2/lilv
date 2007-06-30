@@ -541,3 +541,42 @@ slv2_plugin_get_port_by_symbol(SLV2Plugin  p,
 	return NULL;
 }
 
+
+SLV2Values
+slv2_plugin_get_guis(SLV2Plugin plugin)
+{
+	if (!plugin->rdf)
+		slv2_plugin_load(plugin);
+
+	return slv2_plugin_get_value(plugin, SLV2_URI, 
+			"http://ll-plugins.nongnu.org/lv2/ext/gtk2gui#gui");
+}
+
+
+SLV2Value
+slv2_plugin_gui_get_library_uri(SLV2Plugin plugin, 
+                                SLV2Value  gui)
+{
+	if (!plugin->rdf)
+		slv2_plugin_load(plugin);
+
+	SLV2Values values =  slv2_plugin_get_value_for_subject(plugin, gui, SLV2_URI,
+			"http://ll-plugins.nongnu.org/lv2/ext/gtk2gui#binary");
+
+	if (!values || slv2_values_size(values) == 0) {
+		slv2_values_free(values);
+		return NULL;
+	}
+
+	SLV2Value value = slv2_values_get_at(values, 0);
+	if (!slv2_value_is_uri(value)) {
+		slv2_values_free(values);
+		return NULL;
+	}
+
+	value = slv2_value_duplicate(value);
+	slv2_values_free(values);
+
+	return value;
+}
+

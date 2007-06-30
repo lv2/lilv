@@ -29,6 +29,7 @@ extern "C" {
 #include <slv2/plugin.h>
 #include <slv2/port.h>
 #include <slv2/plugins.h>
+#include <slv2/pluginguiinstance.h>
 #include <slv2/plugininstance.h>
 #include <slv2/value.h>
 #include <slv2/values.h>
