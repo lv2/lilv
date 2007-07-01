@@ -99,11 +99,11 @@ struct _InstanceImpl {
 
 
 /* ********* GUI Instance ********* */
-struct _GUIInstanceImpl {
-  void*                   lib_handle;
-  const LV2UI_Descriptor* lv2ui_descriptor;
-  LV2UI_Handle            lv2ui_handle;
-  void*                   widget;
+struct _SLV2GUIInstanceImpl {
+	void*                   lib_handle;
+	const LV2UI_Descriptor* lv2ui_descriptor;
+	LV2UI_Handle            lv2ui_handle;
+	void*                   widget;
 };
 
 

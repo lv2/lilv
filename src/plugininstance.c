@@ -67,7 +67,7 @@ slv2_plugin_instantiate(SLV2Plugin               plugin,
 		// Search for plugin by URI
 		
 		// FIXME: Kluge to get bundle path (containing directory of binary)
-		char* bundle_path = slv2_uri_to_path(strdup(slv2_plugin_get_bundle_uri(plugin)));
+		const char* bundle_path = slv2_uri_to_path(slv2_plugin_get_bundle_uri(plugin));
 		printf("Bundle path: %s\n", bundle_path);
 		
 		for (uint32_t i=0; 1; ++i) {
@@ -97,8 +97,6 @@ slv2_plugin_instantiate(SLV2Plugin               plugin,
 				break;
 			}
 		}
-
-		free(bundle_path);
 	}
 
 	assert(result);

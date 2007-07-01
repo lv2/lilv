@@ -1,6 +1,7 @@
 /* SLV2
  * Copyright (C) 2007 Dave Robillard <http://drobilla.net>
- *  
+ * Author: Lars Luthman
+ *
  * This library is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
  * Software Foundation; either version 2 of the License, or (at your option)
@@ -31,13 +32,18 @@
 
 
 SLV2GUIInstance
-slv2_plugin_gui_instantiate(SLV2Plugin                 plugin,
-			    SLV2Value                  gui,
-			    LV2UI_Set_Control_Function control_function,
-			    LV2UI_Controller           controller,
-			    const LV2_Host_Feature**   host_features)
+slv2_plugin_gtk2_gui_instantiate(SLV2Plugin                 plugin,
+                                 SLV2Value                  gui,
+                                 LV2UI_Set_Control_Function control_function,
+                                 LV2UI_Controller           controller,
+                                 const LV2_Host_Feature**   host_features)
 {
-        struct _GUIInstance* result = NULL;
+	assert(gui->type == SLV2_VALUE_GUI);
+
+	if (gui->val.gui_type_val != SLV2_GTK2_GUI)
+		return NULL;
+
+	struct _SLV2GUIInstance* result = NULL;
 	
 	bool local_host_features = (host_features == NULL);
 	if (local_host_features) {
@@ -57,9 +63,9 @@ slv2_plugin_gui_instantiate(SLV2Plugin                 plugin,
 		fprintf(stderr, "Unable to open GUI library %s (%s)\n", lib_path, dlerror());
 		return NULL;
 	}
-
+	
 	LV2UI_DescriptorFunction df = dlsym(lib, "lv2ui_descriptor");
-
+	
 	if (!df) {
 		fprintf(stderr, "Could not find symbol 'lv2ui_descriptor', "
 				"%s is not a LV2 plugin GUI.\n", lib_path);
@@ -68,11 +74,8 @@ slv2_plugin_gui_instantiate(SLV2Plugin                 plugin,
 	} else {
 		// Search for plugin by URI
 		
-		// FIXME: Kluge to get bundle path (containing directory of binary)
-		char* bundle_path = strdup(plugin->binary_uri);
-		char* const bundle_path_end = strrchr(bundle_path, '/');
-		if (bundle_path_end)
-		*(bundle_path_end+1) = '\0';
+		// FIXME: Bundle in plugin GUI only, boo
+		const char* bundle_path = slv2_uri_to_path(slv2_plugin_get_bundle_uri(plugin));
 		printf("GUI bundle path: %s\n", bundle_path);
 		
 		for (uint32_t i=0; 1; ++i) {
@@ -92,23 +95,21 @@ slv2_plugin_gui_instantiate(SLV2Plugin                 plugin,
 				assert(ld->instantiate);
 
 				// Create SLV2GUIInstance to return
-				result = malloc(sizeof(struct _GUIInstance));
-				struct _GUIInstanceImpl* impl = malloc(sizeof(struct _GUIInstanceImpl));
+				result = malloc(sizeof(struct _SLV2GUIInstance));
+				struct _SLV2GUIInstanceImpl* impl = malloc(sizeof(struct _SLV2GUIInstanceImpl));
 				impl->lv2ui_descriptor = ld;
 				impl->lv2ui_handle = ld->instantiate(ld, 
-								     slv2_plugin_get_uri(plugin),
-								     (char*)bundle_path, 
-								     control_function,
-								     controller,
-								     (struct _GtkWidget**)&impl->widget,
-								     host_features);
+						slv2_plugin_get_uri(plugin),
+						(char*)bundle_path, 
+						control_function,
+						controller,
+						(struct _GtkWidget**)&impl->widget,
+						host_features);
 				impl->lib_handle = lib;
 				result->pimpl = impl;
 				break;
 			}
 		}
-
-		free(bundle_path);
 	}
 
 	assert(result);
@@ -124,8 +125,8 @@ slv2_plugin_gui_instantiate(SLV2Plugin                 plugin,
 	// Failed to create a widget, but still got a handle - this means that
 	// the plugin is buggy
 	if (result->pimpl->widget == NULL) {
-	  slv2_gui_instance_free(result);
-	  return NULL;
+		slv2_gtk2_gui_instance_free(result);
+		return NULL;
 	}
 
 	if (local_host_features)
@@ -136,9 +137,9 @@ slv2_plugin_gui_instantiate(SLV2Plugin                 plugin,
 
 
 void
-slv2_gui_instance_free(SLV2GUIInstance instance)
+slv2_gtk2_gui_instance_free(SLV2GUIInstance instance)
 {
-	struct _GUIInstance* i = (struct _GUIInstance*)instance;
+	struct _SLV2GUIInstance* i = (struct _SLV2GUIInstance*)instance;
 	i->pimpl->lv2ui_descriptor->cleanup(i->pimpl->lv2ui_handle);
 	i->pimpl->lv2ui_descriptor = NULL;
 	dlclose(i->pimpl->lib_handle);
@@ -151,18 +152,18 @@ slv2_gui_instance_free(SLV2GUIInstance instance)
 
 struct _GtkWidget*
 slv2_gui_instance_get_widget(SLV2GUIInstance instance) {
-  return instance->pimpl->widget;
+	return instance->pimpl->widget;
 }
 
 
 const LV2UI_Descriptor*
 slv2_gui_instance_get_descriptor(SLV2GUIInstance instance) {
-  return instance->pimpl->lv2ui_descriptor;
+	return instance->pimpl->lv2ui_descriptor;
 }
 
 
 LV2_Handle
 slv2_gui_instance_get_handle(SLV2GUIInstance instance) {
-  return instance->pimpl->lv2ui_handle;
+	return instance->pimpl->lv2ui_handle;
 }
 

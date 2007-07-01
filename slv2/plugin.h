@@ -371,20 +371,6 @@ slv2_plugin_get_gui_library_uri(SLV2Plugin plugin,
                                 SLV2Value  gui);
 
 
-/** Load and instantiate a plugin GUI.
- *
- * The type returned depends on the type of the GUI.  For SLV2_GTK2_GUI, the
- * return value must be cast to LV2UI_Handle.
- *
- * NULL returned on error.
- *
- * Time = Query + O(# of GUIs in GUI shared library)
- */
-void*
-slv2_plugin_load_gui(SLV2Plugin plugin,
-                     SLV2Value  gui);
-
-
 /** @} */
 
 #ifdef __cplusplus

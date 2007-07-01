@@ -1,5 +1,6 @@
 /* SLV2
  * Copyright (C) 2007 Dave Robillard <http://drobilla.net>
+ * Author: Lars Luthman
  *  
  * This library is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -38,7 +39,7 @@ extern "C" {
  */
 
 
-typedef struct _GUIInstanceImpl* SLV2GUIInstanceImpl;
+typedef struct _SLV2GUIInstanceImpl* SLV2GUIInstanceImpl;
 
   
 struct _GtkWidget;
@@ -49,8 +50,8 @@ struct _GtkWidget;
  * All details are in hidden in the pimpl member to avoid making the
  * implementation a part of the ABI.
  */
-typedef struct _GUIInstance {
-	SLV2GUIInstanceImpl      pimpl; ///< Private implementation
+typedef struct _SLV2GUIInstance {
+	SLV2GUIInstanceImpl pimpl; ///< Private implementation
 }* SLV2GUIInstance;
 
 
@@ -71,11 +72,11 @@ typedef struct _GUIInstance {
  * \return NULL if instantiation failed.
  */
 SLV2GUIInstance
-slv2_plugin_gui_instantiate(SLV2Plugin                 plugin,
-			    SLV2Value                  gui,
-			    LV2UI_Set_Control_Function control_function,
-			    LV2UI_Controller           controller,
-			    const LV2_Host_Feature**   host_features);
+slv2_plugin_gtk2_gui_instantiate(SLV2Plugin                 plugin,
+                                 SLV2Value                  gui,
+                                 LV2UI_Set_Control_Function control_function,
+                                 LV2UI_Controller           controller,
+                                 const LV2_Host_Feature**   host_features);
 
 
 /** Free a plugin GUI instance.
@@ -83,13 +84,13 @@ slv2_plugin_gui_instantiate(SLV2Plugin                 plugin,
  * \a instance is invalid after this call.
  */
 void
-slv2_gui_instance_free(SLV2GUIInstance instance);
+slv2_gtk2_gui_instance_free(SLV2GUIInstance instance);
 
 
 /** Get the GTK+ 2.0 widget for the GUI instance.
  */
 struct _GtkWidget*
-slv2_gui_instance_get_widget(SLV2GUIInstance instance);
+slv2_gtk2_gui_instance_get_widget(SLV2GUIInstance instance);
 
 
 /** Get the LV2UI_Descriptor of the plugin GUI instance.
@@ -100,7 +101,7 @@ slv2_gui_instance_get_widget(SLV2GUIInstance instance);
  * The returned descriptor is shared and must not be deleted.
  */
 const LV2UI_Descriptor*
-slv2_gui_instance_get_descriptor(SLV2GUIInstance instance);
+slv2_gtk2_gui_instance_get_descriptor(SLV2GUIInstance instance);
 
 
 /** Get the LV2UI_Handle of the plugin GUI instance.
@@ -111,7 +112,7 @@ slv2_gui_instance_get_descriptor(SLV2GUIInstance instance);
  * The returned handle is shared and must not be deleted.
  */
 LV2_Handle
-slv2_gui_instance_get_handle(SLV2GUIInstance instance);
+slv2_gtk2_gui_instance_get_handle(SLV2GUIInstance instance);
 
 
 /** @} */
