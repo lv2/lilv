@@ -59,8 +59,8 @@ void     slv2_port_free(SLV2Port port);
 struct _SLV2Plugin {
 	struct _SLV2World*   world;
 	librdf_uri*      plugin_uri;
-//	char*            bundle_url; ///< Bundle directory plugin was loaded from
-	char*            binary_uri; ///< lv2:binary
+	librdf_uri*      bundle_uri; ///< Bundle directory plugin was loaded from
+	librdf_uri*      binary_uri; ///< lv2:binary
 	SLV2PluginClass  plugin_class;
 	raptor_sequence* data_uris;  ///< rdfs::seeAlso
 	raptor_sequence* ports;
@@ -68,7 +68,7 @@ struct _SLV2Plugin {
 	librdf_model*    rdf;
 };
 
-SLV2Plugin slv2_plugin_new(SLV2World world, librdf_uri* uri, const char* binary_uri);
+SLV2Plugin slv2_plugin_new(SLV2World world, librdf_uri* uri, librdf_uri* bundle_uri, librdf_uri* binary_uri);
 void       slv2_plugin_load(SLV2Plugin p);
 void       slv2_plugin_free(SLV2Plugin plugin);
 

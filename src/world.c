@@ -143,6 +143,7 @@ slv2_world_load_bundle(SLV2World world, const char* bundle_uri_str)
 	librdf_parser_parse_into_model(world->parser, manifest_uri, NULL, 
 			manifest_model);
 
+	/* Query statement: ?plugin a lv2:Plugin */
 	librdf_statement* q = librdf_new_statement_from_nodes(world->world,
 			NULL, world->rdf_a_node, world->lv2_plugin_node);
 
@@ -151,13 +152,22 @@ slv2_world_load_bundle(SLV2World world, const char* bundle_uri_str)
 	while (!librdf_stream_end(results)) {
 		librdf_statement* s = librdf_stream_get_object(results);
 
-		librdf_node* plugin_node = librdf_statement_get_subject(s);
+		librdf_node* plugin_node = librdf_new_node_from_node(librdf_statement_get_subject(s));
 
+		/* Add ?plugin rdfs:seeAlso "datafile.ttl" */
 		librdf_node* subject = plugin_node;
 		librdf_node* predicate = librdf_new_node_from_uri_string(world->world, 
 				(unsigned char*)"http://www.w3.org/2000/01/rdf-schema#seeAlso");
 		librdf_node* object = librdf_new_node_from_uri(world->world,
 				manifest_uri);
+
+		librdf_model_add(world->model, subject, predicate, object);
+		
+		/* Add ?plugin slv2:bundleURI "file://some/path" */
+		subject = librdf_new_node_from_node(plugin_node);
+		predicate = librdf_new_node_from_uri_string(world->world, 
+				(unsigned char*)"http://drobilla.net/ns/slv2#bundleURI");
+		object = librdf_new_node_from_uri(world->world, bundle_uri);
 
 		librdf_model_add(world->model, subject, predicate, object);
 
@@ -172,6 +182,7 @@ slv2_world_load_bundle(SLV2World world, const char* bundle_uri_str)
 	librdf_free_stream(manifest_stream);
 
 	librdf_free_model(manifest_model);
+	free(q);
 	librdf_free_storage(manifest_storage);
 	librdf_free_uri(manifest_uri);
 	librdf_free_uri(bundle_uri);
@@ -345,8 +356,9 @@ slv2_world_load_all(SLV2World world)
 	unsigned char* query_string = (unsigned char*)
     	"PREFIX : <http://lv2plug.in/ontology#>\n"
 		"PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>\n"
-		"SELECT DISTINCT ?plugin ?data ?binary\n"
-		"WHERE { ?plugin a :Plugin; rdfs:seeAlso ?data\n"
+		"PREFIX slv2: <http://drobilla.net/ns/slv2#>\n"
+		"SELECT DISTINCT ?plugin ?data ?bundle ?binary\n"
+		"WHERE { ?plugin a :Plugin; slv2:bundleURI ?bundle; rdfs:seeAlso ?data\n"
 		"OPTIONAL { ?plugin :binary ?binary } }\n"
 		"ORDER BY ?plugin\n";
 	
@@ -361,7 +373,9 @@ slv2_world_load_all(SLV2World world)
 		librdf_uri*  plugin_uri  = librdf_node_get_uri(plugin_node);
 		librdf_node* data_node   = librdf_query_results_get_binding_value(results, 1);
 		librdf_uri*  data_uri    = librdf_node_get_uri(data_node);
-		librdf_node* binary_node = librdf_query_results_get_binding_value(results, 2);
+		librdf_node* bundle_node = librdf_query_results_get_binding_value(results, 2);
+		librdf_uri*  bundle_uri  = librdf_node_get_uri(bundle_node);
+		librdf_node* binary_node = librdf_query_results_get_binding_value(results, 3);
 		librdf_uri*  binary_uri  = librdf_node_get_uri(binary_node);
 		
 		SLV2Plugin plugin = slv2_plugins_get_by_uri(world->plugins,
@@ -369,8 +383,7 @@ slv2_world_load_all(SLV2World world)
 		
 		// Create a new SLV2Plugin
 		if (!plugin) {
-			plugin = slv2_plugin_new(world, plugin_uri,
-					(const char*)librdf_uri_as_string(binary_uri));
+			plugin = slv2_plugin_new(world, plugin_uri, bundle_uri, binary_uri);
 			raptor_sequence_push(world->plugins, plugin);
 		}
 		
@@ -382,6 +395,7 @@ slv2_world_load_all(SLV2World world)
 		
 		librdf_free_node(plugin_node);
 		librdf_free_node(data_node);
+		librdf_free_node(bundle_node);
 		librdf_free_node(binary_node);
 
 		librdf_query_results_next(results);

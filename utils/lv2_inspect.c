@@ -107,6 +107,7 @@ print_plugin(SLV2Plugin p)
 		printf("\tHas latency: no\n\n");
 	}
 
+	printf("\tBundle: %s\n\n", slv2_plugin_get_bundle_uri(p));
 	printf("\tBinary: %s\n\n", slv2_plugin_get_library_uri(p));
 
 	SLV2Values gui = slv2_plugin_get_guis(p);

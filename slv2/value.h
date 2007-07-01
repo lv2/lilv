@@ -57,7 +57,7 @@ slv2_value_equals(SLV2Value value, SLV2Value other);
  * 	1.0
  * 	1
  *
- * 	Returned string is newly allocation and must be freed by caller.
+ * Returned string is newly allocation and must be freed by caller.
  */
 char*
 slv2_value_get_turtle_token(SLV2Value value);
