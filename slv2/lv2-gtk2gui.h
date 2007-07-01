@@ -110,8 +110,8 @@ typedef void* LV2UI_Controller;
     pointer of this type will be provided to the GUI bu the host in the
     instantiate() function. */
 typedef void (*LV2UI_Set_Control_Function)(LV2UI_Controller controller,
-					   uint32_t port,
-					   float value);
+                                           uint32_t         port,
+                                           float            value);
 
 
 typedef struct _LV2UI_Descriptor {
@@ -149,10 +149,10 @@ typedef struct _LV2UI_Descriptor {
   LV2UI_Handle (*instantiate)(const struct _LV2UI_Descriptor* descriptor,
                               const char*                     plugin_uri,
                               const char*                     bundle_path,
-			      LV2UI_Set_Control_Function      control_function,
+                              LV2UI_Set_Control_Function      control_function,
                               LV2UI_Controller                controller,
                               struct _GtkWidget**             widget,
-			      const LV2_Host_Feature**        features);
+                              const LV2_Host_Feature**        features);
 
   
   /** Destroy the GUI object and the associated widget. 
