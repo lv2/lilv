@@ -107,7 +107,7 @@ typedef void* LV2UI_Controller;
 
 /** This is the type of the host-provided function that changes the value
     of a control rate float input port in a plugin instance. A function
-    pointer of this type will be provided to the GUI bu the host in the
+    pointer of this type will be provided to the GUI by the host in the
     instantiate() function. */
 typedef void (*LV2UI_Set_Control_Function)(LV2UI_Controller controller,
                                            uint32_t         port,
