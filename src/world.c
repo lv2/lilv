@@ -356,11 +356,9 @@ slv2_world_load_all(SLV2World world)
 	unsigned char* query_string = (unsigned char*)
     	"PREFIX : <http://lv2plug.in/ontology#>\n"
 		"PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>\n"
-		"PREFIX lv2: <http://lv2plug.in/ontology#>\n"
-		"PREFIX doap: <http://usefulinc.com/ns/doap#>\n"
 		"PREFIX slv2: <http://drobilla.net/ns/slv2#>\n"
 		"SELECT DISTINCT ?plugin ?data ?bundle ?binary\n"
-		"WHERE { ?plugin a :Plugin; doap:name ?name; lv2:bundleURI ?bundle; rdfs:seeAlso ?data\n"
+		"WHERE { ?plugin a :Plugin; slv2:bundleURI ?bundle; rdfs:seeAlso ?data\n"
 		"OPTIONAL { ?plugin :binary ?binary } }\n"
 		"ORDER BY ?plugin\n";
 	
