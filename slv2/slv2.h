@@ -34,6 +34,7 @@ extern "C" {
 #include <slv2/plugininstance.h>
 #include <slv2/value.h>
 #include <slv2/values.h>
+#include <slv2/util.h>
 
 #ifdef __cplusplus
 }
