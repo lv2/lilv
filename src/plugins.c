@@ -281,9 +281,6 @@ slv2_plugins_get_by_uri(SLV2Plugins list, const char* uri)
 	int upper = raptor_sequence_size(list) - 1;
 	int i;
 	
-	if (upper == 0)
-		return NULL;
-
 	while (upper >= lower) {
 		i = lower + ((upper - lower) / 2);
 
