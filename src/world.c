@@ -35,14 +35,23 @@ slv2_world_new()
 	SLV2World world = (SLV2World)malloc(sizeof(struct _SLV2World));
 
 	world->world = librdf_new_world();
+	if (!world->world)
+		goto fail;
+
 	librdf_world_open(world->world);
 	
 	world->storage = librdf_new_storage(world->world, "hashes", NULL,
 			"hash-type='memory'");
+	if (!world->storage)
+		goto fail;
 
 	world->model = librdf_new_model(world->world, world->storage, NULL);
+	if (!world->model)
+		goto fail;
 
 	world->parser = librdf_new_parser(world->world, "turtle", NULL, NULL);
+	if (!world->parser)
+		goto fail;
 
 	world->plugin_classes = slv2_plugin_classes_new();
 	
@@ -58,8 +67,12 @@ slv2_world_new()
 	
 	world->rdf_a_node = librdf_new_node_from_uri_string(world->world,
 			(unsigned char*)"http://www.w3.org/1999/02/22-rdf-syntax-ns#type");
-
+	
 	return world;
+
+fail:
+	free(world);
+	return NULL;
 }
 
 
@@ -69,13 +82,19 @@ slv2_world_new_using_rdf_world(librdf_world* rdf_world)
 	SLV2World world = (SLV2World)malloc(sizeof(struct _SLV2World));
 
 	world->world = rdf_world;
-
+	
 	world->storage = librdf_new_storage(world->world, "hashes", NULL,
 			"hash-type='memory'");
+	if (!world->storage)
+		goto fail;
 
 	world->model = librdf_new_model(world->world, world->storage, NULL);
+	if (!world->model)
+		goto fail;
 
 	world->parser = librdf_new_parser(world->world, "turtle", NULL, NULL);
+	if (!world->parser)
+		goto fail;
 
 	world->plugin_classes = slv2_plugin_classes_new();
 	
@@ -93,6 +112,10 @@ slv2_world_new_using_rdf_world(librdf_world* rdf_world)
 			(unsigned char*)"http://www.w3.org/1999/02/22-rdf-syntax-ns#type");
 
 	return world;
+
+fail:
+	free(world);
+	return NULL;
 }
 
 

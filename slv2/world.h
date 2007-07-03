@@ -48,6 +48,8 @@ extern "C" {
 
 
 /** Initialize a new, empty world.
+ *
+ * If initialization fails, NULL is returned.
  */
 SLV2World
 slv2_world_new();
