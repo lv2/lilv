@@ -151,19 +151,19 @@ slv2_gtk2_gui_instance_free(SLV2GUIInstance instance)
 
 
 struct _GtkWidget*
-slv2_gui_instance_get_widget(SLV2GUIInstance instance) {
+slv2_gtk2_gui_instance_get_widget(SLV2GUIInstance instance) {
 	return instance->pimpl->widget;
 }
 
 
 const LV2UI_Descriptor*
-slv2_gui_instance_get_descriptor(SLV2GUIInstance instance) {
+slv2_gtk2_gui_instance_get_descriptor(SLV2GUIInstance instance) {
 	return instance->pimpl->lv2ui_descriptor;
 }
 
 
 LV2_Handle
-slv2_gui_instance_get_handle(SLV2GUIInstance instance) {
+slv2_gtk2_gui_instance_get_handle(SLV2GUIInstance instance) {
 	return instance->pimpl->lv2ui_handle;
 }
 
