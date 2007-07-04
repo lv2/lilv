@@ -361,9 +361,6 @@ slv2_plugin_get_guis(SLV2Plugin plugin);
  * \param plugin The plugin that the GUI is for.
  * \param gui    A GUI identifier as returned by slv2_plugin_get_guis() (with type SLV2_VALUE_GUI).
  *
- * This function if provided for completeness, but if you want to load a GUI
- * as easily as possible, use slv2_plugin_load_gui.
- *
  * Time = Query
  */
 SLV2Value
