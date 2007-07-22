@@ -54,6 +54,12 @@
        rdfs:seeAlso <http://drobilla.net/drobilla.xrdf>
    ].
 
+:Extension a rdfs:Class ;
+	rdfs:command """
+An extension to the LV2 specification.  Extension data should be installed in
+bundles, and data associated with an extension should be used by the host as
+if it were included directly in lv2.ttl (this file).
+""" .
 
 
 ##################
