@@ -189,7 +189,7 @@ slv2_plugin_load(SLV2Plugin p)
 	
 	// Load ports
 	query = (const unsigned char*)
-		"PREFIX : <http://lv2plug.in/ontology#>\n"
+		"PREFIX : <http://lv2plug.in/ns/lv2core#>\n"
 		"SELECT DISTINCT ?port ?symbol ?index WHERE {\n"
 		"<>    :port   ?port .\n"
 		"?port :symbol ?symbol ;\n"
@@ -302,7 +302,7 @@ slv2_plugin_verify(SLV2Plugin plugin)
 		librdf_node* license_node = librdf_query_results_get_binding_value(results, 2);
 		librdf_node* port_node = librdf_query_results_get_binding_value(results, 3);
 
-		if (!strcmp(type_str, "http://lv2plug.in/ontology#Plugin"))
+		if (!strcmp(type_str, "http://lv2plug.in/ns/lv2core#Plugin"))
 			has_type = true;
 		
 		if (name_node)

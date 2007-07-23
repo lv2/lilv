@@ -78,9 +78,9 @@ slv2_port_get_direction(SLV2Plugin p,
 		SLV2Value val = slv2_values_get_at(direction, i);
 		if (slv2_value_is_uri(val)) {
 			const char* uri = slv2_value_as_uri(val);
-			if (!strcmp(uri, "http://lv2plug.in/ontology#InputPort"))
+			if (!strcmp(uri, "http://lv2plug.in/ns/lv2core#InputPort"))
 				ret = SLV2_PORT_DIRECTION_INPUT;
-			else if (!strcmp(uri, "http://lv2plug.in/ontology#OutputPort"))
+			else if (!strcmp(uri, "http://lv2plug.in/ns/lv2core#OutputPort"))
 				ret = SLV2_PORT_DIRECTION_OUTPUT;
 		}
 	}
@@ -106,9 +106,9 @@ slv2_port_get_type(SLV2Plugin p,
 		SLV2Value val = slv2_values_get_at(type, i);
 		if (slv2_value_is_uri(val)) {
 			const char* uri = slv2_value_as_uri(val);
-			if (!strcmp(uri, "http://lv2plug.in/ontology#ControlPort"))
+			if (!strcmp(uri, "http://lv2plug.in/ns/lv2core#ControlPort"))
 				ret = SLV2_PORT_TYPE_CONTROL;
-			else if (!strcmp(uri, "http://lv2plug.in/ontology#AudioPort"))
+			else if (!strcmp(uri, "http://lv2plug.in/ns/lv2core#AudioPort"))
 				ret = SLV2_PORT_TYPE_AUDIO;
 			else if (!strcmp(uri, "http://ll-plugins.nongnu.org/lv2/ext/MidiPort"))
 				ret = SLV2_PORT_TYPE_MIDI;
@@ -139,10 +139,10 @@ slv2_port_has_hint(SLV2Plugin p,
 		const SLV2Value val = slv2_values_get_at(type, i);
 		if (slv2_value_is_uri(val)) {
 			const char* uri = slv2_value_as_uri(val);
-			if (!strcmp(uri, "http://lv2plug.in/ontology#connectionOptional"))
+			if (!strcmp(uri, "http://lv2plug.in/ns/lv2core#connectionOptional"))
 				return true;
 				ret = SLV2_PORT_TYPE_CONTROL;
-			else if (!strcmp(uri, "http://lv2plug.in/ontology#AudioPort"))
+			else if (!strcmp(uri, "http://lv2plug.in/ns/lv2core#AudioPort"))
 				ret = SLV2_PORT_TYPE_AUDIO;
 			else if (!strcmp(uri, "http://ll-plugins.nongnu.org/lv2/ext/MidiPort"))
 				ret = SLV2_PORT_TYPE_MIDI;

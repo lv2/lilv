@@ -29,7 +29,7 @@
 
 #define U(x) ((const unsigned char*)(x))
 #define NS_RDF(x) "http://www.w3.org/1999/02/22-rdf-syntax-ns#" x
-#define NS_LV2(x) "http://lv2plug.in/ontology#" x
+#define NS_LV2(x) "http://lv2plug.in/ns/lv2core#" x
 #define NS_DOAP(x) "http://usefulinc.com/ns/doap#" x
 
 librdf_world* world = NULL;
@@ -275,7 +275,7 @@ write_lv2_turtle(LADSPA_Descriptor* descriptor, const char* plugin_uri, const ch
 	librdf_serializer_set_namespace(serializer, librdf_new_uri(world,
 			U("http://xmlns.com/foaf/0.1/")), "foaf");
 	librdf_serializer_set_namespace(serializer, librdf_new_uri(world,
-			U("http://lv2plug.in/ontology#")), "lv2");
+			U("http://lv2plug.in/ns/lv2core#")), "lv2");
 	
 	add_resource(model, plugin,
 		NS_RDF("type"),

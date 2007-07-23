@@ -186,7 +186,7 @@ slv2_world_get_plugins_by_class(SLV2World       world,
  *
  * \b Example: Get all plugins with at least 1 audio input and output:
 <tt> \verbatim
-PREFIX : <http://lv2plug.in/ontology#>
+PREFIX : <http://lv2plug.in/ns/lv2core#>
 SELECT DISTINCT ?plugin WHERE {
     ?plugin  :port  [ a :AudioPort; a :InputPort ] ;
              :port  [ a :AudioPort; a :OutputPort ] .

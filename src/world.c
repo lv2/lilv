@@ -56,14 +56,14 @@ slv2_world_new()
 	world->plugin_classes = slv2_plugin_classes_new();
 	
 	// Add the ever-present lv2:Plugin to classes
-	static const char* lv2_plugin_uri = "http://lv2plug.in/ontology#Plugin";
+	static const char* lv2_plugin_uri = "http://lv2plug.in/ns/lv2core#Plugin";
 	raptor_sequence_push(world->plugin_classes, slv2_plugin_class_new(
 				world, NULL, lv2_plugin_uri, "Plugin"));
 	
 	world->plugins = slv2_plugins_new();
 	
 	world->lv2_plugin_node = librdf_new_node_from_uri_string(world->world,
-			(unsigned char*)"http://lv2plug.in/ontology#Plugin");
+			(unsigned char*)"http://lv2plug.in/ns/lv2core#Plugin");
 	
 	world->rdf_a_node = librdf_new_node_from_uri_string(world->world,
 			(unsigned char*)"http://www.w3.org/1999/02/22-rdf-syntax-ns#type");
@@ -99,14 +99,14 @@ slv2_world_new_using_rdf_world(librdf_world* rdf_world)
 	world->plugin_classes = slv2_plugin_classes_new();
 	
 	// Add the ever-present lv2:Plugin to classes
-	static const char* lv2_plugin_uri = "http://lv2plug.in/ontology#Plugin";
+	static const char* lv2_plugin_uri = "http://lv2plug.in/ns/lv2core#Plugin";
 	raptor_sequence_push(world->plugin_classes, slv2_plugin_class_new(
 				world, NULL, lv2_plugin_uri, "Plugin"));
 	
 	world->plugins = slv2_plugins_new();
 	
 	world->lv2_plugin_node = librdf_new_node_from_uri_string(rdf_world,
-			(unsigned char*)"http://lv2plug.in/ontology#Plugin");
+			(unsigned char*)"http://lv2plug.in/ns/lv2core#Plugin");
 	
 	world->rdf_a_node = librdf_new_node_from_uri_string(rdf_world,
 			(unsigned char*)"http://www.w3.org/1999/02/22-rdf-syntax-ns#type");
@@ -289,7 +289,7 @@ slv2_world_load_plugin_classes(SLV2World world)
 	// FIXME: This loads things that aren't plugin categories
 	
 	unsigned char* query_string = (unsigned char*)
-    	"PREFIX : <http://lv2plug.in/ontology#>\n"
+    	"PREFIX : <http://lv2plug.in/ns/lv2core#>\n"
 		"PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>\n"
 		"SELECT DISTINCT ?class ?parent ?label WHERE {\n"
 		//"	?plugin a :Plugin; a ?class .\n"
@@ -377,7 +377,7 @@ slv2_world_load_all(SLV2World world)
 
 	// Find all plugins and associated data files
 	unsigned char* query_string = (unsigned char*)
-    	"PREFIX : <http://lv2plug.in/ontology#>\n"
+    	"PREFIX : <http://lv2plug.in/ns/lv2core#>\n"
 		"PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>\n"
 		"PREFIX slv2: <http://drobilla.net/ns/slv2#>\n"
 		"SELECT DISTINCT ?plugin ?data ?bundle ?binary\n"
@@ -439,7 +439,7 @@ void
 slv2_world_serialize(const char* filename)
 {
 	librdf_uri* lv2_uri = librdf_new_uri(slv2_rdf_world,
-			(unsigned char*)"http://lv2plug.in/ontology#");
+			(unsigned char*)"http://lv2plug.in/ns/lv2core#");
 	
 	librdf_uri* rdfs_uri = librdf_new_uri(slv2_rdf_world,
 			(unsigned char*)"http://www.w3.org/2000/01/rdf-schema#");

@@ -117,7 +117,7 @@ slv2_plugins_load_bundle(SLV2Plugins list,
 	
 	/* Get all plugins explicitly mentioned in the manifest (discovery pass 1) */
 	char* query_string =
-    	"PREFIX : <http://lv2plug.in/ontology#>\n\n"
+    	"PREFIX : <http://lv2plug.in/ns/lv2core#>\n\n"
 		"SELECT DISTINCT ?plugin_uri FROM <>\n"
 		"WHERE { ?plugin_uri a :Plugin }\n";
 	
@@ -157,7 +157,7 @@ slv2_plugins_load_bundle(SLV2Plugins list,
 	/* Get all data files linked to plugins (discovery pass 2) */
 	query_string =
 		"PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>\n"
-    	"PREFIX :     <http://lv2plug.in/ontology#>\n\n"
+    	"PREFIX :     <http://lv2plug.in/ns/lv2core#>\n\n"
     	"SELECT DISTINCT ?subject ?data_uri ?binary FROM <>\n"
     	"WHERE { ?subject  rdfs:seeAlso  ?data_uri\n"
 		"OPTIONAL { ?subject :binary ?binary } }\n";
