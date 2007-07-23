@@ -27,47 +27,52 @@ print_port(SLV2Plugin p, uint32_t index)
 	SLV2Port port = slv2_plugin_get_port_by_index(p, index);
 
 	char* str = NULL;
-	SLV2PortClass cl = SLV2_UNKNOWN_PORT_CLASS;
 
 	printf("\n\tPort %d:\n", index);
 	
-	cl = slv2_port_get_class(p, port);
-	printf("\t\tClass: ");
-	switch (cl) {
-	case SLV2_CONTROL_INPUT:
-		printf("Control input");
+	SLV2PortDirection dir  = slv2_port_get_direction(p, port);
+
+	printf("\t\tDirection: ");
+	switch (dir) {
+	case SLV2_PORT_DIRECTION_INPUT:
+		printf("Input");
 		break;
-	case SLV2_CONTROL_OUTPUT:
-		printf("Control output");
+	case SLV2_PORT_DIRECTION_OUTPUT:
+		printf("Output");
 		break;
-	case SLV2_AUDIO_INPUT:
-		printf("Audio input");
-		break;
-	case SLV2_AUDIO_OUTPUT:
-		printf("Audio output");
-		break;
-	case SLV2_MIDI_INPUT:
-		printf("MIDI input");
-		break;
-	case SLV2_MIDI_OUTPUT:
-		printf("MIDI output");
-		break;
-	case SLV2_UNKNOWN_PORT_CLASS:
+	default:
 		printf("Unknown");
+	}
+	
+	SLV2PortType type = slv2_port_get_type(p, port);
+
+	printf("\n\t\tType: ");
+	switch (type) {
+	case SLV2_PORT_TYPE_CONTROL:
+		printf("Control");
 		break;
+	case SLV2_PORT_TYPE_AUDIO:
+		printf("Audio");
+		break;
+	case SLV2_PORT_TYPE_MIDI:
+		printf("MIDI");
+		break;
+	case SLV2_PORT_TYPE_OSC:
+		printf("OSC");
+		break;
+	default:
+		printf("Unknown");
 	}
 
-	printf("\n");
 	str = slv2_port_get_symbol(p, port);
-	printf("\t\tSymbol: %s\n", str);
+	printf("\n\t\tSymbol: %s\n", str);
 	free(str);
 	
 	str = slv2_port_get_name(p, port);
 	printf("\t\tName: %s\n", str);
 	free(str);
 
-	if (cl == SLV2_CONTROL_INPUT ||
-	    cl == SLV2_CONTROL_OUTPUT) {
+	if (type == SLV2_PORT_TYPE_CONTROL) {
 		printf("\t\tMinimum: %f\n", slv2_port_get_minimum_value(p, port));
 		printf("\t\tMaximum: %f\n", slv2_port_get_maximum_value(p, port));
 		printf("\t\tDefault: %f\n", slv2_port_get_default_value(p, port));

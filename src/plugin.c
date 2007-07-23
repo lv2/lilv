@@ -571,7 +571,7 @@ slv2_plugin_get_guis(SLV2Plugin plugin)
 	for (int i=0; i < raptor_sequence_size(result); ++i) {
 		SLV2Value val = (SLV2Value)raptor_sequence_get_at(result, i);
 		val->type = SLV2_VALUE_GUI;
-		val->val.gui_type_val = SLV2_GTK2_GUI;
+		val->val.gui_type_val = SLV2_GUI_TYPE_GTK2;
 	}
 
 	return result;
@@ -612,7 +612,7 @@ const char*
 slv2_gui_type_get_uri(SLV2GUIType type)
 {
 	// Only one for now...
-	assert(type == SLV2_GTK2_GUI);
+	assert(type == SLV2_GUI_TYPE_GTK2);
 	return "http://ll-plugins.nongnu.org/lv2/ext/gtk2gui";
 }
 

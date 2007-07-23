@@ -40,7 +40,7 @@ slv2_plugin_gtk2_gui_instantiate(SLV2Plugin                 plugin,
 {
 	assert(gui->type == SLV2_VALUE_GUI);
 
-	if (gui->val.gui_type_val != SLV2_GTK2_GUI)
+	if (gui->val.gui_type_val != SLV2_GUI_TYPE_GTK2)
 		return NULL;
 
 	struct _SLV2GUIInstance* result = NULL;

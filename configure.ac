@@ -2,15 +2,19 @@ AC_PREREQ(2.59)
 
 # SLV2 interface version (libtool shared library versioning)
 #
-# current = incremented whenever the public slv2 API is changed 
-# revision = incremented when the slv2 implementation is changed
+# current = incremented whenever the public API is changed 
+# revision = incremented when the implementation of current is changed
 # age = current library is both source and binary compatible with
-#       interfaces current,current-1,...,current-age
+#       interfaces: current,current-1,...,current-age
 #
 # See libtool documentation for detailed documentation
-SLV2_API_CURRENT=1
+#
+# Version history:
+# 0.0.1 = 0,0,0
+# current svn = 2,0,0
+SLV2_API_CURRENT=2
 SLV2_API_REVISION=0
-SLV2_API_AGE=1
+SLV2_API_AGE=0
 
 AC_INIT([slv2],[0.0.2pre],[dave@drobilla.net])
 AC_CONFIG_SRCDIR([src/plugin.c])

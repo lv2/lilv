@@ -27,21 +27,35 @@ extern "C" {
 #endif
 
 
-/** Class (direction and type) of a port
+/** (Data) Type of a port
  *
- * Note that ports may be of other classes not listed here, this is just
- * to make the most common case simple.  Use slv2_port_get_value(p, "rdf:type")
- * if you need further class information.
+ * SLV2_UNKNOWN_PORT_TYPE means the Port is not of any type SLV2 understands
+ * (currently Control, Audio, MIDI, and OSC).
+ *
+ * Further class information can be using slv2_port_get_value(p, "rdf:type")
+ * or a custom query.
  */
-typedef enum _SLV2PortClass {
-	SLV2_UNKNOWN_PORT_CLASS,
-	SLV2_CONTROL_INPUT,  /**< One input float per block */
-	SLV2_CONTROL_OUTPUT, /**< One output float per block */
-	SLV2_AUDIO_INPUT,    /**< One input float per frame */
-	SLV2_AUDIO_OUTPUT,   /**< One output float per frame */
-	SLV2_MIDI_INPUT,     /**< MIDI input (LL extension) */
-	SLV2_MIDI_OUTPUT     /**< MIDI output (LL extension) */
-} SLV2PortClass;
+typedef enum _SLV2PortType {
+	SLV2_PORT_TYPE_UNKNOWN,
+	SLV2_PORT_TYPE_CONTROL, /**< One float per block */
+	SLV2_PORT_TYPE_AUDIO,   /**< One float per frame */
+	SLV2_PORT_TYPE_MIDI,    /**< A buffer of MIDI data (LL extension) */
+	SLV2_PORT_TYPE_OSC,     /**< A buffer of OSC data (DR extension) */
+} SLV2PortType;
+
+/** Direction (input or output) of a port
+ *
+ * SLV2_UNKNOWN_PORT_DIRECTION means the Port is only of type lv2:Port
+ * (neither lv2:Input or lv2:Output) as far as SLV2 understands.
+ *
+ * Further class information can be using slv2_port_get_value(p, "rdf:type")
+ * or a custom query.
+ */
+typedef enum _SLV2PortDirection {
+	SLV2_PORT_DIRECTION_UNKNOWN, /**< Neither input or output */
+	SLV2_PORT_DIRECTION_INPUT,   /**< Plugin reads from port when run */
+	SLV2_PORT_DIRECTION_OUTPUT,  /**< Plugin writes to port when run */
+} SLV2PortDirection;
 
 
 /** The format of a URI string.
@@ -58,7 +72,7 @@ typedef enum _SLV2URIType {
 /** A type of plugin GUI (corresponding to some LV2 GUI extension).
  */
 typedef enum _SLV2GUIType {
-	SLV2_GTK2_GUI ///< http://ll-plugins.nongnu.org/lv2/ext/gtk2gui
+	SLV2_GUI_TYPE_GTK2 ///< http://ll-plugins.nongnu.org/lv2/ext/gtk2gui
 } SLV2GUIType;
 
 

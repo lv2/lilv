@@ -160,32 +160,34 @@ create_port(struct JackHost* host,
 	host->jack_ports[index] = NULL;
 	host->controls[index]   = 0.0f;
 	
-	/* Get the 'class' of the port (control input, audio output, etc) */
-	SLV2PortClass class = slv2_port_get_class(host->plugin, port);
+	/* Get the direction of the port (input, output) */
+	SLV2PortDirection direction = slv2_port_get_direction(host->plugin, port);
 	
-	/* Connect the port based on it's 'class' */
-	switch (class) {
-	case SLV2_CONTROL_INPUT:
-		host->controls[index] = slv2_port_get_default_value(host->plugin, port);
-		slv2_instance_connect_port(host->instance, index, &host->controls[index]);
-		printf("Set %s to %f\n", symbol, host->controls[index]);
-		break;
-	case SLV2_CONTROL_OUTPUT:
-		slv2_instance_connect_port(host->instance, index, &host->controls[index]);
-		break;
-	case SLV2_AUDIO_INPUT:
-		host->jack_ports[index] = jack_port_register(host->jack_client,
-			symbol, JACK_DEFAULT_AUDIO_TYPE, JackPortIsInput, 0);
-		break;
-	case SLV2_AUDIO_OUTPUT:
-		host->jack_ports[index] = jack_port_register(host->jack_client,
-			symbol, JACK_DEFAULT_AUDIO_TYPE, JackPortIsOutput, 0);
-		break;
-	default:
-		// Simple examples don't have to be robust :)
-		die("ERROR: Unknown port type, aborting messily!");
-	}
+	/* Get the (data) type of the port (control, audio, MIDI, OSC) */
+	SLV2PortType type = slv2_port_get_type(host->plugin, port);
+	
+	/* Connect control ports to controls array */
+	if (type == SLV2_PORT_TYPE_CONTROL) {
 
+		/* Set default control values for inputs */
+		if (direction == SLV2_PORT_DIRECTION_INPUT) {
+			host->controls[index] = slv2_port_get_default_value(host->plugin, port);
+			printf("Set %s to %f\n", symbol, host->controls[index]);
+		}
+		
+		slv2_instance_connect_port(host->instance, index, &host->controls[index]);
+
+	} else if (type == SLV2_PORT_TYPE_AUDIO) {
+
+		host->jack_ports[index] = jack_port_register(host->jack_client, symbol,
+			JACK_DEFAULT_AUDIO_TYPE,
+			(direction == SLV2_PORT_DIRECTION_INPUT) ? JackPortIsInput : JackPortIsOutput, 0);
+
+	} else {
+		// Simple examples don't have to be robust :)
+		die("ERROR: Unknown port type, aborting messily!\n");
+	}
+	
 	free(symbol);
 }
 

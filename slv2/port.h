@@ -60,6 +60,16 @@ SLV2Values
 slv2_port_get_hints(SLV2Plugin plugin,
                     SLV2Port   port);
 
+#if 0
+/** Return whether a port has a certain  hint.
+ *
+ * Time = Query
+ */
+bool
+slv2_port_has_hint(SLV2Plugin p,
+                   SLV2Port   port,
+                   SLV2Value  hint)
+#endif
 
 /** Get the symbol of a port given the index.
  *
@@ -87,13 +97,21 @@ slv2_port_get_name(SLV2Plugin plugin,
                    SLV2Port   port);
 
 
-/** Get the class (input/output, data type, rate...) of a port.
+/** Get the direction (input, output) of a port.
  *
  * Time = Query
  */
-SLV2PortClass
-slv2_port_get_class(SLV2Plugin plugin,
-                    SLV2Port   port);
+SLV2PortDirection
+slv2_port_get_direction(SLV2Plugin plugin,
+                        SLV2Port   port);
+
+/** Get the (data) type of a port.
+ *
+ * Time = Query
+ */
+SLV2PortType
+slv2_port_get_type(SLV2Plugin plugin,
+                   SLV2Port   port);
 
 
 /** Get the default value of a port.
