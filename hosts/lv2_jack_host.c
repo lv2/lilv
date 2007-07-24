@@ -22,7 +22,7 @@
 #include <slv2/slv2.h>
 #include <jack/jack.h>
 #include <jack/midiport.h>
-#include "../config/config.h"
+#include "../config/slv2_config.h"
 #include "lv2-miditype.h"
 #include "lv2-midifunctions.h"
 #include "jack_compat.h"

@@ -25,7 +25,7 @@
 #include <slv2/world.h>
 #include <slv2/slv2.h>
 #include <slv2/util.h>
-#include "config.h"
+#include "slv2_config.h"
 #include "slv2_internal.h"
 
 
