@@ -17,10 +17,13 @@ SLV2_API_REVISION=0
 SLV2_API_AGE=0
 
 AC_INIT([slv2],[0.0.2pre],[dave@drobilla.net])
+
+AC_CONFIG_AUX_DIR([config])
+
 AC_CONFIG_SRCDIR([src/plugin.c])
 AC_CONFIG_SRCDIR([slv2/plugin.h])
 AC_CONFIG_SRCDIR([utils/lv2_list.c])
-AC_CONFIG_HEADER([config.h])
+AC_CONFIG_HEADER([config/config.h])
 AM_INIT_AUTOMAKE
 
 SLV2_SO_VERSION=${SLV2_API_CURRENT}:${SLV2_API_REVISION}:${SLV2_API_AGE}
