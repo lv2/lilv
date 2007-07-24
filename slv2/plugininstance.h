@@ -73,7 +73,7 @@ typedef struct _Instance {
  */
 SLV2Instance
 slv2_plugin_instantiate(SLV2Plugin               plugin,
-                        uint32_t                 sample_rate,
+                        double                   sample_rate,
                         const LV2_Host_Feature** host_features);
 
 
