@@ -133,7 +133,6 @@ void              slv2_plugin_classes_free();
 
 /* ********* World ********* */
 
-
 /** Model of LV2 (RDF) data loaded from bundles.
  */
 struct _SLV2World {
@@ -145,7 +144,18 @@ struct _SLV2World {
 	SLV2Plugins       plugins;
 	librdf_node*      lv2_plugin_node;
 	librdf_node*      rdf_a_node;
+
+	void (*rdf_lock)(void*);
+	void (*rdf_unlock)(void*);
+	void* rdf_lock_data;
+	int rdf_lock_count;
 };
+
+void
+slv2_world_lock_if_necessary(SLV2World world);
+
+void
+slv2_world_unlock_if_necessary(SLV2World world);
 
 /** Load all bundles found in \a search_path.
  *

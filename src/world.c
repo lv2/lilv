@@ -67,6 +67,11 @@ slv2_world_new()
 	
 	world->rdf_a_node = librdf_new_node_from_uri_string(world->world,
 			(unsigned char*)"http://www.w3.org/1999/02/22-rdf-syntax-ns#type");
+
+	world->rdf_lock = NULL;
+	world->rdf_unlock = NULL;
+	world->rdf_lock_data = NULL;
+	world->rdf_lock_count = 0;
 	
 	return world;
 
@@ -110,6 +115,11 @@ slv2_world_new_using_rdf_world(librdf_world* rdf_world)
 	
 	world->rdf_a_node = librdf_new_node_from_uri_string(rdf_world,
 			(unsigned char*)"http://www.w3.org/1999/02/22-rdf-syntax-ns#type");
+	
+	world->rdf_lock = NULL;
+	world->rdf_unlock = NULL;
+	world->rdf_lock_data = NULL;
+	world->rdf_lock_count = 0;
 
 	return world;
 
@@ -122,6 +132,9 @@ fail:
 void
 slv2_world_free(SLV2World world)
 {
+	if (world->rdf_lock)
+		world->rdf_lock(world->rdf_lock_data);
+
 	librdf_free_node(world->lv2_plugin_node);
 	librdf_free_node(world->rdf_a_node);
 
@@ -144,14 +157,62 @@ slv2_world_free(SLV2World world)
 	
 	librdf_free_world(world->world);
 	world->world = NULL;
+	
+	if (world->rdf_unlock)
+		world->rdf_unlock(world->rdf_lock_data);
 
 	free(world);
 }
 
 
 void
+slv2_world_set_rdf_lock_function(SLV2World world, void (*lock)(void*), void* data)
+{
+	world->rdf_lock = lock;
+	world->rdf_lock_data = data;
+}
+
+
+void
+slv2_world_set_rdf_unlock_function(SLV2World world, void (*unlock)(void*))
+{
+	world->rdf_unlock = unlock;
+}
+
+
+void
+slv2_world_lock_if_necessary(SLV2World world)
+{
+	if (world->rdf_lock) {
+	
+		if (world->rdf_lock_count == 0)
+			world->rdf_lock(world->rdf_lock_data);
+
+		++world->rdf_lock_count;
+	
+	}
+}
+
+
+void
+slv2_world_unlock_if_necessary(SLV2World world)
+{
+	if (world->rdf_lock && world->rdf_lock_count > 0) {
+
+		if (world->rdf_lock_count == 1 && world->rdf_unlock)
+			world->rdf_unlock(world->rdf_lock_data);
+
+		world->rdf_lock_count = 0;
+
+	}
+}
+
+
+void
 slv2_world_load_bundle(SLV2World world, const char* bundle_uri_str)
 {
+	slv2_world_lock_if_necessary(world);
+
 	librdf_uri* bundle_uri = librdf_new_uri(world->world,
 			(const unsigned char*)bundle_uri_str);
 
@@ -209,6 +270,8 @@ slv2_world_load_bundle(SLV2World world, const char* bundle_uri_str)
 	librdf_free_storage(manifest_storage);
 	librdf_free_uri(manifest_uri);
 	librdf_free_uri(bundle_uri);
+	
+	slv2_world_unlock_if_necessary(world);
 }
 
 
