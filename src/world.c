@@ -37,6 +37,8 @@ slv2_world_new()
 	world->world = librdf_new_world();
 	if (!world->world)
 		goto fail;
+	
+	world->local_world = true;
 
 	librdf_world_open(world->world);
 	
@@ -87,7 +89,11 @@ slv2_world_new_using_rdf_world(librdf_world* rdf_world)
 	SLV2World world = (SLV2World)malloc(sizeof(struct _SLV2World));
 
 	world->world = rdf_world;
+	if (!world->world)
+		goto fail;
 	
+	world->local_world = false;
+
 	world->storage = librdf_new_storage(world->world, "hashes", NULL,
 			"hash-type='memory'");
 	if (!world->storage)
@@ -155,7 +161,9 @@ slv2_world_free(SLV2World world)
 	librdf_free_storage(world->storage);
 	world->storage = NULL;
 	
-	librdf_free_world(world->world);
+	if (world->local_world)
+		librdf_free_world(world->world);
+
 	world->world = NULL;
 	
 	if (world->rdf_unlock)

@@ -136,6 +136,7 @@ void              slv2_plugin_classes_free();
 /** Model of LV2 (RDF) data loaded from bundles.
  */
 struct _SLV2World {
+	bool              local_world;
 	librdf_world*     world;
 	librdf_storage*   storage;
 	librdf_model*     model;
