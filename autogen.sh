@@ -1,6 +1,7 @@
 #!/bin/sh
 
 echo 'Generating necessary files...'
+rm -rf config
 mkdir -p config
 libtoolize --force
 aclocal

@@ -19,3 +19,6 @@ pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = libslv2.pc
 
 dist-hook: dist-check-doxygen
+
+distclean-local:
+	rm -rf doc

@@ -29,15 +29,23 @@ AM_INIT_AUTOMAKE
 SLV2_SO_VERSION=${SLV2_API_CURRENT}:${SLV2_API_REVISION}:${SLV2_API_AGE}
 AC_SUBST(SLV2_SO_VERSION)
 
+# This is cute... autohell FTW
+builddir=`pwd`
+cd $srcdir
+abs_srcdir=`pwd`
+cd $builddir
+
+SLV2_CFLAGS="-I$abs_srcdir"
+SLV2_LIBS="$abs_srcdir/src/.libs/libslv2.la"
+AC_SUBST(SLV2_CFLAGS)
+AC_SUBST(SLV2_LIBS)
+
+CONFIG_H_PATH="$builddir/config/config.h"
+AC_SUBST(CONFIG_H_PATH)
+AC_DEFINE(CONFIG_H_PATH, ["$CONFIG_H_PATH"], [Absolute location of config.h for this build])
+
 # Checks for compiler
 AC_PROG_CC
-AM_PROG_CC_C_O
-
-# Check pedantic other stuff autoscan says we should :)
-AC_C_CONST
-AC_C_INLINE
-AC_HEADER_STDBOOL
-AC_TYPE_SIZE_T
 
 # Library building stuff
 AC_PROG_LIBTOOL

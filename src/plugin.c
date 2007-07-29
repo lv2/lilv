@@ -611,9 +611,10 @@ slv2_plugin_get_gui_library_uri(SLV2Plugin plugin,
 const char*
 slv2_gui_type_get_uri(SLV2GUIType type)
 {
-	// Only one for now...
-	assert(type == SLV2_GUI_TYPE_GTK2);
-	return "http://ll-plugins.nongnu.org/lv2/ext/gtk2gui";
+	if (type == SLV2_GUI_TYPE_GTK2)
+		return "http://ll-plugins.nongnu.org/lv2/ext/gtk2gui";
+	else
+		return NULL;
 }
 
 

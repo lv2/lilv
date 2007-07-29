@@ -38,7 +38,7 @@ PROJECT_NUMBER         = @PACKAGE_VERSION@
 # If a relative path is entered, it will be relative to the location 
 # where doxygen was started. If left blank the current directory will be used.
 
-OUTPUT_DIRECTORY       = @abs_top_srcdir@/doc
+OUTPUT_DIRECTORY       = @abs_top_builddir@/doc
 
 # If the CREATE_SUBDIRS tag is set to YES, then doxygen will create 
 # 4096 sub-directories (in 2 levels) under the output directory of each output 
@@ -462,19 +462,19 @@ WARN_LOGFILE           =
 # directories like "/usr/src/myproject". Separate the files or directories 
 # with spaces.
 
-INPUT                  = @abs_top_srcdir@/doc/mainpage.dox \
-                         @abs_top_srcdir@/slv2/lv2.h \
-                         @abs_top_srcdir@/slv2/types.h \
-                         @abs_top_srcdir@/slv2/util.h \
-                         @abs_top_srcdir@/slv2/value.h \
-                         @abs_top_srcdir@/slv2/values.h \
-                         @abs_top_srcdir@/slv2/world.h \
-                         @abs_top_srcdir@/slv2/plugin.h \
-                         @abs_top_srcdir@/slv2/pluginclass.h \
-                         @abs_top_srcdir@/slv2/pluginclasses.h \
-                         @abs_top_srcdir@/slv2/plugininstance.h \
-                         @abs_top_srcdir@/slv2/plugins.h \
-                         @abs_top_srcdir@/slv2/port.h
+INPUT                  = @abs_srcdir@/../doc/mainpage.dox \
+                         @abs_srcdir@/../slv2/lv2.h \
+                         @abs_srcdir@/../slv2/types.h \
+                         @abs_srcdir@/../slv2/util.h \
+                         @abs_srcdir@/../slv2/value.h \
+                         @abs_srcdir@/../slv2/values.h \
+                         @abs_srcdir@/../slv2/world.h \
+                         @abs_srcdir@/../slv2/plugin.h \
+                         @abs_srcdir@/../slv2/pluginclass.h \
+                         @abs_srcdir@/../slv2/pluginclasses.h \
+                         @abs_srcdir@/../slv2/plugininstance.h \
+                         @abs_srcdir@/../slv2/plugins.h \
+                         @abs_srcdir@/../slv2/port.h
 
 # This tag can be used to specify the character encoding of the source files that 
 # doxygen parses. Internally doxygen uses the UTF-8 encoding, which is also the default 
