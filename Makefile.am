@@ -21,4 +21,6 @@ pkgconfig_DATA = libslv2.pc
 dist-hook: dist-check-doxygen
 
 distclean-local:
-	rm -rf doc
+	rm -rf doc/html
+	rm -rf doc/man
+	rm -rf doc/reference.doxygen
