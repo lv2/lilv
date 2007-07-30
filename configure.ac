@@ -45,7 +45,7 @@ AC_SUBST(CONFIG_H_PATH)
 AC_DEFINE(CONFIG_H_PATH, ["$CONFIG_H_PATH"], [Absolute location of config.h for this build])
 
 # Checks for compiler
-AC_PROG_CC
+AC_PROG_CC_C_0
 
 # Library building stuff
 AC_PROG_LIBTOOL
