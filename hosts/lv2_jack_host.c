@@ -16,13 +16,14 @@
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+#include CONFIG_H_PATH
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <slv2/slv2.h>
 #include <jack/jack.h>
 #include <jack/midiport.h>
-#include "../config/slv2_config.h"
 #include "lv2-miditype.h"
 #include "lv2-midifunctions.h"
 #include "jack_compat.h"

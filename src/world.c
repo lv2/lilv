@@ -16,6 +16,8 @@
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+#include CONFIG_H_PATH
+
 #define _XOPEN_SOURCE 500
 #include <string.h>
 #include <stdlib.h>
@@ -25,7 +27,6 @@
 #include <slv2/world.h>
 #include <slv2/slv2.h>
 #include <slv2/util.h>
-#include "slv2_config.h"
 #include "slv2_internal.h"
 
 
