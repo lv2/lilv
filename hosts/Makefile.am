@@ -1,4 +1,4 @@
-AM_CFLAGS = -std=c99 -I$(top_srcdir) @REDLAND_CFLAGS@
+AM_CFLAGS = -std=c99 -I$(top_srcdir) @REDLAND_CFLAGS@ @SLV2_CFLAGS@
 
 if WITH_JACK
 
