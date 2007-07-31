@@ -10,3 +10,4 @@ clean-local:
 	rm -f *.cxx
 	rm -f *.so
 	rm -f *.o
+	rm -f slv2.py
