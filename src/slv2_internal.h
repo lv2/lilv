@@ -119,7 +119,7 @@ struct _SLV2PluginClass {
 
 SLV2PluginClass slv2_plugin_class_new(SLV2World world, const char* parent_uri,
                                       const char* uri, const char* label);
-void slv2_plugin_class_free(SLV2PluginClass class);
+void slv2_plugin_class_free(SLV2PluginClass plugin_class);
 
 
 

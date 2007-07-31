@@ -23,6 +23,7 @@ AC_CONFIG_AUX_DIR([config])
 AC_CONFIG_SRCDIR([src/plugin.c])
 AC_CONFIG_SRCDIR([slv2/plugin.h])
 AC_CONFIG_SRCDIR([utils/lv2_list.c])
+AC_CONFIG_SRCDIR([swig/slv2.i])
 AC_CONFIG_HEADER([config/config.h])
 AM_INIT_AUTOMAKE
 
@@ -41,11 +42,9 @@ AC_SUBST(SLV2_CFLAGS)
 AC_SUBST(SLV2_LIBS)
 
 CONFIG_H_PATH="$builddir/config/config.h"
-AC_SUBST(CONFIG_H_PATH)
-AC_DEFINE(CONFIG_H_PATH, ["$CONFIG_H_PATH"], [Absolute location of config.h for this build])
 
 # Checks for compiler
-AC_PROG_CC_C_0
+AC_PROG_CC
 
 # Library building stuff
 AC_PROG_LIBTOOL
@@ -72,6 +71,16 @@ if test "$strict" = "yes"; then
   CFLAGS="$CFLAGS -std=c99 -pedantic -Wall -Wextra -Winit-self"
   CXXFLAGS="$CFLAGS -ansi -pedantic -Wall -Wextra -Wconversion -Winit-self"
 fi
+
+# SWiG bindings
+bindings="no"
+AC_ARG_ENABLE(bindings,
+	[AS_HELP_STRING(--enable-bindings, [Build language bindings via SWIG (false)])],
+	[bindings="$enableval"])
+if test "$bindings" = "yes"; then
+  AC_CHECK_PROGS(SWIG, swig)
+fi
+AM_CONDITIONAL(WITH_SWIG, [test "$bindings" = "yes"])
 
 
 # Check for RAPTOR
@@ -117,12 +126,17 @@ if test $HAVE_DOXYGEN = "false"; then
 fi
 AM_CONDITIONAL(HAVE_DOXYGEN, $HAVE_DOXYGEN)
 
+# Bolt on a few specific flags to CFLAGS that should always be used
+CXXFLAGS="$CXXFLAGS -ansi -pipe -fmessage-length=999 -DCONFIG_H_PATH=\\\"$CONFIG_H_PATH\\\""
+CFLAGS="$CFLAGS -std=c99 -pipe -fmessage-length=999 -DCONFIG_H_PATH=\\\"$CONFIG_H_PATH\\\""
+
 # Write output files
 AC_CONFIG_FILES([Makefile])
 AC_CONFIG_FILES([src/Makefile])
 AC_CONFIG_FILES([slv2/Makefile])
 AC_CONFIG_FILES([utils/Makefile])
 AC_CONFIG_FILES([hosts/Makefile])
+AC_CONFIG_FILES([swig/Makefile])
 AC_CONFIG_FILES([data/Makefile])
 AC_CONFIG_FILES([libslv2.pc])
 AC_CONFIG_FILES([doc/Makefile])

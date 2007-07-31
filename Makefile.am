@@ -12,8 +12,8 @@ dist-check-doxygen:
 	@false
 endif
 
-SUBDIRS      = src slv2 utils hosts data $(DOC_DIR)
-DIST_SUBDIRS = src slv2 utils hosts data doc
+SUBDIRS      = src slv2 utils hosts data $(DOC_DIR) swig
+DIST_SUBDIRS = src slv2 utils hosts data doc swig
 
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = libslv2.pc
