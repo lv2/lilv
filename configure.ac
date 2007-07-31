@@ -72,7 +72,7 @@ if test "$strict" = "yes"; then
   CXXFLAGS="$CFLAGS -ansi -pedantic -Wall -Wextra -Wconversion -Winit-self"
 fi
 
-# SWiG bindings
+# SWIG bindings
 bindings="no"
 AC_ARG_ENABLE(bindings,
 	[AS_HELP_STRING(--enable-bindings, [Build language bindings via SWIG (false)])],
