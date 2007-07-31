@@ -6,7 +6,7 @@ all:
 	gcc -fPIC -shared -I/usr/include/python2.4 slv2_wrap.c ../src/.libs/libslv2.so -o _slv2.so
 endif
 
-clean:
-	rm *.c
-	rm *.so
-	rm *.o
+clean-local:
+	rm -f *.cxx
+	rm -f *.so
+	rm -f *.o
