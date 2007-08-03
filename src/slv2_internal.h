@@ -143,6 +143,7 @@ struct _SLV2World {
 	librdf_parser*    parser;
 	SLV2PluginClasses plugin_classes;
 	SLV2Plugins       plugins;
+	librdf_node*      lv2_specification_node;
 	librdf_node*      lv2_plugin_node;
 	librdf_node*      rdf_a_node;
 
@@ -170,6 +171,13 @@ slv2_world_unlock_if_necessary(SLV2World world);
 void
 slv2_world_load_path(SLV2World   world,
                      const char* search_path);
+
+	
+void
+slv2_world_load_specifications(SLV2World world);
+
+void
+slv2_world_load_file(SLV2World world, librdf_uri* file_uri);
 
 
 /* ********* GUI ********* */

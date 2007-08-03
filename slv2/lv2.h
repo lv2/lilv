@@ -36,7 +36,7 @@ extern "C" {
 
 /** @file lv2.h
  *
- * Revision: 1.0beta3
+ * Revision: 1.0beta4
  *
  * == Overview ==
  *
@@ -159,175 +159,175 @@ typedef struct _LV2_Host_Feature {
  * of functions to instantiate it, link it to buffers and run it. */
 typedef struct _LV2_Descriptor { 
 
-  /** A globally unique, case-sensitive identifier for this plugin type.
-   *
-   * All plugins with the same URI MUST be compatible in terms of 'port
-   * signature', meaning they have the same number of ports, same port
-   * shortnames, and roughly the same functionality.  URIs should
-   * probably contain a version number (or similar) for this reason.
-   *
-   * Rationale:  When serializing session/patch/etc files, hosts MUST
-   * refer to a loaded plugin by the plugin URI only.  In the future
-   * loading a plugin with this URI MUST yield a plugin with the
-   * same ports (etc) which is 100% compatible. */
-  const char * URI;
+	/** A globally unique, case-sensitive identifier for this plugin type.
+	 *
+	 * All plugins with the same URI MUST be compatible in terms of 'port
+	 * signature', meaning they have the same number of ports, same port
+	 * shortnames, and roughly the same functionality.  URIs should
+	 * probably contain a version number (or similar) for this reason.
+	 *
+	 * Rationale:  When serializing session/patch/etc files, hosts MUST
+	 * refer to a loaded plugin by the plugin URI only.  In the future
+	 * loading a plugin with this URI MUST yield a plugin with the
+	 * same ports (etc) which is 100% compatible. */
+	const char * URI;
 
-  /** Function pointer that instantiates a plugin.
-   *
-   * A handle is returned indicating the new plugin instance. The
-   * instantiation function accepts a sample rate as a parameter as well
-   * as the plugin descriptor from which this instantiate function was
-   * found. This function must return NULL if instantiation fails.
-   *
-   * BundlePath is a string of the path to the LV2 bundle which contains
-   * this plugin binary.  It MUST include the trailing directory separator
-   * (e.g. '/') so that BundlePath + filename gives the path to a file
-   * in the bundle.
-   *
-   * HostFeatures is a NULL terminated array of the URIs of the LV2
-   * features that the host supports. Plugins may refuse to instantiate
-   * if required features are not found here (however hosts SHOULD NOT use
-   * this as a discovery mechanism, instead reading the data file before
-   * attempting to instantiate the plugin).  This array must always exist;
-   * if a host has no features, it MUST pass a single element array
-   * containing NULL (to simplify plugins).
-   *
-   * Note that instance initialisation should generally occur in
-   * activate() rather than here.  If a host calls instantiate, it MUST
-   * call cleanup() at some point in the future. */
-  LV2_Handle (*instantiate)(const struct _LV2_Descriptor *  Descriptor,
-                            uint32_t                        SampleRate,
-                            const char *                    BundlePath,
-                            const LV2_Host_Feature *const * HostFeatures);
+	/** Function pointer that instantiates a plugin.
+	 *
+	 * A handle is returned indicating the new plugin instance. The
+	 * instantiation function accepts a sample rate as a parameter as well
+	 * as the plugin descriptor from which this instantiate function was
+	 * found. This function must return NULL if instantiation fails.
+	 *
+	 * BundlePath is a string of the path to the LV2 bundle which contains
+	 * this plugin binary.  It MUST include the trailing directory separator
+	 * (e.g. '/') so that BundlePath + filename gives the path to a file
+	 * in the bundle.
+	 *
+	 * HostFeatures is a NULL terminated array of the URIs of the LV2
+	 * features that the host supports. Plugins may refuse to instantiate
+	 * if required features are not found here (however hosts SHOULD NOT use
+	 * this as a discovery mechanism, instead reading the data file before
+	 * attempting to instantiate the plugin).  This array must always exist;
+	 * if a host has no features, it MUST pass a single element array
+	 * containing NULL (to simplify plugins).
+	 *
+	 * Note that instance initialisation should generally occur in
+	 * activate() rather than here.  If a host calls instantiate, it MUST
+	 * call cleanup() at some point in the future. */
+	LV2_Handle (*instantiate)(const struct _LV2_Descriptor *  Descriptor,
+	                          double                          SampleRate,
+	                          const char *                    BundlePath,
+	                          const LV2_Host_Feature *const * HostFeatures);
 
-  /** Function pointer that connects a port on a plugin instance to a memory
-   * location where the block of data for the port will be read/written.
-   *
-   * The data location is expected to be of the type defined in the
-   * plugin's data file (e.g. an array of float for an lv2:AudioPort).
-   * Memory issues are managed by the host. The plugin must read/write
-   * the data at these locations every time run() is called, data
-   * present at the time of this connection call MUST NOT be
-   * considered meaningful.
-   *
-   * connect_port() may be called more than once for a plugin instance
-   * to allow the host to change the buffers that the plugin is reading
-   * or writing. These calls may be made before or after activate()
-   * or deactivate() calls.  Note that there may be realtime constraints
-   * on connect_port (see lv2:hardRTCapable in lv2.ttl).
-   *
-   * connect_port() MUST be called at least once for each port before
-   * run() is called.  The plugin must pay careful attention to the block
-   * size passed to the run function as the block allocated may only just
-   * be large enough to contain the block of data (typically samples), and
-   * is not guaranteed to be constant.
-   *
-   * Plugin writers should be aware that the host may elect to use the
-   * same buffer for more than one port and even use the same buffer for
-   * both input and output (see lv2:inPlaceBroken in lv2.ttl).
-   * However, overlapped buffers or use of a single buffer for both
-   * audio and control data may result in unexpected behaviour.
-   *
-   * If the plugin has the property lv2:hardRTCapable then there are 
-   * various things that the plugin MUST NOT do within the connect_port()
-   * function (see lv2.ttl). */
-  void (*connect_port)(LV2_Handle Instance,
-                       uint32_t   Port,
-                       void *     DataLocation);
+	/** Function pointer that connects a port on a plugin instance to a memory
+	 * location where the block of data for the port will be read/written.
+	 *
+	 * The data location is expected to be of the type defined in the
+	 * plugin's data file (e.g. an array of float for an lv2:AudioPort).
+	 * Memory issues are managed by the host. The plugin must read/write
+	 * the data at these locations every time run() is called, data
+	 * present at the time of this connection call MUST NOT be
+	 * considered meaningful.
+	 *
+	 * connect_port() may be called more than once for a plugin instance
+	 * to allow the host to change the buffers that the plugin is reading
+	 * or writing. These calls may be made before or after activate()
+	 * or deactivate() calls.  Note that there may be realtime constraints
+	 * on connect_port (see lv2:hardRTCapable in lv2.ttl).
+	 *
+	 * connect_port() MUST be called at least once for each port before
+	 * run() is called.  The plugin must pay careful attention to the block
+	 * size passed to the run function as the block allocated may only just
+	 * be large enough to contain the block of data (typically samples), and
+	 * is not guaranteed to be constant.
+	 *
+	 * Plugin writers should be aware that the host may elect to use the
+	 * same buffer for more than one port and even use the same buffer for
+	 * both input and output (see lv2:inPlaceBroken in lv2.ttl).
+	 * However, overlapped buffers or use of a single buffer for both
+	 * audio and control data may result in unexpected behaviour.
+	 *
+	 * If the plugin has the property lv2:hardRTCapable then there are 
+	 * various things that the plugin MUST NOT do within the connect_port()
+	 * function (see lv2.ttl). */
+	void (*connect_port)(LV2_Handle Instance,
+	                     uint32_t   Port,
+	                     void *     DataLocation);
 
-  /** Function pointer that initialises a plugin instance and activates
-   * it for use.
-   * 
-   * This is separated from instantiate() to aid real-time support and so
-   * that hosts can reinitialise a plugin instance by calling deactivate()
-   * and then activate(). In this case the plugin instance must reset all
-   * state information dependent on the history of the plugin instance
-   * except for any data locations provided by connect_port(). If there
-   * is nothing for activate() to do then the plugin writer may provide
-   * a NULL rather than an empty function.
-   *
-   * When present, hosts MUST call this function once before run()
-   * is called for the first time. This call SHOULD be made as close
-   * to the run() call as possible and indicates to real-time plugins
-   * that they are now live, however plugins MUST NOT rely on a prompt
-   * call to run() after activate().  activate() may not be called again
-   * unless deactivate() is called first (after which activate() may be
-   * called again, followed by deactivate, etc. etc.).  If a host calls
-   * activate, it MUST call deactivate at some point in the future.
-   *
-   * Note that connect_port() may be called before or after a call to
-   * activate(). */
-  void (*activate)(LV2_Handle Instance);
+	/** Function pointer that initialises a plugin instance and activates
+	 * it for use.
+	 * 
+	 * This is separated from instantiate() to aid real-time support and so
+	 * that hosts can reinitialise a plugin instance by calling deactivate()
+	 * and then activate(). In this case the plugin instance must reset all
+	 * state information dependent on the history of the plugin instance
+	 * except for any data locations provided by connect_port(). If there
+	 * is nothing for activate() to do then the plugin writer may provide
+	 * a NULL rather than an empty function.
+	 *
+	 * When present, hosts MUST call this function once before run()
+	 * is called for the first time. This call SHOULD be made as close
+	 * to the run() call as possible and indicates to real-time plugins
+	 * that they are now live, however plugins MUST NOT rely on a prompt
+	 * call to run() after activate().  activate() may not be called again
+	 * unless deactivate() is called first (after which activate() may be
+	 * called again, followed by deactivate, etc. etc.).  If a host calls
+	 * activate, it MUST call deactivate at some point in the future.
+	 *
+	 * Note that connect_port() may be called before or after a call to
+	 * activate(). */
+	void (*activate)(LV2_Handle Instance);
 
-  /** Function pointer that runs a plugin instance for a block.
-   *
-   * Two parameters are required: the first is a handle to the particular
-   * instance to be run and the second indicates the block size (in
-   * samples) for which the plugin instance may run.
-   *
-   * Note that if an activate() function exists then it must be called
-   * before run(). If deactivate() is called for a plugin instance then
-   * the plugin instance may not be reused until activate() has been
-   * called again.
-   *
-   * If the plugin has the property lv2:hardRTCapable then there are 
-   * various things that the plugin MUST NOT do within the run()
-   * function (see lv2.ttl). */
-  void (*run)(LV2_Handle Instance,
-              uint32_t   SampleCount);
+	/** Function pointer that runs a plugin instance for a block.
+	 *
+	 * Two parameters are required: the first is a handle to the particular
+	 * instance to be run and the second indicates the block size (in
+	 * samples) for which the plugin instance may run.
+	 *
+	 * Note that if an activate() function exists then it must be called
+	 * before run(). If deactivate() is called for a plugin instance then
+	 * the plugin instance may not be reused until activate() has been
+	 * called again.
+	 *
+	 * If the plugin has the property lv2:hardRTCapable then there are 
+	 * various things that the plugin MUST NOT do within the run()
+	 * function (see lv2.ttl). */
+	void (*run)(LV2_Handle Instance,
+	            uint32_t   SampleCount);
 
-  /** This is the counterpart to activate() (see above). If there is
-   * nothing for deactivate() to do then the plugin writer may provide
-   * a NULL rather than an empty function.
-   *
-   * Hosts must deactivate all activated units after they have been run()
-   * for the last time. This call SHOULD be made as close to the last
-   * run() call as possible and indicates to real-time plugins that
-   * they are no longer live, however plugins MUST NOT rely on prompt
-   * deactivation. Note that connect_port() may be called before or
-   * after a call to deactivate().
-   *
-   * Note that deactivation is not similar to pausing as the plugin
-   * instance will be reinitialised when activate() is called to reuse it.
-   * Hosts MUST NOT call deactivate() unless activate() was previously
-   * called. */
-  void (*deactivate)(LV2_Handle Instance);
+	/** This is the counterpart to activate() (see above). If there is
+	 * nothing for deactivate() to do then the plugin writer may provide
+	 * a NULL rather than an empty function.
+	 *
+	 * Hosts must deactivate all activated units after they have been run()
+	 * for the last time. This call SHOULD be made as close to the last
+	 * run() call as possible and indicates to real-time plugins that
+	 * they are no longer live, however plugins MUST NOT rely on prompt
+	 * deactivation. Note that connect_port() may be called before or
+	 * after a call to deactivate().
+	 *
+	 * Note that deactivation is not similar to pausing as the plugin
+	 * instance will be reinitialised when activate() is called to reuse it.
+	 * Hosts MUST NOT call deactivate() unless activate() was previously
+	 * called. */
+	void (*deactivate)(LV2_Handle Instance);
 
-  /** This is the counterpart to instantiate() (see above).  Once an instance
-   * of a plugin has been finished with it can be deleted using this
-   * function. The instance handle passed ceases to be valid after
-   * this call.
-   * 
-   * If activate() was called for a plugin instance then a corresponding
-   * call to deactivate() MUST be made before cleanup() is called.
-   * Hosts MUST NOT call cleanup() unless instantiate() was previously
-   * called. */
-  void (*cleanup)(LV2_Handle Instance);
-    
-  /** Function pointer that can be used to return additional instance data for
-   * a plugin defined by some extenion (e.g. a struct containing additional
-   * function pointers).
-   *
-   * The actual type and meaning of the returned object MUST be specified 
-   * precisely by the extension if it defines any extra data.  If a particular
-   * extension does not define extra instance data, this function MUST return
-   * NULL for that extension's URI.  If a plugin does not support any
-   * extensions that define extra instance data, this function pointer may be
-   * set to NULL rather than providing an empty function.
-   * 
-   * The only parameter is the URI of the extension. The plugin MUST return
-   * NULL if it does not support the extension, but hosts SHOULD NOT use this
-   * as a discovery method (e.g. hosts should only call this function for
-   * extensions known to be supported by the plugin from the data file).
-   * 
-   * NOTE: It is highly recommended that this function returns a struct, and
-   * NOT a direct function pointer.  Standard C++ (for real reasons) does not
-   * allow type casts from void* to a function pointer type.  To provide
-   * additional functions a struct should be returned containing the extra
-   * function pointers (which is valid standard C++, and a much better idea
-   * for extensibility anyway).
-   */
-  void* (*extension_data)(const char * URI); 
+	/** This is the counterpart to instantiate() (see above).  Once an instance
+	 * of a plugin has been finished with it can be deleted using this
+	 * function. The instance handle passed ceases to be valid after
+	 * this call.
+	 * 
+	 * If activate() was called for a plugin instance then a corresponding
+	 * call to deactivate() MUST be made before cleanup() is called.
+	 * Hosts MUST NOT call cleanup() unless instantiate() was previously
+	 * called. */
+	void (*cleanup)(LV2_Handle Instance);
+
+	/** Function pointer that can be used to return additional instance data for
+	 * a plugin defined by some extenion (e.g. a struct containing additional
+	 * function pointers).
+	 *
+	 * The actual type and meaning of the returned object MUST be specified 
+	 * precisely by the extension if it defines any extra data.  If a particular
+	 * extension does not define extra instance data, this function MUST return
+	 * NULL for that extension's URI.  If a plugin does not support any
+	 * extensions that define extra instance data, this function pointer may be
+	 * set to NULL rather than providing an empty function.
+	 * 
+	 * The only parameter is the URI of the extension. The plugin MUST return
+	 * NULL if it does not support the extension, but hosts SHOULD NOT use this
+	 * as a discovery method (e.g. hosts should only call this function for
+	 * extensions known to be supported by the plugin from the data file).
+	 * 
+	 * NOTE: It is highly recommended that this function returns a struct, and
+	 * NOT a direct function pointer.  Standard C++ (for real reasons) does not
+	 * allow type casts from void* to a function pointer type.  To provide
+	 * additional functions a struct should be returned containing the extra
+	 * function pointers (which is valid standard C++, and a much better idea
+	 * for extensibility anyway).
+	 */
+	void* (*extension_data)(const char * URI); 
 
 } LV2_Descriptor;
 

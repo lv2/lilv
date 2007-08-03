@@ -1,5 +1,5 @@
 # RDF Schema for LV2 plugins
-# *** PROVISIONAL Revision 2007-07-23 ***
+# *** PROVISIONAL Revision 2007-08-03 ***
 #
 # This document describes the classes and properties that are defined by the
 # core LV2 specification.  See <http://lv2plug.in> for more information.
@@ -33,10 +33,10 @@
 
 :Specification a rdfs:Class ;
 	rdfs:comment """
-A part of the system LV2 specification.  This file defines the core of the LV2
-specification, but extensions can be written which add to it.  Specification
-data is distributed in bundles so hosts may discover all present extensions
-and treat them as a single extended "LV2 Specification".
+An LV2 specification (ie this specification, or an LV2 extension).
+
+Specification data, like plugins, is distributed in standardized
+bundles so hosts may discover all present LV2 data.
 See http://lv2plug.in/docs for more details.
 """ .
 
@@ -50,7 +50,7 @@ See http://lv2plug.in/docs for more details.
    doap:programming-language "C" ;
    doap:release [
        doap:revision "1.0beta4" ;
-       doap:created "2007-07-23"
+       doap:created "2007-08-03"
    ] ;
    doap:maintainer [
        a foaf:Person ;
@@ -72,7 +72,7 @@ See http://lv2plug.in/docs for more details.
 :Plugin a rdfs:Class ;
     rdfs:label   "Plugin" ;
     rdfs:comment """
-The class that represents an LV2 plugin.
+The class which represents an LV2 plugin.
 
 To be used by a host a Plugin must have at least the following properties:
     rdf:type (with object :Plugin)
