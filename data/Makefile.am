@@ -1,4 +1,2 @@
-EXTRA_DIST = lv2.ttl
+SUBDIRS = lv2core.lv2
 
-ontologydir = $(datadir)/slv2
-ontology_DATA = lv2.ttl

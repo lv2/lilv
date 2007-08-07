@@ -230,11 +230,21 @@ void
 slv2_world_load_file(SLV2World world, librdf_uri* file_uri)
 {
 	slv2_world_lock_if_necessary(world);
-
-	//printf("LOADING FILE: %s\n", librdf_uri_as_string(file_uri));
-
-	librdf_parser_parse_into_model(world->parser, file_uri, NULL, world->model);
 	
+	librdf_storage* storage = librdf_new_storage(world->world, 
+			"memory", NULL, NULL);
+	librdf_model* model = librdf_new_model(world->world,
+			storage, NULL);
+	librdf_parser_parse_into_model(world->parser, file_uri, NULL, 
+			model);
+
+	librdf_stream* stream = librdf_model_as_stream(model);
+	librdf_model_add_statements(world->model, stream);
+	librdf_free_stream(stream);
+	
+	librdf_free_model(model);
+	librdf_free_storage(storage);
+
 	slv2_world_unlock_if_necessary(world);
 }
 
@@ -310,8 +320,6 @@ slv2_world_load_bundle(SLV2World world, const char* bundle_uri_str)
 		librdf_node* object = librdf_new_node_from_uri(world->world,
 				manifest_uri);
 		
-		//printf("SPEC: %s\n", librdf_uri_as_string(librdf_node_get_uri(subject)));
-
 		librdf_model_add(world->model, subject, predicate, object);
 		
 		/* Add ?specification slv2:bundleURI <file://some/path> */
@@ -425,12 +433,10 @@ slv2_world_load_specifications(SLV2World world)
 	librdf_query_results* results = librdf_query_execute(q, world->model);
 
 	while (!librdf_query_results_finished(results)) {
-		librdf_node* spec_node  = librdf_query_results_get_binding_value(results, 0);
-		librdf_uri*  spec_uri   = librdf_node_get_uri(spec_node);
+		librdf_node* spec_node = librdf_query_results_get_binding_value(results, 0);
+		//librdf_uri*  spec_uri  = librdf_node_get_uri(spec_node);
 		librdf_node* data_node = librdf_query_results_get_binding_value(results, 1);
 		librdf_uri*  data_uri  = librdf_node_get_uri(data_node);
-
-		//printf("SPEC: %s / %s\n", librdf_uri_as_string(spec_uri), librdf_uri_as_string(data_uri));
 
 		slv2_world_load_file(world, data_uri);
 
@@ -458,7 +464,7 @@ slv2_world_load_plugin_classes(SLV2World world)
 		"PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>\n"
 		"SELECT DISTINCT ?class ?parent ?label WHERE {\n"
 		//"	?plugin a ?class .\n"
-		"	?class a :Class; rdfs:subClassOf ?parent; rdfs:label ?label\n"
+		"	?class a rdfs:Class; rdfs:subClassOf ?parent; rdfs:label ?label\n"
 		"} ORDER BY ?class\n";
 	
 	librdf_query* q = librdf_new_query(world->world, "sparql",
@@ -474,8 +480,6 @@ slv2_world_load_plugin_classes(SLV2World world)
 		librdf_node* label_node  = librdf_query_results_get_binding_value(results, 2);
 		const char*  label       = (const char*)librdf_node_get_literal_value(label_node);
 
-		printf("CLASS: %s / %s\n", librdf_uri_as_string(parent_uri), librdf_uri_as_string(class_uri));
-		
 		SLV2PluginClass plugin_class = slv2_plugin_class_new(world,
 				(const char*)librdf_uri_as_string(parent_uri),
 				(const char*)librdf_uri_as_string(class_uri),

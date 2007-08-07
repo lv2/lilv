@@ -16,7 +16,7 @@ SLV2_API_CURRENT=2
 SLV2_API_REVISION=0
 SLV2_API_AGE=0
 
-AC_INIT([slv2],[0.0.2pre],[dave@drobilla.net])
+AC_INIT([slv2],[0.1.0],[dave@drobilla.net])
 
 AC_CONFIG_AUX_DIR([config])
 
@@ -138,6 +138,7 @@ AC_CONFIG_FILES([utils/Makefile])
 AC_CONFIG_FILES([hosts/Makefile])
 AC_CONFIG_FILES([swig/Makefile])
 AC_CONFIG_FILES([data/Makefile])
+AC_CONFIG_FILES([data/lv2core.lv2/Makefile])
 AC_CONFIG_FILES([libslv2.pc])
 AC_CONFIG_FILES([doc/Makefile])
 AC_CONFIG_FILES([doc/reference.doxygen])
