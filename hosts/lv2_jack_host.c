@@ -32,7 +32,7 @@
 
 struct Port {
 	SLV2PortDirection direction;
-	SLV2PortType      type;
+	SLV2PortDataType  type;
 	SLV2Port          slv2_port;
 	jack_port_t*      jack_port;   /**< For audio and MIDI ports, otherwise NULL */
 	float             control;     /**< For control ports, otherwise 0.0f */
@@ -188,7 +188,7 @@ create_port(struct JackHost* host,
 	port->direction = slv2_port_get_direction(host->plugin, port->slv2_port);
 	
 	/* Get the (data) type of the port (control, audio, MIDI, OSC) */
-	port->type = slv2_port_get_type(host->plugin, port->slv2_port);
+	port->type = slv2_port_get_data_type(host->plugin, port->slv2_port);
 
 	if (port->type == SLV2_PORT_TYPE_CONTROL)
 		port->control = slv2_port_get_default_value(host->plugin, port->slv2_port);

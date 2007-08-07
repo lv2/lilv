@@ -35,13 +35,13 @@ extern "C" {
  * Further class information can be using slv2_port_get_value(p, "rdf:type")
  * or a custom query.
  */
-typedef enum _SLV2PortType {
+typedef enum _SLV2PortDataType {
 	SLV2_PORT_TYPE_UNKNOWN,
 	SLV2_PORT_TYPE_CONTROL, /**< One float per block */
 	SLV2_PORT_TYPE_AUDIO,   /**< One float per frame */
 	SLV2_PORT_TYPE_MIDI,    /**< A buffer of MIDI data (LL extension) */
 	SLV2_PORT_TYPE_OSC,     /**< A buffer of OSC data (DR extension) */
-} SLV2PortType;
+} SLV2PortDataType;
 
 /** Direction (input or output) of a port
  *

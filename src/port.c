@@ -91,13 +91,13 @@ slv2_port_get_direction(SLV2Plugin p,
 }
 
 
-SLV2PortType
-slv2_port_get_type(SLV2Plugin p,
-                   SLV2Port   port)
+SLV2PortDataType
+slv2_port_get_data_type(SLV2Plugin p,
+                        SLV2Port   port)
 {
 	SLV2Values type = slv2_port_get_value(p, port, "rdf:type");
 
-	SLV2PortType ret = SLV2_PORT_TYPE_UNKNOWN;
+	SLV2PortDataType ret = SLV2_PORT_TYPE_UNKNOWN;
 
 	if (!type)
 		return ret;

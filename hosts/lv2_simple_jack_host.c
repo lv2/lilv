@@ -164,7 +164,7 @@ create_port(struct JackHost* host,
 	SLV2PortDirection direction = slv2_port_get_direction(host->plugin, port);
 	
 	/* Get the (data) type of the port (control, audio, MIDI, OSC) */
-	SLV2PortType type = slv2_port_get_type(host->plugin, port);
+	SLV2PortDataType type = slv2_port_get_data_type(host->plugin, port);
 	
 	/* Connect control ports to controls array */
 	if (type == SLV2_PORT_TYPE_CONTROL) {

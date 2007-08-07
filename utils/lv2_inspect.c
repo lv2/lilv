@@ -44,7 +44,7 @@ print_port(SLV2Plugin p, uint32_t index)
 			printf("Unknown");
 	}
 
-	SLV2PortType type = slv2_port_get_type(p, port);
+	SLV2PortDataType type = slv2_port_get_data_type(p, port);
 
 	printf("\n\t\tType:       ");
 	switch (type) {

@@ -105,13 +105,13 @@ SLV2PortDirection
 slv2_port_get_direction(SLV2Plugin plugin,
                         SLV2Port   port);
 
-/** Get the (data) type of a port.
+/** Get the data type of a port.
  *
  * Time = Query
  */
-SLV2PortType
-slv2_port_get_type(SLV2Plugin plugin,
-                   SLV2Port   port);
+SLV2PortDataType
+slv2_port_get_data_type(SLV2Plugin plugin,
+                        SLV2Port   port);
 
 
 /** Get the default value of a port.
