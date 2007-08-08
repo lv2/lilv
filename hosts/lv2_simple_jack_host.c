@@ -167,7 +167,7 @@ create_port(struct JackHost* host,
 	SLV2PortDataType type = slv2_port_get_data_type(host->plugin, port);
 	
 	/* Connect control ports to controls array */
-	if (type == SLV2_PORT_TYPE_CONTROL) {
+	if (type == SLV2_PORT_DATA_TYPE_CONTROL) {
 
 		/* Set default control values for inputs */
 		if (direction == SLV2_PORT_DIRECTION_INPUT) {
@@ -177,7 +177,7 @@ create_port(struct JackHost* host,
 		
 		slv2_instance_connect_port(host->instance, index, &host->controls[index]);
 
-	} else if (type == SLV2_PORT_TYPE_AUDIO) {
+	} else if (type == SLV2_PORT_DATA_TYPE_AUDIO) {
 
 		host->jack_ports[index] = jack_port_register(host->jack_client, symbol,
 			JACK_DEFAULT_AUDIO_TYPE,

@@ -97,7 +97,7 @@ slv2_port_get_data_type(SLV2Plugin p,
 {
 	SLV2Values type = slv2_port_get_value(p, port, "rdf:type");
 
-	SLV2PortDataType ret = SLV2_PORT_TYPE_UNKNOWN;
+	SLV2PortDataType ret = SLV2_PORT_DATA_TYPE_UNKNOWN;
 
 	if (!type)
 		return ret;
@@ -107,13 +107,13 @@ slv2_port_get_data_type(SLV2Plugin p,
 		if (slv2_value_is_uri(val)) {
 			const char* uri = slv2_value_as_uri(val);
 			if (!strcmp(uri, "http://lv2plug.in/ns/lv2core#ControlPort"))
-				ret = SLV2_PORT_TYPE_CONTROL;
+				ret = SLV2_PORT_DATA_TYPE_CONTROL;
 			else if (!strcmp(uri, "http://lv2plug.in/ns/lv2core#AudioPort"))
-				ret = SLV2_PORT_TYPE_AUDIO;
+				ret = SLV2_PORT_DATA_TYPE_AUDIO;
 			else if (!strcmp(uri, "http://ll-plugins.nongnu.org/lv2/ext/MidiPort"))
-				ret = SLV2_PORT_TYPE_MIDI;
+				ret = SLV2_PORT_DATA_TYPE_MIDI;
 			else if (!strcmp(uri, "http://drobilla.net/ns/lv2ext/osc/0#OSCPort"))
-				ret = SLV2_PORT_TYPE_OSC;
+				ret = SLV2_PORT_DATA_TYPE_OSC;
 		}
 	}
 
@@ -141,13 +141,13 @@ slv2_port_has_hint(SLV2Plugin p,
 			const char* uri = slv2_value_as_uri(val);
 			if (!strcmp(uri, "http://lv2plug.in/ns/lv2core#connectionOptional"))
 				return true;
-				ret = SLV2_PORT_TYPE_CONTROL;
+				ret = SLV2_PORT_DATA_TYPE_CONTROL;
 			else if (!strcmp(uri, "http://lv2plug.in/ns/lv2core#AudioPort"))
-				ret = SLV2_PORT_TYPE_AUDIO;
+				ret = SLV2_PORT_DATA_TYPE_AUDIO;
 			else if (!strcmp(uri, "http://ll-plugins.nongnu.org/lv2/ext/MidiPort"))
-				ret = SLV2_PORT_TYPE_MIDI;
+				ret = SLV2_PORT_DATA_TYPE_MIDI;
 			else if (!strcmp(uri, "http://drobilla.net/ns/lv2ext/osc/0#OSCPort"))
-				ret = SLV2_PORT_TYPE_OSC;
+				ret = SLV2_PORT_DATA_TYPE_OSC;
 		}
 	}
 

@@ -48,16 +48,16 @@ print_port(SLV2Plugin p, uint32_t index)
 
 	printf("\n\t\tType:       ");
 	switch (type) {
-		case SLV2_PORT_TYPE_CONTROL:
+		case SLV2_PORT_DATA_TYPE_CONTROL:
 			printf("Control");
 			break;
-		case SLV2_PORT_TYPE_AUDIO:
+		case SLV2_PORT_DATA_TYPE_AUDIO:
 			printf("Audio");
 			break;
-		case SLV2_PORT_TYPE_MIDI:
+		case SLV2_PORT_DATA_TYPE_MIDI:
 			printf("MIDI");
 			break;
-		case SLV2_PORT_TYPE_OSC:
+		case SLV2_PORT_DATA_TYPE_OSC:
 			printf("OSC");
 			break;
 		default:
@@ -72,7 +72,7 @@ print_port(SLV2Plugin p, uint32_t index)
 	printf("\t\tName:       %s\n", str);
 	free(str);
 
-	if (type == SLV2_PORT_TYPE_CONTROL) {
+	if (type == SLV2_PORT_DATA_TYPE_CONTROL) {
 		printf("\t\tMinimum:    %f\n", slv2_port_get_minimum_value(p, port));
 		printf("\t\tMaximum:    %f\n", slv2_port_get_maximum_value(p, port));
 		printf("\t\tDefault:    %f\n", slv2_port_get_default_value(p, port));

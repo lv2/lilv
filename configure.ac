@@ -12,11 +12,11 @@ AC_PREREQ(2.59)
 # Version history:
 # 0.0.1 = 0,0,0
 # current svn = 2,0,0
-SLV2_API_CURRENT=2
+SLV2_API_CURRENT=3
 SLV2_API_REVISION=0
 SLV2_API_AGE=0
 
-AC_INIT([slv2],[0.1.0],[dave@drobilla.net])
+AC_INIT([slv2],[0.2.0],[dave@drobilla.net])
 
 AC_CONFIG_AUX_DIR([config])
 
