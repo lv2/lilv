@@ -11,5 +11,5 @@ lv2_inspect_SOURCES = lv2_inspect.c
 lv2_inspect_LDADD = ../src/libslv2.la 
 
 ladspa2lv2_SOURCES = ladspa2lv2.c
-ladspa2lv2_LDADD = -ldl @REDLAND_LIBS@
+ladspa2lv2_LDADD = -ldl -lm @REDLAND_LIBS@
 
