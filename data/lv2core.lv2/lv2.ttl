@@ -1,5 +1,5 @@
 # RDF Schema for LV2 plugins
-# *** PROVISIONAL Revision 2007-08-03 ***
+# *** PROVISIONAL Revision 1.0beta5 (2007-09-14) ***
 #
 # This document describes the classes and properties that are defined by the
 # core LV2 specification.  See <http://lv2plug.in> for more information.
@@ -49,8 +49,8 @@ See http://lv2plug.in/docs for more details.
    doap:shortdesc "An audio processing plugin specification" ;
    doap:programming-language "C" ;
    doap:release [
-       doap:revision "1.0beta4" ;
-       doap:created "2007-08-03"
+       doap:revision "1.0beta5" ;
+       doap:created "2007-09-14"
    ] ;
    doap:maintainer [
        a foaf:Person ;
@@ -150,6 +150,16 @@ Ports of this type will be connected to an array of length SampleCount
 conforming to the 32bit IEEE-754 floating point specification.
 """ .
 
+
+###################################
+# Mandatory Plugin RDF:Properties #
+###################################
+
+:port a rdf:Property ;
+	rdfs:domain  :Plugin ;
+	rdfs:range   :Port ;
+	rdfs:label   "port" ;
+	rdfs:comment "Relates a Plugin to the Ports it contains" .
 
 
 ##################################
@@ -290,6 +300,7 @@ hosts SHOULD always check this before attempting to instantiate a plugin
 ####################
 
 :Property a rdfs:Class ;
+    rdfs:subClassOf rdf:Property ;
     rdfs:label "Property" ;
     rdfs:comment """
 An LV2 Property.  A host MUST NOT ignore the presence of a Property
