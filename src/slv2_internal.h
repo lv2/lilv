@@ -146,18 +146,7 @@ struct _SLV2World {
 	librdf_node*      lv2_specification_node;
 	librdf_node*      lv2_plugin_node;
 	librdf_node*      rdf_a_node;
-
-	void (*rdf_lock)(void*);
-	void (*rdf_unlock)(void*);
-	void* rdf_lock_data;
-	int rdf_lock_count;
 };
-
-void
-slv2_world_lock_if_necessary(SLV2World world);
-
-void
-slv2_world_unlock_if_necessary(SLV2World world);
 
 /** Load all bundles found in \a search_path.
  *
