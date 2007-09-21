@@ -147,10 +147,10 @@ slv2_instance_run(SLV2Instance instance,
 {
 	assert(instance);
 	assert(instance->lv2_descriptor);
-	assert(instance->lv2_handle),
-	assert(instance->lv2_descriptor->run);
-	
-	instance->lv2_descriptor->run(instance->lv2_handle, sample_count);
+	assert(instance->lv2_handle);
+
+	if (instance->lv2_descriptor->run)
+		instance->lv2_descriptor->run(instance->lv2_handle, sample_count);
 }
 
 
