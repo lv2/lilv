@@ -2,7 +2,7 @@
  * *** PROVISIONAL ***
  *
  * Copyright (C) 2000-2002 Richard W.E. Furse, Paul Barton-Davis,
- *                         Stefan Westerfeld
+ *                         Stefan Westerfeld.
  * Copyright (C) 2006-2007 Steve Harris, Dave Robillard.
  *
  * This header is free software; you can redistribute it and/or modify it
@@ -36,7 +36,7 @@ extern "C" {
 
 /** @file lv2.h
  *
- * Revision: 1.0beta4
+ * Revision: 1.0beta5
  *
  * == Overview ==
  *
@@ -54,18 +54,19 @@ extern "C" {
  * possible - the data file is mandatory.
  *
  * Plugins are expected to distinguish between control rate and audio
- * rate data. Plugins have 'ports' that are inputs or outputs for audio
- * or control data and each plugin is 'run' for a 'block' corresponding
- * to a short time interval measured in samples. Audio rate data is
- * communicated using arrays with one element per sample processed,
+ * rate data (or other types of data defined by extensions). Plugins have
+ * 'ports' that are inputs or outputs and each plugin is 'run' for a 'block'
+ * corresponding to a short time interval measured in samples. Audio rate
+ * data is communicated using arrays with one element per sample processed,
  * allowing a block of audio to be processed by the plugin in a single
  * pass. Control rate data is communicated using single values. Control
  * rate data has a single value at the start of a call to the 'run()'
  * function, and may be considered to remain this value for its duration.
- * Thus the 'control rate' is determined by the block size, controlled
- * by the host.  The plugin may assume that all its input and output
- * ports have been connected to the relevant data location (see the
- * 'connect_port()' function below) before it is asked to run.
+ * Thus the 'control rate' is determined by the block size, controlled by
+ * the host.  The plugin may assume that all its input and output ports have
+ * been connected to the relevant data location (see the 'connect_port()'
+ * function below) before it is asked to run, unless the port has been set
+ * 'connection optional' in the plugin's data file.
  *
  * Plugins will reside in shared object files suitable for dynamic linking
  * by dlopen() and family. The file will provide a number of 'plugin
@@ -84,14 +85,16 @@ extern "C" {
  * To facilitate this, the functions provided by a plugin are divided into
  * classes:
  *
- *  - Audio class:           run(), connect_port()
- *  - Instantiation class:   instantiate(), cleanup(), 
- *                           activate(), deactivate()
+ *  - Discovery class:     lv2_descriptor(), extension_data()
+ *  - Instantiation class: instantiate(), cleanup(), activate(), deactivate()
+ *  - Audio class:         run(), connect_port()
  *
  * Extensions to this specification which add new functions MUST declare in
  * which of these classes the functions belong, or define new classes for them.
  * The rules that hosts must follow are these:
  * 
+ *  - When a function from the Discovery class is running, no other 
+ *    functions in the same shared object file may run.
  *  - When a function from the Instantiation class is running for a plugin 
  *    instance, no other functions for that instance may run.
  *  - When a function is running for a plugin instance, no other 
@@ -100,9 +103,6 @@ extern "C" {
  * Any simultaneous calls that are not explicitly forbidden by these rules
  * are allowed. For example, a host may call run() for two different plugin 
  * instances simultaneously.
- *
- * The extension_data() function and the lv2_descriptor() function are never 
- * associated with any plugin instances and may be called at any time.
  */
 
 
@@ -127,14 +127,12 @@ typedef void * LV2_Handle;
  * feature the host has which the plugin may depend on.  This is to allow
  * extensions to the LV2 specification without causing any breakage.  The base
  * LV2 specification does not define any host features; hosts are not required
- * to use this facility.
- */
+ * to use this facility. */
 typedef struct _LV2_Host_Feature {
 	/** A globally unique, case-sensitive identifier for this feature.
 	 *
 	 * This MUST be defined in the specification of any LV2 extension which
-	 * defines a host feature.
-	 */
+	 * defines a host feature. */
 	const char * URI;
 
 	/** Pointer to arbitrary data.
@@ -144,8 +142,7 @@ typedef struct _LV2_Host_Feature {
 	 * specification makes no restrictions on the contents of this data.
 	 * The data here MUST be cleary defined by the LV2 extension which defines
 	 * this feature.
-	 * If no data is required, this may be set to NULL.
-	 */
+	 * If no data is required, this may be set to NULL. */
 	void * data;
 } LV2_Host_Feature;
 
@@ -195,10 +192,10 @@ typedef struct _LV2_Descriptor {
 	 * Note that instance initialisation should generally occur in
 	 * activate() rather than here.  If a host calls instantiate, it MUST
 	 * call cleanup() at some point in the future. */
-	LV2_Handle (*instantiate)(const struct _LV2_Descriptor *  Descriptor,
-	                          double                          SampleRate,
-	                          const char *                    BundlePath,
-	                          const LV2_Host_Feature *const * HostFeatures);
+	LV2_Handle (*instantiate)(const struct _LV2_Descriptor *  descriptor,
+	                          double                          sample_rate,
+	                          const char *                    bundle_path,
+	                          const LV2_Host_Feature *const * host_features);
 
 	/** Function pointer that connects a port on a plugin instance to a memory
 	 * location where the block of data for the port will be read/written.
@@ -231,9 +228,9 @@ typedef struct _LV2_Descriptor {
 	 * If the plugin has the property lv2:hardRTCapable then there are 
 	 * various things that the plugin MUST NOT do within the connect_port()
 	 * function (see lv2.ttl). */
-	void (*connect_port)(LV2_Handle Instance,
-	                     uint32_t   Port,
-	                     void *     DataLocation);
+	void (*connect_port)(LV2_Handle instance,
+	                     uint32_t   port,
+	                     void *     data_location);
 
 	/** Function pointer that initialises a plugin instance and activates
 	 * it for use.
@@ -257,7 +254,7 @@ typedef struct _LV2_Descriptor {
 	 *
 	 * Note that connect_port() may be called before or after a call to
 	 * activate(). */
-	void (*activate)(LV2_Handle Instance);
+	void (*activate)(LV2_Handle instance);
 
 	/** Function pointer that runs a plugin instance for a block.
 	 *
@@ -273,8 +270,8 @@ typedef struct _LV2_Descriptor {
 	 * If the plugin has the property lv2:hardRTCapable then there are 
 	 * various things that the plugin MUST NOT do within the run()
 	 * function (see lv2.ttl). */
-	void (*run)(LV2_Handle Instance,
-	            uint32_t   SampleCount);
+	void (*run)(LV2_Handle instance,
+	            uint32_t   sampleCount);
 
 	/** This is the counterpart to activate() (see above). If there is
 	 * nothing for deactivate() to do then the plugin writer may provide
@@ -291,7 +288,7 @@ typedef struct _LV2_Descriptor {
 	 * instance will be reinitialised when activate() is called to reuse it.
 	 * Hosts MUST NOT call deactivate() unless activate() was previously
 	 * called. */
-	void (*deactivate)(LV2_Handle Instance);
+	void (*deactivate)(LV2_Handle instance);
 
 	/** This is the counterpart to instantiate() (see above).  Once an instance
 	 * of a plugin has been finished with it can be deleted using this
@@ -302,7 +299,7 @@ typedef struct _LV2_Descriptor {
 	 * call to deactivate() MUST be made before cleanup() is called.
 	 * Hosts MUST NOT call cleanup() unless instantiate() was previously
 	 * called. */
-	void (*cleanup)(LV2_Handle Instance);
+	void (*cleanup)(LV2_Handle instance);
 
 	/** Function pointer that can be used to return additional instance data for
 	 * a plugin defined by some extenion (e.g. a struct containing additional
@@ -319,15 +316,16 @@ typedef struct _LV2_Descriptor {
 	 * NULL if it does not support the extension, but hosts SHOULD NOT use this
 	 * as a discovery method (e.g. hosts should only call this function for
 	 * extensions known to be supported by the plugin from the data file).
+	 *
+	 * The host is never responsible for freeing the returned value.
 	 * 
 	 * NOTE: It is highly recommended that this function returns a struct, and
 	 * NOT a direct function pointer.  Standard C++ (for real reasons) does not
 	 * allow type casts from void* to a function pointer type.  To provide
 	 * additional functions a struct should be returned containing the extra
 	 * function pointers (which is valid standard C++, and a much better idea
-	 * for extensibility anyway).
-	 */
-	void* (*extension_data)(const char * URI); 
+	 * for extensibility anyway). */
+	void* (*extension_data)(const char * uri); 
 
 } LV2_Descriptor;
 
@@ -360,12 +358,12 @@ typedef struct _LV2_Descriptor {
  * index that results in NULL being returned.  Index has no meaning,
  * hosts MUST NOT depend on it remaining constant (ie when serialising)
  * in any way. */
-const LV2_Descriptor * lv2_descriptor(uint32_t Index);
+const LV2_Descriptor * lv2_descriptor(uint32_t index);
 
 
 /** Datatype corresponding to the lv2_descriptor() function. */
 typedef const LV2_Descriptor * 
-(*LV2_Descriptor_Function)(uint32_t Index);
+(*LV2_Descriptor_Function)(uint32_t index);
 
 
 /* ******************************************************************** */

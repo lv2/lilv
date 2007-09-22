@@ -32,11 +32,14 @@
 
 
 SLV2GUIInstance
-slv2_plugin_gtk2_gui_instantiate(SLV2Plugin                 plugin,
-                                 SLV2Value                  gui,
-                                 LV2UI_Set_Control_Function control_function,
-                                 LV2UI_Controller           controller,
-                                 const LV2_Host_Feature**   host_features)
+slv2_plugin_gtk2_gui_instantiate(SLV2Plugin                     plugin,
+                                 SLV2Value                      gui,
+                                 LV2UI_Write_Function           write_function,
+                                 LV2UI_Command_Function         command_function,
+                                 LV2UI_Program_Change_Function  program_function,
+                                 LV2UI_Program_Save_Function    save_function,
+                                 LV2UI_Controller               controller,
+                                 const LV2_Host_Feature* const* host_features)
 {
 	assert(gui->type == SLV2_VALUE_GUI);
 
@@ -48,7 +51,7 @@ slv2_plugin_gtk2_gui_instantiate(SLV2Plugin                 plugin,
 	bool local_host_features = (host_features == NULL);
 	if (local_host_features) {
 		host_features = malloc(sizeof(LV2_Host_Feature));
-		host_features[0] = NULL;
+		((LV2_Host_Feature**)host_features)[0] = NULL;
 	}
 	
 	const char* const lib_uri = slv2_value_as_uri(slv2_plugin_get_gui_library_uri(plugin, gui));
@@ -101,9 +104,12 @@ slv2_plugin_gtk2_gui_instantiate(SLV2Plugin                 plugin,
 				impl->lv2ui_handle = ld->instantiate(ld, 
 						slv2_plugin_get_uri(plugin),
 						(char*)bundle_path, 
-						control_function,
+						write_function,
+						command_function,
+						program_function,
+						save_function,
 						controller,
-						(struct _GtkWidget**)&impl->widget,
+						&impl->widget,
 						host_features);
 				impl->lib_handle = lib;
 				result->pimpl = impl;
@@ -130,7 +136,7 @@ slv2_plugin_gtk2_gui_instantiate(SLV2Plugin                 plugin,
 	}
 
 	if (local_host_features)
-		free(host_features);
+		free((LV2_Host_Feature**)host_features);
 
 	return result;
 }
@@ -150,7 +156,7 @@ slv2_gtk2_gui_instance_free(SLV2GUIInstance instance)
 }
 
 
-struct _GtkWidget*
+LV2UI_Widget
 slv2_gtk2_gui_instance_get_widget(SLV2GUIInstance instance) {
 	return instance->pimpl->widget;
 }

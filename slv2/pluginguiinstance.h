@@ -25,7 +25,7 @@ extern "C" {
 #endif
 
 #include <assert.h>
-#include <slv2/lv2-gtk2gui.h>
+#include <slv2/lv2_gui.h>
 #include <slv2/plugin.h>
 
 /** \defgroup lib Plugin GUI library access
@@ -72,11 +72,14 @@ typedef struct _SLV2GUIInstance {
  * \return NULL if instantiation failed.
  */
 SLV2GUIInstance
-slv2_plugin_gtk2_gui_instantiate(SLV2Plugin                 plugin,
-                                 SLV2Value                  gui,
-                                 LV2UI_Set_Control_Function control_function,
-                                 LV2UI_Controller           controller,
-                                 const LV2_Host_Feature**   host_features);
+slv2_plugin_gtk2_gui_instantiate(SLV2Plugin                     plugin,
+                                 SLV2Value                      gui,
+                                 LV2UI_Write_Function           write_function,
+                                 LV2UI_Command_Function         command_function,
+                                 LV2UI_Program_Change_Function  program_function,
+                                 LV2UI_Program_Save_Function    save_function,
+                                 LV2UI_Controller               controller,
+                                 const LV2_Host_Feature* const* host_features);
 
 
 /** Free a plugin GUI instance.
@@ -87,9 +90,9 @@ void
 slv2_gtk2_gui_instance_free(SLV2GUIInstance instance);
 
 
-/** Get the GTK+ 2.0 widget for the GUI instance.
+/** Get the widget for the GUI instance.
  */
-struct _GtkWidget*
+LV2UI_Widget
 slv2_gtk2_gui_instance_get_widget(SLV2GUIInstance instance);
 
 

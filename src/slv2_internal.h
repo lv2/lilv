@@ -28,7 +28,7 @@ extern "C" {
 #include <inttypes.h>
 #include <librdf.h>
 #include <slv2/types.h>
-#include <slv2/lv2-gtk2gui.h>
+#include <slv2/lv2_gui.h>
 
 
 
@@ -103,7 +103,7 @@ struct _SLV2GUIInstanceImpl {
 	void*                   lib_handle;
 	const LV2UI_Descriptor* lv2ui_descriptor;
 	LV2UI_Handle            lv2ui_handle;
-	void*                   widget;
+	LV2UI_Widget            widget;
 };
 
 
