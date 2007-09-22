@@ -74,7 +74,7 @@ slv2_value_is_uri(SLV2Value value);
 /** Return this value as a URI string, e.g. "http://example.org/foo".
  * 
  * Valid to call only if slv2_value_is_uri(\a value) or
- * slv2_value_is_gui(\a value) returns true.
+ * slv2_value_is_ui(\a value) returns true.
  * Returned value is owned by \a value and must not be freed by caller.
  * 
  * Time = O(1)
@@ -175,24 +175,24 @@ slv2_value_as_int(SLV2Value value);
 /** Return whether this value is a GUI (URI and type).
  *
  * If this returns true, slv2_value_as_uri will return the URI of the GUI,
- * and slv2_value_as_gui_type will return the SLV2GUIType (which can be
+ * and slv2_value_as_ui_type will return the SLV2UIType (which can be
  * used to find the URI of the corresponding GUI spec itself, with
- * slv2_gui_type_get_uri).
+ * slv2_ui_type_get_uri).
  *
  * Time = O(1)
  */
 bool
-slv2_value_is_gui(SLV2Value value);
+slv2_value_is_ui(SLV2Value value);
 
 
-/** Return \a value as an SLV2GUIType.
+/** Return \a value as an SLV2UIType.
  * 
- * Valid to call only if slv2_value_is_gui(\a value) returns true.
+ * Valid to call only if slv2_value_is_ui(\a value) returns true.
  *
  * Time = O(1)
  */
-SLV2GUIType
-slv2_value_as_gui_type(SLV2Value value);
+SLV2UIType
+slv2_value_as_ui_type(SLV2Value value);
 
 
 /** @} */

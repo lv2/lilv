@@ -30,11 +30,11 @@ extern "C" {
 #include <slv2/port.h>
 #include <slv2/values.h>
 
-/** \defgroup gui Plugin GUI helpers
+/** \defgroup ui Plugin GUI helpers
  *
  * SLV2 provides access to plugin GUIs, but does not depend on any widget sets
  * itself.  Paths to libraries and opaque pointers to objects are returned, but
- * the GUI extension itself (the URI of which can be had with slv2_gui_get_uri)
+ * the GUI extension itself (the URI of which can be had with slv2_ui_get_uri)
  * defines the specifics of how to use these objects/files/etc.
  *
  * @{
@@ -47,7 +47,7 @@ extern "C" {
  * Time = O(1)
  */
 const char*
-slv2_gui_type_get_uri(SLV2GUIType type);
+slv2_ui_type_get_uri(SLV2UIType type);
 
 
 /** @} */

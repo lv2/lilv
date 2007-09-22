@@ -55,11 +55,11 @@ AC_ARG_ENABLE(debug,
 	[AS_HELP_STRING(--enable-debug, [Enable debugging (false)])],
 	[debug="$enableval"])
 if test "$debug" = "yes"; then
-  CFLAGS="-O0 -g -DDEBUG"
-  CXXFLAGS="-O0 -g -DDEBUG"
+  CFLAGS="-O0 -g -DDEBUG -DLIBRDF_DEBUG"
+  CXXFLAGS="-O0 -g -DDEBUG -DLIBRDF_DEBUG"
 else
-  CFLAGS="$CFLAGS -DNDEBUG"
-  CXXFLAGS="$CFLAGS -DNDEBUG"
+  CFLAGS="$CFLAGS -DNDEBUG -DLIBRDF_DEBUG"
+  CXXFLAGS="$CFLAGS -DNDEBUG -DLIBRDF_DEBUG"
 fi
 
 # Check for strict flag

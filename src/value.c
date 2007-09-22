@@ -90,7 +90,7 @@ slv2_value_get_turtle_token(SLV2Value value)
 	char*  result = NULL;
 
 	switch (value->type) {
-	case SLV2_VALUE_GUI:
+	case SLV2_VALUE_UI:
 	case SLV2_VALUE_URI:
 		len = strlen(value->str_val) + 3;
 		result = calloc(len, sizeof(char));
@@ -119,14 +119,14 @@ slv2_value_get_turtle_token(SLV2Value value)
 bool
 slv2_value_is_uri(SLV2Value value)
 {
-	return (value->type == SLV2_VALUE_URI || value->type == SLV2_VALUE_GUI);
+	return (value->type == SLV2_VALUE_URI || value->type == SLV2_VALUE_UI);
 }
 
 
 const char*
 slv2_value_as_uri(SLV2Value value)
 {
-	assert(slv2_value_is_uri(value) || slv2_value_is_gui(value));
+	assert(slv2_value_is_uri(value) || slv2_value_is_ui(value));
 	return value->str_val;
 }
 
@@ -187,16 +187,16 @@ slv2_value_as_float(SLV2Value value)
 
 
 bool
-slv2_value_is_gui(SLV2Value value)
+slv2_value_is_ui(SLV2Value value)
 {
-	return (value->type == SLV2_VALUE_GUI);
+	return (value->type == SLV2_VALUE_UI);
 }
 
 
-SLV2GUIType
-slv2_value_as_gui_type(SLV2Value value)
+SLV2UIType
+slv2_value_as_ui_type(SLV2Value value)
 {
-	assert(slv2_value_is_gui(value));
-	return value->val.gui_type_val;
+	assert(slv2_value_is_ui(value));
+	return value->val.ui_type_val;
 }
 

@@ -342,30 +342,30 @@ slv2_plugin_get_port_by_symbol(SLV2Plugin  plugin,
                                const char* symbol);
 
 
-/** Get a list of all GUIs available for this plugin.
+/** Get a list of all UIs available for this plugin.
  *
- * Note this returns the URI of the GUI, and not the path/URI to its shared
- * library, use slv2_plugin_gui_get_library_uri with the values returned
+ * Note this returns the URI of the UI, and not the path/URI to its shared
+ * library, use slv2_plugin_ui_get_library_uri with the values returned
  * here for that.
  *
- * \param plugin The plugin to get the GUIs for. 
+ * \param plugin The plugin to get the UIs for. 
  *
  * Time = Query
  */
 SLV2Values
-slv2_plugin_get_guis(SLV2Plugin plugin);
+slv2_plugin_get_uis(SLV2Plugin plugin);
 
 
-/** Get the URI for a GUI library.
+/** Get the URI for a UI library.
  *
- * \param plugin The plugin that the GUI is for.
- * \param gui    A GUI identifier as returned by slv2_plugin_get_guis() (with type SLV2_VALUE_GUI).
+ * \param plugin The plugin that the UI is for.
+ * \param ui     A UI identifier as returned by slv2_plugin_get_uis() (with type SLV2_VALUE_UI).
  *
  * Time = Query
  */
 SLV2Value
-slv2_plugin_get_gui_library_uri(SLV2Plugin plugin, 
-                                SLV2Value  gui);
+slv2_plugin_get_ui_library_uri(SLV2Plugin plugin, 
+                               SLV2Value  ui);
 
 
 /** @} */

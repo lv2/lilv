@@ -26,27 +26,27 @@
 #include <dlfcn.h>
 #include <slv2/types.h>
 #include <slv2/plugin.h>
-#include <slv2/pluginguiinstance.h>
+#include <slv2/pluginuiinstance.h>
 #include <slv2/util.h>
 #include "slv2_internal.h"
 
 
-SLV2GUIInstance
-slv2_plugin_gtk2_gui_instantiate(SLV2Plugin                     plugin,
-                                 SLV2Value                      gui,
-                                 LV2UI_Write_Function           write_function,
-                                 LV2UI_Command_Function         command_function,
-                                 LV2UI_Program_Change_Function  program_function,
-                                 LV2UI_Program_Save_Function    save_function,
-                                 LV2UI_Controller               controller,
-                                 const LV2_Host_Feature* const* host_features)
+SLV2UIInstance
+slv2_plugin_ui_instantiate(SLV2Plugin                     plugin,
+                           SLV2Value                      ui,
+                           LV2UI_Write_Function           write_function,
+                           LV2UI_Command_Function         command_function,
+                           LV2UI_Program_Change_Function  program_function,
+                           LV2UI_Program_Save_Function    save_function,
+                           LV2UI_Controller               controller,
+                           const LV2_Host_Feature* const* host_features)
 {
-	assert(gui->type == SLV2_VALUE_GUI);
+	assert(ui->type == SLV2_VALUE_UI);
 
-	if (gui->val.gui_type_val != SLV2_GUI_TYPE_GTK2)
+	if (ui->val.ui_type_val != SLV2_UI_TYPE_GTK2)
 		return NULL;
 
-	struct _SLV2GUIInstance* result = NULL;
+	struct _SLV2UIInstance* result = NULL;
 	
 	bool local_host_features = (host_features == NULL);
 	if (local_host_features) {
@@ -54,7 +54,7 @@ slv2_plugin_gtk2_gui_instantiate(SLV2Plugin                     plugin,
 		((LV2_Host_Feature**)host_features)[0] = NULL;
 	}
 	
-	const char* const lib_uri = slv2_value_as_uri(slv2_plugin_get_gui_library_uri(plugin, gui));
+	const char* const lib_uri = slv2_value_as_uri(slv2_plugin_get_ui_library_uri(plugin, ui));
 	const char* const lib_path = slv2_uri_to_path(lib_uri);
 	
 	if (!lib_path)
@@ -63,7 +63,7 @@ slv2_plugin_gtk2_gui_instantiate(SLV2Plugin                     plugin,
 	dlerror();
 	void* lib = dlopen(lib_path, RTLD_NOW);
 	if (!lib) {
-		fprintf(stderr, "Unable to open GUI library %s (%s)\n", lib_path, dlerror());
+		fprintf(stderr, "Unable to open UI library %s (%s)\n", lib_path, dlerror());
 		return NULL;
 	}
 	
@@ -71,35 +71,35 @@ slv2_plugin_gtk2_gui_instantiate(SLV2Plugin                     plugin,
 	
 	if (!df) {
 		fprintf(stderr, "Could not find symbol 'lv2ui_descriptor', "
-				"%s is not a LV2 plugin GUI.\n", lib_path);
+				"%s is not a LV2 plugin UI.\n", lib_path);
 		dlclose(lib);
 		return NULL;
 	} else {
 		// Search for plugin by URI
 		
-		// FIXME: Bundle in plugin GUI only, boo
+		// FIXME: Bundle in plugin UI only, boo
 		const char* bundle_path = slv2_uri_to_path(slv2_plugin_get_bundle_uri(plugin));
-		printf("GUI bundle path: %s\n", bundle_path);
+		printf("UI bundle path: %s\n", bundle_path);
 		
 		for (uint32_t i=0; 1; ++i) {
 			
 			const LV2UI_Descriptor* ld = df(i);
 				
 			if (!ld) {
-				fprintf(stderr, "Did not find GUI %s in %s\n",
-						slv2_value_as_uri(gui), lib_path);
+				fprintf(stderr, "Did not find UI %s in %s\n",
+						slv2_value_as_uri(ui), lib_path);
 				dlclose(lib);
 				break; // return NULL
-			} else if (!strcmp(ld->URI, slv2_value_as_uri(gui))) {
+			} else if (!strcmp(ld->URI, slv2_value_as_uri(ui))) {
 
-				printf("Found GUI %s at index %u in:\n\t%s\n\n",
+				printf("Found UI %s at index %u in:\n\t%s\n\n",
 				       librdf_uri_as_string(plugin->plugin_uri), i, lib_path);
 
 				assert(ld->instantiate);
 
-				// Create SLV2GUIInstance to return
-				result = malloc(sizeof(struct _SLV2GUIInstance));
-				struct _SLV2GUIInstanceImpl* impl = malloc(sizeof(struct _SLV2GUIInstanceImpl));
+				// Create SLV2UIInstance to return
+				result = malloc(sizeof(struct _SLV2UIInstance));
+				struct _SLV2UIInstanceImpl* impl = malloc(sizeof(struct _SLV2UIInstanceImpl));
 				impl->lv2ui_descriptor = ld;
 				impl->lv2ui_handle = ld->instantiate(ld, 
 						slv2_plugin_get_uri(plugin),
@@ -131,7 +131,7 @@ slv2_plugin_gtk2_gui_instantiate(SLV2Plugin                     plugin,
 	// Failed to create a widget, but still got a handle - this means that
 	// the plugin is buggy
 	if (result->pimpl->widget == NULL) {
-		slv2_gtk2_gui_instance_free(result);
+		slv2_ui_instance_free(result);
 		return NULL;
 	}
 
@@ -143,9 +143,9 @@ slv2_plugin_gtk2_gui_instantiate(SLV2Plugin                     plugin,
 
 
 void
-slv2_gtk2_gui_instance_free(SLV2GUIInstance instance)
+slv2_ui_instance_free(SLV2UIInstance instance)
 {
-	struct _SLV2GUIInstance* i = (struct _SLV2GUIInstance*)instance;
+	struct _SLV2UIInstance* i = (struct _SLV2UIInstance*)instance;
 	i->pimpl->lv2ui_descriptor->cleanup(i->pimpl->lv2ui_handle);
 	i->pimpl->lv2ui_descriptor = NULL;
 	dlclose(i->pimpl->lib_handle);
@@ -157,19 +157,19 @@ slv2_gtk2_gui_instance_free(SLV2GUIInstance instance)
 
 
 LV2UI_Widget
-slv2_gtk2_gui_instance_get_widget(SLV2GUIInstance instance) {
+slv2_ui_instance_get_widget(SLV2UIInstance instance) {
 	return instance->pimpl->widget;
 }
 
 
 const LV2UI_Descriptor*
-slv2_gtk2_gui_instance_get_descriptor(SLV2GUIInstance instance) {
+slv2_ui_instance_get_descriptor(SLV2UIInstance instance) {
 	return instance->pimpl->lv2ui_descriptor;
 }
 
 
 LV2_Handle
-slv2_gtk2_gui_instance_get_handle(SLV2GUIInstance instance) {
+slv2_ui_instance_get_handle(SLV2UIInstance instance) {
 	return instance->pimpl->lv2ui_handle;
 }
 

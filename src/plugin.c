@@ -560,18 +560,18 @@ slv2_plugin_get_port_by_symbol(SLV2Plugin  p,
 
 
 SLV2Values
-slv2_plugin_get_guis(SLV2Plugin plugin)
+slv2_plugin_get_uis(SLV2Plugin plugin)
 {
 	if (!plugin->rdf)
 		slv2_plugin_load(plugin);
 
 	SLV2Values result = slv2_plugin_get_value(plugin, SLV2_URI, 
-			"http://ll-plugins.nongnu.org/lv2/ext/gtk2gui#gui");
+			"http://ll-plugins.nongnu.org/lv2/ext/gui/dev/1#gui");
 
 	for (int i=0; i < raptor_sequence_size(result); ++i) {
 		SLV2Value val = (SLV2Value)raptor_sequence_get_at(result, i);
-		val->type = SLV2_VALUE_GUI;
-		val->val.gui_type_val = SLV2_GUI_TYPE_GTK2;
+		val->type = SLV2_VALUE_UI;
+		val->val.ui_type_val = SLV2_UI_TYPE_GTK2;
 	}
 
 	return result;
@@ -579,16 +579,16 @@ slv2_plugin_get_guis(SLV2Plugin plugin)
 
 
 SLV2Value
-slv2_plugin_get_gui_library_uri(SLV2Plugin plugin, 
-                                SLV2Value  gui)
+slv2_plugin_get_ui_library_uri(SLV2Plugin plugin, 
+                                SLV2Value  ui)
 {
-	assert(gui->type == SLV2_VALUE_GUI);
+	assert(ui->type == SLV2_VALUE_UI);
 	
 	if (!plugin->rdf)
 		slv2_plugin_load(plugin);
 
-	SLV2Values values =  slv2_plugin_get_value_for_subject(plugin, gui, SLV2_URI,
-			"http://ll-plugins.nongnu.org/lv2/ext/gtk2gui#binary");
+	SLV2Values values =  slv2_plugin_get_value_for_subject(plugin, ui, SLV2_URI,
+			"http://ll-plugins.nongnu.org/lv2/ext/gui/dev/1#binary");
 
 	if (!values || slv2_values_size(values) == 0) {
 		slv2_values_free(values);
@@ -609,20 +609,20 @@ slv2_plugin_get_gui_library_uri(SLV2Plugin plugin,
 
 
 const char*
-slv2_gui_type_get_uri(SLV2GUIType type)
+slv2_ui_type_get_uri(SLV2UIType type)
 {
-	if (type == SLV2_GUI_TYPE_GTK2)
-		return "http://ll-plugins.nongnu.org/lv2/ext/gtk2gui";
+	if (type == SLV2_UI_TYPE_GTK2)
+		return "http://ll-plugins.nongnu.org/ext/gui/dev/1#GtkUI";
 	else
 		return NULL;
 }
 
 
 void*
-slv2_plugin_load_gui(SLV2Plugin plugin,
-                     SLV2Value  gui)
+slv2_plugin_load_ui(SLV2Plugin plugin,
+                    SLV2Value  ui)
 {
-	SLV2Value lib_uri = slv2_plugin_get_gui_library_uri(plugin, gui);
+	SLV2Value lib_uri = slv2_plugin_get_ui_library_uri(plugin, ui);
 
 	if (!lib_uri)
 		return NULL;
