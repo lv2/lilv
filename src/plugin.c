@@ -29,6 +29,7 @@
 #include <slv2/values.h>
 #include <slv2/pluginclass.h>
 #include <slv2/pluginclasses.h>
+#include <slv2/pluginuis.h>
 
 
 /* private */
@@ -239,6 +240,8 @@ slv2_plugin_load(SLV2Plugin p)
 const char*
 slv2_plugin_get_uri(SLV2Plugin p)
 {
+	assert(p);
+	assert(p->plugin_uri);
 	return (const char*)librdf_uri_as_string(p->plugin_uri);
 }
 
@@ -246,6 +249,8 @@ slv2_plugin_get_uri(SLV2Plugin p)
 const char*
 slv2_plugin_get_bundle_uri(SLV2Plugin p)
 {
+	assert(p);
+	assert(p->bundle_uri);
 	return (const char*)librdf_uri_as_string(p->bundle_uri);
 }
 
@@ -253,6 +258,8 @@ slv2_plugin_get_bundle_uri(SLV2Plugin p)
 const char*
 slv2_plugin_get_library_uri(SLV2Plugin p)
 {
+	assert(p);
+	assert(p->binary_uri);
 	return (const char*)librdf_uri_as_string(p->binary_uri);
 }
 
@@ -559,28 +566,54 @@ slv2_plugin_get_port_by_symbol(SLV2Plugin  p,
 }
 
 
-SLV2Values
+SLV2PluginUIs
 slv2_plugin_get_uis(SLV2Plugin plugin)
 {
-	if (!plugin->rdf)
-		slv2_plugin_load(plugin);
+    const char* const query_str =
+		"PREFIX guiext: <http://ll-plugins.nongnu.org/lv2/ext/gui/dev/1#>\n"
+		"SELECT DISTINCT ?uri ?type ?binary WHERE {\n"
+		"<>   guiext:gui    ?uri .\n"
+		"?uri a             ?type ;\n"
+		"     guiext:binary ?binary .\n"
+		"}\n";
 
-	SLV2Values result = slv2_plugin_get_value(plugin, SLV2_URI, 
-			"http://ll-plugins.nongnu.org/lv2/ext/gui/dev/1#gui");
+	librdf_query_results* results = slv2_plugin_query(plugin, query_str);
 
-	for (int i=0; i < raptor_sequence_size(result); ++i) {
-		SLV2Value val = (SLV2Value)raptor_sequence_get_at(result, i);
-		val->type = SLV2_VALUE_UI;
-		val->val.ui_type_val = SLV2_UI_TYPE_GTK2;
+	SLV2PluginUIs result = slv2_plugin_uis_new();
+
+	while (!librdf_query_results_finished(results)) {
+		librdf_node* uri_node    = librdf_query_results_get_binding_value(results, 0);
+		librdf_node* type_node   = librdf_query_results_get_binding_value(results, 1);
+		librdf_node* binary_node = librdf_query_results_get_binding_value(results, 2);
+
+		SLV2PluginUI ui = slv2_plugin_ui_new(plugin->world,
+				librdf_node_get_uri(uri_node),
+				librdf_node_get_uri(type_node),
+				librdf_node_get_uri(binary_node));
+
+		raptor_sequence_push(result, ui);
+
+		librdf_free_node(uri_node);
+		librdf_free_node(type_node);
+		librdf_free_node(binary_node);
+
+		librdf_query_results_next(results);
 	}
 
-	return result;
+	librdf_free_query_results(results);
+
+	if (slv2_plugin_uis_size(result) > 0) {
+		return result;
+	} else {
+		slv2_plugin_uis_free(result);
+		return NULL;
+	}
 }
 
-
+#if 0
 SLV2Value
 slv2_plugin_get_ui_library_uri(SLV2Plugin plugin, 
-                                SLV2Value  ui)
+                               SLV2Value  ui)
 {
 	assert(ui->type == SLV2_VALUE_UI);
 	
@@ -606,7 +639,7 @@ slv2_plugin_get_ui_library_uri(SLV2Plugin plugin,
 
 	return value;
 }
-
+#endif
 
 const char*
 slv2_ui_type_get_uri(SLV2UIType type)
@@ -622,6 +655,7 @@ void*
 slv2_plugin_load_ui(SLV2Plugin plugin,
                     SLV2Value  ui)
 {
+#if 0
 	SLV2Value lib_uri = slv2_plugin_get_ui_library_uri(plugin, ui);
 
 	if (!lib_uri)
@@ -629,6 +663,7 @@ slv2_plugin_load_ui(SLV2Plugin plugin,
 
 	//LV2UI_Handle handle =
 	//
+#endif
 	return NULL;
 }
 

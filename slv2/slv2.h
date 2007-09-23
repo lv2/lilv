@@ -28,6 +28,8 @@ extern "C" {
 #include <slv2/world.h>
 #include <slv2/pluginclass.h>
 #include <slv2/plugin.h>
+#include <slv2/pluginui.h>
+#include <slv2/pluginuis.h>
 #include <slv2/port.h>
 #include <slv2/plugins.h>
 #include <slv2/pluginuiinstance.h>

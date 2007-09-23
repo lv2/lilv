@@ -126,24 +126,27 @@ print_plugin(SLV2Plugin p)
 	printf("\tBundle:      %s\n", slv2_plugin_get_bundle_uri(p));
 	printf("\tBinary:      %s\n", slv2_plugin_get_library_uri(p));
 
-	SLV2Values ui = slv2_plugin_get_uis(p);
-	if (slv2_values_size(ui) > 0) {
-		printf("\tGUI:\n");
-		for (unsigned i=0; i < slv2_values_size(ui); ++i) {
-			printf("\t\t%s\n", slv2_value_as_uri(slv2_values_get_at(ui, i)));
+	SLV2PluginUIs uis = slv2_plugin_get_uis(p);
+	if (slv2_values_size(uis) > 0) {
+		printf("\tGUI:         ");
+		for (unsigned i=0; i < slv2_plugin_uis_size(uis); ++i) {
+			SLV2PluginUI ui = slv2_plugin_uis_get_at(uis, i);
+			printf("%s\n", slv2_plugin_ui_get_uri(ui));
+
+			const char* binary = slv2_plugin_ui_get_binary_uri(ui);
 			
-			SLV2Value binary = slv2_plugin_get_ui_library_uri(p, slv2_values_get_at(ui, i));
-			
-			printf("\t\t\tType: %s\n", slv2_ui_type_get_uri(slv2_value_as_ui_type(
-						slv2_values_get_at(ui, i))));
+			SLV2Values types = slv2_plugin_ui_get_types(ui);
+			for (unsigned i=0; i < slv2_values_size(types); ++i) {
+				printf("\t\t\tType: %s\n", slv2_value_as_uri(slv2_values_get_at(types, i)));
+			}
 	
 			if (binary)
-			  printf("\t\t\tBinary: %s\n", slv2_value_as_uri(binary));
-			
-			slv2_value_free(binary);
+				printf("\t\t\tBinary: %s\n", binary);
+	
+			printf("\t\t\tBundle: %s\n", slv2_plugin_ui_get_bundle_uri(ui));
 		}
 	}
-	slv2_values_free(ui);
+	slv2_plugin_uis_free(uis);
 
 	//SLV2Values ui = slv2_plugin_get_value_for_subject(p,
 	//		"<http://ll-plugins.nongnu.org/lv2/ext/gtk2ui#ui>");
@@ -183,6 +186,7 @@ print_plugin(SLV2Plugin p)
 		printf("%s\n", slv2_value_as_uri(slv2_values_get_at(hints, i)));
 	}
 	printf("\n");
+	slv2_values_free(hints);
 	
 	
 	/* Ports */

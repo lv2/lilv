@@ -7,6 +7,8 @@ slv2include_HEADERS = \
 	plugin.h \
 	pluginclass.h \
 	pluginclasses.h \
+	pluginui.h \
+	pluginuis.h \
 	pluginuiinstance.h \
 	plugininstance.h \
 	plugins.h \

@@ -109,7 +109,11 @@ typedef void* SLV2Values;
 
 
 /** A plugin UI */
-typedef void* SLV2UI;
+typedef struct _SLV2PluginUI* SLV2PluginUI;
+
+
+/** A collection of plugin UIs. */
+typedef void* SLV2PluginUIs;
 
 
 #ifdef __cplusplus

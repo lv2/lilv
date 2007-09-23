@@ -7,6 +7,8 @@ libslv2_la_SOURCES = \
 	plugin.c \
 	pluginclass.c \
 	pluginclasses.c \
+	pluginui.c \
+	pluginuis.c \
 	pluginuiinstance.c \
 	plugininstance.c \
 	plugins.c \

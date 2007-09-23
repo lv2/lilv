@@ -236,6 +236,7 @@ slv2_world_load_bundle(SLV2World world, const char* bundle_uri_str)
 	}
 	
 	librdf_free_stream(results);
+	free(q);
 	
 	/* Query statement: ?specification a lv2:Specification */
 	q = librdf_new_statement_from_nodes(world->world,
@@ -269,6 +270,7 @@ slv2_world_load_bundle(SLV2World world, const char* bundle_uri_str)
 	}
 	
 	librdf_free_stream(results);
+	free(q);
 	
 	/* Join the temporary model to the main model */
 	librdf_stream* manifest_stream = librdf_model_as_stream(manifest_model);
@@ -276,7 +278,6 @@ slv2_world_load_bundle(SLV2World world, const char* bundle_uri_str)
 	librdf_free_stream(manifest_stream);
 
 	librdf_free_model(manifest_model);
-	free(q);
 	librdf_free_storage(manifest_storage);
 	librdf_free_uri(manifest_uri);
 	librdf_free_uri(bundle_uri);

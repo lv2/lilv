@@ -33,7 +33,7 @@
 
 SLV2UIInstance
 slv2_plugin_ui_instantiate(SLV2Plugin                     plugin,
-                           SLV2Value                      ui,
+                           SLV2PluginUI                   ui,
                            LV2UI_Write_Function           write_function,
                            LV2UI_Command_Function         command_function,
                            LV2UI_Program_Change_Function  program_function,
@@ -41,6 +41,7 @@ slv2_plugin_ui_instantiate(SLV2Plugin                     plugin,
                            LV2UI_Controller               controller,
                            const LV2_Host_Feature* const* host_features)
 {
+#if 0
 	assert(ui->type == SLV2_VALUE_UI);
 
 	if (ui->val.ui_type_val != SLV2_UI_TYPE_GTK2)
@@ -139,6 +140,8 @@ slv2_plugin_ui_instantiate(SLV2Plugin                     plugin,
 		free((LV2_Host_Feature**)host_features);
 
 	return result;
+#endif
+	return NULL;
 }
 
 

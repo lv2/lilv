@@ -98,7 +98,7 @@ struct _InstanceImpl {
 };
 
 
-/* ********* GUI Instance ********* */
+/* ********* UI Instance ********* */
 struct _SLV2UIInstanceImpl {
 	void*                   lib_handle;
 	const LV2UI_Descriptor* lv2ui_descriptor;
@@ -169,13 +169,22 @@ void
 slv2_world_load_file(SLV2World world, librdf_uri* file_uri);
 
 
-/* ********* GUI ********* */
+/* ********* Plugin UI ********* */
 
-struct _SLV2UI {
-	SLV2UIType type;
-	char*       uri;
+struct _SLV2PluginUI {
+	librdf_uri* uri;
+	librdf_uri* bundle_uri;
+	librdf_uri* binary_uri;
+	SLV2Values  types;
 };
 
+SLV2PluginUIs slv2_plugin_uis_new();
+SLV2PluginUI
+slv2_plugin_ui_new(SLV2World   world,
+                   librdf_uri* uri,
+                   librdf_uri* type_uri,
+                   librdf_uri* binary_uri);
+void          slv2_plugin_ui_free(SLV2PluginUI ui);
 
 
 /* ********* Value ********* */
@@ -186,16 +195,14 @@ typedef enum _SLV2ValueType {
 	SLV2_VALUE_STRING,
 	SLV2_VALUE_INT,
 	SLV2_VALUE_FLOAT,
-	SLV2_VALUE_UI
 } SLV2ValueType;
 
 struct _SLV2Value {
 	SLV2ValueType type;
 	char*         str_val; ///< always present
 	union {
-		int        int_val;
-		float      float_val;
-		SLV2UIType ui_type_val;
+		int   int_val;
+		float float_val;
 	} val;
 };
 

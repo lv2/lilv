@@ -73,7 +73,7 @@ typedef struct _SLV2UIInstance {
  */
 SLV2UIInstance
 slv2_plugin_ui_instantiate(SLV2Plugin                     plugin,
-                           SLV2Value                      gui,
+                           SLV2PluginUI                   gui,
                            LV2UI_Write_Function           write_function,
                            LV2UI_Command_Function         command_function,
                            LV2UI_Program_Change_Function  program_function,

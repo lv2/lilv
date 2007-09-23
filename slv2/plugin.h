@@ -201,7 +201,7 @@ slv2_plugin_get_value_for_subject(SLV2Plugin  p,
  * understand all the LV2 Properties associated with that plugin (if this is
  * not what you want, see slv2_plugin_get_hints).
  *
- * Return value must be freed by caller with slv2_value_free.
+ * Return value must be freed by caller with slv2_values_free.
  *
  * Time = Query
  */
@@ -214,7 +214,7 @@ slv2_plugin_get_properties(SLV2Plugin p);
  * LV2 Hints are suggestions that may be useful for a host.  LV2 Hints may be
  * ignored and the plugin will still function correctly.
  *
- * Return value must be freed by caller with slv2_value_free.
+ * Return value must be freed by caller with slv2_values_free.
  *
  * Time = Query
  */
@@ -352,20 +352,8 @@ slv2_plugin_get_port_by_symbol(SLV2Plugin  plugin,
  *
  * Time = Query
  */
-SLV2Values
+SLV2PluginUIs
 slv2_plugin_get_uis(SLV2Plugin plugin);
-
-
-/** Get the URI for a UI library.
- *
- * \param plugin The plugin that the UI is for.
- * \param ui     A UI identifier as returned by slv2_plugin_get_uis() (with type SLV2_VALUE_UI).
- *
- * Time = Query
- */
-SLV2Value
-slv2_plugin_get_ui_library_uri(SLV2Plugin plugin, 
-                               SLV2Value  ui);
 
 
 /** @} */
