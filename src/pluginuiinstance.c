@@ -26,6 +26,7 @@
 #include <dlfcn.h>
 #include <slv2/types.h>
 #include <slv2/plugin.h>
+#include <slv2/pluginui.h>
 #include <slv2/pluginuiinstance.h>
 #include <slv2/util.h>
 #include "slv2_internal.h"
@@ -41,12 +42,6 @@ slv2_plugin_ui_instantiate(SLV2Plugin                     plugin,
                            LV2UI_Controller               controller,
                            const LV2_Host_Feature* const* host_features)
 {
-#if 0
-	assert(ui->type == SLV2_VALUE_UI);
-
-	if (ui->val.ui_type_val != SLV2_UI_TYPE_GTK2)
-		return NULL;
-
 	struct _SLV2UIInstance* result = NULL;
 	
 	bool local_host_features = (host_features == NULL);
@@ -55,7 +50,7 @@ slv2_plugin_ui_instantiate(SLV2Plugin                     plugin,
 		((LV2_Host_Feature**)host_features)[0] = NULL;
 	}
 	
-	const char* const lib_uri = slv2_value_as_uri(slv2_plugin_get_ui_library_uri(plugin, ui));
+	const char* const lib_uri = slv2_plugin_ui_get_binary_uri(ui);
 	const char* const lib_path = slv2_uri_to_path(lib_uri);
 	
 	if (!lib_path)
@@ -76,11 +71,8 @@ slv2_plugin_ui_instantiate(SLV2Plugin                     plugin,
 		dlclose(lib);
 		return NULL;
 	} else {
-		// Search for plugin by URI
 		
-		// FIXME: Bundle in plugin UI only, boo
-		const char* bundle_path = slv2_uri_to_path(slv2_plugin_get_bundle_uri(plugin));
-		printf("UI bundle path: %s\n", bundle_path);
+		const char* bundle_path = slv2_uri_to_path(slv2_plugin_ui_get_bundle_uri(ui));
 		
 		for (uint32_t i=0; 1; ++i) {
 			
@@ -88,10 +80,10 @@ slv2_plugin_ui_instantiate(SLV2Plugin                     plugin,
 				
 			if (!ld) {
 				fprintf(stderr, "Did not find UI %s in %s\n",
-						slv2_value_as_uri(ui), lib_path);
+						slv2_plugin_ui_get_uri(ui), lib_path);
 				dlclose(lib);
 				break; // return NULL
-			} else if (!strcmp(ld->URI, slv2_value_as_uri(ui))) {
+			} else if (!strcmp(ld->URI, slv2_plugin_ui_get_uri(ui))) {
 
 				printf("Found UI %s at index %u in:\n\t%s\n\n",
 				       librdf_uri_as_string(plugin->plugin_uri), i, lib_path);
@@ -140,8 +132,6 @@ slv2_plugin_ui_instantiate(SLV2Plugin                     plugin,
 		free((LV2_Host_Feature**)host_features);
 
 	return result;
-#endif
-	return NULL;
 }
 
 

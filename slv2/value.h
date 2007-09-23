@@ -31,6 +31,10 @@ extern "C" {
  */
 
 
+/*SLV2Value
+slv2_value_new_uri(const char* uri);*/
+
+
 /** Free an SLV2Value.
  */
 void

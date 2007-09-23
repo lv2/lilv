@@ -50,6 +50,14 @@ slv2_value_new(SLV2ValueType type, const char* str)
 }
 
 
+/*
+SLV2Value
+slv2_value_new_uri(const char* uri)
+{
+	return slv2_value_new(SLV2_VALUE_URI, uri);
+}
+*/
+
 SLV2Value
 slv2_value_duplicate(SLV2Value val)
 {
