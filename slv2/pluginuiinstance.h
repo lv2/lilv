@@ -28,13 +28,7 @@ extern "C" {
 #include <slv2/lv2_gui.h>
 #include <slv2/plugin.h>
 
-/** \defgroup lib Plugin UI library access
- *
- * An SLV2UIInstance is an instantiated UI for a SLV2Plugin. UI instances
- * are loaded from dynamically loaded libraries.  These functions interact 
- * with the UI code in the binary library only, they do not read data files
- * in any way.
- * 
+/** \addtogroup lib
  * @{
  */
 
@@ -72,14 +66,14 @@ typedef struct _SLV2UIInstance {
  * \return NULL if instantiation failed.
  */
 SLV2UIInstance
-slv2_plugin_ui_instantiate(SLV2Plugin                     plugin,
-                           SLV2PluginUI                   gui,
-                           LV2UI_Write_Function           write_function,
-                           LV2UI_Command_Function         command_function,
-                           LV2UI_Program_Change_Function  program_function,
-                           LV2UI_Program_Save_Function    save_function,
-                           LV2UI_Controller               controller,
-                           const LV2_Host_Feature* const* host_features);
+slv2_ui_instantiate(SLV2Plugin                     plugin,
+                    SLV2UI                         ui,
+                    LV2UI_Write_Function           write_function,
+                    LV2UI_Command_Function         command_function,
+                    LV2UI_Program_Change_Function  program_function,
+                    LV2UI_Program_Save_Function    save_function,
+                    LV2UI_Controller               controller,
+                    const LV2_Host_Feature* const* host_features);
 
 
 /** Free a plugin UI instance.

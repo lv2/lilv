@@ -30,30 +30,30 @@
 #include "slv2_internal.h"
 
 	
-SLV2PluginUIs
-slv2_plugin_uis_new()
+SLV2UIs
+slv2_uis_new()
 {
-	return raptor_new_sequence((void (*)(void*))&slv2_plugin_ui_free, NULL);
+	return raptor_new_sequence((void (*)(void*))&slv2_ui_free, NULL);
 	//return raptor_new_sequence(NULL, NULL);
 }
 
 
 void
-slv2_plugin_uis_free(SLV2PluginUIs list)
+slv2_uis_free(SLV2UIs list)
 {
 	raptor_free_sequence(list);
 }
 
 
 unsigned
-slv2_plugin_uis_size(SLV2PluginUIs list)
+slv2_uis_size(SLV2UIs list)
 {
 	return raptor_sequence_size(list);
 }
 
 
-SLV2PluginUI
-slv2_plugin_uis_get_by_uri(SLV2PluginUIs list, const char* uri)
+SLV2UI
+slv2_uis_get_by_uri(SLV2UIs list, const char* uri)
 {
 	// good old fashioned binary search
 	
@@ -64,9 +64,9 @@ slv2_plugin_uis_get_by_uri(SLV2PluginUIs list, const char* uri)
 	while (upper >= lower) {
 		i = lower + ((upper - lower) / 2);
 
-		SLV2PluginUI ui = raptor_sequence_get_at(list, i);
+		SLV2UI ui = raptor_sequence_get_at(list, i);
 
-		int cmp = strcmp(slv2_plugin_ui_get_uri(ui), uri);
+		int cmp = strcmp(slv2_ui_get_uri(ui), uri);
 
 		if (cmp == 0)
 			return ui;
@@ -80,12 +80,12 @@ slv2_plugin_uis_get_by_uri(SLV2PluginUIs list, const char* uri)
 }
 
 
-SLV2PluginUI
-slv2_plugin_uis_get_at(SLV2PluginUIs list, unsigned index)
+SLV2UI
+slv2_uis_get_at(SLV2UIs list, unsigned index)
 {	
 	if (index > INT_MAX)
 		return NULL;
 	else
-		return (SLV2PluginUI)raptor_sequence_get_at(list, (int)index);
+		return (SLV2UI)raptor_sequence_get_at(list, (int)index);
 }
 

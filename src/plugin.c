@@ -566,7 +566,7 @@ slv2_plugin_get_port_by_symbol(SLV2Plugin  p,
 }
 
 
-SLV2PluginUIs
+SLV2UIs
 slv2_plugin_get_uis(SLV2Plugin plugin)
 {
     const char* const query_str =
@@ -579,14 +579,14 @@ slv2_plugin_get_uis(SLV2Plugin plugin)
 
 	librdf_query_results* results = slv2_plugin_query(plugin, query_str);
 
-	SLV2PluginUIs result = slv2_plugin_uis_new();
+	SLV2UIs result = slv2_uis_new();
 
 	while (!librdf_query_results_finished(results)) {
 		librdf_node* uri_node    = librdf_query_results_get_binding_value(results, 0);
 		librdf_node* type_node   = librdf_query_results_get_binding_value(results, 1);
 		librdf_node* binary_node = librdf_query_results_get_binding_value(results, 2);
 
-		SLV2PluginUI ui = slv2_plugin_ui_new(plugin->world,
+		SLV2UI ui = slv2_ui_new(plugin->world,
 				librdf_node_get_uri(uri_node),
 				librdf_node_get_uri(type_node),
 				librdf_node_get_uri(binary_node));
@@ -602,10 +602,10 @@ slv2_plugin_get_uis(SLV2Plugin plugin)
 
 	librdf_free_query_results(results);
 
-	if (slv2_plugin_uis_size(result) > 0) {
+	if (slv2_uis_size(result) > 0) {
 		return result;
 	} else {
-		slv2_plugin_uis_free(result);
+		slv2_uis_free(result);
 		return NULL;
 	}
 }
@@ -640,15 +640,6 @@ slv2_plugin_get_ui_library_uri(SLV2Plugin plugin,
 	return value;
 }
 #endif
-
-const char*
-slv2_ui_type_get_uri(SLV2UIType type)
-{
-	if (type == SLV2_UI_TYPE_GTK2)
-		return "http://ll-plugins.nongnu.org/ext/gui/dev/1#GtkUI";
-	else
-		return NULL;
-}
 
 
 void*

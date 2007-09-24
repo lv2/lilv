@@ -26,13 +26,13 @@
 
 
 /* private */
-SLV2PluginUI
-slv2_plugin_ui_new(SLV2World   world,
+SLV2UI
+slv2_ui_new(SLV2World   world,
                    librdf_uri* uri,
                    librdf_uri* type_uri,
                    librdf_uri* binary_uri)
 {
-	struct _SLV2PluginUI* ui = malloc(sizeof(struct _SLV2PluginUI));
+	struct _SLV2UI* ui = malloc(sizeof(struct _SLV2UI));
 	ui->uri = librdf_new_uri_from_uri(uri);
 	ui->binary_uri = librdf_new_uri_from_uri(binary_uri);
 	
@@ -53,7 +53,7 @@ slv2_plugin_ui_new(SLV2World   world,
 
 /* private */
 void
-slv2_plugin_ui_free(SLV2PluginUI ui)
+slv2_ui_free(SLV2UI ui)
 {
 	librdf_free_uri(ui->uri);
 	ui->uri = NULL;
@@ -71,7 +71,7 @@ slv2_plugin_ui_free(SLV2PluginUI ui)
 
 
 const char*
-slv2_plugin_ui_get_uri(SLV2PluginUI ui)
+slv2_ui_get_uri(SLV2UI ui)
 {
 	assert(ui);
 	assert(ui->uri);
@@ -80,14 +80,14 @@ slv2_plugin_ui_get_uri(SLV2PluginUI ui)
 
 
 SLV2Values
-slv2_plugin_ui_get_types(SLV2PluginUI ui)
+slv2_ui_get_types(SLV2UI ui)
 {
 	return ui->types;
 }
 
 
 bool
-slv2_plugin_ui_is_type(SLV2PluginUI ui, const char* type_uri)
+slv2_ui_is_type(SLV2UI ui, const char* type_uri)
 {
 	SLV2Value type = slv2_value_new(SLV2_VALUE_URI, type_uri);
 	bool ret = slv2_values_contains(ui->types, type);
@@ -97,7 +97,7 @@ slv2_plugin_ui_is_type(SLV2PluginUI ui, const char* type_uri)
 
 
 const char*
-slv2_plugin_ui_get_bundle_uri(SLV2PluginUI ui)
+slv2_ui_get_bundle_uri(SLV2UI ui)
 {
 	assert(ui);
 	assert(ui->bundle_uri);
@@ -106,7 +106,7 @@ slv2_plugin_ui_get_bundle_uri(SLV2PluginUI ui)
 
 
 const char*
-slv2_plugin_ui_get_binary_uri(SLV2PluginUI ui)
+slv2_ui_get_binary_uri(SLV2UI ui)
 {
 	assert(ui);
 	assert(ui->binary_uri);

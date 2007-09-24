@@ -26,11 +26,7 @@
 extern "C" {
 #endif
 
-/** \defgroup plugins Collections of plugins
- * 
- * These functions work with lists of plugins which come from an
- * SLV2World.  These lists contain only a weak reference to an LV2 plugin
- * in the Model.
+/** \addtogroup collections
  *
  * @{
  */
@@ -42,13 +38,13 @@ extern "C" {
  * are owned by the world).  \a list is invalid after this call.
  */
 void
-slv2_plugin_uis_free(SLV2PluginUIs list);
+slv2_uis_free(SLV2UIs list);
 
 
 /** Get the number of plugins in the list.
  */
 unsigned
-slv2_plugin_uis_size(SLV2PluginUIs list);
+slv2_uis_size(SLV2UIs list);
 
 
 /** Get a plugin from the list by URI.
@@ -60,9 +56,9 @@ slv2_plugin_uis_size(SLV2PluginUIs list);
  * 
  * \return NULL if plugin with \a url not found in \a list.
  */
-SLV2PluginUI
-slv2_plugin_uis_get_by_uri(SLV2PluginUIs list,
-                           const char*   uri);
+SLV2UI
+slv2_uis_get_by_uri(SLV2UIs     list,
+                    const char* uri);
 
 
 /** Get a plugin from the list by index.
@@ -76,9 +72,9 @@ slv2_plugin_uis_get_by_uri(SLV2PluginUIs list,
  *
  * \return NULL if \a index out of range.
  */
-SLV2PluginUI
-slv2_plugin_uis_get_at(SLV2PluginUIs list,
-                       unsigned      index);
+SLV2UI
+slv2_uis_get_at(SLV2UIs  list,
+                unsigned index);
 
 
 /** @} */

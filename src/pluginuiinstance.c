@@ -33,14 +33,14 @@
 
 
 SLV2UIInstance
-slv2_plugin_ui_instantiate(SLV2Plugin                     plugin,
-                           SLV2PluginUI                   ui,
-                           LV2UI_Write_Function           write_function,
-                           LV2UI_Command_Function         command_function,
-                           LV2UI_Program_Change_Function  program_function,
-                           LV2UI_Program_Save_Function    save_function,
-                           LV2UI_Controller               controller,
-                           const LV2_Host_Feature* const* host_features)
+slv2_ui_instantiate(SLV2Plugin                     plugin,
+                    SLV2UI                         ui,
+                    LV2UI_Write_Function           write_function,
+                    LV2UI_Command_Function         command_function,
+                    LV2UI_Program_Change_Function  program_function,
+                    LV2UI_Program_Save_Function    save_function,
+                    LV2UI_Controller               controller,
+                    const LV2_Host_Feature* const* host_features)
 {
 	struct _SLV2UIInstance* result = NULL;
 	
@@ -50,7 +50,7 @@ slv2_plugin_ui_instantiate(SLV2Plugin                     plugin,
 		((LV2_Host_Feature**)host_features)[0] = NULL;
 	}
 	
-	const char* const lib_uri = slv2_plugin_ui_get_binary_uri(ui);
+	const char* const lib_uri = slv2_ui_get_binary_uri(ui);
 	const char* const lib_path = slv2_uri_to_path(lib_uri);
 	
 	if (!lib_path)
@@ -72,7 +72,7 @@ slv2_plugin_ui_instantiate(SLV2Plugin                     plugin,
 		return NULL;
 	} else {
 		
-		const char* bundle_path = slv2_uri_to_path(slv2_plugin_ui_get_bundle_uri(ui));
+		const char* bundle_path = slv2_uri_to_path(slv2_ui_get_bundle_uri(ui));
 		
 		for (uint32_t i=0; 1; ++i) {
 			
@@ -80,10 +80,10 @@ slv2_plugin_ui_instantiate(SLV2Plugin                     plugin,
 				
 			if (!ld) {
 				fprintf(stderr, "Did not find UI %s in %s\n",
-						slv2_plugin_ui_get_uri(ui), lib_path);
+						slv2_ui_get_uri(ui), lib_path);
 				dlclose(lib);
 				break; // return NULL
-			} else if (!strcmp(ld->URI, slv2_plugin_ui_get_uri(ui))) {
+			} else if (!strcmp(ld->URI, slv2_ui_get_uri(ui))) {
 
 				printf("Found UI %s at index %u in:\n\t%s\n\n",
 				       librdf_uri_as_string(plugin->plugin_uri), i, lib_path);

@@ -1,5 +1,5 @@
 # RDF Schema for LV2 plugins
-# *** PROVISIONAL Revision 1.0beta5 (2007-09-14) ***
+# *** PROVISIONAL Revision 1.0beta5 (2007-09-23) ***
 #
 # This document describes the classes and properties that are defined by the
 # core LV2 specification.  See <http://lv2plug.in> for more information.
@@ -50,7 +50,7 @@ See http://lv2plug.in/docs for more details.
    doap:programming-language "C" ;
    doap:release [
        doap:revision "1.0beta5" ;
-       doap:created "2007-09-14"
+       doap:created "2007-09-23"
    ] ;
    doap:maintainer [
        a foaf:Person ;
@@ -489,13 +489,6 @@ A plugin MUST operate reasonably even if such a port has a non-integer input.
 # Plugin Categories (Classes) #
 ###############################
 
-:UtilityPlugin a rdfs:Class ;
-    rdfs:subClassOf :Plugin ;
-    rdfs:label "Utility" ;
-    rdfs:comment """
-Includes things like mathematical functions and non-musical delays.
-""" .
-
 :GeneratorPlugin a rdfs:Class ;
     rdfs:subClassOf :Plugin ;
     rdfs:label "Generator" ;
@@ -513,6 +506,34 @@ Any plugin that is intended to be played as a musical instrument.
 :OscillatorPlugin a rdfs:Class ;
     rdfs:subClassOf :GeneratorPlugin ;
     rdfs:label "Oscillator" .
+
+:UtilityPlugin a rdfs:Class ;
+    rdfs:subClassOf :Plugin ;
+    rdfs:label "Utility" ;
+    rdfs:comment """
+Includes things like mathematical functions and non-musical delays.
+""" .
+
+:ConverterPlugin a rdfs:Class ;
+    rdfs:subClassOf :UtilityPlugin ;
+    rdfs:label "Converter" ;
+    rdfs:comment """
+Any plugin that converts some form of input into a different form of output.
+""" .
+
+:AnalyserPlugin a rdfs:Class ;
+    rdfs:subClassOf :UtilityPlugin ;
+    rdfs:label "Analyser" ;
+    rdfs:comment """
+Any plugin that analyses input to output some useful information.
+""" .
+
+:MixerPlugin a rdfs:Class ;
+    rdfs:subClassOf :UtilityPlugin ;
+    rdfs:label "Mixer" ;
+    rdfs:comment """
+A plugin which mixes some number of inputs into some number of outputs.
+""" .
 
 :SimulatorPlugin a rdfs:Class ;
     rdfs:subClassOf :Plugin ;
@@ -533,6 +554,12 @@ Plugins that intentionally delay their input signal as an effect.
     rdfs:subClassOf :Plugin ;
     rdfs:label "Modulator" .
 
+:ReverbPlugin a rdfs:Class ;
+    rdfs:subClassOf :Plugin ;
+    rdfs:subClassOf :SimulatorPlugin ;
+    rdfs:subClassOf :DelayPlugin ;
+    rdfs:label "Reverb" .
+
 :PhaserPlugin a rdfs:Class ;
     rdfs:subClassOf :ModulatorPlugin ;
     rdfs:label "Phaser" .
@@ -544,12 +571,6 @@ Plugins that intentionally delay their input signal as an effect.
 :ChorusPlugin a rdfs:Class ;
     rdfs:subClassOf :ModulatorPlugin ;
     rdfs:label "Chorus" .
-
-:ReverbPlugin a rdfs:Class ;
-    rdfs:subClassOf :Plugin ;
-    rdfs:subClassOf :SimulatorPlugin ;
-    rdfs:subClassOf :DelayPlugin ;
-    rdfs:label "Reverb" .
 
 :FilterPlugin a rdfs:Class ;
     rdfs:subClassOf :Plugin ;
@@ -587,21 +608,25 @@ Plugins that intentionally delay their input signal as an effect.
     rdfs:subClassOf :EQPlugin ;
     rdfs:label "Multiband" .
 
+:SpectralPlugin a rdfs:Class ;
+	rdfs:subClassOf :Plugin ;
+	rdfs:label "Spectral Processor" .
+
 :PitchPlugin a rdfs:Class ;
-    rdfs:subClassOf :Plugin ;
+    rdfs:subClassOf :SpectralPlugin ;
     rdfs:label "Pitch Shifter" .
 
 :AmplifierPlugin a rdfs:Class ;
     rdfs:subClassOf :Plugin ;
     rdfs:label "Amplifier" .
 
-:WaveshaperPlugin a rdfs:Class ;
-    rdfs:subClassOf :Plugin ;
-    rdfs:label "Waveshaper" .
-
 :DistortionPlugin a rdfs:Class ;
     rdfs:subClassOf :Plugin ;
     rdfs:label "Distortion" .
+
+:WaveshaperPlugin a rdfs:Class ;
+    rdfs:subClassOf :DistortionPlugin ;
+    rdfs:label "Waveshaper" .
 
 :DynamicsPlugin a rdfs:Class ;
     rdfs:subClassOf :Plugin ;

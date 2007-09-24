@@ -26,9 +26,9 @@
 extern "C" {
 #endif
 
-/** \defgroup values Collections of values
+/** \defgroup collections Collections of values/objects
  *
- * SLV2Values is an ordered collection of typed values which is fast for random
+ * Ordered collections of typed values which are fast for random
  * access by index (i.e. a fancy array).
  *
  * @{

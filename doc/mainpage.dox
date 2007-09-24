@@ -3,7 +3,25 @@
 @section Overview
 
 SLV2 is a host library to simplify the discovery, loading, and use of LV2
-plugins.
+plugins (http://lv2plug.in).
 
+SLV2 is written in standard C99, and depends only on the Redland RDF library
+(http://librdf.org).  It should be portable to any system, and is tested on various
+GNU/Linux distributions (often), and Mac OSX (occasionally).
+
+The public interface of SLV2 is documented in several sections.  The RDF and shared
+library functionality is strictly divided so it is simple to understand when each is
+being used (e.g. it is possible to discover/investigate plugins and related data
+without loading any shared libraries, avoiding the associated risks).
+
+\li \link world World \endlink - Global library initialisation, state, plugin discovery, etc.
+
+\li \link util Util \endlink - Generally useful utility functions
+
+\li \link collections Collections \endlink - Collections of values (literals and URIs) and objects
+
+\li \link data Data \endlink - Access to plugin RDF data
+
+\li \link lib Library \endlink - Access to plugin shared libraries
 
 */

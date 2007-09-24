@@ -241,8 +241,7 @@ bool
 slv2_plugin_has_latency(SLV2Plugin p);
 
 
-/** Return the index of the plugin's latency port, or the empty string if the
- * plugin has no latency.
+/** Return the index of the plugin's latency port.
  *
  * It is a fatal error to call this on a plugin without checking if the port
  * exists by first calling slv2_plugin_has_latency.
@@ -345,14 +344,14 @@ slv2_plugin_get_port_by_symbol(SLV2Plugin  plugin,
 /** Get a list of all UIs available for this plugin.
  *
  * Note this returns the URI of the UI, and not the path/URI to its shared
- * library, use slv2_plugin_ui_get_library_uri with the values returned
+ * library, use slv2_ui_get_library_uri with the values returned
  * here for that.
  *
  * \param plugin The plugin to get the UIs for. 
  *
  * Time = Query
  */
-SLV2PluginUIs
+SLV2UIs
 slv2_plugin_get_uis(SLV2Plugin plugin);
 
 

@@ -1,5 +1,5 @@
 /* LV2 - LADSPA (Linux Audio Developer's Simple Plugin API) Version 2.0
- * *** PROVISIONAL ***
+ * *** PROVISIONAL Revision 1.0beta5 (2007-09-23) ***
  *
  * Copyright (C) 2000-2002 Richard W.E. Furse, Paul Barton-Davis,
  *                         Stefan Westerfeld.

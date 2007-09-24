@@ -23,8 +23,7 @@
 extern "C" {
 #endif
 
-/** \defgroup ui Plugin user interfaces
- *
+/** \addtogroup data
  * @{
  */
 
@@ -36,27 +35,28 @@ extern "C" {
  * Time = O(1)
  */
 const char*
-slv2_plugin_ui_get_uri(SLV2PluginUI ui);
+slv2_ui_get_uri(SLV2UI ui);
 
 
-/** Get the URI of the a Plugin UI.
+/** Get the types (URIs of RDF classes) of a Plugin UI.
  *
  * \param ui The Plugin UI
  *
  * Time = O(1)
  */
 SLV2Values
-slv2_plugin_ui_get_types(SLV2PluginUI ui);
+slv2_ui_get_types(SLV2UI ui);
 
 
 /** Check whether a plugin UI is a given type.
  *
- * \param ui The Plugin UI
+ * \param ui       The Plugin UI
+ * \param type_uri The URI of the LV2 UI type to check this UI against
  *
  * Time = O(1)
  */
 bool
-slv2_plugin_ui_is_type(SLV2PluginUI ui, const char* type_uri);
+slv2_ui_is_type(SLV2UI ui, const char* type_uri);
 	
 
 /** Get the URI for a Plugin UI's bundle.
@@ -66,7 +66,7 @@ slv2_plugin_ui_is_type(SLV2PluginUI ui, const char* type_uri);
  * Time = O(1)
  */
 const char*
-slv2_plugin_ui_get_bundle_uri(SLV2PluginUI ui);
+slv2_ui_get_bundle_uri(SLV2UI ui);
 
 
 /** Get the URI for a Plugin UI's shared library.
@@ -76,8 +76,10 @@ slv2_plugin_ui_get_bundle_uri(SLV2PluginUI ui);
  * Time = O(1)
  */
 const char*
-slv2_plugin_ui_get_binary_uri(SLV2PluginUI ui);
+slv2_ui_get_binary_uri(SLV2UI ui);
 
+
+/** @} */
 
 #ifdef __cplusplus
 }
