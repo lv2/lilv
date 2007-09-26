@@ -161,7 +161,7 @@ slv2_ui_instance_get_descriptor(SLV2UIInstance instance) {
 }
 
 
-LV2_Handle
+LV2UI_Handle
 slv2_ui_instance_get_handle(SLV2UIInstance instance) {
 	return instance->pimpl->lv2ui_handle;
 }

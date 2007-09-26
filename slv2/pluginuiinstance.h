@@ -106,7 +106,7 @@ slv2_ui_instance_get_descriptor(SLV2UIInstance instance);
  * 
  * The returned handle is shared and must not be deleted.
  */
-LV2_Handle
+LV2UI_Handle
 slv2_ui_instance_get_handle(SLV2UIInstance instance);
 
 
