@@ -347,6 +347,8 @@ slv2_plugin_get_port_by_symbol(SLV2Plugin  plugin,
  * library, use slv2_ui_get_library_uri with the values returned
  * here for that.
  *
+ * Returned value must be freed by caller using slv2_uis_free.
+ *
  * \param plugin The plugin to get the UIs for. 
  *
  * Time = Query
