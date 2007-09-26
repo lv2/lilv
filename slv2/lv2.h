@@ -205,7 +205,11 @@ typedef struct _LV2_Descriptor {
 	 * Memory issues are managed by the host. The plugin must read/write
 	 * the data at these locations every time run() is called, data
 	 * present at the time of this connection call MUST NOT be
-	 * considered meaningful.
+	 * considered meaningful. 
+	 *
+	 * The host MUST NOT try to connect a data buffer to a port index 
+	 * that is not defined in the RDF data for the plugin. If it does, 
+	 * the plugin's behaviour is undefined.
 	 *
 	 * connect_port() may be called more than once for a plugin instance
 	 * to allow the host to change the buffers that the plugin is reading
