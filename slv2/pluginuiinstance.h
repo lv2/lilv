@@ -36,8 +36,6 @@ extern "C" {
 typedef struct _SLV2UIInstanceImpl* SLV2UIInstanceImpl;
 
   
-struct _GtkWidget;
-
 
 /** Instance of a plugin UI.
  *
