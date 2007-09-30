@@ -42,7 +42,7 @@ slv2_plugins_new()
 void
 slv2_plugins_free(SLV2World world, SLV2Plugins list)
 {
-	if (list != world->plugins)
+	if (list && list != world->plugins)
 		raptor_free_sequence(list);
 }
 
@@ -268,7 +268,7 @@ slv2_plugins_load_path(SLV2Plugins list,
 unsigned
 slv2_plugins_size(SLV2Plugins list)
 {
-	return raptor_sequence_size(list);
+	return (list ? raptor_sequence_size(list) : 0);
 }
 
 

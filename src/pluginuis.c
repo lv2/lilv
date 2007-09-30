@@ -41,14 +41,15 @@ slv2_uis_new()
 void
 slv2_uis_free(SLV2UIs list)
 {
-	raptor_free_sequence(list);
+	if (list)
+		raptor_free_sequence(list);
 }
 
 
 unsigned
 slv2_uis_size(SLV2UIs list)
 {
-	return raptor_sequence_size(list);
+	return (list ? raptor_sequence_size(list) : 0);
 }
 
 

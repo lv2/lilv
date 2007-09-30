@@ -38,6 +38,7 @@ void
 slv2_plugin_classes_free(SLV2PluginClasses list)
 {
 	//if (list != world->plugin_classes)
+	if (list)
 		raptor_free_sequence(list);
 }
 
@@ -45,7 +46,7 @@ slv2_plugin_classes_free(SLV2PluginClasses list)
 unsigned
 slv2_plugin_classes_size(SLV2PluginClasses list)
 {
-	return raptor_sequence_size(list);
+	return (list ? raptor_sequence_size(list) : 0);
 }
 
 

@@ -34,14 +34,15 @@ slv2_values_new()
 void
 slv2_values_free(SLV2Values list)
 {
-	raptor_free_sequence(list);
+	if (list)
+		raptor_free_sequence(list);
 }
 
 
 unsigned
 slv2_values_size(SLV2Values list)
 {
-	return raptor_sequence_size(list);
+	return (list ? raptor_sequence_size(list) : 0);
 }
 
 
