@@ -98,25 +98,25 @@ print_plugin(SLV2Plugin p)
 	printf("%s\n\n", slv2_plugin_get_uri(p));
 	
 	str = slv2_plugin_get_name(p);
-	printf("\tName:        %s\n", str);
+	printf("\tName:              %s\n", str);
 	free(str);
 	
 	const char* class_label = slv2_plugin_class_get_label(slv2_plugin_get_class(p));
-	printf("\tClass:       %s\n", class_label);
+	printf("\tClass:             %s\n", class_label);
 
 	if (slv2_plugin_has_latency(p)) {
 		uint32_t latency_port = slv2_plugin_get_latency_port(p);
-		printf("\tHas latency: yes, reported by port %d\n", latency_port);
+		printf("\tHas latency:       yes, reported by port %d\n", latency_port);
 	} else {
-		printf("\tHas latency: no\n");
+		printf("\tHas latency:       no\n");
 	}
 
-	printf("\tBundle:      %s\n", slv2_plugin_get_bundle_uri(p));
-	printf("\tBinary:      %s\n", slv2_plugin_get_library_uri(p));
+	printf("\tBundle:            %s\n", slv2_plugin_get_bundle_uri(p));
+	printf("\tBinary:            %s\n", slv2_plugin_get_library_uri(p));
 
 	SLV2UIs uis = slv2_plugin_get_uis(p);
 	if (slv2_values_size(uis) > 0) {
-		printf("\tGUI:         ");
+		printf("\tGUI:               ");
 		for (unsigned i=0; i < slv2_uis_size(uis); ++i) {
 			SLV2UI ui = slv2_uis_get_at(uis, i);
 			printf("%s\n", slv2_ui_get_uri(ui));
@@ -139,11 +139,11 @@ print_plugin(SLV2Plugin p)
 	//SLV2Values ui = slv2_plugin_get_value_for_subject(p,
 	//		"<http://ll-plugins.nongnu.org/lv2/ext/gtk2ui#ui>");
 
-	printf("\tData URIs:   ");
+	printf("\tData URIs:         ");
 	SLV2Values data_uris = slv2_plugin_get_data_uris(p);
 	for (unsigned i=0; i < slv2_values_size(data_uris); ++i) {
 		if (i > 0) {
-			printf("\n\t             ");
+			printf("\n\t                   ");
 		}
 		printf("%s", slv2_value_as_uri(slv2_values_get_at(data_uris, i)));
 	}
