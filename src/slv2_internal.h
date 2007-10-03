@@ -112,8 +112,8 @@ struct _SLV2UIInstanceImpl {
 
 struct _SLV2PluginClass {
 	struct _SLV2World* world;
-	char*              parent_uri;
-	char*              uri;
+	librdf_uri*        parent_uri;
+	librdf_uri*        uri;
 	char*              label;
 };
 
@@ -141,6 +141,7 @@ struct _SLV2World {
 	librdf_storage*   storage;
 	librdf_model*     model;
 	librdf_parser*    parser;
+	SLV2PluginClass   lv2_plugin_class;
 	SLV2PluginClasses plugin_classes;
 	SLV2Plugins       plugins;
 	librdf_node*      lv2_specification_node;

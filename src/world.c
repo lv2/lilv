@@ -56,12 +56,10 @@ slv2_world_new()
 	if (!world->parser)
 		goto fail;
 
-	world->plugin_classes = slv2_plugin_classes_new();
-	
-	// Add the ever-present lv2:Plugin to classes
 	static const char* lv2_plugin_uri = "http://lv2plug.in/ns/lv2core#Plugin";
-	raptor_sequence_push(world->plugin_classes, slv2_plugin_class_new(
-				world, NULL, lv2_plugin_uri, "Plugin"));
+	world->lv2_plugin_class = slv2_plugin_class_new(world, NULL, lv2_plugin_uri, "Plugin");
+
+	world->plugin_classes = slv2_plugin_classes_new();
 	
 	world->plugins = slv2_plugins_new();
 	
@@ -106,12 +104,10 @@ slv2_world_new_using_rdf_world(librdf_world* rdf_world)
 	if (!world->parser)
 		goto fail;
 
-	world->plugin_classes = slv2_plugin_classes_new();
-	
-	// Add the ever-present lv2:Plugin to classes
 	static const char* lv2_plugin_uri = "http://lv2plug.in/ns/lv2core#Plugin";
-	raptor_sequence_push(world->plugin_classes, slv2_plugin_class_new(
-				world, NULL, lv2_plugin_uri, "Plugin"));
+	world->lv2_plugin_class = slv2_plugin_class_new(world, NULL, lv2_plugin_uri, "Plugin");
+	
+	world->plugin_classes = slv2_plugin_classes_new();
 	
 	world->plugins = slv2_plugins_new();
 	
@@ -563,7 +559,7 @@ slv2_world_serialize(const char* filename)
 SLV2PluginClass
 slv2_world_get_plugin_class(SLV2World world)
 {
-	return raptor_sequence_get_at(world->plugin_classes, 0);
+	return world->lv2_plugin_class;
 }
 
 

@@ -63,9 +63,9 @@ slv2_plugin_classes_get_by_uri(SLV2PluginClasses list, const char* uri)
 		i = lower + ((upper - lower) / 2);
 
 		SLV2PluginClass p = raptor_sequence_get_at(list, i);
-
-		int cmp = strcmp(slv2_plugin_class_get_uri(p), uri);
-
+	
+		const int cmp = strcmp(slv2_plugin_class_get_uri(p), uri);
+		
 		if (cmp == 0)
 			return p;
 		else if (cmp > 0)

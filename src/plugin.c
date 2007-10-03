@@ -163,27 +163,30 @@ slv2_plugin_load(SLV2Plugin p)
 		NULL, query, p->plugin_uri);
 	
 	librdf_query_results* results = librdf_query_execute(q, p->rdf);
-
+		
 	while (!librdf_query_results_finished(results)) {
 		librdf_node* class_node    = librdf_query_results_get_binding_value(results, 0);
 		librdf_uri*  class_uri     = librdf_node_get_uri(class_node);
 		const char*  class_uri_str = (const char*)librdf_uri_as_string(class_uri);
 		
-		SLV2PluginClass plugin_class = slv2_plugin_classes_get_by_uri(
-				p->world->plugin_classes, class_uri_str);
-		
-		librdf_free_node(class_node);
+		if ( ! librdf_uri_equals(class_uri, p->world->lv2_plugin_class->uri) ) {
 
-		if (plugin_class) {
-			p->plugin_class = plugin_class;
-			break;
+			SLV2PluginClass plugin_class = slv2_plugin_classes_get_by_uri(
+					p->world->plugin_classes, class_uri_str);
+			
+			librdf_free_node(class_node);
+
+			if (plugin_class) {
+				p->plugin_class = plugin_class;
+				break;
+			}
 		}
 
 		librdf_query_results_next(results);
 	}
 	
 	if (p->plugin_class == NULL)
-		p->plugin_class = raptor_sequence_get_at(p->world->plugin_classes, 0); // lv2:Plugin
+		p->plugin_class = p->world->lv2_plugin_class;
 
 	librdf_free_query_results(results);
 	librdf_free_query(q);

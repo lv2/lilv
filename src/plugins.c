@@ -286,7 +286,7 @@ slv2_plugins_get_by_uri(SLV2Plugins list, const char* uri)
 
 		SLV2Plugin p = raptor_sequence_get_at(list, i);
 
-		int cmp = strcmp(slv2_plugin_get_uri(p), uri);
+		const int cmp = strcmp(slv2_plugin_get_uri(p), uri);
 
 		if (cmp == 0)
 			return p;

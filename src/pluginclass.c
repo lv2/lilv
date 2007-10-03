@@ -25,15 +25,15 @@
 
 
 SLV2PluginClass
-slv2_plugin_class_new(SLV2World world, const char* parent_uri,  const char* uri, const char* label)
+slv2_plugin_class_new(SLV2World world, const char* parent_uri, const char* uri, const char* label)
 {
 	SLV2PluginClass plugin_class = (SLV2PluginClass)malloc(sizeof(struct _SLV2PluginClass));
 	plugin_class->world = world;
 	if (parent_uri)
-		plugin_class->parent_uri = strdup(parent_uri);
+		plugin_class->parent_uri = librdf_new_uri(world->world, (const unsigned char*)parent_uri);
 	else
 		plugin_class->parent_uri = NULL;
-	plugin_class->uri = strdup(uri);
+	plugin_class->uri = librdf_new_uri(world->world, (const unsigned char*)uri);
 	plugin_class->label = strdup(label);
 	return plugin_class;
 }
@@ -42,8 +42,8 @@ slv2_plugin_class_new(SLV2World world, const char* parent_uri,  const char* uri,
 void
 slv2_plugin_class_free(SLV2PluginClass plugin_class)
 {
-	free(plugin_class->uri);
-	free(plugin_class->parent_uri);
+	librdf_free_uri(plugin_class->uri);
+	librdf_free_uri(plugin_class->parent_uri);
 	free(plugin_class->label);
 	free(plugin_class);
 }
@@ -52,14 +52,14 @@ slv2_plugin_class_free(SLV2PluginClass plugin_class)
 const char*
 slv2_plugin_class_get_parent_uri(SLV2PluginClass plugin_class)
 {
-	return plugin_class->parent_uri;
+	return (const char*)librdf_uri_as_string(plugin_class->parent_uri);
 }
 
 
 const char*
 slv2_plugin_class_get_uri(SLV2PluginClass plugin_class)
 {
-	return plugin_class->uri;
+	return (const char*)librdf_uri_as_string(plugin_class->uri);
 }
 
 
