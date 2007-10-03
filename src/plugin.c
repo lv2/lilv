@@ -459,9 +459,9 @@ slv2_plugin_has_latency(SLV2Plugin p)
 {
     const char* const query = 
 		"SELECT DISTINCT ?index WHERE {\n"
-		"	<> lv2:port     ?port .\n"
-		"	?port   lv2:portHint lv2:reportsLatency ;\n"
-		"           lv2:index    ?index .\n"
+		"	<>      lv2:port         ?port .\n"
+		"	?port   lv2:portProperty lv2:reportsLatency ;\n"
+		"           lv2:index        ?index .\n"
 		"}\n";
 
 	SLV2Values results = slv2_plugin_simple_query(p, query, 0);
@@ -477,9 +477,9 @@ slv2_plugin_get_latency_port(SLV2Plugin p)
 {
     const char* const query = 
 		"SELECT DISTINCT ?index WHERE {\n"
-		"	<> lv2:port     ?port .\n"
-		"	?port   lv2:portHint lv2:reportsLatency ;\n"
-		"           lv2:index    ?index .\n"
+		"	<>      lv2:port         ?port .\n"
+		"	?port   lv2:portProperty lv2:reportsLatency ;\n"
+		"           lv2:index        ?index .\n"
 		"}\n";
 
 	SLV2Values result = slv2_plugin_simple_query(p, query, 0);
