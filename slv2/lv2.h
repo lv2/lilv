@@ -324,13 +324,13 @@ typedef struct _LV2_Descriptor {
 	 *
 	 * The host is never responsible for freeing the returned value.
 	 * 
-	 * NOTE: It is highly recommended that this function returns a struct, and
-	 * NOT a direct function pointer.  Standard C++ (for real reasons) does not
+	 * NOTE: This function should return a struct (likely containing function
+	 * pointers) and NOT a direct function pointer.  Standard C and C++ do not
 	 * allow type casts from void* to a function pointer type.  To provide
 	 * additional functions a struct should be returned containing the extra
-	 * function pointers (which is valid standard C++, and a much better idea
+	 * function pointers (which is valid standard code, and a much better idea
 	 * for extensibility anyway). */
-	void* (*extension_data)(const char * uri); 
+	const void* (*extension_data)(const char * uri); 
 
 } LV2_Descriptor;
 
