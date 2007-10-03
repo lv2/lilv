@@ -4,7 +4,7 @@ libdir=@libdir@
 includedir=@includedir@
 
 Name: libslv2
-Version: @VERSION@
+Version: @SLV2_VERSION@
 Description: Convenience library for hosts to simplify LV2 plugin support
 Libs: @REDLAND_LIBS@ -L${libdir} -lslv2
 Cflags: @REDLAND_CFLAGS@ -I${includedir}
