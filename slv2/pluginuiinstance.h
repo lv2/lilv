@@ -71,7 +71,7 @@ slv2_ui_instantiate(SLV2Plugin                     plugin,
                     LV2UI_Program_Change_Function  program_function,
                     LV2UI_Program_Save_Function    save_function,
                     LV2UI_Controller               controller,
-                    const LV2_Host_Feature* const* host_features);
+                    const LV2_Feature* const*      features);
 
 
 /** Free a plugin UI instance.

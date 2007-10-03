@@ -124,9 +124,9 @@ slv2_port_get_data_type(SLV2Plugin p,
 
 #if 0
 bool
-slv2_port_has_hint(SLV2Plugin p,
-                   SLV2Port   port,
-                   SLV2Value  hint)
+slv2_port_has_property(SLV2Plugin p,
+                       SLV2Port   port,
+                       SLV2Value  hint)
 {
 	/* FIXME: Add SLV2Value QName stuff to make this not suck to use */
 
@@ -269,13 +269,5 @@ slv2_port_get_properties(SLV2Plugin p,
                          SLV2Port   port)
 {
 	return slv2_port_get_value(p, port, "lv2:portProperty");
-}
-
-
-SLV2Values
-slv2_port_get_hints(SLV2Plugin p,
-                    SLV2Port   port)
-{
-	return slv2_port_get_value(p, port, "lv2:portHint");
 }
 

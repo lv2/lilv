@@ -33,7 +33,7 @@ extern "C" {
  */
 
 
-/** Port equivalent to slv2_plugin_get_value.
+/** Port analog of slv2_plugin_get_value.
  *
  * Time = Query
  */
@@ -43,7 +43,7 @@ slv2_port_get_value(SLV2Plugin  plugin,
                     const char* property);
 
 
-/** Port equivalent to slv2_plugin_get_properties.
+/** Return the LV2 port properties of a port.
  *
  * Time = Query
  */
@@ -52,24 +52,17 @@ slv2_port_get_properties(SLV2Plugin plugin,
                          SLV2Port   port);
 
 
-/** Port equivalent to slv2_plugin_get_hints.
- *
- * Time = Query
- */
-SLV2Values
-slv2_port_get_hints(SLV2Plugin plugin,
-                    SLV2Port   port);
-
 #if 0
-/** Return whether a port has a certain  hint.
+/** Return whether a port has a certain property.
  *
  * Time = Query
  */
 bool
-slv2_port_has_hint(SLV2Plugin p,
-                   SLV2Port   port,
-                   SLV2Value  hint)
+slv2_port_has_property(SLV2Plugin p,
+                       SLV2Port   port,
+                       SLV2Value  hint)
 #endif
+
 
 /** Get the symbol of a port given the index.
  *

@@ -1,5 +1,5 @@
 # RDF Schema for LV2 plugins
-# *** PROVISIONAL Revision 1.0beta5 (2007-09-23) ***
+# *** PROVISIONAL Revision 1.0beta6 (2007-10-03) ***
 #
 # This document describes the classes and properties that are defined by the
 # core LV2 specification.  See <http://lv2plug.in> for more information.
@@ -49,8 +49,8 @@ See http://lv2plug.in/docs for more details.
    doap:shortdesc "An audio processing plugin specification" ;
    doap:programming-language "C" ;
    doap:release [
-       doap:revision "1.0beta5" ;
-       doap:created "2007-09-23"
+       doap:revision "1.0beta6" ;
+       doap:created "2007-10-03"
    ] ;
    doap:maintainer [
        a foaf:Person ;
@@ -110,7 +110,7 @@ at least one other rdf:type property which more specifically describes
 type of the port (e.g. :AudioPort).
 
 Hosts that do not support a specific port class MUST NOT instantiate the
-plugin, unless that port has the connectionOptional hint set (in which case
+plugin, unless that port has the connectionOptional property set (in which case
 the host can simply "connect" that port to NULL).  If a host is interested
 in plugins to insert in a certain signal path (e.g. stereo audio), it SHOULD
 consider all the classes of a port to determine which ports are most suitable
@@ -151,9 +151,9 @@ conforming to the 32bit IEEE-754 floating point specification.
 """ .
 
 
-###################################
-# Mandatory Plugin RDF:Properties #
-###################################
+#####################################
+## Mandatory Plugin RDF Properties ##
+#####################################
 
 :port a rdf:Property ;
 	rdfs:domain  :Plugin ;
@@ -162,9 +162,9 @@ conforming to the 32bit IEEE-754 floating point specification.
 	rdfs:comment "Relates a Plugin to the Ports it contains" .
 
 
-##################################
-# Optional Plugin RDF:Properties #
-##################################
+####################################
+## Optional Plugin RDF Properties ##
+####################################
 
 :documentation a rdf:Property ;
     rdfs:domain  :Plugin ;
@@ -173,9 +173,9 @@ conforming to the 32bit IEEE-754 floating point specification.
 
 
 
-#################################
-# Mandatory Port RDF:Properties #
-#################################
+###################################
+## Mandatory Port RDF Properties ##
+###################################
 
 :index a rdf:Property ;
     rdfs:domain  :Port ;
@@ -213,9 +213,9 @@ property without changing the Plugin URI.
 
 
 
-################################
-# Optional Port RDF:Properties #
-################################
+##################################
+## Optional Port RDF Properties ##
+##################################
 
 :Point a rdfs:Class ;
    rdfs:label   "Port value point" ;
@@ -265,117 +265,65 @@ values in the range of :float.
 
 
 
-###################
-## Host Features ##
-###################
+##############
+## Features ##
+##############
 
-:HostFeature a rdfs:Class ;
-    rdfs:label   "Host feature" ;
-    rdfs:comment "A host feature which a plugin may use (possibly require).".
+:Feature a rdfs:Class ;
+    rdfs:label   "Feature" ;
+    rdfs:comment "An additional feature which a plugin may use (possibly require).".
 
-:optionalHostFeature a rdf:Property ;
+:optionalFeature a rdf:Property ;
     rdfs:domain  :Plugin ;
-    rdfs:range   :HostFeature ;
-    rdfs:label   "Optional host feature" ;
+    rdfs:range   :Feature ;
+    rdfs:label   "Optional feature" ;
     rdfs:comment """
-Signifies that a plugin is able to make use of a certain host feature.
-The plugin MUST NOT fail to instantiate if an optional host feature is
-not present.""" .
+Signifies that a plugin is able to make use of or provide a certain feature.
+If the host supports this feature, it MUST pass its URI and any additional
+data to the plugin in the instantiate() function. The plugin MUST NOT fail to
+instantiate if an optional feature is not supported by the host.""" .
 
-:requiredHostFeature a rdf:Property ;
+:requiredFeature a rdf:Property ;
     rdfs:domain  :Plugin ;
-    rdfs:range   :HostFeature ;
-    rdfs:label   "Required host feature" ;
+    rdfs:range   :Feature ;
+    rdfs:label   "Required feature" ;
     rdfs:comment """
-Signifies that a plugin requires a certain host feature to function.
-The plugin MUST fail to instantiate if a required host feature is not present;
-hosts SHOULD always check this before attempting to instantiate a plugin
-(eg discovery by attempting to instantiate is strongly discouraged).
+Signifies that a plugin requires a certain feature in order to function.
+If the host supports this feature, it MUST pass its URI and any additional
+data to the plugin in the instantiate() function. The plugin MUST fail to 
+instantiate if a required feature is not present; hosts SHOULD always check 
+this before attempting to instantiate a plugin (i.e. discovery by attempting 
+to instantiate is strongly discouraged).
 """ .
 
 
-
 ####################
-## LV2 Properties ##
+## PortProperties ##
 ####################
-
-:Property a rdfs:Class ;
-    rdfs:subClassOf rdf:Property ;
-    rdfs:label "Property" ;
-    rdfs:comment """
-An LV2 Property.  A host MUST NOT ignore the presence of a Property
-(eg if it does, something catastrophic will happen and the plugin will not
-function).  If a piece of information can be ignored by the host and the
-plugin can still function correctly, it is NOT a Property, it is a Hint.
-""" .
-    
-:PluginProperty a rdfs:Class ;
-    rdfs:label      "Plugin property" ;
-    rdfs:subClassOf :Property ;
-    rdfs:comment    "Property of a Plugin." .
 
 :PortProperty a rdfs:Class ;
-    rdfs:label      "Port property" ;
-    rdfs:subClassOf :Property ;
-    rdfs:comment    "Property of a Port." .
-
-:pluginProperty a rdf:Property ;
-    rdfs:domain  :Plugin ;
-    rdfs:range   :PluginProperty ;
-    rdfs:label   "Plugin property" ;
-    rdfs:comment "Relates Plugins to PluginProperties." .
+    rdfs:label "Port property" ;
+    rdfs:comment """
+A port propety - a useful piece of information that allows a host to make more
+sensible decisions (e.g. to provide a better interface).
+""" .
 
 :portProperty a rdf:Property ;
     rdfs:domain  :Port ;
     rdfs:range   :PortProperty ;
-    rdfs:label   "hint" ;
-    rdfs:comment "Relates Ports to PortProperties." .
-
-
-
-###############
-## LV2 Hints ##
-###############
-
-:Hint a rdfs:Class ;
-    rdfs:label "Hint" ;
+    rdfs:label   "Port property" ;
     rdfs:comment """
-An LV2 Hint - a useful piece of information that allows a host to make more
-sensible decisions (eg to provide a better interface).  Unlike a Property
-a Hint may be ignored without catastrophic effects (though this doesn't mean
-a Hint is less "important" than a Property, whether or not it can be safely
-ignored and have the plugin still function correctly is the sole distinction).
-""" .
-
-:PluginHint a rdfs:Class ;
-    rdfs:label      "Plugin hint" ;
-    rdfs:subClassOf :Hint ;
-    rdfs:comment    "Hint for a Plugin." .
-
-:PortHint a rdfs:Class ;
-    rdfs:label      "Port hint" ;
-    rdfs:subClassOf :Hint ;
-    rdfs:comment    "Hint for a Port." .
-
-:pluginHint a rdf:Property ;
-    rdfs:domain  :Plugin ;
-    rdfs:range   :PluginHint ;
-    rdfs:label   "Plugin hint" ;
-    rdfs:comment "Relates Plugins to PluginHints." .
-
-:portHint a rdf:Property ;
-    rdfs:domain  :Port ;
-    rdfs:range   :PortHint ;
-    rdfs:label   "Port hint" ;
-    rdfs:comment "Relates Ports to PortHints." .
+Relates Ports to PortProperties. The PortProperty may be ignored without 
+catastrophic effects, though it may be useful e.g. for providing a sensible
+interface for the port.
+""".
 
 
+#######################
+## Standard Features ##
+#######################
 
-#############################
-# Standard PluginProperties #
-#############################
-
-:isLive a :PluginProperty ;
+:isLive a :Feature ;
     rdfs:label   "Has a live (realtime) dependency" ;
     rdfs:comment """
 Indicates that the plugin has a real-time dependency (e.g. queues data from a
@@ -383,24 +331,18 @@ socket) and so its output must not be cached or subject to significant latency,
 and calls to the run method should be done in rapid succession.
 """ .
 
-:inPlaceBroken a :PluginProperty ;
+:inPlaceBroken a :Feature ;
     rdfs:label   "in-place broken" ;
     rdfs:comment """
 Indicates that the plugin may cease to work correctly if the host elects to use
 the same data location for both input and output.  Plugins that will fail to
 work correctly if ANY input buffer is set to the same location as ANY output
-buffer (with connect_port()) MUST set this property.  Doing so should be
-avoided as enabling this flag makes it impossible for hosts to use the plugin
-to process audio "in-place".
+buffer (with connect_port()) MUST require this Feature.  Doing so should be
+avoided as it makes it impossible for hosts to use the plugin to process audio
+"in-place".
 """ .
 
-
-
-########################
-# Standard PluginHints #
-########################
-
-:hardRTCapable a :PluginHint ;
+:hardRTCapable a :Feature ;
     rdfs:label   "Hard realtime capable" ;
     rdfs:comment """
 Indicates that the plugin is capable of running not only in a conventional host
@@ -430,12 +372,11 @@ satisfy all of the following:
 """ .
 
 
+#############################
+## Standard PortProperties ##
+#############################
 
-######################
-# Standard PortHints #
-######################
-
-:connectionOptional a :PortHint ;
+:connectionOptional a :PortProperty ;
     rdfs:label   "Optionally connected port" ;
     rdfs:comment """
 Indicates that this port does not have to be connected to valid data by the
@@ -443,7 +384,7 @@ host. If it is to be disconnected then the port MUST set to NULL with a call
 to the connectPort method.
 """ .
 
-:reportsLatency a :PortHint ;
+:reportsLatency a :PortProperty ;
     rdfs:label   "Latency reporting port" ;
     rdfs:comment """
 Indicates that the port is used to express the processing latency incurred by
@@ -451,13 +392,13 @@ the plugin, expressed in samples.  The latency may be affected by the current
 sample rate, plugin settings, or other factors, and may be changed by the
 plugin at any time.  Where the latency is frequency dependent the plugin may
 choose any appropriate value.  If a plugin introduces latency it MUST provide
-EXACTLY ONE port with this hint set which informs the host of the "correct" 
+EXACTLY ONE port with this property set which informs the host of the "correct" 
 latency.  In "fuzzy" cases the value output should be the most reasonable based
 on user expectation of input/output alignment (eg. musical delay/echo plugins
 should not report their delay as latency, as it is an intentional effect).
 """.
 
-:toggled a :PortHint ;
+:toggled a :PortProperty ;
    rdfs:label   "Toggled" ;
    rdfs:comment """
 Indicates that the data item should be considered a Boolean toggle. Data less
@@ -465,17 +406,17 @@ than or equal to zero should be considered "off" or "false", and data above
 zero should be considered "on" or "true".
 """ .
 
-:sampleRate a :PortHint ;
+:sampleRate a :PortProperty ;
    rdfs:label   "Sample rate" ;
    rdfs:comment """
 Indicates that any bounds specified should be interpreted as multiples of the
 sample rate. For instance, a frequency range from 0Hz to the Nyquist frequency
-(half the sample rate) could be requested by this hint in conjunction with
+(half the sample rate) could be requested by this property in conjunction with
 :minimum 0.0 and :maximum 0.5. Hosts that support bounds at all must support
-this hint to retain meaning.
+this property to retain meaning.
 """ .
 
-:integer a :PortHint ;
+:integer a :PortProperty ;
    rdfs:label   "Integer" ;
    rdfs:comment """
 Indicates that a port's reasonable values are integers (eg. a user interface
@@ -485,9 +426,9 @@ A plugin MUST operate reasonably even if such a port has a non-integer input.
 
 
 
-###############################
-# Plugin Categories (Classes) #
-###############################
+####################
+## Plugin Classes ##
+####################
 
 :GeneratorPlugin a rdfs:Class ;
     rdfs:subClassOf :Plugin ;

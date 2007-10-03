@@ -1,5 +1,5 @@
 /* LV2 - LADSPA (Linux Audio Developer's Simple Plugin API) Version 2.0
- * *** PROVISIONAL Revision 1.0beta5 (2007-09-23) ***
+ * *** PROVISIONAL Revision 1.0beta6 (2007-10-03) ***
  *
  * Copyright (C) 2000-2002 Richard W.E. Furse, Paul Barton-Davis,
  *                         Stefan Westerfeld.
@@ -36,7 +36,7 @@ extern "C" {
 
 /** @file lv2.h
  *
- * Revision: 1.0beta5
+ * Revision: 1.0beta6
  *
  * == Overview ==
  *
@@ -121,14 +121,15 @@ typedef void * LV2_Handle;
 /* ************************************************************************* */
 
 
-/** Host feature.
+/** Feature data.
  * 
  * These are passed to a plugin's instantiate method to represent a special
  * feature the host has which the plugin may depend on.  This is to allow
- * extensions to the LV2 specification without causing any breakage.  The base
- * LV2 specification does not define any host features; hosts are not required
+ * extensions to the LV2 specification without causing any breakage.
+ * Extensions may specify what data needs to be passed here.  The base
+ * LV2 specification does not define any features; hosts are not required
  * to use this facility. */
-typedef struct _LV2_Host_Feature {
+typedef struct _LV2_Feature {
 	/** A globally unique, case-sensitive identifier for this feature.
 	 *
 	 * This MUST be defined in the specification of any LV2 extension which
@@ -144,7 +145,7 @@ typedef struct _LV2_Host_Feature {
 	 * this feature.
 	 * If no data is required, this may be set to NULL. */
 	void * data;
-} LV2_Host_Feature;
+} LV2_Feature;
 
 
 /* ************************************************************************* */
@@ -192,10 +193,10 @@ typedef struct _LV2_Descriptor {
 	 * Note that instance initialisation should generally occur in
 	 * activate() rather than here.  If a host calls instantiate, it MUST
 	 * call cleanup() at some point in the future. */
-	LV2_Handle (*instantiate)(const struct _LV2_Descriptor *  descriptor,
-	                          double                          sample_rate,
-	                          const char *                    bundle_path,
-	                          const LV2_Host_Feature *const * host_features);
+	LV2_Handle (*instantiate)(const struct _LV2_Descriptor * descriptor,
+	                          double                         sample_rate,
+	                          const char *                   bundle_path,
+	                          const LV2_Feature *const *     features);
 
 	/** Function pointer that connects a port on a plugin instance to a memory
 	 * location where the block of data for the port will be read/written.
@@ -229,7 +230,7 @@ typedef struct _LV2_Descriptor {
 	 * However, overlapped buffers or use of a single buffer for both
 	 * audio and control data may result in unexpected behaviour.
 	 *
-	 * If the plugin has the property lv2:hardRTCapable then there are 
+	 * If the plugin has the feature lv2:hardRTCapable then there are 
 	 * various things that the plugin MUST NOT do within the connect_port()
 	 * function (see lv2.ttl). */
 	void (*connect_port)(LV2_Handle instance,
@@ -271,7 +272,7 @@ typedef struct _LV2_Descriptor {
 	 * the plugin instance may not be reused until activate() has been
 	 * called again.
 	 *
-	 * If the plugin has the property lv2:hardRTCapable then there are 
+	 * If the plugin has the feature lv2:hardRTCapable then there are 
 	 * various things that the plugin MUST NOT do within the run()
 	 * function (see lv2.ttl). */
 	void (*run)(LV2_Handle instance,

@@ -31,16 +31,16 @@
 
 
 SLV2Instance
-slv2_plugin_instantiate(SLV2Plugin               plugin,
-                        double                   sample_rate,
-                        const LV2_Host_Feature** host_features)
+slv2_plugin_instantiate(SLV2Plugin          plugin,
+                        double              sample_rate,
+                        const LV2_Feature** features)
 {
 	struct _Instance* result = NULL;
 	
-	bool local_host_features = (host_features == NULL);
-	if (local_host_features) {
-		host_features = malloc(sizeof(LV2_Host_Feature));
-		host_features[0] = NULL;
+	bool local_features = (features == NULL);
+	if (local_features) {
+		features = malloc(sizeof(LV2_Feature));
+		features[0] = NULL;
 	}
 	
 	const char* const lib_uri = slv2_plugin_get_library_uri(plugin);
@@ -89,7 +89,7 @@ slv2_plugin_instantiate(SLV2Plugin               plugin,
 				// Create SLV2Instance to return
 				result = malloc(sizeof(struct _Instance));
 				result->lv2_descriptor = ld;
-				result->lv2_handle = ld->instantiate(ld, sample_rate, (char*)bundle_path, host_features);
+				result->lv2_handle = ld->instantiate(ld, sample_rate, (char*)bundle_path, features);
 				struct _InstanceImpl* impl = malloc(sizeof(struct _InstanceImpl));
 				impl->lib_handle = lib;
 				result->pimpl = impl;
@@ -114,8 +114,8 @@ slv2_plugin_instantiate(SLV2Plugin               plugin,
 			result->lv2_descriptor->connect_port(result->lv2_handle, i, NULL);
 	}
 
-	if (local_host_features)
-		free(host_features);
+	if (local_features)
+		free(features);
 
 	return result;
 }

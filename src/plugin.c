@@ -498,9 +498,9 @@ slv2_plugin_get_supported_features(SLV2Plugin p)
 {
     const char* const query = 
 		"SELECT DISTINCT ?feature WHERE {\n"
-		"	{ <>  lv2:optionalHostFeature  ?feature }\n"
-		"		UNION\n"
-		"	{ <>  lv2:requiredHostFeature  ?feature }\n"
+		"	{ <>  lv2:optionalFeature ?feature }\n"
+		"	UNION\n"
+		"	{ <>  lv2:requiredFeature ?feature }\n"
 		"}\n";
 
 	SLV2Values result = slv2_plugin_simple_query(p, query, 0);
@@ -512,28 +512,14 @@ slv2_plugin_get_supported_features(SLV2Plugin p)
 SLV2Values
 slv2_plugin_get_optional_features(SLV2Plugin p)
 {
-    const char* const query = 
-		"SELECT DISTINCT ?feature WHERE {\n"
-		"	<>  lv2:optionalHostFeature  ?feature\n"
-		"}\n";
-
-	SLV2Values result = slv2_plugin_simple_query(p, query, 0);
-	
-	return result;
+	return slv2_plugin_get_value(p, SLV2_QNAME, "lv2:optionalFeature");
 }
 
 
 SLV2Values
 slv2_plugin_get_required_features(SLV2Plugin p)
 {
-    const char* const query = 
-		"SELECT DISTINCT ?feature WHERE {\n"
-		"	<>  lv2:requiredHostFeature  ?feature\n"
-		"}\n";
-
-	SLV2Values result = slv2_plugin_simple_query(p, query, 0);
-	
-	return result;
+	return slv2_plugin_get_value(p, SLV2_QNAME, "lv2:requiredFeature");
 }
 
 

@@ -153,7 +153,7 @@ slv2_plugin_get_class(SLV2Plugin plugin);
  *
  * <code>&lt;plugin-uri&gt; predicate ?object</code>
  * 
- * May return NULL if the property was not found, or if object is not
+ * May return NULL if the property was not found, or if object(s) is not
  * sensibly represented as an SLV2Values (e.g. blank nodes).
  *
  * Return value must be freed by caller with slv2_values_free.
@@ -195,31 +195,51 @@ slv2_plugin_get_value_for_subject(SLV2Plugin  p,
                                   const char* predicate);
 
 
-/** Get the LV2 Properties of a plugin.
+/** Get the LV2 Features supported (required or optionally) by a plugin.
  *
- * LV2 Properties are mandatory.  Hosts MUST NOT use a plugin if they do not
- * understand all the LV2 Properties associated with that plugin (if this is
- * not what you want, see slv2_plugin_get_hints).
+ * A feature is "supported" by a plugin if it is required OR optional.
+ *
+ * Since required features have special rules the host must obey, this function
+ * probably shouldn't be used by normal hosts.  Using slv2_plugin_get_optional_features
+ * and slv2_plugin_get_required_features separately is best in most cases.
+ *
+ * Returned value must be freed by caller with slv2_values_free.
+ *
+ * Time = Query
+ */
+SLV2Values
+slv2_plugin_get_supported_features(SLV2Plugin p);
+
+
+/** Get the LV2 Features required by a plugin.
+ *
+ * If a feature is required by a plugin, hosts MUST NOT use the plugin if they do not
+ * understand (or are unable to support) that feature.
+ *
+ * All values returned here MUST be passed to the plugin's instantiate method
+ * (along with data, if necessary, as defined by the feature specification)
+ * or plugin instantiation will fail.
  *
  * Return value must be freed by caller with slv2_values_free.
  *
  * Time = Query
  */
 SLV2Values
-slv2_plugin_get_properties(SLV2Plugin p);
+slv2_plugin_get_required_features(SLV2Plugin p);
 
 
-/** Get the LV2 Hints of a plugin.
+/** Get the LV2 Features optionally supported by a plugin.
  *
- * LV2 Hints are suggestions that may be useful for a host.  LV2 Hints may be
- * ignored and the plugin will still function correctly.
+ * Hosts MAY ignore optional plugin features for whatever reasons.  Plugins
+ * MUST operate (at least somewhat) if they are instantiated without being
+ * passed optional features.
  *
  * Return value must be freed by caller with slv2_values_free.
  *
  * Time = Query
  */
 SLV2Values
-slv2_plugin_get_hints(SLV2Plugin p);
+slv2_plugin_get_optional_features(SLV2Plugin p);
 
 
 /** Get the number of ports on this plugin.
@@ -254,39 +274,6 @@ slv2_plugin_has_latency(SLV2Plugin p);
  */
 uint32_t
 slv2_plugin_get_latency_port(SLV2Plugin p);
-
-
-/** Get a plugin's supported host features / extensions.
- *
- * This returns a list of all supported features (both required and optional).
- *
- * Time = Query
- */
-SLV2Values
-slv2_plugin_get_supported_features(SLV2Plugin p);
-
-
-/** Get a plugin's requires host features / extensions.
- *
- * All feature URI's returned by this call MUST be passed to the plugin's
- * instantiate method for the plugin to instantiate successfully.
- *
- * Time = Query
- */
-SLV2Values
-slv2_plugin_get_required_features(SLV2Plugin p);
-
-
-/** Get a plugin's optional host features / extensions.
- *
- * If the feature URI's returned by this method are passed to the plugin's
- * instantiate method, those features will be used by the function, otherwise
- * the plugin will act as it would if it did not support that feature at all.
- *
- * Time = Query
- */
-SLV2Values
-slv2_plugin_get_optional_features(SLV2Plugin p);
 
 
 /** Query a plugin for a single variable.

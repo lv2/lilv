@@ -88,18 +88,6 @@ print_port(SLV2Plugin p, uint32_t index)
 	}
 	printf("\n");
 	slv2_values_free(properties);
-
-	SLV2Values hints = slv2_port_get_hints(p, port);
-	printf("\t\tHints:      ");
-	for (unsigned i=0; i < slv2_values_size(hints); ++i) {
-		if (i > 0) {
-			printf("\n\t\t            ");
-		}
-		printf("%s\n", slv2_value_as_uri(slv2_values_get_at(hints, i)));
-	}
-	printf("\n");
-
-	slv2_values_free(hints);
 }
 
 void
@@ -107,7 +95,7 @@ print_plugin(SLV2Plugin p)
 {
 	char* str = NULL;
 
-	printf("<%s>\n\n", slv2_plugin_get_uri(p));
+	printf("%s\n\n", slv2_plugin_get_uri(p));
 	
 	str = slv2_plugin_get_name(p);
 	printf("\tName:        %s\n", str);
@@ -137,7 +125,7 @@ print_plugin(SLV2Plugin p)
 			
 			SLV2Values types = slv2_ui_get_types(ui);
 			for (unsigned i=0; i < slv2_values_size(types); ++i) {
-				printf("\t\t\tType: %s\n", slv2_value_as_uri(slv2_values_get_at(types, i)));
+				printf("\t\t\tType:   %s\n", slv2_value_as_uri(slv2_values_get_at(types, i)));
 			}
 	
 			if (binary)
@@ -161,37 +149,38 @@ print_plugin(SLV2Plugin p)
 	}
 	printf("\n");
 
-	/* Properties */
 
-	SLV2Values properties = slv2_plugin_get_properties(p);
-	printf("\tProperties: ");
-	for (unsigned i=0; i < slv2_values_size(properties); ++i) {
+	/* Required Features */
+
+	SLV2Values features = slv2_plugin_get_required_features(p);
+	printf("\tRequired Features: ");
+	for (unsigned i=0; i < slv2_values_size(features); ++i) {
 		if (i > 0) {
 			printf("\n\t            ");
 		}
-		printf("%s\n", slv2_value_as_uri(slv2_values_get_at(properties, i)));
+		printf("%s\n", slv2_value_as_uri(slv2_values_get_at(features, i)));
 	}
 	printf("\n");
-	slv2_values_free(properties);
+	slv2_values_free(features);
+	
+	
+	/* Optional Features */
 
-
-	/* Hints */
-
-	SLV2Values hints = slv2_plugin_get_hints(p);
-	printf("\tHints:      ");
-	for (unsigned i=0; i < slv2_values_size(hints); ++i) {
+	features = slv2_plugin_get_optional_features(p);
+	printf("\tOptional Features: ");
+	for (unsigned i=0; i < slv2_values_size(features); ++i) {
 		if (i > 0) {
 			printf("\n\t            ");
 		}
-		printf("%s\n", slv2_value_as_uri(slv2_values_get_at(hints, i)));
+		printf("%s\n", slv2_value_as_uri(slv2_values_get_at(features, i)));
 	}
 	printf("\n");
-	slv2_values_free(hints);
-	
-	
+	slv2_values_free(features);
+
+
 	/* Ports */
 
-	uint32_t num_ports = slv2_plugin_get_num_ports(p);
+	const uint32_t num_ports = slv2_plugin_get_num_ports(p);
 	
 	//printf("\n\t# Ports: %d\n", num_ports);
 	

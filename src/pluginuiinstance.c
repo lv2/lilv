@@ -40,14 +40,14 @@ slv2_ui_instantiate(SLV2Plugin                     plugin,
                     LV2UI_Program_Change_Function  program_function,
                     LV2UI_Program_Save_Function    save_function,
                     LV2UI_Controller               controller,
-                    const LV2_Host_Feature* const* host_features)
+                    const LV2_Feature* const*      features)
 {
 	struct _SLV2UIInstance* result = NULL;
 	
-	bool local_host_features = (host_features == NULL);
-	if (local_host_features) {
-		host_features = malloc(sizeof(LV2_Host_Feature));
-		((LV2_Host_Feature**)host_features)[0] = NULL;
+	bool local_features = (features == NULL);
+	if (local_features) {
+		features = malloc(sizeof(LV2_Feature));
+		((LV2_Feature**)features)[0] = NULL;
 	}
 	
 	const char* const lib_uri = slv2_ui_get_binary_uri(ui);
@@ -103,7 +103,7 @@ slv2_ui_instantiate(SLV2Plugin                     plugin,
 						save_function,
 						controller,
 						&impl->widget,
-						host_features);
+						features);
 				impl->lib_handle = lib;
 				result->pimpl = impl;
 				break;
@@ -128,8 +128,8 @@ slv2_ui_instantiate(SLV2Plugin                     plugin,
 		return NULL;
 	}
 
-	if (local_host_features)
-		free((LV2_Host_Feature**)host_features);
+	if (local_features)
+		free((LV2_Feature**)features);
 
 	return result;
 }

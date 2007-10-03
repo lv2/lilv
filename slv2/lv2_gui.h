@@ -210,7 +210,7 @@ typedef struct _LV2UI_Descriptor {
                               LV2UI_Program_Save_Function     save_function,
                               LV2UI_Controller                controller,
                               LV2UI_Widget*                   widget,
-                              const LV2_Host_Feature* const*  host_features);
+                              const LV2_Feature* const*       features);
 
   
   /** Destroy the GUI object and the associated widget. 
