@@ -448,7 +448,7 @@ slv2_world_load_all(SLV2World world)
 	} else {
 		const char* const home = getenv("HOME");
 		if (home) {
-			const char* const suffix = "/.lv2/bundles:/usr/local/lib/lv2:/usr/lib/lv2";
+			const char* const suffix = "/.lv2:/usr/local/lib/lv2:/usr/lib/lv2";
 			lv2_path = slv2_strjoin(home, suffix, NULL);
 		} else {
 			lv2_path = strdup("/usr/local/lib/lv2:/usr/lib/lv2");
