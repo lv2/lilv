@@ -167,6 +167,7 @@ slv2_plugin_load(SLV2Plugin p)
 	while (!librdf_query_results_finished(results)) {
 		librdf_node* class_node    = librdf_query_results_get_binding_value(results, 0);
 		librdf_uri*  class_uri     = librdf_node_get_uri(class_node);
+		assert(class_uri);
 		const char*  class_uri_str = (const char*)librdf_uri_as_string(class_uri);
 		
 		if ( ! librdf_uri_equals(class_uri, p->world->lv2_plugin_class->uri) ) {

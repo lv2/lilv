@@ -80,6 +80,8 @@ slv2_plugin_instantiate(SLV2Plugin          plugin,
 				dlclose(lib);
 				break; // return NULL
 			} else if (!strcmp(ld->URI, slv2_plugin_get_uri(plugin))) {
+					
+				assert(plugin->plugin_uri);
 
 				printf("Found %s at index %u in:\n\t%s\n\n",
 						librdf_uri_as_string(plugin->plugin_uri), i, lib_path);

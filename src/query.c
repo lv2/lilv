@@ -74,6 +74,7 @@ slv2_query_get_variable_bindings(librdf_query_results* results,
 		switch (librdf_node_get_type(node)) {
 		case LIBRDF_NODE_TYPE_RESOURCE:
 			type = SLV2_VALUE_URI;
+			assert(librdf_node_get_uri(node));
 			str_val = (const char*)librdf_uri_as_string(librdf_node_get_uri(node));
 			break;
 		case LIBRDF_NODE_TYPE_LITERAL:

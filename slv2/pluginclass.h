@@ -33,6 +33,7 @@ extern "C" {
 /** Get the URI of this class' superclass.
  *
  * Returned value is owned by \a plugin_class and must not be freed by caller.
+ * Returned value may be NULL, if class has no parent.
  *
  * Time = O(1)
  */

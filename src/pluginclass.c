@@ -18,6 +18,7 @@
 
 #define _XOPEN_SOURCE 500
 
+#include <assert.h>
 #include <stdlib.h>
 #include <string.h>
 #include <slv2/pluginclass.h>
@@ -52,13 +53,17 @@ slv2_plugin_class_free(SLV2PluginClass plugin_class)
 const char*
 slv2_plugin_class_get_parent_uri(SLV2PluginClass plugin_class)
 {
-	return (const char*)librdf_uri_as_string(plugin_class->parent_uri);
+	if (plugin_class->parent_uri)
+		return (const char*)librdf_uri_as_string(plugin_class->parent_uri);
+	else
+		return NULL;
 }
 
 
 const char*
 slv2_plugin_class_get_uri(SLV2PluginClass plugin_class)
 {
+	assert(plugin_class->uri);
 	return (const char*)librdf_uri_as_string(plugin_class->uri);
 }
 

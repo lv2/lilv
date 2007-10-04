@@ -28,13 +28,19 @@
 /* private */
 SLV2UI
 slv2_ui_new(SLV2World   world,
-                   librdf_uri* uri,
-                   librdf_uri* type_uri,
-                   librdf_uri* binary_uri)
+            librdf_uri* uri,
+            librdf_uri* type_uri,
+            librdf_uri* binary_uri)
 {
+	assert(uri);
+	assert(type_uri);
+	assert(binary_uri);
+
 	struct _SLV2UI* ui = malloc(sizeof(struct _SLV2UI));
 	ui->uri = librdf_new_uri_from_uri(uri);
 	ui->binary_uri = librdf_new_uri_from_uri(binary_uri);
+	
+	assert(ui->binary_uri);
 	
 	// FIXME: kludge
 	char* bundle = strdup((const char*)librdf_uri_as_string(ui->binary_uri));

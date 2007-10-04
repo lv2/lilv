@@ -85,6 +85,9 @@ slv2_ui_instantiate(SLV2Plugin                     plugin,
 				break; // return NULL
 			} else if (!strcmp(ld->URI, slv2_ui_get_uri(ui))) {
 
+	
+				assert(plugin->plugin_uri);
+
 				printf("Found UI %s at index %u in:\n\t%s\n\n",
 				       librdf_uri_as_string(plugin->plugin_uri), i, lib_path);
 
