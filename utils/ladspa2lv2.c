@@ -287,7 +287,7 @@ write_lv2_turtle(LADSPA_Descriptor* descriptor, const char* plugin_uri, const ch
 
 	if (LADSPA_IS_HARD_RT_CAPABLE(descriptor->Properties))
 		add_resource(model, plugin,
-			NS_LV2("property"),
+			NS_LV2("optionalFeature"),
 		 	NS_LV2("hardRTCapable"));
 	
 	for (uint32_t i=0; i < descriptor->PortCount; ++i) {
@@ -339,7 +339,7 @@ write_lv2_turtle(LADSPA_Descriptor* descriptor, const char* plugin_uri, const ch
 void
 print_usage()
 {
-	printf("Usage: ladspa2slv2 /path/to/laddspalib.so ladspa_index lv2_uri\n");
+	printf("Usage: ladspa2lv2 /path/to/ladspalib.so ladspa_index lv2_uri output_data_file\n");
 	printf("Partially convert a LADSPA plugin to an LV2 plugin.\n");
 	printf("This utility is for developers, it will not generate a usable\n");
 	printf("LV2 plugin directly.\n\n");
@@ -349,7 +349,7 @@ print_usage()
 int
 main(int argc, char** argv)
 {
-	if (argc != 4) {
+	if (argc != 5) {
 		print_usage();
 		return 1;
 	}
@@ -365,7 +365,7 @@ main(int argc, char** argv)
 
 	if (descriptor) {
 		printf("Loaded %s : %lu\n", lib_path, index);
-		write_lv2_turtle(descriptor, uri, "ladspaplugin.ttl");
+		write_lv2_turtle(descriptor, uri, argv[4]);
 	} else {
 		printf("Failed to load %s : %lu\n", lib_path, index);
 	}
