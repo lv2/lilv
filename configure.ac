@@ -49,7 +49,7 @@ AC_SUBST(SLV2_LIBS)
 CONFIG_H_PATH="$builddir/config/config.h"
 
 # Checks for compiler
-AC_PROG_CC_C_O
+AM_PROG_CC_C_O
 
 # Library building stuff
 AC_PROG_LIBTOOL
