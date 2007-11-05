@@ -16,9 +16,9 @@ AC_PREREQ(2.59)
 # current svn = 4,0,0
 
 SLV2_VERSION="0.3.0"
-SLV2_API_CURRENT=4
-SLV2_API_REVISION=0
-SLV2_API_AGE=0
+SLV2_API_CURRENT="4"
+SLV2_API_REVISION="0"
+SLV2_API_AGE="0"
 
 # SLV2 follows the even/odd minor = stable/development convention
 AC_INIT([slv2],${SLV2_VERSION},[dave@drobilla.net])
@@ -32,8 +32,9 @@ AC_CONFIG_SRCDIR([swig/slv2.i])
 AC_CONFIG_HEADER([config/config.h])
 AM_INIT_AUTOMAKE
 
-SLV2_SO_VERSION=${SLV2_API_CURRENT}:${SLV2_API_REVISION}:${SLV2_API_AGE}
+SLV2_SO_VERSION="${SLV2_API_CURRENT}:${SLV2_API_REVISION}:${SLV2_API_AGE}"
 AC_SUBST(SLV2_SO_VERSION)
+AC_SUBST(SLV2_VERSION)
 
 # This is cute... autohell FTW
 builddir=`pwd`
