@@ -1,5 +1,17 @@
 AC_PREREQ(2.59)
 
+# SLV2 follows the even/odd minor = stable/development convention
+AC_INIT([slv2],0.3.0,[dave@drobilla.net])
+
+AC_CONFIG_AUX_DIR([config])
+
+AC_CONFIG_SRCDIR([src/plugin.c])
+AC_CONFIG_SRCDIR([slv2/plugin.h])
+AC_CONFIG_SRCDIR([utils/lv2_list.c])
+AC_CONFIG_SRCDIR([swig/slv2.i])
+AC_CONFIG_HEADER([config/config.h])
+AM_INIT_AUTOMAKE
+
 # SLV2 interface version (libtool shared library versioning)
 #
 # current = incremented whenever the public API is changed 
@@ -20,18 +32,9 @@ SLV2_API_CURRENT="4"
 SLV2_API_REVISION="0"
 SLV2_API_AGE="0"
 
-# SLV2 follows the even/odd minor = stable/development convention
-AC_INIT([slv2],0.3.0,[dave@drobilla.net])
-
-AC_CONFIG_AUX_DIR([config])
-
-AC_CONFIG_SRCDIR([src/plugin.c])
-AC_CONFIG_SRCDIR([slv2/plugin.h])
-AC_CONFIG_SRCDIR([utils/lv2_list.c])
-AC_CONFIG_SRCDIR([swig/slv2.i])
-AC_CONFIG_HEADER([config/config.h])
-AM_INIT_AUTOMAKE
-
+AC_SUBST(SLV2_API_CURRENT)
+AC_SUBST(SLV2_API_REVISION)
+AC_SUBST(SLV2_API_AGE)
 SLV2_SO_VERSION="${SLV2_API_CURRENT}:${SLV2_API_REVISION}:${SLV2_API_AGE}"
 AC_SUBST(SLV2_SO_VERSION)
 AC_SUBST(SLV2_VERSION)
