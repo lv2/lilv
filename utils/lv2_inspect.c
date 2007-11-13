@@ -16,8 +16,10 @@
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+#include CONFIG_H_PATH
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 #include <slv2/slv2.h>
 
 
@@ -189,6 +191,24 @@ print_plugin(SLV2Plugin p)
 }
 
 
+void
+print_version()
+{
+	printf("lv2_inspect (slv2) " PACKAGE_VERSION "\n");
+	printf("Copyright (C) 2007 Dave Robillard <dave@drobilla.net>\n");
+	printf("License: GNU GPL version 2 or later <http://gnu.org/licenses/gpl.html>\n");
+	printf("This is free software: you are free to change and redistribute it.\n");
+	printf("There is NO WARRANTY, to the extent permitted by law.\n");
+}
+
+
+void
+print_usage()
+{
+	printf("Usage: lv2_inspect PLUGIN_URI\n");
+	printf("Show information about an installed LV2 plugin.\n");
+}
+
 	
 int
 main(int argc, char** argv)
@@ -197,7 +217,18 @@ main(int argc, char** argv)
 	slv2_world_load_all(world);
 
 	if (argc != 2) {
-		fprintf(stderr, "Usage: %s PLUGIN_URI\n", argv[0]);
+		print_usage();
+		return -1;
+	}
+
+	if (!strcmp(argv[1], "--version")) {
+		print_version();
+		return 0;
+	} else if (!strcmp(argv[1], "--help")) {
+		print_usage();
+		return 0;
+	} else {
+		print_usage();
 		return -1;
 	}
 
