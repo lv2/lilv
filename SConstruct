@@ -1,8 +1,6 @@
-#!/bin/env python
-# Run scons in this directory to build
+#!python (This script must be run with scons)
 # See INSTALL for build instructions, and COPYING for licensing information.
 
-import sys
 import os
 
 print "WARNING: SCons building is experimental"
@@ -41,19 +39,23 @@ else:
 	print "Using default CFLAGS:\t", opt_cflags
 	env.Append(CCFLAGS = opt_cflags)
 
+env.Append(CCFLAGS = "-DCONFIG_H_PATH=\\\"" + os.path.abspath(".") + "/config/config.h\\\"")
+
 slv2_sources = Split('''
+src/plugin.c
 src/pluginclass.c
 src/pluginclasses.c
-src/query.c
 src/plugininstance.c
-src/value.c
-src/port.c
-src/util.c
-src/pluginguiinstance.c
-src/values.c
 src/plugins.c
+src/pluginui.c
+src/pluginuis.c
+src/pluginuiinstance.c
+src/port.c
+src/query.c
+src/util.c
+src/value.c
+src/values.c
 src/world.c
-src/plugin.c
 ''')
 
 

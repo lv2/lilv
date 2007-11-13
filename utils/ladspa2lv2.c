@@ -164,7 +164,7 @@ add_port_range(LADSPA_Descriptor* plugin,
 		= plugin->PortRangeHints[port_index].HintDescriptor;
 
 	bool range_valid = false;
-	float upper, lower, normal;
+	float upper=1.0f, lower=0.0f, normal=0.0f;
 
 	/* Convert hints */
 

@@ -1,6 +1,5 @@
 AC_PREREQ(2.59)
 
-# SLV2 follows the even/odd minor = stable/development convention
 AC_INIT([slv2],0.3.0,[dave@drobilla.net])
 
 AC_CONFIG_AUX_DIR([config])
@@ -25,7 +24,7 @@ AM_INIT_AUTOMAKE
 # 0.0.1 = 0,0,0
 # 0.1.0 = 2,0,0
 # 0.2.0 = 3,0,0
-# current svn = 4,0,0
+# 0.3.0 = 4,0,0
 
 SLV2_VERSION="0.3.0"
 SLV2_API_CURRENT="4"
@@ -90,13 +89,6 @@ if test "$bindings" = "yes"; then
   AC_CHECK_PROGS(SWIG, swig)
 fi
 AM_CONDITIONAL(WITH_SWIG, [test "$bindings" = "yes"])
-
-
-# Check for RAPTOR
-#PKG_CHECK_MODULES(RAPTOR, raptor >= 0.21)
-
-# Check for RASQAL
-#PKG_CHECK_MODULES(RASQAL, rasqal >= 0.9.11)
 
 # Check for Redland
 #PKG_CHECK_MODULES(REDLAND, redland >= 1.0.0)
