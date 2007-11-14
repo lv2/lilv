@@ -1,5 +1,5 @@
 /* LV2 - LADSPA (Linux Audio Developer's Simple Plugin API) Version 2.0
- * *** PROVISIONAL Revision 1.0beta6 (2007-10-03) ***
+ * *** PROVISIONAL Revision 1.0beta7 (2007-11-14) ***
  *
  * Copyright (C) 2000-2002 Richard W.E. Furse, Paul Barton-Davis,
  *                         Stefan Westerfeld.
@@ -36,7 +36,7 @@ extern "C" {
 
 /** @file lv2.h
  *
- * Revision: 1.0beta6
+ * Revision: 1.0beta7
  *
  * == Overview ==
  *
@@ -177,18 +177,18 @@ typedef struct _LV2_Descriptor {
 	 * as the plugin descriptor from which this instantiate function was
 	 * found. This function must return NULL if instantiation fails.
 	 *
-	 * BundlePath is a string of the path to the LV2 bundle which contains
+	 * bundle_path is a string of the path to the LV2 bundle which contains
 	 * this plugin binary.  It MUST include the trailing directory separator
 	 * (e.g. '/') so that BundlePath + filename gives the path to a file
 	 * in the bundle.
 	 *
-	 * HostFeatures is a NULL terminated array of the URIs of the LV2
-	 * features that the host supports. Plugins may refuse to instantiate
-	 * if required features are not found here (however hosts SHOULD NOT use
-	 * this as a discovery mechanism, instead reading the data file before
-	 * attempting to instantiate the plugin).  This array must always exist;
-	 * if a host has no features, it MUST pass a single element array
-	 * containing NULL (to simplify plugins).
+	 * features is a NULL terminated array of LV2_Feature structs which
+	 * represent the features the host supports. Plugins may refuse to
+	 * instantiate if required features are not found here (however hosts
+	 * SHOULD NOT use this as a discovery mechanism, instead reading the
+	 * data file before attempting to instantiate the plugin).  This array
+	 * must always exist; if a host has no features, it MUST pass a single
+	 * element array containing NULL (to simplify plugins).
 	 *
 	 * Note that instance initialisation should generally occur in
 	 * activate() rather than here.  If a host calls instantiate, it MUST
@@ -276,7 +276,7 @@ typedef struct _LV2_Descriptor {
 	 * various things that the plugin MUST NOT do within the run()
 	 * function (see lv2.ttl). */
 	void (*run)(LV2_Handle instance,
-	            uint32_t   sampleCount);
+	            uint32_t   sample_count);
 
 	/** This is the counterpart to activate() (see above). If there is
 	 * nothing for deactivate() to do then the plugin writer may provide

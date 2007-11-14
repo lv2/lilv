@@ -1,5 +1,5 @@
 # RDF Schema for LV2 plugins
-# *** PROVISIONAL Revision 1.0beta6 (2007-10-03) ***
+# *** PROVISIONAL Revision 1.0beta7 (2007-11-14) ***
 #
 # This document describes the classes and properties that are defined by the
 # core LV2 specification.  See <http://lv2plug.in> for more information.
@@ -49,8 +49,8 @@ See http://lv2plug.in/docs for more details.
    doap:shortdesc "An audio processing plugin specification" ;
    doap:programming-language "C" ;
    doap:release [
-       doap:revision "1.0beta6" ;
-       doap:created "2007-10-03"
+       doap:revision "1.0beta7" ;
+       doap:created "2007-11-14"
    ] ;
    doap:maintainer [
        a foaf:Person ;
