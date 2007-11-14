@@ -1,6 +1,6 @@
 AC_PREREQ(2.59)
 
-AC_INIT([slv2],0.3.0,[dave@drobilla.net])
+AC_INIT([slv2],0.3.1,[dave@drobilla.net])
 
 AC_CONFIG_AUX_DIR([config])
 
@@ -25,8 +25,9 @@ AM_INIT_AUTOMAKE
 # 0.1.0 = 2,0,0
 # 0.2.0 = 3,0,0
 # 0.3.0 = 4,0,0
+# current svn = 0.3.1 = 4,0,0
 
-SLV2_VERSION="0.3.0"
+SLV2_VERSION="0.3.1"
 SLV2_API_CURRENT="4"
 SLV2_API_REVISION="0"
 SLV2_API_AGE="0"
@@ -91,17 +92,7 @@ fi
 AM_CONDITIONAL(WITH_SWIG, [test "$bindings" = "yes"])
 
 # Check for Redland
-#PKG_CHECK_MODULES(REDLAND, redland >= 1.0.0)
-# No pkg-config?!  Booo!
-AC_CHECK_PROG(REDLAND_CONFIG, redland-config, redland-config)
-if test "X$REDLAND_CONFIG" = X; then
-  AC_MSG_ERROR([SLV2 requires Redland (librdf), but redland-config not found.])
-else
-  REDLAND_CFLAGS=`$REDLAND_CONFIG --cflags`
-  REDLAND_LIBS=`$REDLAND_CONFIG --libs`
-  AC_SUBST(REDLAND_CFLAGS)
-  AC_SUBST(REDLAND_LIBS)
-fi
+PKG_CHECK_MODULES(REDLAND, redland >= 1.0.0)
 
 # Check for JACK
 build_jack="yes"
