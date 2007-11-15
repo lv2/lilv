@@ -37,7 +37,7 @@ typedef struct { SLV2Plugin me; } Plugin;
     }
     
     ~Plugin() {
-        /* FIXME: free SLV2Plugin? */
+        /* FIXME: free SLV2Plugin here? */
         free($self);
     }
 
@@ -45,7 +45,7 @@ typedef struct { SLV2Plugin me; } Plugin;
     const char* uri() { return slv2_plugin_get_uri($self->me); }
 };
 
-typedef struct { SLV2Plugins me; } Plugins;
+typedef struct { SLV2World world; SLV2Plugins me; } Plugins;
 %extend Plugins {
     Plugins(SLV2World w, SLV2Plugins p) {
         Plugins* ret = malloc(sizeof(Plugins));
@@ -68,6 +68,23 @@ typedef struct { SLV2Plugins me; } Plugins;
         else
             return NULL;
     }
+
+%pythoncode %{
+    def __iter__(self):
+        class Iterator(object):
+            def __init__(self, plugins):
+                self.plugins = plugins
+                self.iter = 0
+
+            def next(self):
+                if self.iter < self.plugins.size():
+                    self.iter += 1
+                    return Plugin(slv2_plugins_get_at(self.plugins.me, self.iter-1))
+                else:
+                    raise StopIteration
+
+        return Iterator(self)
+%}
 };
 
 typedef struct { SLV2World me; } World;
@@ -82,8 +99,6 @@ typedef struct { SLV2World me; } World;
         slv2_world_free($self->me);
         free($self);
     }
-    /*World() { $self->me = slv2_world_new(); }
-    ~World() { slv2_world_free($self->me); }*/
 
     void load_all() { slv2_world_load_all($self->me); }
     void load_bundle(const char* path) { slv2_world_load_bundle($self->me, path); }

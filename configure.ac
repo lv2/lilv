@@ -25,7 +25,7 @@ AM_INIT_AUTOMAKE
 # 0.1.0 = 2,0,0
 # 0.2.0 = 3,0,0
 # 0.3.0 = 4,0,0
-# current svn = 0.3.1 = 4,0,0
+# 0.3.1 = 4,0,0
 
 SLV2_VERSION="0.3.1"
 SLV2_API_CURRENT="4"
@@ -134,6 +134,7 @@ AC_CONFIG_FILES([data/lv2core.lv2/Makefile])
 AC_CONFIG_FILES([slv2.pc])
 AC_CONFIG_FILES([doc/Makefile])
 AC_CONFIG_FILES([doc/reference.doxygen])
+AC_CONFIG_FILES([debian/Makefile])
 
 AC_OUTPUT
 
