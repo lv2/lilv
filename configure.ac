@@ -131,7 +131,7 @@ AC_CONFIG_FILES([hosts/Makefile])
 AC_CONFIG_FILES([swig/Makefile])
 AC_CONFIG_FILES([data/Makefile])
 AC_CONFIG_FILES([data/lv2core.lv2/Makefile])
-AC_CONFIG_FILES([libslv2.pc])
+AC_CONFIG_FILES([slv2.pc])
 AC_CONFIG_FILES([doc/Makefile])
 AC_CONFIG_FILES([doc/reference.doxygen])
 

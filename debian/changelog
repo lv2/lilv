@@ -1,0 +1,5 @@
+slv2 (0.3.0) unstable; urgency=low
+
+  * Initial Debian Release.
+
+ -- Dave Robillard <dave@drobilla.net>  Wed, 14 Nov 2007 22:29:49 -0500

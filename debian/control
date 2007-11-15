@@ -1,0 +1,21 @@
+Source: slv2
+Priority: extra
+Maintainer: Dave Robillard <dave@drobilla.net>
+Build-Depends: debhelper (>= 5), autotools-dev
+Standards-Version: 3.7.2
+Section: libs
+
+Package: slv2-dev
+Section: libdevel
+Architecture: any
+Depends: slv2 (= ${binary:Version})
+Description: Development files (headers) for SLV2
+ Files required for compiling programs which use SLV2.
+
+Package: slv2
+Section: libs
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: A library for simple use of LV2 plugins
+ SLV2 is a library geared towards music and audio applications which makes
+ the use of LV2 plugins <http://lv2plug.in> as simple as possible.

@@ -17,7 +17,7 @@ SUBDIRS      = src slv2 utils hosts data $(DOC_DIR) swig
 DIST_SUBDIRS = src slv2 utils hosts data doc swig
 
 pkgconfigdir = $(libdir)/pkgconfig
-pkgconfig_DATA = libslv2.pc
+pkgconfig_DATA = slv2.pc
 
 dist-hook: dist-check-doxygen
 
