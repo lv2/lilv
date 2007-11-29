@@ -72,9 +72,9 @@ typedef struct _Instance {
  * \return NULL if instantiation failed.
  */
 SLV2Instance
-slv2_plugin_instantiate(SLV2Plugin          plugin,
-                        double              sample_rate,
-                        const LV2_Feature** features);
+slv2_plugin_instantiate(SLV2Plugin               plugin,
+                        double                   sample_rate,
+                        const LV2_Feature*const* features);
 
 
 /** Free a plugin instance.
