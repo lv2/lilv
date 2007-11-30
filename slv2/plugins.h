@@ -26,7 +26,7 @@
 extern "C" {
 #endif
 
-/** \addtogroup collections
+/** \addtogroup slv2_collections
  * @{
  */
 

@@ -25,7 +25,7 @@
 extern "C" {
 #endif
 
-/** \defgroup util Utility functions
+/** \defgroup slv2_util Utility functions
  *
  * @{
  */

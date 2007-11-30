@@ -29,10 +29,10 @@ extern "C" {
 #include <slv2/port.h>
 #include <slv2/values.h>
 
-/** \defgroup data Plugin data access
+/** \defgroup slv2_data Plugin data access
  *
- * These functions work exclusively with the plugin's RDF data.
- * They do not load or access the plugin dynamic library in any way.
+ * These functions work exclusively with the plugin's RDF data,
+ * they do not access the plugin's shared library in any way.
  *
  * An SLV2Plugin contains an in-memory cache of the plugin data, loaded
  * on demand.  Duplicating plugins should be avoided when possible for

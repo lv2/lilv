@@ -23,7 +23,7 @@
 extern "C" {
 #endif
 
-/** \addtogroup data
+/** \addtogroup slv2_data
  * @{
  */
 

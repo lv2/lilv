@@ -26,7 +26,7 @@
 extern "C" {
 #endif
 
-/** \defgroup collections Collections of values/objects
+/** \defgroup slv2_collections Collections of values/objects
  *
  * Ordered collections of typed values which are fast for random
  * access by index (i.e. a fancy array).

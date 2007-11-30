@@ -38,7 +38,7 @@ PROJECT_NUMBER         = @PACKAGE_VERSION@
 # If a relative path is entered, it will be relative to the location 
 # where doxygen was started. If left blank the current directory will be used.
 
-OUTPUT_DIRECTORY       = @abs_top_builddir@/doc/slv2
+OUTPUT_DIRECTORY       = @top_builddir@/doc/slv2
 
 # If the CREATE_SUBDIRS tag is set to YES, then doxygen will create 
 # 4096 sub-directories (in 2 levels) under the output directory of each output 
@@ -66,14 +66,14 @@ OUTPUT_LANGUAGE        = English
 # the file and class documentation (similar to JavaDoc). 
 # Set to NO to disable this.
 
-BRIEF_MEMBER_DESC      = YES
+BRIEF_MEMBER_DESC      = NO
 
 # If the REPEAT_BRIEF tag is set to YES (the default) Doxygen will prepend 
 # the brief description of a member or function before the detailed description. 
 # Note: if both HIDE_UNDOC_MEMBERS and BRIEF_MEMBER_DESC are set to NO, the 
 # brief descriptions will be completely suppressed.
 
-REPEAT_BRIEF           = YES
+REPEAT_BRIEF           = NO
 
 # This tag implements a quasi-intelligent brief description abbreviator 
 # that is used to form the text in various listings. Each string 
@@ -462,22 +462,23 @@ WARN_LOGFILE           =
 # directories like "/usr/src/myproject". Separate the files or directories 
 # with spaces.
 
-INPUT                  = @abs_srcdir@/../doc/mainpage.dox \
-                         @abs_srcdir@/../slv2/lv2.h \
-                         @abs_srcdir@/../slv2/types.h \
-                         @abs_srcdir@/../slv2/util.h \
-                         @abs_srcdir@/../slv2/value.h \
-                         @abs_srcdir@/../slv2/values.h \
-                         @abs_srcdir@/../slv2/world.h \
-                         @abs_srcdir@/../slv2/plugin.h \
-                         @abs_srcdir@/../slv2/pluginclass.h \
-                         @abs_srcdir@/../slv2/pluginclasses.h \
-                         @abs_srcdir@/../slv2/plugininstance.h \
-                         @abs_srcdir@/../slv2/plugins.h \
-                         @abs_srcdir@/../slv2/port.h \
-                         @abs_srcdir@/../slv2/pluginui.h \
-                         @abs_srcdir@/../slv2/pluginuis.h \
-                         @abs_srcdir@/../slv2/pluginuiinstance.h
+INPUT                  = @SLV2_SRCDIR@/doc/mainpage.dox \
+                         @SLV2_SRCDIR@/slv2/types.h \
+                         @SLV2_SRCDIR@/slv2/util.h \
+                         @SLV2_SRCDIR@/slv2/value.h \
+                         @SLV2_SRCDIR@/slv2/values.h \
+                         @SLV2_SRCDIR@/slv2/world.h \
+                         @SLV2_SRCDIR@/slv2/plugin.h \
+                         @SLV2_SRCDIR@/slv2/pluginclass.h \
+                         @SLV2_SRCDIR@/slv2/pluginclasses.h \
+                         @SLV2_SRCDIR@/slv2/plugininstance.h \
+                         @SLV2_SRCDIR@/slv2/plugins.h \
+                         @SLV2_SRCDIR@/slv2/port.h \
+                         @SLV2_SRCDIR@/slv2/pluginui.h \
+                         @SLV2_SRCDIR@/slv2/pluginuis.h \
+                         @SLV2_SRCDIR@/slv2/pluginuiinstance.h
+                         
+						 #@SLV2_SRCDIR@/slv2/lv2.h \
 
 # This tag can be used to specify the character encoding of the source files that 
 # doxygen parses. Internally doxygen uses the UTF-8 encoding, which is also the default 

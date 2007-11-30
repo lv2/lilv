@@ -28,16 +28,9 @@ extern "C" {
 #include <slv2/lv2_gui.h>
 #include <slv2/plugin.h>
 
-/** \addtogroup lib
- * @{
- */
-
-
 typedef struct _SLV2UIInstanceImpl* SLV2UIInstanceImpl;
 
-  
-
-/** Instance of a plugin UI.
+/* Instance of a plugin UI.
  *
  * All details are in hidden in the pimpl member to avoid making the
  * implementation a part of the ABI.
@@ -46,6 +39,10 @@ typedef struct _SLV2UIInstance {
 	SLV2UIInstanceImpl pimpl; ///< Private implementation
 }* SLV2UIInstance;
 
+
+/** \addtogroup slv2_library
+ * @{
+ */
 
 
 /** Instantiate a plugin UI.

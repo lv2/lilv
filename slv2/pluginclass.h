@@ -25,7 +25,7 @@ extern "C" {
 
 #include <slv2/types.h>
 
-/** \addtogroup data
+/** \addtogroup slv2_data
  * @{
  */
 

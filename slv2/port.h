@@ -28,7 +28,7 @@ extern "C" {
 #include <slv2/port.h>
 #include <slv2/values.h>
 
-/** \addtogroup data
+/** \addtogroup slv2_data
  * @{
  */
 
