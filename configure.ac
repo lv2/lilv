@@ -92,7 +92,18 @@ fi
 AM_CONDITIONAL(WITH_SWIG, [test "$bindings" = "yes"])
 
 # Check for Redland
-PKG_CHECK_MODULES(REDLAND, redland >= 1.0.0)
+build_redland="no"
+AC_CHECK_PROG(REDLAND_CONFIG, redland-config, redland-config)
+if test "X$REDLAND_CONFIG" = X; then
+  AC_MSG_ERROR([REDLANDMM requires Redland (librdf), but redland-config not found.])
+else
+  build_redland="yes"
+  REDLAND_CFLAGS=`$REDLAND_CONFIG --cflags`
+  REDLAND_LIBS=`$REDLAND_CONFIG --libs`
+  AC_SUBST(REDLAND_CFLAGS)
+  AC_SUBST(REDLAND_LIBS)
+fi
+AM_CONDITIONAL(WITH_REDLAND, [test "$build_redland" = "yes"])
 
 # Check for JACK
 build_jack="yes"
