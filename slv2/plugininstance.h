@@ -38,7 +38,7 @@ typedef struct _InstanceImpl* SLV2InstanceImpl;
  * documented and should not be used directly.  The remaining implementation
  * details are in the opaque pimpl member.
  */
-typedef struct {
+typedef struct _Instance {
 	const LV2_Descriptor* lv2_descriptor;
 	LV2_Handle            lv2_handle;
 	SLV2InstanceImpl      pimpl; ///< Private implementation

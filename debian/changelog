@@ -1,3 +1,9 @@
+slv2 (0.3.2) unstable; urgency=low
+
+  * Build man pages
+ 
+ -- Dave Robillard <dave@drobilla.net>  Wed, 30 Nov 2007 18:19:00 -0500
+
 slv2 (0.3.1) unstable; urgency=low
 
   * Initial Debian Release.

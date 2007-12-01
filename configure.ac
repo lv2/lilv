@@ -1,6 +1,6 @@
 AC_PREREQ(2.59)
 
-AC_INIT([slv2],0.3.1,[dave@drobilla.net])
+AC_INIT([slv2],0.3.2,[dave@drobilla.net])
 
 AC_CONFIG_AUX_DIR([config])
 
@@ -26,11 +26,12 @@ AM_INIT_AUTOMAKE
 # 0.2.0 = 3,0,0
 # 0.3.0 = 4,0,0
 # 0.3.1 = 4,0,0
+# 0.3.2 = 5,0,1
 
-SLV2_VERSION="0.3.1"
-SLV2_API_CURRENT="4"
+SLV2_VERSION="0.3.2"
+SLV2_API_CURRENT="5"
 SLV2_API_REVISION="0"
-SLV2_API_AGE="0"
+SLV2_API_AGE="1"
 
 AC_SUBST(SLV2_API_CURRENT)
 AC_SUBST(SLV2_API_REVISION)
@@ -47,8 +48,10 @@ cd $builddir
 
 SLV2_CFLAGS="-I$abs_srcdir"
 SLV2_LIBS="$abs_srcdir/src/.libs/libslv2.la"
+SLV2_SRCDIR="$abs_srcdir"
 AC_SUBST(SLV2_CFLAGS)
 AC_SUBST(SLV2_LIBS)
+AC_SUBST(SLV2_SRCDIR)
 
 CONFIG_H_PATH="$builddir/config/config.h"
 
@@ -98,6 +101,7 @@ if test "X$REDLAND_CONFIG" = X; then
   AC_MSG_ERROR([REDLANDMM requires Redland (librdf), but redland-config not found.])
 else
   build_redland="yes"
+  PKG_CHECK_MODULES(RAPTOR, raptor, build_raptor="yes", build_raptor="no")
   REDLAND_CFLAGS=`$REDLAND_CONFIG --cflags`
   REDLAND_LIBS=`$REDLAND_CONFIG --libs`
   AC_SUBST(REDLAND_CFLAGS)
@@ -122,12 +126,17 @@ else
 fi
 AM_CONDITIONAL(WITH_JACK, [test "$build_jack" = "yes"])
 
-# Doxygen is required to make dist
+# Build documentation
+build_documentation="yes"
+AC_ARG_ENABLE(documentation,
+	[AS_HELP_STRING(--enable-documentation, [Build documentation (no)])],
+	[build_documentation="$enableval"])
 AC_CHECK_PROG(HAVE_DOXYGEN, doxygen, true, false)
 if test $HAVE_DOXYGEN = "false"; then
-	AC_MSG_WARN([Doxygen not found, documentation will not be built])
+	AC_MSG_WARN([*** Doxygen not found, API documentation will not be built])
+	build_documentation="no"
 fi
-AM_CONDITIONAL(HAVE_DOXYGEN, $HAVE_DOXYGEN)
+AM_CONDITIONAL(HAVE_DOXYGEN, [test "x$build_documentation" = "xyes"])
 
 # Bolt on a few specific flags to CFLAGS that should always be used
 CXXFLAGS="$CXXFLAGS -ansi -pipe -fmessage-length=999 -DCONFIG_H_PATH=\\\"$CONFIG_H_PATH\\\""

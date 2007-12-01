@@ -6,6 +6,5 @@ EXTRA_DIST = \
 	copyright \
 	dirs \
 	docs \
-	files \
 	rules \
 	shlibs.local
