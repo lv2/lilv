@@ -4,7 +4,7 @@
  *
  * Copyright (C) 2006-2007 Lars Luthman <lars.luthman@gmail.com>
  * 
- * Based on lv2.h, which is:
+ * Based on lv2.h, which was
  *
  * Copyright (C) 2000-2002 Richard W.E. Furse, Paul Barton-Davis, 
  *                         Stefan Westerfeld
@@ -30,11 +30,12 @@
 /** @file
     This extension defines an interface that can be used in LV2 plugins and
     hosts to create GUIs for plugins. The GUIs are plugins that reside in
-    shared object files in an LV2 bundle and be referenced in the RDF file
+    shared object files in an LV2 bundle and are referenced in the RDF data
     using the triples (Turtle shown)
 <pre>    
-    @prefix guiext: <http://ll-plugins.nongnu.org/lv2/ext/ipgui/1#> .
+    @@prefix guiext: <http://ll-plugins.nongnu.org/lv2/ext/gui#> .
     <http://my.plugin>    guiext:gui    <http://my.plugingui> .
+    <http://my.plugin>    a             guiext:GtkGUI .
     <http://my.plugingui> guiext:binary <mygui.so> .
 </pre>
     where <http://my.plugin> is the URI of the plugin, <http://my.plugingui> is
@@ -42,15 +43,15 @@
     object file. While it is possible to have the plugin GUI and the plugin in 
     the same shared object file it is probably a good idea to keep them 
     separate so that hosts that don't want GUIs don't have to load the GUI code.
+    A GUI MUST specify its class in the RDF data. In this case the class is
+    guiext:GtkGUI, which is the only class defined by this extension.
     
-    (Note: the prefix above is used throughout this file for the same URI)
+      (Note: the prefix above is used throughout this file for the same URI)
     
     It's entirely possible to have multiple GUIs for the same plugin, or to have
     the GUI for a plugin in a different bundle from the actual plugin - this
     way people other than the plugin author can write plugin GUIs independently
-    without editing the original plugin bundle. If a GUI is in a separate bundle
-    the first triple above should be in that bundle's manifest.ttl file so that
-    hosts can find the GUI when scanning the manifests.
+    without editing the original plugin bundle.
     
     Note that the process that loads the shared object file containing the GUI
     code and the process that loads the shared object file containing the 
@@ -64,21 +65,36 @@
     Since the LV2 specification itself allows for extensions that may add 
     new types of data and configuration parameters that plugin authors may 
     want to control with a GUI, this extension allows for meta-extensions that
-    can extend the interface between the GUI and the host. See the
-    instantiate() and extension_data() callback pointers for more details.
+    can extend the interface between the GUI and the host. These extensions
+    mirror the extensions used for plugins - there are required and optional
+    "features" that you declare in the RDF data for the GUI as
+<pre>    
+    <http://my.plugingui> guiext:requiredFeature <http://my.feature> .
+    <http://my.plugingui> guiext:optionalFeature <http://my.feature> .
+</pre>
+    These predicates have the same semantics as lv2:requiredFeature and 
+    lv2:optionalFeature - if a GUI is declaring a feature as required, the
+    host is NOT allowed to load it unless it supports that feature, and if it
+    does support a feature (required or optional) it MUST pass that feature's
+    URI and any additional data (specified by the meta-extension that defines
+    the feature) to the GUI's instantiate() function.
     
-    Note that this extension is NOT a Host Feature. There is no way for a plugin
-    to know whether the host that loads it supports GUIs or not, and the plugin
-    must ALWAYS work without the GUI (although it may be rather useless unless
-    it has been configured using the GUI in a previous session).
+    These features may be used to specify how to pass data between the GUI
+    and the plugin port buffers - see LV2UI_Write_Function for details.
     
     GUIs written to this specification do not need to be threadsafe - the 
     functions defined below may only be called in the same thread as the UI
     main loop is running in.
+    
+    Note that this GUI extension is NOT a lv2:Feature. There is no way for a 
+    plugin to know whether the host that loads it supports GUIs or not, and 
+    the plugin must ALWAYS work without the GUI (although it may be rather 
+    useless unless it has been configured using the GUI in a previous session).
+    
 */
 
-#ifndef LV2_GUI_H
-#define LV2_GUI_H
+#ifndef LV2_IPGUI_H
+#define LV2_IPGUI_H
 
 #include "lv2.h"
 
@@ -89,13 +105,15 @@ extern "C" {
 
 
 /** A pointer to some widget.
- * The actual type of the widget is defined by the type URI of the GUI.
- * e.g. if "<http://example.org/somegui> a guiext:GtkGUI", this is a pointer
- * to a GtkWidget.  All the functionality provided by this extension is
- * toolkit independent, the host only needs to pass the necessary callbacks
- * and display the widget, if possible.  Plugins may have several GUIs,
- * in various toolkits.
- */
+    The actual type of the widget is defined by the type URI of the GUI.
+    e.g. if "<http://example.org/somegui> a guiext:GtkGUI", this is a pointer
+    to a GtkWidget compatible with GTK+ 2.0 and the GUI can expect the GTK+
+    main loop to be running during the entire lifetime of all instances of that
+    GUI. All the functionality provided by this extension is toolkit 
+    independent, the host only needs to pass the necessary callbacks and 
+    display the widget, if possible. Plugins may have several GUIs, in various
+    toolkits, but guiext:GtkGUI is the only type that is defined in this 
+    extension. */
 typedef void* LV2UI_Widget;
 
   
@@ -109,63 +127,35 @@ typedef void* LV2UI_Handle;
 /** This handle indicates a particular plugin instance, provided by the host.
     It is valid to compare this to NULL (0 for C++) but otherwise the 
     GUI plugin MUST not attempt to interpret it. The host may use it to 
-    reference internal instance data. */
+    reference internal plugin instance data. */
 typedef void* LV2UI_Controller;
 
 
 /** This is the type of the host-provided function that the GUI can use to
     send data to a plugin's input ports. The @c buffer parameter must point
     to a block of data, @c buffer_size bytes large. The contents of this buffer
-    will depend on the class of the port it's being sent to. For ports of the
-    class lv2:ControlPort, buffer_size should be sizeof(float) and the buffer 
-    contents should be a float value. For ports of the class llext:MidiPort the
-    buffer should contain the data bytes of a single MIDI event, and buffer_size
-    should be the number of bytes in the event. No other port classes are
-    allowed, unless the format and the meaning of the buffer passed to this 
-    function is defined in the extension that specifies that class or in a 
-    separate GUI host feature extension that is required by this GUI.
+    will depend on the class of the port it's being sent to, and the transfer
+    mechanism specified for that port class. 
     
-    The GUI is responsible for allocating the buffer and deallocating it after
-    the call. There are no timing guarantees at all for this function, although
-    the faster the host can get the data to the plugin port the better. A 
-    function pointer of this type will be provided to the GUI by the host in
-    the instantiate() function. */
+    Transfer mechanisms are Features and may be defined in meta-extensions. 
+    They specify how to translate the data buffers passed to this function 
+    to input data for the plugin ports. If a GUI wishes to write data to an 
+    input port, it must list a transfer mechanism Feature for that port's 
+    class as an optional or required feature (depending on whether the GUI 
+    will work without being able to write to that port or not). The only 
+    exception is ports of the class lv2:ControlPort, for which @c buffer_size
+    should always be 4 and the buffer should always contain a single IEEE-754
+    float.
+    
+    The GUI MUST NOT try to write to a port for which there is no specified
+    transfer mechanism, or to an output port. The GUI is responsible for 
+    allocating the buffer and deallocating it after the call. A function 
+    pointer of this type will be provided to the GUI by the host in the 
+    instantiate() function. */
 typedef void (*LV2UI_Write_Function)(LV2UI_Controller controller,
                                      uint32_t         port_index,
                                      uint32_t         buffer_size,
                                      const void*      buffer);
-
-/** This is the type of the host-provided function that the GUI can use to
-    send arbitrary commands to the plugin. The parameters after the first one
-    should be const char* variables, terminated by a NULL pointer, and will be
-    interpreted as a command with arguments. A function of this type will be 
-    provided to the GUI by the host in the instantiate() function. */
-typedef void (*LV2UI_Command_Function)(LV2UI_Controller   controller,
-                                       uint32_t           argc,
-                                       const char* const* argv);
-
-/** This is the type of the host-provided function that the GUI can use to
-    request a program change in the host. A function of this type will be 
-    provided to the GUI by the host in the instantiate() function. Calling
-    this function does not guarantee that the program will change, it is just
-    a request. If the program does change, the GUI's current_program_changed() 
-    callback will be called, either before or after this function returns
-    depending on whether the GUI host <-> plugin instance communication is
-    synchronous or asynchronous. */
-typedef void (*LV2UI_Program_Change_Function)(LV2UI_Controller controller,
-                                              unsigned char    program);
-
-/** This is the type of the host-provided function that the GUI can use to
-    request that the current state of the plugin is saved to a program.
-    A function of this type will be provided to the GUI by the host in the
-    instantiate function. Calling this function does not guarantee that the
-    state will be saved, it is just a request. If the state is saved, the 
-    GUI's program_added() callback will be called, either before or after
-    this function returns depending on whether the GUI host <-> plugin
-    instance communication is synchronous or asynchronous. */
-typedef void (*LV2UI_Program_Save_Function)(LV2UI_Controller controller,
-                                            unsigned char    program,
-                                            const char*      name);
 
 
 /** */
@@ -175,60 +165,53 @@ typedef struct _LV2UI_Descriptor {
   const char* URI;
   
   /** Create a new GUI object and return a handle to it. This function works
-      similarly to the instantiate() member in LV2_Descriptor, with the 
-      additions that the URI for the plugin that this GUI is for is passed
-      as a parameter, a function pointer and a controller handle are passed to
-      allow the plugin to write to input ports in the plugin (write_function 
-      and controller) and a pointer to a LV2_Widget is passed, which the GUI
-	  plugin should set to point to a newly created widget which will be the
-	  GUI for the plugin.  This widget may only be destroyed by cleanup().
+      similarly to the instantiate() member in LV2_Descriptor.
       
-      The features array works like the one in the instantiate() member
-      in LV2_Descriptor, except that the URIs should be denoted with the triples
-      <pre>
-      <http://my.plugingui> guiext:optionalFeature <http://my.guifeature>
-      </pre>
-      or 
-      <pre>
-      <http://my.plugingui> guiext:requiredFeature <http://my.guifeature>
-      </pre>
-      in the RDF file, instead of the lv2:optionalFeature or lv2:requiredFeature
-      that is used by host features. These features are associated with the GUI,
-      not with the plugin - they are not actually LV2 Host Features, they just
-      use the same data structure.
-      
-      The same rules apply for these features as for normal host features -
-      if a feature is listed as required in the RDF file and the host does not
-      support it, it must not load the GUI.
+      @param descriptor The descriptor for the GUI that you want to instantiate.
+      @param plugin_uri The URI of the plugin that this GUI will control.
+      @param bundle_path The path to the bundle containing the RDF data file
+                         that references this shared object file, including the
+			 trailing '/'.
+      @param write_function A function provided by the host that the GUI can
+                            use to send data to the plugin's input ports.
+      @param controller A handle for the plugin instance that should be passed
+                        as the first parameter of @c write_function.
+      @param widget     A pointer to an LV2UI_Widget. The GUI will write a
+                        widget pointer to this location (what type of widget 
+			depends on the RDF class of the GUI) that will be the
+			main GUI widget.
+      @param features   An array of LV2_Feature pointers. The host must pass
+                        all feature URIs that it and the plugin supports and any
+			additional data, just like in the LV2 plugin 
+			instantiate() function.
   */
   LV2UI_Handle (*instantiate)(const struct _LV2UI_Descriptor* descriptor,
                               const char*                     plugin_uri,
                               const char*                     bundle_path,
                               LV2UI_Write_Function            write_function,
-                              LV2UI_Command_Function          command_function,
-                              LV2UI_Program_Change_Function   program_function,
-                              LV2UI_Program_Save_Function     save_function,
                               LV2UI_Controller                controller,
                               LV2UI_Widget*                   widget,
                               const LV2_Feature* const*       features);
 
   
-  /** Destroy the GUI object and the associated widget. 
+  /** Destroy the GUI object and the associated widget. The host must not try
+      to access the widget after calling this function.
    */
   void (*cleanup)(LV2UI_Handle gui);
   
   /** Tell the GUI that something interesting has happened at a plugin port.
-      For control ports this would be when the value in the buffer has changed,
-      for message-based port classes like MIDI or OSC it would be when a 
-      message has arrived in the buffer. For other port classes it is not 
-      defined when this function is called, unless it is specified in the 
-      definition of that port class extension. For control ports the default
-      setting is to call this function whenever an input control port value 
-      has changed but not when any output control port value has changed, for 
-      all other port classes the default setting is to never call this function.
-
-      However, the default setting can be modified by using the following
-      URIs:
+      What is interesting and how it is written to the buffer passed to this
+      function is defined by the specified transfer mechanism for that port 
+      class (see LV2UI_Write_Function). The only exception is ports of the 
+      class lv2:ControlPort, for which this function should be called
+      when the port value changes (it must not be called for every single 
+      change if the host's GUI thread has problems keeping up with the thread
+      the plugin is running in), @c buffer_size should be 4 and the buffer
+      should contain a single IEEE-754 float.
+      
+      By default, the host should only call this function for input ports of
+      the lv2:ControlPort class. However, the default setting can be modified
+      by using the following URIs in the GUI's RDF data:
       <pre>
       guiext:portNotification
       guiext:noPortNotification
@@ -244,21 +227,15 @@ typedef struct _LV2UI_Descriptor {
       <http://my.plugingui> guiext:portNotification [ guiext:plugin <http://my.plugin> ;
                                                       guiext:portIndex 4 ] .
       </pre>
-      and similarly with <code>guiext:noPortNotification</code> if you wanted to 
-      prevent notifications for a port for which it would be on by default 
-      otherwise.
+      and similarly with <code>guiext:noPortNotification</code> if you wanted
+      to prevent notifications for a port for which it would be on by default 
+      otherwise. The GUI is not allowed to request notifications for ports
+      for which no transfer mechanism is specified, if it does it should be
+      considered broken and the host should not load it.
       
       The @c buffer is only valid during the time of this function call, so if 
       the GUI wants to keep it for later use it has to copy the contents to an
       internal buffer.
-      
-      The buffer is subject to the same rules as the ones for the 
-      LV2_Write_Function type. This means that a plugin GUI may not request a
-      portNotification for a port that has a class other than lv2:ControlPort
-      or llext:MidiPort unless the buffer format and meaning is specified in
-      the extension that defines that port class, or in a separate GUI host 
-      feature extension that is required by the GUI. Any GUI that does that
-      should be considered broken and the host should not use it.
       
       This member may be set to NULL if the GUI is not interested in any 
       port events.
@@ -268,39 +245,6 @@ typedef struct _LV2UI_Descriptor {
                      uint32_t       buffer_size,
                      const void*    buffer);
   
-  /** This function is called when the plugin instance wants to send feedback
-      to the GUI. It may be called in response to a command function call,
-      either before or after the command function has returned (depending on
-      whether the GUI host <-> plugin instance communication is synchronous or
-      asynchronous). */
-  void (*feedback)(LV2UI_Handle       gui, 
-                   uint32_t           argc, 
-                   const char* const* argv);
-  
-  /** This function is called when the host adds a new program to its program
-      list, or changes the name of an old one. It may be set to NULL if the 
-      GUI isn't interested in displaying program information. */
-  void (*program_added)(LV2UI_Handle  gui, 
-                        unsigned char number, 
-                        const char*   name);
-  
-  /** This function is called when the host removes a program from its program
-      list. It may be set to NULL if the GUI isn't interested in displaying
-      program information. */
-  void (*program_removed)(LV2UI_Handle  gui, 
-                          unsigned char number);
-  
-  /** This function is called when the host clears its program list. It may be
-      set to NULL if the GUI isn't interested in displaying program 
-      information. */
-  void (*programs_cleared)(LV2UI_Handle gui);
-  
-  /** This function is called when the host changes the current program. It may
-      be set to NULL if the GUI isn't interested in displaying program 
-      information. */
-  void (*current_program_changed)(LV2UI_Handle  gui, 
-                                  unsigned char number);
-
   /** Returns a data structure associated with an extension URI, for example
       a struct containing additional function pointers. Avoid returning
       function pointers directly since standard C++ has no valid way of
@@ -308,14 +252,13 @@ typedef struct _LV2UI_Descriptor {
       if the GUI is not interested in supporting any extensions. This is similar
       to the extension_data() member in LV2_Descriptor.
   */
-  void* (*extension_data)(LV2UI_Handle gui,
-                          const char*  uri);
+  const void* (*extension_data)(const char*  uri);
 
 } LV2UI_Descriptor;
 
 
 
-/** A plugin programmer must include a function called "lv2ui_descriptor"
+/** A plugin GUI programmer must include a function called "lv2ui_descriptor"
     with the following function prototype within the shared object
     file. This function will have C-style linkage (if you are using
     C++ this is taken care of by the 'extern "C"' clause at the top of
@@ -342,5 +285,4 @@ typedef const LV2UI_Descriptor* (*LV2UI_DescriptorFunction)(uint32_t index);
 #endif
 
 
-#endif /* LV2_GUI_H */
-
+#endif

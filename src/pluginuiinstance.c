@@ -36,9 +36,6 @@ SLV2UIInstance
 slv2_ui_instantiate(SLV2Plugin                     plugin,
                     SLV2UI                         ui,
                     LV2UI_Write_Function           write_function,
-                    LV2UI_Command_Function         command_function,
-                    LV2UI_Program_Change_Function  program_function,
-                    LV2UI_Program_Save_Function    save_function,
                     LV2UI_Controller               controller,
                     const LV2_Feature* const*      features)
 {
@@ -101,9 +98,6 @@ slv2_ui_instantiate(SLV2Plugin                     plugin,
 						slv2_plugin_get_uri(plugin),
 						(char*)bundle_path, 
 						write_function,
-						command_function,
-						program_function,
-						save_function,
 						controller,
 						&impl->widget,
 						features);
