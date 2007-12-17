@@ -335,6 +335,30 @@ slv2_world_load_path(SLV2World   world,
 }
 
 
+/** Comparator for sorting SLV2Plugins */
+int
+slv2_plugin_compare_by_uri(const void* a, const void* b)
+{
+    SLV2Plugin plugin_a = *(SLV2Plugin*)a;
+    SLV2Plugin plugin_b = *(SLV2Plugin*)b;
+
+    return strcmp((const char*)librdf_uri_as_string(plugin_a->plugin_uri),
+                  (const char*)librdf_uri_as_string(plugin_b->plugin_uri));
+}
+
+
+/** Comparator for sorting SLV2PluginClasses */
+int
+slv2_plugin_class_compare_by_uri(const void* a, const void* b)
+{
+    SLV2PluginClass class_a = *(SLV2PluginClass*)a;
+    SLV2PluginClass class_b = *(SLV2PluginClass*)b;
+
+    return strcmp((const char*)librdf_uri_as_string(class_a->uri),
+                  (const char*)librdf_uri_as_string(class_b->uri));
+}
+
+
 void
 slv2_world_load_specifications(SLV2World world)
 {
@@ -383,7 +407,7 @@ slv2_world_load_plugin_classes(SLV2World world)
 		"SELECT DISTINCT ?class ?parent ?label WHERE {\n"
 		//"	?plugin a ?class .\n"
 		"	?class a rdfs:Class; rdfs:subClassOf ?parent; rdfs:label ?label\n"
-		"} ORDER BY ?class\n";
+		"}\n"; // ORDER BY ?class\n";
 	
 	librdf_query* q = librdf_new_query(world->world, "sparql",
 		NULL, query_string, NULL);
@@ -405,6 +429,8 @@ slv2_world_load_plugin_classes(SLV2World world)
 				(const char*)librdf_uri_as_string(class_uri),
 				label);
 		raptor_sequence_push(world->plugin_classes, plugin_class);
+		// FIXME: Slow!  ORDER BY broken in certain versions of redland?
+		raptor_sequence_sort(world->plugin_classes, slv2_plugin_class_compare_by_uri);
 
 		librdf_free_node(class_node);
 		librdf_free_node(parent_node);
@@ -473,8 +499,8 @@ slv2_world_load_all(SLV2World world)
 		"PREFIX slv2: <http://drobilla.net/ns/slv2#>\n"
 		"SELECT DISTINCT ?plugin ?data ?bundle ?binary\n"
 		"WHERE { ?plugin a :Plugin; slv2:bundleURI ?bundle; rdfs:seeAlso ?data\n"
-		"OPTIONAL { ?plugin :binary ?binary } }\n"
-		"ORDER BY ?plugin\n";
+		"OPTIONAL { ?plugin :binary ?binary } }\n";
+		//"ORDER BY ?plugin\n";
 	
 	librdf_query* q = librdf_new_query(world->world, "sparql",
 		NULL, query_string, NULL);
@@ -502,6 +528,8 @@ slv2_world_load_all(SLV2World world)
 		if (!plugin) {
 			plugin = slv2_plugin_new(world, plugin_uri, bundle_uri, binary_uri);
 			raptor_sequence_push(world->plugins, plugin);
+			// FIXME: Slow!  ORDER BY broken in certain versions of redland?
+			raptor_sequence_sort(world->plugins, slv2_plugin_compare_by_uri);
 		}
 		
 		plugin->world = world;
