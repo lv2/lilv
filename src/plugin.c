@@ -560,7 +560,7 @@ SLV2UIs
 slv2_plugin_get_uis(SLV2Plugin plugin)
 {
     const char* const query_str =
-		"PREFIX guiext: <http://ll-plugins.nongnu.org/lv2/ext/gui/dev/1#>\n"
+		"PREFIX guiext: <http://ll-plugins.nongnu.org/lv2/ext/gui#>\n"
 		"SELECT DISTINCT ?uri ?type ?binary WHERE {\n"
 		"<>   guiext:gui    ?uri .\n"
 		"?uri a             ?type ;\n"
