@@ -70,6 +70,10 @@ slv2_ui_instantiate(SLV2Plugin                     plugin,
 
 /** Free a plugin UI instance.
  *
+ * It is the caller's responsibility to ensure all references to the UI
+ * instance (including any returned widgets) are cut before calling
+ * this function.
+ *
  * \a instance is invalid after this call.
  */
 void
