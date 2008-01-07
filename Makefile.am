@@ -25,4 +25,5 @@ docs:
 	cd doc && make docs
 
 deb:
-	debuild -i --lintian-opts -i
+	dpkg-buildpackage -sn
+

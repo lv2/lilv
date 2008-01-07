@@ -4,7 +4,9 @@ EXTRA_DIST = \
 	compat \
 	control \
 	copyright \
-	dirs \
 	docs \
+	postinst \
+	postrm \
 	rules \
-	shlibs.local
+	shlibs.local \
+	shlibs

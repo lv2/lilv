@@ -1,6 +1,6 @@
 AC_PREREQ(2.59)
 
-AC_INIT([slv2],0.4.0,[dave@drobilla.net])
+AC_INIT([slv2],0.4.1,[dave@drobilla.net])
 
 AC_CONFIG_AUX_DIR([config])
 
@@ -29,7 +29,7 @@ AM_INIT_AUTOMAKE
 # 0.3.2 = 5,0,1
 # 0.4.0 = 6,0,0
 
-SLV2_VERSION="0.4.0"
+SLV2_VERSION="0.4.1"
 SLV2_API_CURRENT="6"
 SLV2_API_REVISION="0"
 SLV2_API_AGE="0"
