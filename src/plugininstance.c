@@ -68,7 +68,7 @@ slv2_plugin_instantiate(SLV2Plugin               plugin,
 		
 		// FIXME: Kluge to get bundle path (containing directory of binary)
 		const char* bundle_path = slv2_uri_to_path(slv2_plugin_get_bundle_uri(plugin));
-		printf("Bundle path: %s\n", bundle_path);
+		//printf("Bundle path: %s\n", bundle_path);
 		
 		for (uint32_t i=0; 1; ++i) {
 			
@@ -83,8 +83,8 @@ slv2_plugin_instantiate(SLV2Plugin               plugin,
 					
 				assert(plugin->plugin_uri);
 
-				printf("Found %s at index %u in:\n\t%s\n\n",
-						librdf_uri_as_string(plugin->plugin_uri), i, lib_path);
+				//printf("Found %s at index %u in:\n\t%s\n\n",
+				//		librdf_uri_as_string(plugin->plugin_uri), i, lib_path);
 
 				assert(ld->instantiate);
 
