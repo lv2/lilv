@@ -1,6 +1,6 @@
 EXTRA_DIST = ladspa.h
 
-AM_CFLAGS = -std=c99 -I$(top_srcdir) @REDLAND_CFLAGS@ @SLV2_CFLAGS@
+AM_CFLAGS = -std=c99 -I$(top_srcdir) @REDLAND_CFLAGS@ @SLV2_CFLAGS@ @LV2CORE_CFLAGS@
 
 bin_PROGRAMS = lv2_list lv2_inspect
 noinst_PROGRAMS = ladspa2lv2

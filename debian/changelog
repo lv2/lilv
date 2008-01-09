@@ -1,3 +1,9 @@
+slv2 (0.4.2) unstable; urgency=low
+
+  * Update for LV2 specification release 1
+ 
+ -- Dave Robillard <dave@drobilla.net>  Tue, 08 Jan 2008 20:16:56 -0500
+ 
 slv2 (0.4.1) unstable; urgency=low
 
   * Debian packaging (no functional changes)

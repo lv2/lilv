@@ -1,6 +1,6 @@
 AC_PREREQ(2.59)
 
-AC_INIT([slv2],0.4.1,[dave@drobilla.net])
+AC_INIT([slv2],0.4.2,[dave@drobilla.net])
 
 AC_CONFIG_AUX_DIR([config])
 
@@ -28,8 +28,10 @@ AM_INIT_AUTOMAKE
 # 0.3.1 = 4,0,0
 # 0.3.2 = 5,0,1
 # 0.4.0 = 6,0,0
+# 0.4.1 = 6,0,0
+# 0.4.2 = 6,0,0
 
-SLV2_VERSION="0.4.1"
+SLV2_VERSION="0.4.2"
 SLV2_API_CURRENT="6"
 SLV2_API_REVISION="0"
 SLV2_API_AGE="0"
@@ -61,6 +63,9 @@ AM_PROG_CC_C_O
 
 # Library building stuff
 AC_PROG_LIBTOOL
+
+# LV2 core package
+PKG_CHECK_MODULES(LV2CORE, lv2core >= 1)
 
 # Check for debugging flag
 debug="no"
@@ -150,8 +155,6 @@ AC_CONFIG_FILES([slv2/Makefile])
 AC_CONFIG_FILES([utils/Makefile])
 AC_CONFIG_FILES([hosts/Makefile])
 AC_CONFIG_FILES([swig/Makefile])
-AC_CONFIG_FILES([data/Makefile])
-AC_CONFIG_FILES([data/lv2core.lv2/Makefile])
 AC_CONFIG_FILES([slv2.pc])
 AC_CONFIG_FILES([doc/Makefile])
 AC_CONFIG_FILES([doc/reference.doxygen])

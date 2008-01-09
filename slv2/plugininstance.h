@@ -24,7 +24,7 @@ extern "C" {
 #endif
 
 #include <assert.h>
-#include <slv2/lv2.h>
+#include <lv2.h>
 #include <slv2/plugin.h>
 #include <slv2/port.h>
 
