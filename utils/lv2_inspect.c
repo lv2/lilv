@@ -227,7 +227,7 @@ main(int argc, char** argv)
 	} else if (!strcmp(argv[1], "--help")) {
 		print_usage();
 		return 0;
-	} else {
+	} else if (argv[1][0] == '-') {
 		print_usage();
 		return -1;
 	}
