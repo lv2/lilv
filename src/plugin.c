@@ -42,6 +42,7 @@ slv2_plugin_new(SLV2World world, librdf_uri* uri, librdf_uri* bundle_uri, librdf
 	plugin->bundle_uri = librdf_new_uri_from_uri(bundle_uri);
 	plugin->binary_uri = librdf_new_uri_from_uri(binary_uri);
 	plugin->plugin_class = NULL;
+	plugin->templt = NULL;
 	plugin->data_uris = slv2_values_new();
 	plugin->ports = raptor_new_sequence((void (*)(void*))&slv2_port_free, NULL);
 	plugin->storage = NULL;
@@ -66,6 +67,9 @@ slv2_plugin_free(SLV2Plugin p)
 	
 	raptor_free_sequence(p->ports);
 	p->ports = NULL;
+
+	slv2_template_free(p->templt);
+	p->templt = NULL;
 
 	if (p->rdf) {
 		librdf_free_model(p->rdf);
@@ -195,37 +199,55 @@ slv2_plugin_load(SLV2Plugin p)
 	// Load ports
 	query = (const unsigned char*)
 		"PREFIX : <http://lv2plug.in/ns/lv2core#>\n"
-		"SELECT DISTINCT ?port ?symbol ?index WHERE {\n"
-		"<>    :port   ?port .\n"
-		"?port :symbol ?symbol ;\n"
-		"      :index  ?index .\n"
-		"}";
+		"SELECT DISTINCT ?type ?symbol ?index WHERE {\n"
+		"<>    :port    ?port .\n"
+		"?port a        ?type ;\n"
+		"      :symbol  ?symbol ;\n"
+		"      :index   ?index .\n"
+		"} ORDER BY (?index)";
 	
 	q = librdf_new_query(p->world->world, "sparql",
 		NULL, query, p->plugin_uri);
 	
 	results = librdf_query_execute(q, p->rdf);
 
+	int num_ports = 0;
+	int last_index = -1;
+
+	assert(!p->templt);
+	p->templt = slv2_template_new();
+
 	while (!librdf_query_results_finished(results)) {
 	
-		//librdf_node* port_node = librdf_query_results_get_binding_value(results, 0);
+		librdf_node* type_node = librdf_query_results_get_binding_value(results, 0);
 		librdf_node* symbol_node = librdf_query_results_get_binding_value(results, 1);
 		librdf_node* index_node = librdf_query_results_get_binding_value(results, 2);
 
-		//assert(librdf_node_is_blank(port_node));
 		assert(librdf_node_is_literal(symbol_node));
 		assert(librdf_node_is_literal(index_node));
 
 		//const char* id = (const char*)librdf_node_get_blank_identifier(port_node);
+		const char* type = (const char*)librdf_uri_as_string(librdf_node_get_uri(type_node));
 		const char* symbol = (const char*)librdf_node_get_literal_value(symbol_node);
 		const char* index = (const char*)librdf_node_get_literal_value(index_node);
 
-		//printf("%s: PORT: %s %s\n", p->plugin_uri, index, symbol);
+		//printf("PORT: %s %s %s\n", type, index, symbol);
+
+		const int this_index = atoi(index);
 		
-		// Create a new SLV2Port
-		SLV2Port port = slv2_port_new((unsigned)atoi(index), symbol);
-		raptor_sequence_push(p->ports, port);
+		// Create a new SLV2Port, and add to template
+		if (this_index == num_ports) {
+			assert(this_index == last_index + 1);
+			SLV2Port port = slv2_port_new((unsigned)atoi(index), symbol);
+			raptor_sequence_push(p->ports, port);
+			slv2_template_add_port(p->templt);
+			++num_ports;
+			++last_index;
+		}
+
+		slv2_template_port_type(p->templt, this_index, type);
 		
+		librdf_free_node(type_node);
 		librdf_free_node(symbol_node);
 		librdf_free_node(index_node);
 		
@@ -458,6 +480,16 @@ slv2_plugin_get_num_ports(SLV2Plugin p)
 }
 
 
+SLV2Template
+slv2_plugin_get_template(SLV2Plugin p)
+{
+	if (!p->rdf)
+		slv2_plugin_load(p);
+
+	return p->templt;
+}
+
+
 bool
 slv2_plugin_has_latency(SLV2Plugin p)
 {
@@ -553,6 +585,84 @@ slv2_plugin_get_port_by_symbol(SLV2Plugin  p,
 	}
 
 	return NULL;
+}
+
+
+char*
+slv2_plugin_get_author_name(SLV2Plugin plugin)
+{
+	char* ret = NULL;
+
+    const char* const query = 
+		"SELECT DISTINCT ?name WHERE {\n"
+		"	<>      doap:maintainer ?maint . \n"
+		"	?maint  foaf:name ?name . \n"
+		"}\n";
+
+	SLV2Values result = slv2_plugin_simple_query(plugin, query, 0);
+	
+	if (result && slv2_values_size(result) > 0) {
+		SLV2Value val = slv2_values_get_at(result, 0);
+		if (slv2_value_is_string(val))
+			ret = strdup(slv2_value_as_string(val));
+	}
+
+	if (result)
+		slv2_values_free(result);
+
+	return ret;
+}
+
+
+char*
+slv2_plugin_get_author_email(SLV2Plugin plugin)
+{
+	char* ret = NULL;
+
+    const char* const query = 
+		"SELECT DISTINCT ?email WHERE {\n"
+		"	<>      doap:maintainer ?maint . \n"
+		"	?maint  foaf:mbox ?email . \n"
+		"}\n";
+
+	SLV2Values result = slv2_plugin_simple_query(plugin, query, 0);
+	
+	if (result && slv2_values_size(result) > 0) {
+		SLV2Value val = slv2_values_get_at(result, 0);
+		if (slv2_value_is_string(val))
+			ret = strdup(slv2_value_as_string(val));
+	}
+
+	if (result)
+		slv2_values_free(result);
+
+	return ret;
+}
+
+	
+char*
+slv2_plugin_get_author_homepage(SLV2Plugin plugin)
+{
+	char* ret = NULL;
+
+    const char* const query = 
+		"SELECT DISTINCT ?email WHERE {\n"
+		"	<>      doap:maintainer ?maint . \n"
+		"	?maint  foaf:homepage ?email . \n"
+		"}\n";
+
+	SLV2Values result = slv2_plugin_simple_query(plugin, query, 0);
+	
+	if (result && slv2_values_size(result) > 0) {
+		SLV2Value val = slv2_values_get_at(result, 0);
+		if (slv2_value_is_string(val))
+			ret = strdup(slv2_value_as_string(val));
+	}
+
+	if (result)
+		slv2_values_free(result);
+
+	return ret;
 }
 
 

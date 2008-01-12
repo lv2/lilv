@@ -52,16 +52,14 @@ slv2_port_get_properties(SLV2Plugin plugin,
                          SLV2Port   port);
 
 
-#if 0
 /** Return whether a port has a certain property.
  *
  * Time = Query
  */
 bool
-slv2_port_has_property(SLV2Plugin p,
-                       SLV2Port   port,
-                       SLV2Value  hint)
-#endif
+slv2_port_has_property(SLV2Plugin  p,
+                       SLV2Port    port,
+                       const char* property_uri);
 
 
 /** Get the symbol of a port given the index.

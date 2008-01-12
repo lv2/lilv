@@ -64,7 +64,7 @@ install: build
 	dh_installdirs
 
 	$(MAKE) DESTDIR=$(CURDIR)/debian/slv2-6 install-exec
-	$(MAKE) DESTDIR=$(CURDIR)/debian/slv2-dev install-data install-man
+	$(MAKE) DESTDIR=$(CURDIR)/debian/slv2-6-dev install-data install-man
 
 
 # Build architecture-independent files here.
@@ -95,7 +95,7 @@ binary-arch: build install
 	dh_fixperms
 #	dh_perl
 #	dh_python
-#	dh_makeshlibs
+	dh_makeshlibs
 	dh_installdeb
 	dh_shlibdeps
 	dh_gencontrol

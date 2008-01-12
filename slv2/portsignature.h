@@ -16,59 +16,31 @@
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef __SLV2_VALUES_H__
-#define __SLV2_VALUES_H__
+#ifndef __SLV2_PORTSIGNATURE_H__
+#define __SLV2_PORTSIGNATURE_H__
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 #include <stdbool.h>
-#include <slv2/value.h>
+#include <slv2/types.h>
 
-/** \defgroup slv2_collections Collections of values/objects
- *
- * Ordered collections of typed values which are fast for random
- * access by index (i.e. a fancy array).
- *
+/** \addtogroup slv2_data
  * @{
  */
 
 
-/** Allocate a new, empty SLV2Values
+/** Get the direction (input or output) of the port.
  */
-SLV2Values
-slv2_values_new();
+SLV2PortDirection
+slv2_port_signature_get_direction(SLV2PortSignature sig);
 
 
-/** Free an SLV2Values.
+/** Get the type (e.g. audio, midi) of the port.
  */
-void
-slv2_values_free(SLV2Values);
-
-
-/** Get the number of elements in a string list.
- */
-unsigned
-slv2_values_size(SLV2Values list);
-
-
-/** Get a string from a string list at the given index.
- *
- * @return the element at \a index, or NULL if index is out of range.
- *
- * Time = O(1)
- */
-SLV2Value
-slv2_values_get_at(SLV2Values list, unsigned index);
-
-
-/** Return whether \a list contains \a value.
- *
- * Time = O(n)
- */
-bool
-slv2_values_contains(SLV2Values list, SLV2Value value);
+SLV2PortDataType
+slv2_port_signature_get_type(SLV2PortSignature sig);
 
 
 /** @} */
@@ -77,5 +49,5 @@ slv2_values_contains(SLV2Values list, SLV2Value value);
 }
 #endif
 
-#endif /* __SLV2_VALUES_H__ */
+#endif /* __SLV2_PORTSIGNATURE_H__ */
 

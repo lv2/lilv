@@ -58,14 +58,15 @@ void     slv2_port_free(SLV2Port port);
  */
 struct _SLV2Plugin {
 	struct _SLV2World*   world;
-	librdf_uri*      plugin_uri;
-	librdf_uri*      bundle_uri; ///< Bundle directory plugin was loaded from
-	librdf_uri*      binary_uri; ///< lv2:binary
-	SLV2PluginClass  plugin_class;
-	raptor_sequence* data_uris;  ///< rdfs::seeAlso
-	raptor_sequence* ports;
-	librdf_storage*  storage;
-	librdf_model*    rdf;
+	librdf_uri*          plugin_uri;
+	librdf_uri*          bundle_uri; ///< Bundle directory plugin was loaded from
+	librdf_uri*          binary_uri; ///< lv2:binary
+	SLV2PluginClass      plugin_class;
+	SLV2Template         templt;
+	raptor_sequence*     data_uris;  ///< rdfs::seeAlso
+	raptor_sequence*     ports;
+	librdf_storage*      storage;
+	librdf_model*        rdf;
 };
 
 SLV2Plugin slv2_plugin_new(SLV2World world, librdf_uri* uri, librdf_uri* bundle_uri, librdf_uri* binary_uri);
@@ -191,7 +192,6 @@ void slv2_ui_free(SLV2UI ui);
 
 /* ********* Value ********* */
 
-
 typedef enum _SLV2ValueType {
 	SLV2_VALUE_URI,
 	SLV2_VALUE_STRING,
@@ -211,6 +211,28 @@ struct _SLV2Value {
 SLV2Value slv2_value_new(SLV2ValueType type, const char* val);
 
 
+
+/* ********* PortSignature ********* */
+
+struct _SLV2PortSignature {
+	SLV2PortDirection direction;
+	SLV2PortDataType  type;
+};
+
+SLV2PortSignature slv2_port_signature_new(SLV2PortDirection direction,
+                                          SLV2PortDataType  type);
+
+void slv2_port_signature_free(SLV2PortSignature val);
+
+
+/* ********* Template ********* */
+
+SLV2Template slv2_template_new();
+void         slv2_template_free(SLV2Template t);
+void         slv2_template_add_port(SLV2Template t);
+void         slv2_template_port_type(SLV2Template t,
+                                     uint32_t     port_index,
+                                     const char*  type_uri);
 
 #ifdef __cplusplus
 }

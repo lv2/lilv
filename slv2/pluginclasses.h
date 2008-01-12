@@ -19,11 +19,11 @@
 #ifndef __SLV2_PLUGIN_CLASSES_H__
 #define __SLV2_PLUGIN_CLASSES_H__
 
-#include <slv2/pluginclass.h>
-
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+#include <slv2/pluginclass.h>
 
 /** \addtogroup slv2_collections
  * @{

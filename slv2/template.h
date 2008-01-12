@@ -16,59 +16,46 @@
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef __SLV2_VALUES_H__
-#define __SLV2_VALUES_H__
+#ifndef __SLV2_TEMPLATE_H__
+#define __SLV2_TEMPLATE_H__
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 #include <stdbool.h>
-#include <slv2/value.h>
+#include <slv2/types.h>
 
-/** \defgroup slv2_collections Collections of values/objects
- *
- * Ordered collections of typed values which are fast for random
- * access by index (i.e. a fancy array).
- *
+/** \addtogroup slv2_data
  * @{
  */
 
-
-/** Allocate a new, empty SLV2Values
- */
-SLV2Values
-slv2_values_new();
-
-
-/** Free an SLV2Values.
+	
+/** Free an SLV2Template.
  */
 void
-slv2_values_free(SLV2Values);
+slv2_template_free(SLV2Template);
 
 
-/** Get the number of elements in a string list.
+/** Get the signature (direction and type) of a port
  */
-unsigned
-slv2_values_size(SLV2Values list);
+SLV2PortSignature
+slv2_template_get_port(SLV2Template t,
+                       uint32_t     index);
 
 
-/** Get a string from a string list at the given index.
- *
- * @return the element at \a index, or NULL if index is out of range.
- *
- * Time = O(1)
+/** Get the total number of ports.
  */
-SLV2Value
-slv2_values_get_at(SLV2Values list, unsigned index);
+uint32_t
+slv2_template_get_num_ports(SLV2Template t);
 
 
-/** Return whether \a list contains \a value.
- *
- * Time = O(n)
+/** Get the number of ports of a given direction and type.
  */
-bool
-slv2_values_contains(SLV2Values list, SLV2Value value);
+uint32_t
+slv2_template_get_num_ports_of_type(SLV2Template      t,
+                                    SLV2PortDirection direction,
+                                    SLV2PortDataType  type);
 
 
 /** @} */
@@ -77,5 +64,5 @@ slv2_values_contains(SLV2Values list, SLV2Value value);
 }
 #endif
 
-#endif /* __SLV2_VALUES_H__ */
+#endif /* __SLV2_TEMPLATE_H__ */
 

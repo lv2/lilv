@@ -16,31 +16,41 @@
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef __SLV2_H__
-#define __SLV2_H__
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-#include <slv2/plugin.h>
-#include <slv2/pluginclass.h>
-#include <slv2/plugininstance.h>
-#include <slv2/plugins.h>
-#include <slv2/pluginui.h>
-#include <slv2/pluginuiinstance.h>
-#include <slv2/pluginuis.h>
-#include <slv2/port.h>
-#include <slv2/portsignature.h>
-#include <slv2/template.h>
+#include <stdlib.h>
 #include <slv2/types.h>
-#include <slv2/util.h>
-#include <slv2/value.h>
-#include <slv2/values.h>
-#include <slv2/world.h>
+#include "slv2_internal.h"
 
-#ifdef __cplusplus
+
+/* private */
+SLV2PortSignature
+slv2_port_signature_new(SLV2PortDirection direction,
+                        SLV2PortDataType  type)
+{
+	struct _SLV2PortSignature* ret = malloc(sizeof(struct _SLV2PortSignature));
+	ret->direction = direction;
+	ret->type = type;
+	return ret;
 }
-#endif
 
-#endif /* __SLV2_H__ */
+
+/* private */
+void
+slv2_port_signature_free(SLV2PortSignature sig)
+{
+	free(sig);
+}
+
+
+SLV2PortDirection
+slv2_port_signature_get_direction(SLV2PortSignature sig)
+{
+	return sig->direction;
+}
+
+
+SLV2PortDataType
+slv2_port_signature_get_type(SLV2PortSignature sig)
+{
+	return sig->type;
+}
+

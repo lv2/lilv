@@ -122,40 +122,31 @@ slv2_port_get_data_type(SLV2Plugin p,
 	return ret;
 }
 
-#if 0
 bool
-slv2_port_has_property(SLV2Plugin p,
-                       SLV2Port   port,
-                       SLV2Value  hint)
+slv2_port_has_property(SLV2Plugin  p,
+                       SLV2Port    port,
+                       const char* property)
 {
-	/* FIXME: Add SLV2Value QName stuff to make this not suck to use */
+	assert(property);
 
-	SLV2Values hints = slv2_port_get_value(p, port, "lv2:portHint");
+	SLV2Values result = NULL;
 
-	if (!hints)
-		return false;
+	char* query = slv2_strjoin(
+			"SELECT DISTINCT ?port WHERE {\n"
+			"<", librdf_uri_as_string(p->plugin_uri), "> lv2:port ?port ."
+			"?port lv2:symbol \"", port->symbol, "\";\n",
+			"      lv2:portProperty <", property, "> .\n}", NULL);
+			
+	result = slv2_plugin_simple_query(p, query, 0);
+
+	const bool ret = (slv2_values_size(result) > 0);
+
+	free(query);
+	free(result);
 	
-	for (unsigned i=0; i < slv2_values_size(type); ++i) {
-		const SLV2Value val = slv2_values_get_at(type, i);
-		if (slv2_value_is_uri(val)) {
-			const char* uri = slv2_value_as_uri(val);
-			if (!strcmp(uri, "http://lv2plug.in/ns/lv2core#connectionOptional"))
-				return true;
-				ret = SLV2_PORT_DATA_TYPE_CONTROL;
-			else if (!strcmp(uri, "http://lv2plug.in/ns/lv2core#AudioPort"))
-				ret = SLV2_PORT_DATA_TYPE_AUDIO;
-			else if (!strcmp(uri, "http://ll-plugins.nongnu.org/lv2/ext/MidiPort"))
-				ret = SLV2_PORT_DATA_TYPE_MIDI;
-			else if (!strcmp(uri, "http://drobilla.net/ns/lv2ext/osc/0#OSCPort"))
-				ret = SLV2_PORT_DATA_TYPE_OSC;
-		}
-	}
-
-	slv2_values_free(type);
-
 	return ret;
 }
-#endif
+
 
 SLV2Values
 slv2_port_get_value(SLV2Plugin  p,

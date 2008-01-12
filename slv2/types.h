@@ -19,12 +19,12 @@
 #ifndef __SLV2_TYPES_H__
 #define __SLV2_TYPES_H__
 
-#include <stdbool.h>
-#include <stdint.h>
-
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+#include <stdbool.h>
+#include <stdint.h>
 
 
 /** (Data) Type of a port
@@ -73,6 +73,10 @@ typedef enum _SLV2URIType {
 typedef struct _SLV2Port* SLV2Port;
 
 
+/** The port (I/O) signature of a plugin.  Opaque, but valid to compare to NULL. */
+typedef struct _SLV2PortSignature* SLV2PortSignature;
+
+
 /** A plugin.  Opaque, but valid to compare to NULL. */
 typedef struct _SLV2Plugin* SLV2Plugin;
 
@@ -95,6 +99,10 @@ typedef void* SLV2PluginClasses;
 
 /** A typed value */
 typedef struct _SLV2Value* SLV2Value;
+
+
+/** A plugin template (collection of port signatures). */
+typedef void* SLV2Template;
 
 
 /** A collection of typed values. */

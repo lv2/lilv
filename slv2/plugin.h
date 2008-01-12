@@ -128,7 +128,6 @@ const char*
 slv2_plugin_get_library_uri(SLV2Plugin plugin);
 
 
-
 /** Get the name of \a plugin.
  *
  * This is guaranteed to return the untranslated name (the doap:name in the
@@ -250,6 +249,32 @@ uint32_t
 slv2_plugin_get_num_ports(SLV2Plugin p);
 
 
+/** Get the "template" (port signature) of this plugin.
+ *
+ * The template is intended to be all the basic information a host might
+ * want to know about a plugin's inputs and outputs (e.g. to determine if the
+ * plugin is appropriate for a given situation).  Using this function is much,
+ * much faster than using the individual functions repeatedly to get the same
+ * information (since each call results in a single query).
+ *
+ * Time = Query
+ */
+SLV2Template
+slv2_plugin_get_template(SLV2Plugin p);
+
+
+/** Get the number of ports on this plugin of a given direction and/or type.
+ *
+ * Use SLV2_PORT_DATA_TYPE_ANY and SLV2_PORT_DIRECTION_ANY for a wildcard.
+ *
+ * Time = O(1)
+ */
+uint32_t
+slv2_plugin_get_num_ports_of_type(SLV2Plugin        p,
+                                  SLV2PortDirection dir,
+                                  SLV2PortDataType  type);
+
+
 /** Return whether or not the plugin introduces (and reports) latency.
  *
  * The index of the latency port can be found with slv2_plugin_get_latency_port
@@ -342,6 +367,39 @@ slv2_plugin_get_port_by_symbol(SLV2Plugin  plugin,
  */
 SLV2UIs
 slv2_plugin_get_uis(SLV2Plugin plugin);
+
+
+/** Get the full name of the plugin's author.
+ *
+ * Returns NULL if author name is not present.
+ * Returned value must be freed by caller.
+ *
+ * Time = Query
+ */
+char*
+slv2_plugin_get_author_name(SLV2Plugin plugin);
+
+
+/** Get the email address of the plugin's author.
+ *
+ * Returns NULL if author email address is not present.
+ * Returned value must be freed by caller.
+ *
+ * Time = Query
+ */
+char*
+slv2_plugin_get_author_email(SLV2Plugin plugin);
+
+
+/** Get the email address of the plugin's author.
+ *
+ * Returns NULL if author homepage is not present.
+ * Returned value must be freed by caller.
+ *
+ * Time = Query
+ */
+char*
+slv2_plugin_get_author_homepage(SLV2Plugin plugin);
 
 
 /** @} */

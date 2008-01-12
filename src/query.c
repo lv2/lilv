@@ -32,6 +32,7 @@ static const char* slv2_query_prefixes =
 	"PREFIX rdf:    <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n"
 	"PREFIX rdfs:   <http://www.w3.org/2000/01/rdf-schema#>\n"
 	"PREFIX doap:   <http://usefulinc.com/ns/doap#>\n"
+	"PREFIX foaf:   <http://xmlns.com/foaf/0.1/>\n"
 	"PREFIX lv2:    <http://lv2plug.in/ns/lv2core#>\n";
 
 #if 0

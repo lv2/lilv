@@ -29,8 +29,6 @@ Description: A library for simple use of LV2 plugins
  the use of LV2 plugins <http://lv2plug.in> as simple as possible.
 
 Package: slv2-6-dev
-Provides: slv2-dev
-Conflicts: slv2-dev
 Section: libdevel
 Architecture: any
 Pre-Depends: make

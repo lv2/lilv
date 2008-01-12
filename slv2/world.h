@@ -19,13 +19,13 @@
 #ifndef __SLV2_WORLD_H__
 #define __SLV2_WORLD_H__
 
-#include <slv2/plugins.h>
-#include <slv2/pluginclasses.h>
-#include <librdf.h>
-
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+#include <slv2/plugins.h>
+#include <slv2/pluginclasses.h>
+#include <librdf.h>
 
 /** \defgroup slv2_world Global library state
  * 

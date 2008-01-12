@@ -8,14 +8,16 @@ libslv2_la_SOURCES = \
 	plugin.c \
 	pluginclass.c \
 	pluginclasses.c \
-	pluginui.c \
-	pluginuis.c \
-	pluginuiinstance.c \
 	plugininstance.c \
 	plugins.c \
+	pluginui.c \
+	pluginuiinstance.c \
+	pluginuis.c \
 	port.c \
+	portsignature.c \
 	query.c \
 	slv2_internal.h \
+	template.c \
 	util.c \
 	value.c \
 	values.c \

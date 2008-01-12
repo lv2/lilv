@@ -1,3 +1,19 @@
+slv2 (0.4.4) unstable; urgency=low
+
+  * Add slv2_port_has_property
+  * Add plugin template and port signature interface for much faster plugin
+    discovery with port input/output/type inspection.
+ 
+ -- Dave Robillard <dave@drobilla.net>  Sat, 12 Jan 2008 12:52:35 -0500
+ 
+slv2 (0.4.3) unstable; urgency=low
+
+  * Fix lv2_inspect command line handling bug (always prints help)
+  * Fix case where multiple plugins are described in the same file
+    (avoid port symbol clashing).
+ 
+ -- Dave Robillard <dave@drobilla.net>  Thu, 10 Jan 2008 20:03:19 -0500
+ 
 slv2 (0.4.2) unstable; urgency=low
 
   * Update for LV2 specification release 1

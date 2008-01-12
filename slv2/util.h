@@ -19,11 +19,12 @@
 #ifndef __SLV2_UTIL_H__
 #define __SLV2_UTIL_H__
 
-#include <stdarg.h>
-
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+#include <stdarg.h>
+
 
 /** \defgroup slv2_util Utility functions
  *
