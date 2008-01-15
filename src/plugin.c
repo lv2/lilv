@@ -528,6 +528,31 @@ slv2_plugin_get_latency_port(SLV2Plugin p)
 	return slv2_value_as_int(val);
 }
 
+	
+bool
+slv2_plugin_has_feature(SLV2Plugin  p,
+                        const char* feature)
+{
+	assert(feature);
+
+    const char* const query = slv2_strjoin(
+		"ASK {\n"
+		"	{ <>  lv2:optionalFeature <", feature, "> }\n"
+		"	UNION\n"
+		"	{ <>  lv2:requiredFeature <", feature, "> }\n"
+		"}\n", NULL);
+
+
+	librdf_query_results* results = slv2_plugin_query(p, query);
+	assert(librdf_query_results_is_boolean(results));
+
+	const bool ret = results && (librdf_query_results_get_boolean(results) > 0);
+
+	librdf_free_query_results(results);
+
+	return ret;
+}
+
 
 SLV2Values
 slv2_plugin_get_supported_features(SLV2Plugin p)

@@ -194,6 +194,18 @@ slv2_plugin_get_value_for_subject(SLV2Plugin  p,
                                   const char* predicate);
 
 
+/** Return whether a feature is supported by a plugin.
+ *
+ * This will return true if the feature is an optional or required feature
+ * of the plugin.
+ *
+ * Time = Query
+ */
+bool
+slv2_plugin_has_feature(SLV2Plugin  p,
+                        const char* feature);
+
+
 /** Get the LV2 Features supported (required or optionally) by a plugin.
  *
  * A feature is "supported" by a plugin if it is required OR optional.
