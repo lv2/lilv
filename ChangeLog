@@ -1,6 +1,11 @@
+slv2 (0.4.5) unstable; urgency=low
+
+  * Fix redland librdf_free_query_results warning
+
 slv2 (0.4.4) unstable; urgency=low
 
   * Add slv2_port_has_property
+  * Add slv2_plugin_has_feature
   * Add plugin template and port signature interface for much faster plugin
     discovery with port input/output/type inspection.
  

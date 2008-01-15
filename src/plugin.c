@@ -259,6 +259,7 @@ slv2_plugin_load(SLV2Plugin p)
 	librdf_free_query_results(results);
 	librdf_free_query(q);
 
+	librdf_model_print(p->rdf, stdout);
 	//printf("%p %s: NUM PORTS: %d\n", (void*)p, p->plugin_uri, slv2_plugin_get_num_ports(p));
 }
 
