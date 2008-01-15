@@ -548,7 +548,8 @@ slv2_plugin_has_feature(SLV2Plugin  p,
 
 	const bool ret = results && (librdf_query_results_get_boolean(results) > 0);
 
-	librdf_free_query_results(results);
+	if (results)
+		librdf_free_query_results(results);
 
 	return ret;
 }
