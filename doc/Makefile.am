@@ -6,6 +6,12 @@ dist_man_MANS = \
 	man/man3/slv2_util.3 \
 	man/man3/slv2_world.3
 
+if HAVE_DOXYGEN
+	man_MANS = $(dist_man_MANS)
+else
+	man_mans =
+endif
+
 EXTRA_DIST = mainpage.dox reference.doxygen.in $(man_MANS)
 
 %.3:
