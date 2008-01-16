@@ -32,12 +32,16 @@ extern "C" {
 
 	
 /** Free an SLV2Template.
+ *
+ * Time = O(1) + free()
  */
 void
 slv2_template_free(SLV2Template);
 
 
 /** Get the signature (direction and type) of a port
+ *
+ * Time = O(1)
  */
 SLV2PortSignature
 slv2_template_get_port(SLV2Template t,
@@ -45,12 +49,16 @@ slv2_template_get_port(SLV2Template t,
 
 
 /** Get the total number of ports.
+ *
+ * Time = O(1)
  */
 uint32_t
 slv2_template_get_num_ports(SLV2Template t);
 
 
 /** Get the number of ports of a given direction and type.
+ *
+ * Time = O(1)
  */
 uint32_t
 slv2_template_get_num_ports_of_type(SLV2Template      t,

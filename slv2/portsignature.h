@@ -32,12 +32,16 @@ extern "C" {
 
 
 /** Get the direction (input or output) of the port.
+ *
+ * Time = O(1)
  */
 SLV2PortDirection
 slv2_port_signature_get_direction(SLV2PortSignature sig);
 
 
 /** Get the type (e.g. audio, midi) of the port.
+ *
+ * Time = O(1)
  */
 SLV2PortDataType
 slv2_port_signature_get_type(SLV2PortSignature sig);

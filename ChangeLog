@@ -1,6 +1,10 @@
 slv2 (0.4.5) unstable; urgency=low
 
   * Fix redland librdf_free_query_results warning
+  * Use "memory" store instead of "hashes" store for plugin RDF data,
+    resulting in extreme speedups in some cases.
+ 
+ -- Dave Robillard <dave@drobilla.net>  Tue, 15 Jan 2008 19:22:21 -0500
 
 slv2 (0.4.4) unstable; urgency=low
 
@@ -9,7 +13,7 @@ slv2 (0.4.4) unstable; urgency=low
   * Add plugin template and port signature interface for much faster plugin
     discovery with port input/output/type inspection.
  
- -- Dave Robillard <dave@drobilla.net>  Sat, 12 Jan 2008 12:52:35 -0500
+ -- Dave Robillard <dave@drobilla.net>  Tue, 15 Jan 2008 10:43:00 -0500
  
 slv2 (0.4.3) unstable; urgency=low
 
