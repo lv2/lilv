@@ -145,8 +145,9 @@ slv2_plugin_load(SLV2Plugin p)
 
 	if (!p->storage) {
 		assert(!p->rdf);
-		p->storage = librdf_new_storage(p->world->world, "hashes", NULL,
-				"hash-type='memory'");
+		//p->storage = librdf_new_storage(p->world->world, "hashes", NULL,
+		//		"hash-type='memory'");
+		p->storage = librdf_new_storage(p->world->world, "memory", NULL, NULL);
 		p->rdf = librdf_new_model(p->world->world, p->storage, NULL);
 	}
 
@@ -259,7 +260,6 @@ slv2_plugin_load(SLV2Plugin p)
 	librdf_free_query_results(results);
 	librdf_free_query(q);
 
-	librdf_model_print(p->rdf, stdout);
 	//printf("%p %s: NUM PORTS: %d\n", (void*)p, p->plugin_uri, slv2_plugin_get_num_ports(p));
 }
 
