@@ -451,33 +451,26 @@ slv2_world_load_all(SLV2World world)
 {
 	char* lv2_path = getenv("LV2_PATH");
 
-	/* 1. Read LV2 ontology into model */
-	const char* ontology_path = "/usr/local/share/slv2/lv2.ttl";
-	FILE* ontology = fopen(ontology_path, "r");
-	if (ontology == NULL) {
-		ontology_path = "/usr/share/slv2/lv2.ttl";
-		ontology = fopen(ontology_path, "r");
-	}
-
-	if (ontology) {
-		fclose(ontology);
-		librdf_uri* ontology_uri = librdf_new_uri_from_filename(world->world,
-				ontology_path);
-		librdf_parser_parse_into_model(world->parser, ontology_uri, NULL, world->model);
-		librdf_free_uri(ontology_uri);
-	}
-
-	/* 2. Read all manifest files into model */
+	/* 1. Read all manifest files into model */
 
 	if (lv2_path) {
 		slv2_world_load_path(world, lv2_path);
 	} else {
 		const char* const home = getenv("HOME");
 		if (home) {
+#ifdef __APPLE__
+			const char* const suffix = "/Library/Audio/Plug-Ins/LV2:/Library/Audio/Plug-Ins/LV2"
+				":/usr/local/lib/lv2:/usr/lib/lv2";
+#else
 			const char* const suffix = "/.lv2:/usr/local/lib/lv2:/usr/lib/lv2";
+#endif
 			lv2_path = slv2_strjoin(home, suffix, NULL);
 		} else {
+#ifdef __APPLE__
+			lv2_path = strdup("/Library/Audio/Plug-Ins/LV2:/usr/local/lib/lv2:/usr/lib/lv2");
+#else
 			lv2_path = strdup("/usr/local/lib/lv2:/usr/lib/lv2");
+#endif
 		}
 
 		slv2_world_load_path(world, lv2_path);
@@ -486,7 +479,7 @@ slv2_world_load_all(SLV2World world)
 	}
 
 	
-	/* 3. Query out things to cache */
+	/* 2. Query out things to cache */
 
 	slv2_world_load_specifications(world);
 
