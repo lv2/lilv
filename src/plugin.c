@@ -697,11 +697,11 @@ SLV2UIs
 slv2_plugin_get_uis(SLV2Plugin plugin)
 {
     const char* const query_str =
-		"PREFIX guiext: <http://ll-plugins.nongnu.org/lv2/ext/gui#>\n"
+		"PREFIX uiext: <http://ll-plugins.nongnu.org/lv2/ext/ui#>\n"
 		"SELECT DISTINCT ?uri ?type ?binary WHERE {\n"
-		"<>   guiext:gui    ?uri .\n"
-		"?uri a             ?type ;\n"
-		"     guiext:binary ?binary .\n"
+		"<>   uiext:ui     ?uri .\n"
+		"?uri a            ?type ;\n"
+		"     uiext:binary ?binary .\n"
 		"}\n";
 
 	librdf_query_results* results = slv2_plugin_query(plugin, query_str);
