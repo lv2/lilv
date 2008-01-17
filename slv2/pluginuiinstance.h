@@ -24,7 +24,7 @@ extern "C" {
 #endif
 
 #include <assert.h>
-#include <slv2/lv2_gui.h>
+#include <slv2/lv2_ui.h>
 #include <slv2/plugin.h>
 
 typedef struct _SLV2UIInstanceImpl* SLV2UIInstanceImpl;
@@ -60,11 +60,12 @@ typedef struct _SLV2UIInstance {
  * \return NULL if instantiation failed.
  */
 SLV2UIInstance
-slv2_ui_instantiate(SLV2Plugin                     plugin,
-                    SLV2UI                         ui,
-                    LV2UI_Write_Function           write_function,
-                    LV2UI_Controller               controller,
-                    const LV2_Feature* const*      features);
+slv2_ui_instantiate(SLV2Plugin                plugin,
+                    SLV2UI                    ui,
+                    LV2UI_Write_Function      write_function,
+                    LV2UI_Controller          controller,
+                    LV2UI_Host_Data           host_data,
+                    const LV2_Feature* const* features);
 
 
 /** Free a plugin UI instance.

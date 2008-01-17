@@ -1,7 +1,7 @@
 slv2includedir = $(includedir)/slv2
 
 slv2include_HEADERS = \
-	lv2_gui.h \
+	lv2_ui.h \
 	plugin.h \
 	pluginclass.h \
 	pluginclasses.h \
