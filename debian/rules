@@ -63,8 +63,8 @@ install: build
 	dh_clean -k 
 	dh_installdirs
 
-	$(MAKE) DESTDIR=$(CURDIR)/debian/slv2-6 install-exec
-	$(MAKE) DESTDIR=$(CURDIR)/debian/slv2-6-dev install-data install-man
+	$(MAKE) DESTDIR=$(CURDIR)/debian/slv2-8 install-exec
+	$(MAKE) DESTDIR=$(CURDIR)/debian/slv2-8-dev install-data install-man
 
 
 # Build architecture-independent files here.

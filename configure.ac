@@ -33,6 +33,7 @@ AM_INIT_AUTOMAKE
 # 0.4.3 = 6,0,0 (oops, should have been 6,3,0)
 # 0.4.4 = 7,0,1
 # 0.4.5 = 7,0,1
+# 0.5.0 = 8,0,0
 
 SLV2_VERSION="0.5.0"
 SLV2_API_CURRENT="8"
@@ -68,7 +69,7 @@ AM_PROG_CC_C_O
 AC_PROG_LIBTOOL
 
 # LV2 core package
-PKG_CHECK_MODULES(LV2CORE, lv2core >= 1)
+PKG_CHECK_MODULES(LV2CORE, lv2core >= 1, , [AC_ERROR([SLV2 Requires the LV2 core package (http://lv2plug.in/spec/)])])
 
 # Check for debugging flag
 debug="no"
