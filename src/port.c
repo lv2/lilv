@@ -150,6 +150,32 @@ slv2_port_has_property(SLV2Plugin  p,
 }
 
 
+bool
+slv2_port_supports_event(SLV2Plugin  p,
+                         SLV2Port    port,
+                         const char* event)
+{
+	assert(event);
+
+	char* query = slv2_strjoin(
+			"ASK WHERE {\n"
+			"<", librdf_uri_as_string(p->plugin_uri), "> lv2:port ?port ."
+			"?port lv2:symbol \"", port->symbol, "\";\n",
+			"      lv2ev:supportsEvent <", event, "> .\n"
+			"}", NULL);
+			
+	librdf_query_results* results = slv2_plugin_query(p, query);
+	assert(librdf_query_results_is_boolean(results));
+
+	const bool ret = librdf_query_results_get_boolean(results);
+
+	free(query);
+	librdf_free_query_results(results);
+	
+	return ret;
+}
+
+
 SLV2Values
 slv2_port_get_value(SLV2Plugin  p,
                     SLV2Port    port,

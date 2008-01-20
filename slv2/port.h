@@ -40,7 +40,7 @@ extern "C" {
 SLV2Values
 slv2_port_get_value(SLV2Plugin  plugin,
                     SLV2Port    port,
-                    const char* property);
+                    const char* property_uri);
 
 
 /** Return the LV2 port properties of a port.
@@ -60,6 +60,16 @@ bool
 slv2_port_has_property(SLV2Plugin  p,
                        SLV2Port    port,
                        const char* property_uri);
+
+
+/** Return whether a port is an event port and supports a certain event type.
+ *
+ * Time = Query
+ */
+bool
+slv2_port_supports_event(SLV2Plugin  p,
+                         SLV2Port    port,
+                         const char* event_uri);
 
 
 /** Get the symbol of a port given the index.

@@ -69,6 +69,18 @@ print_port(SLV2Plugin p, uint32_t index)
 			printf("Unknown");
 	}
 
+	if (type == SLV2_PORT_DATA_TYPE_EVENT) {
+		SLV2Values supported = slv2_port_get_value(p, port,
+			"lv2ev:supportsEvent");
+		if (slv2_values_size(supported) > 0) {
+			printf("\n\t\tSupported events:\n");
+			for (unsigned i=0; i < slv2_values_size(supported); ++i) {
+				printf("\t\t\t%s\n", slv2_value_as_uri(slv2_values_get_at(supported, i)));
+			}
+		}
+		slv2_values_free(supported);
+	}
+
 	str = slv2_port_get_symbol(p, port);
 	printf("\n\t\tSymbol:     %s\n", str);
 	free(str);
