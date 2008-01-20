@@ -43,8 +43,10 @@ slv2_plugin_class_new(SLV2World world, const char* parent_uri, const char* uri, 
 void
 slv2_plugin_class_free(SLV2PluginClass plugin_class)
 {
+	assert(plugin_class->uri);
 	librdf_free_uri(plugin_class->uri);
-	librdf_free_uri(plugin_class->parent_uri);
+	if (plugin_class->parent_uri)
+		librdf_free_uri(plugin_class->parent_uri);
 	free(plugin_class->label);
 	free(plugin_class);
 }
