@@ -535,22 +535,14 @@ slv2_plugin_has_feature(SLV2Plugin  p,
                         const char* feature)
 {
 	assert(feature);
+	SLV2Values features = slv2_plugin_get_supported_features(p);
+	
+	SLV2Value val = slv2_value_new(SLV2_VALUE_URI, feature);
 
-    const char* const query = slv2_strjoin(
-		"ASK {\n"
-		"	{ <>  lv2:optionalFeature <", feature, "> }\n"
-		"	UNION\n"
-		"	{ <>  lv2:requiredFeature <", feature, "> }\n"
-		"}\n", NULL);
+	const bool ret = features && slv2_values_contains(features, val);
 
-
-	librdf_query_results* results = slv2_plugin_query(p, query);
-	assert(librdf_query_results_is_boolean(results));
-
-	const bool ret = results && (librdf_query_results_get_boolean(results) > 0);
-
-	if (results)
-		librdf_free_query_results(results);
+	slv2_values_free(features);
+	slv2_value_free(val);
 
 	return ret;
 }
