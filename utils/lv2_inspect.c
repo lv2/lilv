@@ -62,6 +62,9 @@ print_port(SLV2Plugin p, uint32_t index)
 		case SLV2_PORT_DATA_TYPE_OSC:
 			printf("OSC");
 			break;
+		case SLV2_PORT_DATA_TYPE_EVENT:
+			printf("Event");
+			break;
 		default:
 			printf("Unknown");
 	}

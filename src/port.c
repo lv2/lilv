@@ -114,6 +114,8 @@ slv2_port_get_data_type(SLV2Plugin p,
 				ret = SLV2_PORT_DATA_TYPE_MIDI;
 			else if (!strcmp(uri, "http://drobilla.net/ns/lv2ext/osc/0#OSCPort"))
 				ret = SLV2_PORT_DATA_TYPE_OSC;
+			else if (!strcmp(uri, "http://lv2plug.in/ns/ext/event#EventPort"))
+				ret = SLV2_PORT_DATA_TYPE_EVENT;
 		}
 	}
 
