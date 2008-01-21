@@ -22,6 +22,8 @@
 #include <string.h>
 #include <slv2/slv2.h>
 
+SLV2Value event_class   = NULL;
+SLV2Value control_class = NULL;
 
 void
 print_port(SLV2Plugin p, uint32_t index)
@@ -32,44 +34,14 @@ print_port(SLV2Plugin p, uint32_t index)
 
 	printf("\n\tPort %d:\n", index);
 
-	SLV2PortDirection dir  = slv2_port_get_direction(p, port);
+	SLV2Values classes = slv2_port_get_classes(p, port);
 
-	printf("\t\tDirection:  ");
-	switch (dir) {
-		case SLV2_PORT_DIRECTION_INPUT:
-			printf("Input");
-			break;
-		case SLV2_PORT_DIRECTION_OUTPUT:
-			printf("Output");
-			break;
-		default:
-			printf("Unknown");
+	printf("\t\tClasses:\n");
+	for (unsigned i=0; i < slv2_values_size(classes); ++i) {
+		printf("\t\t\t%s\n", slv2_value_as_uri(slv2_values_get_at(classes, i)));
 	}
 
-	SLV2PortDataType type = slv2_port_get_data_type(p, port);
-
-	printf("\n\t\tType:       ");
-	switch (type) {
-		case SLV2_PORT_DATA_TYPE_CONTROL:
-			printf("Control");
-			break;
-		case SLV2_PORT_DATA_TYPE_AUDIO:
-			printf("Audio");
-			break;
-		case SLV2_PORT_DATA_TYPE_MIDI:
-			printf("MIDI");
-			break;
-		case SLV2_PORT_DATA_TYPE_OSC:
-			printf("OSC");
-			break;
-		case SLV2_PORT_DATA_TYPE_EVENT:
-			printf("Event");
-			break;
-		default:
-			printf("Unknown");
-	}
-
-	if (type == SLV2_PORT_DATA_TYPE_EVENT) {
+	if (slv2_port_is_a(p, port, event_class)) {
 		SLV2Values supported = slv2_port_get_value(p, port,
 			"lv2ev:supportsEvent");
 		if (slv2_values_size(supported) > 0) {
@@ -89,7 +61,7 @@ print_port(SLV2Plugin p, uint32_t index)
 	printf("\t\tName:       %s\n", str);
 	free(str);
 
-	if (type == SLV2_PORT_DATA_TYPE_CONTROL) {
+	if (slv2_port_is_a(p, port, control_class)) {
 		printf("\t\tMinimum:    %f\n", slv2_port_get_minimum_value(p, port));
 		printf("\t\tMaximum:    %f\n", slv2_port_get_maximum_value(p, port));
 		printf("\t\tDefault:    %f\n", slv2_port_get_default_value(p, port));

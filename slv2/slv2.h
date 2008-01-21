@@ -31,8 +31,6 @@ extern "C" {
 #include <slv2/pluginuiinstance.h>
 #include <slv2/pluginuis.h>
 #include <slv2/port.h>
-#include <slv2/portsignature.h>
-#include <slv2/template.h>
 #include <slv2/types.h>
 #include <slv2/util.h>
 #include <slv2/value.h>

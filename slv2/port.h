@@ -98,6 +98,38 @@ slv2_port_get_name(SLV2Plugin plugin,
                    SLV2Port   port);
 
 
+/** Get all the classes of a port.
+ *
+ * This can be used to determine if a port is an input, output, audio,
+ * control, midi, etc, etc, though it's simpler to use slv2_port_is_a.
+ * The returned list does not include lv2:Port, which is implied.
+ *
+ * Returned value is shared and must not be destroyed by caller.
+ *
+ * Time = O(1)
+ */
+SLV2Values
+slv2_port_get_classes(SLV2Plugin plugin,
+                      SLV2Port   port);
+                      
+
+/** Determine if a port is of a given class (input, output, audio, etc).
+ *
+ * For convenience/performance/extensibility reasons, hosts are expected to
+ * create an SLV2Value for each port class they "care about".  Well-known type
+ * URI strings are defined (e.g. SLV2_PORT_CLASS_INPUT) for convenience, but
+ * this function is designed so that SLV2 is usable with any port types
+ * without requiring explicit support in SLV2.
+ *
+ * Time = O(n) (n pointer comparisons where n is the number of classes of
+ * this port, so this method is suitable for realtime use on any sane port).
+ */
+bool
+slv2_port_is_a(SLV2Plugin plugin,
+               SLV2Port   port,
+               SLV2Value  port_class);
+
+#if 0
 /** Get the direction (input, output) of a port.
  *
  * Time = Query
@@ -113,6 +145,7 @@ slv2_port_get_direction(SLV2Plugin plugin,
 SLV2PortDataType
 slv2_port_get_data_type(SLV2Plugin plugin,
                         SLV2Port   port);
+#endif
 
 
 /** Get the default value of a port.

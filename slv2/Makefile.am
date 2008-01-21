@@ -11,9 +11,7 @@ slv2include_HEADERS = \
 	pluginuiinstance.h \
 	pluginuis.h \
 	port.h \
-	portsignature.h \
 	slv2.h \
-	template.h \
 	types.h \
 	util.h \
 	value.h \

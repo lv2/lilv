@@ -28,13 +28,20 @@
 
 /* private */
 SLV2Value
-slv2_value_new(SLV2ValueType type, const char* str)
+slv2_value_new(SLV2World world, SLV2ValueType type, const char* str)
 {
 	SLV2Value val = (SLV2Value)malloc(sizeof(struct _SLV2Value));
-	val->str_val = strdup(str);
 	val->type = type;
 
-	//printf("New value, t=%d, %s\n", type, str);
+	if (type == SLV2_VALUE_URI) {
+		val->val.uri_val = librdf_new_uri(world->world, (const unsigned char*)str);
+		if (val->val.uri_val)
+			val->str_val = (char*)librdf_uri_as_string(val->val.uri_val);
+		else
+			return NULL;
+	} else {
+		val->str_val = strdup(str);
+	}
 
 	if (type == SLV2_VALUE_INT) {
 		char* endptr = 0;
@@ -42,29 +49,44 @@ slv2_value_new(SLV2ValueType type, const char* str)
 	} else if (type == SLV2_VALUE_FLOAT) {
 		char* endptr = 0;
 		val->val.float_val = strtod(str, &endptr);
-	} else {
-		val->val.int_val = 0;
 	}
 
 	return val;
 }
 
 
-/*
+/* private */
 SLV2Value
-slv2_value_new_uri(const char* uri)
+slv2_value_new_librdf_uri(SLV2World world, librdf_uri* uri)
 {
-	return slv2_value_new(SLV2_VALUE_URI, uri);
+	SLV2Value val = (SLV2Value)malloc(sizeof(struct _SLV2Value));
+	val->type = SLV2_VALUE_URI;
+	val->val.uri_val = librdf_new_uri_from_uri(uri);
+	val->str_val = (char*)librdf_uri_as_string(val->val.uri_val);
+	return val;
 }
-*/
+
+	
+SLV2Value
+slv2_value_new_uri(SLV2World world, const char* uri)
+{
+	return slv2_value_new(world, SLV2_VALUE_URI, uri);
+}
+
 
 SLV2Value
 slv2_value_duplicate(SLV2Value val)
 {
 	SLV2Value result = (SLV2Value)malloc(sizeof(struct _SLV2Value));
-	result->str_val = strdup(val->str_val);
 	result->type = val->type;
-	result->val = val->val;
+
+	if (val->type == SLV2_VALUE_URI) {
+		result->val.uri_val = librdf_new_uri_from_uri(val->val.uri_val);
+	} else {
+		result->str_val = strdup(val->str_val);
+		result->val = val->val;
+	}
+
 	return result;
 }
 
@@ -73,7 +95,11 @@ void
 slv2_value_free(SLV2Value val)
 {
 	if (val) {
-		free(val->str_val);
+		if (val->type == SLV2_VALUE_URI)
+			librdf_free_uri(val->val.uri_val);
+		else
+			free(val->str_val);
+
 		free(val);
 	}
 }
@@ -82,12 +108,25 @@ slv2_value_free(SLV2Value val)
 bool
 slv2_value_equals(SLV2Value value, SLV2Value other)
 {
-	if (value->type != other->type)
-		return false;
-	else if (value && other)
-		return ! strcmp(value->str_val, other->str_val);
-	else
+	if (value == NULL && other == NULL)
 		return true;
+	else if (value == NULL || other == NULL)
+		return false;
+	else if (value->type != other->type)
+		return false;
+
+	switch (value->type) {
+	case SLV2_VALUE_URI:
+		return (librdf_uri_equals(value->val.uri_val, other->val.uri_val) != 0);
+	case SLV2_VALUE_STRING:
+		return ! strcmp(value->str_val, other->str_val);
+	case SLV2_VALUE_INT:
+		return (value->val.int_val == other->val.int_val);
+	case SLV2_VALUE_FLOAT:
+		return (value->val.float_val == other->val.float_val);
+	}
+
+	return false; /* shouldn't get here */
 }
 
 

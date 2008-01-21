@@ -36,6 +36,7 @@ slv2_port_new(uint32_t index, const char* symbol/*, const char* node_id*/)
 	struct _SLV2Port* port = malloc(sizeof(struct _SLV2Port));
 	port->index = index;
 	port->symbol = strdup(symbol);
+	port->classes = slv2_values_new();
 	//port->node_id = strdup(node_id);
 	return port;
 }
@@ -46,7 +47,7 @@ void
 slv2_port_free(SLV2Port port)
 {
 	free(port->symbol);
-	//free(port->node_id);
+	slv2_values_free(port->classes);
 	free(port);
 }
 
@@ -58,11 +59,10 @@ slv2_port_duplicate(SLV2Port port)
 	SLV2Port result = malloc(sizeof(struct _SLV2Port));
 	result->index = port->index;
 	result->symbol = strdup(port->symbol);
-	//result->node_id = strdup(port->node_id);
 	return result;
 }
 
-
+#if 0
 SLV2PortDirection
 slv2_port_get_direction(SLV2Plugin p,
                         SLV2Port   port)
@@ -123,6 +123,20 @@ slv2_port_get_data_type(SLV2Plugin p,
 
 	return ret;
 }
+#endif
+
+bool
+slv2_port_is_a(SLV2Plugin plugin,
+               SLV2Port   port,
+               SLV2Value  port_class)
+{
+	for (unsigned i=0; i < slv2_values_size(port->classes); ++i)
+		if (slv2_value_equals(slv2_values_get_at(port->classes, i), port_class))
+			return true;
+
+	return false;
+}
+
 
 bool
 slv2_port_has_property(SLV2Plugin  p,
@@ -230,6 +244,14 @@ slv2_port_get_name(SLV2Plugin p,
 	slv2_values_free(result);
 
 	return name;
+}
+
+	
+SLV2Values
+slv2_port_get_classes(SLV2Plugin p,
+                      SLV2Port   port)
+{
+	return port->classes;
 }
 
 

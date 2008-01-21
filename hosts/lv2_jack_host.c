@@ -30,23 +30,39 @@
 
 #define MIDI_BUFFER_SIZE 1024
 
+enum PortDirection {
+	INPUT,
+	OUTPUT
+};
+
+enum PortType {
+	CONTROL,
+	AUDIO,
+	MIDI
+};
+
 struct Port {
-	SLV2PortDirection direction;
-	SLV2PortDataType  type;
-	SLV2Port          slv2_port;
-	jack_port_t*      jack_port;   /**< For audio and MIDI ports, otherwise NULL */
-	float             control;     /**< For control ports, otherwise 0.0f */
-	LV2_MIDI*         midi_buffer; /**< For midi ports, otherwise NULL */
+	SLV2Port           slv2_port;
+	enum PortDirection direction;
+	enum PortType      type;
+	jack_port_t*       jack_port;   /**< For audio and MIDI ports, otherwise NULL */
+	float              control;     /**< For control ports, otherwise 0.0f */
+	LV2_MIDI*          midi_buffer; /**< For midi ports, otherwise NULL */
 };
 
 
 /** This program's data */
 struct JackHost {
-	jack_client_t* jack_client; /**< Jack client */
-	SLV2Plugin     plugin;      /**< Plugin "class" (actually just a few strings) */
-	SLV2Instance   instance;    /**< Plugin "instance" (loaded shared lib) */
-	uint32_t       num_ports;   /**< Size of the two following arrays: */
-	struct Port*   ports;       /** Port array of size num_ports */
+	jack_client_t* jack_client;   /**< Jack client */
+	SLV2Plugin     plugin;        /**< Plugin "class" (actually just a few strings) */
+	SLV2Instance   instance;      /**< Plugin "instance" (loaded shared lib) */
+	uint32_t       num_ports;     /**< Size of the two following arrays: */
+	struct Port*   ports;         /** Port array of size num_ports */
+	SLV2Value      input_class;   /**< Input port class (URI) */
+	SLV2Value      output_class;  /**< Output port class (URI) */
+	SLV2Value      control_class; /**< Control port class (URI) */
+	SLV2Value      audio_class;   /**< Audio port class (URI) */
+	SLV2Value      midi_class;    /**< MIDI port class (URI) */
 };
 
 
@@ -68,6 +84,13 @@ main(int argc, char** argv)
 	SLV2World world = slv2_world_new();
 	slv2_world_load_all(world);
 	SLV2Plugins plugins = slv2_world_get_all_plugins(world);
+	
+	/* Set up the port classes this app supports */
+	host.input_class = slv2_value_new_uri(world, SLV2_PORT_CLASS_INPUT);
+	host.output_class = slv2_value_new_uri(world, SLV2_PORT_CLASS_OUTPUT);
+	host.control_class = slv2_value_new_uri(world, SLV2_PORT_CLASS_CONTROL);
+	host.audio_class = slv2_value_new_uri(world, SLV2_PORT_CLASS_AUDIO);
+	host.midi_class = slv2_value_new_uri(world, SLV2_PORT_CLASS_MIDI);
 
 	/* Find the plugin to run */
 	const char* plugin_uri = (argc == 2) ? argv[1] : NULL;
@@ -112,7 +135,7 @@ main(int argc, char** argv)
 	jack_set_process_callback(host.jack_client, &jack_process_cb, (void*)(&host));
 	
 	/* Create ports */
-	host.num_ports  = slv2_plugin_get_num_ports(host.plugin);
+	host.num_ports = slv2_plugin_get_num_ports(host.plugin);
 	host.ports = calloc((size_t)host.num_ports, sizeof(struct Port));
 	
 	for (uint32_t i=0; i < host.num_ports; ++i)
@@ -127,9 +150,8 @@ main(int argc, char** argv)
 	getc(stdin);
 	printf("\n");
 	
-	/* Deactivate plugin and JACK */
-	slv2_instance_free(host.instance);
-	slv2_plugins_free(world, plugins);
+	/* Deactivate JACK */
+	jack_deactivate(host.jack_client);
 	
 	printf("Shutting down JACK.\n");
 	for (unsigned long i=0; i < host.num_ports; ++i) {
@@ -143,6 +165,16 @@ main(int argc, char** argv)
 	}
 	jack_client_close(host.jack_client);
 	
+	/* Deactivate plugin */
+	slv2_instance_deactivate(host.instance);
+	slv2_instance_free(host.instance);
+	
+	/* Clean up */
+	slv2_value_free(host.input_class);
+	slv2_value_free(host.output_class);
+	slv2_value_free(host.control_class);
+	slv2_value_free(host.audio_class);
+	slv2_value_free(host.midi_class);
 	slv2_plugins_free(world, plugins);
 	slv2_world_free(world);
 
@@ -172,8 +204,6 @@ create_port(struct JackHost* host,
 {
 	struct Port* const port = &host->ports[port_index];
 
-	port->direction   = SLV2_PORT_DIRECTION_UNKNOWN;
-	port->type        = SLV2_PORT_DATA_TYPE_UNKNOWN;
 	port->slv2_port   = slv2_plugin_get_port_by_index(host->plugin, port_index);
 	port->jack_port   = NULL;
 	port->control     = 0.0f;
@@ -184,43 +214,40 @@ create_port(struct JackHost* host,
 	/* Get the port symbol (label) for console printing */
 	char* symbol = slv2_port_get_symbol(host->plugin, port->slv2_port);
 
-	/* Get the direction of the port (input, output) */
-	port->direction = slv2_port_get_direction(host->plugin, port->slv2_port);
-	
-	/* Get the (data) type of the port (control, audio, MIDI, OSC) */
-	port->type = slv2_port_get_data_type(host->plugin, port->slv2_port);
-
-	if (port->type == SLV2_PORT_DATA_TYPE_CONTROL)
-		port->control = slv2_port_get_default_value(host->plugin, port->slv2_port);
-
 	enum JackPortFlags jack_flags = 0;
-	switch (port->direction) {
-		case SLV2_PORT_DIRECTION_INPUT:
-			jack_flags = JackPortIsInput; break;
-		case SLV2_PORT_DIRECTION_OUTPUT:
-			jack_flags = JackPortIsOutput; break;
-		default:
-			// FIXME: check if port connection is is optional and die if not
-			slv2_instance_connect_port(host->instance, port_index, NULL);
-			return;
+	if (slv2_port_is_a(host->plugin, port->slv2_port, host->input_class)) {
+		jack_flags = JackPortIsInput;
+		port->direction = INPUT;
+	} else if (slv2_port_is_a(host->plugin, port->slv2_port, host->output_class)) {
+		jack_flags = JackPortIsOutput;
+		port->direction = OUTPUT;
+	} else if (slv2_port_has_property(host->plugin, port->slv2_port, SLV2_NAMESPACE_LV2 "connectionOptional")) {
+		slv2_instance_connect_port(host->instance, port_index, NULL);
+	} else {
+		die("Mandatory port has unknown type (neither input or output)");
 	}
-
+	
 	/* Set control values */
-	if (port->direction == SLV2_PORT_DIRECTION_INPUT && port->type == SLV2_PORT_DATA_TYPE_CONTROL) {
+	if (slv2_port_is_a(host->plugin, port->slv2_port, host->control_class)) {
+		port->type = CONTROL;
 		port->control = slv2_port_get_default_value(host->plugin, port->slv2_port);
 		printf("Set %s to %f\n", symbol, host->ports[port_index].control);
+	} else if (slv2_port_is_a(host->plugin, port->slv2_port, host->audio_class)) {
+		port->type = AUDIO;
+	} else if (slv2_port_is_a(host->plugin, port->slv2_port, host->midi_class)) {
+		port->type = MIDI;
 	}
 
 	/* Connect the port based on it's type */
 	switch (port->type) {
-		case SLV2_PORT_DATA_TYPE_CONTROL:
+		case CONTROL:
 			slv2_instance_connect_port(host->instance, port_index, &port->control);
 			break;
-		case SLV2_PORT_DATA_TYPE_AUDIO:
+		case AUDIO:
 			port->jack_port = jack_port_register(host->jack_client,
 					symbol, JACK_DEFAULT_AUDIO_TYPE, jack_flags, 0);
 			break;
-		case SLV2_PORT_DATA_TYPE_MIDI:
+		case MIDI:
 			port->jack_port = jack_port_register(host->jack_client,
 					symbol, JACK_DEFAULT_MIDI_TYPE, JackPortIsInput, 0);
 			port->midi_buffer = lv2midi_new(MIDI_BUFFER_SIZE);
@@ -247,16 +274,16 @@ jack_process_cb(jack_nframes_t nframes, void* data)
 		if (!host->ports[p].jack_port)
 			continue;
 
-		if (host->ports[p].type == SLV2_PORT_DATA_TYPE_AUDIO) {
+		if (host->ports[p].type == AUDIO) {
 
 			slv2_instance_connect_port(host->instance, p,
 					jack_port_get_buffer(host->ports[p].jack_port, nframes));
 
-		} else if (host->ports[p].type == SLV2_PORT_DATA_TYPE_MIDI) {
+		} else if (host->ports[p].type == MIDI) {
 
 			lv2midi_reset_buffer(host->ports[p].midi_buffer);
 
-			if (host->ports[p].direction == SLV2_PORT_DIRECTION_INPUT) {
+			if (host->ports[p].direction == INPUT) {
 				void* jack_buffer = jack_port_get_buffer(host->ports[p].jack_port, nframes);
 
 				lv2midi_reset_buffer(host->ports[p].midi_buffer);
@@ -286,8 +313,8 @@ jack_process_cb(jack_nframes_t nframes, void* data)
 	/* Deliver output */
 	for (uint32_t p=0; p < host->num_ports; ++p) {
 		if (host->ports[p].jack_port
-				&& host->ports[p].direction == SLV2_PORT_DIRECTION_OUTPUT
-				&& host->ports[p].type == SLV2_PORT_DATA_TYPE_MIDI) {
+				&& host->ports[p].direction == INPUT
+				&& host->ports[p].type == MIDI) {
 
 			void* jack_buffer = jack_port_get_buffer(host->ports[p].jack_port, nframes);
 

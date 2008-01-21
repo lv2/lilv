@@ -37,6 +37,7 @@ slv2_ui_new(SLV2World   world,
 	assert(binary_uri);
 
 	struct _SLV2UI* ui = malloc(sizeof(struct _SLV2UI));
+	ui->world = world;
 	ui->uri = librdf_new_uri_from_uri(uri);
 	ui->binary_uri = librdf_new_uri_from_uri(binary_uri);
 	
@@ -50,8 +51,7 @@ slv2_ui_new(SLV2World   world,
 	free(bundle);
 
 	ui->types = slv2_values_new();
-	raptor_sequence_push(ui->types, slv2_value_new(SLV2_VALUE_URI,
-				(const char*)librdf_uri_as_string(type_uri)));
+	raptor_sequence_push(ui->types, slv2_value_new_librdf_uri(world, type_uri));
 
 	return ui;
 }
@@ -95,7 +95,7 @@ slv2_ui_get_types(SLV2UI ui)
 bool
 slv2_ui_is_type(SLV2UI ui, const char* type_uri)
 {
-	SLV2Value type = slv2_value_new(SLV2_VALUE_URI, type_uri);
+	SLV2Value type = slv2_value_new(ui->world, SLV2_VALUE_URI, type_uri);
 	bool ret = slv2_values_contains(ui->types, type);
 	slv2_value_free(type);
 	return ret;

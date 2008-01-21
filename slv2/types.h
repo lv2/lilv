@@ -26,7 +26,17 @@ extern "C" {
 #include <stdbool.h>
 #include <stdint.h>
 
+#define SLV2_NAMESPACE_LV2      "http://lv2plug.in/ns/lv2core#"
+#define SLV2_PORT_CLASS_PORT    "http://lv2plug.in/ns/lv2core#Port"
+#define SLV2_PORT_CLASS_INPUT   "http://lv2plug.in/ns/lv2core#InputPort"
+#define SLV2_PORT_CLASS_OUTPUT  "http://lv2plug.in/ns/lv2core#OutputPort"
+#define SLV2_PORT_CLASS_CONTROL "http://lv2plug.in/ns/lv2core#ControlPort"
+#define SLV2_PORT_CLASS_AUDIO   "http://lv2plug.in/ns/lv2core#AudioPort"
+#define SLV2_PORT_CLASS_MIDI    "http://ll-plugins.nongnu.org/lv2/ext/MidiPort"
+#define SLV2_PORT_CLASS_OSC     "http://drobilla.net/ns/lv2ext/osc/0#OSCPort"
+#define SLV2_PORT_CLASS_EVENT   "http://lv2plug.in/ns/ext/event#EventPort"
 
+#if 0
 /** (Data) Type of a port
  *
  * SLV2_PORT_DATA_TYPE_UNKNOWN means the Port is not of any type SLV2
@@ -43,6 +53,7 @@ typedef enum _SLV2PortDataType {
 	SLV2_PORT_DATA_TYPE_EVENT,   /**< Generic event port */
 } SLV2PortDataType;
 
+
 /** Direction (input or output) of a port
  *
  * SLV2_UNKNOWN_PORT_DIRECTION means the Port is only of type lv2:Port
@@ -56,6 +67,7 @@ typedef enum _SLV2PortDirection {
 	SLV2_PORT_DIRECTION_INPUT,   /**< Plugin reads from port when run */
 	SLV2_PORT_DIRECTION_OUTPUT,  /**< Plugin writes to port when run */
 } SLV2PortDirection;
+#endif
 
 
 /** The format of a URI string.

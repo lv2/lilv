@@ -37,8 +37,9 @@ extern "C" {
 
 /** Reference to a port on some plugin. */
 struct _SLV2Port {
-	uint32_t index;  ///< LV2 index
-	char*    symbol; ///< LV2 symbol
+	uint32_t   index;   ///< lv2:index
+	char*      symbol;  ///< lv2:symbol
+	SLV2Values classes; ///< rdf:type
 };
 
 
@@ -62,7 +63,6 @@ struct _SLV2Plugin {
 	librdf_uri*          bundle_uri; ///< Bundle directory plugin was loaded from
 	librdf_uri*          binary_uri; ///< lv2:binary
 	SLV2PluginClass      plugin_class;
-	SLV2Template         templt;
 	raptor_sequence*     data_uris;  ///< rdfs::seeAlso
 	raptor_sequence*     ports;
 	librdf_storage*      storage;
@@ -174,10 +174,11 @@ slv2_world_load_file(SLV2World world, librdf_uri* file_uri);
 /* ********* Plugin UI ********* */
 
 struct _SLV2UI {
-	librdf_uri* uri;
-	librdf_uri* bundle_uri;
-	librdf_uri* binary_uri;
-	SLV2Values  types;
+	struct _SLV2World* world;
+	librdf_uri*        uri;
+	librdf_uri*        bundle_uri;
+	librdf_uri*        binary_uri;
+	SLV2Values         types;
 };
 
 SLV2UIs slv2_uis_new();
@@ -203,36 +204,16 @@ struct _SLV2Value {
 	SLV2ValueType type;
 	char*         str_val; ///< always present
 	union {
-		int   int_val;
-		float float_val;
+		int         int_val;
+		float       float_val;
+		librdf_uri* uri_val;
 	} val;
 };
 
-SLV2Value slv2_value_new(SLV2ValueType type, const char* val);
+SLV2Value slv2_value_new(SLV2World world, SLV2ValueType type, const char* val);
+SLV2Value slv2_value_new_librdf_uri(SLV2World world, librdf_uri* uri);
 
 
-
-/* ********* PortSignature ********* */
-
-struct _SLV2PortSignature {
-	SLV2PortDirection direction;
-	SLV2PortDataType  type;
-};
-
-SLV2PortSignature slv2_port_signature_new(SLV2PortDirection direction,
-                                          SLV2PortDataType  type);
-
-void slv2_port_signature_free(SLV2PortSignature val);
-
-
-/* ********* Template ********* */
-
-SLV2Template slv2_template_new();
-void         slv2_template_free(SLV2Template t);
-void         slv2_template_add_port(SLV2Template t);
-void         slv2_template_port_type(SLV2Template t,
-                                     uint32_t     port_index,
-                                     const char*  type_uri);
 
 #ifdef __cplusplus
 }

@@ -55,7 +55,8 @@ slv2_query_lang_filter(const char* variable)
 #endif
 
 SLV2Values
-slv2_query_get_variable_bindings(librdf_query_results* results,
+slv2_query_get_variable_bindings(SLV2World             world,
+                                 librdf_query_results* results,
                                  int                   variable)
 {
 	SLV2Values result = NULL;
@@ -71,13 +72,14 @@ slv2_query_get_variable_bindings(librdf_query_results* results,
 		librdf_uri* datatype_uri = NULL;
 		SLV2ValueType type = SLV2_VALUE_STRING;
 		
+		librdf_uri* uri_val = NULL;
 		const char* str_val = NULL;
 
 		switch (librdf_node_get_type(node)) {
 		case LIBRDF_NODE_TYPE_RESOURCE:
 			type = SLV2_VALUE_URI;
-			assert(librdf_node_get_uri(node));
-			str_val = (const char*)librdf_uri_as_string(librdf_node_get_uri(node));
+			uri_val = librdf_node_get_uri(node);
+			assert(uri_val);
 			break;
 		case LIBRDF_NODE_TYPE_LITERAL:
 			datatype_uri = librdf_node_get_literal_value_datatype_uri(node);
@@ -102,8 +104,10 @@ slv2_query_get_variable_bindings(librdf_query_results* results,
 			break;
 		}
 			
-		if (str_val)
-			raptor_sequence_push(result, slv2_value_new(type, str_val));
+		if (uri_val)
+			raptor_sequence_push(result, slv2_value_new_librdf_uri(world, uri_val));
+		else if (str_val)
+			raptor_sequence_push(result, slv2_value_new(world, type, str_val));
 
 		librdf_free_node(node);
 
@@ -168,7 +172,7 @@ slv2_plugin_simple_query(SLV2Plugin  plugin,
 
 	librdf_query_results* results = slv2_plugin_query(plugin, sparql_str);
 
-	SLV2Values ret = slv2_query_get_variable_bindings(results, (int)variable);
+	SLV2Values ret = slv2_query_get_variable_bindings(plugin->world, results, (int)variable);
 	
 	librdf_free_query_results(results);
 
