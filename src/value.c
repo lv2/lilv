@@ -50,9 +50,9 @@ slv2_value_new(SLV2World world, SLV2ValueType type, const char* str)
 		struct lconv* locale = localeconv();
 		if (locale->decimal_point && strcmp(locale->decimal_point, ".")) {
 			assert(strlen(locale->decimal_point) == 1);
-			char* dec = strchr(str, locale->decimal_point[0]);
+			char* dec = strchr(str, '.');
 			if (dec)
-				*dec = '.';
+				*dec = locale->decimal_point[0];
 		}
 	}
 
