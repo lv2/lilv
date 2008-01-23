@@ -21,6 +21,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <slv2/slv2.h>
+#include <locale.h>
 
 SLV2Value event_class   = NULL;
 SLV2Value control_class = NULL;
@@ -200,6 +201,8 @@ print_usage()
 int
 main(int argc, char** argv)
 {
+	setlocale (LC_ALL, "");
+
 	SLV2World world = slv2_world_new();
 	slv2_world_load_all(world);
 
