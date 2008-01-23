@@ -91,8 +91,8 @@ AC_ARG_ENABLE(strict,
 	[AS_HELP_STRING(--enable-strict, [Enable strict compiler warnings and errors (false)])],
 	[strict="$enableval"])
 if test "$strict" = "yes"; then
-  CFLAGS="$CFLAGS -std=c99 -pedantic -Wall -Wextra -Winit-self"
-  CXXFLAGS="$CFLAGS -ansi -pedantic -Wall -Wextra -Wconversion -Winit-self"
+  CFLAGS="$CFLAGS -std=c99 -pedantic -Wall -Wextra -Winit-self -Wno-unused-parameter"
+  CXXFLAGS="$CFLAGS -ansi -pedantic -Wall -Wextra -Wconversion -Winit-self -Wno-unused-parameter"
 fi
 
 # SWIG bindings

@@ -36,23 +36,6 @@ static const char* slv2_query_prefixes =
 	"PREFIX lv2:    <http://lv2plug.in/ns/lv2core#>\n"
 	"PREFIX lv2ev:  <http://lv2plug.in/ns/ext/event#>\n";
 
-#if 0
-char*
-slv2_query_lang_filter(const char* variable)
-{
-	char* result = NULL;
-	char* const lang = (char*)getenv("LANG");
-	if (lang) {
-		// FILTER( LANG(?value) = "en" || LANG(?value) = "" )
-		result = slv2_strjoin(
-			//"FILTER (lang(?value) = \"", lang, "\"\n"), 0);
-			"FILTER( lang(?", variable, ") = \"", lang, 
-			"\" || lang(?", variable, ") = \"\" )\n", NULL);
-	}
-
-	return result;
-}
-#endif
 
 SLV2Values
 slv2_query_get_variable_bindings(SLV2World             world,
@@ -186,6 +169,9 @@ slv2_plugin_simple_query(SLV2Plugin  plugin,
  *
  * More efficient than slv2_plugin_simple_query if you're only interested
  * in the number of results (ie slv2_plugin_num_ports).
+ * 
+ * Note the result of this function is probably meaningless unless the query
+ * is a SELECT DISTINCT.
  */
 unsigned
 slv2_plugin_query_count(SLV2Plugin  plugin,
@@ -203,31 +189,3 @@ slv2_plugin_query_count(SLV2Plugin  plugin,
 	return ret;
 }
 
-/*
-size_t
-slv2_query_count_results(SLV2Plugin  p,
-                         const char* query)
-{
-	char* query_str = slv2_strjoin(slv2_query_prefixes, query, NULL);
-
-	assert(p);
-	assert(query_str);
-
-	librdf_query *rq = librdf_new_query(p->world->world, "sparql", NULL,
-			(unsigned char*)query_str, NULL);
-
-	//printf("Query: \n%s\n\n", query_str);
-
-	librdf_query_results* results = librdf_query_execute(rq, p->world->model);
-	assert(results);
-	
-	size_t count = slv2_query_count_bindings(results);
-	
-	librdf_free_query_results(results);
-	librdf_free_query(rq);
-	
-	free(query_str);
-
-	return count;
-}
-*/
