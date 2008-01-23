@@ -68,6 +68,8 @@ slv2_query_get_variable_bindings(SLV2World             world,
 
         librdf_node* node =
             librdf_query_results_get_binding_value(results, variable);
+
+		assert(node);
 		
 		librdf_uri* datatype_uri = NULL;
 		SLV2ValueType type = SLV2_VALUE_STRING;
