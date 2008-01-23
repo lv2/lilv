@@ -23,7 +23,6 @@
 extern "C" {
 #endif
 
-#include <stdbool.h>
 #include <stdint.h>
 
 #define SLV2_NAMESPACE_LV2      "http://lv2plug.in/ns/lv2core#"
@@ -35,39 +34,6 @@ extern "C" {
 #define SLV2_PORT_CLASS_MIDI    "http://ll-plugins.nongnu.org/lv2/ext/MidiPort"
 #define SLV2_PORT_CLASS_OSC     "http://drobilla.net/ns/lv2ext/osc/0#OSCPort"
 #define SLV2_PORT_CLASS_EVENT   "http://lv2plug.in/ns/ext/event#EventPort"
-
-#if 0
-/** (Data) Type of a port
- *
- * SLV2_PORT_DATA_TYPE_UNKNOWN means the Port is not of any type SLV2
- * understands.  This does not mean the port is unusable with slv2
- * however:further class information can be using
- * slv2_port_get_value(p, "rdf:type") or a custom query.
- */
-typedef enum _SLV2PortDataType {
-	SLV2_PORT_DATA_TYPE_UNKNOWN,
-	SLV2_PORT_DATA_TYPE_CONTROL, /**< One float per block */
-	SLV2_PORT_DATA_TYPE_AUDIO,   /**< One float per frame */
-	SLV2_PORT_DATA_TYPE_MIDI,    /**< DEPRECATED: A buffer of MIDI data (LL extension) */
-	SLV2_PORT_DATA_TYPE_OSC,     /**< DEPRECATED: A buffer of OSC data (DR extension) */
-	SLV2_PORT_DATA_TYPE_EVENT,   /**< Generic event port */
-} SLV2PortDataType;
-
-
-/** Direction (input or output) of a port
- *
- * SLV2_UNKNOWN_PORT_DIRECTION means the Port is only of type lv2:Port
- * (neither lv2:Input or lv2:Output) as far as SLV2 understands.
- *
- * Further class information can be using slv2_port_get_value(p, "rdf:type")
- * or a custom query.
- */
-typedef enum _SLV2PortDirection {
-	SLV2_PORT_DIRECTION_UNKNOWN, /**< Neither input or output */
-	SLV2_PORT_DIRECTION_INPUT,   /**< Plugin reads from port when run */
-	SLV2_PORT_DIRECTION_OUTPUT,  /**< Plugin writes to port when run */
-} SLV2PortDirection;
-#endif
 
 
 /** The format of a URI string.
