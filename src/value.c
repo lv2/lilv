@@ -21,6 +21,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
+#include <locale.h>
 #include <raptor.h>
 #include <slv2/value.h>
 #include "slv2_internal.h"
@@ -41,6 +42,18 @@ slv2_value_new(SLV2World world, SLV2ValueType type, const char* str)
 			return NULL;
 	} else {
 		val->str_val = strdup(str);
+	}
+	
+	/* Kludge decimal point to '.' for people in crazy locales that use ',' */
+	/* TODO: librdf should probably provide this... */
+	if (type == SLV2_VALUE_INT || type == SLV2_VALUE_FLOAT) {
+		struct lconv* locale = localeconv();
+		if (locale->decimal_point && strcmp(locale->decimal_point, ".")) {
+			assert(strlen(locale->decimal_point) == 1);
+			char* dec = strchr(str, locale->decimal_point[0]);
+			if (dec)
+				*dec = '.';
+		}
 	}
 
 	if (type == SLV2_VALUE_INT) {

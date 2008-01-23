@@ -203,6 +203,9 @@ main(int argc, char** argv)
 	SLV2World world = slv2_world_new();
 	slv2_world_load_all(world);
 
+	event_class = slv2_value_new_uri(world, SLV2_PORT_CLASS_EVENT);
+	control_class = slv2_value_new_uri(world, SLV2_PORT_CLASS_CONTROL);
+
 	if (argc != 2) {
 		print_usage();
 		return -1;
