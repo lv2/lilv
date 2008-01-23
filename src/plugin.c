@@ -220,8 +220,6 @@ slv2_plugin_load(SLV2Plugin p)
 		assert(librdf_node_is_literal(symbol_node));
 		assert(librdf_node_is_literal(index_node));
 
-		//const char* id = (const char*)librdf_node_get_blank_identifier(port_node);
-		//const char* type = (const char*)librdf_uri_as_string(librdf_node_get_uri(type_node));
 		const char* symbol = (const char*)librdf_node_get_literal_value(symbol_node);
 		const char* index = (const char*)librdf_node_get_literal_value(index_node);
 
@@ -328,7 +326,6 @@ slv2_plugin_verify(SLV2Plugin plugin)
 		librdf_node* type_node = librdf_query_results_get_binding_value(results, 0);
 		const char* const type_str = (const char*)librdf_node_get_literal_value(type_node);
 		librdf_node* name_node = librdf_query_results_get_binding_value(results, 1);
-		//const char* const name = (const char*)librdf_node_get_literal_value(name_node);
 		librdf_node* license_node = librdf_query_results_get_binding_value(results, 2);
 		librdf_node* port_node = librdf_query_results_get_binding_value(results, 3);
 
