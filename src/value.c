@@ -44,25 +44,22 @@ slv2_value_new(SLV2World world, SLV2ValueType type, const char* str)
 		val->str_val = strdup(str);
 	}
 	
-	/* Kludge decimal point to '.' for people in crazy locales that use ',' */
-	/* TODO: librdf should probably provide this... */
-	if (type == SLV2_VALUE_INT || type == SLV2_VALUE_FLOAT) {
-		struct lconv* locale = localeconv();
-		if (locale->decimal_point && strcmp(locale->decimal_point, ".")) {
-			assert(strlen(locale->decimal_point) == 1);
-			char* dec = strchr(str, '.');
-			if (dec)
-				*dec = locale->decimal_point[0];
-		}
-	}
+	// FIXME: locale kludges to work around librdf bug
+	char* locale = strdup(setlocale(LC_NUMERIC, NULL));
 
 	if (type == SLV2_VALUE_INT) {
 		char* endptr = 0;
+		setlocale(LC_NUMERIC, "POSIX");
 		val->val.int_val = strtol(str, &endptr, 10);
+		setlocale(LC_NUMERIC, locale);
 	} else if (type == SLV2_VALUE_FLOAT) {
 		char* endptr = 0;
+		setlocale(LC_NUMERIC, "POSIX");
 		val->val.float_val = strtod(str, &endptr);
+		setlocale(LC_NUMERIC, locale);
 	}
+
+	free(locale);
 
 	return val;
 }
@@ -148,6 +145,9 @@ slv2_value_get_turtle_token(SLV2Value value)
 {
 	size_t len    = 0;
 	char*  result = NULL;
+	char*  locale = strdup(setlocale(LC_NUMERIC, NULL));
+		
+	// FIXME: locale kludges to work around librdf bug
 
 	switch (value->type) {
 	case SLV2_VALUE_URI:
@@ -162,14 +162,20 @@ slv2_value_get_turtle_token(SLV2Value value)
 	    // INT64_MAX is 9223372036854775807 (19 digits) + 1 for sign
 		len = 20;
 		result = calloc(len, sizeof(char));
+		setlocale(LC_NUMERIC, "POSIX");
 		snprintf(result, len, "%d", value->val.int_val);
+		setlocale(LC_NUMERIC, locale);
 		break;
 	case SLV2_VALUE_FLOAT:
 		len = 20; // FIXME: proper maximum value?
 		result = calloc(len, sizeof(char));
+		setlocale(LC_NUMERIC, "POSIX");
 		snprintf(result, len, ".1%f", value->val.float_val);
+		setlocale(LC_NUMERIC, locale);
 		break;
 	}
+
+	free(locale);
 	
 	return result;
 }

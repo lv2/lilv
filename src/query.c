@@ -21,6 +21,7 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <librdf.h>
+#include <locale.h>
 #include <limits.h>
 #include <slv2/plugin.h>
 #include <slv2/util.h>
@@ -52,7 +53,11 @@ slv2_query_get_variable_bindings(SLV2World             world,
         librdf_node* node =
             librdf_query_results_get_binding_value(results, variable);
 
-		assert(node);
+		if (!node) {
+			fprintf(stderr, "SLV2 ERROR: Variable %d bound to NULL.\n", variable);
+        	librdf_query_results_next(results);
+			continue;
+		}
 		
 		librdf_uri* datatype_uri = NULL;
 		SLV2ValueType type = SLV2_VALUE_STRING;
@@ -138,7 +143,14 @@ slv2_plugin_query(SLV2Plugin  plugin,
 		return NULL;
 	}
 	
+	// FIXME: locale kludges to work around librdf bug
+	char* locale = strdup(setlocale(LC_NUMERIC, NULL));
+
+	setlocale(LC_NUMERIC, "POSIX");
 	librdf_query_results* results = librdf_query_execute(query, plugin->rdf);
+	setlocale(LC_NUMERIC, locale);
+	
+	free(locale);
 	
 	librdf_free_query(query);
 	free(query_str);

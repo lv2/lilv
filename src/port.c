@@ -139,7 +139,7 @@ slv2_port_get_value(SLV2Plugin  p,
 
 	char* query = slv2_strjoin(
 			"SELECT DISTINCT ?value WHERE {\n"
-			"<", librdf_uri_as_string(p->plugin_uri), "> lv2:port ?port ."
+			"<", librdf_uri_as_string(p->plugin_uri), "> lv2:port ?port .\n"
 			"?port lv2:symbol \"", port->symbol, "\";\n\t",
 			       property, " ?value .\n}", NULL);
 			
