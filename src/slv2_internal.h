@@ -178,7 +178,7 @@ struct _SLV2UI {
 	librdf_uri*        uri;
 	librdf_uri*        bundle_uri;
 	librdf_uri*        binary_uri;
-	SLV2Values         types;
+	SLV2Values         classes;
 };
 
 SLV2UIs slv2_uis_new();

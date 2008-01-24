@@ -50,8 +50,8 @@ slv2_ui_new(SLV2World   world,
 	ui->bundle_uri = librdf_new_uri(world->world, (const unsigned char*)bundle);
 	free(bundle);
 
-	ui->types = slv2_values_new();
-	raptor_sequence_push(ui->types, slv2_value_new_librdf_uri(world, type_uri));
+	ui->classes = slv2_values_new();
+	raptor_sequence_push(ui->classes, slv2_value_new_librdf_uri(world, type_uri));
 
 	return ui;
 }
@@ -70,7 +70,7 @@ slv2_ui_free(SLV2UI ui)
 	librdf_free_uri(ui->binary_uri);
 	ui->binary_uri = NULL;
 
-	slv2_values_free(ui->types);
+	slv2_values_free(ui->classes);
 	
 	free(ui);
 }
@@ -86,17 +86,17 @@ slv2_ui_get_uri(SLV2UI ui)
 
 
 SLV2Values
-slv2_ui_get_types(SLV2UI ui)
+slv2_ui_get_classes(SLV2UI ui)
 {
-	return ui->types;
+	return ui->classes;
 }
 
 
 bool
-slv2_ui_is_type(SLV2UI ui, const char* type_uri)
+slv2_ui_is_a(SLV2UI ui, const char* type_uri)
 {
 	SLV2Value type = slv2_value_new(ui->world, SLV2_VALUE_URI, type_uri);
-	bool ret = slv2_values_contains(ui->types, type);
+	bool ret = slv2_values_contains(ui->classes, type);
 	slv2_value_free(type);
 	return ret;
 }

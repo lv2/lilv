@@ -113,9 +113,9 @@ print_plugin(SLV2Plugin p)
 
 			const char* binary = slv2_ui_get_binary_uri(ui);
 			
-			SLV2Values types = slv2_ui_get_types(ui);
+			SLV2Values types = slv2_ui_get_classes(ui);
 			for (unsigned i=0; i < slv2_values_size(types); ++i) {
-				printf("\t\t\tType:   %s\n", slv2_value_as_uri(slv2_values_get_at(types, i)));
+				printf("\t\t\tClass:   %s\n", slv2_value_as_uri(slv2_values_get_at(types, i)));
 			}
 	
 			if (binary)

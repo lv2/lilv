@@ -45,7 +45,7 @@ slv2_ui_get_uri(SLV2UI ui);
  * Time = O(1)
  */
 SLV2Values
-slv2_ui_get_types(SLV2UI ui);
+slv2_ui_get_classes(SLV2UI ui);
 
 
 /** Check whether a plugin UI is a given type.
@@ -56,7 +56,7 @@ slv2_ui_get_types(SLV2UI ui);
  * Time = O(1)
  */
 bool
-slv2_ui_is_type(SLV2UI ui, const char* type_uri);
+slv2_ui_is_a(SLV2UI ui, const char* type_uri);
 	
 
 /** Get the URI for a Plugin UI's bundle.
