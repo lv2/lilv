@@ -25,23 +25,11 @@
 #include <slv2/util.h>
 
 
-void
-slv2_strappend(char** dst, const char* suffix)
-{
-	assert(dst);
-	assert(*dst);
-	assert(suffix);
-
-	const size_t new_length = strlen((char*)*dst) + strlen((char*)suffix) + 1;
-	*dst = realloc(*dst, (new_length * sizeof(char)));
-	assert(dst);
-	strcat((char*)*dst, (char*)suffix);
-}
-
-
 char*
 slv2_strjoin(const char* first, ...)
 {
+	/* FIXME: This is, in fact, as stupid as it looks */
+
 	size_t  len    = strlen(first);
 	char*   result = NULL;
 	va_list args;

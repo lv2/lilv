@@ -38,12 +38,12 @@ extern "C" {
 /** Reference to a port on some plugin. */
 struct _SLV2Port {
 	uint32_t   index;   ///< lv2:index
-	char*      symbol;  ///< lv2:symbol
+	SLV2Value  symbol;  ///< lv2:symbol
 	SLV2Values classes; ///< rdf:type
 };
 
 
-SLV2Port slv2_port_new(uint32_t index, const char* symbol);
+SLV2Port slv2_port_new(SLV2World world, uint32_t index, const char* symbol);
 SLV2Port slv2_port_duplicate(SLV2Port port);
 void     slv2_port_free(SLV2Port port);
 
@@ -59,9 +59,9 @@ void     slv2_port_free(SLV2Port port);
  */
 struct _SLV2Plugin {
 	struct _SLV2World*   world;
-	librdf_uri*          plugin_uri;
-	librdf_uri*          bundle_uri; ///< Bundle directory plugin was loaded from
-	librdf_uri*          binary_uri; ///< lv2:binary
+	SLV2Value            plugin_uri;
+	SLV2Value            bundle_uri; ///< Bundle directory plugin was loaded from
+	SLV2Value            binary_uri; ///< lv2:binary
 	SLV2PluginClass      plugin_class;
 	raptor_sequence*     data_uris;  ///< rdfs::seeAlso
 	raptor_sequence*     ports;
@@ -69,7 +69,7 @@ struct _SLV2Plugin {
 	librdf_model*        rdf;
 };
 
-SLV2Plugin slv2_plugin_new(SLV2World world, librdf_uri* uri, librdf_uri* bundle_uri, librdf_uri* binary_uri);
+SLV2Plugin slv2_plugin_new(SLV2World world, SLV2Value uri, librdf_uri* bundle_uri, librdf_uri* binary_uri);
 void       slv2_plugin_load(SLV2Plugin p);
 void       slv2_plugin_free(SLV2Plugin plugin);
 
@@ -113,13 +113,13 @@ struct _SLV2UIInstanceImpl {
 
 struct _SLV2PluginClass {
 	struct _SLV2World* world;
-	librdf_uri*        parent_uri;
-	librdf_uri*        uri;
-	char*              label;
+	SLV2Value          parent_uri;
+	SLV2Value          uri;
+	SLV2Value          label;
 };
 
-SLV2PluginClass slv2_plugin_class_new(SLV2World world, const char* parent_uri,
-                                      const char* uri, const char* label);
+SLV2PluginClass slv2_plugin_class_new(SLV2World world, librdf_uri* parent_uri,
+                                      librdf_uri* uri, const char* label);
 void slv2_plugin_class_free(SLV2PluginClass plugin_class);
 
 
@@ -148,6 +148,8 @@ struct _SLV2World {
 	librdf_node*      lv2_specification_node;
 	librdf_node*      lv2_plugin_node;
 	librdf_node*      rdf_a_node;
+	librdf_node*      xsd_integer_node;
+	librdf_node*      xsd_decimal_node;
 };
 
 /** Load all bundles found in \a search_path.
@@ -175,9 +177,9 @@ slv2_world_load_file(SLV2World world, librdf_uri* file_uri);
 
 struct _SLV2UI {
 	struct _SLV2World* world;
-	librdf_uri*        uri;
-	librdf_uri*        bundle_uri;
-	librdf_uri*        binary_uri;
+	SLV2Value          uri;
+	SLV2Value          bundle_uri;
+	SLV2Value          binary_uri;
 	SLV2Values         classes;
 };
 
@@ -195,6 +197,7 @@ void slv2_ui_free(SLV2UI ui);
 
 typedef enum _SLV2ValueType {
 	SLV2_VALUE_URI,
+	SLV2_VALUE_QNAME,
 	SLV2_VALUE_STRING,
 	SLV2_VALUE_INT,
 	SLV2_VALUE_FLOAT,
@@ -210,9 +213,21 @@ struct _SLV2Value {
 	} val;
 };
 
-SLV2Value slv2_value_new(SLV2World world, SLV2ValueType type, const char* val);
-SLV2Value slv2_value_new_librdf_uri(SLV2World world, librdf_uri* uri);
+SLV2Value   slv2_value_new(SLV2World world, SLV2ValueType type, const char* val);
+SLV2Value   slv2_value_new_librdf_node(SLV2World world, librdf_node* node);
+SLV2Value   slv2_value_new_librdf_uri(SLV2World world, librdf_uri* uri);
+void        slv2_value_set_numerics_from_string(SLV2Value val);
+librdf_uri* slv2_value_as_librdf_uri(SLV2Value value);
 
+	
+/* ********* Values ********* */
+
+void slv2_values_set_at(SLV2Values list, unsigned index, void* value);
+
+
+/* String utility functions */
+
+char* slv2_strjoin(const char* first, ...);
 
 
 #ifdef __cplusplus

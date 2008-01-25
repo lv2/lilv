@@ -36,23 +36,8 @@ extern "C" {
 #define SLV2_PORT_CLASS_EVENT   "http://lv2plug.in/ns/ext/event#EventPort"
 
 
-/** The format of a URI string.
- *
- * Full URI: http://example.org/foo
- * QName: lv2:Plugin
- */
-typedef enum _SLV2URIType {
-	SLV2_URI,
-	SLV2_QNAME
-} SLV2URIType;
-
-
 /** A port on a plugin.  Opaque, but valid to compare to NULL. */
 typedef struct _SLV2Port* SLV2Port;
-
-
-/** The port (I/O) signature of a plugin.  Opaque, but valid to compare to NULL. */
-typedef struct _SLV2PortSignature* SLV2PortSignature;
 
 
 /** A plugin.  Opaque, but valid to compare to NULL. */
@@ -77,10 +62,6 @@ typedef void* SLV2PluginClasses;
 
 /** A typed value */
 typedef struct _SLV2Value* SLV2Value;
-
-
-/** A plugin template (collection of port signatures). */
-typedef void* SLV2Template;
 
 
 /** A collection of typed values. */

@@ -48,7 +48,7 @@ slv2_ui_instantiate(SLV2Plugin                     plugin,
 		((LV2_Feature**)features)[0] = NULL;
 	}
 	
-	const char* const lib_uri = slv2_ui_get_binary_uri(ui);
+	const char* const lib_uri = slv2_value_as_string(slv2_ui_get_binary_uri(ui));
 	const char* const lib_path = slv2_uri_to_path(lib_uri);
 	
 	if (!lib_path)
@@ -70,7 +70,7 @@ slv2_ui_instantiate(SLV2Plugin                     plugin,
 		return NULL;
 	} else {
 		
-		const char* bundle_path = slv2_uri_to_path(slv2_ui_get_bundle_uri(ui));
+		const char* bundle_path = slv2_uri_to_path(slv2_value_as_uri(slv2_ui_get_bundle_uri(ui)));
 		
 		for (uint32_t i=0; 1; ++i) {
 			
@@ -78,16 +78,15 @@ slv2_ui_instantiate(SLV2Plugin                     plugin,
 				
 			if (!ld) {
 				fprintf(stderr, "Did not find UI %s in %s\n",
-						slv2_ui_get_uri(ui), lib_path);
+						slv2_value_as_uri(slv2_ui_get_uri(ui)), lib_path);
 				dlclose(lib);
 				break; // return NULL
-			} else if (!strcmp(ld->URI, slv2_ui_get_uri(ui))) {
-
+			} else if (!strcmp(ld->URI, slv2_value_as_uri(slv2_ui_get_uri(ui)))) {
 	
 				assert(plugin->plugin_uri);
 
 				printf("Found UI %s at index %u in:\n\t%s\n\n",
-				       librdf_uri_as_string(plugin->plugin_uri), i, lib_path);
+				       slv2_value_as_uri(plugin->plugin_uri), i, lib_path);
 
 				assert(ld->instantiate);
 
@@ -96,7 +95,7 @@ slv2_ui_instantiate(SLV2Plugin                     plugin,
 				struct _SLV2UIInstanceImpl* impl = malloc(sizeof(struct _SLV2UIInstanceImpl));
 				impl->lv2ui_descriptor = ld;
 				impl->lv2ui_handle = ld->instantiate(ld, 
-						slv2_plugin_get_uri(plugin),
+						slv2_value_as_uri(slv2_plugin_get_uri(plugin)),
 						(char*)bundle_path, 
 						write_function,
 						controller,

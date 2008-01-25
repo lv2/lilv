@@ -30,6 +30,8 @@ extern "C" {
 
 typedef struct _InstanceImpl* SLV2InstanceImpl;
 
+/** \cond IGNORE */
+
 /* Instance of a plugin.
  *
  * The LV2 descriptor and handle of this are exposed to allow inlining of
@@ -43,6 +45,8 @@ typedef struct _Instance {
 	LV2_Handle            lv2_handle;
 	SLV2InstanceImpl      pimpl; ///< Private implementation
 }* SLV2Instance;
+
+/** \endcond */
 
 
 /** \defgroup slv2_library Plugin library access
@@ -147,7 +151,7 @@ slv2_instance_run(SLV2Instance instance,
 	assert(instance->lv2_descriptor);
 	assert(instance->lv2_handle);
 
-	if (instance->lv2_descriptor->run)
+	/*if (instance->lv2_descriptor->run)*/
 		instance->lv2_descriptor->run(instance->lv2_handle, sample_count);
 }
 

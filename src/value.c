@@ -43,24 +43,77 @@ slv2_value_new(SLV2World world, SLV2ValueType type, const char* str)
 	} else {
 		val->str_val = strdup(str);
 	}
-	
+
+	slv2_value_set_numerics_from_string(val);
+
+	return val;
+}
+
+
+/* private */
+void
+slv2_value_set_numerics_from_string(SLV2Value val)
+{
+	if (!val)
+		return;
+
 	// FIXME: locale kludges to work around librdf bug
 	char* locale = strdup(setlocale(LC_NUMERIC, NULL));
 
-	if (type == SLV2_VALUE_INT) {
+	if (val->type == SLV2_VALUE_INT) {
 		char* endptr = 0;
 		setlocale(LC_NUMERIC, "POSIX");
-		val->val.int_val = strtol(str, &endptr, 10);
+		val->val.int_val = strtol(val->str_val, &endptr, 10);
 		setlocale(LC_NUMERIC, locale);
-	} else if (type == SLV2_VALUE_FLOAT) {
+	} else if (val->type == SLV2_VALUE_FLOAT) {
 		char* endptr = 0;
 		setlocale(LC_NUMERIC, "POSIX");
-		val->val.float_val = strtod(str, &endptr);
+		val->val.float_val = strtod(val->str_val, &endptr);
 		setlocale(LC_NUMERIC, locale);
 	}
-
+	
 	free(locale);
+}
 
+
+/* private */
+SLV2Value
+slv2_value_new_librdf_node(SLV2World world, librdf_node* node)
+{
+	SLV2Value val = (SLV2Value)malloc(sizeof(struct _SLV2Value));
+	val->type = SLV2_VALUE_STRING;
+	val->str_val = NULL;
+	
+	librdf_uri* datatype_uri = NULL;
+
+	switch (librdf_node_get_type(node)) {
+	case LIBRDF_NODE_TYPE_RESOURCE:
+		val->type = SLV2_VALUE_URI;
+		val->val.uri_val = librdf_node_get_uri(node);
+		val->str_val = (char*)librdf_uri_as_string(val->val.uri_val);
+		break;
+	case LIBRDF_NODE_TYPE_LITERAL:
+		datatype_uri = librdf_node_get_literal_value_datatype_uri(node);
+		if (datatype_uri) {
+			if (librdf_uri_equals(datatype_uri, librdf_node_get_uri(world->xsd_integer_node)))
+				val->type = SLV2_VALUE_INT;
+			else if (librdf_uri_equals(datatype_uri, librdf_node_get_uri(world->xsd_decimal_node)))
+				val->type = SLV2_VALUE_FLOAT;
+			else
+				fprintf(stderr, "Unknown datatype %s\n", librdf_uri_as_string(datatype_uri));
+		}
+		val->str_val = strdup((char*)librdf_node_get_literal_value(node));
+		break;
+	case LIBRDF_NODE_TYPE_BLANK:
+	case LIBRDF_NODE_TYPE_UNKNOWN:
+	default:
+		fprintf(stderr, "slv2_value_new_librdf_node error: Unknown node type.");
+		free(val);
+		val = NULL;
+		break;
+	}
+	
+	slv2_value_set_numerics_from_string(val);
 	return val;
 }
 
@@ -76,7 +129,7 @@ slv2_value_new_librdf_uri(SLV2World world, librdf_uri* uri)
 	return val;
 }
 
-	
+
 SLV2Value
 slv2_value_new_uri(SLV2World world, const char* uri)
 {
@@ -92,6 +145,7 @@ slv2_value_duplicate(SLV2Value val)
 
 	if (val->type == SLV2_VALUE_URI) {
 		result->val.uri_val = librdf_new_uri_from_uri(val->val.uri_val);
+		result->str_val = (char*)librdf_uri_as_string(val->val.uri_val);
 	} else {
 		result->str_val = strdup(val->str_val);
 		result->val = val->val;
@@ -128,6 +182,7 @@ slv2_value_equals(SLV2Value value, SLV2Value other)
 	switch (value->type) {
 	case SLV2_VALUE_URI:
 		return (librdf_uri_equals(value->val.uri_val, other->val.uri_val) != 0);
+	case SLV2_VALUE_QNAME:
 	case SLV2_VALUE_STRING:
 		return ! strcmp(value->str_val, other->str_val);
 	case SLV2_VALUE_INT:
@@ -155,6 +210,7 @@ slv2_value_get_turtle_token(SLV2Value value)
 		result = calloc(len, sizeof(char));
 		snprintf(result, len, "<%s>", value->str_val);
 		break;
+	case SLV2_VALUE_QNAME:
 	case SLV2_VALUE_STRING:
 		result = strdup(value->str_val);
 		break;
@@ -184,7 +240,7 @@ slv2_value_get_turtle_token(SLV2Value value)
 bool
 slv2_value_is_uri(SLV2Value value)
 {
-	return (value->type == SLV2_VALUE_URI);
+	return (value && value->type == SLV2_VALUE_URI);
 }
 
 
@@ -195,19 +251,28 @@ slv2_value_as_uri(SLV2Value value)
 	return value->str_val;
 }
 
+	
+/* private */
+librdf_uri*
+slv2_value_as_librdf_uri(SLV2Value value)
+{
+	assert(slv2_value_is_uri(value));
+	return value->val.uri_val;
+}
+
 
 bool
 slv2_value_is_literal(SLV2Value value)
 {
 	// No blank nodes
-	return (value->type != SLV2_VALUE_URI);
+	return (value && value->type != SLV2_VALUE_URI);
 }
 
 
 bool
 slv2_value_is_string(SLV2Value value)
 {
-	return (value->type == SLV2_VALUE_STRING);
+	return (value && value->type == SLV2_VALUE_STRING);
 }
 
 
@@ -221,13 +286,14 @@ slv2_value_as_string(SLV2Value value)
 bool
 slv2_value_is_int(SLV2Value value)
 {
-	return (value->type == SLV2_VALUE_INT);
+	return (value && value->type == SLV2_VALUE_INT);
 }
 
 
 int
 slv2_value_as_int(SLV2Value value)
 {
+	assert(value);
 	assert(slv2_value_is_int(value));
 	return value->val.int_val;
 }
@@ -236,7 +302,7 @@ slv2_value_as_int(SLV2Value value)
 bool
 slv2_value_is_float(SLV2Value value)
 {
-	return (value->type == SLV2_VALUE_FLOAT);
+	return (value && value->type == SLV2_VALUE_FLOAT);
 }
 
 

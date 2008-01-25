@@ -16,6 +16,7 @@
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+#define _XOPEN_SOURCE 500
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -68,9 +69,9 @@ main(int argc, char** argv)
 	SLV2Plugins plugins = slv2_world_get_all_plugins(host.world);
 
 	/* Find the plugin to run */
-	const char* plugin_uri = (argc == 2) ? argv[1] : NULL;
+	const char* plugin_uri_str = (argc == 2) ? argv[1] : NULL;
 	
-	if (!plugin_uri) {
+	if (!plugin_uri_str) {
 		fprintf(stderr, "\nYou must specify a plugin URI to load.\n");
 		fprintf(stderr, "\nKnown plugins:\n\n");
 		list_plugins(plugins);
@@ -78,22 +79,38 @@ main(int argc, char** argv)
 		return EXIT_FAILURE;
 	}
 
-	printf("URI:\t%s\n", plugin_uri);
+	printf("URI:\t%s\n", plugin_uri_str);
+	SLV2Value plugin_uri = slv2_value_new_uri(host.world, plugin_uri_str);
 	host.plugin = slv2_plugins_get_by_uri(plugins, plugin_uri);
+	slv2_value_free(plugin_uri);
 	
 	if (!host.plugin) {
-		fprintf(stderr, "Failed to find plugin %s.\n", plugin_uri);
+		fprintf(stderr, "Failed to find plugin %s.\n", plugin_uri_str);
 		slv2_world_free(host.world);
 		return EXIT_FAILURE;
 	}
 
 	/* Get the plugin's name */
-	char* name = slv2_plugin_get_name(host.plugin);
-	printf("Name:\t%s\n", name);
+	SLV2Value name = slv2_plugin_get_name(host.plugin);
+	const char* name_str = slv2_value_as_string(name);
+	printf("Plugin Name:\t%s\n", slv2_value_as_string(name));
+
+	/* Truncate plugin name to suit JACK (if necessary) */
+	char* jack_name = NULL;
+	if (strlen(name_str) >= (unsigned)jack_client_name_size() - 1) {
+		jack_name = calloc(jack_client_name_size(), sizeof(char));
+		strncpy(jack_name, name_str, jack_client_name_size() - 1);
+	} else {
+		jack_name = strdup(name_str);
+	}
+
+	/* Connect to JACK */
+	printf("JACK Name:\t%s\n", name_str);
+	host.jack_client = jack_client_open(jack_name, JackNullOption, NULL);
 	
-	/* Connect to JACK (with plugin name as client name) */
-	host.jack_client = jack_client_open(name, JackNullOption, NULL);
-	free(name);
+	free(jack_name);
+	slv2_value_free(name);
+
 	if (!host.jack_client)
 		die("Failed to connect to JACK.");
 	else
@@ -176,7 +193,8 @@ create_port(struct JackHost* host,
 	SLV2Port port = slv2_plugin_get_port_by_index(host->plugin, index);
 
 	/* Get the port symbol (label) for console printing */
-	char* symbol = slv2_port_get_symbol(host->plugin, port);
+	SLV2Value symbol       = slv2_port_get_symbol(host->plugin, port);
+	const char* symbol_str = slv2_value_as_string(symbol);
 	
 	/* Initialize the port array elements */
 	host->jack_ports[index] = NULL;
@@ -187,16 +205,19 @@ create_port(struct JackHost* host,
 
 		/* Set default control values for inputs */
 		if (slv2_port_is_a(host->plugin, port, host->input_class)) {
-			host->controls[index] = slv2_port_get_default_value(host->plugin, port);
-			printf("Set %s to %f\n", symbol, host->controls[index]);
+			SLV2Value def;
+			slv2_port_get_range(host->plugin, port, &def, NULL, NULL);
+			host->controls[index] = slv2_value_as_float(def);
+			printf("Set %s to %f\n", symbol_str, host->controls[index]);
+			slv2_value_free(def);
 		}
 		
 		slv2_instance_connect_port(host->instance, index, &host->controls[index]);
 
 	} else if (slv2_port_is_a(host->plugin, port, host->audio_class)) {
 
-		host->jack_ports[index] = jack_port_register(host->jack_client, symbol,
-			JACK_DEFAULT_AUDIO_TYPE,
+		host->jack_ports[index] = jack_port_register(host->jack_client,
+			symbol_str, JACK_DEFAULT_AUDIO_TYPE,
 			slv2_port_is_a(host->plugin, port, host->input_class)
 				? JackPortIsInput : JackPortIsOutput,
 			0);
@@ -205,8 +226,6 @@ create_port(struct JackHost* host,
 		// Simple examples don't have to be robust :)
 		die("ERROR: Unknown port type, aborting messily!\n");
 	}
-	
-	free(symbol);
 }
 
 
@@ -234,6 +253,6 @@ list_plugins(SLV2Plugins list)
 {
 	for (unsigned i=0; i < slv2_plugins_size(list); ++i) {
 		SLV2Plugin p = slv2_plugins_get_at(list, i);
-		printf("%s\n", slv2_plugin_get_uri(p));
+		printf("%s\n", slv2_value_as_uri(slv2_plugin_get_uri(p)));
 	}
 }

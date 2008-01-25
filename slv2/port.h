@@ -38,9 +38,9 @@ extern "C" {
  * Time = Query
  */
 SLV2Values
-slv2_port_get_value(SLV2Plugin  plugin,
-                    SLV2Port    port,
-                    const char* property_uri);
+slv2_port_get_value_by_qname(SLV2Plugin  plugin,
+                             SLV2Port    port,
+                             const char* property_uri);
 
 
 /** Return the LV2 port properties of a port.
@@ -57,9 +57,9 @@ slv2_port_get_properties(SLV2Plugin plugin,
  * Time = Query
  */
 bool
-slv2_port_has_property(SLV2Plugin  p,
-                       SLV2Port    port,
-                       const char* property_uri);
+slv2_port_has_property(SLV2Plugin p,
+                       SLV2Port   port,
+                       SLV2Value  property_uri);
 
 
 /** Return whether a port is an event port and supports a certain event type.
@@ -67,21 +67,19 @@ slv2_port_has_property(SLV2Plugin  p,
  * Time = Query
  */
 bool
-slv2_port_supports_event(SLV2Plugin  p,
-                         SLV2Port    port,
-                         const char* event_uri);
+slv2_port_supports_event(SLV2Plugin p,
+                         SLV2Port   port,
+                         SLV2Value  event_uri);
 
 
-/** Get the symbol of a port given the index.
+/** Get the symbol of a port.
  *
  * The 'symbol' is a short string, a valid C identifier.
- * Returned string must be free()'d by caller.
- *
- * \return NULL when index is out of range
+ * Returned value is owned by \a port and must not be freed.
  *
  * Time = Query
  */
-char*
+SLV2Value
 slv2_port_get_symbol(SLV2Plugin plugin,
                      SLV2Port   port);
 
@@ -93,7 +91,7 @@ slv2_port_get_symbol(SLV2Plugin plugin,
  *
  * Time = Query
  */
-char*
+SLV2Value
 slv2_port_get_name(SLV2Plugin plugin,
                    SLV2Port   port);
 
@@ -129,56 +127,22 @@ slv2_port_is_a(SLV2Plugin plugin,
                SLV2Port   port,
                SLV2Value  port_class);
 
-#if 0
-/** Get the direction (input, output) of a port.
+
+/** Get the default, minimum, and maximum values of a port.
+ *
+ * @a def, @a min, and @a max are outputs, pass pointers to uninitialized
+ * (i.e. NOT created with slv2_value_new) SLV2Value variables.  These will
+ * be set to point at new values (which must be freed by the caller using
+ * slv2_value_free), or NULL if the value does not exist.
  *
  * Time = Query
  */
-SLV2PortDirection
-slv2_port_get_direction(SLV2Plugin plugin,
-                        SLV2Port   port);
-
-/** Get the data type of a port.
- *
- * Time = Query
- */
-SLV2PortDataType
-slv2_port_get_data_type(SLV2Plugin plugin,
-                        SLV2Port   port);
-#endif
-
-
-/** Get the default value of a port.
- *
- * Only valid for ports with a data type of lv2:float.
- *
- * Time = Query
- */
-float
-slv2_port_get_default_value(SLV2Plugin plugin, 
-                            SLV2Port   port);
-
-
-/** Get the minimum value of a port.
- *
- * Only valid for ports with a data type of lv2:float.
- *
- * Time = Query
- */
-float
-slv2_port_get_minimum_value(SLV2Plugin plugin, 
-                            SLV2Port   port);
-
-
-/** Get the maximum value of a port.
- *
- * Only valid for ports with a data type of lv2:float.
- *
- * Time = Query
- */
-float
-slv2_port_get_maximum_value(SLV2Plugin plugin, 
-                            SLV2Port   port);
+void
+slv2_port_get_range(SLV2Plugin p, 
+                    SLV2Port   port,
+                    SLV2Value* def,
+                    SLV2Value* min,
+                    SLV2Value* max);
 
 
 /** @} */

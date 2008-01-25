@@ -56,6 +56,15 @@ slv2_values_get_at(SLV2Values list, unsigned index)
 }
 
 
+/* private */
+void
+slv2_values_set_at(SLV2Values list, unsigned index, void* value)
+{
+	if (index <= INT_MAX)
+		raptor_sequence_set_at(list, index, value);
+}
+
+
 bool
 slv2_values_contains(SLV2Values list, SLV2Value value)
 {

@@ -472,8 +472,6 @@ INPUT                  = @SLV2_SRCDIR@/doc/mainpage.dox \
                          @SLV2_SRCDIR@/slv2/pluginuiinstance.h \
                          @SLV2_SRCDIR@/slv2/pluginuis.h \
                          @SLV2_SRCDIR@/slv2/port.h \
-                         @SLV2_SRCDIR@/slv2/portsignature.h \
-                         @SLV2_SRCDIR@/slv2/template.h \
                          @SLV2_SRCDIR@/slv2/types.h \
                          @SLV2_SRCDIR@/slv2/util.h \
                          @SLV2_SRCDIR@/slv2/value.h \

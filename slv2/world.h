@@ -107,8 +107,8 @@ slv2_world_load_all(SLV2World world);
  * Time = Query
  */
 void
-slv2_world_load_bundle(SLV2World   world,
-                       const char* bundle_uri);
+slv2_world_load_bundle(SLV2World world,
+                       SLV2Value bundle_uri);
 
 
 /** Get the parent of all other plugin classes, lv2:Plugin.

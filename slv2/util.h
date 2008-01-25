@@ -40,27 +40,6 @@ extern "C" {
 const char* slv2_uri_to_path(const char* uri);
 
 
-/** Append \a suffix to \a *dst, reallocating \a dst as necessary.
- *
- * \a dst will (possibly) be freed, it must be dynamically allocated with malloc
- * or NULL.
- */
-void
-slv2_strappend(char** dst, const char* suffix);
-
-
-/** Join all arguments into one string.
- *
- * Arguments are not modified, return value must be free()'d.
- */
-char*
-slv2_strjoin(const char* first, ...);
-
-
-char*
-slv2_vstrjoin(const char** first, va_list args_list);
-
-
 /** @} */
 
 #ifdef __cplusplus

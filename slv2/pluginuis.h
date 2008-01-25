@@ -57,8 +57,8 @@ slv2_uis_size(SLV2UIs list);
  * \return NULL if plugin with \a url not found in \a list.
  */
 SLV2UI
-slv2_uis_get_by_uri(SLV2UIs     list,
-                    const char* uri);
+slv2_uis_get_by_uri(SLV2UIs   list,
+                    SLV2Value uri);
 
 
 /** Get a plugin from the list by index.

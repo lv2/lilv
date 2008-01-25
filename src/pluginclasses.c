@@ -22,9 +22,9 @@
 #include <limits.h>
 #include <librdf.h>
 #include "slv2_internal.h"
+#include <slv2/value.h>
 #include <slv2/pluginclass.h>
 #include <slv2/pluginclasses.h>
-
 
 	
 SLV2PluginClasses
@@ -51,7 +51,7 @@ slv2_plugin_classes_size(SLV2PluginClasses list)
 
 
 SLV2PluginClass
-slv2_plugin_classes_get_by_uri(SLV2PluginClasses list, const char* uri)
+slv2_plugin_classes_get_by_uri(SLV2PluginClasses list, SLV2Value uri)
 {
 	// good old fashioned binary search
 	
@@ -64,7 +64,8 @@ slv2_plugin_classes_get_by_uri(SLV2PluginClasses list, const char* uri)
 
 		SLV2PluginClass p = raptor_sequence_get_at(list, i);
 	
-		const int cmp = strcmp(slv2_plugin_class_get_uri(p), uri);
+		const int cmp = strcmp(slv2_value_as_uri(slv2_plugin_class_get_uri(p)),
+		                       slv2_value_as_uri(uri));
 		
 		if (cmp == 0)
 			return p;

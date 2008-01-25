@@ -54,7 +54,7 @@ slv2_uis_size(SLV2UIs list)
 
 
 SLV2UI
-slv2_uis_get_by_uri(SLV2UIs list, const char* uri)
+slv2_uis_get_by_uri(SLV2UIs list, SLV2Value uri)
 {
 	// good old fashioned binary search
 	
@@ -67,7 +67,8 @@ slv2_uis_get_by_uri(SLV2UIs list, const char* uri)
 
 		SLV2UI ui = raptor_sequence_get_at(list, i);
 
-		const int cmp = strcmp(slv2_ui_get_uri(ui), uri);
+		const int cmp = strcmp(slv2_value_as_uri(slv2_ui_get_uri(ui)),
+		                       slv2_value_as_uri(uri));
 
 		if (cmp == 0)
 			return ui;

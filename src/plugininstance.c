@@ -43,7 +43,7 @@ slv2_plugin_instantiate(SLV2Plugin               plugin,
 		local_features[0] = NULL;
 	}
 	
-	const char* const lib_uri = slv2_plugin_get_library_uri(plugin);
+	const char* const lib_uri = slv2_value_as_uri(slv2_plugin_get_library_uri(plugin));
 	const char* const lib_path = slv2_uri_to_path(lib_uri);
 	
 	if (!lib_path)
@@ -67,7 +67,9 @@ slv2_plugin_instantiate(SLV2Plugin               plugin,
 		// Search for plugin by URI
 		
 		// FIXME: Kluge to get bundle path (containing directory of binary)
-		const char* bundle_path = slv2_uri_to_path(slv2_plugin_get_bundle_uri(plugin));
+		const char* bundle_path = slv2_uri_to_path(slv2_value_as_uri(
+					slv2_plugin_get_bundle_uri(plugin)));
+
 		//printf("Bundle path: %s\n", bundle_path);
 		
 		for (uint32_t i=0; 1; ++i) {
@@ -76,10 +78,10 @@ slv2_plugin_instantiate(SLV2Plugin               plugin,
 				
 			if (!ld) {
 				fprintf(stderr, "Did not find plugin %s in %s\n",
-						slv2_plugin_get_uri(plugin), lib_path);
+						slv2_value_as_uri(slv2_plugin_get_uri(plugin)), lib_path);
 				dlclose(lib);
 				break; // return NULL
-			} else if (!strcmp(ld->URI, slv2_plugin_get_uri(plugin))) {
+			} else if (!strcmp(ld->URI, slv2_value_as_uri(slv2_plugin_get_uri(plugin)))) {
 					
 				assert(plugin->plugin_uri);
 

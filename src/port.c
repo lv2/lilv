@@ -31,11 +31,11 @@
 
 /* private */
 SLV2Port
-slv2_port_new(uint32_t index, const char* symbol/*, const char* node_id*/)
+slv2_port_new(SLV2World world, uint32_t index, const char* symbol)
 {
 	struct _SLV2Port* port = malloc(sizeof(struct _SLV2Port));
 	port->index = index;
-	port->symbol = strdup(symbol);
+	port->symbol = slv2_value_new(world, SLV2_VALUE_STRING, symbol);
 	port->classes = slv2_values_new();
 	//port->node_id = strdup(node_id);
 	return port;
@@ -46,8 +46,8 @@ slv2_port_new(uint32_t index, const char* symbol/*, const char* node_id*/)
 void
 slv2_port_free(SLV2Port port)
 {
-	free(port->symbol);
 	slv2_values_free(port->classes);
+	slv2_value_free(port->symbol);
 	free(port);
 }
 
@@ -56,10 +56,10 @@ slv2_port_free(SLV2Port port)
 SLV2Port
 slv2_port_duplicate(SLV2Port port)
 {
-	SLV2Port result = malloc(sizeof(struct _SLV2Port));
-	result->index = port->index;
-	result->symbol = strdup(port->symbol);
-	return result;
+	SLV2Port ret = malloc(sizeof(struct _SLV2Port));
+	ret->index = port->index;
+	ret->symbol = slv2_value_duplicate(port->symbol);
+	return ret;
 }
 
 
@@ -77,42 +77,42 @@ slv2_port_is_a(SLV2Plugin plugin,
 
 
 bool
-slv2_port_has_property(SLV2Plugin  p,
-                       SLV2Port    port,
-                       const char* property)
+slv2_port_has_property(SLV2Plugin p,
+                       SLV2Port   port,
+                       SLV2Value  property)
 {
 	assert(property);
 
-	SLV2Values result = NULL;
+	SLV2Values results = NULL;
 
 	char* query = slv2_strjoin(
 			"SELECT DISTINCT ?port WHERE {\n"
-			"<", librdf_uri_as_string(p->plugin_uri), "> lv2:port ?port ."
-			"?port lv2:symbol \"", port->symbol, "\";\n",
-			"      lv2:portProperty <", property, "> .\n}", NULL);
+			"<", slv2_value_as_uri(p->plugin_uri), "> lv2:port ?port ."
+			"?port lv2:symbol \"", slv2_value_as_string(port->symbol), "\";\n",
+			"      lv2:portProperty <", slv2_value_as_uri(property), "> .\n}", NULL);
 			
-	result = slv2_plugin_simple_query(p, query, 0);
+	results = slv2_plugin_query_variable(p, query, 0);
 
-	const bool ret = (slv2_values_size(result) > 0);
+	const bool ret = (slv2_values_size(results) > 0);
 
 	free(query);
-	free(result);
+	free(results);
 	
 	return ret;
 }
 
 
 bool
-slv2_port_supports_event(SLV2Plugin  p,
-                         SLV2Port    port,
-                         const char* event)
+slv2_port_supports_event(SLV2Plugin p,
+                         SLV2Port   port,
+                         SLV2Value  event)
 {
 	assert(event);
 
 	char* query = slv2_strjoin(
 			"ASK WHERE {\n"
-			"<", librdf_uri_as_string(p->plugin_uri), "> lv2:port ?port ."
-			"?port lv2:symbol \"", port->symbol, "\";\n",
+			"<", slv2_value_as_uri(p->plugin_uri), "> lv2:port ?port ."
+			"?port lv2:symbol \"", slv2_value_as_string(port->symbol), "\";\n",
 			"      lv2ev:supportsEvent <", event, "> .\n"
 			"}", NULL);
 			
@@ -129,59 +129,47 @@ slv2_port_supports_event(SLV2Plugin  p,
 
 
 SLV2Values
-slv2_port_get_value(SLV2Plugin  p,
-                    SLV2Port    port,
-                    const char* property)
+slv2_port_get_value_by_qname(SLV2Plugin  p,
+                             SLV2Port    port,
+                             const char* property)
 {
 	assert(property);
-
-	SLV2Values result = NULL;
+	SLV2Values results = NULL;
 
 	char* query = slv2_strjoin(
 			"SELECT DISTINCT ?value WHERE {\n"
-			"<", librdf_uri_as_string(p->plugin_uri), "> lv2:port ?port .\n"
-			"?port lv2:symbol \"", port->symbol, "\";\n\t",
+			"<", slv2_value_as_uri(p->plugin_uri), "> lv2:port ?port .\n"
+			"?port lv2:symbol \"", slv2_value_as_string(port->symbol), "\";\n\t",
 			       property, " ?value .\n}", NULL);
 			
-	result = slv2_plugin_simple_query(p, query, 0);
+	results = slv2_plugin_query_variable(p, query, 0);
 
 	free(query);
-	
-	return result;
+	return results;
 }
 
 
-char*
+SLV2Value
 slv2_port_get_symbol(SLV2Plugin p,
                      SLV2Port   port)
 {
-	char* symbol = NULL;
-	
-	SLV2Values result = slv2_port_get_value(p, port, "lv2:symbol");
-
-	if (result && slv2_values_size(result) == 1)
-		symbol = strdup(slv2_value_as_string(slv2_values_get_at(result, 0)));
-	
-	slv2_values_free(result);
-
-	return symbol;
+	return port->symbol;
 }
 
 	
-char*
+SLV2Value
 slv2_port_get_name(SLV2Plugin p,
                    SLV2Port   port)
 {
-	char* name = NULL;
-	
-	SLV2Values result = slv2_port_get_value(p, port, "lv2:name");
+	SLV2Value  ret     = NULL;
+	SLV2Values results = slv2_port_get_value_by_qname(p, port, "lv2:name");
 
-	if (result && slv2_values_size(result) == 1)
-		name = strdup(slv2_value_as_string(slv2_values_get_at(result, 0)));
+	if (results && slv2_values_size(results) == 1)
+		ret = slv2_value_duplicate(slv2_values_get_at(results, 0));
 	
-	slv2_values_free(result);
+	slv2_values_free(results);
 
-	return name;
+	return ret;
 }
 
 	
@@ -193,54 +181,52 @@ slv2_port_get_classes(SLV2Plugin p,
 }
 
 
-float
-slv2_port_get_default_value(SLV2Plugin p, 
-                            SLV2Port   port)
+void
+slv2_port_get_range(SLV2Plugin p, 
+                    SLV2Port   port,
+                    SLV2Value* def,
+                    SLV2Value* min,
+                    SLV2Value* max)
 {
-	float value = 0.0f;
+	if (def)
+		*def = NULL;
+	if (min)
+		*min = NULL;
+	if (max)
+		*max = NULL;
+
+	char* query = slv2_strjoin(
+			"SELECT DISTINCT ?def ?min ?max WHERE {\n"
+			"<", slv2_value_as_uri(p->plugin_uri), "> lv2:port ?port .\n"
+			"?port lv2:symbol \"", slv2_value_as_string(port->symbol), "\".\n",
+			"OPTIONAL { ?port lv2:default ?def }\n",
+			"OPTIONAL { ?port lv2:minimum ?min }\n",
+			"OPTIONAL { ?port lv2:maximum ?max }\n",
+			"\n}", NULL);
 	
-	SLV2Values result = slv2_port_get_value(p, port, "lv2:default");
+	librdf_query_results* results = slv2_plugin_query(p, query);
 
-	if (result && slv2_values_size(result) == 1)
-		value = slv2_value_as_float(slv2_values_get_at(result, 0));
-	
-	slv2_values_free(result);
+    while (!librdf_query_results_finished(results)) {
+		librdf_node* def_node = librdf_query_results_get_binding_value(results, 0);
+		librdf_node* min_node = librdf_query_results_get_binding_value(results, 1);
+		librdf_node* max_node = librdf_query_results_get_binding_value(results, 2);
 
-	return value;
-}
+		if (def && def_node && !*def)
+			*def = slv2_value_new_librdf_node(p->world, def_node);
+		if (min && min_node && !*min)
+			*min = slv2_value_new_librdf_node(p->world, min_node);
+		if (max && max_node && !*max)
+			*max = slv2_value_new_librdf_node(p->world, max_node);
 
+		if ((!def || *def) && (!min || *min) && (!max || *max))
+			break;
 
-float
-slv2_port_get_minimum_value(SLV2Plugin p, 
-                            SLV2Port   port)
-{
-	float value = 0.0f;
-	
-	SLV2Values result = slv2_port_get_value(p, port, "lv2:minimum");
+		librdf_query_results_next(results);
+	}
+			
+	librdf_free_query_results(results);
 
-	if (result && slv2_values_size(result) == 1)
-		value = slv2_value_as_float(slv2_values_get_at(result, 0));
-	
-	slv2_values_free(result);
-
-	return value;
-}
-
-
-float
-slv2_port_get_maximum_value(SLV2Plugin p, 
-                            SLV2Port   port)
-{
-	float value = 0.0f;
-	
-	SLV2Values result = slv2_port_get_value(p, port, "lv2:maximum");
-
-	if (result && slv2_values_size(result) == 1)
-		value = slv2_value_as_float(slv2_values_get_at(result, 0));
-	
-	slv2_values_free(result);
-
-	return value;
+	free(query);
 }
 
 
@@ -248,6 +234,6 @@ SLV2Values
 slv2_port_get_properties(SLV2Plugin p,
                          SLV2Port   port)
 {
-	return slv2_port_get_value(p, port, "lv2:portProperty");
+	return slv2_port_get_value_by_qname(p, port, "lv2:portProperty");
 }
 

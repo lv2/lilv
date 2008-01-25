@@ -189,8 +189,8 @@ typedef struct _LV2UI_Descriptor {
                         as the first parameter of @c write_function.
       @param host_data  Data required from the host for instantiation.
                         The type of this depends on the RDF class of the UI.
-			If the UI type does not specify anything to be passed
-			here, the host should pass NULL.
+                        If the UI type does not specify anything to be passed
+                        here, the host should pass NULL.
       @param widget     A pointer to an LV2UI_Widget. The UI will write a
                         widget pointer to this location (what type of widget 
                         depends on the RDF class of the UI) that will be the

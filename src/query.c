@@ -129,7 +129,7 @@ slv2_plugin_query(SLV2Plugin  plugin,
 	if (!plugin->rdf)
 		slv2_plugin_load(plugin);
 
-	librdf_uri* base_uri = plugin->plugin_uri;
+	librdf_uri* base_uri = slv2_value_as_librdf_uri(plugin->plugin_uri);
 
 	char* query_str = slv2_strjoin(slv2_query_prefixes, sparql_str, NULL);
 
@@ -161,9 +161,9 @@ slv2_plugin_query(SLV2Plugin  plugin,
 
 /** Query a single variable */
 SLV2Values
-slv2_plugin_simple_query(SLV2Plugin  plugin,
-                         const char* sparql_str,
-                         unsigned    variable)
+slv2_plugin_query_variable(SLV2Plugin  plugin,
+                           const char* sparql_str,
+                           unsigned    variable)
 {
 	assert(variable < INT_MAX);
 

@@ -76,7 +76,7 @@ slv2_plugin_verify(SLV2Plugin plugin);
  *
  * Time = O(1)
  */
-const char*
+SLV2Value
 slv2_plugin_get_uri(SLV2Plugin plugin);
 
 
@@ -95,7 +95,7 @@ slv2_plugin_get_uri(SLV2Plugin plugin);
  *
  * Time = O(1)
  */
-const char*
+SLV2Value
 slv2_plugin_get_bundle_uri(SLV2Plugin plugin);
 
 
@@ -124,7 +124,7 @@ slv2_plugin_get_data_uris(SLV2Plugin plugin);
  *
  * Time = O(1)
  */
-const char*
+SLV2Value
 slv2_plugin_get_library_uri(SLV2Plugin plugin);
 
 
@@ -136,7 +136,7 @@ slv2_plugin_get_library_uri(SLV2Plugin plugin);
  *
  * Time = Query
  */
-char*
+SLV2Value
 slv2_plugin_get_name(SLV2Plugin plugin);
 
 
@@ -163,9 +163,19 @@ slv2_plugin_get_class(SLV2Plugin plugin);
  * Time = Query
  */
 SLV2Values
-slv2_plugin_get_value(SLV2Plugin  p,
-                      SLV2URIType predicate_type,
-                      const char* predicate);
+slv2_plugin_get_value(SLV2Plugin p,
+                      SLV2Value  predicate);
+
+
+/** Get a value associated with the plugin in a plugin's data files.
+ *
+ * This function is identical to slv2_plugin_get_value, but takes a QName
+ * string parameter for a predicate instead of an SLV2Value, which may be
+ * more convenient.
+ */
+SLV2Values
+slv2_plugin_get_value_by_qname(SLV2Plugin  p,
+                               const char* predicate);
 
 
 /** Get a value associated with some subject in a plugin's data files.
@@ -189,9 +199,8 @@ slv2_plugin_get_value(SLV2Plugin  p,
  */
 SLV2Values
 slv2_plugin_get_value_for_subject(SLV2Plugin  p,
-                                  SLV2Value   subject,
-                                  SLV2URIType predicate_type,
-                                  const char* predicate);
+                                  SLV2Value   subject_uri,
+								  SLV2Value   predicate_uri);
 
 
 /** Return whether a feature is supported by a plugin.
@@ -202,8 +211,8 @@ slv2_plugin_get_value_for_subject(SLV2Plugin  p,
  * Time = Query
  */
 bool
-slv2_plugin_has_feature(SLV2Plugin  p,
-                        const char* feature);
+slv2_plugin_has_feature(SLV2Plugin p,
+                        SLV2Value  feature_uri);
 
 
 /** Get the LV2 Features supported (required or optionally) by a plugin.
@@ -261,20 +270,6 @@ uint32_t
 slv2_plugin_get_num_ports(SLV2Plugin p);
 
 
-/** Get the "template" (port signature) of this plugin.
- *
- * The template is intended to be all the basic information a host might
- * want to know about a plugin's inputs and outputs (e.g. to determine if the
- * plugin is appropriate for a given situation).  Using this function is much,
- * much faster than using the individual functions repeatedly to get the same
- * information (since each call results in a single query).
- *
- * Time = Query
- */
-SLV2Template
-slv2_plugin_get_template(SLV2Plugin p);
-
-
 /** Return whether or not the plugin introduces (and reports) latency.
  *
  * The index of the latency port can be found with slv2_plugin_get_latency_port
@@ -298,29 +293,32 @@ slv2_plugin_has_latency(SLV2Plugin p);
  * Time = Query
  */
 uint32_t
-slv2_plugin_get_latency_port(SLV2Plugin p);
+slv2_plugin_get_latency_port_index(SLV2Plugin p);
 
 
-/** Query a plugin for a single variable.
+/** Query a plugin for a single variable (i.e. SELECT a single ?value).
  *
  * \param plugin The plugin to query.
  * \param sparql_str A SPARQL SELECT query.
  * \param variable The index of the variable to return results for
- *     (i.e. with "<code>SELECT ?foo ?bar</code>" foo is 0, and bar is 1).
+ *        (e.g. with "<code>SELECT ?foo ?bar</code>" foo=0, bar=1).
  * \return All matches for \a variable.
  *
  * Time = Query
  */
 SLV2Values
-slv2_plugin_simple_query(SLV2Plugin  plugin,
-                         const char* sparql_str,
-                         unsigned    variable);
+slv2_plugin_query_variable(SLV2Plugin  plugin,
+                           const char* sparql_str,
+                           unsigned    variable);
 
 
 /** Query a plugin and return the number of results found.
  *
+ * Note that this function will work, but is mostly meaningless for queries
+ * that are not SELECT DISTINCT.
+ *
  * \param plugin The plugin to query.
- * \param sparql_str A SPARQL SELECT query.
+ * \param sparql_str A SPARQL SELECT DISTINCT query.
  *
  * Time = Query
  */
@@ -344,13 +342,15 @@ slv2_plugin_get_port_by_index(SLV2Plugin plugin,
 /** Get a port on this plugin by \a symbol.
  *
  * To perform multiple calls on a port, the returned value should
- * be cached and used repeatedly.
+ * be cached and used repeatedly.  Note this function is slower
+ * than slv2_plugin_get_port_by_index, especially on plugins
+ * with a very large number of ports.
  *
  * Time = O(n)
  */
 SLV2Port
-slv2_plugin_get_port_by_symbol(SLV2Plugin  plugin,
-                               const char* symbol);
+slv2_plugin_get_port_by_symbol(SLV2Plugin plugin,
+                               SLV2Value  symbol);
 
 
 /** Get a list of all UIs available for this plugin.
@@ -376,7 +376,7 @@ slv2_plugin_get_uis(SLV2Plugin plugin);
  *
  * Time = Query
  */
-char*
+SLV2Value
 slv2_plugin_get_author_name(SLV2Plugin plugin);
 
 
@@ -387,7 +387,7 @@ slv2_plugin_get_author_name(SLV2Plugin plugin);
  *
  * Time = Query
  */
-char*
+SLV2Value
 slv2_plugin_get_author_email(SLV2Plugin plugin);
 
 
@@ -398,7 +398,7 @@ slv2_plugin_get_author_email(SLV2Plugin plugin);
  *
  * Time = Query
  */
-char*
+SLV2Value
 slv2_plugin_get_author_homepage(SLV2Plugin plugin);
 
 

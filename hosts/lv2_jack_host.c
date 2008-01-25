@@ -18,6 +18,7 @@
 
 #include CONFIG_H_PATH
 
+#define _XOPEN_SOURCE 500
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -57,12 +58,13 @@ struct JackHost {
 	SLV2Plugin     plugin;        /**< Plugin "class" (actually just a few strings) */
 	SLV2Instance   instance;      /**< Plugin "instance" (loaded shared lib) */
 	uint32_t       num_ports;     /**< Size of the two following arrays: */
-	struct Port*   ports;         /** Port array of size num_ports */
+	struct Port*   ports;         /**< Port array of size num_ports */
 	SLV2Value      input_class;   /**< Input port class (URI) */
 	SLV2Value      output_class;  /**< Output port class (URI) */
 	SLV2Value      control_class; /**< Control port class (URI) */
 	SLV2Value      audio_class;   /**< Audio port class (URI) */
 	SLV2Value      midi_class;    /**< MIDI port class (URI) */
+	SLV2Value      optional;      /**< lv2:connectionOptional port property */
 };
 
 
@@ -91,11 +93,12 @@ main(int argc, char** argv)
 	host.control_class = slv2_value_new_uri(world, SLV2_PORT_CLASS_CONTROL);
 	host.audio_class = slv2_value_new_uri(world, SLV2_PORT_CLASS_AUDIO);
 	host.midi_class = slv2_value_new_uri(world, SLV2_PORT_CLASS_MIDI);
+	host.optional = slv2_value_new_uri(world, SLV2_NAMESPACE_LV2 "connectionOptional");
 
 	/* Find the plugin to run */
-	const char* plugin_uri = (argc == 2) ? argv[1] : NULL;
+	const char* plugin_uri_str = (argc == 2) ? argv[1] : NULL;
 	
-	if (!plugin_uri) {
+	if (!plugin_uri_str) {
 		fprintf(stderr, "\nYou must specify a plugin URI to load.\n");
 		fprintf(stderr, "\nKnown plugins:\n\n");
 		list_plugins(plugins);
@@ -103,22 +106,39 @@ main(int argc, char** argv)
 		return EXIT_FAILURE;
 	}
 
-	printf("URI:\t%s\n", plugin_uri);
+	printf("URI:\t%s\n", plugin_uri_str);
+
+	SLV2Value plugin_uri = slv2_value_new_uri(world, plugin_uri_str);
 	host.plugin = slv2_plugins_get_by_uri(plugins, plugin_uri);
+	slv2_value_free(plugin_uri);
 	
 	if (!host.plugin) {
-		fprintf(stderr, "Failed to find plugin %s.\n", plugin_uri);
+		fprintf(stderr, "Failed to find plugin %s.\n", plugin_uri_str);
 		slv2_world_free(world);
 		return EXIT_FAILURE;
 	}
 
 	/* Get the plugin's name */
-	char* name = slv2_plugin_get_name(host.plugin);
-	printf("Name:\t%s\n", name);
+	SLV2Value name = slv2_plugin_get_name(host.plugin);
+	const char* name_str = slv2_value_as_string(name);
+	printf("Plugin Name:\t%s\n", slv2_value_as_string(name));
+
+	/* Truncate plugin name to suit JACK (if necessary) */
+	char* jack_name = NULL;
+	if (strlen(name_str) >= (unsigned)jack_client_name_size() - 1) {
+		jack_name = calloc(jack_client_name_size(), sizeof(char));
+		strncpy(jack_name, name_str, jack_client_name_size() - 1);
+	} else {
+		jack_name = strdup(name_str);
+	}
 	
-	/* Connect to JACK (with plugin name as client name) */
-	host.jack_client = jack_client_open(name, JackNullOption, NULL);
-	free(name);
+	/* Connect to JACK */
+	printf("JACK Name:\t%s\n", name_str);
+	host.jack_client = jack_client_open(jack_name, JackNullOption, NULL);
+
+	free(jack_name);
+	slv2_value_free(name);
+
 	if (!host.jack_client)
 		die("Failed to connect to JACK.");
 	else
@@ -175,6 +195,7 @@ main(int argc, char** argv)
 	slv2_value_free(host.control_class);
 	slv2_value_free(host.audio_class);
 	slv2_value_free(host.midi_class);
+	slv2_value_free(host.optional);
 	slv2_plugins_free(world, plugins);
 	slv2_world_free(world);
 
@@ -211,8 +232,9 @@ create_port(struct JackHost* host,
 
 	slv2_instance_connect_port(host->instance, port_index, NULL);
 
-	/* Get the port symbol (label) for console printing */
-	char* symbol = slv2_port_get_symbol(host->plugin, port->slv2_port);
+	/* Get the port symbol for console printing */
+	SLV2Value symbol       = slv2_port_get_symbol(host->plugin, port->slv2_port);
+	const char* symbol_str = slv2_value_as_string(symbol);
 
 	enum JackPortFlags jack_flags = 0;
 	if (slv2_port_is_a(host->plugin, port->slv2_port, host->input_class)) {
@@ -221,7 +243,7 @@ create_port(struct JackHost* host,
 	} else if (slv2_port_is_a(host->plugin, port->slv2_port, host->output_class)) {
 		jack_flags = JackPortIsOutput;
 		port->direction = OUTPUT;
-	} else if (slv2_port_has_property(host->plugin, port->slv2_port, SLV2_NAMESPACE_LV2 "connectionOptional")) {
+	} else if (slv2_port_has_property(host->plugin, port->slv2_port, host->optional)) {
 		slv2_instance_connect_port(host->instance, port_index, NULL);
 	} else {
 		die("Mandatory port has unknown type (neither input or output)");
@@ -230,8 +252,11 @@ create_port(struct JackHost* host,
 	/* Set control values */
 	if (slv2_port_is_a(host->plugin, port->slv2_port, host->control_class)) {
 		port->type = CONTROL;
-		port->control = slv2_port_get_default_value(host->plugin, port->slv2_port);
-		printf("Set %s to %f\n", symbol, host->ports[port_index].control);
+		SLV2Value def;
+		slv2_port_get_range(host->plugin, port->slv2_port, &def, NULL, NULL);
+		port->control = slv2_value_as_float(def);
+		printf("Set %s to %f\n", symbol_str, host->ports[port_index].control);
+		slv2_value_free(def);
 	} else if (slv2_port_is_a(host->plugin, port->slv2_port, host->audio_class)) {
 		port->type = AUDIO;
 	} else if (slv2_port_is_a(host->plugin, port->slv2_port, host->midi_class)) {
@@ -245,11 +270,11 @@ create_port(struct JackHost* host,
 			break;
 		case AUDIO:
 			port->jack_port = jack_port_register(host->jack_client,
-					symbol, JACK_DEFAULT_AUDIO_TYPE, jack_flags, 0);
+					symbol_str, JACK_DEFAULT_AUDIO_TYPE, jack_flags, 0);
 			break;
 		case MIDI:
 			port->jack_port = jack_port_register(host->jack_client,
-					symbol, JACK_DEFAULT_MIDI_TYPE, JackPortIsInput, 0);
+					symbol_str, JACK_DEFAULT_MIDI_TYPE, JackPortIsInput, 0);
 			port->midi_buffer = lv2midi_new(MIDI_BUFFER_SIZE);
 			slv2_instance_connect_port(host->instance, port_index, port->midi_buffer);
 			break;
@@ -258,8 +283,6 @@ create_port(struct JackHost* host,
 			slv2_instance_connect_port(host->instance, port_index, NULL);
 			fprintf(stderr, "WARNING: Unknown port type, port not connected.\n");
 	}
-
-	free(symbol);
 }
 
 
@@ -355,6 +378,6 @@ list_plugins(SLV2Plugins list)
 {
 	for (unsigned i=0; i < slv2_plugins_size(list); ++i) {
 		SLV2Plugin p = slv2_plugins_get_at(list, i);
-		printf("%s\n", slv2_plugin_get_uri(p));
+		printf("%s\n", slv2_value_as_uri(slv2_plugin_get_uri(p)));
 	}
 }

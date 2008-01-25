@@ -31,8 +31,6 @@ print_port(SLV2Plugin p, uint32_t index)
 {
 	SLV2Port port = slv2_plugin_get_port_by_index(p, index);
 
-	char* str = NULL;
-
 	printf("\n\tPort %d:\n", index);
 
 	SLV2Values classes = slv2_port_get_classes(p, port);
@@ -43,7 +41,7 @@ print_port(SLV2Plugin p, uint32_t index)
 	}
 
 	if (slv2_port_is_a(p, port, event_class)) {
-		SLV2Values supported = slv2_port_get_value(p, port,
+		SLV2Values supported = slv2_port_get_value_by_qname(p, port,
 			"lv2ev:supportsEvent");
 		if (slv2_values_size(supported) > 0) {
 			printf("\n\t\tSupported events:\n");
@@ -54,18 +52,19 @@ print_port(SLV2Plugin p, uint32_t index)
 		slv2_values_free(supported);
 	}
 
-	str = slv2_port_get_symbol(p, port);
-	printf("\n\t\tSymbol:     %s\n", str);
-	free(str);
+	SLV2Value val = slv2_port_get_symbol(p, port);
+	printf("\n\t\tSymbol:     %s\n", slv2_value_as_string(val));
 
-	str = slv2_port_get_name(p, port);
-	printf("\t\tName:       %s\n", str);
-	free(str);
+	val = slv2_port_get_name(p, port);
+	printf("\t\tName:       %s\n", slv2_value_as_string(val));
+	slv2_value_free(val);
 
 	if (slv2_port_is_a(p, port, control_class)) {
-		printf("\t\tMinimum:    %f\n", slv2_port_get_minimum_value(p, port));
-		printf("\t\tMaximum:    %f\n", slv2_port_get_maximum_value(p, port));
-		printf("\t\tDefault:    %f\n", slv2_port_get_default_value(p, port));
+		SLV2Value def, min, max;
+		slv2_port_get_range(p, port, &def, &min, &max);
+		printf("\t\tMinimum:    %f\n", slv2_value_as_float(min));
+		printf("\t\tMaximum:    %f\n", slv2_value_as_float(max));
+		printf("\t\tDefault:    %f\n", slv2_value_as_float(def));
 	}
 
 	SLV2Values properties = slv2_port_get_properties(p, port);
@@ -83,45 +82,65 @@ print_port(SLV2Plugin p, uint32_t index)
 void
 print_plugin(SLV2Plugin p)
 {
-	char* str = NULL;
+	SLV2Value val = NULL;
 
-	printf("%s\n\n", slv2_plugin_get_uri(p));
+	printf("%s\n\n", slv2_value_as_uri(slv2_plugin_get_uri(p)));
 	
-	str = slv2_plugin_get_name(p);
-	printf("\tName:              %s\n", str);
-	free(str);
+	val = slv2_plugin_get_name(p);
+	printf("\tName:              %s\n", slv2_value_as_string(val));
+	slv2_value_free(val);
 	
-	const char* class_label = slv2_plugin_class_get_label(slv2_plugin_get_class(p));
-	printf("\tClass:             %s\n", class_label);
+	SLV2Value class_label = slv2_plugin_class_get_label(slv2_plugin_get_class(p));
+	printf("\tClass:             %s\n", slv2_value_as_string(class_label));
+
+	val = slv2_plugin_get_author_name(p);
+	if (val) {
+		printf("\tAuthor:            %s\n", slv2_value_as_string(val));
+		slv2_value_free(val);
+	}
+	
+	val = slv2_plugin_get_author_email(p);
+	if (val) {
+		printf("\tAuthor Email:      %s\n", slv2_value_as_uri(val));
+		slv2_value_free(val);
+	}
+	
+	val = slv2_plugin_get_author_homepage(p);
+	if (val) {
+		printf("\tAuthor Homepage:   %s\n", slv2_value_as_uri(val));
+		slv2_value_free(val);
+	}
 
 	if (slv2_plugin_has_latency(p)) {
-		uint32_t latency_port = slv2_plugin_get_latency_port(p);
+		uint32_t latency_port = slv2_plugin_get_latency_port_index(p);
 		printf("\tHas latency:       yes, reported by port %d\n", latency_port);
 	} else {
 		printf("\tHas latency:       no\n");
 	}
 
-	printf("\tBundle:            %s\n", slv2_plugin_get_bundle_uri(p));
-	printf("\tBinary:            %s\n", slv2_plugin_get_library_uri(p));
+	printf("\tBundle:            %s\n", slv2_value_as_uri(slv2_plugin_get_bundle_uri(p)));
+	printf("\tBinary:            %s\n", slv2_value_as_uri(slv2_plugin_get_library_uri(p)));
 
 	SLV2UIs uis = slv2_plugin_get_uis(p);
 	if (slv2_values_size(uis) > 0) {
 		printf("\tGUI:               ");
 		for (unsigned i=0; i < slv2_uis_size(uis); ++i) {
 			SLV2UI ui = slv2_uis_get_at(uis, i);
-			printf("%s\n", slv2_ui_get_uri(ui));
+			printf("%s\n", slv2_value_as_uri(slv2_ui_get_uri(ui)));
 
-			const char* binary = slv2_ui_get_binary_uri(ui);
+			const char* binary = slv2_value_as_uri(slv2_ui_get_binary_uri(ui));
 			
 			SLV2Values types = slv2_ui_get_classes(ui);
 			for (unsigned i=0; i < slv2_values_size(types); ++i) {
-				printf("\t\t\tClass:   %s\n", slv2_value_as_uri(slv2_values_get_at(types, i)));
+				printf("\t                       Class:  %s\n",
+						slv2_value_as_uri(slv2_values_get_at(types, i)));
 			}
 	
 			if (binary)
-				printf("\t\t\tBinary: %s\n", binary);
+				printf("\t                       Binary: %s\n", binary);
 	
-			printf("\t\t\tBundle: %s\n", slv2_ui_get_bundle_uri(ui));
+			printf("\t                       Bundle: %s\n",
+					slv2_value_as_uri(slv2_ui_get_bundle_uri(ui)));
 		}
 	}
 	slv2_uis_free(uis);
@@ -226,16 +245,17 @@ main(int argc, char** argv)
 	}
 
 	SLV2Plugins plugins = slv2_world_get_all_plugins(world);
+	SLV2Value   uri     = slv2_value_new_uri(world, argv[1]);
 
-	SLV2Plugin p = slv2_plugins_get_by_uri(plugins, argv[1]);
+	SLV2Plugin p = slv2_plugins_get_by_uri(plugins, uri);
 
 	if (p) {
 		print_plugin(p);
 	} else {
 		fprintf(stderr, "Plugin not found.\n");
-		return -1;
 	}
 
+	slv2_value_free(uri);
 	slv2_plugins_free(world, plugins);
 	slv2_world_free(world);
 

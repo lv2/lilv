@@ -58,7 +58,7 @@ slv2_plugins_size(SLV2Plugins list);
  */
 SLV2Plugin
 slv2_plugins_get_by_uri(SLV2Plugins list,
-                        const char* uri);
+                        SLV2Value   uri);
 
 
 /** Get a plugin from the list by index.
