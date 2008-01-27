@@ -5,8 +5,4 @@ EXTRA_DIST = \
 	control \
 	copyright \
 	docs \
-	postinst.ex \
-	postrm.ex \
-	rules \
-	shlibs.local \
-	shlibs
+	rules

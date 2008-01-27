@@ -15,6 +15,8 @@ libslv2_la_SOURCES = \
 	pluginuis.c \
 	port.c \
 	query.c \
+	scalepoint.c \
+	scalepoints.c \
 	slv2_internal.h \
 	util.c \
 	value.c \

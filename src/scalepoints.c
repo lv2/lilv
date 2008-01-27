@@ -16,31 +16,42 @@
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef __SLV2_H__
-#define __SLV2_H__
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-#include <slv2/plugin.h>
-#include <slv2/pluginclass.h>
-#include <slv2/plugininstance.h>
-#include <slv2/plugins.h>
-#include <slv2/pluginui.h>
-#include <slv2/pluginuiinstance.h>
-#include <slv2/pluginuis.h>
-#include <slv2/port.h>
-#include <slv2/types.h>
-#include <slv2/util.h>
-#include <slv2/value.h>
-#include <slv2/values.h>
-#include <slv2/scalepoint.h>
+#include <string.h>
+#include <stdlib.h>
+#include <limits.h>
+#include <raptor.h>
 #include <slv2/scalepoints.h>
-#include <slv2/world.h>
+#include "slv2_internal.h"
 
-#ifdef __cplusplus
+
+SLV2ScalePoints
+slv2_scale_points_new()
+{
+	return raptor_new_sequence((void (*)(void*))&slv2_scale_point_free, NULL);
 }
-#endif
 
-#endif /* __SLV2_H__ */
+
+void
+slv2_scale_points_free(SLV2ScalePoints points)
+{
+	if (points)
+		raptor_free_sequence(points);
+}
+
+
+unsigned
+slv2_scale_points_size(SLV2ScalePoints points)
+{
+	return (points ? raptor_sequence_size(points) : 0);
+}
+
+
+SLV2ScalePoint
+slv2_scale_points_get_at(SLV2ScalePoints points, unsigned index)
+{
+	if (index > INT_MAX)
+		return NULL;
+	else
+		return (SLV2ScalePoint)raptor_sequence_get_at(points, (int)index);
+}
+

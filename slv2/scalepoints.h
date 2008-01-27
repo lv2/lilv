@@ -16,31 +16,58 @@
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef __SLV2_H__
-#define __SLV2_H__
+#ifndef __SLV2_SCALE_POINTS_H__
+#define __SLV2_SCALE_POINTS_H__
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#include <slv2/plugin.h>
-#include <slv2/pluginclass.h>
-#include <slv2/plugininstance.h>
-#include <slv2/plugins.h>
-#include <slv2/pluginui.h>
-#include <slv2/pluginuiinstance.h>
-#include <slv2/pluginuis.h>
-#include <slv2/port.h>
-#include <slv2/types.h>
-#include <slv2/util.h>
+#include <stdbool.h>
 #include <slv2/value.h>
-#include <slv2/values.h>
-#include <slv2/scalepoint.h>
-#include <slv2/scalepoints.h>
-#include <slv2/world.h>
+
+/** \defgroup slv2_collections Collections of scale_points/objects
+ *
+ * Ordered collections of typed scale_points which are fast for random
+ * access by index (i.e. a fancy array).
+ *
+ * @{
+ */
+
+
+/** Allocate a new, empty SLV2Values
+ */
+SLV2Values
+slv2_scale_points_new();
+
+
+/** Free an SLV2Values.
+ */
+void
+slv2_scale_points_free(SLV2Values);
+
+
+/** Get the number of elements in a string list.
+ */
+unsigned
+slv2_scale_points_size(SLV2Values list);
+
+
+/** Get a string from a string list at the given index.
+ *
+ * @return the element at \a index, or NULL if index is out of range.
+ *
+ * Time = O(1)
+ */
+SLV2ScalePoint
+slv2_scale_points_get_at(SLV2ScalePoints points, unsigned index);
+
+
+/** @} */
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* __SLV2_H__ */
+#endif /* __SLV2_SCALE_POINTS_H__ */
+

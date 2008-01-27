@@ -339,7 +339,7 @@ slv2_plugin_get_name(SLV2Plugin plugin)
 	
 	// FIXME: lang?
 	
-	if (results && slv2_values_size(results) > 0) {
+	if (results) {
 		SLV2Value val = slv2_values_get_at(results, 0);
 		if (slv2_value_is_string(val))
 			ret = slv2_value_duplicate(val);

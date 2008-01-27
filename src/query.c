@@ -45,7 +45,7 @@ slv2_query_get_variable_bindings(SLV2World             world,
 {
 	SLV2Values result = NULL;
 
-    if (librdf_query_results_get_bindings_count(results) > 0)
+    if (!librdf_query_results_finished(results))
 		result = slv2_values_new();
 
     while (!librdf_query_results_finished(results)) {

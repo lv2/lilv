@@ -68,6 +68,14 @@ typedef struct _SLV2Value* SLV2Value;
 typedef void* SLV2Values;
 
 
+/** A scale point */
+typedef struct _SLV2ScalePoint* SLV2ScalePoint;
+
+
+/** A collection of scale points. */
+typedef void* SLV2ScalePoints;
+
+
 /** A plugin UI */
 typedef struct _SLV2UI* SLV2UI;
 

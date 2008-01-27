@@ -26,6 +26,7 @@
 #include <slv2/types.h>
 #include <slv2/util.h>
 #include <slv2/values.h>
+#include <slv2/scalepoints.h>
 #include "slv2_internal.h"
 
 
@@ -228,6 +229,50 @@ slv2_port_get_range(SLV2Plugin p,
 
 	free(query);
 }
+
+
+SLV2ScalePoints
+slv2_port_get_scale_points(SLV2Plugin p,
+                           SLV2Port port)
+{
+	char* query = slv2_strjoin(
+			"SELECT DISTINCT ?value ?label WHERE {\n"
+			"<", slv2_value_as_uri(p->plugin_uri), "> lv2:port ?port .\n"
+			"?port  lv2:symbol \"", slv2_value_as_string(port->symbol), "\" ;\n",
+			"       lv2:scalePoint ?point .\n"
+			"?point rdf:value ?value ;\n"
+			"       rdfs:label ?label .\n"
+			"\n} ORDER BY ?value", NULL);
+	
+	librdf_query_results* results = slv2_plugin_query(p, query);
+	
+	SLV2ScalePoints ret = NULL;
+
+    if (!librdf_query_results_finished(results))
+		ret = slv2_scale_points_new();
+
+    while (!librdf_query_results_finished(results)) {
+	
+		librdf_node* value_node = librdf_query_results_get_binding_value(results, 0);
+		librdf_node* label_node = librdf_query_results_get_binding_value(results, 1);
+
+		SLV2Value value = slv2_value_new_librdf_node(p->world, value_node);
+		SLV2Value label = slv2_value_new_librdf_node(p->world, label_node);
+
+		raptor_sequence_push(ret, slv2_scale_point_new(value, label));
+		
+		librdf_query_results_next(results);
+	}
+			
+	librdf_free_query_results(results);
+
+	free(query);
+
+	assert(!ret || slv2_values_size(ret) > 0);
+
+	return ret;
+}
+
 
 
 SLV2Values

@@ -225,6 +225,17 @@ librdf_uri* slv2_value_as_librdf_uri(SLV2Value value);
 void slv2_values_set_at(SLV2Values list, unsigned index, void* value);
 
 
+/* ********* Scale Points ********* */
+
+struct _SLV2ScalePoint {
+	SLV2Value value;
+	SLV2Value label;
+};
+
+SLV2ScalePoint slv2_scale_point_new(SLV2Value value, SLV2Value label);
+void           slv2_scale_point_free(SLV2ScalePoint point);
+
+
 /* String utility functions */
 
 char* slv2_strjoin(const char* first, ...);

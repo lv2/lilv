@@ -13,6 +13,8 @@ slv2include_HEADERS = \
 	port.h \
 	slv2.h \
 	types.h \
+	scalepoint.h \
+	scalepoints.h \
 	util.h \
 	value.h \
 	values.h \

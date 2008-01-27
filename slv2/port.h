@@ -138,11 +138,24 @@ slv2_port_is_a(SLV2Plugin plugin,
  * Time = Query
  */
 void
-slv2_port_get_range(SLV2Plugin p, 
+slv2_port_get_range(SLV2Plugin plugin, 
                     SLV2Port   port,
                     SLV2Value* def,
                     SLV2Value* min,
                     SLV2Value* max);
+
+
+/** Get the scale points (enumeration values) of a port.
+ *
+ * This returns a collection of 'interesting' named values of a port
+ * (e.g. appropriate entries for a UI selector associated with this port).
+ *
+ * Returned value may be NULL if @a port has no scale points, otherwise it
+ * must be freed by caller with slv2_scale_points_free.
+ */
+SLV2ScalePoints
+slv2_port_get_scale_points(SLV2Plugin plugin,
+                           SLV2Port   port);
 
 
 /** @} */

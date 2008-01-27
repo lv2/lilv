@@ -16,31 +16,48 @@
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef __SLV2_H__
-#define __SLV2_H__
+#define _XOPEN_SOURCE 500
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-#include <slv2/plugin.h>
-#include <slv2/pluginclass.h>
-#include <slv2/plugininstance.h>
-#include <slv2/plugins.h>
-#include <slv2/pluginui.h>
-#include <slv2/pluginuiinstance.h>
-#include <slv2/pluginuis.h>
-#include <slv2/port.h>
-#include <slv2/types.h>
-#include <slv2/util.h>
+#include <stdlib.h>
+#include <string.h>
+#include <assert.h>
+#include <locale.h>
+#include <raptor.h>
 #include <slv2/value.h>
-#include <slv2/values.h>
-#include <slv2/scalepoint.h>
-#include <slv2/scalepoints.h>
-#include <slv2/world.h>
+#include "slv2_internal.h"
 
-#ifdef __cplusplus
+
+/* private - ownership of value and label is taken */
+SLV2ScalePoint
+slv2_scale_point_new(SLV2Value value, SLV2Value label)
+{
+	SLV2ScalePoint point = (SLV2ScalePoint)malloc(sizeof(struct _SLV2ScalePoint));
+	point->value = value;
+	point->label= label;
+	return point;
 }
-#endif
 
-#endif /* __SLV2_H__ */
+
+/* private */
+void
+slv2_scale_point_free(SLV2ScalePoint point)
+{
+	slv2_value_free(point->value);
+	slv2_value_free(point->label);
+	free(point);
+}
+
+
+SLV2Value
+slv2_scale_point_get_value(SLV2ScalePoint p)
+{
+	return p->value;
+}
+
+
+SLV2Value
+slv2_scale_point_get_label(SLV2ScalePoint p)
+{
+	return p->label;
+}
+

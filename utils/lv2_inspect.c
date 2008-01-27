@@ -52,6 +52,17 @@ print_port(SLV2Plugin p, uint32_t index)
 		slv2_values_free(supported);
 	}
 
+	SLV2ScalePoints points = slv2_port_get_scale_points(p, port);
+	if (points)
+		printf("\t\tScale Points:\n");
+	for (unsigned i=0; i < slv2_scale_points_size(points); ++i) {
+		SLV2ScalePoint p = slv2_scale_points_get_at(points, i);
+		printf("\t\t\t%s = \"%s\"\n",
+				slv2_value_as_string(slv2_scale_point_get_value(p)),
+				slv2_value_as_string(slv2_scale_point_get_label(p)));
+	}
+	slv2_scale_points_free(points);
+
 	SLV2Value val = slv2_port_get_symbol(p, port);
 	printf("\n\t\tSymbol:     %s\n", slv2_value_as_string(val));
 
@@ -162,28 +173,32 @@ print_plugin(SLV2Plugin p)
 	/* Required Features */
 
 	SLV2Values features = slv2_plugin_get_required_features(p);
-	printf("\tRequired Features: ");
+	if (features)
+		printf("\tRequired Features: ");
 	for (unsigned i=0; i < slv2_values_size(features); ++i) {
 		if (i > 0) {
 			printf("\n\t            ");
 		}
 		printf("%s\n", slv2_value_as_uri(slv2_values_get_at(features, i)));
 	}
-	printf("\n");
+	if (features)
+		printf("\n");
 	slv2_values_free(features);
 	
 	
 	/* Optional Features */
 
 	features = slv2_plugin_get_optional_features(p);
-	printf("\tOptional Features: ");
+	if (features)
+		printf("\tOptional Features: ");
 	for (unsigned i=0; i < slv2_values_size(features); ++i) {
 		if (i > 0) {
 			printf("\n\t            ");
 		}
 		printf("%s\n", slv2_value_as_uri(slv2_values_get_at(features, i)));
 	}
-	printf("\n");
+	if (features)
+		printf("\n");
 	slv2_values_free(features);
 
 
