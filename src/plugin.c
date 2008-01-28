@@ -496,10 +496,8 @@ slv2_plugin_get_num_ports_of_class(SLV2Plugin p,
 			}
 		}
 
-		if (matches) {
-			printf("HIT: %s\n", slv2_value_as_string(slv2_port_get_name(p, port)));
+		if (matches)
 			++ret;
-		}
 
 		va_end(args);
 	}
