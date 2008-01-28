@@ -47,13 +47,13 @@ void
 slv2_scale_points_free(SLV2Values);
 
 
-/** Get the number of elements in a string list.
+/** Get the number of scale points in a collection.
  */
 unsigned
-slv2_scale_points_size(SLV2Values list);
+slv2_scale_points_size(SLV2Values points);
 
 
-/** Get a string from a string list at the given index.
+/** Get the scale point at the given index in a collection.
  *
  * @return the element at \a index, or NULL if index is out of range.
  *

@@ -47,28 +47,28 @@ void
 slv2_values_free(SLV2Values);
 
 
-/** Get the number of elements in a string list.
+/** Get the number of elements in a value collection.
  */
 unsigned
-slv2_values_size(SLV2Values list);
+slv2_values_size(SLV2Values values);
 
 
-/** Get a string from a string list at the given index.
+/** Get the value at a given index in the collection.
  *
  * @return the element at \a index, or NULL if index is out of range.
  *
  * Time = O(1)
  */
 SLV2Value
-slv2_values_get_at(SLV2Values list, unsigned index);
+slv2_values_get_at(SLV2Values values, unsigned index);
 
 
-/** Return whether \a list contains \a value.
+/** Return whether \a values contains \a value.
  *
  * Time = O(n)
  */
 bool
-slv2_values_contains(SLV2Values list, SLV2Value value);
+slv2_values_contains(SLV2Values values, SLV2Value value);
 
 
 /** @} */

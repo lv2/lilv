@@ -30,31 +30,31 @@ extern "C" {
  */
 
 
-/** Get the number of plugins in the list.
+/** Get the number of plugins in the collection.
  */
 unsigned
-slv2_plugin_classes_size(SLV2PluginClasses list);
+slv2_plugin_classes_size(SLV2PluginClasses classes);
 
 
-/** Get a plugin class from the list by URI.
+/** Get a plugin class from the collection by URI.
  *
- * Return value is shared (stored in \a list) and must not be freed or
+ * Return value is shared (stored in \a classes) and must not be freed or
  * modified by the caller in any way.
  *
  * Time = O(log2(n))
  * 
- * \return NULL if plugin with \a url not found in \a list.
+ * \return NULL if plugin with \a url not found in \a classes.
  */
 SLV2PluginClass
-slv2_plugin_classes_get_by_uri(SLV2PluginClasses list,
+slv2_plugin_classes_get_by_uri(SLV2PluginClasses classes,
                                SLV2Value         uri);
 
 
-/** Get a plugin from the list by index.
+/** Get a plugin from the collection by index.
  *
- * \a index has no significance other than as an index into this list.
- * Any \a index not less than slv2_plugin_classes_get_length(list) will return NULL,
- * so all plugin_classes in a list can be enumerated by repeated calls
+ * \a index has no significance other than as an index into \a classes.
+ * Any \a index not less than slv2_plugin_classes_get_length(classes) will return NULL,
+ * so all plugin_classes in a classes can be enumerated by repeated calls
  * to this function starting with \a index = 0.
  *
  * Time = O(1)
@@ -62,7 +62,7 @@ slv2_plugin_classes_get_by_uri(SLV2PluginClasses list,
  * \return NULL if \a index out of range.
  */
 SLV2PluginClass
-slv2_plugin_classes_get_at(SLV2PluginClasses list,
+slv2_plugin_classes_get_at(SLV2PluginClasses classes,
                            unsigned          index);
 
 
