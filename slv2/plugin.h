@@ -270,6 +270,18 @@ uint32_t
 slv2_plugin_get_num_ports(SLV2Plugin p);
 
 
+/** Get the number of ports on this plugin that are members of some class(es).
+ *
+ * Note that this is a varargs function so ports fitting any type 'profile'
+ * desired can be found quickly.  REMEMBER TO TERMINATE THE PARAMETER LIST
+ * OF THIS FUNCTION WITH NULL OR VERY NASTY THINGS WILL HAPPEN.
+ *
+ * Time = O(1)
+ */
+uint32_t
+slv2_plugin_get_num_ports_of_class(SLV2Plugin p,
+                                   SLV2Value  class_1, ...);
+
 /** Return whether or not the plugin introduces (and reports) latency.
  *
  * The index of the latency port can be found with slv2_plugin_get_latency_port

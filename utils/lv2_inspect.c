@@ -96,7 +96,7 @@ print_plugin(SLV2Plugin p)
 	SLV2Value val = NULL;
 
 	printf("%s\n\n", slv2_value_as_uri(slv2_plugin_get_uri(p)));
-	
+
 	val = slv2_plugin_get_name(p);
 	printf("\tName:              %s\n", slv2_value_as_string(val));
 	slv2_value_free(val);

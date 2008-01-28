@@ -473,6 +473,41 @@ slv2_plugin_get_num_ports(SLV2Plugin p)
 }
 
 
+uint32_t
+slv2_plugin_get_num_ports_of_class(SLV2Plugin p,
+                                   SLV2Value  class_1, ...)
+{
+	uint32_t ret = 0;
+	va_list  args;
+
+	for (unsigned i=0; i < slv2_plugin_get_num_ports(p); ++i) {
+		SLV2Port port = raptor_sequence_get_at(p->ports, i);
+		if (!slv2_port_is_a(p, port, class_1))
+			continue;
+
+		va_start(args, class_1);
+		
+		bool matches = true;
+		for (SLV2Value class_i = NULL; (class_i = va_arg(args, SLV2Value)) != NULL ; ) {
+			if (!slv2_port_is_a(p, port, class_i)) {
+				va_end(args);
+				matches = false;
+				break;
+			}
+		}
+
+		if (matches) {
+			printf("HIT: %s\n", slv2_value_as_string(slv2_port_get_name(p, port)));
+			++ret;
+		}
+
+		va_end(args);
+	}
+
+	return ret;
+}
+
+
 bool
 slv2_plugin_has_latency(SLV2Plugin p)
 {
