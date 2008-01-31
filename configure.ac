@@ -112,7 +112,8 @@ if test "X$REDLAND_CONFIG" = X; then
   AC_MSG_ERROR([REDLANDMM requires Redland (librdf), but redland-config not found.])
 else
   build_redland="yes"
-  PKG_CHECK_MODULES(RAPTOR, raptor, build_raptor="yes", build_raptor="no")
+  PKG_CHECK_MODULES(RAPTOR, raptor)
+  PKG_CHECK_MODULES(RASQAL, rasqal >= 0.9.14)
   REDLAND_CFLAGS=`$REDLAND_CONFIG --cflags`
   REDLAND_LIBS=`$REDLAND_CONFIG --libs`
   AC_SUBST(REDLAND_CFLAGS)
