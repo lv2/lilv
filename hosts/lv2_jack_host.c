@@ -339,7 +339,7 @@ jack_process_cb(jack_nframes_t nframes, void* data)
 
 				for (jack_nframes_t e=0; e < event_count; ++e) {
 					jack_midi_event_get(&ev, jack_buffer, e);
-					lv2_event_append(&iter, ev.time, 0, MIDI_EVENT_ID, ev.size, ev.buffer);
+					lv2_event_write(&iter, ev.time, 0, MIDI_EVENT_ID, ev.size, ev.buffer);
 				}
 			}
 		}
