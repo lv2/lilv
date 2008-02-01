@@ -371,7 +371,7 @@ jack_process_cb(jack_nframes_t nframes, void* data)
 
 #if defined(JACK_MIDI_NEEDS_NFRAMES)
 				jack_midi_event_write(jack_buffer,
-                              (jack_nframes_t)ev->frames, data, size, nframes);
+                              (jack_nframes_t)ev->frames, data, ev->size, nframes);
 #else
 				jack_midi_event_write(jack_buffer,
 						(jack_nframes_t)ev->frames, data, ev->size);
