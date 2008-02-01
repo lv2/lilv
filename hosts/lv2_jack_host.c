@@ -25,8 +25,9 @@
 #include <slv2/slv2.h>
 #include <jack/jack.h>
 #include <jack/midiport.h>
-#include "lv2-miditype.h"
-#include "lv2-midifunctions.h"
+#include "lv2_uri_map.h"
+#include "lv2_event.h"
+#include "lv2_event_helpers.h"
 #include "jack_compat.h"
 
 #define MIDI_BUFFER_SIZE 1024
@@ -39,16 +40,16 @@ enum PortDirection {
 enum PortType {
 	CONTROL,
 	AUDIO,
-	MIDI
+	EVENT
 };
 
 struct Port {
 	SLV2Port           slv2_port;
 	enum PortDirection direction;
 	enum PortType      type;
-	jack_port_t*       jack_port;   /**< For audio and MIDI ports, otherwise NULL */
-	float              control;     /**< For control ports, otherwise 0.0f */
-	LV2_MIDI*          midi_buffer; /**< For midi ports, otherwise NULL */
+	jack_port_t*       jack_port; /**< For audio and MIDI ports, otherwise NULL */
+	float              control;   /**< For control ports, otherwise 0.0f */
+	LV2_Event_Buffer*  ev_buffer; /**< For midi ports, otherwise NULL */
 };
 
 
@@ -63,10 +64,27 @@ struct JackHost {
 	SLV2Value      output_class;  /**< Output port class (URI) */
 	SLV2Value      control_class; /**< Control port class (URI) */
 	SLV2Value      audio_class;   /**< Audio port class (URI) */
-	SLV2Value      midi_class;    /**< MIDI port class (URI) */
+	SLV2Value      event_class;   /**< Event port class (URI) */
+	SLV2Value      midi_class;    /**< MIDI event class (URI) */
 	SLV2Value      optional;      /**< lv2:connectionOptional port property */
 };
 
+/** URI map feature, for event types (we use only MIDI) */
+#define MIDI_EVENT_ID 1
+uint32_t
+uri_to_id(LV2_URI_Map_Callback_Data callback_data,
+          const char*               map,
+          const char*               uri)
+{
+	if (!strcmp(map, LV2_EVENT_URI) && !strcmp(uri, SLV2_EVENT_CLASS_MIDI))
+		return MIDI_EVENT_ID;
+	else
+		return 0; // no id for you!
+}
+
+static LV2_URI_Map_Feature uri_map = { &uri_to_id, NULL };
+static const LV2_Feature uri_map_feature = { "http://lv2plug.in/ns/ext/uri-map", &uri_map };
+const LV2_Feature* features[2] = { &uri_map_feature, NULL };
 
 void die(const char* msg);
 void create_port(struct JackHost* host, uint32_t port_index);
@@ -92,7 +110,8 @@ main(int argc, char** argv)
 	host.output_class = slv2_value_new_uri(world, SLV2_PORT_CLASS_OUTPUT);
 	host.control_class = slv2_value_new_uri(world, SLV2_PORT_CLASS_CONTROL);
 	host.audio_class = slv2_value_new_uri(world, SLV2_PORT_CLASS_AUDIO);
-	host.midi_class = slv2_value_new_uri(world, SLV2_PORT_CLASS_MIDI);
+	host.event_class = slv2_value_new_uri(world, SLV2_PORT_CLASS_EVENT);
+	host.midi_class = slv2_value_new_uri(world, SLV2_EVENT_CLASS_MIDI);
 	host.optional = slv2_value_new_uri(world, SLV2_NAMESPACE_LV2 "connectionOptional");
 
 	/* Find the plugin to run */
@@ -133,7 +152,7 @@ main(int argc, char** argv)
 	}
 	
 	/* Connect to JACK */
-	printf("JACK Name:\t%s\n", name_str);
+	printf("JACK Name:\t%s\n", jack_name);
 	host.jack_client = jack_client_open(jack_name, JackNullOption, NULL);
 
 	free(jack_name);
@@ -146,7 +165,7 @@ main(int argc, char** argv)
 	
 	/* Instantiate the plugin */
 	host.instance = slv2_plugin_instantiate(
-		host.plugin, jack_get_sample_rate(host.jack_client), NULL);
+		host.plugin, jack_get_sample_rate(host.jack_client), features);
 	if (!host.instance)
 		die("Failed to instantiate plugin.\n");
 	else
@@ -179,8 +198,8 @@ main(int argc, char** argv)
 			jack_port_unregister(host.jack_client, host.ports[i].jack_port);
 			host.ports[i].jack_port = NULL;
 		}
-		if (host.ports[i].midi_buffer != NULL) {
-			lv2midi_free(host.ports[i].midi_buffer);
+		if (host.ports[i].ev_buffer != NULL) {
+			free(host.ports[i].ev_buffer);
 		}
 	}
 	jack_client_close(host.jack_client);
@@ -194,6 +213,7 @@ main(int argc, char** argv)
 	slv2_value_free(host.output_class);
 	slv2_value_free(host.control_class);
 	slv2_value_free(host.audio_class);
+	slv2_value_free(host.event_class);
 	slv2_value_free(host.midi_class);
 	slv2_value_free(host.optional);
 	slv2_plugins_free(world, plugins);
@@ -225,10 +245,10 @@ create_port(struct JackHost* host,
 {
 	struct Port* const port = &host->ports[port_index];
 
-	port->slv2_port   = slv2_plugin_get_port_by_index(host->plugin, port_index);
-	port->jack_port   = NULL;
-	port->control     = 0.0f;
-	port->midi_buffer = NULL;
+	port->slv2_port = slv2_plugin_get_port_by_index(host->plugin, port_index);
+	port->jack_port = NULL;
+	port->control   = 0.0f;
+	port->ev_buffer = NULL;
 
 	slv2_instance_connect_port(host->instance, port_index, NULL);
 
@@ -254,13 +274,13 @@ create_port(struct JackHost* host,
 		port->type = CONTROL;
 		SLV2Value def;
 		slv2_port_get_range(host->plugin, port->slv2_port, &def, NULL, NULL);
-		port->control = slv2_value_as_float(def);
+		port->control = def ? slv2_value_as_float(def) : 0.0f;
 		printf("Set %s to %f\n", symbol_str, host->ports[port_index].control);
 		slv2_value_free(def);
 	} else if (slv2_port_is_a(host->plugin, port->slv2_port, host->audio_class)) {
 		port->type = AUDIO;
-	} else if (slv2_port_is_a(host->plugin, port->slv2_port, host->midi_class)) {
-		port->type = MIDI;
+	} else if (slv2_port_is_a(host->plugin, port->slv2_port, host->event_class)) {
+		port->type = EVENT;
 	}
 
 	/* Connect the port based on it's type */
@@ -272,11 +292,11 @@ create_port(struct JackHost* host,
 			port->jack_port = jack_port_register(host->jack_client,
 					symbol_str, JACK_DEFAULT_AUDIO_TYPE, jack_flags, 0);
 			break;
-		case MIDI:
+		case EVENT:
 			port->jack_port = jack_port_register(host->jack_client,
-					symbol_str, JACK_DEFAULT_MIDI_TYPE, JackPortIsInput, 0);
-			port->midi_buffer = lv2midi_new(MIDI_BUFFER_SIZE);
-			slv2_instance_connect_port(host->instance, port_index, port->midi_buffer);
+					symbol_str, JACK_DEFAULT_MIDI_TYPE, jack_flags, 0);
+			port->ev_buffer = lv2_event_buffer_new(MIDI_BUFFER_SIZE, LV2_EVENT_AUDIO_STAMP);
+			slv2_instance_connect_port(host->instance, port_index, port->ev_buffer);
 			break;
 		default:
 			// FIXME: check if port connection is is optional and die if not
@@ -302,17 +322,15 @@ jack_process_cb(jack_nframes_t nframes, void* data)
 			slv2_instance_connect_port(host->instance, p,
 					jack_port_get_buffer(host->ports[p].jack_port, nframes));
 
-		} else if (host->ports[p].type == MIDI) {
+		} else if (host->ports[p].type == EVENT) {
 
-			lv2midi_reset_buffer(host->ports[p].midi_buffer);
+			lv2_event_buffer_reset(host->ports[p].ev_buffer, LV2_EVENT_AUDIO_STAMP);
 
 			if (host->ports[p].direction == INPUT) {
 				void* jack_buffer = jack_port_get_buffer(host->ports[p].jack_port, nframes);
 
-				lv2midi_reset_buffer(host->ports[p].midi_buffer);
-
-				LV2_MIDIState state;
-				lv2midi_reset_state(&state, host->ports[p].midi_buffer, nframes);
+				LV2_Event_Iterator iter;
+				lv2_event_begin(&iter, host->ports[p].ev_buffer);
 
 				const jack_nframes_t event_count
 					= jack_midi_get_event_count(jack_buffer);
@@ -321,9 +339,8 @@ jack_process_cb(jack_nframes_t nframes, void* data)
 
 				for (jack_nframes_t e=0; e < event_count; ++e) {
 					jack_midi_event_get(&ev, jack_buffer, e);
-					lv2midi_put_event(&state, (double)ev.time, ev.size, ev.buffer);
+					lv2_event_append(&iter, ev.time, 0, MIDI_EVENT_ID, ev.size, ev.buffer);
 				}
-
 			}
 		}
 	}
@@ -337,33 +354,30 @@ jack_process_cb(jack_nframes_t nframes, void* data)
 	for (uint32_t p=0; p < host->num_ports; ++p) {
 		if (host->ports[p].jack_port
 				&& host->ports[p].direction == INPUT
-				&& host->ports[p].type == MIDI) {
+				&& host->ports[p].type == EVENT) {
 
 			void* jack_buffer = jack_port_get_buffer(host->ports[p].jack_port, nframes);
 
 			jack_midi_clear_buffer(jack_buffer);
 
-			LV2_MIDIState state;
-			lv2midi_reset_state(&state, host->ports[p].midi_buffer, nframes);
-			
-			double         timestamp = 0.0f;
-			uint32_t       size      = 0;
-			unsigned char* data      = NULL;
+			LV2_Event_Iterator iter;
+			lv2_event_begin(&iter, host->ports[p].ev_buffer);
 
-			const uint32_t event_count = state.midi->event_count;
+			const uint32_t event_count = iter.buf->event_count;
 
 			for (uint32_t i=0; i < event_count; ++i) {
-				lv2midi_get_event(&state, &timestamp, &size, &data);
+				uint8_t* data;
+				LV2_Event* ev = lv2_event_get(&iter, &data);
 
 #if defined(JACK_MIDI_NEEDS_NFRAMES)
 				jack_midi_event_write(jack_buffer,
-                              (jack_nframes_t)timestamp, data, size, nframes);
+                              (jack_nframes_t)ev->frames, data, size, nframes);
 #else
 				jack_midi_event_write(jack_buffer,
-						(jack_nframes_t)timestamp, data, size);
+						(jack_nframes_t)ev->frames, data, ev->size);
 #endif
 
-				lv2midi_increment(&state);
+				lv2_event_increment(&iter);
 			}
 
 		}

@@ -31,9 +31,8 @@ extern "C" {
 #define SLV2_PORT_CLASS_OUTPUT  "http://lv2plug.in/ns/lv2core#OutputPort"
 #define SLV2_PORT_CLASS_CONTROL "http://lv2plug.in/ns/lv2core#ControlPort"
 #define SLV2_PORT_CLASS_AUDIO   "http://lv2plug.in/ns/lv2core#AudioPort"
-#define SLV2_PORT_CLASS_MIDI    "http://ll-plugins.nongnu.org/lv2/ext/MidiPort"
-#define SLV2_PORT_CLASS_OSC     "http://drobilla.net/ns/lv2ext/osc/0#OSCPort"
 #define SLV2_PORT_CLASS_EVENT   "http://lv2plug.in/ns/ext/event#EventPort"
+#define SLV2_EVENT_CLASS_MIDI   "http://lv2plug.in/ns/ext/midi#MidiEvent"
 
 
 /** A port on a plugin.  Opaque, but valid to compare to NULL. */

@@ -105,7 +105,7 @@ main(int argc, char** argv)
 	}
 
 	/* Connect to JACK */
-	printf("JACK Name:\t%s\n", name_str);
+	printf("JACK Name:\t%s\n", jack_name);
 	host.jack_client = jack_client_open(jack_name, JackNullOption, NULL);
 	
 	free(jack_name);
