@@ -114,10 +114,7 @@ else
   build_redland="yes"
   PKG_CHECK_MODULES(RAPTOR, raptor)
   PKG_CHECK_MODULES(RASQAL, rasqal >= 0.9.14)
-  REDLAND_CFLAGS=`$REDLAND_CONFIG --cflags`
-  REDLAND_LIBS=`$REDLAND_CONFIG --libs`
-  AC_SUBST(REDLAND_CFLAGS)
-  AC_SUBST(REDLAND_LIBS)
+  PKG_CHECK_MODULES(REDLAND, redland >= 1.0.6)
 fi
 AM_CONDITIONAL(WITH_REDLAND, [test "$build_redland" = "yes"])
 
