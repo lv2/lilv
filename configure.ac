@@ -109,12 +109,36 @@ AM_CONDITIONAL(WITH_SWIG, [test "$bindings" = "yes"])
 build_redland="no"
 AC_CHECK_PROG(REDLAND_CONFIG, redland-config, redland-config)
 if test "X$REDLAND_CONFIG" = X; then
-  AC_MSG_ERROR([REDLANDMM requires Redland (librdf), but redland-config not found.])
+	AC_MSG_ERROR([REDLANDMM requires Redland (librdf), but redland-config not found.])
 else
-  build_redland="yes"
-  PKG_CHECK_MODULES(RAPTOR, raptor)
-  PKG_CHECK_MODULES(RASQAL, rasqal >= 0.9.14)
-  PKG_CHECK_MODULES(REDLAND, redland >= 1.0.6)
+	build_redland="yes"
+	PKG_CHECK_MODULES(RAPTOR, raptor)
+	PKG_CHECK_MODULES(RASQAL, rasqal >= 0.9.14)
+	redland_major_version=`$REDLAND_CONFIG --version | \
+	  sed 's/\([[0-9]]*\).\([[0-9]]*\).\([[0-9]]*\)/\1/'`
+	redland_minor_version=`$REDLAND_CONFIG --version | \
+	  sed 's/\([[0-9]]*\).\([[0-9]]*\).\([[0-9]]*\)/\2/'`
+	redland_micro_version=`$REDLAND_CONFIG --version | \
+	  sed 's/\([[0-9]]*\).\([[0-9]]*\).\([[0-9]]*\)/\3/'`
+	AC_MSG_CHECKING([for REDLAND version >= 1.0.6])
+	version_ok="no"
+	if test 1 -le $redland_major_version; then
+		if test 0 -le $redland_minor_version; then
+			if test 6 -le $redland_micro_version; then
+				version_ok="yes"
+			fi
+		fi
+	fi
+	if test $version_ok = "no"; then
+	    act=`$REDLAND_CONFIG --version`
+		AC_MSG_ERROR([REDLAND version >= 1.0.6 required; $act found])
+	else
+		AC_MSG_RESULT([yes])
+    fi
+	REDLAND_CFLAGS=`$REDLAND_CONFIG --cflags`
+	REDLAND_LIBS=`$REDLAND_CONFIG --libs`
+	AC_SUBST(REDLAND_CFLAGS)
+	AC_SUBST(REDLAND_LIBS)
 fi
 AM_CONDITIONAL(WITH_REDLAND, [test "$build_redland" = "yes"])
 
