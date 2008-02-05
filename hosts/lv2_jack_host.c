@@ -324,7 +324,7 @@ jack_process_cb(jack_nframes_t nframes, void* data)
 
 		} else if (host->ports[p].type == EVENT) {
 
-			lv2_event_buffer_reset(host->ports[p].ev_buffer, LV2_EVENT_AUDIO_STAMP);
+			lv2_event_buffer_reset(host->ports[p].ev_buffer, LV2_EVENT_AUDIO_STAMP, (uint8_t *)(host->ports[p].ev_buffer + 1));
 
 			if (host->ports[p].direction == INPUT) {
 				void* jack_buffer = jack_port_get_buffer(host->ports[p].jack_port, nframes);
