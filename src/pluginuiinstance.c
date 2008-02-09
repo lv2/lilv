@@ -109,11 +109,9 @@ slv2_ui_instantiate(SLV2Plugin                     plugin,
 		}
 	}
 
-	assert(result);
-	assert(slv2_plugin_get_num_ports(plugin) > 0);
 
 	// Failed to instantiate
-	if (result->pimpl->lv2ui_handle == NULL) {
+	if (result == NULL || result->pimpl->lv2ui_handle == NULL) {
 		//printf("Failed to instantiate %s\n", plugin->plugin_uri);
 		free(result);
 		return NULL;
@@ -136,6 +134,9 @@ slv2_ui_instantiate(SLV2Plugin                     plugin,
 void
 slv2_ui_instance_free(SLV2UIInstance instance)
 {
+	if (instance == NULL)
+		return;
+
 	struct _SLV2UIInstance* i = (struct _SLV2UIInstance*)instance;
 	i->pimpl->lv2ui_descriptor->cleanup(i->pimpl->lv2ui_handle);
 	i->pimpl->lv2ui_descriptor = NULL;
