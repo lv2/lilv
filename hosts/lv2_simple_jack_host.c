@@ -53,6 +53,11 @@ main(int argc, char** argv)
 	host.num_ports   = 0;
 	host.jack_ports  = NULL;
 	host.controls    = NULL;
+	
+	/* Find all installed plugins */
+	host.world = slv2_world_new();
+	slv2_world_load_all(host.world);
+	SLV2Plugins plugins = slv2_world_get_all_plugins(host.world);
 
 	/* Set up the port classes this app supports */
 	host.input_class = slv2_value_new_uri(host.world, SLV2_PORT_CLASS_INPUT);
@@ -62,11 +67,6 @@ main(int argc, char** argv)
 	 * is the same as: */
 	host.control_class = slv2_value_new_uri(host.world,
 			"http://lv2plug.in/ns/lv2core#ControlPort");
-	
-	/* Find all installed plugins */
-	host.world = slv2_world_new();
-	slv2_world_load_all(host.world);
-	SLV2Plugins plugins = slv2_world_get_all_plugins(host.world);
 
 	/* Find the plugin to run */
 	const char* plugin_uri_str = (argc == 2) ? argv[1] : NULL;
