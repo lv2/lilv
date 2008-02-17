@@ -2,6 +2,7 @@ AC_PREREQ(2.59)
 
 AC_INIT([slv2],0.6.0,[dave@drobilla.net])
 
+m4_include([m4/ac_python_devel.m4])
 AC_CONFIG_AUX_DIR([config])
 
 AC_CONFIG_SRCDIR([src/plugin.c])
