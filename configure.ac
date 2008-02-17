@@ -96,9 +96,9 @@ if test "$strict" = "yes"; then
 fi
 
 # SWIG bindings
-bindings="yes"
+bindings="no"
 AC_ARG_ENABLE(bindings,
-	[AS_HELP_STRING(--enable-bindings, [Build language bindings via SWIG (true if available)])],
+	[AS_HELP_STRING(--enable-bindings, [Build language bindings via SWIG (false)])],
 	[bindings="$enableval"])
 if test "$bindings" = "yes"; then
   AC_CHECK_PROGS(SWIG, "swig swig-1.3")
@@ -108,11 +108,17 @@ if test "$bindings" = "yes"; then
 fi
 AM_CONDITIONAL(WITH_SWIG, [test "$bindings" = "yes"])
 
-python="no"
+# Check for binding languages
+mzscheme="no"
+chicken="no"
 if test "$bindings" = "yes"; then
   AC_PYTHON_DEVEL([>= '2.3.0'])
+  AC_CHECK_HEADER([plt/escheme.h], [mzscheme="yes"], [mzscheme="no"])
+  AC_CHECK_HEADER([chicken.h], [chicken="yes"], [chicken="no"])
 fi
 AM_CONDITIONAL(WITH_PYTHON, [test ! "$PYTHON_VERSION" = "yes"])
+AM_CONDITIONAL(WITH_MZSCHEME, [test "$mzscheme" = "yes"])
+AM_CONDITIONAL(WITH_CHICKEN, [test "$chicken" = "yes"])
 
 # Check for Redland
 build_redland="no"

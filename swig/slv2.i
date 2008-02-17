@@ -1,37 +1,37 @@
 %module slv2
 %{
-#include "../slv2/plugin.h"
-#include "../slv2/pluginclass.h"
-#include "../slv2/pluginclasses.h"
-#include "../slv2/plugininstance.h"
-#include "../slv2/plugins.h"
-#include "../slv2/port.h"
-#include "../slv2/slv2.h"
-#include "../slv2/types.h"
-#include "../slv2/value.h"
-#include "../slv2/values.h"
-#include "../slv2/world.h"
+#include "slv2/plugin.h"
+#include "slv2/pluginclass.h"
+#include "slv2/pluginclasses.h"
+#include "slv2/plugininstance.h"
+#include "slv2/plugins.h"
+#include "slv2/port.h"
+#include "slv2/slv2.h"
+#include "slv2/types.h"
+#include "slv2/value.h"
+#include "slv2/values.h"
+#include "slv2/world.h"
 typedef struct { SLV2World me; } World;
 typedef struct { SLV2World world; SLV2Plugins me; } Plugins;
 typedef struct { SLV2World world; SLV2Plugin me; } Plugin;
 %}
  
-%include "../slv2/plugin.h"
-%include "../slv2/pluginclass.h"
-%include "../slv2/pluginclasses.h"
-%include "../slv2/plugininstance.h"
-%include "../slv2/plugins.h"
-%include "../slv2/port.h"
-%include "../slv2/slv2.h"
-%include "../slv2/types.h"
-%include "../slv2/value.h"
-%include "../slv2/values.h"
-%include "../slv2/world.h"
+%include "slv2/plugin.h"
+%include "slv2/pluginclass.h"
+%include "slv2/pluginclasses.h"
+%include "slv2/plugininstance.h"
+%include "slv2/plugins.h"
+%include "slv2/port.h"
+%include "slv2/slv2.h"
+%include "slv2/types.h"
+%include "slv2/value.h"
+%include "slv2/values.h"
+%include "slv2/world.h"
 
 typedef struct { SLV2Plugin me; } Plugin;
 %extend Plugin {
     Plugin(SLV2Plugin p) {
-        Plugin* ret = malloc(sizeof(Plugin));
+        Plugin* ret = (Plugin*)malloc(sizeof(Plugin));
         ret->me = p;
         return ret;
     }
@@ -55,7 +55,7 @@ typedef struct { SLV2Plugin me; } Plugin;
 typedef struct { SLV2World world; SLV2Plugins me; } Plugins;
 %extend Plugins {
     Plugins(SLV2World w, SLV2Plugins p) {
-        Plugins* ret = malloc(sizeof(Plugins));
+        Plugins* ret = (Plugins*)malloc(sizeof(Plugins));
         ret->world = w;
         ret->me = p;
         return ret;
@@ -76,6 +76,7 @@ typedef struct { SLV2World world; SLV2Plugins me; } Plugins;
             return NULL;
     }
 
+#ifdef PYTHON
 %pythoncode %{
     def __iter__(self):
         class Iterator(object):
@@ -92,12 +93,13 @@ typedef struct { SLV2World world; SLV2Plugins me; } Plugins;
 
         return Iterator(self)
 %}
+#endif
 };
 
 typedef struct { SLV2World me; } World;
 %extend World {
     World() {
-        World* ret = malloc(sizeof(World));
+        World* ret = (World*)malloc(sizeof(World));
         ret->me = slv2_world_new();
         return ret;
     }
@@ -109,7 +111,7 @@ typedef struct { SLV2World me; } World;
 
     void load_all() { slv2_world_load_all($self->me); }
     void load_bundle(const char* uri) {
-        SLV2Value bundle_uri = slv2_value_new_uri($self->me, (const unsigned char*)uri);
+        SLV2Value bundle_uri = slv2_value_new_uri($self->me, uri);
         slv2_world_load_bundle($self->me, bundle_uri);
         slv2_value_free(bundle_uri);
     }
