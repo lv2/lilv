@@ -96,14 +96,23 @@ if test "$strict" = "yes"; then
 fi
 
 # SWIG bindings
-bindings="no"
+bindings="yes"
 AC_ARG_ENABLE(bindings,
-	[AS_HELP_STRING(--enable-bindings, [Build language bindings via SWIG (false)])],
+	[AS_HELP_STRING(--enable-bindings, [Build language bindings via SWIG (true if available)])],
 	[bindings="$enableval"])
 if test "$bindings" = "yes"; then
-  AC_CHECK_PROGS(SWIG, swig)
+  AC_CHECK_PROGS(SWIG, "swig swig-1.3")
+  if test "$SWIG" = ""; then
+  	AC_MSG_WARN("SWIG not found, language bindings disabled")
+  fi
 fi
 AM_CONDITIONAL(WITH_SWIG, [test "$bindings" = "yes"])
+
+python="no"
+if test "$bindings" = "yes"; then
+  AC_PYTHON_DEVEL([>= '2.3.0'])
+fi
+AM_CONDITIONAL(WITH_PYTHON, [test ! "$PYTHON_VERSION" = "yes"])
 
 # Check for Redland
 build_redland="no"

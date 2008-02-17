@@ -41,8 +41,15 @@ typedef struct { SLV2Plugin me; } Plugin;
         free($self);
     }
 
-    char* name() { return slv2_plugin_get_name($self->me); }
-    const char* uri() { return slv2_plugin_get_uri($self->me); }
+    char* name() {
+        SLV2Value nm = slv2_plugin_get_name($self->me);
+        char* ret = nm ? strdup((char*)slv2_value_as_string(nm)) : strdup("");
+        slv2_value_free(nm);
+        return ret;
+    }
+    const char* uri() {
+        return strdup((char*)slv2_value_as_string(slv2_plugin_get_uri($self->me)));
+    }
 };
 
 typedef struct { SLV2World world; SLV2Plugins me; } Plugins;
@@ -101,8 +108,15 @@ typedef struct { SLV2World me; } World;
     }
 
     void load_all() { slv2_world_load_all($self->me); }
-    void load_bundle(const char* path) { slv2_world_load_bundle($self->me, path); }
-    Plugins* get_all_plugins() { return new_Plugins($self->me, slv2_world_get_all_plugins($self->me)); }
+    void load_bundle(const char* uri) {
+        SLV2Value bundle_uri = slv2_value_new_uri($self->me, (const unsigned char*)uri);
+        slv2_world_load_bundle($self->me, bundle_uri);
+        slv2_value_free(bundle_uri);
+    }
+   
+    Plugins* get_all_plugins() {
+        return new_Plugins($self->me, slv2_world_get_all_plugins($self->me));
+    }
 };
 
 

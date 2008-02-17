@@ -8,7 +8,7 @@ if [ -x "`which glibtoolize`" ]; then # OSX
 else # Unix
 	libtoolize --force
 fi
-aclocal
+aclocal -I m4
 autoheader -Wall
 automake --foreign --add-missing
 autoconf
