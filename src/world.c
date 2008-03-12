@@ -43,6 +43,8 @@ slv2_world_new()
 
 	librdf_world_open(world->world);
 	
+	// Testing shows hashes to be  faster here
+	//world->storage = librdf_new_storage(world->world, "memory", NULL, NULL);
 	world->storage = librdf_new_storage(world->world, "hashes", NULL,
 			"hash-type='memory'");
 	if (!world->storage)
@@ -97,6 +99,8 @@ slv2_world_new_using_rdf_world(librdf_world* rdf_world)
 	
 	world->local_world = false;
 
+	// Testing shows hashes to be  faster here
+	//world->storage = librdf_new_storage(world->world, "memory", NULL, NULL);
 	world->storage = librdf_new_storage(world->world, "hashes", NULL,
 			"hash-type='memory'");
 	if (!world->storage)

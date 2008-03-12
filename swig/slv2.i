@@ -67,8 +67,8 @@ typedef struct { SLV2World world; SLV2Plugins me; } Plugins;
     }
 
     inline unsigned size() const { return slv2_plugins_size($self->me); }
-    inline unsigned __len__() const { return slv2_plugins_size($self->me); }
 
+#ifdef PYTHON
     Plugin* __getitem__(unsigned i) {
         if (i < slv2_plugins_size($self->me))
             return new_Plugin(slv2_plugins_get_at($self->me, i));
@@ -76,7 +76,8 @@ typedef struct { SLV2World world; SLV2Plugins me; } Plugins;
             return NULL;
     }
 
-#ifdef PYTHON
+    inline unsigned __len__() const { return slv2_plugins_size($self->me); }
+
 %pythoncode %{
     def __iter__(self):
         class Iterator(object):

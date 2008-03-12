@@ -19,16 +19,16 @@ if WITH_MZSCHEME
 mzscheme:
 	swig -DMZSCHEME -Wall -mzscheme -I.. -o slv2_mzscheme.c -oh slv2_mzscheme.h slv2.i
 	gcc -fPIC -shared -Iplt \
-		-I/usr/include/plt slv2_mzscheme.c ../src/.libs/libslv2.so -o libslv2_mzscheme.so
+		-I/usr/include/plt slv2_mzscheme.c -o libslv2_mzscheme.so
 endif # WITH_MZSCHEME
 
 if WITH_CHICKEN
 chicken:
+	rm -f slv2.scm slv2_wrap.c
 	rm -rf eggs
 	mkdir -p eggs
 	swig -DCHICKEN -Wall -chicken -proxy -nounit -I.. -o slv2_wrap.c -oh slv2_wrap.h slv2.i
 	tar -czf eggs/slv2.egg slv2.setup slv2.scm slv2_wrap.c
-	rm -f slv2.scm slv2_wrap.c
 endif # WITH_CHICKEN
 
 endif # WITH_SWIG

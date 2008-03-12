@@ -256,8 +256,10 @@ add_port_range(LADSPA_Descriptor* plugin,
 void
 write_lv2_turtle(LADSPA_Descriptor* descriptor, const char* plugin_uri, const char* filename)
 {
-	librdf_storage* storage = librdf_new_storage(world,
-			"hashes", NULL, "hash-type='memory'");
+	//librdf_storage* storage = librdf_new_storage(world,
+	//		"hashes", NULL, "hash-type='memory'");
+	librdf_storage* storage = librdf_new_storage(world, "memory", NULL, NULL);
+
 	librdf_model* model = librdf_new_model(world, storage, NULL);
 	librdf_serializer* serializer = librdf_new_serializer(world, "turtle", NULL, NULL);
 
