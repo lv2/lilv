@@ -133,8 +133,8 @@ slv2_plugin_load(SLV2Plugin p)
 	librdf_query_results* results = librdf_query_execute(q, p->rdf);
 		
 	while (!librdf_query_results_finished(results)) {
-		librdf_node* class_node    = librdf_query_results_get_binding_value(results, 0);
-		librdf_uri*  class_uri     = librdf_node_get_uri(class_node);
+		librdf_node* class_node = librdf_query_results_get_binding_value(results, 0);
+		librdf_uri*  class_uri  = librdf_node_get_uri(class_node);
 
 		SLV2Value class = slv2_value_new_librdf_uri(p->world, class_uri);
 		
@@ -236,6 +236,29 @@ slv2_plugin_load(SLV2Plugin p)
 	librdf_free_query_results(results);
 	librdf_free_query(q);
 
+	// Load binary URI
+	query = (const unsigned char*)
+		"PREFIX : <http://lv2plug.in/ns/lv2core#>\n"
+		"SELECT ?binary WHERE { <> :binary ?binary . }";
+	
+	q = librdf_new_query(p->world->world, "sparql",
+		NULL, query, slv2_value_as_librdf_uri(p->plugin_uri));
+	
+	results = librdf_query_execute(q, p->rdf);
+
+	if (!librdf_query_results_finished(results)) {
+		librdf_node* binary_node = librdf_query_results_get_binding_value(results, 0);
+		librdf_uri* binary_uri = librdf_node_get_uri(binary_node);
+
+		SLV2Value binary = slv2_value_new_librdf_uri(p->world, binary_uri);
+		p->binary_uri = binary;
+
+		librdf_free_node(binary_node);
+	}
+	
+	librdf_free_query_results(results);
+	librdf_free_query(q);
+
 	//printf("%p %s: NUM PORTS: %d\n", (void*)p, p->plugin_uri, slv2_plugin_get_num_ports(p));
 }
 
@@ -262,7 +285,8 @@ SLV2Value
 slv2_plugin_get_library_uri(SLV2Plugin p)
 {
 	assert(p);
-	assert(p->binary_uri);
+	if (!p->binary_uri && !p->rdf)
+		slv2_plugin_load(p);
 	return p->binary_uri;
 }
 

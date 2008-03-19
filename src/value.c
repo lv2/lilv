@@ -122,6 +122,9 @@ slv2_value_new_librdf_node(SLV2World world, librdf_node* node)
 SLV2Value
 slv2_value_new_librdf_uri(SLV2World world, librdf_uri* uri)
 {
+	if (!uri)
+		return NULL;
+
 	SLV2Value val = (SLV2Value)malloc(sizeof(struct _SLV2Value));
 	val->type = SLV2_VALUE_URI;
 	val->val.uri_val = librdf_new_uri_from_uri(uri);
