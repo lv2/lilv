@@ -82,7 +82,7 @@ uri_to_id(LV2_URI_Map_Callback_Data callback_data,
 		return 0; // no id for you!
 }
 
-static LV2_URI_Map_Feature uri_map = { &uri_to_id, NULL };
+static LV2_URI_Map_Feature uri_map = { NULL, &uri_to_id };
 static const LV2_Feature uri_map_feature = { "http://lv2plug.in/ns/ext/uri-map", &uri_map };
 const LV2_Feature* features[2] = { &uri_map_feature, NULL };
 
