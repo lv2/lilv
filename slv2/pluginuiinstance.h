@@ -64,7 +64,6 @@ slv2_ui_instantiate(SLV2Plugin                plugin,
                     SLV2UI                    ui,
                     LV2UI_Write_Function      write_function,
                     LV2UI_Controller          controller,
-                    LV2UI_Host_Data           host_data,
                     const LV2_Feature* const* features);
 
 

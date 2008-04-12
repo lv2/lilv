@@ -734,7 +734,7 @@ SLV2UIs
 slv2_plugin_get_uis(SLV2Plugin plugin)
 {
     const char* const query_str =
-		"PREFIX uiext: <http://ll-plugins.nongnu.org/lv2/ext/ui#>\n"
+		"PREFIX uiext: <http://lv2plug.in/ns/extensions/ui#>\n"
 		"SELECT DISTINCT ?uri ?type ?binary WHERE {\n"
 		"<>   uiext:ui     ?uri .\n"
 		"?uri a            ?type ;\n"
