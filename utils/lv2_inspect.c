@@ -79,14 +79,16 @@ print_port(SLV2Plugin p, uint32_t index)
 	}
 
 	SLV2Values properties = slv2_port_get_properties(p, port);
-	printf("\t\tProperties: ");
+	if (slv2_values_size(properties) > 0)
+		printf("\t\tProperties: ");
 	for (unsigned i=0; i < slv2_values_size(properties); ++i) {
 		if (i > 0) {
 			printf("\n\t\t            ");
 		}
 		printf("%s\n", slv2_value_as_uri(slv2_values_get_at(properties, i)));
 	}
-	printf("\n");
+	if (slv2_values_size(properties) > 0)
+		printf("\n");
 	slv2_values_free(properties);
 }
 
