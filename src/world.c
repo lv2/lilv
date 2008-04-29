@@ -528,7 +528,7 @@ slv2_world_load_all(SLV2World world)
 		librdf_node* bundle_node = librdf_query_results_get_binding_value(results, 2);
 		librdf_uri*  bundle_uri  = librdf_node_get_uri(bundle_node);
 		librdf_node* binary_node = librdf_query_results_get_binding_value(results, 3);
-		librdf_uri*  binary_uri  = librdf_node_get_uri(binary_node);
+		librdf_uri*  binary_uri  = binary_node ? librdf_node_get_uri(binary_node) : NULL;
 		
 		assert(plugin_uri);
 		assert(data_uri);
@@ -558,7 +558,8 @@ slv2_world_load_all(SLV2World world)
 		librdf_free_node(plugin_node);
 		librdf_free_node(data_node);
 		librdf_free_node(bundle_node);
-		librdf_free_node(binary_node);
+		if (binary_node)
+			librdf_free_node(binary_node);
 
 		librdf_query_results_next(results);
 	}

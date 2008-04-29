@@ -41,7 +41,7 @@ slv2_plugin_new(SLV2World world, SLV2Value uri, librdf_uri* bundle_uri, librdf_u
 	plugin->world = world;
 	plugin->plugin_uri = uri;
 	plugin->bundle_uri = slv2_value_new_librdf_uri(world, bundle_uri);
-	plugin->binary_uri = slv2_value_new_librdf_uri(world, binary_uri);
+	plugin->binary_uri = binary_uri ? slv2_value_new_librdf_uri(world, binary_uri) : NULL;
 	plugin->plugin_class = NULL;
 	plugin->data_uris = slv2_values_new();
 	plugin->ports = raptor_new_sequence((void (*)(void*))&slv2_port_free, NULL);
