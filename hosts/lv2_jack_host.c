@@ -88,13 +88,14 @@ static const LV2_Feature uri_map_feature = { "http://lv2plug.in/ns/ext/uri-map",
 /** We don't support type 0 events, so the ref and unref functions just point
     to the same empty function. */
 uint32_t event_ref_func(LV2_Event_Callback_Data callback_data,
-			LV2_Event*              event) {
-  
+                        LV2_Event*              event)
+{
+	return 0;
 }
 
 static LV2_Event_Feature event_ref = { NULL, &event_ref_func, &event_ref_func };
 static const LV2_Feature event_ref_feature = { "http://lv2plug.in/ns/ext/event",
-					       &event_ref };
+                                                &event_ref };
 
 const LV2_Feature* features[3] = { &uri_map_feature, &event_ref_feature, NULL };
 
