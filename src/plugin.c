@@ -234,6 +234,7 @@ slv2_plugin_load(SLV2Plugin p)
 		librdf_query_results_next(results);
 	}
 	
+	// Not necessary due to ORDER BY clause
 	//raptor_sequence_sort(p->ports, slv2_port_compare_by_index);
 	
 	librdf_free_query_results(results);
@@ -261,8 +262,6 @@ slv2_plugin_load(SLV2Plugin p)
 	
 	librdf_free_query_results(results);
 	librdf_free_query(q);
-
-	//printf("%p %s: NUM PORTS: %d\n", (void*)p, p->plugin_uri, slv2_plugin_get_num_ports(p));
 }
 
 

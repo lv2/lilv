@@ -197,19 +197,7 @@ slv2_world_free(SLV2World world)
 void
 slv2_world_load_file(SLV2World world, librdf_uri* file_uri)
 {
-	librdf_storage* storage = librdf_new_storage(world->world, 
-			"memory", NULL, NULL);
-	librdf_model* model = librdf_new_model(world->world,
-			storage, NULL);
-	librdf_parser_parse_into_model(world->parser, file_uri, NULL, 
-			model);
-
-	librdf_stream* stream = librdf_model_as_stream(model);
-	librdf_model_add_statements(world->model, stream);
-	librdf_free_stream(stream);
-	
-	librdf_free_model(model);
-	librdf_free_storage(storage);
+	librdf_parser_parse_into_model(world->parser, file_uri, NULL, world->model);
 }
 
 
