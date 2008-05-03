@@ -18,6 +18,7 @@
 
 #define _XOPEN_SOURCE 500
 
+#include <math.h>
 #include <string.h>
 #include <stdlib.h>
 #include <assert.h>
@@ -506,6 +507,69 @@ slv2_plugin_get_num_ports(SLV2Plugin p)
 		slv2_plugin_load(p);
 	
 	return raptor_sequence_size(p->ports);
+}
+
+
+void
+slv2_plugin_get_port_float_values(SLV2Plugin  p,
+                                  const char* qname,
+                                  float*      values)
+{
+	if (!p->rdf)
+		slv2_plugin_load(p);
+
+	const unsigned char* query;
+	librdf_query* q;
+	librdf_query_results* results;
+
+	for (int i = 0; i < raptor_sequence_size(p->ports); ++i)
+		values[i] = NAN;
+
+	query = (const unsigned char*)slv2_strjoin(
+			"PREFIX : <http://lv2plug.in/ns/lv2core#>\n"
+			"SELECT DISTINCT ?index ?value WHERE {\n"
+			"<>    :port    ?port .\n"
+			"?port :index   ?index .\n"
+			"?port ", qname, " ?value .\n"
+			"} ", NULL);
+
+	q = librdf_new_query(p->world->world, "sparql",
+			NULL, query, slv2_value_as_librdf_uri(p->plugin_uri));
+
+	results = librdf_query_execute(q, p->rdf);
+
+	while (!librdf_query_results_finished(results)) {
+		librdf_node* idx_node = librdf_query_results_get_binding_value(results, 0);
+		librdf_node* val_node = librdf_query_results_get_binding_value(results, 1);
+		assert(librdf_node_is_literal(idx_node));
+		assert(librdf_node_is_literal(val_node));
+		const int idx = atoi((const char*)librdf_node_get_literal_value(idx_node));
+		const float val = atof((const char*)librdf_node_get_literal_value(val_node));
+		values[idx] = val;
+		librdf_free_node(idx_node);
+		librdf_free_node(val_node);
+		librdf_query_results_next(results);
+	}
+
+	librdf_free_query_results(results);
+	librdf_free_query(q);
+}
+
+
+void
+slv2_plugin_get_port_ranges(SLV2Plugin p, 
+                            float*     min_values, 
+                            float*     max_values,
+                            float*     def_values)
+{
+	if (min_values)
+		slv2_plugin_get_port_float_values(p, ":minimum", min_values);
+
+	if (max_values)
+		slv2_plugin_get_port_float_values(p, ":maximum", max_values);
+
+	if (def_values)
+		slv2_plugin_get_port_float_values(p, ":default", def_values);
 }
 
 

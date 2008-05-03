@@ -20,6 +20,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <math.h>
 #include <slv2/slv2.h>
 #include <locale.h>
 
@@ -27,7 +28,7 @@ SLV2Value event_class   = NULL;
 SLV2Value control_class = NULL;
 
 void
-print_port(SLV2Plugin p, uint32_t index)
+print_port(SLV2Plugin p, uint32_t index, float* mins, float* maxes, float* defaults)
 {
 	SLV2Port port = slv2_plugin_get_port_by_index(p, index);
 
@@ -71,11 +72,12 @@ print_port(SLV2Plugin p, uint32_t index)
 	slv2_value_free(val);
 
 	if (slv2_port_is_a(p, port, control_class)) {
-		SLV2Value def, min, max;
-		slv2_port_get_range(p, port, &def, &min, &max);
-		printf("\t\tMinimum:    %f\n", slv2_value_as_float(min));
-		printf("\t\tMaximum:    %f\n", slv2_value_as_float(max));
-		printf("\t\tDefault:    %f\n", slv2_value_as_float(def));
+		if (!isnan(mins[index]))
+			printf("\t\tMinimum:    %f\n", mins[index]);
+		if (!isnan(mins[index]))
+			printf("\t\tMaximum:    %f\n", maxes[index]);
+		if (!isnan(mins[index]))
+			printf("\t\tDefault:    %f\n", defaults[index]);
 	}
 
 	SLV2Values properties = slv2_port_get_properties(p, port);
@@ -207,11 +209,15 @@ print_plugin(SLV2Plugin p)
 	/* Ports */
 
 	const uint32_t num_ports = slv2_plugin_get_num_ports(p);
+	float* mins     = calloc(num_ports, sizeof(float));
+	float* maxes    = calloc(num_ports, sizeof(float));
+	float* defaults = calloc(num_ports, sizeof(float));
+	slv2_plugin_get_port_ranges(p, mins, maxes, defaults);
 	
 	//printf("\n\t# Ports: %d\n", num_ports);
 	
 	for (uint32_t i=0; i < num_ports; ++i)
-		print_port(p, i);
+		print_port(p, i, mins, maxes, defaults);
 }
 
 

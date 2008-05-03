@@ -22,6 +22,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <math.h>
 #include <slv2/slv2.h>
 #include <jack/jack.h>
 #include <jack/midiport.h>
@@ -100,7 +101,7 @@ static const LV2_Feature event_ref_feature = { "http://lv2plug.in/ns/ext/event",
 const LV2_Feature* features[3] = { &uri_map_feature, &event_ref_feature, NULL };
 
 void die(const char* msg);
-void create_port(struct JackHost* host, uint32_t port_index);
+void create_port(struct JackHost* host, uint32_t port_index, float default_value);
 int  jack_process_cb(jack_nframes_t nframes, void* data);
 void list_plugins(SLV2Plugins list);
 
@@ -189,9 +190,12 @@ main(int argc, char** argv)
 	/* Create ports */
 	host.num_ports = slv2_plugin_get_num_ports(host.plugin);
 	host.ports = calloc((size_t)host.num_ports, sizeof(struct Port));
-	
+	float* default_values  = calloc(slv2_plugin_get_num_ports(host.plugin), 
+					sizeof(float));
+	slv2_plugin_get_port_ranges(host.plugin, NULL, NULL, default_values);
+
 	for (uint32_t i=0; i < host.num_ports; ++i)
-		create_port(&host, i);
+	  create_port(&host, i, default_values[i]);
 	
 	/* Activate plugin and JACK */
 	slv2_instance_activate(host.instance);
@@ -254,7 +258,8 @@ die(const char* msg)
  */
 void
 create_port(struct JackHost* host,
-            uint32_t         port_index)
+            uint32_t         port_index,
+            float            default_value)
 {
 	struct Port* const port = &host->ports[port_index];
 
@@ -285,11 +290,8 @@ create_port(struct JackHost* host,
 	/* Set control values */
 	if (slv2_port_is_a(host->plugin, port->slv2_port, host->control_class)) {
 		port->type = CONTROL;
-		SLV2Value def;
-		slv2_port_get_range(host->plugin, port->slv2_port, &def, NULL, NULL);
-		port->control = def ? slv2_value_as_float(def) : 0.0f;
+		port->control = isnan(default_value) ? 0.0 : default_value;
 		printf("Set %s to %f\n", symbol_str, host->ports[port_index].control);
-		slv2_value_free(def);
 	} else if (slv2_port_is_a(host->plugin, port->slv2_port, host->audio_class)) {
 		port->type = AUDIO;
 	} else if (slv2_port_is_a(host->plugin, port->slv2_port, host->event_class)) {

@@ -270,6 +270,22 @@ uint32_t
 slv2_plugin_get_num_ports(SLV2Plugin p);
 
 
+/** Get the port ranges (minimum, maximum and default values) for all ports.
+ *
+ * min_values, max_values and def_values must either point to an array of 
+ * N floats, where N is the value returned by slv2_plugin_get_num_ports() for
+ * this plugin, or NULL. This function will set the elements of the non-NULL
+ * array pointers to the minimum, maximum and default values of the ports on
+ * this plugin, with array index corresponding to port index. If a port doesn't
+ * have a minimum, maximum or default value, the corresponding array element will
+ * be set to NAN.
+ */
+void
+slv2_plugin_get_port_ranges(SLV2Plugin p, 
+                            float*     min_values, 
+                            float*     max_values,
+                            float*     def_values);
+
 /** Get the number of ports on this plugin that are members of some class(es).
  *
  * Note that this is a varargs function so ports fitting any type 'profile'
