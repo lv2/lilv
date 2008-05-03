@@ -528,32 +528,34 @@ slv2_world_load_all(SLV2World world)
 		librdf_node* bundle_node = librdf_query_results_get_binding_value(results, 2);
 		librdf_uri*  bundle_uri  = librdf_node_get_uri(bundle_node);
 		librdf_node* binary_node = librdf_query_results_get_binding_value(results, 3);
-		librdf_uri*  binary_uri  = binary_node ? librdf_node_get_uri(binary_node) : NULL;
 		
 		assert(plugin_uri);
 		assert(data_uri);
 
-		// printf("PLUGIN: %s\n", librdf_uri_as_string(plugin_uri));
+		if (binary_node) {
+			librdf_uri* binary_uri = librdf_node_get_uri(binary_node);
+			SLV2Value   uri        = slv2_value_new_librdf_uri(world, plugin_uri);
+			SLV2Plugin  plugin     = slv2_plugins_get_by_uri(world->plugins, uri);
 
-		SLV2Value uri = slv2_value_new_librdf_uri(world, plugin_uri);
+			// Create a new SLV2Plugin
+			if (!plugin) {
+				plugin = slv2_plugin_new(world, uri, bundle_uri, binary_uri);
+				raptor_sequence_push(world->plugins, plugin);
+				// FIXME: Slow!  ORDER BY broken in certain versions of redland?
+				raptor_sequence_sort(world->plugins, slv2_plugin_compare_by_uri);
+			} else {
+				slv2_value_free(uri);
+			}
 
-		SLV2Plugin plugin = slv2_plugins_get_by_uri(world->plugins, uri);
-		
-		// Create a new SLV2Plugin
-		if (!plugin) {
-			plugin = slv2_plugin_new(world, uri, bundle_uri, binary_uri);
-			raptor_sequence_push(world->plugins, plugin);
-			// FIXME: Slow!  ORDER BY broken in certain versions of redland?
-			raptor_sequence_sort(world->plugins, slv2_plugin_compare_by_uri);
+			plugin->world = world;
+
+			// FIXME: check for duplicates
+			raptor_sequence_push(plugin->data_uris,
+					slv2_value_new_librdf_uri(plugin->world, data_uri));
 		} else {
-			slv2_value_free(uri);
+			fprintf(stderr, "Warning: plugin %s has no binary; ignored.\n",
+					librdf_uri_as_string(plugin_uri));
 		}
-		
-		plugin->world = world;
-
-		// FIXME: check for duplicates
-		raptor_sequence_push(plugin->data_uris,
-				slv2_value_new_librdf_uri(plugin->world, data_uri));
 		
 		librdf_free_node(plugin_node);
 		librdf_free_node(data_node);

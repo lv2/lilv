@@ -38,6 +38,8 @@
 SLV2Plugin
 slv2_plugin_new(SLV2World world, SLV2Value uri, librdf_uri* bundle_uri, librdf_uri* binary_uri)
 {
+	assert(bundle_uri);
+	assert(binary_uri);
 	struct _SLV2Plugin* plugin = malloc(sizeof(struct _SLV2Plugin));
 	plugin->world = world;
 	plugin->plugin_uri = uri;
