@@ -43,10 +43,15 @@ slv2_world_new()
 
 	librdf_world_open(world->world);
 	
-	// Testing shows hashes to be  faster here
-	//world->storage = librdf_new_storage(world->world, "memory", NULL, NULL);
-	world->storage = librdf_new_storage(world->world, "hashes", NULL,
-			"hash-type='memory'");
+	world->storage = librdf_new_storage(world->world, "trees", NULL, NULL);
+	if (!world->storage) {
+		fprintf(stderr, "Warning: Unable to create \"trees\" RDF storage.\n");
+		fprintf(stderr, "Performance can be improved by upgrading librdf.\n");
+		// Testing shows "hashes" to be faster than "memory" (list) here
+		world->storage = librdf_new_storage(world->world, "hashes", NULL,
+				"hash-type='memory'");
+	}
+
 	if (!world->storage)
 		goto fail;
 
@@ -99,10 +104,15 @@ slv2_world_new_using_rdf_world(librdf_world* rdf_world)
 	
 	world->local_world = false;
 
-	// Testing shows hashes to be  faster here
-	//world->storage = librdf_new_storage(world->world, "memory", NULL, NULL);
-	world->storage = librdf_new_storage(world->world, "hashes", NULL,
-			"hash-type='memory'");
+	world->storage = librdf_new_storage(world->world, "trees", NULL, NULL);
+	if (!world->storage) {
+		fprintf(stderr, "Warning: Unable to create \"trees\" RDF storage.\n");
+		fprintf(stderr, "Performance can be improved by upgrading librdf.\n");
+		// Testing shows "hashes" to be faster than "memory" (list) here
+		world->storage = librdf_new_storage(world->world, "hashes", NULL,
+				"hash-type='memory'");
+	}
+	
 	if (!world->storage)
 		goto fail;
 
@@ -211,8 +221,10 @@ slv2_world_load_bundle(SLV2World world, SLV2Value bundle_uri)
 			bundle_uri->val.uri_val, (const unsigned char*)"manifest.ttl");
 
 	/* Parse the manifest into a temporary model */
-	librdf_storage* manifest_storage = librdf_new_storage(world->world, 
-			"memory", NULL, NULL);
+	librdf_storage* manifest_storage = librdf_new_storage(world->world, "trees", NULL, NULL);
+	if (manifest_storage == NULL)
+		manifest_storage = librdf_new_storage(world->world, "memory", NULL, NULL);
+
 	librdf_model* manifest_model = librdf_new_model(world->world,
 			manifest_storage, NULL);
 	librdf_parser_parse_into_model(world->parser, manifest_uri, NULL, 
