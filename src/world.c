@@ -509,7 +509,7 @@ slv2_world_load_all(SLV2World world)
     	"PREFIX : <http://lv2plug.in/ns/lv2core#>\n"
 		"PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>\n"
 		"PREFIX slv2: <http://drobilla.net/ns/slv2#>\n"
-		"SELECT DISTINCT ?plugin ?data ?bundle ?binary\n"
+		"SELECT DISTINCT ?plugin ?data ?bundle\n"
 		"WHERE { ?plugin a :Plugin; slv2:bundleURI ?bundle; rdfs:seeAlso ?data }\n";
 		//"ORDER BY ?plugin\n";
 	
