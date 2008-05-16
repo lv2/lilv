@@ -510,8 +510,7 @@ slv2_world_load_all(SLV2World world)
 		"PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>\n"
 		"PREFIX slv2: <http://drobilla.net/ns/slv2#>\n"
 		"SELECT DISTINCT ?plugin ?data ?bundle ?binary\n"
-		"WHERE { ?plugin a :Plugin; slv2:bundleURI ?bundle; rdfs:seeAlso ?data\n"
-		"OPTIONAL { ?plugin :binary ?binary } }\n";
+		"WHERE { ?plugin a :Plugin; slv2:bundleURI ?bundle; rdfs:seeAlso ?data }\n";
 		//"ORDER BY ?plugin\n";
 	
 	librdf_query* q = librdf_new_query(world->world, "sparql",
@@ -527,18 +526,16 @@ slv2_world_load_all(SLV2World world)
 		librdf_uri*  data_uri    = librdf_node_get_uri(data_node);
 		librdf_node* bundle_node = librdf_query_results_get_binding_value(results, 2);
 		librdf_uri*  bundle_uri  = librdf_node_get_uri(bundle_node);
-		librdf_node* binary_node = librdf_query_results_get_binding_value(results, 3);
 
 		assert(plugin_uri);
 		assert(data_uri);
 
-		librdf_uri* binary_uri = binary_node ? librdf_node_get_uri(binary_node) : NULL;
 		SLV2Value   uri        = slv2_value_new_librdf_uri(world, plugin_uri);
 		SLV2Plugin  plugin     = slv2_plugins_get_by_uri(world->plugins, uri);
 
 		// Create a new SLV2Plugin
 		if (!plugin) {
-			plugin = slv2_plugin_new(world, uri, bundle_uri, binary_uri);
+			plugin = slv2_plugin_new(world, uri, bundle_uri);
 			raptor_sequence_push(world->plugins, plugin);
 			// FIXME: Slow!  ORDER BY broken in certain versions of redland?
 			raptor_sequence_sort(world->plugins, slv2_plugin_compare_by_uri);
@@ -555,8 +552,6 @@ slv2_world_load_all(SLV2World world)
 		librdf_free_node(plugin_node);
 		librdf_free_node(data_node);
 		librdf_free_node(bundle_node);
-		if (binary_node)
-			librdf_free_node(binary_node);
 
 		librdf_query_results_next(results);
 	}
