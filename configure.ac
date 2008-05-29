@@ -125,7 +125,7 @@ AM_CONDITIONAL(WITH_CHICKEN, [test "$chicken" = "yes"])
 build_redland="no"
 AC_CHECK_PROG(REDLAND_CONFIG, redland-config, redland-config)
 if test "X$REDLAND_CONFIG" = X; then
-	AC_MSG_ERROR([REDLANDMM requires Redland (librdf), but redland-config not found.])
+	AC_MSG_ERROR([SLV2 requires Redland (librdf), but redland-config not found.])
 else
 	build_redland="yes"
 	PKG_CHECK_MODULES(RAPTOR, raptor)
