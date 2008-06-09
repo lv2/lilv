@@ -180,10 +180,12 @@ build_documentation="yes"
 AC_ARG_ENABLE(documentation,
 	[AS_HELP_STRING(--enable-documentation, [Build documentation (no)])],
 	[build_documentation="$enableval"])
-AC_CHECK_PROG(HAVE_DOXYGEN, doxygen, true, false)
-if test $HAVE_DOXYGEN = "false"; then
-	AC_MSG_WARN([*** Doxygen not found, API documentation will not be built])
-	build_documentation="no"
+if test "$build_documentation" = "yes"; then
+	AC_CHECK_PROG(HAVE_DOXYGEN, doxygen, true, false)
+	if test $HAVE_DOXYGEN = "false"; then
+		AC_MSG_WARN([*** Doxygen not found, API documentation will not be built])
+		build_documentation="no"
+	fi
 fi
 AM_CONDITIONAL(HAVE_DOXYGEN, [test "x$build_documentation" = "xyes"])
 
