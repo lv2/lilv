@@ -178,7 +178,7 @@ AM_CONDITIONAL(WITH_JACK, [test "$build_jack" = "yes"])
 # Build documentation
 build_documentation="yes"
 AC_ARG_ENABLE(documentation,
-	[AS_HELP_STRING(--enable-documentation, [Build documentation (no)])],
+	[AS_HELP_STRING(--enable-documentation, [Build documentation (yes, if doxygen available)])],
 	[build_documentation="$enableval"])
 if test "$build_documentation" = "yes"; then
 	AC_CHECK_PROG(HAVE_DOXYGEN, doxygen, true, false)

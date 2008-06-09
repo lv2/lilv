@@ -7,14 +7,16 @@ dist_man_MANS = \
 	man/man3/slv2_world.3
 
 if HAVE_DOXYGEN
-	man_MANS = $(dist_man_MANS)
+man_MANS = $(dist_man_MANS)
+all: docs
 else
-	man_mans =
+man_mans =
+all:
 endif
 
 EXTRA_DIST = mainpage.dox reference.doxygen.in $(man_MANS)
 
-all: docs
+
 
 %.3:
 	make docs
