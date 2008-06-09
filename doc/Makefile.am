@@ -14,6 +14,8 @@ endif
 
 EXTRA_DIST = mainpage.dox reference.doxygen.in $(man_MANS)
 
+all: docs
+
 %.3:
 	make docs
 
