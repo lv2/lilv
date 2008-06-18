@@ -14,7 +14,7 @@ dist-check-doxygen:
 endif
 
 SUBDIRS      = src slv2 utils hosts $(DOC_DIR) swig debian
-DIST_SUBDIRS = src slv2 utils hosts doc swig debian m4
+DIST_SUBDIRS = src slv2 utils hosts doc swig debian
 
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = slv2.pc

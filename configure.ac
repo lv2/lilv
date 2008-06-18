@@ -194,16 +194,16 @@ CXXFLAGS="$CXXFLAGS -ansi -pipe -fmessage-length=999 -DCONFIG_H_PATH=\\\"$CONFIG
 CFLAGS="$CFLAGS -std=c99 -pipe -fmessage-length=999 -DCONFIG_H_PATH=\\\"$CONFIG_H_PATH\\\""
 
 # Write output files
-AC_CONFIG_FILES([Makefile])
-AC_CONFIG_FILES([src/Makefile])
-AC_CONFIG_FILES([slv2/Makefile])
-AC_CONFIG_FILES([utils/Makefile])
-AC_CONFIG_FILES([hosts/Makefile])
-AC_CONFIG_FILES([swig/Makefile])
-AC_CONFIG_FILES([slv2.pc])
+AC_CONFIG_FILES([debian/Makefile])
 AC_CONFIG_FILES([doc/Makefile])
 AC_CONFIG_FILES([doc/reference.doxygen])
-AC_CONFIG_FILES([debian/Makefile])
+AC_CONFIG_FILES([hosts/Makefile])
+AC_CONFIG_FILES([Makefile])
+AC_CONFIG_FILES([slv2/Makefile])
+AC_CONFIG_FILES([slv2.pc])
+AC_CONFIG_FILES([src/Makefile])
+AC_CONFIG_FILES([swig/Makefile])
+AC_CONFIG_FILES([utils/Makefile])
 
 AC_OUTPUT
 
