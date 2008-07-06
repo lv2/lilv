@@ -1,13 +1,14 @@
 slv2 (0.6.0) unstable; urgency=low
 
   * Rework API to reduce dependence of SLV2 on specific LV2 features
-  * Use SLV2Value most everywhere in the API for performance reasons
+  * Use SLV2Value most everywhere in the API for type safety and
+    performance reasons
   * Typical use case performance improvements
   * Add support for scale points
-  * Use new Redland "trees" store for dramatic performance improvements.
+  * Use new Redland "trees" store for dramatic performance improvements
   * *** API BREAK ***
  
- -- Dave Robillard <dave@drobilla.net>  Wed Jun 18 14:41:43 EDT 2008
+ -- Dave Robillard <dave@drobilla.net>  Sun, 06 Jul 2008 13:11:15 -0400
 
 slv2 (0.5.0) unstable; urgency=low
 
