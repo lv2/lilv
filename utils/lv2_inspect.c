@@ -212,7 +212,7 @@ print_plugin(SLV2Plugin p)
 	float* mins     = calloc(num_ports, sizeof(float));
 	float* maxes    = calloc(num_ports, sizeof(float));
 	float* defaults = calloc(num_ports, sizeof(float));
-	slv2_plugin_get_port_ranges(p, mins, maxes, defaults);
+	slv2_plugin_get_port_ranges_float(p, mins, maxes, defaults);
 	
 	//printf("\n\t# Ports: %d\n", num_ports);
 	

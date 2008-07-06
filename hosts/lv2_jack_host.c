@@ -192,7 +192,7 @@ main(int argc, char** argv)
 	host.ports = calloc((size_t)host.num_ports, sizeof(struct Port));
 	float* default_values  = calloc(slv2_plugin_get_num_ports(host.plugin), 
 					sizeof(float));
-	slv2_plugin_get_port_ranges(host.plugin, NULL, NULL, default_values);
+	slv2_plugin_get_port_ranges_float(host.plugin, NULL, NULL, default_values);
 
 	for (uint32_t i=0; i < host.num_ports; ++i)
 	  create_port(&host, i, default_values[i]);

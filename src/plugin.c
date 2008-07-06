@@ -559,10 +559,10 @@ slv2_plugin_get_port_float_values(SLV2Plugin  p,
 
 
 void
-slv2_plugin_get_port_ranges(SLV2Plugin p, 
-                            float*     min_values, 
-                            float*     max_values,
-                            float*     def_values)
+slv2_plugin_get_port_ranges_float(SLV2Plugin p, 
+                                  float*     min_values, 
+                                  float*     max_values,
+                                  float*     def_values)
 {
 	if (min_values)
 		slv2_plugin_get_port_float_values(p, ":minimum", min_values);
