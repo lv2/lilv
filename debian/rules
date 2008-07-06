@@ -64,12 +64,13 @@ install: build
 	dh_installdirs
 
 	$(MAKE) DESTDIR=$(CURDIR)/debian/slv2-9 install-exec
-	$(MAKE) DESTDIR=$(CURDIR)/debian/slv2-9-dev install-data install-man
+	$(MAKE) DESTDIR=$(CURDIR)/debian/slv2-9-dev install-data
+	$(MAKE) DESTDIR=$(CURDIR)/debian/slv2-doc install-man
 
 
 # Build architecture-independent files here.
 binary-indep: build install
-# We have nothing to do by default.
+	dh_installman
 
 # Build architecture-dependent files here.
 binary-arch: build install
@@ -88,7 +89,7 @@ binary-arch: build install
 #	dh_installinit
 #	dh_installcron
 #	dh_installinfo
-	dh_installman
+#	dh_installman
 	dh_link
 	dh_strip
 	dh_compress

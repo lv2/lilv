@@ -29,3 +29,6 @@ distclean-local:
 docs: reference.doxygen @SLV2_SRCDIR@/slv2/*.h
 	doxygen reference.doxygen
 
+# Don't install man pages with this target,
+# only install with install-man (for debian package building)
+install-data:

@@ -19,6 +19,11 @@ Description: Development files (headers) for SLV2
  Files required for compiling programs which use SLV2, and developer
  documentation.
 
+Package: slv2-doc
+Architecture: any
+Description: Documentation for SLV2
+ Man pages documenting the SLV2 API.
+
 Package: slv2-9
 Section: libs
 Architecture: any
