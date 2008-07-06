@@ -24,6 +24,9 @@ dist-hook: dist-check-doxygen
 docs:
 	cd doc && make docs
 
+install-man:
+	cd doc && make install-man
+
 deb:
 	dpkg-buildpackage -sn
 
