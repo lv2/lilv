@@ -2,7 +2,6 @@ AC_PREREQ(2.59)
 
 AC_INIT([slv2],0.6.0,[dave@drobilla.net])
 
-m4_include([m4/ac_python_devel.m4])
 AC_CONFIG_AUX_DIR([config])
 
 AC_CONFIG_SRCDIR([src/plugin.c])
@@ -194,13 +193,13 @@ CXXFLAGS="$CXXFLAGS -ansi -pipe -fmessage-length=999 -DCONFIG_H_PATH=\\\"$CONFIG
 CFLAGS="$CFLAGS -std=c99 -pipe -fmessage-length=999 -DCONFIG_H_PATH=\\\"$CONFIG_H_PATH\\\""
 
 # Write output files
+AC_CONFIG_FILES([Makefile])
 AC_CONFIG_FILES([debian/Makefile])
 AC_CONFIG_FILES([doc/Makefile])
 AC_CONFIG_FILES([doc/reference.doxygen])
 AC_CONFIG_FILES([hosts/Makefile])
-AC_CONFIG_FILES([Makefile])
-AC_CONFIG_FILES([slv2/Makefile])
 AC_CONFIG_FILES([slv2.pc])
+AC_CONFIG_FILES([slv2/Makefile])
 AC_CONFIG_FILES([src/Makefile])
 AC_CONFIG_FILES([swig/Makefile])
 AC_CONFIG_FILES([utils/Makefile])
