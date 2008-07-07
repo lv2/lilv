@@ -7,6 +7,7 @@ Section: libs
 
 Package: slv2
 Depends: slv2-9
+Recommends: lv2core
 Architecture: any
 Description: A library for simple use of LV2 plugins
  SLV2 is a library geared towards music and audio applications which makes
