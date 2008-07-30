@@ -202,6 +202,9 @@ AC_CONFIG_FILES([slv2.pc])
 AC_CONFIG_FILES([slv2/Makefile])
 AC_CONFIG_FILES([src/Makefile])
 AC_CONFIG_FILES([swig/Makefile])
+AC_CONFIG_FILES([swig/python/Makefile])
+AC_CONFIG_FILES([swig/mzscheme/Makefile])
+AC_CONFIG_FILES([swig/chicken/Makefile])
 AC_CONFIG_FILES([utils/Makefile])
 
 AC_OUTPUT
