@@ -7,7 +7,7 @@ all: python mzscheme chicken
 if WITH_PYTHON
 python:
 	swig -DPYTHON -Wall -python -I.. -o slv2_python.c -oh slv2_python.h slv2.i
-	gcc -fPIC -shared $(PYTHON_CPPFLAGS) $(PYTHON_EXTRA_LDFLAGS) \
+	gcc -fPIC -shared -I.. $(PYTHON_CPPFLAGS) $(PYTHON_EXTRA_LDFLAGS) \
 		$(PYTHON_EXTRA_LIBS) $(PYTHON_EXTRA_LDFLAGS) \
 		slv2_python.c ../src/.libs/libslv2.so -o _slv2.so
 else
@@ -18,7 +18,7 @@ endif # WITH_PYTHON
 if WITH_MZSCHEME
 mzscheme:
 	swig -DMZSCHEME -Wall -mzscheme -I.. -o slv2_mzscheme.c -oh slv2_mzscheme.h slv2.i
-	gcc -fPIC -shared -Iplt \
+	gcc -fPIC -shared -Iplt -I.. \
 		-I/usr/include/plt slv2_mzscheme.c -o libslv2_mzscheme.so
 endif # WITH_MZSCHEME
 
