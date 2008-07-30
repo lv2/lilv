@@ -35,22 +35,22 @@ extern "C" {
  */
 
 
-/** Allocate a new, empty SLV2Values
+/** Allocate a new, empty SLV2ScalePoints
  */
-SLV2Values
+SLV2ScalePoints
 slv2_scale_points_new();
 
 
-/** Free an SLV2Values.
+/** Free an SLV2ScalePoints.
  */
 void
-slv2_scale_points_free(SLV2Values);
+slv2_scale_points_free(SLV2ScalePoints);
 
 
 /** Get the number of scale points in a collection.
  */
 unsigned
-slv2_scale_points_size(SLV2Values points);
+slv2_scale_points_size(SLV2ScalePoints points);
 
 
 /** Get the scale point at the given index in a collection.
