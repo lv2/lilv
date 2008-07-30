@@ -5,4 +5,4 @@ w = slv2.World()
 w.load_all()
 
 for p in w.get_all_plugins():
-    print p.uri()
+	print p.uri(), "-", p.name()
