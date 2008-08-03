@@ -43,7 +43,7 @@ const char* slv2_uri_to_path(const char* uri);
 /** @} */
 
 #ifdef __cplusplus
-}
+} /* extern "C" */
 #endif
 
 #endif /* __SLV2_UTIL_H__ */

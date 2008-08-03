@@ -182,7 +182,7 @@ slv2_value_as_int(SLV2Value value);
 /** @} */
 
 #ifdef __cplusplus
-}
+} /* extern "C" */
 #endif
 
 #endif /* __SLV2_VALUE_H__ */

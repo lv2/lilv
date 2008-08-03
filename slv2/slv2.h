@@ -40,7 +40,7 @@ extern "C" {
 #include <slv2/world.h>
 
 #ifdef __cplusplus
-}
+} /* extern "C" */
 #endif
 
 #endif /* __SLV2_H__ */

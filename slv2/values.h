@@ -44,7 +44,7 @@ slv2_values_new();
 /** Free an SLV2Values.
  */
 void
-slv2_values_free(SLV2Values);
+slv2_values_free(SLV2Values values);
 
 
 /** Get the number of elements in a value collection.
@@ -74,7 +74,7 @@ slv2_values_contains(SLV2Values values, SLV2Value value);
 /** @} */
 
 #ifdef __cplusplus
-}
+} /* extern "C" */
 #endif
 
 #endif /* __SLV2_VALUES_H__ */

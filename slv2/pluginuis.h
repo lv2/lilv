@@ -80,7 +80,7 @@ slv2_uis_get_at(SLV2UIs  list,
 /** @} */
 
 #ifdef __cplusplus
-}
+} /* extern "C" */
 #endif
 
 #endif /* __SLV2_PLUGIN_UIS_H__ */

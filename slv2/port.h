@@ -161,7 +161,7 @@ slv2_port_get_scale_points(SLV2Plugin plugin,
 /** @} */
 
 #ifdef __cplusplus
-}
+} /* extern "C" */
 #endif
 
 #endif /* __SLV2_PORT_H__ */

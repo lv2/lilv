@@ -84,7 +84,7 @@ typedef void* SLV2UIs;
 
 
 #ifdef __cplusplus
-}
+} /* extern "C" */
 #endif
 
 

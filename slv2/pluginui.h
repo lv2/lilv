@@ -82,7 +82,7 @@ slv2_ui_get_binary_uri(SLV2UI ui);
 /** @} */
 
 #ifdef __cplusplus
-}
+} /* extern "C" */
 #endif
 
 #endif /* __SLV2_PLUGIN_UI_H__ */

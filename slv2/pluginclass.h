@@ -71,7 +71,7 @@ slv2_plugin_class_get_children(SLV2PluginClass plugin_class);
 /** @} */
 
 #ifdef __cplusplus
-}
+} /* extern "C" */
 #endif
 
 #endif /* __SLV2_PLUGIN_CLASS_H__ */

@@ -69,7 +69,7 @@ slv2_plugin_classes_get_at(SLV2PluginClasses classes,
 /** @} */
 
 #ifdef __cplusplus
-}
+} /* extern "C" */
 #endif
 
 #endif /* __SLV2_PLUGIN_CLASSES_H__ */

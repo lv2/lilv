@@ -437,7 +437,7 @@ slv2_plugin_get_author_homepage(SLV2Plugin plugin);
 /** @} */
 
 #ifdef __cplusplus
-}
+} /* extern "C" */
 #endif
 
 #endif /* __SLV2_PLUGIN_H__ */

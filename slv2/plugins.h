@@ -80,7 +80,7 @@ slv2_plugins_get_at(SLV2Plugins plugins,
 /** @} */
 
 #ifdef __cplusplus
-}
+} /* extern "C" */
 #endif
 
 #endif /* __SLV2_PLUGINS_H__ */

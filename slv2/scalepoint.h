@@ -49,7 +49,7 @@ slv2_scale_point_get_value(SLV2ScalePoint point);
 /** @} */
 
 #ifdef __cplusplus
-}
+} /* extern "C" */
 #endif
 
 #endif /* __SLV2_SCALE_POINT_H__ */

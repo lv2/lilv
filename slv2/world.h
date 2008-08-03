@@ -204,7 +204,7 @@ slv2_world_get_plugins_by_query(SLV2World   world,
 /** @} */
 
 #ifdef __cplusplus
-}
+} /* extern "C" */
 #endif
 
 #endif /* __SLV2_WORLD_H__ */

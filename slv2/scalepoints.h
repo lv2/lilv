@@ -44,7 +44,7 @@ slv2_scale_points_new();
 /** Free an SLV2ScalePoints.
  */
 void
-slv2_scale_points_free(SLV2ScalePoints);
+slv2_scale_points_free(SLV2ScalePoints points);
 
 
 /** Get the number of scale points in a collection.
@@ -66,7 +66,7 @@ slv2_scale_points_get_at(SLV2ScalePoints points, unsigned index);
 /** @} */
 
 #ifdef __cplusplus
-}
+} /* extern "C" */
 #endif
 
 #endif /* __SLV2_SCALE_POINTS_H__ */

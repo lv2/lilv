@@ -110,7 +110,7 @@ slv2_ui_instance_get_handle(SLV2UIInstance instance);
 /** @} */
 
 #ifdef __cplusplus
-}
+} /* extern "C" */
 #endif
 
 

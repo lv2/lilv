@@ -211,7 +211,7 @@ slv2_instance_get_handle(SLV2Instance instance)
 /** @} */
 
 #ifdef __cplusplus
-}
+} /* extern "C" */
 #endif
 
 
