@@ -194,7 +194,7 @@ CFLAGS="$CFLAGS -std=c99 -pipe -fmessage-length=999 -DCONFIG_H_PATH=\\\"$CONFIG_
 
 # Write output files
 AC_CONFIG_FILES([Makefile])
-AC_CONFIG_FILES([debian/Makefile])
+AC_CONFIG_FILES([debian-sid/Makefile])
 AC_CONFIG_FILES([doc/Makefile])
 AC_CONFIG_FILES([doc/reference.doxygen])
 AC_CONFIG_FILES([hosts/Makefile])

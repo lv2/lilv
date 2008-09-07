@@ -13,8 +13,8 @@ dist-check-doxygen:
 	@false
 endif
 
-SUBDIRS      = src slv2 utils hosts $(DOC_DIR) swig debian
-DIST_SUBDIRS = src slv2 utils hosts doc swig debian
+SUBDIRS      = src slv2 utils hosts $(DOC_DIR) swig debian-sid
+DIST_SUBDIRS = src slv2 utils hosts doc swig debian-sid
 
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = slv2.pc
@@ -28,5 +28,11 @@ install-man:
 	cd doc && make install-man
 
 deb:
-	dpkg-buildpackage -sn
+	if [ -e debian ]; then \
+		echo "ERROR: ./debian exists, you must move it out of the way."; \
+	else \
+		ln -s debian-sid debian; \
+		dpkg-buildpackage -sn; \
+		rm debian; \
+	fi
 
