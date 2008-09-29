@@ -173,6 +173,25 @@ slv2_instance_deactivate(SLV2Instance instance)
 }
 
 
+/** Get extension data from the plugin instance.
+ *
+ * The type and semantics of the data returned is specific to the particular
+ * extension, though in all cases it is shared and must not be deleted.
+ */
+static inline const void*
+slv2_instance_get_extension_data(SLV2Instance instance,
+                                 const char*  uri)
+{
+	assert(instance);
+	assert(instance->lv2_descriptor);
+	
+	if (instance->lv2_descriptor->extension_data)
+		return instance->lv2_descriptor->extension_data(uri);
+	else
+		return NULL;
+}
+
+
 /** Get the LV2_Descriptor of the plugin instance.
  *
  * Normally hosts should not need to access the LV2_Descriptor directly,

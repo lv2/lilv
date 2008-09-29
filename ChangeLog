@@ -2,6 +2,7 @@ slv2 (9999) unstable; urgency=low
 
   * NOT YET RELEASED
   * Add slv2_port_get_value (analogous to slv2_plugin_get_value).
+  * Add slv2_instance_get_extension_data.
  
  -- Dave Robillard <dave@drobilla.net>  Sun, 01 Jan 9999 00:00:00 -0400
 
