@@ -150,6 +150,44 @@ slv2_port_get_value_by_qname(SLV2Plugin  p,
 }
 
 
+SLV2Values
+slv2_port_get_value(SLV2Plugin p,
+                    SLV2Port   port,
+                    SLV2Value  predicate)
+{
+	char* query = NULL;
+	
+	/* Hack around broken RASQAL, full URI predicates don't work :/ */
+
+	if (predicate->type == SLV2_VALUE_URI) {
+		query = slv2_strjoin(
+			"PREFIX slv2predicate: <", slv2_value_as_string(predicate), ">",
+			"SELECT DISTINCT ?value WHERE { \n"
+			"<", slv2_value_as_uri(p->plugin_uri), "> lv2:port ?port .\n"
+			"?port lv2:symbol \"", slv2_value_as_string(port->symbol), "\";\n\t",
+				" slv2predicate: ?value .\n"
+			"}\n", NULL);
+	} else if (predicate->type == SLV2_VALUE_QNAME) {
+    	query = slv2_strjoin(
+			"SELECT DISTINCT ?value WHERE { \n"
+			"<", slv2_value_as_uri(p->plugin_uri), "> lv2:port ?port .\n"
+			"?port lv2:symbol \"", slv2_value_as_string(port->symbol), "\";\n\t",
+				slv2_value_as_string(predicate), " ?value .\n"
+			"}\n", NULL);
+	} else {
+		fprintf(stderr, "slv2_port_get_value error: "
+				"predicate is not a URI or QNAME\n");
+		return NULL;
+	}
+
+	SLV2Values result = slv2_plugin_query_variable(p, query, 0);
+	
+	free(query);
+
+	return result;
+}
+
+
 SLV2Value
 slv2_port_get_symbol(SLV2Plugin p,
                      SLV2Port   port)

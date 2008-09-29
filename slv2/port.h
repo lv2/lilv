@@ -38,6 +38,16 @@ extern "C" {
  * Time = Query
  */
 SLV2Values
+slv2_port_get_value(SLV2Plugin plugin,
+                    SLV2Port   port,
+                    SLV2Value  predicate);
+
+
+/** Port analog of slv2_plugin_get_value_by_qname.
+ *
+ * Time = Query
+ */
+SLV2Values
 slv2_port_get_value_by_qname(SLV2Plugin  plugin,
                              SLV2Port    port,
                              const char* property_uri);
