@@ -1,9 +1,13 @@
 #!/usr/bin/env python
 import Params
+import autowaf
+
+# Version of this package (even if built as a child)
+SLV2_VERSION = '0.6.1'
 
 # Variables for 'waf dist'
-VERSION = '0.6.1'
 APPNAME = 'slv2'
+VERSION = SLV2_VERSION
 
 # Mandatory variables
 srcdir = '.'
@@ -13,6 +17,7 @@ def set_options(opt):
 	opt.tool_options('compiler_cc')
 
 def configure(conf):
+	conf.check_tool('misc') # subst builder
 	if not conf.env['CC']:
 		conf.check_tool('compiler_cc')
 	if not conf.env['HAVE_LV2CORE']:
@@ -26,12 +31,15 @@ def configure(conf):
 	conf.write_config_header('waf-config.h')
 	conf.env.append_value('CCFLAGS', '-DCONFIG_H_PATH=\\\"waf-config.h\\\"')
 	conf.env.append_value('CCFLAGS', '-DPACKAGE_VERSION=\\\"' + VERSION + '\\\"')
-
+		
 def build(bld):
-	# Headers (slv2)
+	# C Headers
 	install_files('PREFIX', 'include/slv2', 'slv2/*.h')
+
+	# Pkgconfig file
+	autowaf.build_pc(bld, 'SLV2', SLV2_VERSION, ['REDLAND'])
 	
-	# Library (src)
+	# Library
 	obj = bld.create_obj('cc', 'shlib')
 	obj.source = '''
 		src/plugin.c
@@ -57,7 +65,7 @@ def build(bld):
 	obj.uselib   = 'REDLAND LV2CORE'
 	obj.vnum     = '1.0.0'
 
-	# Utilities (util)
+	# Utilities
 	utils = '''
 		utils/lv2_inspect
 		utils/lv2_list
@@ -70,7 +78,7 @@ def build(bld):
 		obj.target       = i
 		obj.inst_var     = 0
 	
-	# JACK Hosts (hosts)
+	# JACK Hosts
 	hosts = '''
 		hosts/lv2_jack_host
 		hosts/lv2_simple_jack_host
