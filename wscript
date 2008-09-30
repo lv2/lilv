@@ -54,7 +54,7 @@ def build(bld):
 	obj.includes = '..'
 	obj.name     = 'libslv2'
 	obj.target   = 'slv2'
-	obj.uselib   = 'REDLAND'
+	obj.uselib   = 'REDLAND LV2CORE'
 	obj.vnum     = '1.0.0'
 
 	# Utilities (util)
