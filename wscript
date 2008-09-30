@@ -17,7 +17,6 @@ def set_options(opt):
 	opt.tool_options('compiler_cc')
 
 def configure(conf):
-	conf.check_tool('misc') # subst builder
 	if not conf.env['CC']:
 		conf.check_tool('compiler_cc')
 	if not conf.env['HAVE_LV2CORE']:
