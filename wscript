@@ -75,7 +75,6 @@ def build(bld):
 		obj.includes     = '.'
 		obj.uselib_local = 'libslv2'
 		obj.target       = i
-		obj.inst_var     = 0
 	
 	# JACK Hosts
 	hosts = '''
@@ -89,5 +88,4 @@ def build(bld):
 		obj.uselib       = 'JACK'
 		obj.uselib_local = 'libslv2'
 		obj.target       = i
-		obj.inst_var     = 0
 
