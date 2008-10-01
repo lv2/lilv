@@ -5,6 +5,27 @@ import autowaf
 # Version of this package (even if built as a child)
 SLV2_VERSION = '0.6.1'
 
+# Library version (UNIX style major, minor, micro)
+# major increment <=> incompatible changes
+# minor increment <=> compatible changes (additions)
+# micro increment <=> no interface changes
+# Version history:
+#   0.0.1 = 0,0,0
+#   0.1.0 = 2,0,0
+#   0.2.0 = 3,0,0
+#   0.3.0 = 4,0,0
+#   0.3.1 = 4,0,0
+#   0.3.2 = 5,0,1
+#   0.4.0 = 6,0,0
+#   0.4.1 = 6,0,0 (oops, should have been 6,1,0)
+#   0.4.2 = 6,0,0 (oops, should have been 6,2,0)
+#   0.4.3 = 6,0,0 (oops, should have been 6,3,0)
+#   0.4.4 = 7,0,1
+#   0.4.5 = 7,0,1
+#   0.5.0 = 8,0,0
+#   0.6.0 = 9,0,0 (SVN r1282)
+SLV2_LIB_VERSION = '9.0.0'
+
 # Variables for 'waf dist'
 APPNAME = 'slv2'
 VERSION = SLV2_VERSION
@@ -62,7 +83,7 @@ def build(bld):
 	obj.name     = 'libslv2'
 	obj.target   = 'slv2'
 	obj.uselib   = 'REDLAND LV2CORE'
-	obj.vnum     = '1.0.0'
+	obj.vnum     = SLV2_LIB_VERSION
 
 	# Utilities
 	utils = '''
