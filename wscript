@@ -89,8 +89,8 @@ def build(bld):
 	obj.includes = '..'
 	obj.name     = 'libslv2'
 	obj.target   = 'slv2'
-	obj.uselib   = 'REDLAND LV2CORE'
 	obj.vnum     = SLV2_LIB_VERSION
+	autowaf.use_lib(bld, obj, 'REDLAND LV2CORE')
 
 	# Utilities
 	utils = '''
