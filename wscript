@@ -55,7 +55,7 @@ def configure(conf):
 	conf.env.append_value('CCFLAGS', '-DPACKAGE_VERSION=\\\"' + VERSION + '\\\"')
 	
 	autowaf.print_summary(conf)
-	print '= SLV2 Configuration ='
+	autowaf.display_header('SLV2 Configuration')
 	autowaf.display_msg("Jack clients", str(bool(conf.env['HAVE_JACK'])), 'YELLOW')
 	print
 		
