@@ -116,4 +116,9 @@ def build(bld):
 		obj.uselib       = 'JACK'
 		obj.uselib_local = 'libslv2'
 		obj.target       = i
+	
+	# Documentation
+	autowaf.build_dox(bld, 'SLV2', SLV2_VERSION, srcdir, blddir)
+	install_files('PREFIX', 'share/doc/slv2', blddir + '/default/doc/html/*')
+
 
