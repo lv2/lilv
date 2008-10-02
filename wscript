@@ -35,9 +35,11 @@ srcdir = '.'
 blddir = 'build'
 
 def set_options(opt):
+	autowaf.set_options(opt)
 	opt.tool_options('compiler_cc')
 
 def configure(conf):
+	autowaf.configure(conf)
 	if not conf.env['CC']:
 		conf.check_tool('compiler_cc')
 	if not conf.env['HAVE_LV2CORE']:
@@ -51,6 +53,11 @@ def configure(conf):
 	conf.write_config_header('waf-config.h')
 	conf.env.append_value('CCFLAGS', '-DCONFIG_H_PATH=\\\"waf-config.h\\\"')
 	conf.env.append_value('CCFLAGS', '-DPACKAGE_VERSION=\\\"' + VERSION + '\\\"')
+	
+	autowaf.print_summary(conf)
+	print '= SLV2 Configuration ='
+	autowaf.display_msg("Jack clients", str(bool(conf.env['HAVE_JACK'])), 'YELLOW')
+	print
 		
 def build(bld):
 	# C Headers
