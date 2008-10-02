@@ -45,7 +45,7 @@ def configure(conf):
 	if not conf.env['HAVE_LV2CORE']:
 		conf.check_pkg('lv2core', destvar='LV2CORE', vnum='1', mandatory=True)
 	if not conf.env['HAVE_REDLAND']:
-		conf.check_pkg('redland', destvar='REDLAND', vnum='1.0.8', mandatory=True)
+		conf.check_pkg('redland', destvar='REDLAND', vnum='1.0.6', mandatory=True)
 	if not conf.env['HAVE_JACK']:
 		conf.check_pkg('jack', destvar='JACK', vnum='0.107.0', mandatory=False)
 	conf.env.append_value('CCFLAGS', '-std=c99')
