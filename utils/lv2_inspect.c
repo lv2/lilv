@@ -224,7 +224,7 @@ print_plugin(SLV2Plugin p)
 void
 print_version()
 {
-	printf("lv2_inspect (slv2) " PACKAGE_VERSION "\n");
+	printf("lv2_inspect (slv2) " SLV2_VERSION "\n");
 	printf("Copyright (C) 2007 Dave Robillard <dave@drobilla.net>\n");
 	printf("License: GNU GPL version 2 or later <http://gnu.org/licenses/gpl.html>\n");
 	printf("This is free software: you are free to change and redistribute it.\n");

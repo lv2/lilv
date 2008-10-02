@@ -40,19 +40,14 @@ def set_options(opt):
 
 def configure(conf):
 	autowaf.configure(conf)
-	if not conf.env['CC']:
-		conf.check_tool('compiler_cc')
-	if not conf.env['HAVE_LV2CORE']:
-		conf.check_pkg('lv2core', destvar='LV2CORE', vnum='1', mandatory=True)
-	if not conf.env['HAVE_REDLAND']:
-		conf.check_pkg('redland', destvar='REDLAND', vnum='1.0.6', mandatory=True)
-	if not conf.env['HAVE_JACK']:
-		conf.check_pkg('jack', destvar='JACK', vnum='0.107.0', mandatory=False)
+	autowaf.check_tool(conf, 'compiler_cc')
+	autowaf.check_pkg(conf, 'lv2core', destvar='LV2CORE', vnum='1', mandatory=True)
+	autowaf.check_pkg(conf, 'redland', destvar='REDLAND', vnum='1.0.6', mandatory=True)
+	autowaf.check_pkg(conf, 'jack', destvar='JACK', vnum='0.107.0', mandatory=False)
 	conf.env.append_value('CCFLAGS', '-std=c99')
-	conf.define('PACKAGE_VERSION', VERSION)
+	conf.define('SLV2_VERSION', SLV2_VERSION)
 	conf.write_config_header('waf-config.h')
 	conf.env.append_value('CCFLAGS', '-DCONFIG_H_PATH=\\\"waf-config.h\\\"')
-	conf.env.append_value('CCFLAGS', '-DPACKAGE_VERSION=\\\"' + VERSION + '\\\"')
 	
 	autowaf.print_summary(conf)
 	autowaf.display_header('SLV2 Configuration')
