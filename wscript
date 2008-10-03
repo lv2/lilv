@@ -46,8 +46,7 @@ def configure(conf):
 	autowaf.check_pkg(conf, 'jack', destvar='JACK', vnum='0.107.0', mandatory=False)
 	conf.env.append_value('CCFLAGS', '-std=c99')
 	conf.define('SLV2_VERSION', SLV2_VERSION)
-	conf.write_config_header('waf-config.h')
-	conf.env.append_value('CCFLAGS', '-DCONFIG_H_PATH=\\\"waf-config.h\\\"')
+	conf.write_config_header('config.h')
 	
 	autowaf.print_summary(conf)
 	autowaf.display_header('SLV2 Configuration')
