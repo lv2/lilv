@@ -663,14 +663,26 @@ slv2_plugin_has_feature(SLV2Plugin p,
 SLV2Values
 slv2_plugin_get_supported_features(SLV2Plugin p)
 {
-    const char* const query = 
+	/* Work around broken UNION in Redland :( */
+    /*const char* const query = 
 		"SELECT DISTINCT ?feature WHERE {\n"
 		"	{ <>  lv2:optionalFeature ?feature }\n"
 		"	UNION\n"
 		"	{ <>  lv2:requiredFeature ?feature }\n"
 		"}\n";
+	
+	SLV2Values result = slv2_plugin_query_variable(p, query, 0);*/
 
-	SLV2Values result = slv2_plugin_query_variable(p, query, 0);
+	SLV2Values optional = slv2_plugin_get_optional_features(p);
+	SLV2Values required = slv2_plugin_get_required_features(p);
+	
+	SLV2Values result = slv2_values_new();
+	unsigned n_optional = slv2_values_size(optional);
+	unsigned i = 0;
+	for ( ; i < n_optional; ++i)
+		slv2_values_set_at(result, i, slv2_values_get_at(optional, i));
+	for ( ; i < n_optional + slv2_values_size(required); ++i)
+		slv2_values_set_at(result, i, slv2_values_get_at(required, i - n_optional));
 	
 	return result;
 }
