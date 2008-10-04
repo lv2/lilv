@@ -85,7 +85,7 @@ print_port(SLV2Plugin p, uint32_t index, float* mins, float* maxes, float* defau
 		printf("\t\tProperties: ");
 	for (unsigned i=0; i < slv2_values_size(properties); ++i) {
 		if (i > 0) {
-			printf("\n\t\t            ");
+			printf("\t\t            ");
 		}
 		printf("%s\n", slv2_value_as_uri(slv2_values_get_at(properties, i)));
 	}
@@ -183,7 +183,7 @@ print_plugin(SLV2Plugin p)
 		if (i > 0) {
 			printf("\n\t            ");
 		}
-		printf("%s\n", slv2_value_as_uri(slv2_values_get_at(features, i)));
+		printf("%s", slv2_value_as_uri(slv2_values_get_at(features, i)));
 	}
 	if (features)
 		printf("\n");
@@ -197,15 +197,15 @@ print_plugin(SLV2Plugin p)
 		printf("\tOptional Features: ");
 	for (unsigned i=0; i < slv2_values_size(features); ++i) {
 		if (i > 0) {
-			printf("\n\t            ");
+			printf("\n\t                   ");
 		}
-		printf("%s\n", slv2_value_as_uri(slv2_values_get_at(features, i)));
+		printf("%s", slv2_value_as_uri(slv2_values_get_at(features, i)));
 	}
 	if (features)
 		printf("\n");
 	slv2_values_free(features);
-
-
+	
+	
 	/* Ports */
 
 	const uint32_t num_ports = slv2_plugin_get_num_ports(p);
