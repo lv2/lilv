@@ -115,4 +115,6 @@ def build(bld):
 	autowaf.build_dox(bld, 'SLV2', SLV2_VERSION, srcdir, blddir)
 	install_files('PREFIX', 'share/doc/slv2', blddir + '/default/doc/html/*')
 
+def shutdown():
+	autowaf.shutdown()
 
