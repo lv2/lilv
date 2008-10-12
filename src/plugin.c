@@ -543,13 +543,14 @@ slv2_plugin_get_port_float_values(SLV2Plugin  p,
 	while (!librdf_query_results_finished(results)) {
 		librdf_node* idx_node = librdf_query_results_get_binding_value(results, 0);
 		librdf_node* val_node = librdf_query_results_get_binding_value(results, 1);
-		assert(librdf_node_is_literal(idx_node));
-		assert(librdf_node_is_literal(val_node));
-		const int idx = atoi((const char*)librdf_node_get_literal_value(idx_node));
-		const float val = atof((const char*)librdf_node_get_literal_value(val_node));
-		values[idx] = val;
-		librdf_free_node(idx_node);
-		librdf_free_node(val_node);
+		if (idx_node && val_node && librdf_node_is_literal(idx_node)
+				&& librdf_node_is_literal(val_node)) {
+			const int idx = atoi((const char*)librdf_node_get_literal_value(idx_node));
+			const float val = atof((const char*)librdf_node_get_literal_value(val_node));
+			values[idx] = val;
+			librdf_free_node(idx_node);
+			librdf_free_node(val_node);
+		}
 		librdf_query_results_next(results);
 	}
 
