@@ -23,10 +23,10 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <librdf.h>
-#include <slv2/types.h>
-#include <slv2/pluginuis.h>
-#include <slv2/pluginui.h>
-#include <slv2/util.h>
+#include "slv2/types.h"
+#include "slv2/pluginuis.h"
+#include "slv2/pluginui.h"
+#include "slv2/util.h"
 #include "slv2_internal.h"
 
 	

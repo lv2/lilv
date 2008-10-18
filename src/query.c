@@ -23,9 +23,9 @@
 #include <librdf.h>
 #include <locale.h>
 #include <limits.h>
-#include <slv2/plugin.h>
-#include <slv2/util.h>
-#include <slv2/values.h>
+#include "slv2/plugin.h"
+#include "slv2/util.h"
+#include "slv2/values.h"
 #include "slv2_internal.h"
 
 

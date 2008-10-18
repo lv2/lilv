@@ -20,7 +20,7 @@
 #include <stdlib.h>
 #include <limits.h>
 #include <raptor.h>
-#include <slv2/values.h>
+#include "slv2/values.h"
 #include "slv2_internal.h"
 
 

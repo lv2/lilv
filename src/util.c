@@ -22,7 +22,7 @@
 #include <string.h>
 #include <assert.h>
 #include <stdarg.h>
-#include <slv2/util.h>
+#include "slv2/util.h"
 
 
 char*

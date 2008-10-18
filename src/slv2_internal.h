@@ -27,8 +27,8 @@ extern "C" {
 #include <stddef.h>
 #include <inttypes.h>
 #include <librdf.h>
-#include <slv2/types.h>
-#include <slv2/lv2_ui.h>
+#include "slv2/types.h"
+#include "slv2/lv2_ui.h"
 
 
 

@@ -22,9 +22,9 @@
 #include <limits.h>
 #include <librdf.h>
 #include "slv2_internal.h"
-#include <slv2/value.h>
-#include <slv2/pluginclass.h>
-#include <slv2/pluginclasses.h>
+#include "slv2/value.h"
+#include "slv2/pluginclass.h"
+#include "slv2/pluginclasses.h"
 
 	
 SLV2PluginClasses

@@ -21,8 +21,8 @@
 #include <assert.h>
 #include <stdlib.h>
 #include <string.h>
-#include <slv2/pluginclass.h>
-#include <slv2/value.h>
+#include "slv2/pluginclass.h"
+#include "slv2/value.h"
 #include "slv2_internal.h"
 
 

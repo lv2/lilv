@@ -22,11 +22,11 @@
 #include <stdio.h>
 #include <string.h>
 #include <limits.h>
-#include <slv2/port.h>
-#include <slv2/types.h>
-#include <slv2/util.h>
-#include <slv2/values.h>
-#include <slv2/scalepoints.h>
+#include "slv2/port.h"
+#include "slv2/types.h"
+#include "slv2/util.h"
+#include "slv2/values.h"
+#include "slv2/scalepoints.h"
 #include "slv2_internal.h"
 
 

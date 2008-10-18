@@ -23,10 +23,10 @@
 #include <string.h>
 #include <assert.h>
 #include <dlfcn.h>
-#include <slv2/types.h>
-#include <slv2/plugin.h>
-#include <slv2/plugininstance.h>
-#include <slv2/util.h>
+#include "slv2/types.h"
+#include "slv2/plugin.h"
+#include "slv2/plugininstance.h"
+#include "slv2/util.h"
 #include "slv2_internal.h"
 
 

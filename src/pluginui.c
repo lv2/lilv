@@ -21,7 +21,7 @@
 #include <assert.h>
 #include <string.h>
 #include <stdlib.h>
-#include <slv2/values.h>
+#include "slv2/values.h"
 #include "slv2_internal.h"
 
 
