@@ -103,13 +103,14 @@ def build(bld):
 		hosts/lv2_jack_host
 		hosts/lv2_simple_jack_host
 	'''
-	for i in hosts.split():
-		obj = bld.create_obj('cc', 'program')
-		obj.source       = i + '.c'
-		obj.includes     = '.'
-		obj.uselib       = 'JACK'
-		obj.uselib_local = 'libslv2'
-		obj.target       = i
+	if bld.env()['HAVE_JACK']:
+		for i in hosts.split():
+			obj = bld.create_obj('cc', 'program')
+			obj.source       = i + '.c'
+			obj.includes     = '.'
+			obj.uselib       = 'JACK'
+			obj.uselib_local = 'libslv2'
+			obj.target       = i
 	
 	# Documentation
 	autowaf.build_dox(bld, 'SLV2', SLV2_VERSION, srcdir, blddir)
