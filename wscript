@@ -50,7 +50,7 @@ def configure(conf):
 	
 	autowaf.print_summary(conf)
 	autowaf.display_header('SLV2 Configuration')
-	autowaf.display_msg("Jack clients", str(bool(conf.env['HAVE_JACK'])), 'YELLOW')
+	autowaf.display_msg("Jack clients", str(conf.env['HAVE_JACK'] == 1), 'YELLOW')
 	print
 		
 def build(bld):
@@ -103,7 +103,7 @@ def build(bld):
 		hosts/lv2_jack_host
 		hosts/lv2_simple_jack_host
 	'''
-	if bld.env()['HAVE_JACK']:
+	if bld.env()['HAVE_JACK'] == 1:
 		for i in hosts.split():
 			obj = bld.create_obj('cc', 'program')
 			obj.source       = i + '.c'
