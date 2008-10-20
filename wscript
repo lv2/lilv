@@ -36,7 +36,6 @@ blddir = 'build'
 
 def set_options(opt):
 	autowaf.set_options(opt)
-	opt.tool_options('compiler_cc')
 
 def configure(conf):
 	autowaf.configure(conf)
@@ -55,7 +54,7 @@ def configure(conf):
 		
 def build(bld):
 	# C Headers
-	install_files('PREFIX', 'include/slv2', 'slv2/*.h')
+	install_files('INCLUDEDIR', 'slv2', 'slv2/*.h')
 
 	# Pkgconfig file
 	autowaf.build_pc(bld, 'SLV2', SLV2_VERSION, ['REDLAND'])
@@ -84,6 +83,7 @@ def build(bld):
 	obj.name     = 'libslv2'
 	obj.target   = 'slv2'
 	obj.vnum     = SLV2_LIB_VERSION
+	obj.inst_dir = bld.env()['LIBDIRNAME']
 	autowaf.use_lib(bld, obj, 'REDLAND LV2CORE')
 
 	# Utilities
@@ -97,6 +97,7 @@ def build(bld):
 		obj.includes     = '.'
 		obj.uselib_local = 'libslv2'
 		obj.target       = i
+		obj.inst_dir     = bld.env()['BINDIRNAME']
 	
 	# JACK Hosts
 	hosts = '''
@@ -111,6 +112,7 @@ def build(bld):
 			obj.uselib       = 'JACK'
 			obj.uselib_local = 'libslv2'
 			obj.target       = i
+			obj.inst_dir     = bld.env()['BINDIRNAME']
 	
 	# Documentation
 	autowaf.build_dox(bld, 'SLV2', SLV2_VERSION, srcdir, blddir)

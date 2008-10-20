@@ -24,9 +24,9 @@ extern "C" {
 #endif
 
 #include <assert.h>
-#include <lv2.h>
-#include <slv2/plugin.h>
-#include <slv2/port.h>
+#include "lv2.h"
+#include "slv2/plugin.h"
+#include "slv2/port.h"
 
 typedef struct _InstanceImpl* SLV2InstanceImpl;
 

@@ -24,7 +24,7 @@ extern "C" {
 #endif
 
 #include <stdbool.h>
-#include <slv2/value.h>
+#include "slv2/value.h"
 
 /** \defgroup slv2_collections Collections of scale_points/objects
  *

@@ -23,8 +23,8 @@
 extern "C" {
 #endif
 
-#include <slv2/types.h>
-#include <slv2/plugin.h>
+#include "slv2/types.h"
+#include "slv2/plugin.h"
 
 /** \addtogroup slv2_collections
  *

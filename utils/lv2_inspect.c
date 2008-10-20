@@ -21,8 +21,8 @@
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
-#include <slv2/slv2.h>
 #include <locale.h>
+#include "slv2/slv2.h"
 
 SLV2Value event_class   = NULL;
 SLV2Value control_class = NULL;

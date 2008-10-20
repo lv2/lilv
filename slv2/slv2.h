@@ -23,21 +23,21 @@
 extern "C" {
 #endif
 
-#include <slv2/plugin.h>
-#include <slv2/pluginclass.h>
-#include <slv2/plugininstance.h>
-#include <slv2/plugins.h>
-#include <slv2/pluginui.h>
-#include <slv2/pluginuiinstance.h>
-#include <slv2/pluginuis.h>
-#include <slv2/port.h>
-#include <slv2/types.h>
-#include <slv2/util.h>
-#include <slv2/value.h>
-#include <slv2/values.h>
-#include <slv2/scalepoint.h>
-#include <slv2/scalepoints.h>
-#include <slv2/world.h>
+#include "slv2/plugin.h"
+#include "slv2/pluginclass.h"
+#include "slv2/plugininstance.h"
+#include "slv2/plugins.h"
+#include "slv2/pluginui.h"
+#include "slv2/pluginuiinstance.h"
+#include "slv2/pluginuis.h"
+#include "slv2/port.h"
+#include "slv2/types.h"
+#include "slv2/util.h"
+#include "slv2/value.h"
+#include "slv2/values.h"
+#include "slv2/scalepoint.h"
+#include "slv2/scalepoints.h"
+#include "slv2/world.h"
 
 #ifdef __cplusplus
 } /* extern "C" */

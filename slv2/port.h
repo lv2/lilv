@@ -23,10 +23,10 @@
 extern "C" {
 #endif
 
-#include <slv2/types.h>
-#include <slv2/plugin.h>
-#include <slv2/port.h>
-#include <slv2/values.h>
+#include "slv2/types.h"
+#include "slv2/plugin.h"
+#include "slv2/port.h"
+#include "slv2/values.h"
 
 /** \addtogroup slv2_data
  * @{

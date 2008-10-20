@@ -24,8 +24,8 @@ extern "C" {
 #endif
 
 #include <assert.h>
-#include <slv2/lv2_ui.h>
-#include <slv2/plugin.h>
+#include "slv2/lv2_ui.h"
+#include "slv2/plugin.h"
 
 typedef struct _SLV2UIInstanceImpl* SLV2UIInstanceImpl;
 

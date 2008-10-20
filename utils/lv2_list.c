@@ -19,7 +19,7 @@
 #include "config.h"
 #include <stdio.h>
 #include <string.h>
-#include <slv2/slv2.h>
+#include "slv2/slv2.h"
 
 
 void
