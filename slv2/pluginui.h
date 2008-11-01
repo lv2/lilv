@@ -31,6 +31,7 @@ extern "C" {
 /** Get the URI of a Plugin UI.
  *
  * \param ui The Plugin UI
+ * \return a shared value which must not be modified or freed.
  *
  * Time = O(1)
  */
@@ -41,6 +42,7 @@ slv2_ui_get_uri(SLV2UI ui);
 /** Get the types (URIs of RDF classes) of a Plugin UI.
  *
  * \param ui The Plugin UI
+ * \return a shared value which must not be modified or freed.
  *
  * Time = O(1)
  */
@@ -62,6 +64,7 @@ slv2_ui_is_a(SLV2UI ui, SLV2Value class_uri);
 /** Get the URI for a Plugin UI's bundle.
  *
  * \param ui The Plugin UI
+ * \return a shared value which must not be modified or freed.
  *
  * Time = O(1)
  */
@@ -72,6 +75,7 @@ slv2_ui_get_bundle_uri(SLV2UI ui);
 /** Get the URI for a Plugin UI's shared library.
  *
  * \param ui The Plugin UI
+ * \return a shared value which must not be modified or freed.
  *
  * Time = O(1)
  */
