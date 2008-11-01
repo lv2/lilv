@@ -114,7 +114,7 @@ slv2_port_supports_event(SLV2Plugin p,
 			"ASK WHERE {\n"
 			"<", slv2_value_as_uri(p->plugin_uri), "> lv2:port ?port ."
 			"?port lv2:symbol \"", slv2_value_as_string(port->symbol), "\";\n",
-			"      lv2ev:supportsEvent <", event, "> .\n"
+			"      lv2ev:supportsEvent <", slv2_value_as_uri(event), "> .\n"
 			"}", NULL);
 			
 	librdf_query_results* results = slv2_plugin_query(p, query);
