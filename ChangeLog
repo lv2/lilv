@@ -1,11 +1,11 @@
-slv2 (9999) unstable; urgency=low
+slv2 (0.6.1) unstable; urgency=low
 
-  * NOT YET RELEASED
+  * I18N support.
   * Add slv2_port_get_value (analogous to slv2_plugin_get_value).
   * Add slv2_instance_get_extension_data.
   * Fix slv2_plugin_get_supported_features (previously non-functional).
  
- -- Dave Robillard <dave@drobilla.net>  Sun, 01 Jan 9999 00:00:00 -0400
+ -- Dave Robillard <dave@drobilla.net>  Sat, 08 Nov 2008 14:27:10 -0500
 
 slv2 (0.6.0) unstable; urgency=low
 

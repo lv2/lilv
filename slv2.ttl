@@ -1,26 +1,29 @@
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix : <http://usefulinc.com/ns/doap#> .
 @prefix foaf: <http://xmlns.com/foaf/0.1/> .
 
-[]
-    a :Project;
-    :name "SLV2";
-    :shortname "SLV2";
-    :shortdesc "Library for simple use of LV2 plugins";
-    :homepage <http://drobilla.net/software/slv2>;
-    :download-page <http://download.drobilla.net>;
-    :bug-database <http://dev.drobilla.net/query?status=new&status=assigned&status=reopened&component=SLV2&order=priority>;
-    :programming-language "C", "Turtle";
-    :license <http://usefulinc.com/doap/licenses/gpl>;
+<http://drobilla.net/software/slv2>
+    a :Project ;
+    :bug-database <http://dev.drobilla.net/query?status=new&status=assigned&status=reopened&component=SLV2&order=priority> ;
     :developer [
-        a foaf:Person;
-        foaf:name "Dave Robillard";
-        foaf:homepage <http://drobilla.net>;
-        foaf:mbox_sha1sum "253b3c58086250260bac1232d744d150274ad308"
-    ];
+        a foaf:Person ;
+        rdfs:seeAlso <http://drobilla.net/drobilla.rdf> ;
+        foaf:homepage <http://drobilla.net> ;
+        foaf:mbox_sha1sum "253b3c58086250260bac1232d744d150274ad308" ;
+        foaf:name "Dave Robillard"
+    ] ;
+    :download-page <http://download.drobilla.net> ;
+    :homepage <http://drobilla.net/software/slv2> ;
+    :license <http://usefulinc.com/doap/licenses/gpl> ;
+    :name "SLV2" ;
+    :programming-language "C", "Turtle" ;
     :repository [
-        a :SVNRepository;
-        :browse <http://dev.drobilla.net/browser/slv2>;
-        :location <http://svn.drobilla.net/lad/slv2>
-    ] .
+        :browse <http://dev.drobilla.net/browser/trunk/slv2> ;
+        :location <http://svn.drobilla.net/lad/trunk/slv2> ;
+        a :SVNRepository
+    ] ;
+    :shortdesc "Library for simple use of LV2 plugins" ;
+    :shortname "SLV2" .
+
 
