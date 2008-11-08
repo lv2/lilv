@@ -24,7 +24,8 @@ SLV2_VERSION = '0.6.1'
 #   0.4.5 = 7,0,1
 #   0.5.0 = 8,0,0
 #   0.6.0 = 9,0,0 (SVN r1282)
-SLV2_LIB_VERSION = '9.0.0'
+#   0.6.1 = 9,1,0
+SLV2_LIB_VERSION = '9.1.0'
 
 # Variables for 'waf dist'
 APPNAME = 'slv2'

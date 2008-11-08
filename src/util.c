@@ -71,4 +71,27 @@ slv2_uri_to_path(const char* uri)
 }
 
 
+char* 
+slv2_get_lang()
+{
+	static char lang[32];
+	lang[31] = '\0';
+	char* tmp = getenv("LANG");
+	if (!tmp) {
+		lang[0] = '\0';
+	} else {
+		strncpy(lang, tmp, 31);
+		for (int i = 0; i < 31 && lang[i]; ++i) {
+			if (lang[i] == '_') {
+				lang[i] = '-';
+			} else if (   !(lang[i] >= 'a' && lang[i] <= 'z')
+			           && !(lang[i] >= 'A' && lang[i] <= 'Z')) {
+				lang[i] = '\0';
+				break;
+			}
+		}
+	}
+
+	return lang;
+}
 

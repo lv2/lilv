@@ -178,6 +178,18 @@ slv2_plugin_get_value_by_qname(SLV2Plugin  p,
                                const char* predicate);
 
 
+/** Get a translated value associated with the plugin in a plugin's data files.
+ *
+ * This function is identical to slv2_plugin_get_value, but takes a QName
+ * string parameter for a predicate instead of an SLV2Value, which may be
+ * more convenient. It returns the value translated to the current language
+ * if possible.
+ */
+SLV2Values
+slv2_plugin_get_value_by_qname_i18n(SLV2Plugin  p,
+                                    const char* predicate);
+
+
 /** Get a value associated with some subject in a plugin's data files.
  *
  * Returns the ?object of all triples found of the form:
@@ -200,7 +212,7 @@ slv2_plugin_get_value_by_qname(SLV2Plugin  p,
 SLV2Values
 slv2_plugin_get_value_for_subject(SLV2Plugin  p,
                                   SLV2Value   subject_uri,
-								  SLV2Value   predicate_uri);
+                                  SLV2Value   predicate_uri);
 
 
 /** Return whether a feature is supported by a plugin.

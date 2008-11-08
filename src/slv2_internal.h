@@ -25,6 +25,7 @@ extern "C" {
 
 #include <stdbool.h>
 #include <stddef.h>
+#include <stdlib.h>
 #include <inttypes.h>
 #include <librdf.h>
 #include "slv2/types.h"
@@ -242,6 +243,9 @@ void           slv2_scale_point_free(SLV2ScalePoint point);
 /* String utility functions */
 
 char* slv2_strjoin(const char* first, ...);
+
+/* I18N utility functions */
+char* slv2_get_lang();
 
 
 #ifdef __cplusplus

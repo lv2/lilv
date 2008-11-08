@@ -141,7 +141,8 @@ slv2_port_get_value_by_qname(SLV2Plugin  p,
 			"SELECT DISTINCT ?value WHERE {\n"
 			"<", slv2_value_as_uri(p->plugin_uri), "> lv2:port ?port .\n"
 			"?port lv2:symbol \"", slv2_value_as_string(port->symbol), "\";\n\t",
-			       property, " ?value .\n}", NULL);
+			property, " ?value .\n"
+			"FILTER(lang(?value) = \"\") }", NULL);
 			
 	results = slv2_plugin_query_variable(p, query, 0);
 
@@ -188,6 +189,29 @@ slv2_port_get_value(SLV2Plugin p,
 }
 
 
+SLV2Values
+slv2_port_get_value_by_qname_i18n(SLV2Plugin  p,
+                                  SLV2Port    port,
+                                  const char* property)
+{
+	assert(property);
+	SLV2Values results = NULL;
+
+	char* query = slv2_strjoin(
+			"SELECT DISTINCT ?value WHERE {\n"
+			"<", slv2_value_as_uri(p->plugin_uri), "> lv2:port ?port .\n"
+			"?port lv2:symbol \"", slv2_value_as_string(port->symbol), "\";\n\t",
+			property, " ?value .\n"
+			"FILTER(lang(?value) = \"", slv2_get_lang(), 
+			"\") }", NULL);
+	
+	results = slv2_plugin_query_variable(p, query, 0);
+
+	free(query);
+	return results;
+}
+
+
 SLV2Value
 slv2_port_get_symbol(SLV2Plugin p,
                      SLV2Port   port)
@@ -201,11 +225,16 @@ slv2_port_get_name(SLV2Plugin p,
                    SLV2Port   port)
 {
 	SLV2Value  ret     = NULL;
-	SLV2Values results = slv2_port_get_value_by_qname(p, port, "lv2:name");
+	SLV2Values results = slv2_port_get_value_by_qname_i18n(p, port, "lv2:name");
 
-	if (results && slv2_values_size(results) == 1)
+	if (results && slv2_values_size(results) > 0) {
 		ret = slv2_value_duplicate(slv2_values_get_at(results, 0));
-	
+	} else {
+		results = slv2_port_get_value_by_qname(p, port, "lv2:name");
+		if (results && slv2_values_size(results) > 0)
+			ret = slv2_value_duplicate(slv2_values_get_at(results, 0));
+	}
+		
 	slv2_values_free(results);
 
 	return ret;

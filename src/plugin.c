@@ -373,19 +373,21 @@ slv2_plugin_verify(SLV2Plugin plugin)
 SLV2Value
 slv2_plugin_get_name(SLV2Plugin plugin)
 {
-	SLV2Values results = slv2_plugin_get_value_by_qname(plugin, "doap:name");
+	SLV2Values results = slv2_plugin_get_value_by_qname_i18n(plugin, "doap:name");
 	SLV2Value  ret     = NULL;
-	
-	// FIXME: lang?
 	
 	if (results) {
 		SLV2Value val = slv2_values_get_at(results, 0);
 		if (slv2_value_is_string(val))
 			ret = slv2_value_duplicate(val);
-	}
-
-	if (results)
 		slv2_values_free(results);
+	} else {
+		results = slv2_plugin_get_value_by_qname(plugin, "doap:name");
+		SLV2Value val = slv2_values_get_at(results, 0);
+		if (slv2_value_is_string(val))
+			ret = slv2_value_duplicate(val);
+		slv2_values_free(results);
+	}
 
 	return ret;
 }
@@ -429,11 +431,29 @@ SLV2Values
 slv2_plugin_get_value_by_qname(SLV2Plugin  p,
                                const char* predicate)
 {
-	char* query = NULL;
-	
-    query = slv2_strjoin(
+	char* query = slv2_strjoin(
 			"SELECT DISTINCT ?value WHERE { \n"
-			"<> ", predicate, " ?value \n"
+			"<> ", predicate, " ?value . \n"
+			"FILTER(lang(?value) = \"\") \n"
+			"}\n", NULL);
+
+	SLV2Values result = slv2_plugin_query_variable(p, query, 0);
+	
+	free(query);
+
+	return result;
+}
+
+	
+/* internal: get i18n value if possible */
+SLV2Values
+slv2_plugin_get_value_by_qname_i18n(SLV2Plugin  p,
+                                    const char* predicate)
+{
+	char* query = slv2_strjoin(
+			"SELECT DISTINCT ?value WHERE { \n"
+			"<> ", predicate, " ?value . \n"
+			"FILTER(lang(?value) = \"", slv2_get_lang(), "\") \n"
 			"}\n", NULL);
 
 	SLV2Values result = slv2_plugin_query_variable(p, query, 0);
