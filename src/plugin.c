@@ -434,7 +434,6 @@ slv2_plugin_get_value_by_qname(SLV2Plugin  p,
 	char* query = slv2_strjoin(
 			"SELECT DISTINCT ?value WHERE { \n"
 			"<> ", predicate, " ?value . \n"
-			"FILTER(lang(?value) = \"\") \n"
 			"}\n", NULL);
 
 	SLV2Values result = slv2_plugin_query_variable(p, query, 0);

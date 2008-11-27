@@ -3,7 +3,7 @@ import Params
 import autowaf
 
 # Version of this package (even if built as a child)
-SLV2_VERSION = '0.6.1'
+SLV2_VERSION = '0.6.2'
 
 # Library version (UNIX style major, minor, micro)
 # major increment <=> incompatible changes
@@ -25,7 +25,7 @@ SLV2_VERSION = '0.6.1'
 #   0.5.0 = 8,0,0
 #   0.6.0 = 9,0,0 (SVN r1282)
 #   0.6.1 = 9,1,0
-SLV2_LIB_VERSION = '9.1.0'
+SLV2_LIB_VERSION = '9.1.1'
 
 # Variables for 'waf dist'
 APPNAME = 'slv2'

@@ -1,3 +1,9 @@
+slv2 (0.6.2) unstable; urgency=high
+
+  * Fix bug introduced with I18N in 0.6.1 which broke feature detection.
+ 
+ -- Dave Robillard <dave@drobilla.net>  Thu, 27 Nov 2008 13:54:56 -0500
+
 slv2 (0.6.1) unstable; urgency=low
 
   * I18N support.
