@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-import Params
 import autowaf
 
 # Version of this package (even if built as a child)
@@ -50,18 +49,18 @@ def configure(conf):
 	
 	autowaf.print_summary(conf)
 	autowaf.display_header('SLV2 Configuration')
-	autowaf.display_msg("Jack clients", str(conf.env['HAVE_JACK'] == 1), 'YELLOW')
+	autowaf.display_msg(conf, "Jack clients", str(conf.env['HAVE_JACK'] == 1))
 	print
 		
 def build(bld):
 	# C Headers
-	install_files('INCLUDEDIR', 'slv2', 'slv2/*.h')
+	bld.install_files('${INCLUDEDIR}/slv2', 'slv2/*.h')
 
 	# Pkgconfig file
 	autowaf.build_pc(bld, 'SLV2', SLV2_VERSION, ['REDLAND'])
 	
 	# Library
-	obj = bld.create_obj('cc', 'shlib')
+	obj = bld.new_task_gen('cc', 'shlib')
 	obj.source = '''
 		src/plugin.c
 		src/pluginclass.c
@@ -80,11 +79,11 @@ def build(bld):
 		src/values.c
 		src/world.c
 	'''
-	obj.includes = '..'
-	obj.name     = 'libslv2'
-	obj.target   = 'slv2'
-	obj.vnum     = SLV2_LIB_VERSION
-	obj.inst_dir = bld.env()['LIBDIRNAME']
+	obj.includes     = '..'
+	obj.name         = 'libslv2'
+	obj.target       = 'slv2'
+	obj.vnum         = SLV2_LIB_VERSION
+	obj.install_path = '${LIBDIR}'
 	autowaf.use_lib(bld, obj, 'REDLAND LV2CORE')
 
 	# Utilities
@@ -93,32 +92,32 @@ def build(bld):
 		utils/lv2_list
 	'''
 	for i in utils.split():
-		obj = bld.create_obj('cc', 'program')
+		obj = bld.new_task_gen('cc', 'program')
 		obj.source       = i + '.c'
 		obj.includes     = '.'
 		obj.uselib_local = 'libslv2'
 		obj.target       = i
-		obj.inst_dir     = bld.env()['BINDIRNAME']
+		obj.install_path = '${BINDIR}'
 	
 	# JACK Hosts
 	hosts = '''
 		hosts/lv2_jack_host
 		hosts/lv2_simple_jack_host
 	'''
-	if bld.env()['HAVE_JACK'] == 1:
+	if bld.env['HAVE_JACK'] == 1:
 		for i in hosts.split():
-			obj = bld.create_obj('cc', 'program')
+			obj = bld.new_task_gen('cc', 'program')
 			obj.source       = i + '.c'
 			obj.includes     = '.'
 			obj.uselib       = 'JACK'
 			obj.uselib_local = 'libslv2'
 			obj.target       = i
-			obj.inst_dir     = bld.env()['BINDIRNAME']
+			obj.install_path = '${BINDIR}'
 	
 	# Documentation
 	autowaf.build_dox(bld, 'SLV2', SLV2_VERSION, srcdir, blddir)
-	install_files('HTMLDIR', '', blddir + '/default/doc/html/*')
-	install_files('MANDIR', 'man3', blddir + '/default/doc/man/man3/*')
+	bld.install_files('${HTMLDIR}', blddir + '/default/doc/html/*')
+	bld.install_files('${MANDIR}/man3', blddir + '/default/doc/man/man3/*')
 
 def shutdown():
 	autowaf.shutdown()
