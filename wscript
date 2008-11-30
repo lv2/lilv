@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import autowaf
+import Options
 
 # Version of this package (even if built as a child)
 SLV2_VERSION = '0.6.2'
@@ -36,6 +37,8 @@ blddir = 'build'
 
 def set_options(opt):
 	autowaf.set_options(opt)
+	opt.add_option('--no-jack', action='store_true', default=False, dest='no_jack',
+			help="Do not build JACK clients")
 
 def configure(conf):
 	autowaf.configure(conf)
@@ -49,7 +52,8 @@ def configure(conf):
 	
 	autowaf.print_summary(conf)
 	autowaf.display_header('SLV2 Configuration')
-	autowaf.display_msg(conf, "Jack clients", str(conf.env['HAVE_JACK'] == 1))
+	autowaf.display_msg(conf, "Jack clients",
+			str(conf.env['HAVE_JACK'] == 1 and not Options.options.no_jack))
 	print
 		
 def build(bld):
@@ -104,7 +108,7 @@ def build(bld):
 		hosts/lv2_jack_host
 		hosts/lv2_simple_jack_host
 	'''
-	if bld.env['HAVE_JACK'] == 1:
+	if bld.env['HAVE_JACK'] == 1 and not Options.options.no_jack:
 		for i in hosts.split():
 			obj = bld.new_task_gen('cc', 'program')
 			obj.source       = i + '.c'
