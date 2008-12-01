@@ -25,6 +25,7 @@ SLV2_VERSION = '0.6.2'
 #   0.5.0 = 8,0,0
 #   0.6.0 = 9,0,0 (SVN r1282)
 #   0.6.1 = 9,1,0
+#   0.6.2 = 9,1,1
 SLV2_LIB_VERSION = '9.1.1'
 
 # Variables for 'waf dist'
@@ -43,17 +44,18 @@ def set_options(opt):
 def configure(conf):
 	autowaf.configure(conf)
 	autowaf.check_tool(conf, 'compiler_cc')
-	autowaf.check_pkg(conf, 'lv2core', destvar='LV2CORE', vnum='1', mandatory=True)
+	autowaf.check_pkg(conf, 'lv2core', destvar='LV2CORE', vnum='1.0', mandatory=True)
 	autowaf.check_pkg(conf, 'redland', destvar='REDLAND', vnum='1.0.6', mandatory=True)
 	autowaf.check_pkg(conf, 'jack', destvar='JACK', vnum='0.107.0', mandatory=False)
 	conf.env.append_value('CCFLAGS', '-std=c99')
 	conf.define('SLV2_VERSION', SLV2_VERSION)
 	conf.write_config_header('config.h')
 	
+	conf.env['USE_JACK'] = conf.env['HAVE_JACK'] and not Options.options.no_jack
+	
 	autowaf.print_summary(conf)
 	autowaf.display_header('SLV2 Configuration')
-	autowaf.display_msg(conf, "Jack clients",
-			str(conf.env['HAVE_JACK'] == 1 and not Options.options.no_jack))
+	autowaf.display_msg(conf, "Jack clients", str(conf.env['USE_JACK']))
 	print
 		
 def build(bld):
@@ -102,13 +104,13 @@ def build(bld):
 		obj.uselib_local = 'libslv2'
 		obj.target       = i
 		obj.install_path = '${BINDIR}'
-	
+
 	# JACK Hosts
 	hosts = '''
 		hosts/lv2_jack_host
 		hosts/lv2_simple_jack_host
 	'''
-	if bld.env['HAVE_JACK'] == 1 and not Options.options.no_jack:
+	if bld.env['USE_JACK']:
 		for i in hosts.split():
 			obj = bld.new_task_gen('cc', 'program')
 			obj.source       = i + '.c'
