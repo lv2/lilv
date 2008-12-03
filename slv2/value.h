@@ -134,7 +134,7 @@ bool
 slv2_value_is_string(SLV2Value value);
 
 
-/** Return whether this value is a string literal.
+/** Return \a value as a string.
  *
  * Time = O(1)
  */
