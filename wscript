@@ -120,6 +120,9 @@ def build(bld):
 			obj.target       = i
 			obj.install_path = '${BINDIR}'
 	
+	# Unit tests
+	bld.add_subdirs('test')
+	
 	# Documentation
 	autowaf.build_dox(bld, 'SLV2', SLV2_VERSION, srcdir, blddir)
 	bld.install_files('${HTMLDIR}', blddir + '/default/doc/html/*')

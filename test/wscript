@@ -1,0 +1,14 @@
+#!/usr/bin/env python
+
+def build(bld):
+	tests = '''
+		slv2_test 
+	'''
+	for i in tests.split():
+		obj = bld.new_task_gen('cc', 'program')
+		obj.source       = i + '.c'
+		obj.includes     = '..'
+		obj.uselib_local = 'libslv2'
+		obj.target       = i
+		obj.install_path = ''
+
