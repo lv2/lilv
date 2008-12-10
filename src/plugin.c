@@ -333,12 +333,11 @@ slv2_plugin_verify(SLV2Plugin plugin)
 
 	while (!librdf_query_results_finished(results)) {
 		librdf_node* type_node = librdf_query_results_get_binding_value(results, 0);
-		const char* const type_str = (const char*)librdf_node_get_literal_value(type_node);
 		librdf_node* name_node = librdf_query_results_get_binding_value(results, 1);
 		librdf_node* license_node = librdf_query_results_get_binding_value(results, 2);
 		librdf_node* port_node = librdf_query_results_get_binding_value(results, 3);
 
-		if (!strcmp(type_str, "http://lv2plug.in/ns/lv2core#Plugin"))
+		if (librdf_node_get_type(type_node) == LIBRDF_NODE_TYPE_RESOURCE)
 			has_type = true;
 		
 		if (name_node)
