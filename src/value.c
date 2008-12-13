@@ -141,6 +141,31 @@ slv2_value_new_uri(SLV2World world, const char* uri)
 
 
 SLV2Value
+slv2_value_new_string(SLV2World world, const char* str)
+{
+	return slv2_value_new(world, SLV2_VALUE_STRING, str);
+}
+
+
+SLV2Value
+slv2_value_new_int(SLV2World world, int val)
+{
+	char str[32];
+	snprintf(str, 32, "%d", val);
+	return slv2_value_new(world, SLV2_VALUE_INT, str);
+}
+
+
+SLV2Value
+slv2_value_new_float(SLV2World world, float val)
+{
+	char str[32];
+	snprintf(str, 32, "%f", val);
+	return slv2_value_new(world, SLV2_VALUE_FLOAT, str);
+}
+
+
+SLV2Value
 slv2_value_duplicate(SLV2Value val)
 {
 	SLV2Value result = (SLV2Value)malloc(sizeof(struct _SLV2Value));
@@ -229,7 +254,7 @@ slv2_value_get_turtle_token(SLV2Value value)
 		len = 20; // FIXME: proper maximum value?
 		result = calloc(len, sizeof(char));
 		setlocale(LC_NUMERIC, "POSIX");
-		snprintf(result, len, ".1%f", value->val.float_val);
+		snprintf(result, len, "%f", value->val.float_val);
 		setlocale(LC_NUMERIC, locale);
 		break;
 	}

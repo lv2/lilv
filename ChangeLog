@@ -1,3 +1,9 @@
+slv2 (0.6.3) unstable; urgency=low
+
+  * Fix illegal output of slv2_value_get_turtle_token for floats.
+ 
+ -- Dave Robillard <dave@drobilla.net>  Fri, 12 Dec 2008 23:23:47 -0500
+
 slv2 (0.6.2) unstable; urgency=high
 
   * Fix bug introduced with I18N in 0.6.1 which broke feature detection.

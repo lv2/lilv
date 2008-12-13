@@ -27,6 +27,8 @@
 #include <librdf.h>
 #include <sys/stat.h>
 #include <limits.h>
+#include <float.h>
+#include <math.h>
 #include "slv2/slv2.h"
 
 #define TEST_PATH_MAX 1024
@@ -210,47 +212,83 @@ test_utils()
 int
 test_value()
 {
-	const char *uri = "http://example.com/";
-	char *res;
+	if (!start_bundle(MANIFEST_PREFIXES
+			":plug a lv2:Plugin ; lv2:binary <foo.so> ; rdfs:seeAlso <plugin.ttl> .\n",
+			BUNDLE_PREFIXES
+			":plug a lv2:Plugin ; a lv2:CompressorPlugin ; "
+			PLUGIN_NAME("Test plugin") " ; "
+			LICENSE_GPL " ; "
+			"lv2:port [ "
+			"  a lv2:ControlPort ; a lv2:InputPort ; "
+			"  lv2:index 0 ; lv2:symbol \"foo\" ; lv2:name \"Foo\" ; "
+			"] .",
+			1))
+		return 0;
 
-	init_world();
-	SLV2Value v1 = slv2_value_new_uri(world, "http://example.com/");
-	TEST_ASSERT(v1);
-	TEST_ASSERT(slv2_value_is_uri(v1));
-	TEST_ASSERT(!strcmp(slv2_value_as_uri(v1), uri));
-	TEST_ASSERT(!slv2_value_is_literal(v1));
-	TEST_ASSERT(!slv2_value_is_string(v1));
-	TEST_ASSERT(!slv2_value_is_float(v1));
-	TEST_ASSERT(!slv2_value_is_int(v1));
-	res = slv2_value_get_turtle_token(v1);
-	TEST_ASSERT(!strcmp(res, "<http://example.com/>"));
+	init_uris();
 
-	SLV2Value v2 = slv2_value_new_uri(world, uri);
-	TEST_ASSERT(v2);
-	TEST_ASSERT(slv2_value_is_uri(v2));
-	TEST_ASSERT(!strcmp(slv2_value_as_uri(v2), uri));
+	SLV2Value uval = slv2_value_new_uri(world, "http://example.org");
+	SLV2Value sval = slv2_value_new_string(world, "Foo");
+	SLV2Value ival = slv2_value_new_int(world, 42);
+	SLV2Value fval = slv2_value_new_float(world, 1.6180);
 
-	TEST_ASSERT(slv2_value_equals(v1, v2));
+	TEST_ASSERT(slv2_value_is_uri(uval));
+	TEST_ASSERT(slv2_value_is_string(sval));
+	TEST_ASSERT(slv2_value_is_int(ival));
+	TEST_ASSERT(slv2_value_is_float(fval));
+	
+	TEST_ASSERT(!slv2_value_is_literal(uval));
+	TEST_ASSERT(slv2_value_is_literal(sval));
+	TEST_ASSERT(slv2_value_is_literal(ival));
+	TEST_ASSERT(slv2_value_is_literal(fval));
 
-	SLV2Value v3 = slv2_value_new_uri(world, "http://example.com/another");
-	TEST_ASSERT(v3);
-	TEST_ASSERT(slv2_value_is_uri(v3));
-	TEST_ASSERT(!strcmp(slv2_value_as_uri(v3), "http://example.com/another"));
-	TEST_ASSERT(!slv2_value_equals(v1, v3));
+	TEST_ASSERT(!strcmp(slv2_value_as_uri(uval), "http://example.org"));
+	TEST_ASSERT(!strcmp(slv2_value_as_string(sval), "Foo"));
+	TEST_ASSERT(slv2_value_as_int(ival) == 42);
+	TEST_ASSERT(fabs(slv2_value_as_float(fval) - 1.6180) < FLT_EPSILON);
 
-	slv2_value_free(v2);
-	v2 = slv2_value_duplicate(v1);
-	TEST_ASSERT(slv2_value_equals(v1, v2));
-	TEST_ASSERT(slv2_value_is_uri(v2));
-	TEST_ASSERT(!strcmp(slv2_value_as_uri(v2), uri));
-	TEST_ASSERT(!slv2_value_is_literal(v2));
-	TEST_ASSERT(!slv2_value_is_string(v2));
-	TEST_ASSERT(!slv2_value_is_float(v2));
-	TEST_ASSERT(!slv2_value_is_int(v2));
+	TEST_ASSERT(!strcmp(slv2_value_get_turtle_token(uval), "<http://example.org>"));
+	TEST_ASSERT(!strcmp(slv2_value_get_turtle_token(sval), "Foo"));
+	TEST_ASSERT(!strcmp(slv2_value_get_turtle_token(ival), "42"));
+	TEST_ASSERT(!strncmp(slv2_value_get_turtle_token(fval), "1.6180", 6));
+	
+	SLV2Value uval_e = slv2_value_new_uri(world, "http://example.org");
+	SLV2Value sval_e = slv2_value_new_string(world, "Foo");
+	SLV2Value ival_e = slv2_value_new_int(world, 42);
+	SLV2Value fval_e = slv2_value_new_float(world, 1.6180);
+	SLV2Value uval_ne = slv2_value_new_uri(world, "http://no-example.org");
+	SLV2Value sval_ne = slv2_value_new_string(world, "Bar");
+	SLV2Value ival_ne = slv2_value_new_int(world, 24);
+	SLV2Value fval_ne = slv2_value_new_float(world, 3.14159);
 
-	slv2_value_free(v3);
-	slv2_value_free(v2);
-	slv2_value_free(v1);
+	TEST_ASSERT(slv2_value_equals(uval, uval_e));
+	TEST_ASSERT(slv2_value_equals(sval, sval_e));
+	TEST_ASSERT(slv2_value_equals(ival, ival_e));
+	TEST_ASSERT(slv2_value_equals(fval, fval_e));
+	
+	TEST_ASSERT(!slv2_value_equals(uval, uval_ne));
+	TEST_ASSERT(!slv2_value_equals(sval, sval_ne));
+	TEST_ASSERT(!slv2_value_equals(ival, ival_ne));
+	TEST_ASSERT(!slv2_value_equals(fval, fval_ne));
+	
+	SLV2Value uval_dup = slv2_value_duplicate(uval);
+	TEST_ASSERT(slv2_value_equals(uval, uval_dup));
+
+	slv2_value_free(uval);
+	slv2_value_free(sval);
+	slv2_value_free(ival);
+	slv2_value_free(fval);
+	slv2_value_free(uval_e);
+	slv2_value_free(sval_e);
+	slv2_value_free(ival_e);
+	slv2_value_free(fval_e);
+	slv2_value_free(uval_ne);
+	slv2_value_free(sval_ne);
+	slv2_value_free(ival_ne);
+	slv2_value_free(fval_ne);
+	slv2_value_free(uval_dup);
+
+	cleanup_uris();
 	return 1;
 }
 
@@ -483,6 +521,7 @@ test_classes()
 	return 1;
 }
 
+
 /*****************************************************************************/
 
 int
@@ -532,6 +571,10 @@ test_plugin()
 			slv2_value_as_string(plug_bundle_uri), "manifest.ttl");
 	snprintf(data_uri, TEST_PATH_MAX, "%s%s",
 			slv2_value_as_string(plug_bundle_uri), "plugin.ttl");
+	
+	SLV2Value manifest_uri_val = slv2_value_new_uri(world, manifest_uri);
+	TEST_ASSERT(slv2_values_contains(data_uris, manifest_uri_val));
+	slv2_value_free(manifest_uri_val);
 
 	TEST_ASSERT(!strcmp(slv2_value_as_string(slv2_values_get_at(data_uris, 0)), manifest_uri));
 	TEST_ASSERT(!strcmp(slv2_value_as_string(slv2_values_get_at(data_uris, 1)), data_uri));
@@ -569,7 +612,6 @@ test_plugin()
 	slv2_value_free(audio_class);
 	slv2_value_free(in_class);
 	slv2_value_free(out_class);
-	slv2_plugins_free(world, plugins);
 	cleanup_uris();
 	return 1;
 }

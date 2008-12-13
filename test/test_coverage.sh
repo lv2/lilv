@@ -8,7 +8,7 @@ cd ../build/default
 
 lcov -d ./src -z
 ./test/slv2_test
-lcov -d ./src -b .. -c > coverage.lcov
+lcov -d ./src -d ./test -b .. -c > coverage.lcov
 mkdir -p ./coverage
 genhtml -o coverage coverage.lcov
 echo "Report written to:"

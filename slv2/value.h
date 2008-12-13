@@ -33,10 +33,34 @@ extern "C" {
 
 /** Create a new URI value.
  *
- * Returned value must be freed by called with slv2_value_free.
+ * Returned value must be freed by caller with slv2_value_free.
  */
 SLV2Value
 slv2_value_new_uri(SLV2World world, const char* uri);
+
+
+/** Create a new string value (with no language).
+ *
+ * Returned value must be freed by caller with slv2_value_free.
+ */
+SLV2Value
+slv2_value_new_string(SLV2World world, const char* str);
+
+
+/** Create a new integer value.
+ *
+ * Returned value must be freed by caller with slv2_value_free.
+ */
+SLV2Value
+slv2_value_new_int(SLV2World world, int val);
+
+
+/** Create a new floating point value.
+ *
+ * Returned value must be freed by caller with slv2_value_free.
+ */
+SLV2Value
+slv2_value_new_float(SLV2World world, float val);
 
 
 /** Free an SLV2Value.

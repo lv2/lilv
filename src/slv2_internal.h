@@ -32,9 +32,7 @@ extern "C" {
 #include "slv2/lv2_ui.h"
 
 
-
 /* ********* PORT ********* */
-
 
 /** Reference to a port on some plugin. */
 struct _SLV2Port {
@@ -49,9 +47,7 @@ SLV2Port slv2_port_new(SLV2World world, uint32_t index, const char* symbol);
 void     slv2_port_free(SLV2Port port);
 
 
-
 /* ********* Plugin ********* */
-
 
 /** Record of an installed/available plugin.
  *
@@ -81,9 +77,7 @@ librdf_query_results* slv2_plugin_query(SLV2Plugin  plugin,
                                         const char* sparql_str);
 
 
-
 /* ********* Plugins ********* */
-
 
 /** Create a new, empty plugin list.
  *
@@ -93,9 +87,7 @@ SLV2Plugins
 slv2_plugins_new();
 
 
-
 /* ********* Instance ********* */
-
 
 /** Pimpl portion of SLV2Instance */
 struct _InstanceImpl {
@@ -104,6 +96,7 @@ struct _InstanceImpl {
 
 
 /* ********* UI Instance ********* */
+
 struct _SLV2UIInstanceImpl {
 	void*                   lib_handle;
 	const LV2UI_Descriptor* lv2ui_descriptor;
@@ -113,7 +106,6 @@ struct _SLV2UIInstanceImpl {
 
 
 /* ********* Plugin Class ********* */
-
 
 struct _SLV2PluginClass {
 	struct _SLV2World* world;
@@ -127,13 +119,10 @@ SLV2PluginClass slv2_plugin_class_new(SLV2World world, librdf_uri* parent_uri,
 void slv2_plugin_class_free(SLV2PluginClass plugin_class);
 
 
-
 /* ********* Plugin Classes ********* */
-
 
 SLV2PluginClasses slv2_plugin_classes_new();
 void              slv2_plugin_classes_free();
-
 
 
 /* ********* World ********* */
@@ -240,11 +229,9 @@ SLV2ScalePoint slv2_scale_point_new(SLV2Value value, SLV2Value label);
 void           slv2_scale_point_free(SLV2ScalePoint point);
 
 
-/* String utility functions */
+/* ********* Utilities ********* */
 
 char* slv2_strjoin(const char* first, ...);
-
-/* I18N utility functions */
 char* slv2_get_lang();
 
 
