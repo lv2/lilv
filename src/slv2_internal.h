@@ -210,7 +210,6 @@ struct _SLV2Value {
 SLV2Value   slv2_value_new(SLV2World world, SLV2ValueType type, const char* val);
 SLV2Value   slv2_value_new_librdf_node(SLV2World world, librdf_node* node);
 SLV2Value   slv2_value_new_librdf_uri(SLV2World world, librdf_uri* uri);
-void        slv2_value_set_numerics_from_string(SLV2Value val);
 librdf_uri* slv2_value_as_librdf_uri(SLV2Value value);
 
 	

@@ -321,14 +321,14 @@ slv2_port_get_scale_points(SLV2Plugin p,
 		ret = slv2_scale_points_new();
 
     while (!librdf_query_results_finished(results)) {
-	
 		librdf_node* value_node = librdf_query_results_get_binding_value(results, 0);
 		librdf_node* label_node = librdf_query_results_get_binding_value(results, 1);
 
 		SLV2Value value = slv2_value_new_librdf_node(p->world, value_node);
 		SLV2Value label = slv2_value_new_librdf_node(p->world, label_node);
 
-		raptor_sequence_push(ret, slv2_scale_point_new(value, label));
+		if (value && label)
+			raptor_sequence_push(ret, slv2_scale_point_new(value, label));
 		
 		librdf_query_results_next(results);
 	}

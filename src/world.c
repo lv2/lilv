@@ -530,8 +530,8 @@ slv2_world_load_all(SLV2World world)
 		assert(plugin_uri);
 		assert(data_uri);
 
-		SLV2Value   uri        = slv2_value_new_librdf_uri(world, plugin_uri);
-		SLV2Plugin  plugin     = slv2_plugins_get_by_uri(world->plugins, uri);
+		SLV2Value   uri    = slv2_value_new_librdf_uri(world, plugin_uri);
+		SLV2Plugin  plugin = slv2_plugins_get_by_uri(world->plugins, uri);
 
 		// Create a new SLV2Plugin
 		if (!plugin) {

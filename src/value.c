@@ -28,35 +28,9 @@
 
 
 /* private */
-SLV2Value
-slv2_value_new(SLV2World world, SLV2ValueType type, const char* str)
-{
-	SLV2Value val = (SLV2Value)malloc(sizeof(struct _SLV2Value));
-	val->type = type;
-
-	if (type == SLV2_VALUE_URI) {
-		val->val.uri_val = librdf_new_uri(world->world, (const unsigned char*)str);
-		if (val->val.uri_val)
-			val->str_val = (char*)librdf_uri_as_string(val->val.uri_val);
-		else
-			return NULL;
-	} else {
-		val->str_val = strdup(str);
-	}
-
-	slv2_value_set_numerics_from_string(val);
-
-	return val;
-}
-
-
-/* private */
-void
+static void
 slv2_value_set_numerics_from_string(SLV2Value val)
 {
-	if (!val)
-		return;
-
 	// FIXME: locale kludges to work around librdf bug
 	char* locale = strdup(setlocale(LC_NUMERIC, NULL));
 
@@ -73,6 +47,27 @@ slv2_value_set_numerics_from_string(SLV2Value val)
 	}
 	
 	free(locale);
+}
+
+
+/* private */
+SLV2Value
+slv2_value_new(SLV2World world, SLV2ValueType type, const char* str)
+{
+	SLV2Value val = (SLV2Value)malloc(sizeof(struct _SLV2Value));
+	val->type = type;
+
+	if (type == SLV2_VALUE_URI) {
+		val->val.uri_val = librdf_new_uri(world->world, (const unsigned char*)str);
+		assert(val->val.uri_val);
+		val->str_val = (char*)librdf_uri_as_string(val->val.uri_val);
+	} else {
+		val->str_val = strdup(str);
+	}
+
+	slv2_value_set_numerics_from_string(val);
+
+	return val;
 }
 
 
@@ -113,7 +108,9 @@ slv2_value_new_librdf_node(SLV2World world, librdf_node* node)
 		break;
 	}
 	
-	slv2_value_set_numerics_from_string(val);
+	if (val)
+		slv2_value_set_numerics_from_string(val);
+
 	return val;
 }
 
@@ -122,9 +119,7 @@ slv2_value_new_librdf_node(SLV2World world, librdf_node* node)
 SLV2Value
 slv2_value_new_librdf_uri(SLV2World world, librdf_uri* uri)
 {
-	if (!uri)
-		return NULL;
-
+	assert(uri);
 	SLV2Value val = (SLV2Value)malloc(sizeof(struct _SLV2Value));
 	val->type = SLV2_VALUE_URI;
 	val->val.uri_val = librdf_new_uri_from_uri(uri);
