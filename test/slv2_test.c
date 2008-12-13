@@ -26,6 +26,7 @@
 #include <assert.h>
 #include <librdf.h>
 #include <sys/stat.h>
+#include <limits.h>
 #include "slv2/slv2.h"
 
 static char bundle_dir_name[1024];
@@ -435,6 +436,78 @@ test_verify()
 
 /*****************************************************************************/
 
+int
+test_port()
+{
+	if (!start_bundle(MANIFEST_PREFIXES
+			":plug a lv2:Plugin ; lv2:binary <foo.so> ; rdfs:seeAlso <plugin.ttl> .\n",
+			BUNDLE_PREFIXES
+			":plug a lv2:Plugin ; "
+			PLUGIN_NAME("Test plugin") " ; "
+			LICENSE_GPL " ; "
+			"lv2:port [ "
+			"  a lv2:ControlPort ; a lv2:InputPort ; "
+			"  lv2:index 0 ; lv2:symbol \"foo\" ; "
+			"  lv2:name \"bar\" ; lv2:name \"le bar\"@fr ; "
+			"  lv2:scalePoint [ rdfs:label \"Sin\"; rdf:value 3 ] ; "
+			"  lv2:scalePoint [ rdfs:label \"Cos\"; rdf:value 4 ] ; "
+			"] .",
+			1))
+		return 0;
+
+	init_uris();
+	SLV2Plugins plugins = slv2_world_get_all_plugins(world);
+	SLV2Plugin plug = slv2_plugins_get_by_uri(plugins, plugin_uri_value);
+	TEST_ASSERT(plug);
+
+	SLV2Port p = slv2_plugin_get_port_by_index(plug, 0);
+	//SLV2Port p2 = slv2_plugin_get_port_by_symbol(plug, "foo");
+	TEST_ASSERT(p != NULL);
+	//TEST_ASSERT(p2 != NULL);
+	//TEST_ASSERT(p == p2);
+
+	SLV2Value audio_class = slv2_value_new_uri(world,
+			"http://lv2plug.in/ns/lv2core#AudioPort");
+	SLV2Value control_class = slv2_value_new_uri(world,
+			"http://lv2plug.in/ns/lv2core#ControlPort");
+	SLV2Value input_class = slv2_value_new_uri(world,
+			"http://lv2plug.in/ns/lv2core#ControlPort");
+
+	TEST_ASSERT(slv2_values_size(slv2_port_get_classes(plug, p)) == 2);
+	TEST_ASSERT(slv2_port_is_a(plug, p, control_class));
+	TEST_ASSERT(slv2_port_is_a(plug, p, input_class));
+	TEST_ASSERT(!slv2_port_is_a(plug, p, audio_class));
+	
+	TEST_ASSERT(slv2_values_size(slv2_port_get_properties(plug, p)) == 0);
+
+	TEST_ASSERT(!strcmp(slv2_value_as_string(slv2_port_get_symbol(plug, p)), "foo"));
+	TEST_ASSERT(!strcmp(slv2_value_as_string(slv2_port_get_name(plug, p)), "bar"));
+
+	SLV2ScalePoints points = slv2_port_get_scale_points(plug, p);
+	TEST_ASSERT(slv2_scale_points_size(points) == 2);
+
+	TEST_ASSERT(slv2_scale_points_get_at(points, (unsigned)INT_MAX+1) == NULL);
+	TEST_ASSERT(slv2_scale_points_get_at(points, 2) == NULL);
+	SLV2ScalePoint sp0 = slv2_scale_points_get_at(points, 0);
+	TEST_ASSERT(sp0);
+	SLV2ScalePoint sp1 = slv2_scale_points_get_at(points, 1);
+	TEST_ASSERT(sp1);
+	
+	TEST_ASSERT(!strcmp(slv2_value_as_string(slv2_scale_point_get_label(sp0)), "Sin"));
+	TEST_ASSERT(slv2_value_as_float(slv2_scale_point_get_value(sp0)) == 3);
+	TEST_ASSERT(!strcmp(slv2_value_as_string(slv2_scale_point_get_label(sp1)), "Cos"));
+	TEST_ASSERT(slv2_value_as_float(slv2_scale_point_get_value(sp1)) == 4);
+
+	slv2_scale_points_free(points);
+	slv2_value_free(control_class);
+	slv2_value_free(input_class);
+	slv2_plugins_free(world, plugins);
+	cleanup_uris();
+	return 1;
+}
+
+/*****************************************************************************/
+
 /* add tests here */
 static struct TestCase tests[] = {
 	TEST_CASE(utils),
@@ -443,6 +516,7 @@ static struct TestCase tests[] = {
 	/* TEST_CASE(discovery_load_bundle), */
 	TEST_CASE(verify),
 	TEST_CASE(discovery_load_all),
+	TEST_CASE(port),
 	{ NULL, NULL }
 };
 
