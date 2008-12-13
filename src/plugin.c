@@ -230,7 +230,7 @@ slv2_plugin_load(SLV2Plugin p)
 		} else if (this_index < num_ports) {
 			this_port = slv2_plugin_get_port_by_index(p, this_index);
 		
-		// Got a port index out of whack, plugin or rasqal is broken
+		// Got a port index out of whack; plugin or rasqal is broken
 		} else {
 			fprintf(stderr, "ERROR: Found port %d immediately after port %d\n",
 					this_index, num_ports-1);

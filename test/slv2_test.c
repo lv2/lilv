@@ -486,7 +486,29 @@ test_verify()
 	SLV2Plugins plugins = slv2_world_get_all_plugins(world);
 	SLV2Plugin explug = slv2_plugins_get_by_uri(plugins, plugin_uri_value);
 	TEST_ASSERT(explug);
-	slv2_plugin_verify(explug);
+	TEST_ASSERT(slv2_plugin_verify(explug));
+	slv2_plugins_free(world, plugins);
+	cleanup_uris();
+	return 1;
+}
+
+/*****************************************************************************/
+
+int
+test_no_verify()
+{
+	if (!start_bundle(MANIFEST_PREFIXES
+			":plug a lv2:Plugin ; lv2:binary <foo.so> ; rdfs:seeAlso <plugin.ttl> .\n",
+			BUNDLE_PREFIXES
+			":plug a lv2:Plugin . ",
+			1))
+		return 0;
+
+	init_uris();
+	SLV2Plugins plugins = slv2_world_get_all_plugins(world);
+	SLV2Plugin explug = slv2_plugins_get_by_uri(plugins, plugin_uri_value);
+	TEST_ASSERT(explug);
+	TEST_ASSERT(!slv2_plugin_verify(explug));
 	slv2_plugins_free(world, plugins);
 	cleanup_uris();
 	return 1;
@@ -804,6 +826,7 @@ static struct TestCase tests[] = {
 	TEST_CASE(values),
 	/* TEST_CASE(discovery_load_bundle), */
 	TEST_CASE(verify),
+	TEST_CASE(no_verify),
 	TEST_CASE(discovery_load_all),
 	TEST_CASE(classes),
 	TEST_CASE(plugin),
