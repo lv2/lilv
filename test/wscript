@@ -4,11 +4,14 @@ def build(bld):
 	tests = '''
 		slv2_test 
 	'''
-	for i in tests.split():
-		obj = bld.new_task_gen('cc', 'program')
-		obj.source       = i + '.c'
-		obj.includes     = '..'
-		obj.uselib_local = 'libslv2'
-		obj.target       = i
-		obj.install_path = ''
+	if bld.env['BUILD_TESTS']:
+		for i in tests.split():
+			obj = bld.new_task_gen('cc', 'program')
+			obj.source       = i + '.c'
+			obj.includes     = '..'
+			obj.uselib_local = 'libslv2_static'
+			obj.uselib       = 'REDLAND LV2CORE'
+			obj.libs         = 'gcov'
+			obj.target       = i
+			obj.install_path = ''
 

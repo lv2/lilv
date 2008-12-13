@@ -40,6 +40,8 @@ def set_options(opt):
 	autowaf.set_options(opt)
 	opt.add_option('--no-jack', action='store_true', default=False, dest='no_jack',
 			help="Do not build JACK clients")
+	opt.add_option('--test', action='store_true', default=False, dest='build_tests',
+			help="Build unit tests")
 
 def configure(conf):
 	autowaf.configure(conf)
@@ -52,10 +54,12 @@ def configure(conf):
 	conf.write_config_header('config.h')
 	
 	conf.env['USE_JACK'] = conf.env['HAVE_JACK'] and not Options.options.no_jack
+	conf.env['BUILD_TESTS'] = Options.options.build_tests
 	
 	autowaf.print_summary(conf)
 	autowaf.display_header('SLV2 Configuration')
 	autowaf.display_msg(conf, "Jack clients", str(conf.env['USE_JACK']))
+	autowaf.display_msg(conf, "Unit tests", str(conf.env['BUILD_TESTS']))
 	print
 		
 def build(bld):
@@ -65,9 +69,7 @@ def build(bld):
 	# Pkgconfig file
 	autowaf.build_pc(bld, 'SLV2', SLV2_VERSION, ['REDLAND'])
 	
-	# Library
-	obj = bld.new_task_gen('cc', 'shlib')
-	obj.source = '''
+	lib_source = '''
 		src/plugin.c
 		src/pluginclass.c
 		src/pluginclasses.c
@@ -85,12 +87,26 @@ def build(bld):
 		src/values.c
 		src/world.c
 	'''
+
+	# Library
+	obj = bld.new_task_gen('cc', 'shlib')
+	obj.source       = lib_source
 	obj.includes     = '..'
 	obj.name         = 'libslv2'
 	obj.target       = 'slv2'
 	obj.vnum         = SLV2_LIB_VERSION
 	obj.install_path = '${LIBDIR}'
 	autowaf.use_lib(bld, obj, 'REDLAND LV2CORE')
+	
+	# Static library (for unit test code coverage)
+	if bld.env['BUILD_TESTS']:
+		obj = bld.new_task_gen('cc', 'staticlib')
+		obj.source       = lib_source
+		obj.includes     = '..'
+		obj.name         = 'libslv2_static'
+		obj.target       = 'slv2_static'
+		obj.install_path = ''
+		obj.ccflags      = '-fprofile-arcs -ftest-coverage'
 
 	# Utilities
 	utils = '''
