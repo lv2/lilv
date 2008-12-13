@@ -30,28 +30,21 @@
 #include "slv2_internal.h"
 
 
-SLV2World
-slv2_world_new()
+/* private */
+static SLV2World
+slv2_world_new_internal(SLV2World world)
 {
-	SLV2World world = (SLV2World)malloc(sizeof(struct _SLV2World));
+	assert(world);
+	assert(world->world);
 
-	world->world = librdf_new_world();
-	if (!world->world)
-		goto fail;
-	
-	world->local_world = true;
-
-	librdf_world_open(world->world);
-	
 	world->storage = librdf_new_storage(world->world, "trees", NULL, NULL);
 	if (!world->storage) {
-		fprintf(stderr, "Warning: Unable to create \"trees\" RDF storage.\n");
-		fprintf(stderr, "Performance can be improved by upgrading librdf.\n");
-		// Testing shows "hashes" to be faster than "memory" (list) here
+		fprintf(stderr, "Warning: Unable to create \"trees\" RDF storage.\n"
+		                "Performance can be improved by upgrading librdf.\n");
 		world->storage = librdf_new_storage(world->world, "hashes", NULL,
 				"hash-type='memory'");
 	}
-
+	
 	if (!world->storage)
 		goto fail;
 
@@ -81,7 +74,7 @@ slv2_world_new()
 	
 	world->xsd_decimal_node = librdf_new_node_from_uri_string(world->world,
 			(const unsigned char*)"http://www.w3.org/2001/XMLSchema#decimal");
-
+	
 	world->lv2_plugin_class = slv2_plugin_class_new(world, NULL,
 			librdf_node_get_uri(world->lv2_plugin_node), "Plugin");
 	
@@ -94,63 +87,36 @@ fail:
 
 
 SLV2World
-slv2_world_new_using_rdf_world(librdf_world* rdf_world)
+slv2_world_new()
 {
 	SLV2World world = (SLV2World)malloc(sizeof(struct _SLV2World));
 
-	world->world = rdf_world;
-	if (!world->world)
-		goto fail;
-	
-	world->local_world = false;
-
-	world->storage = librdf_new_storage(world->world, "trees", NULL, NULL);
-	if (!world->storage) {
-		fprintf(stderr, "Warning: Unable to create \"trees\" RDF storage.\n");
-		fprintf(stderr, "Performance can be improved by upgrading librdf.\n");
-		// Testing shows "hashes" to be faster than "memory" (list) here
-		world->storage = librdf_new_storage(world->world, "hashes", NULL,
-				"hash-type='memory'");
+	world->world = librdf_new_world();
+	if (!world->world) {
+		free(world);
+		return NULL;
 	}
 	
-	if (!world->storage)
-		goto fail;
+	world->local_world = true;
+	
+	librdf_world_open(world->world);
+	
+	return slv2_world_new_internal(world);
+}
 
-	world->model = librdf_new_model(world->world, world->storage, NULL);
-	if (!world->model)
-		goto fail;
 
-	world->parser = librdf_new_parser(world->world, "turtle", NULL, NULL);
-	if (!world->parser)
-		goto fail;
+SLV2World
+slv2_world_new_using_rdf_world(librdf_world* rdf_world)
+{
+	if (rdf_world == NULL)
+		return slv2_world_new();
 
-	world->plugin_classes = slv2_plugin_classes_new();
-	
-	world->plugins = slv2_plugins_new();
-	
-	world->lv2_specification_node = librdf_new_node_from_uri_string(world->world,
-			(const unsigned char*)"http://lv2plug.in/ns/lv2core#Specification");
-	
-	world->lv2_plugin_node = librdf_new_node_from_uri_string(world->world,
-			(const unsigned char*)"http://lv2plug.in/ns/lv2core#Plugin");
-	
-	world->rdf_a_node = librdf_new_node_from_uri_string(rdf_world,
-			(const unsigned char*)"http://www.w3.org/1999/02/22-rdf-syntax-ns#type");
-	
-	world->xsd_integer_node = librdf_new_node_from_uri_string(world->world,
-			(const unsigned char*)"http://www.w3.org/2001/XMLSchema#integer");
-	
-	world->xsd_decimal_node = librdf_new_node_from_uri_string(world->world,
-			(const unsigned char*)"http://www.w3.org/2001/XMLSchema#decimal");
-	
-	world->lv2_plugin_class = slv2_plugin_class_new(world, NULL,
-			librdf_node_get_uri(world->lv2_plugin_node), "Plugin");
-	
-	return world;
+	SLV2World world = (SLV2World)malloc(sizeof(struct _SLV2World));
 
-fail:
-	/* keep on rockin' in the */ free(world);
-	return NULL;
+	world->world = rdf_world;
+	world->local_world = false;
+
+	return slv2_world_new_internal(world);
 }
 
 
