@@ -164,6 +164,7 @@ struct TestCase {
 
 #define PREFIX_LINE "@prefix : <http://example.com/> .\n"
 #define PREFIX_LV2 "@prefix lv2: <http://lv2plug.in/ns/lv2core#> .\n"
+#define PREFIX_LV2EV "@prefix lv2ev: <http://lv2plug.in/ns/ext/event#> . \n"
 #define PREFIX_RDFS "@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .\n"
 #define PREFIX_FOAF "@prefix foaf: <http://xmlns.com/foaf/0.1/> .\n"
 #define PREFIX_DOAP "@prefix doap: <http://usefulinc.com/ns/doap#> .\n"
@@ -658,7 +659,7 @@ test_port()
 {
 	if (!start_bundle(MANIFEST_PREFIXES
 			":plug a lv2:Plugin ; lv2:binary <foo.so> ; rdfs:seeAlso <plugin.ttl> .\n",
-			BUNDLE_PREFIXES
+			BUNDLE_PREFIXES PREFIX_LV2EV
 			":plug a lv2:Plugin ; "
 			PLUGIN_NAME("Test plugin") " ; "
 			LICENSE_GPL " ; "
@@ -667,9 +668,15 @@ test_port()
 			"  a lv2:ControlPort ; a lv2:InputPort ; "
 			"  lv2:index 0 ; lv2:symbol \"foo\" ; "
 			"  lv2:name \"bar\" ; lv2:name \"le bar\"@fr ; "
+     		"  lv2:portProperty lv2:integer ; "
 			"  lv2:minimum -1.0 ; lv2:maximum 1.0 ; lv2:default 0.5 ; "
 			"  lv2:scalePoint [ rdfs:label \"Sin\"; rdf:value 3 ] ; "
-			"  lv2:scalePoint [ rdfs:label \"Cos\"; rdf:value 4 ] ; "
+			"  lv2:scalePoint [ rdfs:label \"Cos\"; rdf:value 4 ] "
+			"] , [\n"
+			"  a lv2:EventPort ; a lv2:InputPort ; "
+			"  lv2:index 1 ; lv2:symbol \"event_in\" ; "
+			"  lv2:name \"Event Input\" ; "
+     		"  lv2ev:supportsEvent <http://example.org/event> "
 			"] .",
 			1))
 		return 0;
@@ -693,7 +700,7 @@ test_port()
 			"http://lv2plug.in/ns/lv2core#InputPort");
 
 	TEST_ASSERT(slv2_values_size(slv2_port_get_classes(plug, p)) == 2);
-	TEST_ASSERT(slv2_plugin_get_num_ports(plug) == 1);
+	TEST_ASSERT(slv2_plugin_get_num_ports(plug) == 2);
 	TEST_ASSERT(slv2_values_get_at(slv2_port_get_classes(plug, p), (unsigned)INT_MAX+1) == NULL);
 	TEST_ASSERT(slv2_port_is_a(plug, p, control_class));
 	TEST_ASSERT(slv2_port_is_a(plug, p, in_class));
@@ -739,6 +746,42 @@ test_port()
 	TEST_ASSERT(slv2_value_as_float(def) == 0.5);
 	TEST_ASSERT(slv2_value_as_float(min) == -1.0);
 	TEST_ASSERT(slv2_value_as_float(max) == 1.0);
+	
+	SLV2Value integer_prop = slv2_value_new_uri(world, "http://lv2plug.in/ns/lv2core#integer");
+	SLV2Value toggled_prop = slv2_value_new_uri(world, "http://lv2plug.in/ns/lv2core#toggled");
+
+	TEST_ASSERT(slv2_port_has_property(plug, p, integer_prop));
+	TEST_ASSERT(!slv2_port_has_property(plug, p, toggled_prop));
+	
+	SLV2Port ep = slv2_plugin_get_port_by_index(plug, 1);
+
+	SLV2Value event_type = slv2_value_new_uri(world, "http://example.org/event");
+	SLV2Value event_type_2 = slv2_value_new_uri(world, "http://example.org/otherEvent");
+	TEST_ASSERT(slv2_port_supports_event(plug, ep, event_type));
+	TEST_ASSERT(!slv2_port_supports_event(plug, ep, event_type_2));
+	
+	SLV2Value name_p = slv2_value_new_uri(world, "http://lv2plug.in/ns/lv2core#name");
+	SLV2Values names = slv2_port_get_value(plug, p, name_p);
+	TEST_ASSERT(slv2_values_size(names) == 2);
+	TEST_ASSERT(!strcmp(slv2_value_as_string(slv2_values_get_at(names, 0)),
+			"bar"));
+	slv2_values_free(names);
+	names = slv2_port_get_value(plug, ep, name_p);
+	TEST_ASSERT(slv2_values_size(names) == 1);
+	TEST_ASSERT(!strcmp(slv2_value_as_string(slv2_values_get_at(names, 0)),
+			"Event Input"));
+	slv2_values_free(names);
+
+	TEST_ASSERT(slv2_port_get_value(plug, p, min) == NULL);
+
+	slv2_value_free(integer_prop);
+	slv2_value_free(toggled_prop);
+	slv2_value_free(event_type);
+	slv2_value_free(event_type_2);
+
+	slv2_value_free(min);
+	slv2_value_free(max);
+	slv2_value_free(def);
 
 	slv2_value_free(homepage_p);
 	slv2_values_free(homepages);
