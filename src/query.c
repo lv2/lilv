@@ -53,7 +53,7 @@ slv2_query_get_variable_bindings(SLV2World             world,
         librdf_node* node =
             librdf_query_results_get_binding_value(results, variable);
 
-		if (!node) {
+		if (node == NULL) {
 			fprintf(stderr, "SLV2 ERROR: Variable %d bound to NULL.\n", variable);
         	librdf_query_results_next(results);
 			continue;
@@ -168,7 +168,8 @@ slv2_plugin_query_variable(SLV2Plugin  plugin,
 
 	librdf_query_results* results = slv2_plugin_query(plugin, sparql_str);
 
-	SLV2Values ret = slv2_query_get_variable_bindings(plugin->world, results, (int)variable);
+	SLV2Values ret = slv2_query_get_variable_bindings(plugin->world,
+			results, (int)variable);
 	
 	librdf_free_query_results(results);
 

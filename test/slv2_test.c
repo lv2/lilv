@@ -574,6 +574,7 @@ test_plugin()
 			LICENSE_GPL " ; "
     		"lv2:optionalFeature lv2:hardRtCapable ; "
 		    "lv2:requiredFeature <http://lv2plug.in/ns/ext/event> ; "
+			":foo 1.6180 ; "
 			"doap:maintainer [ foaf:name \"David Robillard\" ; "
 			"  foaf:homepage <http://drobilla.net> ; foaf:mbox <mailto:dave@drobilla.net> ] ; "
 			"lv2:port [ "
@@ -669,6 +670,13 @@ test_plugin()
 	TEST_ASSERT(slv2_values_size(supported) == 2);
 	TEST_ASSERT(slv2_values_size(required) == 1);
 	TEST_ASSERT(slv2_values_size(optional) == 1);
+	
+	SLV2Value foo_p = slv2_value_new_uri(world, "http://example.org/foo");
+	SLV2Values foos = slv2_plugin_get_value(plug, foo_p);
+	TEST_ASSERT(slv2_values_size(foos) == 1);
+	TEST_ASSERT(fabs(slv2_value_as_float(slv2_values_get_at(foos, 0)) - 1.6180) < FLT_EPSILON);
+	slv2_value_free(foo_p);
+	slv2_values_free(foos);
 
 	SLV2Value author_name = slv2_plugin_get_author_name(plug);
 	TEST_ASSERT(!strcmp(slv2_value_as_string(author_name), "David Robillard"));
@@ -684,12 +692,15 @@ test_plugin()
 
 	SLV2Value thing_uri = slv2_value_new_uri(world, "http://example.org/thing");
 	SLV2Value name_p = slv2_value_new_uri(world, "http://usefulinc.com/ns/doap#name");
-	SLV2Value thing_name = slv2_plugin_get_value_for_subject(plug, thing_uri, name_p);
-	//TEST_ASSERT(!strcmp(slv2_value_as_string(thing_name), "Something else"));
+	SLV2Values thing_names = slv2_plugin_get_value_for_subject(plug, thing_uri, name_p);
+	TEST_ASSERT(slv2_values_size(thing_names) == 1);
+	SLV2Value thing_name = slv2_values_get_at(thing_names, 0);
+	TEST_ASSERT(thing_name);
+	TEST_ASSERT(slv2_value_is_string(thing_name));
+	TEST_ASSERT(!strcmp(slv2_value_as_string(thing_name), "Something else"));
 
 	slv2_value_free(thing_uri);
 	slv2_value_free(name_p);
-	//slv2_value_free(thing_name);
 	slv2_value_free(control_class);
 	slv2_value_free(audio_class);
 	slv2_value_free(in_class);

@@ -470,9 +470,9 @@ slv2_plugin_get_value_by_qname_i18n(SLV2Plugin  p,
 
 	
 SLV2Values
-slv2_plugin_get_value_for_subject(SLV2Plugin  p,
-                                  SLV2Value   subject,
-                                  SLV2Value   predicate)
+slv2_plugin_get_value_for_subject(SLV2Plugin p,
+                                  SLV2Value  subject,
+                                  SLV2Value  predicate)
 {
 	if ( ! slv2_value_is_uri(subject)) {
 		fprintf(stderr, "slv2_plugin_get_value_for_subject error: "

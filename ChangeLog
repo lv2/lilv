@@ -2,7 +2,8 @@ slv2 (0.6.3) unstable; urgency=low
 
   * Fix illegal output of slv2_value_get_turtle_token for floats.
   * Fix slv2_plugin_get_value_for_subject
-  * Add test suite
+  * Add test suite and coverage instrumentation
+  * Upgrade to waf 1.5.1
  
  -- Dave Robillard <dave@drobilla.net>  Sat, 13 Dec 2008 14:13:43 -0500
 
