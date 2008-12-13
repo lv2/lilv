@@ -207,12 +207,11 @@ test_utils()
 int
 test_value()
 {
-	SLV2Value v1, v2, v3;
 	const char *uri = "http://example.com/";
 	char *res;
 
 	init_world();
-	v1 = slv2_value_new_uri(world, "http://example.com/");
+	SLV2Value v1 = slv2_value_new_uri(world, "http://example.com/");
 	TEST_ASSERT(v1);
 	TEST_ASSERT(slv2_value_is_uri(v1));
 	TEST_ASSERT(!strcmp(slv2_value_as_uri(v1), uri));
@@ -223,14 +222,14 @@ test_value()
 	res = slv2_value_get_turtle_token(v1);
 	TEST_ASSERT(!strcmp(res, "<http://example.com/>"));
 
-	v2 = slv2_value_new_uri(world, uri);
+	SLV2Value v2 = slv2_value_new_uri(world, uri);
 	TEST_ASSERT(v2);
 	TEST_ASSERT(slv2_value_is_uri(v2));
 	TEST_ASSERT(!strcmp(slv2_value_as_uri(v2), uri));
 
 	TEST_ASSERT(slv2_value_equals(v1, v2));
 
-	v3 = slv2_value_new_uri(world, "http://example.com/another");
+	SLV2Value v3 = slv2_value_new_uri(world, "http://example.com/another");
 	TEST_ASSERT(v3);
 	TEST_ASSERT(slv2_value_is_uri(v3));
 	TEST_ASSERT(!strcmp(slv2_value_as_uri(v3), "http://example.com/another"));
@@ -257,12 +256,9 @@ test_value()
 int
 test_values()
 {
-	SLV2Value v0;
-	SLV2Values vs1;
-
 	init_world();
-	v0 = slv2_value_new_uri(world, "http://example.com/");
-	vs1 = slv2_values_new();
+	SLV2Value v0 = slv2_value_new_uri(world, "http://example.com/");
+	SLV2Values vs1 = slv2_values_new();
 	TEST_ASSERT(vs1);
 	TEST_ASSERT(!slv2_values_size(vs1));
 	TEST_ASSERT(!slv2_values_contains(vs1, v0));
@@ -322,7 +318,6 @@ int
 test_discovery_variant(int load_all)
 {
 	SLV2Plugins plugins;
-	SLV2Plugin explug, explug2;
 
 	if (!start_bundle(MANIFEST_PREFIXES
 			":plug a lv2:Plugin ; lv2:binary <foo.so> ; rdfs:seeAlso <plugin.ttl> .\n",
@@ -376,9 +371,9 @@ test_discovery_variant(int load_all)
 			break;
 		}
 
-		explug = slv2_plugins_get_by_uri(plugins, plugin_uri_value);
+		SLV2Plugin explug = slv2_plugins_get_by_uri(plugins, plugin_uri_value);
 		TEST_ASSERT((explug != NULL) == expect_found);
-		explug2 = slv2_plugins_get_by_uri(plugins, plugin2_uri_value);
+		SLV2Plugin explug2 = slv2_plugins_get_by_uri(plugins, plugin2_uri_value);
 		TEST_ASSERT(explug2 == NULL);
 
 		if (explug && expect_found) {
@@ -417,9 +412,6 @@ test_discovery_load_all()
 int
 test_verify()
 {
-	SLV2Plugins plugins;
-	SLV2Plugin explug;
-
 	if (!start_bundle(MANIFEST_PREFIXES
 			":plug a lv2:Plugin ; lv2:binary <foo.so> ; rdfs:seeAlso <plugin.ttl> .\n",
 			BUNDLE_PREFIXES
@@ -432,8 +424,8 @@ test_verify()
 		return 0;
 
 	init_uris();
-	plugins = slv2_world_get_all_plugins(world);
-	explug = slv2_plugins_get_by_uri(plugins, plugin_uri_value);
+	SLV2Plugins plugins = slv2_world_get_all_plugins(world);
+	SLV2Plugin explug = slv2_plugins_get_by_uri(plugins, plugin_uri_value);
 	TEST_ASSERT(explug);
 	slv2_plugin_verify(explug);
 	slv2_plugins_free(world, plugins);
