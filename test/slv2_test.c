@@ -573,6 +573,8 @@ test_plugin()
 			LICENSE_GPL " ; "
     		"lv2:optionalFeature lv2:hardRtCapable ; "
 		    "lv2:requiredFeature <http://lv2plug.in/ns/ext/event> ; "
+			"doap:maintainer [ foaf:name \"David Robillard\" ; "
+			"  foaf:homepage <http://drobilla.net> ; foaf:mbox <mailto:dave@drobilla.net> ] ; "
 			"lv2:port [ "
 			"  a lv2:ControlPort ; a lv2:InputPort ; "
 			"  lv2:index 0 ; lv2:symbol \"foo\" ; lv2:name \"bar\" ; "
@@ -666,6 +668,18 @@ test_plugin()
 	TEST_ASSERT(slv2_values_size(required) == 1);
 	TEST_ASSERT(slv2_values_size(optional) == 1);
 
+	SLV2Value author_name = slv2_plugin_get_author_name(plug);
+	TEST_ASSERT(!strcmp(slv2_value_as_string(author_name), "David Robillard"));
+	slv2_value_free(author_name);
+	
+	SLV2Value author_email = slv2_plugin_get_author_email(plug);
+	TEST_ASSERT(!strcmp(slv2_value_as_string(author_email), "mailto:dave@drobilla.net"));
+	slv2_value_free(author_email);
+	
+	SLV2Value author_homepage = slv2_plugin_get_author_homepage(plug);
+	TEST_ASSERT(!strcmp(slv2_value_as_string(author_homepage), "http://drobilla.net"));
+	slv2_value_free(author_homepage);
+
 	slv2_value_free(control_class);
 	slv2_value_free(audio_class);
 	slv2_value_free(in_class);
@@ -711,9 +725,15 @@ test_port()
 	SLV2Value psym = slv2_value_new_string(world, "foo");
 	SLV2Port p = slv2_plugin_get_port_by_index(plug, 0);
 	SLV2Port p2 = slv2_plugin_get_port_by_symbol(plug, psym);
+	slv2_value_free(psym);
 	TEST_ASSERT(p != NULL);
 	TEST_ASSERT(p2 != NULL);
 	TEST_ASSERT(p == p2);
+	
+	SLV2Value nopsym = slv2_value_new_string(world, "thisaintnoportfoo");
+	SLV2Port p3 = slv2_plugin_get_port_by_symbol(plug, nopsym);
+	TEST_ASSERT(p3 == NULL);
+	slv2_value_free(nopsym);
 
 	SLV2Value audio_class = slv2_value_new_uri(world,
 			"http://lv2plug.in/ns/lv2core#AudioPort");
@@ -841,7 +861,7 @@ run_tests()
 {
 	int i;
 	for (i = 0; tests[i].title; i++) {
-		printf("\n--- Test: %s\n", tests[i].title);
+		printf("--- Test: %s\n", tests[i].title);
 		if (!tests[i].func()) {
 			printf("\nTest failed\n");
 			/* test case that wasn't able to be executed at all counts as 1 test + 1 error */
@@ -863,7 +883,7 @@ main(int argc, char *argv[])
 	init_tests();
 	run_tests();
 	cleanup();
-	printf("\n--- Results: %d tests, %d errors\n", test_count, error_count);
+	printf("\n***\n*** Test Results: %d tests, %d errors\n***\n\n", test_count, error_count);
 	return error_count ? 1 : 0;
 }
 
