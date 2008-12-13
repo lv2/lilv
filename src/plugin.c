@@ -218,6 +218,9 @@ slv2_plugin_load(SLV2Plugin p)
 		const int this_index = atoi(index);
 		SLV2Port  this_port  = NULL;
 		
+		// ORDER BY guarantees order
+		assert(this_index <= num_ports);
+
 		// Create a new SLV2Port, and add to template
 		if (this_index == num_ports) {
 			assert(this_index == last_index + 1);
@@ -229,14 +232,6 @@ slv2_plugin_load(SLV2Plugin p)
 		// More information about a port we already created
 		} else if (this_index < num_ports) {
 			this_port = slv2_plugin_get_port_by_index(p, this_index);
-		
-		// Got a port index out of whack; plugin or rasqal is broken
-		} else {
-			fprintf(stderr, "ERROR: Found port %d immediately after port %d\n",
-					this_index, num_ports-1);
-			fprintf(stderr, "Either the plugin %s or your version of rasqal is broken.\n",
-					slv2_value_as_uri(p->plugin_uri));
-			fprintf(stderr, "Please report (with rasqal version): http://dev.drobilla.net/newticket?component=SLV2\n");
 		}
 			
 		if (this_port) {
@@ -250,9 +245,6 @@ slv2_plugin_load(SLV2Plugin p)
 		
 		librdf_query_results_next(results);
 	}
-	
-	// Not necessary due to ORDER BY clause
-	//raptor_sequence_sort(p->ports, slv2_port_compare_by_index);
 	
 	librdf_free_query_results(results);
 	librdf_free_query(q);

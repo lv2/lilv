@@ -708,11 +708,12 @@ test_port()
 	SLV2Plugin plug = slv2_plugins_get_by_uri(plugins, plugin_uri_value);
 	TEST_ASSERT(plug);
 
+	SLV2Value psym = slv2_value_new_string(world, "foo");
 	SLV2Port p = slv2_plugin_get_port_by_index(plug, 0);
-	//SLV2Port p2 = slv2_plugin_get_port_by_symbol(plug, "foo");
+	SLV2Port p2 = slv2_plugin_get_port_by_symbol(plug, psym);
 	TEST_ASSERT(p != NULL);
-	//TEST_ASSERT(p2 != NULL);
-	//TEST_ASSERT(p == p2);
+	TEST_ASSERT(p2 != NULL);
+	TEST_ASSERT(p == p2);
 
 	SLV2Value audio_class = slv2_value_new_uri(world,
 			"http://lv2plug.in/ns/lv2core#AudioPort");
