@@ -271,8 +271,23 @@ test_value()
 	TEST_ASSERT(!slv2_value_equals(ival, ival_ne));
 	TEST_ASSERT(!slv2_value_equals(fval, fval_ne));
 	
+	TEST_ASSERT(!slv2_value_equals(uval, sval));
+	TEST_ASSERT(!slv2_value_equals(sval, ival));
+	TEST_ASSERT(!slv2_value_equals(ival, fval));
+	
 	SLV2Value uval_dup = slv2_value_duplicate(uval);
 	TEST_ASSERT(slv2_value_equals(uval, uval_dup));
+
+	SLV2Value ifval = slv2_value_new_float(world, 42.0);
+	TEST_ASSERT(!slv2_value_equals(ival, ifval));
+	
+	SLV2Value nil = NULL;
+	TEST_ASSERT(!slv2_value_equals(uval, nil));
+	TEST_ASSERT(!slv2_value_equals(nil, uval));
+	TEST_ASSERT(slv2_value_equals(nil, nil));
+
+	SLV2Value nil2 = slv2_value_duplicate(nil);
+	TEST_ASSERT(slv2_value_equals(nil, nil2));
 
 	slv2_value_free(uval);
 	slv2_value_free(sval);
@@ -533,6 +548,8 @@ test_plugin()
 			":plug a lv2:Plugin ; a lv2:CompressorPlugin ; "
 			PLUGIN_NAME("Test plugin") " ; "
 			LICENSE_GPL " ; "
+    		"lv2:optionalFeature lv2:hardRtCapable ; "
+		    "lv2:requiredFeature <http://lv2plug.in/ns/ext/event> ; "
 			"lv2:port [ "
 			"  a lv2:ControlPort ; a lv2:InputPort ; "
 			"  lv2:index 0 ; lv2:symbol \"foo\" ; lv2:name \"bar\" ; "
@@ -608,6 +625,24 @@ test_plugin()
 	TEST_ASSERT(slv2_plugin_has_latency(plug));
 	TEST_ASSERT(slv2_plugin_get_latency_port_index(plug) == 2);
 
+	SLV2Value rt_feature = slv2_value_new_uri(world,
+			"http://lv2plug.in/ns/lv2core#hardRtCapable");
+	SLV2Value event_feature = slv2_value_new_uri(world,
+			"http://lv2plug.in/ns/ext/event");
+	SLV2Value pretend_feature = slv2_value_new_uri(world,
+			"http://example.org/solvesWorldHunger");
+
+	TEST_ASSERT(slv2_plugin_has_feature(plug, rt_feature));
+	TEST_ASSERT(slv2_plugin_has_feature(plug, event_feature));
+	TEST_ASSERT(!slv2_plugin_has_feature(plug, pretend_feature));
+
+	SLV2Values supported = slv2_plugin_get_supported_features(plug);
+	SLV2Values required = slv2_plugin_get_required_features(plug);
+	SLV2Values optional = slv2_plugin_get_optional_features(plug);
+	TEST_ASSERT(slv2_values_size(supported) == 2);
+	TEST_ASSERT(slv2_values_size(required) == 1);
+	TEST_ASSERT(slv2_values_size(optional) == 1);
+
 	slv2_value_free(control_class);
 	slv2_value_free(audio_class);
 	slv2_value_free(in_class);
@@ -632,6 +667,7 @@ test_port()
 			"  a lv2:ControlPort ; a lv2:InputPort ; "
 			"  lv2:index 0 ; lv2:symbol \"foo\" ; "
 			"  lv2:name \"bar\" ; lv2:name \"le bar\"@fr ; "
+			"  lv2:minimum -1.0 ; lv2:maximum 1.0 ; lv2:default 0.5 ; "
 			"  lv2:scalePoint [ rdfs:label \"Sin\"; rdf:value 3 ] ; "
 			"  lv2:scalePoint [ rdfs:label \"Cos\"; rdf:value 4 ] ; "
 			"] .",
@@ -695,6 +731,15 @@ test_port()
 	TEST_ASSERT(slv2_plugin_query_count(plug, "SELECT DISTINCT ?parent WHERE {\n"
 			   "<> rdfs:subClassOf ?parent . }") == 0);
 	
+	SLV2Value min, max, def;
+	slv2_port_get_range(plug, p, &def, &min, &max);
+	TEST_ASSERT(def);
+	TEST_ASSERT(min);
+	TEST_ASSERT(max);
+	TEST_ASSERT(slv2_value_as_float(def) == 0.5);
+	TEST_ASSERT(slv2_value_as_float(min) == -1.0);
+	TEST_ASSERT(slv2_value_as_float(max) == 1.0);
+
 	slv2_value_free(homepage_p);
 	slv2_values_free(homepages);
 

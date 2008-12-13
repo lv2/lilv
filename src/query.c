@@ -126,8 +126,7 @@ librdf_query_results*
 slv2_plugin_query(SLV2Plugin  plugin,
                   const char* sparql_str)
 {
-	if (!plugin->rdf)
-		slv2_plugin_load(plugin);
+	slv2_plugin_load_if_necessary(plugin);
 
 	librdf_uri* base_uri = slv2_value_as_librdf_uri(plugin->plugin_uri);
 

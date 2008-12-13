@@ -105,6 +105,15 @@ slv2_port_compare_by_index(const void* a, const void* b)
 #endif
 
 
+/* private */
+void
+slv2_plugin_load_if_necessary(SLV2Plugin p)
+{
+	if (!p->rdf)
+		slv2_plugin_load(p);
+}
+
+
 void
 slv2_plugin_load(SLV2Plugin p)
 {
@@ -290,8 +299,7 @@ SLV2Value
 slv2_plugin_get_library_uri(SLV2Plugin p)
 {
 	assert(p);
-	if (!p->binary_uri && !p->rdf)
-		slv2_plugin_load(p);
+	slv2_plugin_load_if_necessary(p);
 	return p->binary_uri;
 }
 
@@ -309,9 +317,7 @@ slv2_plugin_get_class(SLV2Plugin p)
 	// FIXME: Typical use case this will bring every single plugin model
 	// into memory
 	
-	if (!p->rdf)
-		slv2_plugin_load(p);
-
+	slv2_plugin_load_if_necessary(p);
 	return p->plugin_class;
 }
 
@@ -525,9 +531,7 @@ slv2_plugin_get_hints(SLV2Plugin p)
 uint32_t
 slv2_plugin_get_num_ports(SLV2Plugin p)
 {
-	if (!p->rdf)
-		slv2_plugin_load(p);
-	
+	slv2_plugin_load_if_necessary(p);
 	return raptor_sequence_size(p->ports);
 }
 
@@ -537,12 +541,11 @@ slv2_plugin_get_port_float_values(SLV2Plugin  p,
                                   const char* qname,
                                   float*      values)
 {
-	if (!p->rdf)
-		slv2_plugin_load(p);
-
 	const unsigned char* query;
 	librdf_query* q;
 	librdf_query_results* results;
+	
+	slv2_plugin_load_if_necessary(p);
 
 	for (int i = 0; i < raptor_sequence_size(p->ports); ++i)
 		values[i] = NAN;
@@ -717,9 +720,7 @@ SLV2Port
 slv2_plugin_get_port_by_index(SLV2Plugin p,
                               uint32_t   index)
 {
-	if (!p->rdf)
-		slv2_plugin_load(p);
-	
+	slv2_plugin_load_if_necessary(p);
 	return raptor_sequence_get_at(p->ports, (int)index);
 }
 
@@ -728,9 +729,7 @@ SLV2Port
 slv2_plugin_get_port_by_symbol(SLV2Plugin p,
                                SLV2Value  symbol)
 {
-	if (!p->rdf)
-		slv2_plugin_load(p);
-	
+	slv2_plugin_load_if_necessary(p);
 	for (int i=0; i < raptor_sequence_size(p->ports); ++i) {
 		SLV2Port port = raptor_sequence_get_at(p->ports, i);
 		if (slv2_value_equals(port->symbol, symbol))

@@ -168,6 +168,9 @@ slv2_value_new_float(SLV2World world, float val)
 SLV2Value
 slv2_value_duplicate(SLV2Value val)
 {
+	if (val == NULL)
+		return val;
+
 	SLV2Value result = (SLV2Value)malloc(sizeof(struct _SLV2Value));
 	result->type = val->type;
 
