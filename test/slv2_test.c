@@ -441,6 +441,51 @@ test_verify()
 /*****************************************************************************/
 
 int
+test_classes()
+{
+	if (!start_bundle(MANIFEST_PREFIXES
+			":plug a lv2:Plugin ; lv2:binary <foo.so> ; rdfs:seeAlso <plugin.ttl> .\n",
+			BUNDLE_PREFIXES
+			":plug a lv2:Plugin ; a lv2:CompressorPlugin ; "
+			PLUGIN_NAME("Test plugin") " ; "
+			LICENSE_GPL " ; "
+			"lv2:port [ "
+			"  a lv2:ControlPort ; a lv2:InputPort ; "
+			"  lv2:index 0 ; lv2:symbol \"foo\" ; lv2:name \"Foo\" ; "
+			"] .",
+			1))
+		return 0;
+
+	init_uris();
+	SLV2PluginClass plugin = slv2_world_get_plugin_class(world);
+	SLV2PluginClasses classes = slv2_world_get_plugin_classes(world);
+	SLV2PluginClasses children = slv2_plugin_class_get_children(plugin);
+	
+	TEST_ASSERT(slv2_plugin_class_get_parent_uri(plugin) == NULL);
+	TEST_ASSERT(slv2_plugin_classes_size(classes) > slv2_plugin_classes_size(children))
+	TEST_ASSERT(!strcmp(slv2_value_as_string(slv2_plugin_class_get_label(plugin)), "Plugin"));
+	TEST_ASSERT(!strcmp(slv2_value_as_string(slv2_plugin_class_get_uri(plugin)),
+			"http://lv2plug.in/ns/lv2core#Plugin"));
+
+	for (unsigned i = 0; i < slv2_plugin_classes_size(children); ++i) {
+		TEST_ASSERT(slv2_value_equals(
+				slv2_plugin_class_get_parent_uri(slv2_plugin_classes_get_at(children, i)),
+				slv2_plugin_class_get_uri(plugin)));
+	}
+
+	SLV2Value some_uri = slv2_value_new_uri(world, "http://example.org/whatever");
+	TEST_ASSERT(slv2_plugin_classes_get_by_uri(classes, some_uri) == NULL);
+	slv2_value_free(some_uri);
+	
+	TEST_ASSERT(slv2_plugin_classes_get_at(classes, (unsigned)INT_MAX + 1) == NULL);
+
+	cleanup_uris();
+	return 1;
+}
+
+/*****************************************************************************/
+
+int
 test_plugin()
 {
 	if (!start_bundle(MANIFEST_PREFIXES
@@ -630,6 +675,7 @@ static struct TestCase tests[] = {
 	/* TEST_CASE(discovery_load_bundle), */
 	TEST_CASE(verify),
 	TEST_CASE(discovery_load_all),
+	TEST_CASE(classes),
 	TEST_CASE(plugin),
 	TEST_CASE(port),
 	TEST_CASE(plugin),
