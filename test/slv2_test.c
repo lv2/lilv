@@ -588,7 +588,8 @@ test_plugin()
 			"  a lv2:ControlPort ; a lv2:OutputPort ; "
 			"  lv2:index 2 ; lv2:symbol \"latency\" ; lv2:name \"Latency\" ; "
 			"  lv2:portProperty lv2:reportsLatency "
-			"] .",
+			"] . \n"
+			":thing doap:name \"Something else\" .\n",
 			1))
 		return 0;
 
@@ -681,6 +682,14 @@ test_plugin()
 	TEST_ASSERT(!strcmp(slv2_value_as_string(author_homepage), "http://drobilla.net"));
 	slv2_value_free(author_homepage);
 
+	SLV2Value thing_uri = slv2_value_new_uri(world, "http://example.org/thing");
+	SLV2Value name_p = slv2_value_new_uri(world, "http://usefulinc.com/ns/doap#name");
+	SLV2Value thing_name = slv2_plugin_get_value_for_subject(plug, thing_uri, name_p);
+	//TEST_ASSERT(!strcmp(slv2_value_as_string(thing_name), "Something else"));
+
+	slv2_value_free(thing_uri);
+	slv2_value_free(name_p);
+	//slv2_value_free(thing_name);
 	slv2_value_free(control_class);
 	slv2_value_free(audio_class);
 	slv2_value_free(in_class);

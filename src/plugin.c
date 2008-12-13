@@ -409,14 +409,14 @@ slv2_plugin_get_value(SLV2Plugin p,
 
 	if (predicate->type == SLV2_VALUE_URI) {
 		query = slv2_strjoin(
-			"PREFIX slv2predicate: <", slv2_value_as_string(predicate), ">",
-			"SELECT DISTINCT ?value WHERE { \n"
-			"<> slv2predicate: ?value \n"
+			"PREFIX slv2predicate: <", slv2_value_as_string(predicate), ">\n",
+			"SELECT DISTINCT ?value WHERE {\n"
+			"<> slv2predicate: ?value .\n"
 			"}\n", NULL);
 	} else if (predicate->type == SLV2_VALUE_QNAME) {
     	query = slv2_strjoin(
-			"SELECT DISTINCT ?value WHERE { \n"
-			"<> ", slv2_value_as_string(predicate), " ?value \n"
+			"SELECT DISTINCT ?value WHERE {\n"
+			"<> ", slv2_value_as_string(predicate), " ?value .\n"
 			"}\n", NULL);
 	} else {
 		fprintf(stderr, "slv2_plugin_get_value error: "
@@ -488,14 +488,14 @@ slv2_plugin_get_value_for_subject(SLV2Plugin  p,
 
 	if (predicate->type == SLV2_VALUE_URI) {
 		query = slv2_strjoin(
-			"PREFIX slv2predicate: <", predicate, ">",
-			"SELECT DISTINCT ?value WHERE { \n",
-			subject_token, " slv2predicate: ?value \n"
+			"PREFIX slv2predicate: <", slv2_value_as_string(predicate), ">\n",
+			"SELECT DISTINCT ?value WHERE {\n",
+			subject_token, " slv2predicate: ?value .\n"
 			"}\n", NULL);
-	} else if (predicate->type == SLV2_VALUE_URI) {
+	} else if (predicate->type == SLV2_VALUE_QNAME) {
     	query = slv2_strjoin(
-			"SELECT DISTINCT ?value WHERE { \n",
-			subject_token, " ", predicate, " ?value \n"
+			"SELECT DISTINCT ?value WHERE {\n",
+			subject_token, " ", slv2_value_as_string(predicate), " ?value .\n"
 			"}\n", NULL);
 	} else {
 		fprintf(stderr, "slv2_plugin_get_value error: "
