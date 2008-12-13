@@ -45,7 +45,7 @@ struct _SLV2Port {
 
 
 SLV2Port slv2_port_new(SLV2World world, uint32_t index, const char* symbol);
-SLV2Port slv2_port_duplicate(SLV2Port port);
+//SLV2Port slv2_port_duplicate(SLV2Port port);
 void     slv2_port_free(SLV2Port port);
 
 

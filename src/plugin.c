@@ -88,7 +88,8 @@ slv2_plugin_free(SLV2Plugin p)
 
 
 /** comparator for sorting */
-/*static int
+#if 0
+static int
 slv2_port_compare_by_index(const void* a, const void* b)
 {
 	SLV2Port port_a = *(SLV2Port*)a;
@@ -100,7 +101,8 @@ slv2_port_compare_by_index(const void* a, const void* b)
 		return 0;
 	else //if (port_a->index > port_b->index)
 		return 1;
-}*/
+}
+#endif
 
 
 void

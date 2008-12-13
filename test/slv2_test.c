@@ -1,4 +1,4 @@
-/* SLV2
+/* SLV2 Tests
  * Copyright (C) 2008 Dave Robillard <http://drobilla.net>
  * Copyright (C) 2008 Krzysztof Foltman
  *
@@ -141,10 +141,16 @@ cleanup()
 
 /*****************************************************************************/
 
-#define TESTCASE(name) { #name, test_##name }
-#define TESTITEM(check) do { test_count++; if (!(check)) { error_count++; fprintf(stderr, "Failed: %s\n", #check); } } while(0);
+#define TEST_CASE(name) { #name, test_##name }
+#define TEST_ASSERT(check) do {\
+	test_count++;\
+	if (!(check)) {\
+		error_count++;\
+		fprintf(stderr, "Failure at slv2_test.c:%d: %s\n", __LINE__, #check);\
+	}\
+} while (0);
 
-typedef int (*TestFunc) ();
+typedef int (*TestFunc)();
 
 struct TestCase {
 	const char *title;
@@ -172,8 +178,8 @@ init_uris()
 {
 	plugin_uri_value = slv2_value_new_uri(world, uris_plugin);
 	plugin2_uri_value = slv2_value_new_uri(world, "http://example.com/foobar");
-	TESTITEM(plugin_uri_value);
-	TESTITEM(plugin2_uri_value);
+	TEST_ASSERT(plugin_uri_value);
+	TEST_ASSERT(plugin2_uri_value);
 }
 
 void
@@ -190,9 +196,9 @@ cleanup_uris()
 int
 test_utils()
 {
-	TESTITEM(!strcmp(slv2_uri_to_path("file:///tmp/blah"), "/tmp/blah"));
-	TESTITEM(!slv2_uri_to_path("file:/example.com/blah"));
-	TESTITEM(!slv2_uri_to_path("http://example.com/blah"));
+	TEST_ASSERT(!strcmp(slv2_uri_to_path("file:///tmp/blah"), "/tmp/blah"));
+	TEST_ASSERT(!slv2_uri_to_path("file:/example.com/blah"));
+	TEST_ASSERT(!slv2_uri_to_path("http://example.com/blah"));
 	return 1;
 }
 
@@ -207,38 +213,38 @@ test_value()
 
 	init_world();
 	v1 = slv2_value_new_uri(world, "http://example.com/");
-	TESTITEM(v1);
-	TESTITEM(slv2_value_is_uri(v1));
-	TESTITEM(!strcmp(slv2_value_as_uri(v1), uri));
-	TESTITEM(!slv2_value_is_literal(v1));
-	TESTITEM(!slv2_value_is_string(v1));
-	TESTITEM(!slv2_value_is_float(v1));
-	TESTITEM(!slv2_value_is_int(v1));
+	TEST_ASSERT(v1);
+	TEST_ASSERT(slv2_value_is_uri(v1));
+	TEST_ASSERT(!strcmp(slv2_value_as_uri(v1), uri));
+	TEST_ASSERT(!slv2_value_is_literal(v1));
+	TEST_ASSERT(!slv2_value_is_string(v1));
+	TEST_ASSERT(!slv2_value_is_float(v1));
+	TEST_ASSERT(!slv2_value_is_int(v1));
 	res = slv2_value_get_turtle_token(v1);
-	TESTITEM(!strcmp(res, "<http://example.com/>"));
+	TEST_ASSERT(!strcmp(res, "<http://example.com/>"));
 
 	v2 = slv2_value_new_uri(world, uri);
-	TESTITEM(v2);
-	TESTITEM(slv2_value_is_uri(v2));
-	TESTITEM(!strcmp(slv2_value_as_uri(v2), uri));
+	TEST_ASSERT(v2);
+	TEST_ASSERT(slv2_value_is_uri(v2));
+	TEST_ASSERT(!strcmp(slv2_value_as_uri(v2), uri));
 
-	TESTITEM(slv2_value_equals(v1, v2));
+	TEST_ASSERT(slv2_value_equals(v1, v2));
 
 	v3 = slv2_value_new_uri(world, "http://example.com/another");
-	TESTITEM(v3);
-	TESTITEM(slv2_value_is_uri(v3));
-	TESTITEM(!strcmp(slv2_value_as_uri(v3), "http://example.com/another"));
-	TESTITEM(!slv2_value_equals(v1, v3));
+	TEST_ASSERT(v3);
+	TEST_ASSERT(slv2_value_is_uri(v3));
+	TEST_ASSERT(!strcmp(slv2_value_as_uri(v3), "http://example.com/another"));
+	TEST_ASSERT(!slv2_value_equals(v1, v3));
 
 	slv2_value_free(v2);
 	v2 = slv2_value_duplicate(v1);
-	TESTITEM(slv2_value_equals(v1, v2));
-	TESTITEM(slv2_value_is_uri(v2));
-	TESTITEM(!strcmp(slv2_value_as_uri(v2), uri));
-	TESTITEM(!slv2_value_is_literal(v2));
-	TESTITEM(!slv2_value_is_string(v2));
-	TESTITEM(!slv2_value_is_float(v2));
-	TESTITEM(!slv2_value_is_int(v2));
+	TEST_ASSERT(slv2_value_equals(v1, v2));
+	TEST_ASSERT(slv2_value_is_uri(v2));
+	TEST_ASSERT(!strcmp(slv2_value_as_uri(v2), uri));
+	TEST_ASSERT(!slv2_value_is_literal(v2));
+	TEST_ASSERT(!slv2_value_is_string(v2));
+	TEST_ASSERT(!slv2_value_is_float(v2));
+	TEST_ASSERT(!slv2_value_is_int(v2));
 
 	slv2_value_free(v3);
 	slv2_value_free(v2);
@@ -257,9 +263,9 @@ test_values()
 	init_world();
 	v0 = slv2_value_new_uri(world, "http://example.com/");
 	vs1 = slv2_values_new();
-	TESTITEM(vs1);
-	TESTITEM(!slv2_values_size(vs1));
-	TESTITEM(!slv2_values_contains(vs1, v0));
+	TEST_ASSERT(vs1);
+	TEST_ASSERT(!slv2_values_size(vs1));
+	TEST_ASSERT(!slv2_values_contains(vs1, v0));
 	slv2_values_free(vs1);
 	slv2_value_free(v0);
 	return 1;
@@ -299,16 +305,16 @@ discovery_verify_plugin(SLV2Plugin plugin)
 	SLV2Value value = slv2_plugin_get_uri(plugin);
 	if (slv2_value_equals(value, plugin_uri_value)) {
 		SLV2Value lib_uri = NULL;
-		TESTITEM(!slv2_value_equals(value, plugin2_uri_value));
+		TEST_ASSERT(!slv2_value_equals(value, plugin2_uri_value));
 		discovery_plugin_found = 1;
 		lib_uri = slv2_plugin_get_library_uri(plugin);
-		TESTITEM(lib_uri);
-		TESTITEM(slv2_value_is_uri(lib_uri));
-		TESTITEM(slv2_value_as_uri(lib_uri));
-		TESTITEM(strstr(slv2_value_as_uri(lib_uri), "foo.so"));
+		TEST_ASSERT(lib_uri);
+		TEST_ASSERT(slv2_value_is_uri(lib_uri));
+		TEST_ASSERT(slv2_value_as_uri(lib_uri));
+		TEST_ASSERT(strstr(slv2_value_as_uri(lib_uri), "foo.so"));
 		/* this is already being tested as ticket291, but the discovery and ticket291
 		 * may diverge at some point, so I'm duplicating it here */
-		TESTITEM(slv2_plugin_verify(plugin));
+		TEST_ASSERT(slv2_plugin_verify(plugin));
 	}
 }
 
@@ -338,58 +344,53 @@ test_discovery_variant(int load_all)
 	 * lookup 5: no plugins (get_plugins_by_filter, non-existing plugin)
 	 */
 	for (int lookup = 1; lookup <= 5; lookup++) {
-		printf("Lookup variant %d\n", lookup);
+		//printf("Lookup variant %d\n", lookup);
 		int expect_found = 0;
 		switch (lookup) {
 		case 1:
 			plugins = slv2_world_get_all_plugins(world);
-			TESTITEM(slv2_plugins_size(plugins) > 0);
+			TEST_ASSERT(slv2_plugins_size(plugins) > 0);
 			expect_found = 1;
 			break;
 		case 2:
-			plugins =
-			    slv2_world_get_plugins_by_filter(world,
-			                                     discovery_plugin_filter_all);
-			TESTITEM(slv2_plugins_size(plugins) > 0);
+			plugins = slv2_world_get_plugins_by_filter(world,
+					discovery_plugin_filter_all);
+			TEST_ASSERT(slv2_plugins_size(plugins) > 0);
 			expect_found = 1;
 			break;
 		case 3:
-			plugins =
-			    slv2_world_get_plugins_by_filter(world,
-			                                     discovery_plugin_filter_none);
-			TESTITEM(slv2_plugins_size(plugins) == 0);
+			plugins = slv2_world_get_plugins_by_filter(world,
+					discovery_plugin_filter_none);
+			TEST_ASSERT(slv2_plugins_size(plugins) == 0);
 			break;
 		case 4:
-			plugins =
-			    slv2_world_get_plugins_by_filter(world,
-			                                     discovery_plugin_filter_ours);
-			TESTITEM(slv2_plugins_size(plugins) == 1);
+			plugins = slv2_world_get_plugins_by_filter(world,
+					discovery_plugin_filter_ours);
+			TEST_ASSERT(slv2_plugins_size(plugins) == 1);
 			expect_found = 1;
 			break;
 		case 5:
-			plugins =
-			    slv2_world_get_plugins_by_filter(world,
-			                                     discovery_plugin_filter_fake);
-			TESTITEM(slv2_plugins_size(plugins) == 0);
+			plugins = slv2_world_get_plugins_by_filter(world,
+					discovery_plugin_filter_fake);
+			TEST_ASSERT(slv2_plugins_size(plugins) == 0);
 			break;
 		}
 
 		explug = slv2_plugins_get_by_uri(plugins, plugin_uri_value);
-		TESTITEM((explug != NULL) == expect_found);
+		TEST_ASSERT((explug != NULL) == expect_found);
 		explug2 = slv2_plugins_get_by_uri(plugins, plugin2_uri_value);
-		TESTITEM(explug2 == NULL);
+		TEST_ASSERT(explug2 == NULL);
 
 		if (explug && expect_found) {
-			TESTITEM(!strcmp
-			         (slv2_value_as_string(slv2_plugin_get_name(explug)),
-			          "Test plugin"));
+			TEST_ASSERT(!strcmp(slv2_value_as_string(slv2_plugin_get_name(explug)),
+					"Test plugin"));
 		}
 
 		discovery_plugin_found = 0;
 		for (size_t i = 0; i < slv2_plugins_size(plugins); i++)
 			discovery_verify_plugin(slv2_plugins_get_at(plugins, i));
 
-		TESTITEM(discovery_plugin_found == expect_found);
+		TEST_ASSERT(discovery_plugin_found == expect_found);
 		slv2_plugins_free(world, plugins);
 		plugins = NULL;
 	}
@@ -433,7 +434,7 @@ test_verify()
 	init_uris();
 	plugins = slv2_world_get_all_plugins(world);
 	explug = slv2_plugins_get_by_uri(plugins, plugin_uri_value);
-	TESTITEM(explug);
+	TEST_ASSERT(explug);
 	slv2_plugin_verify(explug);
 	slv2_plugins_free(world, plugins);
 	cleanup_uris();
@@ -444,12 +445,12 @@ test_verify()
 
 /* add tests here */
 static struct TestCase tests[] = {
-	TESTCASE(utils),
-	TESTCASE(value),
-	TESTCASE(values),
-	/* TESTCASE(discovery_load_bundle), */
-	TESTCASE(verify),
-	TESTCASE(discovery_load_all),
+	TEST_CASE(utils),
+	TEST_CASE(value),
+	TEST_CASE(values),
+	/* TEST_CASE(discovery_load_bundle), */
+	TEST_CASE(verify),
+	TEST_CASE(discovery_load_all),
 	{ NULL, NULL }
 };
 
