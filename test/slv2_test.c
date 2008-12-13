@@ -29,10 +29,12 @@
 #include <limits.h>
 #include "slv2/slv2.h"
 
-static char bundle_dir_name[1024];
-static char bundle_dir_uri[1024];
-static char manifest_name[1024];
-static char content_name[1024];
+#define TEST_PATH_MAX 1024
+
+static char bundle_dir_name[TEST_PATH_MAX];
+static char bundle_dir_uri[TEST_PATH_MAX];
+static char manifest_name[TEST_PATH_MAX];
+static char content_name[TEST_PATH_MAX];
 
 static SLV2World world;
 
@@ -52,7 +54,7 @@ init_tests()
 {
 	strncpy(bundle_dir_name, getenv("HOME"), 900);
 	strcat(bundle_dir_name, "/.lv2/slv2-test.lv2");
-	sprintf(bundle_dir_uri, "file:///%s/", bundle_dir_name);
+	sprintf(bundle_dir_uri, "file://%s/", bundle_dir_name);
 	sprintf(manifest_name, "%s/manifest.ttl", bundle_dir_name);
 	sprintf(content_name, "%s/plugin.ttl", bundle_dir_name);
 
@@ -391,6 +393,8 @@ test_discovery_variant(int load_all)
 		plugins = NULL;
 	}
 
+	TEST_ASSERT(slv2_plugins_get_at(plugins, (unsigned)INT_MAX + 1) == NULL);
+
 	cleanup_uris();
 
 	return 1;
@@ -437,6 +441,97 @@ test_verify()
 /*****************************************************************************/
 
 int
+test_plugin()
+{
+	if (!start_bundle(MANIFEST_PREFIXES
+			":plug a lv2:Plugin ; lv2:binary <foo.so> ; rdfs:seeAlso <plugin.ttl> .\n",
+			BUNDLE_PREFIXES
+			":plug a lv2:Plugin ; a lv2:CompressorPlugin ; "
+			PLUGIN_NAME("Test plugin") " ; "
+			LICENSE_GPL " ; "
+			"lv2:port [ "
+			"  a lv2:ControlPort ; a lv2:InputPort ; "
+			"  lv2:index 0 ; lv2:symbol \"foo\" ; lv2:name \"bar\" ; "
+			"  lv2:minimum -1.0 ; lv2:maximum 1.0 ; lv2:default 0.5 "
+			"] , [ "
+			"  a lv2:ControlPort ; a lv2:InputPort ; "
+			"  lv2:index 1 ; lv2:symbol \"bar\" ; lv2:name \"Baz\" ; "
+			"  lv2:minimum -2.0 ; lv2:maximum 2.0 ; lv2:default 1.0 "
+			"] , [ "
+			"  a lv2:ControlPort ; a lv2:OutputPort ; "
+			"  lv2:index 2 ; lv2:symbol \"latency\" ; lv2:name \"Latency\" ; "
+			"  lv2:portProperty lv2:reportsLatency "
+			"] .",
+			1))
+		return 0;
+
+	init_uris();
+	SLV2Plugins plugins = slv2_world_get_all_plugins(world);
+	SLV2Plugin plug = slv2_plugins_get_by_uri(plugins, plugin_uri_value);
+	TEST_ASSERT(plug);
+
+	SLV2PluginClass class = slv2_plugin_get_class(plug);
+	SLV2Value class_uri = slv2_plugin_class_get_uri(class);
+	TEST_ASSERT(!strcmp(slv2_value_as_string(class_uri),
+			"http://lv2plug.in/ns/lv2core#CompressorPlugin"));
+
+	SLV2Value plug_bundle_uri = slv2_plugin_get_bundle_uri(plug);
+	TEST_ASSERT(!strcmp(slv2_value_as_string(plug_bundle_uri), bundle_dir_uri));
+	
+	SLV2Values data_uris = slv2_plugin_get_data_uris(plug);
+	TEST_ASSERT(slv2_values_size(data_uris) == 2);
+	
+	char* manifest_uri = (char*)malloc(TEST_PATH_MAX);
+	char* data_uri     = (char*)malloc(TEST_PATH_MAX);
+	snprintf(manifest_uri, TEST_PATH_MAX, "%s%s",
+			slv2_value_as_string(plug_bundle_uri), "manifest.ttl");
+	snprintf(data_uri, TEST_PATH_MAX, "%s%s",
+			slv2_value_as_string(plug_bundle_uri), "plugin.ttl");
+
+	TEST_ASSERT(!strcmp(slv2_value_as_string(slv2_values_get_at(data_uris, 0)), manifest_uri));
+	TEST_ASSERT(!strcmp(slv2_value_as_string(slv2_values_get_at(data_uris, 1)), data_uri));
+
+	float mins[1];
+	float maxs[1];
+	float defs[1];
+	slv2_plugin_get_port_ranges_float(plug, mins, maxs, defs);
+	TEST_ASSERT(mins[0] == -1.0f);
+	TEST_ASSERT(maxs[0] == 1.0f);
+	TEST_ASSERT(defs[0] == 0.5f);
+	
+	SLV2Value audio_class = slv2_value_new_uri(world,
+			"http://lv2plug.in/ns/lv2core#AudioPort");
+	SLV2Value control_class = slv2_value_new_uri(world,
+			"http://lv2plug.in/ns/lv2core#ControlPort");
+	SLV2Value in_class = slv2_value_new_uri(world,
+			"http://lv2plug.in/ns/lv2core#InputPort");
+	SLV2Value out_class = slv2_value_new_uri(world,
+			"http://lv2plug.in/ns/lv2core#OutputPort");
+
+	TEST_ASSERT(slv2_plugin_get_num_ports_of_class(plug, control_class, NULL) == 3)
+	TEST_ASSERT(slv2_plugin_get_num_ports_of_class(plug, audio_class, NULL) == 0)
+	TEST_ASSERT(slv2_plugin_get_num_ports_of_class(plug, in_class, NULL) == 2)
+	TEST_ASSERT(slv2_plugin_get_num_ports_of_class(plug, out_class, NULL) == 1)
+	TEST_ASSERT(slv2_plugin_get_num_ports_of_class(plug, control_class, in_class, NULL) == 2)
+	TEST_ASSERT(slv2_plugin_get_num_ports_of_class(plug, control_class, out_class, NULL) == 1)
+	TEST_ASSERT(slv2_plugin_get_num_ports_of_class(plug, audio_class, in_class, NULL) == 0)
+	TEST_ASSERT(slv2_plugin_get_num_ports_of_class(plug, audio_class, out_class, NULL) == 0)
+
+	TEST_ASSERT(slv2_plugin_has_latency(plug));
+	TEST_ASSERT(slv2_plugin_get_latency_port_index(plug) == 2);
+
+	slv2_value_free(control_class);
+	slv2_value_free(audio_class);
+	slv2_value_free(in_class);
+	slv2_value_free(out_class);
+	slv2_plugins_free(world, plugins);
+	cleanup_uris();
+	return 1;
+}
+
+/*****************************************************************************/
+
+int
 test_port()
 {
 	if (!start_bundle(MANIFEST_PREFIXES
@@ -445,6 +540,7 @@ test_port()
 			":plug a lv2:Plugin ; "
 			PLUGIN_NAME("Test plugin") " ; "
 			LICENSE_GPL " ; "
+			"doap:homepage <http://example.org/someplug> ; "
 			"lv2:port [ "
 			"  a lv2:ControlPort ; a lv2:InputPort ; "
 			"  lv2:index 0 ; lv2:symbol \"foo\" ; "
@@ -470,12 +566,14 @@ test_port()
 			"http://lv2plug.in/ns/lv2core#AudioPort");
 	SLV2Value control_class = slv2_value_new_uri(world,
 			"http://lv2plug.in/ns/lv2core#ControlPort");
-	SLV2Value input_class = slv2_value_new_uri(world,
-			"http://lv2plug.in/ns/lv2core#ControlPort");
+	SLV2Value in_class = slv2_value_new_uri(world,
+			"http://lv2plug.in/ns/lv2core#InputPort");
 
 	TEST_ASSERT(slv2_values_size(slv2_port_get_classes(plug, p)) == 2);
+	TEST_ASSERT(slv2_plugin_get_num_ports(plug) == 1);
+	TEST_ASSERT(slv2_values_get_at(slv2_port_get_classes(plug, p), (unsigned)INT_MAX+1) == NULL);
 	TEST_ASSERT(slv2_port_is_a(plug, p, control_class));
-	TEST_ASSERT(slv2_port_is_a(plug, p, input_class));
+	TEST_ASSERT(slv2_port_is_a(plug, p, in_class));
 	TEST_ASSERT(!slv2_port_is_a(plug, p, audio_class));
 	
 	TEST_ASSERT(slv2_values_size(slv2_port_get_properties(plug, p)) == 0);
@@ -498,9 +596,25 @@ test_port()
 	TEST_ASSERT(!strcmp(slv2_value_as_string(slv2_scale_point_get_label(sp1)), "Cos"));
 	TEST_ASSERT(slv2_value_as_float(slv2_scale_point_get_value(sp1)) == 4);
 
+	SLV2Value homepage_p = slv2_value_new_uri(world, "http://usefulinc.com/ns/doap#homepage");
+	SLV2Values homepages = slv2_plugin_get_value(plug, homepage_p);
+	TEST_ASSERT(slv2_values_size(homepages) == 1);
+	TEST_ASSERT(!strcmp(slv2_value_as_string(slv2_values_get_at(homepages, 0)),
+			"http://example.org/someplug"));
+
+	TEST_ASSERT(slv2_plugin_query_count(plug, "SELECT DISTINCT ?bin WHERE {\n"
+			   "<> lv2:binary ?bin . }") == 1);
+	
+	TEST_ASSERT(slv2_plugin_query_count(plug, "SELECT DISTINCT ?parent WHERE {\n"
+			   "<> rdfs:subClassOf ?parent . }") == 0);
+	
+	slv2_value_free(homepage_p);
+	slv2_values_free(homepages);
+
 	slv2_scale_points_free(points);
 	slv2_value_free(control_class);
-	slv2_value_free(input_class);
+	slv2_value_free(audio_class);
+	slv2_value_free(in_class);
 	slv2_plugins_free(world, plugins);
 	cleanup_uris();
 	return 1;
@@ -516,7 +630,9 @@ static struct TestCase tests[] = {
 	/* TEST_CASE(discovery_load_bundle), */
 	TEST_CASE(verify),
 	TEST_CASE(discovery_load_all),
+	TEST_CASE(plugin),
 	TEST_CASE(port),
+	TEST_CASE(plugin),
 	{ NULL, NULL }
 };
 

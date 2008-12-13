@@ -636,7 +636,7 @@ slv2_plugin_has_latency(SLV2Plugin p)
 		"SELECT ?index WHERE {\n"
 		"	<>      lv2:port         ?port .\n"
 		"	?port   lv2:portProperty lv2:reportsLatency ;\n"
-		"           lv2:index        ?index .\n"
+		"	        lv2:index        ?index .\n"
 		"}\n";
 
 	SLV2Values results = slv2_plugin_query_variable(p, query, 0);
@@ -654,7 +654,7 @@ slv2_plugin_get_latency_port_index(SLV2Plugin p)
 		"SELECT ?index WHERE {\n"
 		"	<>      lv2:port         ?port .\n"
 		"	?port   lv2:portProperty lv2:reportsLatency ;\n"
-		"           lv2:index        ?index .\n"
+		"	        lv2:index        ?index .\n"
 		"}\n";
 
 	SLV2Values result = slv2_plugin_query_variable(p, query, 0);
@@ -684,16 +684,6 @@ slv2_plugin_has_feature(SLV2Plugin p,
 SLV2Values
 slv2_plugin_get_supported_features(SLV2Plugin p)
 {
-	/* Work around broken UNION in Redland :( */
-    /*const char* const query = 
-		"SELECT DISTINCT ?feature WHERE {\n"
-		"	{ <>  lv2:optionalFeature ?feature }\n"
-		"	UNION\n"
-		"	{ <>  lv2:requiredFeature ?feature }\n"
-		"}\n";
-	
-	SLV2Values result = slv2_plugin_query_variable(p, query, 0);*/
-
 	SLV2Values optional = slv2_plugin_get_optional_features(p);
 	SLV2Values required = slv2_plugin_get_required_features(p);
 	
