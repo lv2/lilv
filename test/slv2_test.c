@@ -162,9 +162,10 @@ struct TestCase {
 	TestFunc func;
 };
 
-#define PREFIX_LINE "@prefix : <http://example.com/> .\n"
+#define PREFIX_LINE "@prefix : <http://example.org/> .\n"
 #define PREFIX_LV2 "@prefix lv2: <http://lv2plug.in/ns/lv2core#> .\n"
 #define PREFIX_LV2EV "@prefix lv2ev: <http://lv2plug.in/ns/ext/event#> . \n"
+#define PREFIX_LV2UI "@prefix lv2ui: <http://lv2plug.in/ns/extensions/ui#> .\n"
 #define PREFIX_RDFS "@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .\n"
 #define PREFIX_FOAF "@prefix foaf: <http://xmlns.com/foaf/0.1/> .\n"
 #define PREFIX_DOAP "@prefix doap: <http://usefulinc.com/ns/doap#> .\n"
@@ -174,7 +175,7 @@ struct TestCase {
 #define PLUGIN_NAME(name) "doap:name \"" name "\""
 #define LICENSE_GPL "doap:license <http://usefulinc.com/doap/licenses/gpl>"
 
-static char *uris_plugin = "http://example.com/plug";
+static char *uris_plugin = "http://example.org/plug";
 static SLV2Value plugin_uri_value, plugin2_uri_value;
 
 /*****************************************************************************/
@@ -183,7 +184,7 @@ void
 init_uris()
 {
 	plugin_uri_value = slv2_value_new_uri(world, uris_plugin);
-	plugin2_uri_value = slv2_value_new_uri(world, "http://example.com/foobar");
+	plugin2_uri_value = slv2_value_new_uri(world, "http://example.org/foobar");
 	TEST_ASSERT(plugin_uri_value);
 	TEST_ASSERT(plugin2_uri_value);
 }
@@ -203,8 +204,8 @@ int
 test_utils()
 {
 	TEST_ASSERT(!strcmp(slv2_uri_to_path("file:///tmp/blah"), "/tmp/blah"));
-	TEST_ASSERT(!slv2_uri_to_path("file:/example.com/blah"));
-	TEST_ASSERT(!slv2_uri_to_path("http://example.com/blah"));
+	TEST_ASSERT(!slv2_uri_to_path("file:/example.org/blah"));
+	TEST_ASSERT(!slv2_uri_to_path("http://example.org/blah"));
 	return 1;
 }
 
@@ -314,7 +315,7 @@ int
 test_values()
 {
 	init_world();
-	SLV2Value v0 = slv2_value_new_uri(world, "http://example.com/");
+	SLV2Value v0 = slv2_value_new_uri(world, "http://example.org/");
 	SLV2Values vs1 = slv2_values_new();
 	TEST_ASSERT(vs1);
 	TEST_ASSERT(!slv2_values_size(vs1));
@@ -840,6 +841,107 @@ test_port()
 
 /*****************************************************************************/
 
+int
+test_ui()
+{
+	if (!start_bundle(MANIFEST_PREFIXES
+			":plug a lv2:Plugin ; lv2:binary <foo.so> ; rdfs:seeAlso <plugin.ttl> .\n",
+			BUNDLE_PREFIXES PREFIX_LV2UI
+			":plug a lv2:Plugin ; a lv2:CompressorPlugin ; "
+			PLUGIN_NAME("Test plugin") " ; "
+			LICENSE_GPL " ; "
+    		"lv2:optionalFeature lv2:hardRtCapable ; "
+		    "lv2:requiredFeature <http://lv2plug.in/ns/ext/event> ; "
+			"lv2ui:ui :ui , :ui2 , :ui3 , :ui4 ; "
+			"doap:maintainer [ foaf:name \"David Robillard\" ; "
+			"  foaf:homepage <http://drobilla.net> ; foaf:mbox <mailto:dave@drobilla.net> ] ; "
+			"lv2:port [ "
+			"  a lv2:ControlPort ; a lv2:InputPort ; "
+			"  lv2:index 0 ; lv2:symbol \"foo\" ; lv2:name \"bar\" ; "
+			"  lv2:minimum -1.0 ; lv2:maximum 1.0 ; lv2:default 0.5 "
+			"] , [ "
+			"  a lv2:ControlPort ; a lv2:InputPort ; "
+			"  lv2:index 1 ; lv2:symbol \"bar\" ; lv2:name \"Baz\" ; "
+			"  lv2:minimum -2.0 ; lv2:maximum 2.0 ; lv2:default 1.0 "
+			"] , [ "
+			"  a lv2:ControlPort ; a lv2:OutputPort ; "
+			"  lv2:index 2 ; lv2:symbol \"latency\" ; lv2:name \"Latency\" ; "
+			"  lv2:portProperty lv2:reportsLatency "
+			"] .\n"
+			":ui a lv2ui:GtkUI ; "
+			"  lv2ui:requiredFeature lv2ui:makeResident ; "
+			"  lv2ui:binary <ui.so> ; "
+			"  lv2ui:optionalFeature lv2ui:ext_presets . "
+			":ui2 a lv2ui:GtkUI ; lv2ui:binary <ui2.so> . "
+			":ui3 a lv2ui:GtkUI ; lv2ui:binary <ui3.so> . "
+			":ui4 a lv2ui:GtkUI ; lv2ui:binary <ui4.so> . ",
+			1))
+		return 0;
+
+	init_uris();
+	SLV2Plugins plugins = slv2_world_get_all_plugins(world);
+	SLV2Plugin plug = slv2_plugins_get_by_uri(plugins, plugin_uri_value);
+	TEST_ASSERT(plug);
+
+	SLV2UIs uis = slv2_plugin_get_uis(plug);
+	TEST_ASSERT(slv2_uis_size(uis) == 4);
+
+	TEST_ASSERT(slv2_uis_get_at(uis, (unsigned)INT_MAX + 1) == NULL);
+
+	SLV2UI ui0 = slv2_uis_get_at(uis, 0);
+	TEST_ASSERT(ui0);
+
+	SLV2Value ui_uri = slv2_value_new_uri(world, "http://example.org/ui");
+	SLV2Value ui2_uri = slv2_value_new_uri(world, "http://example.org/ui3");
+	SLV2Value ui3_uri = slv2_value_new_uri(world, "http://example.org/ui4");
+	SLV2Value noui_uri = slv2_value_new_uri(world, "http://example.org/notaui");
+
+	SLV2UI ui0_2 = slv2_uis_get_by_uri(uis, ui_uri);
+	TEST_ASSERT(ui0 == ui0_2);
+	
+	SLV2UI ui2 = slv2_uis_get_by_uri(uis, ui2_uri);
+	TEST_ASSERT(ui2 != ui0);
+	
+	SLV2UI ui3 = slv2_uis_get_by_uri(uis, ui3_uri);
+	TEST_ASSERT(ui3 != ui0);
+	
+	SLV2UI noui = slv2_uis_get_by_uri(uis, noui_uri);
+	TEST_ASSERT(noui == NULL);
+	
+	SLV2Values classes = slv2_ui_get_classes(ui0);
+	TEST_ASSERT(slv2_values_size(classes) == 1);
+
+	SLV2Value ui_class_uri = slv2_value_new_uri(world,
+			"http://lv2plug.in/ns/extensions/ui#GtkUI");
+
+	TEST_ASSERT(slv2_value_equals(slv2_values_get_at(classes, 0), ui_class_uri));
+	TEST_ASSERT(slv2_ui_is_a(ui0, ui_class_uri));
+	
+	SLV2Value plug_bundle_uri = slv2_plugin_get_bundle_uri(plug);
+	SLV2Value ui_bundle_uri = slv2_ui_get_bundle_uri(ui0);
+	TEST_ASSERT(slv2_value_equals(plug_bundle_uri, ui_bundle_uri));
+
+	char* ui_binary_uri_str = (char*)malloc(TEST_PATH_MAX);
+	snprintf(ui_binary_uri_str, TEST_PATH_MAX, "%s%s",
+			slv2_value_as_string(plug_bundle_uri), "ui.so");
+
+	SLV2Value ui_binary_uri = slv2_ui_get_binary_uri(ui0);
+
+	SLV2Value expected_uri = slv2_value_new_uri(world, ui_binary_uri_str);
+	TEST_ASSERT(slv2_value_equals(expected_uri, ui_binary_uri));
+
+	slv2_value_free(ui_uri);
+	slv2_value_free(ui2_uri);
+	slv2_value_free(noui_uri);
+	slv2_value_free(expected_uri);
+	slv2_uis_free(uis);
+
+	cleanup_uris();
+	return 1;
+}
+
+/*****************************************************************************/
+
 /* add tests here */
 static struct TestCase tests[] = {
 	TEST_CASE(utils),
@@ -853,6 +955,7 @@ static struct TestCase tests[] = {
 	TEST_CASE(plugin),
 	TEST_CASE(port),
 	TEST_CASE(plugin),
+	TEST_CASE(ui),
 	{ NULL, NULL }
 };
 

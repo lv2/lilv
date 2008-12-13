@@ -34,7 +34,6 @@ SLV2UIs
 slv2_uis_new()
 {
 	return raptor_new_sequence((void (*)(void*))&slv2_ui_free, NULL);
-	//return raptor_new_sequence(NULL, NULL);
 }
 
 
