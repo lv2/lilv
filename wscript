@@ -91,8 +91,9 @@ def build(bld):
 
 	# Library
 	obj = bld.new_task_gen('cc', 'shlib')
+	obj.export_incdirs = ['.']
 	obj.source       = lib_source
-	obj.includes     = '..'
+	obj.includes     = ['.', './src']
 	obj.name         = 'libslv2'
 	obj.target       = 'slv2'
 	obj.vnum         = SLV2_LIB_VERSION
@@ -103,7 +104,7 @@ def build(bld):
 	if bld.env['BUILD_TESTS']:
 		obj = bld.new_task_gen('cc', 'staticlib')
 		obj.source       = lib_source
-		obj.includes     = '..'
+		obj.includes     = ['.', './src']
 		obj.name         = 'libslv2_static'
 		obj.target       = 'slv2_static'
 		obj.install_path = ''
@@ -117,7 +118,7 @@ def build(bld):
 	for i in utils.split():
 		obj = bld.new_task_gen('cc', 'program')
 		obj.source       = i + '.c'
-		obj.includes     = '.'
+		obj.includes     = ['.', './src']
 		obj.uselib_local = 'libslv2'
 		obj.target       = i
 		obj.install_path = '${BINDIR}'
@@ -131,7 +132,7 @@ def build(bld):
 		for i in hosts.split():
 			obj = bld.new_task_gen('cc', 'program')
 			obj.source       = i + '.c'
-			obj.includes     = '.'
+			obj.includes     = ['.', './src']
 			obj.uselib       = 'JACK'
 			obj.uselib_local = 'libslv2'
 			obj.target       = i
