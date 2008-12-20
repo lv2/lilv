@@ -153,7 +153,7 @@ cleanup()
 		error_count++;\
 		fprintf(stderr, "Failure at slv2_test.c:%d: %s\n", __LINE__, #check);\
 	}\
-} while (0);
+} while (0)
 
 typedef int (*TestFunc)();
 
@@ -539,7 +539,7 @@ test_classes()
 	SLV2PluginClasses children = slv2_plugin_class_get_children(plugin);
 	
 	TEST_ASSERT(slv2_plugin_class_get_parent_uri(plugin) == NULL);
-	TEST_ASSERT(slv2_plugin_classes_size(classes) > slv2_plugin_classes_size(children))
+	TEST_ASSERT(slv2_plugin_classes_size(classes) > slv2_plugin_classes_size(children));
 	TEST_ASSERT(!strcmp(slv2_value_as_string(slv2_plugin_class_get_label(plugin)), "Plugin"));
 	TEST_ASSERT(!strcmp(slv2_value_as_string(slv2_plugin_class_get_uri(plugin)),
 			"http://lv2plug.in/ns/lv2core#Plugin"));
@@ -641,14 +641,14 @@ test_plugin()
 	SLV2Value out_class = slv2_value_new_uri(world,
 			"http://lv2plug.in/ns/lv2core#OutputPort");
 
-	TEST_ASSERT(slv2_plugin_get_num_ports_of_class(plug, control_class, NULL) == 3)
-	TEST_ASSERT(slv2_plugin_get_num_ports_of_class(plug, audio_class, NULL) == 0)
-	TEST_ASSERT(slv2_plugin_get_num_ports_of_class(plug, in_class, NULL) == 2)
-	TEST_ASSERT(slv2_plugin_get_num_ports_of_class(plug, out_class, NULL) == 1)
-	TEST_ASSERT(slv2_plugin_get_num_ports_of_class(plug, control_class, in_class, NULL) == 2)
-	TEST_ASSERT(slv2_plugin_get_num_ports_of_class(plug, control_class, out_class, NULL) == 1)
-	TEST_ASSERT(slv2_plugin_get_num_ports_of_class(plug, audio_class, in_class, NULL) == 0)
-	TEST_ASSERT(slv2_plugin_get_num_ports_of_class(plug, audio_class, out_class, NULL) == 0)
+	TEST_ASSERT(slv2_plugin_get_num_ports_of_class(plug, control_class, NULL) == 3);
+	TEST_ASSERT(slv2_plugin_get_num_ports_of_class(plug, audio_class, NULL) == 0);
+	TEST_ASSERT(slv2_plugin_get_num_ports_of_class(plug, in_class, NULL) == 2);
+	TEST_ASSERT(slv2_plugin_get_num_ports_of_class(plug, out_class, NULL) == 1);
+	TEST_ASSERT(slv2_plugin_get_num_ports_of_class(plug, control_class, in_class, NULL) == 2);
+	TEST_ASSERT(slv2_plugin_get_num_ports_of_class(plug, control_class, out_class, NULL) == 1);
+	TEST_ASSERT(slv2_plugin_get_num_ports_of_class(plug, audio_class, in_class, NULL) == 0);
+	TEST_ASSERT(slv2_plugin_get_num_ports_of_class(plug, audio_class, out_class, NULL) == 0);
 
 	TEST_ASSERT(slv2_plugin_has_latency(plug));
 	TEST_ASSERT(slv2_plugin_get_latency_port_index(plug) == 2);
