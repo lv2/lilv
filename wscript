@@ -47,9 +47,9 @@ def set_options(opt):
 def configure(conf):
 	autowaf.configure(conf)
 	autowaf.check_tool(conf, 'compiler_cc')
-	autowaf.check_pkg(conf, 'lv2core', destvar='LV2CORE', vnum='1.0', mandatory=True)
-	autowaf.check_pkg(conf, 'redland', destvar='REDLAND', vnum='1.0.6', mandatory=True)
-	autowaf.check_pkg(conf, 'jack', destvar='JACK', vnum='0.107.0', mandatory=False)
+	autowaf.check_pkg(conf, 'lv2core', uselib_store='LV2CORE', atleast_version='1.0', mandatory=True)
+	autowaf.check_pkg(conf, 'redland', uselib_store='REDLAND', atleast_version='1.0.6', mandatory=True)
+	autowaf.check_pkg(conf, 'jack', uselib_store='JACK', atleast_version='0.107.0', mandatory=False)
 	conf.env.append_value('CCFLAGS', '-std=c99')
 	conf.define('SLV2_VERSION', SLV2_VERSION)
 	conf.write_config_header('wafconfig.h')
