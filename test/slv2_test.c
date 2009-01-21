@@ -249,10 +249,18 @@ test_value()
 	TEST_ASSERT(slv2_value_as_int(ival) == 42);
 	TEST_ASSERT(fabs(slv2_value_as_float(fval) - 1.6180) < FLT_EPSILON);
 
-	TEST_ASSERT(!strcmp(slv2_value_get_turtle_token(uval), "<http://example.org>"));
-	TEST_ASSERT(!strcmp(slv2_value_get_turtle_token(sval), "Foo"));
-	TEST_ASSERT(!strcmp(slv2_value_get_turtle_token(ival), "42"));
-	TEST_ASSERT(!strncmp(slv2_value_get_turtle_token(fval), "1.6180", 6));
+	char* tok = slv2_value_get_turtle_token(uval);
+	TEST_ASSERT(!strcmp(tok, "<http://example.org>"));
+	free(tok);
+	tok = slv2_value_get_turtle_token(sval);
+	TEST_ASSERT(!strcmp(tok, "Foo"));
+	free(tok);
+	tok = slv2_value_get_turtle_token(ival);
+	TEST_ASSERT(!strcmp(tok, "42"));
+	free(tok);
+	tok = slv2_value_get_turtle_token(fval);
+	TEST_ASSERT(!strncmp(tok, "1.6180", 6));
+	free(tok);
 	
 	SLV2Value uval_e = slv2_value_new_uri(world, "http://example.org");
 	SLV2Value sval_e = slv2_value_new_string(world, "Foo");
@@ -282,6 +290,7 @@ test_value()
 
 	SLV2Value ifval = slv2_value_new_float(world, 42.0);
 	TEST_ASSERT(!slv2_value_equals(ival, ifval));
+	slv2_value_free(ifval);
 	
 	SLV2Value nil = NULL;
 	TEST_ASSERT(!slv2_value_equals(uval, nil));
@@ -435,8 +444,9 @@ test_discovery_variant(int load_all)
 		TEST_ASSERT(explug2 == NULL);
 
 		if (explug && expect_found) {
-			TEST_ASSERT(!strcmp(slv2_value_as_string(slv2_plugin_get_name(explug)),
-					"Test plugin"));
+			SLV2Value name = slv2_plugin_get_name(explug);
+			TEST_ASSERT(!strcmp(slv2_value_as_string(name), "Test plugin"));
+			slv2_value_free(name);
 		}
 
 		discovery_plugin_found = 0;
@@ -555,6 +565,8 @@ test_classes()
 	slv2_value_free(some_uri);
 	
 	TEST_ASSERT(slv2_plugin_classes_get_at(classes, (unsigned)INT_MAX + 1) == NULL);
+	
+	slv2_plugin_classes_free(children);
 
 	cleanup_uris();
 	return 1;
@@ -624,6 +636,9 @@ test_plugin()
 	TEST_ASSERT(!strcmp(slv2_value_as_string(slv2_values_get_at(data_uris, 0)), manifest_uri));
 	TEST_ASSERT(!strcmp(slv2_value_as_string(slv2_values_get_at(data_uris, 1)), data_uri));
 
+	free(manifest_uri);
+	free(data_uri);
+
 	float mins[1];
 	float maxs[1];
 	float defs[1];
@@ -664,12 +679,19 @@ test_plugin()
 	TEST_ASSERT(slv2_plugin_has_feature(plug, event_feature));
 	TEST_ASSERT(!slv2_plugin_has_feature(plug, pretend_feature));
 
+	slv2_value_free(rt_feature);
+	slv2_value_free(event_feature);
+	slv2_value_free(pretend_feature);
+
 	SLV2Values supported = slv2_plugin_get_supported_features(plug);
 	SLV2Values required = slv2_plugin_get_required_features(plug);
 	SLV2Values optional = slv2_plugin_get_optional_features(plug);
 	TEST_ASSERT(slv2_values_size(supported) == 2);
 	TEST_ASSERT(slv2_values_size(required) == 1);
 	TEST_ASSERT(slv2_values_size(optional) == 1);
+	slv2_values_free(supported);
+	slv2_values_free(required);
+	slv2_values_free(optional);
 	
 	SLV2Value foo_p = slv2_value_new_uri(world, "http://example.org/foo");
 	SLV2Values foos = slv2_plugin_get_value(plug, foo_p);
@@ -699,6 +721,7 @@ test_plugin()
 	TEST_ASSERT(slv2_value_is_string(thing_name));
 	TEST_ASSERT(!strcmp(slv2_value_as_string(thing_name), "Something else"));
 
+	slv2_values_free(thing_names);
 	slv2_value_free(thing_uri);
 	slv2_value_free(name_p);
 	slv2_value_free(control_class);
@@ -773,7 +796,9 @@ test_port()
 	TEST_ASSERT(slv2_values_size(slv2_port_get_properties(plug, p)) == 0);
 
 	TEST_ASSERT(!strcmp(slv2_value_as_string(slv2_port_get_symbol(plug, p)), "foo"));
-	TEST_ASSERT(!strcmp(slv2_value_as_string(slv2_port_get_name(plug, p)), "bar"));
+	SLV2Value name = slv2_port_get_name(plug, p);
+	TEST_ASSERT(!strcmp(slv2_value_as_string(name), "bar"));
+	slv2_value_free(name);
 
 	SLV2ScalePoints points = slv2_port_get_scale_points(plug, p);
 	TEST_ASSERT(slv2_scale_points_size(points) == 2);
@@ -835,6 +860,7 @@ test_port()
 	TEST_ASSERT(!strcmp(slv2_value_as_string(slv2_values_get_at(names, 0)),
 			"Event Input"));
 	slv2_values_free(names);
+	slv2_value_free(name_p);
 
 	TEST_ASSERT(slv2_port_get_value(plug, p, min) == NULL);
 
@@ -950,8 +976,11 @@ test_ui()
 	SLV2Value expected_uri = slv2_value_new_uri(world, ui_binary_uri_str);
 	TEST_ASSERT(slv2_value_equals(expected_uri, ui_binary_uri));
 
+	free(ui_binary_uri_str);
+	slv2_value_free(ui_class_uri);
 	slv2_value_free(ui_uri);
 	slv2_value_free(ui2_uri);
+	slv2_value_free(ui3_uri);
 	slv2_value_free(noui_uri);
 	slv2_value_free(expected_uri);
 	slv2_uis_free(uis);

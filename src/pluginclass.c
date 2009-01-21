@@ -39,7 +39,6 @@ slv2_plugin_class_new(SLV2World world, librdf_uri* parent_uri, librdf_uri* uri, 
 }
 
 
-/* private */
 void
 slv2_plugin_class_free(SLV2PluginClass plugin_class)
 {

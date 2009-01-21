@@ -85,21 +85,16 @@ slv2_port_has_property(SLV2Plugin p,
                        SLV2Value  property)
 {
 	assert(property);
-
-	SLV2Values results = NULL;
-
 	char* query = slv2_strjoin(
 			"SELECT DISTINCT ?port WHERE {\n"
 			"<", slv2_value_as_uri(p->plugin_uri), "> lv2:port ?port ."
 			"?port lv2:symbol \"", slv2_value_as_string(port->symbol), "\";\n",
 			"      lv2:portProperty <", slv2_value_as_uri(property), "> .\n}", NULL);
 			
-	results = slv2_plugin_query_variable(p, query, 0);
-
+	SLV2Values results = slv2_plugin_query_variable(p, query, 0);
 	const bool ret = (slv2_values_size(results) > 0);
-
+	slv2_values_free(results);
 	free(query);
-	free(results);
 	
 	return ret;
 }

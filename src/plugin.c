@@ -162,7 +162,6 @@ slv2_plugin_load(SLV2Plugin p)
 
 			SLV2PluginClass plugin_class = slv2_plugin_classes_get_by_uri(
 					p->world->plugin_classes, class);
-			
 
 			librdf_free_node(class_node);
 
@@ -539,17 +538,13 @@ void
 slv2_plugin_get_port_float_values(SLV2Plugin  p,
                                   const char* qname,
                                   float*      values)
-{
-	const unsigned char* query;
-	librdf_query* q;
-	librdf_query_results* results;
-	
+{	
 	slv2_plugin_load_if_necessary(p);
 
 	for (int i = 0; i < raptor_sequence_size(p->ports); ++i)
 		values[i] = NAN;
 
-	query = (const unsigned char*)slv2_strjoin(
+	unsigned char* query = (unsigned char*)slv2_strjoin(
 			"PREFIX : <http://lv2plug.in/ns/lv2core#>\n"
 			"SELECT DISTINCT ?index ?value WHERE {\n"
 			"<>    :port    ?port .\n"
@@ -557,10 +552,10 @@ slv2_plugin_get_port_float_values(SLV2Plugin  p,
 			"?port ", qname, " ?value .\n"
 			"} ", NULL);
 
-	q = librdf_new_query(p->world->world, "sparql",
+	librdf_query* q = librdf_new_query(p->world->world, "sparql",
 			NULL, query, slv2_value_as_librdf_uri(p->plugin_uri));
 
-	results = librdf_query_execute(q, p->rdf);
+	librdf_query_results* results = librdf_query_execute(q, p->rdf);
 
 	while (!librdf_query_results_finished(results)) {
 		librdf_node* idx_node = librdf_query_results_get_binding_value(results, 0);
@@ -578,6 +573,7 @@ slv2_plugin_get_port_float_values(SLV2Plugin  p,
 
 	librdf_free_query_results(results);
 	librdf_free_query(q);
+	free(query);
 }
 
 
@@ -666,7 +662,9 @@ slv2_plugin_get_latency_port_index(SLV2Plugin p)
 	SLV2Value val = slv2_values_get_at(result, 0);
 	assert(slv2_value_is_int(val));
 
-	return slv2_value_as_int(val);
+	int ret = slv2_value_as_int(val);
+	slv2_values_free(result);
+	return ret;
 }
 
 	
@@ -691,11 +689,15 @@ slv2_plugin_get_supported_features(SLV2Plugin p)
 	
 	SLV2Values result = slv2_values_new();
 	unsigned n_optional = slv2_values_size(optional);
+	unsigned n_required = slv2_values_size(required);
 	unsigned i = 0;
 	for ( ; i < n_optional; ++i)
-		slv2_values_set_at(result, i, slv2_values_get_at(optional, i));
-	for ( ; i < n_optional + slv2_values_size(required); ++i)
-		slv2_values_set_at(result, i, slv2_values_get_at(required, i - n_optional));
+		slv2_values_set_at(result, i, raptor_sequence_pop(optional));
+	for ( ; i < n_optional + n_required; ++i)
+		slv2_values_set_at(result, i, raptor_sequence_pop(required));
+
+	slv2_values_free(optional);
+	slv2_values_free(required);
 	
 	return result;
 }

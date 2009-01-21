@@ -137,7 +137,7 @@ slv2_world_free(SLV2World world)
 	raptor_free_sequence(world->plugins);
 	world->plugins = NULL;
 	
-	slv2_plugin_classes_free(world->plugin_classes);
+	raptor_free_sequence(world->plugin_classes);
 	world->plugin_classes = NULL;
 	
 	librdf_free_parser(world->parser);

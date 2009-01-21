@@ -106,7 +106,7 @@ slv2_port_get_symbol(SLV2Plugin plugin,
 /** Get the name of a port.
  *
  * This is guaranteed to return the untranslated name (the doap:name in the
- * data file without a language tag).  Returned value must be free()'d by
+ * data file without a language tag).  Returned value must be freed by
  * the caller.
  *
  * Time = Query

@@ -30,6 +30,13 @@ extern "C" {
  */
 
 
+/** Free an SLV2PluginClasses.
+ * Note that only certain plugin classes should be freed by the user
+ * (as specified by the documentation of the slv2 function which returned it).
+ */
+void slv2_plugin_classes_free(SLV2PluginClasses classes);
+
+
 /** Get the number of plugins in the collection.
  */
 unsigned
