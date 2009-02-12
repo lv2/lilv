@@ -38,6 +38,48 @@ static const char* slv2_query_prefixes =
 	"PREFIX lv2ev:  <http://lv2plug.in/ns/ext/event#>\n";
 
 
+/** Create a new SLV2Value from a librdf_node, or return NULL if impossible */
+SLV2Value
+slv2_value_from_librdf_node(SLV2World world, librdf_node* node)
+{
+	SLV2Value result = NULL;
+
+	librdf_uri* datatype_uri = NULL;
+	SLV2ValueType type = SLV2_VALUE_STRING;
+
+	switch (librdf_node_get_type(node)) {
+	case LIBRDF_NODE_TYPE_RESOURCE:
+		type = SLV2_VALUE_URI;
+		result = slv2_value_new_librdf_uri(world, librdf_node_get_uri(node));
+		break;
+	case LIBRDF_NODE_TYPE_LITERAL:
+		datatype_uri = librdf_node_get_literal_value_datatype_uri(node);
+		if (datatype_uri) {
+			if (!strcmp((const char*)librdf_uri_as_string(datatype_uri),
+						"http://www.w3.org/2001/XMLSchema#integer"))
+				type = SLV2_VALUE_INT;
+			else if (!strcmp((const char*)librdf_uri_as_string(datatype_uri),
+						"http://www.w3.org/2001/XMLSchema#decimal"))
+				type = SLV2_VALUE_FLOAT;
+			else
+				fprintf(stderr, "Unknown datatype %s\n", librdf_uri_as_string(datatype_uri));
+		}
+		result = slv2_value_new(world, type, (const char*)librdf_node_get_literal_value(node));
+		break;
+	case LIBRDF_NODE_TYPE_BLANK:
+		type = SLV2_VALUE_STRING;
+		result = slv2_value_new(world, type, (const char*)librdf_node_get_blank_identifier(node));
+		break;
+	case LIBRDF_NODE_TYPE_UNKNOWN:
+	default:
+		fprintf(stderr, "Unknown RDF node type %d\n", librdf_node_get_type(node));
+		break;
+	}
+
+	return result;
+}
+
+
 SLV2Values
 slv2_query_get_variable_bindings(SLV2World             world,
                                  librdf_query_results* results,
@@ -49,9 +91,7 @@ slv2_query_get_variable_bindings(SLV2World             world,
 		result = slv2_values_new();
 
     while (!librdf_query_results_finished(results)) {
-
-        librdf_node* node =
-            librdf_query_results_get_binding_value(results, variable);
+        librdf_node* node = librdf_query_results_get_binding_value(results, variable);
 
 		if (node == NULL) {
 			fprintf(stderr, "SLV2 ERROR: Variable %d bound to NULL.\n", variable);
@@ -59,48 +99,11 @@ slv2_query_get_variable_bindings(SLV2World             world,
 			continue;
 		}
 		
-		librdf_uri* datatype_uri = NULL;
-		SLV2ValueType type = SLV2_VALUE_STRING;
-		
-		librdf_uri* uri_val = NULL;
-		const char* str_val = NULL;
-
-		switch (librdf_node_get_type(node)) {
-		case LIBRDF_NODE_TYPE_RESOURCE:
-			type = SLV2_VALUE_URI;
-			uri_val = librdf_node_get_uri(node);
-			assert(uri_val);
-			break;
-		case LIBRDF_NODE_TYPE_LITERAL:
-			datatype_uri = librdf_node_get_literal_value_datatype_uri(node);
-			if (datatype_uri) {
-				if (!strcmp((const char*)librdf_uri_as_string(datatype_uri),
-							"http://www.w3.org/2001/XMLSchema#integer"))
-					type = SLV2_VALUE_INT;
-				else if (!strcmp((const char*)librdf_uri_as_string(datatype_uri),
-							"http://www.w3.org/2001/XMLSchema#decimal"))
-					type = SLV2_VALUE_FLOAT;
-				else
-					fprintf(stderr, "Unknown datatype %s\n", librdf_uri_as_string(datatype_uri));
-			}
-			str_val = (const char*)librdf_node_get_literal_value(node);
-			break;
-		case LIBRDF_NODE_TYPE_BLANK:
-			str_val = (const char*)librdf_node_get_blank_identifier(node);
-			break;
-		case LIBRDF_NODE_TYPE_UNKNOWN:
-		default:
-			fprintf(stderr, "Unknown variable binding type %d\n", variable);
-			break;
-		}
-			
-		if (uri_val)
-			raptor_sequence_push(result, slv2_value_new_librdf_uri(world, uri_val));
-		else if (str_val)
-			raptor_sequence_push(result, slv2_value_new(world, type, str_val));
+		SLV2Value val = slv2_value_from_librdf_node(world, node);
+		if (val)
+			raptor_sequence_push(result, val);
 
 		librdf_free_node(node);
-
         librdf_query_results_next(results);
     }
 
