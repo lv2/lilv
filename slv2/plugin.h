@@ -27,7 +27,7 @@ extern "C" {
 #include <stdbool.h>
 #include "slv2/types.h"
 #include "slv2/port.h"
-#include "slv2/values.h"
+#include "slv2/collections.h"
 
 /** \defgroup slv2_data Plugin data access
  *

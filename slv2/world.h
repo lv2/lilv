@@ -24,8 +24,7 @@ extern "C" {
 #endif
 
 #include <librdf.h>
-#include "slv2/plugins.h"
-#include "slv2/pluginclasses.h"
+#include "slv2/collections.h"
 
 /** \defgroup slv2_world Global library state
  * 

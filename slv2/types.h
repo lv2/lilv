@@ -24,6 +24,7 @@ extern "C" {
 #endif
 
 #include <stdint.h>
+#include <stdbool.h>
 
 #define SLV2_NAMESPACE_LV2      "http://lv2plug.in/ns/lv2core#"
 #define SLV2_PORT_CLASS_PORT    "http://lv2plug.in/ns/lv2core#Port"

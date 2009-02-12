@@ -70,21 +70,18 @@ def build(bld):
 	autowaf.build_pc(bld, 'SLV2', SLV2_VERSION, ['REDLAND'])
 	
 	lib_source = '''
+		src/collections.c
 		src/plugin.c
 		src/pluginclass.c
-		src/pluginclasses.c
 		src/plugininstance.c
 		src/plugins.c
 		src/pluginui.c
 		src/pluginuiinstance.c
-		src/pluginuis.c
 		src/port.c
 		src/query.c
 		src/scalepoint.c
-		src/scalepoints.c
 		src/util.c
 		src/value.c
-		src/values.c
 		src/world.c
 	'''
 

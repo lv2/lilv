@@ -23,10 +23,11 @@
 #include <string.h>
 #include <assert.h>
 #include <dlfcn.h>
-#include "slv2/types.h"
 #include "slv2/plugin.h"
 #include "slv2/plugininstance.h"
+#include "slv2/types.h"
 #include "slv2/util.h"
+#include "slv2/value.h"
 #include "slv2_internal.h"
 
 
@@ -66,7 +67,7 @@ slv2_plugin_instantiate(SLV2Plugin               plugin,
 	} else {
 		// Search for plugin by URI
 		
-		// FIXME: Kluge to get bundle path (containing directory of binary)
+		// FIXME: Kludge to get bundle path (containing directory of binary)
 		const char* bundle_path = slv2_uri_to_path(slv2_value_as_uri(
 					slv2_plugin_get_bundle_uri(plugin)));
 

@@ -25,8 +25,7 @@
 #include <librdf.h>
 #include "slv2/types.h"
 #include "slv2/plugin.h"
-#include "slv2/plugins.h"
-#include "slv2/values.h"
+#include "slv2/collections.h"
 #include "slv2/util.h"
 #include "slv2_internal.h"
 
