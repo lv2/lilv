@@ -84,10 +84,13 @@ typedef struct _SLV2UI* SLV2UI;
 typedef void* SLV2UIs;
 
 
+/** A set of query results (conceptually a table) */
+typedef struct _SLV2Results* SLV2Results;
+
+
 #ifdef __cplusplus
 } /* extern "C" */
 #endif
-
 
 #endif /* __SLV2_TYPES_H__ */
 
