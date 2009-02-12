@@ -196,6 +196,8 @@ main(int argc, char** argv)
 
 	for (uint32_t i=0; i < host.num_ports; ++i)
 	  create_port(&host, i, default_values[i]);
+
+	free(default_values);
 	
 	/* Activate plugin and JACK */
 	slv2_instance_activate(host.instance);
@@ -226,6 +228,7 @@ main(int argc, char** argv)
 	slv2_instance_free(host.instance);
 	
 	/* Clean up */
+	free(host.ports);
 	slv2_value_free(host.input_class);
 	slv2_value_free(host.output_class);
 	slv2_value_free(host.control_class);

@@ -218,6 +218,10 @@ print_plugin(SLV2Plugin p)
 	
 	for (uint32_t i=0; i < num_ports; ++i)
 		print_port(p, i, mins, maxes, defaults);
+
+	free(mins);
+	free(maxes);
+	free(defaults);
 }
 
 

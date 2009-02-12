@@ -313,6 +313,7 @@ test_value()
 	slv2_value_free(ival_ne);
 	slv2_value_free(fval_ne);
 	slv2_value_free(uval_dup);
+	slv2_value_free(nil2);
 
 	cleanup_uris();
 	return 1;
