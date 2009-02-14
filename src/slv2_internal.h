@@ -74,9 +74,6 @@ void       slv2_plugin_get_port_float_values(SLV2Plugin  p,
 					     const char* qname,
 					     float*      values);
 
-librdf_query_results* slv2_plugin_query(SLV2Plugin  plugin,
-                                        const char* sparql_str);
-
 
 /* ********* Plugins ********* */
 
@@ -227,6 +224,14 @@ struct _SLV2ScalePoint {
 
 SLV2ScalePoint slv2_scale_point_new(SLV2Value value, SLV2Value label);
 void           slv2_scale_point_free(SLV2ScalePoint point);
+
+
+/* ********* Query Results********* */
+
+struct _SLV2Results {
+	SLV2World             world;
+	librdf_query_results* rdf_results;
+};
 
 
 /* ********* Utilities ********* */

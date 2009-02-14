@@ -22,10 +22,11 @@
 #include <stdio.h>
 #include <string.h>
 #include <limits.h>
+#include "slv2/collections.h"
 #include "slv2/port.h"
+#include "slv2/query.h"
 #include "slv2/types.h"
 #include "slv2/util.h"
-#include "slv2/collections.h"
 #include "slv2_internal.h"
 
 
@@ -113,13 +114,13 @@ slv2_port_supports_event(SLV2Plugin p,
 			"      lv2ev:supportsEvent <", slv2_value_as_uri(event), "> .\n"
 			"}", NULL);
 			
-	librdf_query_results* results = slv2_plugin_query(p, query);
-	assert(librdf_query_results_is_boolean(results));
+	SLV2Results results = slv2_plugin_query_sparql(p, query);
+	assert(librdf_query_results_is_boolean(results->rdf_results));
 
-	const bool ret = librdf_query_results_get_boolean(results);
+	const bool ret = librdf_query_results_get_boolean(results->rdf_results);
 
 	free(query);
-	librdf_free_query_results(results);
+	slv2_results_free(results);
 	
 	return ret;
 }
@@ -268,12 +269,12 @@ slv2_port_get_range(SLV2Plugin p,
 			"OPTIONAL { ?port lv2:maximum ?max }\n",
 			"\n}", NULL);
 	
-	librdf_query_results* results = slv2_plugin_query(p, query);
+	SLV2Results results = slv2_plugin_query_sparql(p, query);
 
-    while (!librdf_query_results_finished(results)) {
-		librdf_node* def_node = librdf_query_results_get_binding_value(results, 0);
-		librdf_node* min_node = librdf_query_results_get_binding_value(results, 1);
-		librdf_node* max_node = librdf_query_results_get_binding_value(results, 2);
+    while (!librdf_query_results_finished(results->rdf_results)) {
+		librdf_node* def_node = librdf_query_results_get_binding_value(results->rdf_results, 0);
+		librdf_node* min_node = librdf_query_results_get_binding_value(results->rdf_results, 1);
+		librdf_node* max_node = librdf_query_results_get_binding_value(results->rdf_results, 2);
 
 		if (def && def_node && !*def)
 			*def = slv2_value_new_librdf_node(p->world, def_node);
@@ -285,10 +286,10 @@ slv2_port_get_range(SLV2Plugin p,
 		if ((!def || *def) && (!min || *min) && (!max || *max))
 			break;
 
-		librdf_query_results_next(results);
+		librdf_query_results_next(results->rdf_results);
 	}
-			
-	librdf_free_query_results(results);
+	
+	slv2_results_free(results);
 
 	free(query);
 }
@@ -307,27 +308,24 @@ slv2_port_get_scale_points(SLV2Plugin p,
 			"       rdfs:label ?label .\n"
 			"\n} ORDER BY ?value", NULL);
 	
-	librdf_query_results* results = slv2_plugin_query(p, query);
+	SLV2Results results = slv2_plugin_query_sparql(p, query);
 	
 	SLV2ScalePoints ret = NULL;
 
-    if (!librdf_query_results_finished(results))
+    if (!slv2_results_finished(results))
 		ret = slv2_scale_points_new();
 
-    while (!librdf_query_results_finished(results)) {
-		librdf_node* value_node = librdf_query_results_get_binding_value(results, 0);
-		librdf_node* label_node = librdf_query_results_get_binding_value(results, 1);
-
-		SLV2Value value = slv2_value_new_librdf_node(p->world, value_node);
-		SLV2Value label = slv2_value_new_librdf_node(p->world, label_node);
+    while (!slv2_results_finished(results)) {
+		SLV2Value value = slv2_results_get_binding_value(results, 0);
+		SLV2Value label = slv2_results_get_binding_value(results, 1);
 
 		if (value && label)
 			raptor_sequence_push(ret, slv2_scale_point_new(value, label));
 		
-		librdf_query_results_next(results);
+		slv2_results_next(results);
 	}
 			
-	librdf_free_query_results(results);
+	slv2_results_free(results);
 
 	free(query);
 

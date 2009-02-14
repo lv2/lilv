@@ -25,6 +25,7 @@
 #include <string.h>
 #include "slv2/collections.h"
 #include "slv2/plugin.h"
+#include "slv2/query.h"
 #include "slv2/util.h"
 #include "slv2_internal.h"
 
@@ -81,53 +82,53 @@ slv2_value_from_librdf_node(SLV2World world, librdf_node* node)
 
 
 SLV2Values
-slv2_query_get_variable_bindings(SLV2World             world,
-                                 librdf_query_results* results,
-                                 int                   variable)
+slv2_query_get_variable_bindings(SLV2World   world,
+                                 SLV2Results results,
+                                 int         variable)
 {
 	SLV2Values result = NULL;
 
-    if (!librdf_query_results_finished(results))
+    if (!librdf_query_results_finished(results->rdf_results))
 		result = slv2_values_new();
 
-    while (!librdf_query_results_finished(results)) {
-        librdf_node* node = librdf_query_results_get_binding_value(results, variable);
+	while (!librdf_query_results_finished(results->rdf_results)) {
+		librdf_node* node = librdf_query_results_get_binding_value(results->rdf_results, variable);
 
 		if (node == NULL) {
 			fprintf(stderr, "SLV2 ERROR: Variable %d bound to NULL.\n", variable);
-        	librdf_query_results_next(results);
+			librdf_query_results_next(results->rdf_results);
 			continue;
 		}
-		
+
 		SLV2Value val = slv2_value_from_librdf_node(world, node);
 		if (val)
 			raptor_sequence_push(result, val);
 
 		librdf_free_node(node);
-        librdf_query_results_next(results);
-    }
+		librdf_query_results_next(results->rdf_results);
+	}
 
     return result;
 }
 
 
-size_t
-slv2_query_count_bindings(librdf_query_results* results)
+unsigned
+slv2_results_size(SLV2Results results)
 {
 	size_t count = 0;
 
-    while (!librdf_query_results_finished(results)) {
+	while (!slv2_results_finished(results)) {
 		++count;
-        librdf_query_results_next(results);
-    }
+		slv2_results_next(results);
+	}
 
     return count;
 }
 
-	
-librdf_query_results*
-slv2_plugin_query(SLV2Plugin  plugin,
-                  const char* sparql_str)
+
+SLV2Results
+slv2_plugin_query_sparql(SLV2Plugin  plugin,
+                         const char* sparql_str)
 {
 	slv2_plugin_load_if_necessary(plugin);
 
@@ -157,7 +158,58 @@ slv2_plugin_query(SLV2Plugin  plugin,
 	librdf_free_query(query);
 	free(query_str);
 
-	return results;
+	SLV2Results ret = (SLV2Results)malloc(sizeof(struct _SLV2Results));
+	ret->world = plugin->world;
+	ret->rdf_results = results;
+
+	return ret;
+}
+
+
+void
+slv2_results_free(SLV2Results results)
+{
+	librdf_free_query_results(results->rdf_results);
+	free(results);
+}
+
+
+bool
+slv2_results_finished(SLV2Results results)
+{
+	return librdf_query_results_finished(results->rdf_results);
+}
+
+
+SLV2Value
+slv2_results_get_binding_value(SLV2Results results, unsigned index)
+{
+	return slv2_value_from_librdf_node(results->world,
+			librdf_query_results_get_binding_value(
+					results->rdf_results, index));
+}
+
+
+SLV2Value
+slv2_results_get_binding_value_by_name(SLV2Results results, const char* name)
+{
+	return slv2_value_from_librdf_node(results->world,
+			librdf_query_results_get_binding_value_by_name(
+					results->rdf_results, name));
+}
+
+
+const char*
+slv2_results_get_binding_name(SLV2Results results, unsigned index)
+{
+	return librdf_query_results_get_binding_name(results->rdf_results, index);
+}
+
+
+void
+slv2_results_next(SLV2Results results)
+{
+	librdf_query_results_next(results->rdf_results);
 }
 
 
@@ -169,12 +221,12 @@ slv2_plugin_query_variable(SLV2Plugin  plugin,
 {
 	assert(variable < INT_MAX);
 
-	librdf_query_results* results = slv2_plugin_query(plugin, sparql_str);
+	SLV2Results results = slv2_plugin_query_sparql(plugin, sparql_str);
 
 	SLV2Values ret = slv2_query_get_variable_bindings(plugin->world,
 			results, (int)variable);
 	
-	librdf_free_query_results(results);
+	slv2_results_free(results);
 
 	return ret;
 }
@@ -192,13 +244,13 @@ unsigned
 slv2_plugin_query_count(SLV2Plugin  plugin,
                         const char* sparql_str)
 {
-	librdf_query_results* results = slv2_plugin_query(plugin, sparql_str);
+	SLV2Results results = slv2_plugin_query_sparql(plugin, sparql_str);
 
 	unsigned ret = 0;
 
 	if (results) {
-		ret = slv2_query_count_bindings(results);
-		librdf_free_query_results(results);
+		ret = slv2_results_size(results);
+		slv2_results_free(results);
 	}
 
 	return ret;

@@ -26,6 +26,7 @@
 #include "slv2/collections.h"
 #include "slv2/plugin.h"
 #include "slv2/pluginclass.h"
+#include "slv2/query.h"
 #include "slv2/types.h"
 #include "slv2/util.h"
 #include "slv2_internal.h"
@@ -328,18 +329,18 @@ slv2_plugin_verify(SLV2Plugin plugin)
 		"doap:license ?license ;\n"
 		"lv2:port     [ lv2:index ?port ] .\n}";
 
-	librdf_query_results* results = slv2_plugin_query(plugin, query_str);
+	SLV2Results results = slv2_plugin_query_sparql(plugin, query_str);
 
 	bool has_type    = false;
 	bool has_name    = false;
 	bool has_license = false;
 	bool has_port    = false;
 
-	while (!librdf_query_results_finished(results)) {
-		librdf_node* type_node = librdf_query_results_get_binding_value(results, 0);
-		librdf_node* name_node = librdf_query_results_get_binding_value(results, 1);
-		librdf_node* license_node = librdf_query_results_get_binding_value(results, 2);
-		librdf_node* port_node = librdf_query_results_get_binding_value(results, 3);
+	while (!librdf_query_results_finished(results->rdf_results)) {
+		librdf_node* type_node = librdf_query_results_get_binding_value(results->rdf_results, 0);
+		librdf_node* name_node = librdf_query_results_get_binding_value(results->rdf_results, 1);
+		librdf_node* license_node = librdf_query_results_get_binding_value(results->rdf_results, 2);
+		librdf_node* port_node = librdf_query_results_get_binding_value(results->rdf_results, 3);
 
 		if (librdf_node_get_type(type_node) == LIBRDF_NODE_TYPE_RESOURCE)
 			has_type = true;
@@ -358,10 +359,10 @@ slv2_plugin_verify(SLV2Plugin plugin)
 		librdf_free_node(license_node);
 		librdf_free_node(port_node);
 
-		librdf_query_results_next(results);
+		librdf_query_results_next(results->rdf_results);
 	}
 
-	librdf_free_query_results(results);
+	slv2_results_free(results);
 
 	if ( ! (has_type && has_name && has_license && has_port) ) {
 		fprintf(stderr, "Invalid LV2 Plugin %s\n",
@@ -828,14 +829,14 @@ slv2_plugin_get_uis(SLV2Plugin plugin)
 		"     uiext:binary ?binary .\n"
 		"}\n";
 
-	librdf_query_results* results = slv2_plugin_query(plugin, query_str);
+	SLV2Results results = slv2_plugin_query_sparql(plugin, query_str);
 
 	SLV2UIs result = slv2_uis_new();
 
-	while (!librdf_query_results_finished(results)) {
-		librdf_node* uri_node    = librdf_query_results_get_binding_value(results, 0);
-		librdf_node* type_node   = librdf_query_results_get_binding_value(results, 1);
-		librdf_node* binary_node = librdf_query_results_get_binding_value(results, 2);
+	while (!librdf_query_results_finished(results->rdf_results)) {
+		librdf_node* uri_node    = librdf_query_results_get_binding_value(results->rdf_results, 0);
+		librdf_node* type_node   = librdf_query_results_get_binding_value(results->rdf_results, 1);
+		librdf_node* binary_node = librdf_query_results_get_binding_value(results->rdf_results, 2);
 
 		SLV2UI ui = slv2_ui_new(plugin->world,
 				librdf_node_get_uri(uri_node),
@@ -848,10 +849,10 @@ slv2_plugin_get_uis(SLV2Plugin plugin)
 		librdf_free_node(type_node);
 		librdf_free_node(binary_node);
 
-		librdf_query_results_next(results);
+		librdf_query_results_next(results->rdf_results);
 	}
 
-	librdf_free_query_results(results);
+	slv2_results_free(results);
 
 	if (slv2_uis_size(result) > 0) {
 		return result;

@@ -205,6 +205,20 @@ print_plugin(SLV2Plugin p)
 		printf("\n");
 	slv2_values_free(features);
 	
+
+	/* Presets */
+
+	SLV2Results presets = slv2_plugin_query_sparql(p, "\
+PREFIX lv2p: <http://lv2plug.in/ns/dev/presets#> \
+PREFIX dc:  <http://dublincore.org/documents/dcmi-namespace/> \
+SELECT ?name WHERE { <> lv2p:hasPreset ?preset . ?preset dc:title ?name }");
+	if (!slv2_results_finished(presets))
+		printf("\tPresets: \n");
+	for (; !slv2_results_finished(presets); slv2_results_next(presets)) {
+		SLV2Value name = slv2_results_get_binding_value(presets, 0);
+		printf("\t         %s\n", slv2_value_as_string(name));
+	}
+	slv2_results_free(presets);
 	
 	/* Ports */
 
