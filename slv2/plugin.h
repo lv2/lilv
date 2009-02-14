@@ -210,9 +210,9 @@ slv2_plugin_get_value_by_qname_i18n(SLV2Plugin  p,
  * Time = Query
  */
 SLV2Values
-slv2_plugin_get_value_for_subject(SLV2Plugin  p,
-                                  SLV2Value   subject_uri,
-                                  SLV2Value   predicate_uri);
+slv2_plugin_get_value_for_subject(SLV2Plugin p,
+                                  SLV2Value  subject_uri,
+                                  SLV2Value  predicate_uri);
 
 
 /** Return whether a feature is supported by a plugin.

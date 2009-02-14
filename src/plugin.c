@@ -404,23 +404,11 @@ slv2_plugin_get_value(SLV2Plugin p,
 	char* query = NULL;
 	
 	/* Hack around broken RASQAL, full URI predicates don't work :/ */
-
-	if (predicate->type == SLV2_VALUE_URI) {
-		query = slv2_strjoin(
-			"PREFIX slv2predicate: <", slv2_value_as_string(predicate), ">\n",
-			"SELECT DISTINCT ?value WHERE {\n"
-			"<> slv2predicate: ?value .\n"
-			"}\n", NULL);
-	} else if (predicate->type == SLV2_VALUE_QNAME) {
-    	query = slv2_strjoin(
-			"SELECT DISTINCT ?value WHERE {\n"
-			"<> ", slv2_value_as_string(predicate), " ?value .\n"
-			"}\n", NULL);
-	} else {
-		fprintf(stderr, "slv2_plugin_get_value error: "
-				"predicate is not a URI or QNAME\n");
-		return NULL;
-	}
+	query = slv2_strjoin(
+		"PREFIX slv2predicate: <", slv2_value_as_string(predicate), ">\n",
+		"SELECT DISTINCT ?value WHERE {\n"
+		"<> slv2predicate: ?value .\n"
+		"}\n", NULL);
 
 	SLV2Values result = slv2_plugin_query_variable(p, query, 0);
 	
@@ -480,27 +468,16 @@ slv2_plugin_get_value_for_subject(SLV2Plugin p,
 
 	char* query = NULL;
 
-	/* Hack around broken RASQAL, full URI predicates don't work :/ */
+
 
 	char* subject_token = slv2_value_get_turtle_token(subject);
 
-	if (predicate->type == SLV2_VALUE_URI) {
-		query = slv2_strjoin(
-			"PREFIX slv2predicate: <", slv2_value_as_string(predicate), ">\n",
-			"SELECT DISTINCT ?value WHERE {\n",
-			subject_token, " slv2predicate: ?value .\n"
-			"}\n", NULL);
-	} else if (predicate->type == SLV2_VALUE_QNAME) {
-    	query = slv2_strjoin(
-			"SELECT DISTINCT ?value WHERE {\n",
-			subject_token, " ", slv2_value_as_string(predicate), " ?value .\n"
-			"}\n", NULL);
-	} else {
-		fprintf(stderr, "slv2_plugin_get_value error: "
-				"predicate is not a URI or QNAME\n");
-		free(subject_token);
-		return NULL;
-	}
+	/* Hack around broken RASQAL, full URI predicates don't work :/ */
+	query = slv2_strjoin(
+		"PREFIX slv2predicate: <", slv2_value_as_string(predicate), ">\n",
+		"SELECT DISTINCT ?value WHERE {\n",
+		subject_token, " slv2predicate: ?value .\n"
+		"}\n", NULL);
 
 	SLV2Values result = slv2_plugin_query_variable(p, query, 0);
 	
@@ -514,6 +491,7 @@ slv2_plugin_get_value_for_subject(SLV2Plugin p,
 SLV2Values
 slv2_plugin_get_properties(SLV2Plugin p)
 {
+	// FIXME: APIBREAK: This predicate does not even exist.  Remove this function.
 	return slv2_plugin_get_value_by_qname(p, "lv2:pluginProperty");
 }
 
@@ -521,6 +499,7 @@ slv2_plugin_get_properties(SLV2Plugin p)
 SLV2Values
 slv2_plugin_get_hints(SLV2Plugin p)
 {
+	// FIXME: APIBREAK: This predicate does not even exist.  Remove this function.
 	return slv2_plugin_get_value_by_qname(p, "lv2:pluginHint");
 }
 

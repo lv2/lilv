@@ -99,18 +99,6 @@ load_all_bundles()
 	return 1;
 }
 
-int
-load_bundle()
-{
-	SLV2Value uri;
-	if (!init_world())
-		return 0;
-	uri = slv2_value_new_uri(world, bundle_dir_uri);
-	slv2_world_load_bundle(world, uri);
-	slv2_value_free(uri);
-	return 1;
-}
-
 void
 create_bundle(char *manifest, char *content)
 {
@@ -121,13 +109,10 @@ create_bundle(char *manifest, char *content)
 }
 
 int
-start_bundle(char *manifest, char *content, int load_all)
+start_bundle(char *manifest, char *content)
 {
 	create_bundle(manifest, content);
-	if (load_all)
-		return load_all_bundles();
-	else
-		return load_bundle();
+	return load_all_bundles();
 }
 
 void
@@ -223,8 +208,7 @@ test_value()
 			"lv2:port [ "
 			"  a lv2:ControlPort ; a lv2:InputPort ; "
 			"  lv2:index 0 ; lv2:symbol \"foo\" ; lv2:name \"Foo\" ; "
-			"] .",
-			1))
+			"] ."))
 		return 0;
 
 	init_uris();
@@ -383,7 +367,7 @@ discovery_verify_plugin(SLV2Plugin plugin)
 }
 
 int
-test_discovery_variant(int load_all)
+test_discovery()
 {
 	SLV2Plugins plugins;
 
@@ -394,8 +378,7 @@ test_discovery_variant(int load_all)
 			PLUGIN_NAME("Test plugin") " ; "
 			LICENSE_GPL " ; "
 			"lv2:port [ a lv2:ControlPort ; a lv2:InputPort ;"
-			" lv2:index 0 ; lv2:symbol \"foo\" ; lv2:name \"bar\" ; ] .",
-			load_all))
+			" lv2:index 0 ; lv2:symbol \"foo\" ; lv2:name \"bar\" ; ] ."))
 		return 0;
 
 	init_uris();
@@ -466,17 +449,6 @@ test_discovery_variant(int load_all)
 	return 1;
 }
 
-int
-test_discovery_load_bundle()
-{
-	return test_discovery_variant(0);
-}
-
-int
-test_discovery_load_all()
-{
-	return test_discovery_variant(1);
-}
 
 /*****************************************************************************/
 
@@ -490,8 +462,7 @@ test_verify()
 			PLUGIN_NAME("Test plugin") " ; "
 			LICENSE_GPL " ; "
 			"lv2:port [ a lv2:ControlPort ; a lv2:InputPort ;"
-			" lv2:index 0 ; lv2:symbol \"foo\" ; lv2:name \"bar\" ] .",
-			1))
+			" lv2:index 0 ; lv2:symbol \"foo\" ; lv2:name \"bar\" ] ."))
 		return 0;
 
 	init_uris();
@@ -512,8 +483,7 @@ test_no_verify()
 	if (!start_bundle(MANIFEST_PREFIXES
 			":plug a lv2:Plugin ; lv2:binary <foo.so> ; rdfs:seeAlso <plugin.ttl> .\n",
 			BUNDLE_PREFIXES
-			":plug a lv2:Plugin . ",
-			1))
+			":plug a lv2:Plugin . "))
 		return 0;
 
 	init_uris();
@@ -540,8 +510,7 @@ test_classes()
 			"lv2:port [ "
 			"  a lv2:ControlPort ; a lv2:InputPort ; "
 			"  lv2:index 0 ; lv2:symbol \"foo\" ; lv2:name \"Foo\" ; "
-			"] .",
-			1))
+			"] ."))
 		return 0;
 
 	init_uris();
@@ -603,8 +572,7 @@ test_plugin()
 			"  lv2:index 2 ; lv2:symbol \"latency\" ; lv2:name \"Latency\" ; "
 			"  lv2:portProperty lv2:reportsLatency "
 			"] . \n"
-			":thing doap:name \"Something else\" .\n",
-			1))
+			":thing doap:name \"Something else\" .\n"))
 		return 0;
 
 	init_uris();
@@ -721,7 +689,11 @@ test_plugin()
 	TEST_ASSERT(thing_name);
 	TEST_ASSERT(slv2_value_is_string(thing_name));
 	TEST_ASSERT(!strcmp(slv2_value_as_string(thing_name), "Something else"));
+	
+	SLV2UIs uis = slv2_plugin_get_uis(plug);
+	TEST_ASSERT(slv2_uis_size(uis) == 0);
 
+	slv2_uis_free(uis);
 	slv2_values_free(thing_names);
 	slv2_value_free(thing_uri);
 	slv2_value_free(name_p);
@@ -758,8 +730,7 @@ test_port()
 			"  lv2:index 1 ; lv2:symbol \"event_in\" ; "
 			"  lv2:name \"Event Input\" ; "
      		"  lv2ev:supportsEvent <http://example.org/event> "
-			"] .",
-			1))
+			"] ."))
 		return 0;
 
 	init_uris();
@@ -921,8 +892,7 @@ test_ui()
 			"  lv2ui:optionalFeature lv2ui:ext_presets . "
 			":ui2 a lv2ui:GtkUI ; lv2ui:binary <ui2.so> . "
 			":ui3 a lv2ui:GtkUI ; lv2ui:binary <ui3.so> . "
-			":ui4 a lv2ui:GtkUI ; lv2ui:binary <ui4.so> . ",
-			1))
+			":ui4 a lv2ui:GtkUI ; lv2ui:binary <ui4.so> . "))
 		return 0;
 
 	init_uris();
@@ -997,10 +967,9 @@ static struct TestCase tests[] = {
 	TEST_CASE(utils),
 	TEST_CASE(value),
 	TEST_CASE(values),
-	/* TEST_CASE(discovery_load_bundle), */
 	TEST_CASE(verify),
 	TEST_CASE(no_verify),
-	TEST_CASE(discovery_load_all),
+	TEST_CASE(discovery),
 	TEST_CASE(classes),
 	TEST_CASE(plugin),
 	TEST_CASE(port),

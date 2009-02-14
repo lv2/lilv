@@ -23,7 +23,6 @@
 extern "C" {
 #endif
 
-#include <assert.h>
 #include <stddef.h>
 #include "lv2.h"
 #include "slv2/plugin.h"
@@ -96,9 +95,6 @@ slv2_instance_free(SLV2Instance instance);
 static inline const char*
 slv2_instance_get_uri(SLV2Instance instance)
 {
-	assert(instance);
-	assert(instance->lv2_descriptor);
-	
 	return instance->lv2_descriptor->URI;
 }
 
@@ -113,10 +109,6 @@ slv2_instance_connect_port(SLV2Instance instance,
                            uint32_t     port_index,
                            void*        data_location)
 {
-	assert(instance);
-	assert(instance->lv2_descriptor);
-	assert(instance->lv2_descriptor->connect_port);
-	
 	instance->lv2_descriptor->connect_port
 		(instance->lv2_handle, port_index, data_location);
 }
@@ -131,9 +123,6 @@ slv2_instance_connect_port(SLV2Instance instance,
 static inline void
 slv2_instance_activate(SLV2Instance instance)
 {
-	assert(instance);
-	assert(instance->lv2_descriptor);
-	
 	if (instance->lv2_descriptor->activate)
 		instance->lv2_descriptor->activate(instance->lv2_handle);
 }
@@ -148,10 +137,6 @@ static inline void
 slv2_instance_run(SLV2Instance instance,
                   uint32_t     sample_count)
 {
-	assert(instance);
-	assert(instance->lv2_descriptor);
-	assert(instance->lv2_handle);
-
 	/*if (instance->lv2_descriptor->run)*/
 		instance->lv2_descriptor->run(instance->lv2_handle, sample_count);
 }
@@ -165,10 +150,6 @@ slv2_instance_run(SLV2Instance instance,
 static inline void
 slv2_instance_deactivate(SLV2Instance instance)
 {
-	assert(instance);
-	assert(instance->lv2_descriptor);
-	assert(instance->lv2_handle);
-	
 	if (instance->lv2_descriptor->deactivate)
 		instance->lv2_descriptor->deactivate(instance->lv2_handle);
 }
@@ -183,9 +164,6 @@ static inline const void*
 slv2_instance_get_extension_data(SLV2Instance instance,
                                  const char*  uri)
 {
-	assert(instance);
-	assert(instance->lv2_descriptor);
-	
 	if (instance->lv2_descriptor->extension_data)
 		return instance->lv2_descriptor->extension_data(uri);
 	else
@@ -203,9 +181,6 @@ slv2_instance_get_extension_data(SLV2Instance instance,
 static inline const LV2_Descriptor*
 slv2_instance_get_descriptor(SLV2Instance instance)
 {
-	assert(instance);
-	assert(instance->lv2_descriptor);
-	
 	return instance->lv2_descriptor;
 }
 
@@ -220,9 +195,6 @@ slv2_instance_get_descriptor(SLV2Instance instance)
 static inline LV2_Handle
 slv2_instance_get_handle(SLV2Instance instance)
 {
-	assert(instance);
-	assert(instance->lv2_descriptor);
-	
 	return instance->lv2_handle;
 }
 

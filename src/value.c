@@ -208,8 +208,8 @@ slv2_value_equals(SLV2Value value, SLV2Value other)
 	switch (value->type) {
 	case SLV2_VALUE_URI:
 		return (librdf_uri_equals(value->val.uri_val, other->val.uri_val) != 0);
-	case SLV2_VALUE_QNAME:
 	case SLV2_VALUE_STRING:
+	case SLV2_VALUE_QNAME_UNUSED:
 		return ! strcmp(value->str_val, other->str_val);
 	case SLV2_VALUE_INT:
 		return (value->val.int_val == other->val.int_val);
@@ -236,8 +236,8 @@ slv2_value_get_turtle_token(SLV2Value value)
 		result = calloc(len, sizeof(char));
 		snprintf(result, len, "<%s>", value->str_val);
 		break;
-	case SLV2_VALUE_QNAME:
 	case SLV2_VALUE_STRING:
+	case SLV2_VALUE_QNAME_UNUSED:
 		result = strdup(value->str_val);
 		break;
 	case SLV2_VALUE_INT:
