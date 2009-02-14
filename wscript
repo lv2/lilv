@@ -3,7 +3,7 @@ import autowaf
 import Options
 
 # Version of this package (even if built as a child)
-SLV2_VERSION = '0.6.3'
+SLV2_VERSION = '0.6.4'
 
 # Library version (UNIX style major, minor, micro)
 # major increment <=> incompatible changes
