@@ -24,6 +24,7 @@ extern "C" {
 #endif
 
 #include <stddef.h>
+#include <stdlib.h>
 #include "lv2.h"
 #include "slv2/plugin.h"
 #include "slv2/port.h"
