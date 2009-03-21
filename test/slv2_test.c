@@ -574,7 +574,7 @@ test_plugin()
 			"] . \n"
 			":thing doap:name \"Something else\" .\n"))
 		return 0;
-
+	
 	init_uris();
 	SLV2Plugins plugins = slv2_world_get_all_plugins(world);
 	SLV2Plugin plug = slv2_plugins_get_by_uri(plugins, plugin_uri_value);
@@ -692,6 +692,17 @@ test_plugin()
 	
 	SLV2UIs uis = slv2_plugin_get_uis(plug);
 	TEST_ASSERT(slv2_uis_size(uis) == 0);
+	
+	SLV2Results results = slv2_plugin_query_sparql(plug,
+"SELECT ?name WHERE { <> doap:maintainer [ foaf:name ?name ] }");
+	TEST_ASSERT(!slv2_results_finished(results));
+	TEST_ASSERT(!strcmp(slv2_results_get_binding_name(results, 0), "name"));
+	TEST_ASSERT(!strcmp(
+			slv2_value_as_string(slv2_results_get_binding_value(results, 0)),
+			"David Robillard"));
+	TEST_ASSERT(!strcmp(
+			slv2_value_as_string(slv2_results_get_binding_value_by_name(results, "name")),
+			"David Robillard"));
 
 	slv2_uis_free(uis);
 	slv2_values_free(thing_names);

@@ -220,6 +220,7 @@ SELECT ?name WHERE { <> lv2p:hasPreset ?preset . ?preset dc:title ?name }");
 	}
 	slv2_results_free(presets);
 	
+
 	/* Ports */
 
 	const uint32_t num_ports = slv2_plugin_get_num_ports(p);
