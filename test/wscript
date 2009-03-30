@@ -14,5 +14,5 @@ def build(bld):
 			obj.libs         = 'gcov'
 			obj.target       = i
 			obj.install_path = ''
-			obj.ccflags      = '-fprofile-arcs -ftest-coverage'
+			obj.ccflags      = [ '-fprofile-arcs',  '-ftest-coverage' ]
 

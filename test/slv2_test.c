@@ -697,12 +697,14 @@ test_plugin()
 "SELECT ?name WHERE { <> doap:maintainer [ foaf:name ?name ] }");
 	TEST_ASSERT(!slv2_results_finished(results));
 	TEST_ASSERT(!strcmp(slv2_results_get_binding_name(results, 0), "name"));
-	TEST_ASSERT(!strcmp(
-			slv2_value_as_string(slv2_results_get_binding_value(results, 0)),
-			"David Robillard"));
-	TEST_ASSERT(!strcmp(
-			slv2_value_as_string(slv2_results_get_binding_value_by_name(results, "name")),
-			"David Robillard"));
+	SLV2Value val = slv2_results_get_binding_value(results, 0);
+	TEST_ASSERT(!strcmp(slv2_value_as_string(val), "David Robillard"));
+	slv2_value_free(val);
+	val = slv2_results_get_binding_value_by_name(results, "name");
+	TEST_ASSERT(!strcmp(slv2_value_as_string(val), "David Robillard"));
+	slv2_value_free(val);
+
+	slv2_results_free(results);
 
 	slv2_uis_free(uis);
 	slv2_values_free(thing_names);

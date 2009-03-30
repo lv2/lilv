@@ -104,7 +104,7 @@ def build(bld):
 		obj.name         = 'libslv2_static'
 		obj.target       = 'slv2_static'
 		obj.install_path = ''
-		obj.ccflags      = '-fprofile-arcs -ftest-coverage'
+		obj.ccflags      = [ '-fprofile-arcs',  '-ftest-coverage' ]
 
 	# Utilities
 	utils = '''

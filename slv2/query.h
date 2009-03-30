@@ -54,6 +54,7 @@ slv2_results_finished(SLV2Results results);
 
 /** Return a binding in \a results by index.
  * Indices correspond to selected variables in the query in order of appearance.
+ * Returned value must be freed by caller with slv2_value_free.
  * \return NULL if binding value can not be expressed as an SLV2Value.
  */
 SLV2Value
@@ -62,6 +63,7 @@ slv2_results_get_binding_value(SLV2Results results, unsigned index);
 
 /** Return a binding in \a results by name.
  * \a name corresponds to the name of the SPARQL variable (without the '?').
+ * Returned value must be freed by caller with slv2_value_free.
  * \return NULL if binding value can not be expressed as an SLV2Value.
  */
 SLV2Value
@@ -69,6 +71,7 @@ slv2_results_get_binding_value_by_name(SLV2Results results, const char* name);
 
 
 /** Return the name of a binding in \a results.
+ * Returned value is shared and must not be freed by caller.
  * Indices correspond to selected variables in the query in order of appearance.
  */
 const char*

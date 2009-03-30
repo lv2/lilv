@@ -262,6 +262,7 @@ print_usage()
 int
 main(int argc, char** argv)
 {
+	int ret = 0;
 	setlocale (LC_ALL, "");
 
 	SLV2World world = slv2_world_new();
@@ -272,18 +273,22 @@ main(int argc, char** argv)
 
 	if (argc != 2) {
 		print_usage();
-		return -1;
+		ret = 1;
+		goto done;
 	}
 
 	if (!strcmp(argv[1], "--version")) {
 		print_version();
-		return 0;
+		ret = 0;
+		goto done;
 	} else if (!strcmp(argv[1], "--help")) {
 		print_usage();
-		return 0;
+		ret = 0;
+		goto done;
 	} else if (argv[1][0] == '-') {
 		print_usage();
-		return -1;
+		ret = 2;
+		goto done;
 	}
 
 	SLV2Plugins plugins = slv2_world_get_all_plugins(world);
@@ -297,9 +302,15 @@ main(int argc, char** argv)
 		fprintf(stderr, "Plugin not found.\n");
 	}
 
+	ret = (p != NULL ? 0 : -1);
+	
 	slv2_value_free(uri);
 	slv2_plugins_free(world, plugins);
-	slv2_world_free(world);
 
-	return (p != NULL ? 0 : -1);
+done:
+	slv2_value_free(event_class);
+	slv2_value_free(control_class);
+	slv2_world_free(world);
+	return ret;
 }
+
