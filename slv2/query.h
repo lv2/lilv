@@ -23,6 +23,10 @@
 extern "C" {
 #endif
 
+/** \addtogroup slv2_data
+ * @{
+ */
+
 
 /** Query a plugin with an arbitrary SPARQL string.
  */
@@ -84,9 +88,10 @@ void
 slv2_results_next(SLV2Results results);
 
 
+/** @} */
+
 #ifdef __cplusplus
 } /* extern "C" */
 #endif
-
 
 #endif /* __SLV2_QUERY_H__ */

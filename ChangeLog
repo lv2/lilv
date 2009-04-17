@@ -1,3 +1,11 @@
+slv2 (0.6.4) unstable; urgency=low
+
+  * Add generic query interface to allow arbitrary querying of data
+  * Combine similar headers (reduce code duplication)
+  * Upgrade to waf 1.5.4
+ 
+ -- Dave Robillard <dave@drobilla.net>  Thu, 16 Apr 2009 20:13:08 -0400
+
 slv2 (0.6.3) unstable; urgency=low
 
   * Fix illegal output of slv2_value_get_turtle_token for floats.
