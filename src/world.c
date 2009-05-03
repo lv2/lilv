@@ -16,7 +16,7 @@
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "wafconfig.h"
+#include "slv2-config.h"
 
 #define _XOPEN_SOURCE 500
 #include <string.h>

@@ -52,7 +52,7 @@ def configure(conf):
 	autowaf.check_pkg(conf, 'jack', uselib_store='JACK', atleast_version='0.107.0', mandatory=False)
 	conf.env.append_value('CCFLAGS', '-std=c99')
 	conf.define('SLV2_VERSION', SLV2_VERSION)
-	conf.write_config_header('wafconfig.h')
+	conf.write_config_header('slv2-config.h')
 	
 	conf.env['USE_JACK'] = conf.env['HAVE_JACK'] and not Options.options.no_jack
 	conf.env['BUILD_TESTS'] = Options.options.build_tests
