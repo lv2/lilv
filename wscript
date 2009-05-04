@@ -142,6 +142,7 @@ def build(bld):
 	autowaf.build_dox(bld, 'SLV2', SLV2_VERSION, srcdir, blddir)
 	bld.install_files('${HTMLDIR}', blddir + '/default/doc/html/*')
 	bld.install_files('${MANDIR}/man3', blddir + '/default/doc/man/man3/*')
+	bld.install_files('${MANDIR}/man1', 'doc/*.1')
 
 def shutdown():
 	autowaf.shutdown()
