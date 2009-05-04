@@ -53,23 +53,23 @@ def configure(conf):
 	conf.env.append_value('CCFLAGS', '-std=c99')
 	conf.define('SLV2_VERSION', SLV2_VERSION)
 	conf.write_config_header('slv2-config.h')
-	
+
 	conf.env['USE_JACK'] = conf.env['HAVE_JACK'] and not Options.options.no_jack
 	conf.env['BUILD_TESTS'] = Options.options.build_tests
-	
+
 	autowaf.print_summary(conf)
 	autowaf.display_header('SLV2 Configuration')
 	autowaf.display_msg(conf, "Jack clients", str(conf.env['USE_JACK']))
 	autowaf.display_msg(conf, "Unit tests", str(conf.env['BUILD_TESTS']))
 	print
-		
+
 def build(bld):
 	# C Headers
 	bld.install_files('${INCLUDEDIR}/slv2', 'slv2/*.h')
 
 	# Pkgconfig file
 	autowaf.build_pc(bld, 'SLV2', SLV2_VERSION, ['REDLAND'])
-	
+
 	lib_source = '''
 		src/collections.c
 		src/plugin.c
@@ -96,7 +96,7 @@ def build(bld):
 	obj.vnum         = SLV2_LIB_VERSION
 	obj.install_path = '${LIBDIR}'
 	autowaf.use_lib(bld, obj, 'REDLAND LV2CORE')
-	
+
 	# Static library (for unit test code coverage)
 	if bld.env['BUILD_TESTS']:
 		obj = bld.new_task_gen('cc', 'staticlib')
@@ -134,10 +134,10 @@ def build(bld):
 			obj.uselib_local = 'libslv2'
 			obj.target       = i
 			obj.install_path = '${BINDIR}'
-	
+
 	# Unit tests
 	bld.add_subdirs('test')
-	
+
 	# Documentation
 	autowaf.build_dox(bld, 'SLV2', SLV2_VERSION, srcdir, blddir)
 	bld.install_files('${HTMLDIR}', blddir + '/default/doc/html/*')

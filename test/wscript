@@ -2,7 +2,7 @@
 
 def build(bld):
 	tests = '''
-		slv2_test 
+		slv2_test
 	'''
 	if bld.env['BUILD_TESTS']:
 		for i in tests.split():
