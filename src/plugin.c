@@ -45,7 +45,7 @@ slv2_plugin_new(SLV2World world, SLV2Value uri, librdf_uri* bundle_uri)
 	plugin->binary_uri = NULL;
 	plugin->plugin_class = NULL;
 	plugin->data_uris = slv2_values_new();
-	plugin->ports = raptor_new_sequence((void (*)(void*))&slv2_port_free, NULL);
+	plugin->ports = NULL;
 	plugin->storage = NULL;
 	plugin->rdf = NULL;
 
@@ -66,7 +66,8 @@ slv2_plugin_free(SLV2Plugin p)
 	slv2_value_free(p->binary_uri);
 	p->binary_uri = NULL;
 	
-	raptor_free_sequence(p->ports);
+	if (p->ports)
+		raptor_free_sequence(p->ports);
 	p->ports = NULL;
 
 	if (p->rdf) {
@@ -113,15 +114,91 @@ slv2_plugin_load_if_necessary(SLV2Plugin p)
 }
 
 
+/* private */
+void
+slv2_plugin_load_ports_if_necessary(SLV2Plugin p)
+{
+	if (!p->rdf)
+		slv2_plugin_load(p);
+
+	if (!p->ports) {
+		p->ports = raptor_new_sequence((void (*)(void*))&slv2_port_free, NULL);
+
+		const unsigned char* query = (const unsigned char*)
+			"PREFIX : <http://lv2plug.in/ns/lv2core#>\n"
+			"SELECT DISTINCT ?type ?symbol ?index WHERE {\n"
+			"<>    :port    ?port .\n"
+			"?port a        ?type ;\n"
+			"      :symbol  ?symbol ;\n"
+			"      :index   ?index .\n"
+			"} ORDER BY (?index)";
+
+		librdf_query* q = librdf_new_query(p->world->world, "sparql",
+				NULL, query, slv2_value_as_librdf_uri(p->plugin_uri));
+
+		librdf_query_results* results = librdf_query_execute(q, p->rdf);
+
+		int num_ports  = 0;
+		int last_index = -1;
+
+		while (!librdf_query_results_finished(results)) {
+
+			librdf_node* type_node = librdf_query_results_get_binding_value(results, 0);
+			librdf_node* symbol_node = librdf_query_results_get_binding_value(results, 1);
+			librdf_node* index_node = librdf_query_results_get_binding_value(results, 2);
+
+			assert(librdf_node_is_literal(symbol_node));
+			assert(librdf_node_is_literal(index_node));
+
+			const char* symbol = (const char*)librdf_node_get_literal_value(symbol_node);
+			const char* index = (const char*)librdf_node_get_literal_value(index_node);
+
+			//printf("PORT: %s %s %s\n", type, index, symbol);
+
+			const int this_index = atoi(index);
+			SLV2Port  this_port  = NULL;
+
+			// ORDER BY guarantees order
+			assert(this_index <= num_ports);
+
+			// Create a new SLV2Port, and add to template
+			if (this_index == num_ports) {
+				assert(this_index == last_index + 1);
+				this_port = slv2_port_new(p->world, (unsigned)atoi(index), symbol);
+				raptor_sequence_push(p->ports, this_port);
+				++num_ports;
+				++last_index;
+
+			// More information about a port we already created
+			} else if (this_index < num_ports) {
+				this_port = slv2_plugin_get_port_by_index(p, this_index);
+			}
+
+			if (this_port) {
+				raptor_sequence_push(this_port->classes,
+						slv2_value_new_librdf_uri(p->world, librdf_node_get_uri(type_node)));
+			}
+
+			librdf_free_node(type_node);
+			librdf_free_node(symbol_node);
+			librdf_free_node(index_node);
+
+			librdf_query_results_next(results);
+		}
+
+		librdf_free_query_results(results);
+		librdf_free_query(q);
+	}
+}
+
+
 void
 slv2_plugin_load(SLV2Plugin p)
 {
-	//printf("Loading cache for %s\n", (const char*)librdf_uri_as_string(p->plugin_uri));
+	//printf("Loading cache for %s\n", slv2_value_as_string(p->plugin_uri));
 
 	if (!p->storage) {
 		assert(!p->rdf);
-		//p->storage = librdf_new_storage(p->world->world, "hashes", NULL,
-		//		"hash-type='memory'");
 		p->storage = librdf_new_storage(p->world->world, "trees", NULL, NULL);
 		if (!p->storage)
 			p->storage = librdf_new_storage(p->world->world, "memory", NULL, NULL);
@@ -136,141 +213,6 @@ slv2_plugin_load(SLV2Plugin p)
 		librdf_parser_parse_into_model(p->world->parser, data_uri, NULL, p->rdf);
 		librdf_free_uri(data_uri);
 	}
-
-	// Load plugin_class
-	const unsigned char* query = (const unsigned char*)
-		"SELECT DISTINCT ?class WHERE { <> a ?class }";
-	
-	librdf_query* q = librdf_new_query(p->world->world, "sparql",
-		NULL, query, slv2_value_as_librdf_uri(p->plugin_uri));
-	
-	librdf_query_results* results = librdf_query_execute(q, p->rdf);
-		
-	while (!librdf_query_results_finished(results)) {
-		librdf_node* class_node = librdf_query_results_get_binding_value(results, 0);
-		librdf_uri*  class_uri  = librdf_node_get_uri(class_node);
-
-		if (!class_uri) {
-			librdf_query_results_next(results);
-			continue;
-		}
-
-		SLV2Value class = slv2_value_new_librdf_uri(p->world, class_uri);
-		
-		if ( ! slv2_value_equals(class, p->world->lv2_plugin_class->uri)) {
-
-			SLV2PluginClass plugin_class = slv2_plugin_classes_get_by_uri(
-					p->world->plugin_classes, class);
-
-			librdf_free_node(class_node);
-
-			if (plugin_class) {
-				p->plugin_class = plugin_class;
-				slv2_value_free(class);
-				break;
-			}
-		}
-
-		slv2_value_free(class);
-		librdf_query_results_next(results);
-	}
-	
-	if (p->plugin_class == NULL)
-		p->plugin_class = p->world->lv2_plugin_class;
-
-	librdf_free_query_results(results);
-	librdf_free_query(q);
-	
-	// Load ports
-	query = (const unsigned char*)
-		"PREFIX : <http://lv2plug.in/ns/lv2core#>\n"
-		"SELECT DISTINCT ?type ?symbol ?index WHERE {\n"
-		"<>    :port    ?port .\n"
-		"?port a        ?type ;\n"
-		"      :symbol  ?symbol ;\n"
-		"      :index   ?index .\n"
-		"} ORDER BY (?index)";
-	
-	q = librdf_new_query(p->world->world, "sparql",
-		NULL, query, slv2_value_as_librdf_uri(p->plugin_uri));
-	
-	results = librdf_query_execute(q, p->rdf);
-
-	int num_ports = 0;
-	int last_index = -1;
-
-	while (!librdf_query_results_finished(results)) {
-	
-		librdf_node* type_node = librdf_query_results_get_binding_value(results, 0);
-		librdf_node* symbol_node = librdf_query_results_get_binding_value(results, 1);
-		librdf_node* index_node = librdf_query_results_get_binding_value(results, 2);
-
-		assert(librdf_node_is_literal(symbol_node));
-		assert(librdf_node_is_literal(index_node));
-
-		const char* symbol = (const char*)librdf_node_get_literal_value(symbol_node);
-		const char* index = (const char*)librdf_node_get_literal_value(index_node);
-
-		//printf("PORT: %s %s %s\n", type, index, symbol);
-
-		const int this_index = atoi(index);
-		SLV2Port  this_port  = NULL;
-		
-		// ORDER BY guarantees order
-		assert(this_index <= num_ports);
-
-		// Create a new SLV2Port, and add to template
-		if (this_index == num_ports) {
-			assert(this_index == last_index + 1);
-			this_port = slv2_port_new(p->world, (unsigned)atoi(index), symbol);
-			raptor_sequence_push(p->ports, this_port);
-			++num_ports;
-			++last_index;
-
-		// More information about a port we already created
-		} else if (this_index < num_ports) {
-			this_port = slv2_plugin_get_port_by_index(p, this_index);
-		}
-			
-		if (this_port) {
-			raptor_sequence_push(this_port->classes,
-					slv2_value_new_librdf_uri(p->world, librdf_node_get_uri(type_node)));
-		}
-
-		librdf_free_node(type_node);
-		librdf_free_node(symbol_node);
-		librdf_free_node(index_node);
-		
-		librdf_query_results_next(results);
-	}
-	
-	librdf_free_query_results(results);
-	librdf_free_query(q);
-
-	// Load binary URI
-	query = (const unsigned char*)
-		"PREFIX : <http://lv2plug.in/ns/lv2core#>\n"
-		"SELECT ?binary WHERE { <> :binary ?binary . }";
-	
-	q = librdf_new_query(p->world->world, "sparql",
-		NULL, query, slv2_value_as_librdf_uri(p->plugin_uri));
-	
-	results = librdf_query_execute(q, p->rdf);
-
-	if (!librdf_query_results_finished(results)) {
-		librdf_node* binary_node = librdf_query_results_get_binding_value(results, 0);
-		librdf_uri* binary_uri = librdf_node_get_uri(binary_node);
-		
-		if (binary_uri) {
-			SLV2Value binary = slv2_value_new_librdf_uri(p->world, binary_uri);
-			p->binary_uri = binary;
-		}
-
-		librdf_free_node(binary_node);
-	}
-	
-	librdf_free_query_results(results);
-	librdf_free_query(q);
 }
 
 
@@ -297,6 +239,31 @@ slv2_plugin_get_library_uri(SLV2Plugin p)
 {
 	assert(p);
 	slv2_plugin_load_if_necessary(p);
+	if (!p->binary_uri) {
+		const unsigned char* query = (const unsigned char*)
+			"PREFIX : <http://lv2plug.in/ns/lv2core#>\n"
+			"SELECT ?binary WHERE { <> :binary ?binary . }";
+
+		librdf_query* q = librdf_new_query(p->world->world, "sparql",
+				NULL, query, slv2_value_as_librdf_uri(p->plugin_uri));
+
+		librdf_query_results* results = librdf_query_execute(q, p->rdf);
+
+		if (!librdf_query_results_finished(results)) {
+			librdf_node* binary_node = librdf_query_results_get_binding_value(results, 0);
+			librdf_uri* binary_uri = librdf_node_get_uri(binary_node);
+
+			if (binary_uri) {
+				SLV2Value binary = slv2_value_new_librdf_uri(p->world, binary_uri);
+				p->binary_uri = binary;
+			}
+
+			librdf_free_node(binary_node);
+		}
+
+		librdf_free_query_results(results);
+		librdf_free_query(q);
+	}
 	return p->binary_uri;
 }
 
@@ -311,10 +278,52 @@ slv2_plugin_get_data_uris(SLV2Plugin p)
 SLV2PluginClass
 slv2_plugin_get_class(SLV2Plugin p)
 {
-	// FIXME: Typical use case this will bring every single plugin model
-	// into memory
-	
 	slv2_plugin_load_if_necessary(p);
+	if (!p->plugin_class) {
+		const unsigned char* query = (const unsigned char*)
+			"SELECT DISTINCT ?class WHERE { <> a ?class }";
+
+		librdf_query* q = librdf_new_query(p->world->world, "sparql",
+				NULL, query, slv2_value_as_librdf_uri(p->plugin_uri));
+
+		librdf_query_results* results = librdf_query_execute(q, p->rdf);
+
+		while (!librdf_query_results_finished(results)) {
+			librdf_node* class_node = librdf_query_results_get_binding_value(results, 0);
+			librdf_uri*  class_uri  = librdf_node_get_uri(class_node);
+
+			if (!class_uri) {
+				librdf_query_results_next(results);
+				continue;
+			}
+
+			SLV2Value class = slv2_value_new_librdf_uri(p->world, class_uri);
+
+			if ( ! slv2_value_equals(class, p->world->lv2_plugin_class->uri)) {
+
+				SLV2PluginClass plugin_class = slv2_plugin_classes_get_by_uri(
+						p->world->plugin_classes, class);
+
+				librdf_free_node(class_node);
+
+				if (plugin_class) {
+					p->plugin_class = plugin_class;
+					slv2_value_free(class);
+					break;
+				}
+			}
+
+			slv2_value_free(class);
+			librdf_query_results_next(results);
+		}
+
+		if (p->plugin_class == NULL)
+			p->plugin_class = p->world->lv2_plugin_class;
+
+		librdf_free_query_results(results);
+		librdf_free_query(q);
+	}
+
 	return p->plugin_class;
 }
 
@@ -507,7 +516,7 @@ slv2_plugin_get_hints(SLV2Plugin p)
 uint32_t
 slv2_plugin_get_num_ports(SLV2Plugin p)
 {
-	slv2_plugin_load_if_necessary(p);
+	slv2_plugin_load_ports_if_necessary(p);
 	return raptor_sequence_size(p->ports);
 }
 
@@ -517,7 +526,7 @@ slv2_plugin_get_port_float_values(SLV2Plugin  p,
                                   const char* qname,
                                   float*      values)
 {	
-	slv2_plugin_load_if_necessary(p);
+	slv2_plugin_load_ports_if_necessary(p);
 
 	for (int i = 0; i < raptor_sequence_size(p->ports); ++i)
 		values[i] = NAN;
@@ -576,6 +585,8 @@ uint32_t
 slv2_plugin_get_num_ports_of_class(SLV2Plugin p,
                                    SLV2Value  class_1, ...)
 {
+	slv2_plugin_load_ports_if_necessary(p);
+
 	uint32_t ret = 0;
 	va_list  args;
 
@@ -699,7 +710,7 @@ SLV2Port
 slv2_plugin_get_port_by_index(SLV2Plugin p,
                               uint32_t   index)
 {
-	slv2_plugin_load_if_necessary(p);
+	slv2_plugin_load_ports_if_necessary(p);
 	return raptor_sequence_get_at(p->ports, (int)index);
 }
 
@@ -708,7 +719,7 @@ SLV2Port
 slv2_plugin_get_port_by_symbol(SLV2Plugin p,
                                SLV2Value  symbol)
 {
-	slv2_plugin_load_if_necessary(p);
+	slv2_plugin_load_ports_if_necessary(p);
 	for (int i=0; i < raptor_sequence_size(p->ports); ++i) {
 		SLV2Port port = raptor_sequence_get_at(p->ports, i);
 		if (slv2_value_equals(port->symbol, symbol))

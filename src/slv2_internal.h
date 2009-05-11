@@ -69,6 +69,7 @@ struct _SLV2Plugin {
 SLV2Plugin slv2_plugin_new(SLV2World world, SLV2Value uri, librdf_uri* bundle_uri);
 void       slv2_plugin_load(SLV2Plugin p);
 void       slv2_plugin_load_if_necessary(SLV2Plugin p);
+void       slv2_plugin_load_ports_if_necessary(SLV2Plugin p);
 void       slv2_plugin_free(SLV2Plugin plugin);
 void       slv2_plugin_get_port_float_values(SLV2Plugin  p,
 					     const char* qname,
