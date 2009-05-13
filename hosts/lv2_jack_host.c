@@ -1,5 +1,5 @@
 /* jack_host - SLV2 Jack Host
- * Copyright (C) 2007 Dave Robillard <drobilla.net>
+ * Copyright (C) 2007-2009 Dave Robillard <drobilla.net>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free

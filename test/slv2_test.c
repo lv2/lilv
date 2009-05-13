@@ -1,5 +1,5 @@
 /* SLV2 Tests
- * Copyright (C) 2008 Dave Robillard <http://drobilla.net>
+ * Copyright (C) 2008-2009 Dave Robillard <http://drobilla.net>
  * Copyright (C) 2008 Krzysztof Foltman
  *
  * This library is free software; you can redistribute it and/or modify it
