@@ -1,6 +1,6 @@
 /* SLV2
  * Copyright (C) 2007 Dave Robillard <http://drobilla.net>
- *  
+ *
  * This library is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
  * Software Foundation; either version 2 of the License, or (at your option)
@@ -40,9 +40,9 @@ slv2_ui_new(SLV2World   world,
 	ui->world = world;
 	ui->uri = slv2_value_new_librdf_uri(world, uri);
 	ui->binary_uri = slv2_value_new_librdf_uri(world, binary_uri);
-	
+
 	assert(ui->binary_uri);
-	
+
 	// FIXME: kludge
 	char* bundle = strdup(slv2_value_as_string(ui->binary_uri));
 	char* last_slash = strrchr(bundle, '/') + 1;
@@ -63,15 +63,15 @@ slv2_ui_free(SLV2UI ui)
 {
 	slv2_value_free(ui->uri);
 	ui->uri = NULL;
-	
+
 	slv2_value_free(ui->bundle_uri);
 	ui->bundle_uri = NULL;
-	
+
 	slv2_value_free(ui->binary_uri);
 	ui->binary_uri = NULL;
 
 	slv2_values_free(ui->classes);
-	
+
 	free(ui);
 }
 

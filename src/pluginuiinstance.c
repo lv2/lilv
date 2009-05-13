@@ -40,48 +40,48 @@ slv2_ui_instantiate(SLV2Plugin                     plugin,
                     const LV2_Feature* const*      features)
 {
 	struct _SLV2UIInstance* result = NULL;
-	
+
 	bool local_features = (features == NULL);
 	if (local_features) {
 		features = malloc(sizeof(LV2_Feature));
 		((LV2_Feature**)features)[0] = NULL;
 	}
-	
+
 	const char* const lib_uri = slv2_value_as_string(slv2_ui_get_binary_uri(ui));
 	const char* const lib_path = slv2_uri_to_path(lib_uri);
-	
+
 	if (!lib_path)
 		return NULL;
-	
+
 	dlerror();
 	void* lib = dlopen(lib_path, RTLD_NOW);
 	if (!lib) {
 		fprintf(stderr, "Unable to open UI library %s (%s)\n", lib_path, dlerror());
 		return NULL;
 	}
-	
+
 	LV2UI_DescriptorFunction df = dlsym(lib, "lv2ui_descriptor");
-	
+
 	if (!df) {
 		fprintf(stderr, "Could not find symbol 'lv2ui_descriptor', "
 				"%s is not a LV2 plugin UI.\n", lib_path);
 		dlclose(lib);
 		return NULL;
 	} else {
-		
+
 		const char* bundle_path = slv2_uri_to_path(slv2_value_as_uri(slv2_ui_get_bundle_uri(ui)));
-		
+
 		for (uint32_t i=0; 1; ++i) {
-			
+
 			const LV2UI_Descriptor* ld = df(i);
-				
+
 			if (!ld) {
 				fprintf(stderr, "Did not find UI %s in %s\n",
 						slv2_value_as_uri(slv2_ui_get_uri(ui)), lib_path);
 				dlclose(lib);
 				break; // return NULL
 			} else if (!strcmp(ld->URI, slv2_value_as_uri(slv2_ui_get_uri(ui)))) {
-	
+
 				assert(plugin->plugin_uri);
 
 				printf("Found UI %s at index %u in:\n\t%s\n\n",
@@ -93,9 +93,9 @@ slv2_ui_instantiate(SLV2Plugin                     plugin,
 				result = malloc(sizeof(struct _SLV2UIInstance));
 				struct _SLV2UIInstanceImpl* impl = malloc(sizeof(struct _SLV2UIInstanceImpl));
 				impl->lv2ui_descriptor = ld;
-				impl->lv2ui_handle = ld->instantiate(ld, 
+				impl->lv2ui_handle = ld->instantiate(ld,
 						slv2_value_as_uri(slv2_plugin_get_uri(plugin)),
-						(char*)bundle_path, 
+						(char*)bundle_path,
 						write_function,
 						controller,
 						&impl->widget,
@@ -114,7 +114,7 @@ slv2_ui_instantiate(SLV2Plugin                     plugin,
 		free(result);
 		return NULL;
 	}
-	
+
 	// Failed to create a widget, but still got a handle - this means that
 	// the plugin is buggy
 	if (result->pimpl->widget == NULL) {

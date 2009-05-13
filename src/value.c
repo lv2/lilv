@@ -1,6 +1,6 @@
 /* SLV2
  * Copyright (C) 2007 Dave Robillard <http://drobilla.net>
- *  
+ *
  * This library is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
  * Software Foundation; either version 2 of the License, or (at your option)
@@ -45,7 +45,7 @@ slv2_value_set_numerics_from_string(SLV2Value val)
 		val->val.float_val = strtod(val->str_val, &endptr);
 		setlocale(LC_NUMERIC, locale);
 	}
-	
+
 	free(locale);
 }
 
@@ -78,7 +78,7 @@ slv2_value_new_librdf_node(SLV2World world, librdf_node* node)
 	SLV2Value val = (SLV2Value)malloc(sizeof(struct _SLV2Value));
 	val->type = SLV2_VALUE_STRING;
 	val->str_val = NULL;
-	
+
 	librdf_uri* datatype_uri = NULL;
 
 	switch (librdf_node_get_type(node)) {
@@ -107,7 +107,7 @@ slv2_value_new_librdf_node(SLV2World world, librdf_node* node)
 		val = NULL;
 		break;
 	}
-	
+
 	if (val)
 		slv2_value_set_numerics_from_string(val);
 
@@ -227,7 +227,7 @@ slv2_value_get_turtle_token(SLV2Value value)
 	size_t len    = 0;
 	char*  result = NULL;
 	char*  locale = strdup(setlocale(LC_NUMERIC, NULL));
-		
+
 	// FIXME: locale kludges to work around librdf bug
 
 	switch (value->type) {
@@ -258,7 +258,7 @@ slv2_value_get_turtle_token(SLV2Value value)
 	}
 
 	free(locale);
-	
+
 	return result;
 }
 
@@ -277,7 +277,7 @@ slv2_value_as_uri(SLV2Value value)
 	return value->str_val;
 }
 
-	
+
 /* private */
 librdf_uri*
 slv2_value_as_librdf_uri(SLV2Value value)

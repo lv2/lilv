@@ -1,6 +1,6 @@
 /* SLV2
  * Copyright (C) 2007 Dave Robillard <http://drobilla.net>
- *  
+ *
  * This library is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
  * Software Foundation; either version 2 of the License, or (at your option)
@@ -27,7 +27,7 @@ extern "C" {
 #include "slv2/collections.h"
 
 /** \defgroup slv2_world Global library state
- * 
+ *
  * The "world" represents all library state, and the data found in bundles'
  * manifest.ttl (ie it is an in-memory index of all things LV2 found).
  * Plugins (and plugin extensions) and the LV2 specification (and LV2
@@ -121,7 +121,7 @@ slv2_world_get_plugin_class(SLV2World world);
 /** Return a list of all found plugin classes.
  *
  * Returned list is owned by world and must not be freed by the caller.
- * 
+ *
  * Time = O(1)
  */
 SLV2PluginClasses

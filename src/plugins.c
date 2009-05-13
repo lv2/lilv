@@ -1,6 +1,6 @@
 /* SLV2
  * Copyright (C) 2007 Dave Robillard <http://drobilla.net>
- *  
+ *
  * This library is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
  * Software Foundation; either version 2 of the License, or (at your option)
@@ -29,7 +29,7 @@
 #include "slv2/util.h"
 #include "slv2_internal.h"
 
-	
+
 SLV2Plugins
 slv2_plugins_new()
 {
@@ -71,11 +71,11 @@ SLV2Plugin
 slv2_plugins_get_by_uri(SLV2Plugins list, SLV2Value uri)
 {
 	// good old fashioned binary search
-	
+
 	int lower = 0;
 	int upper = raptor_sequence_size(list) - 1;
 	int i;
-	
+
 	while (upper >= lower) {
 		i = lower + ((upper - lower) / 2);
 
@@ -98,7 +98,7 @@ slv2_plugins_get_by_uri(SLV2Plugins list, SLV2Value uri)
 
 SLV2Plugin
 slv2_plugins_get_at(SLV2Plugins list, unsigned index)
-{	
+{
 	if (index > INT_MAX)
 		return NULL;
 	else

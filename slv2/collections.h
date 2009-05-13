@@ -1,6 +1,6 @@
 /* SLV2
  * Copyright (C) 2008 Dave Robillard <http://drobilla.net>
- *  
+ *
  * This library is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
  * Software Foundation; either version 2 of the License, or (at your option)
@@ -40,7 +40,7 @@ extern "C" {
 #define SLV2_COLLECTION(CollType, ElemType, prefix) \
 \
 /** Free a collection.
- * 
+ *
  * Time = O(1)
  */ \
 void \
@@ -103,7 +103,7 @@ slv2_plugins_size(SLV2Plugins plugins);
  * modified by the caller in any way.
  *
  * Time = O(log2(n))
- * 
+ *
  * \return NULL if plugin with \a url not found in \a plugins.
  */
 SLV2Plugin
@@ -136,7 +136,7 @@ slv2_plugins_get_at(SLV2Plugins plugins,
  * modified by the caller in any way.
  *
  * Time = O(log2(n))
- * 
+ *
  * \return NULL if plugin with \a url not found in \a classes.
  */
 SLV2PluginClass
@@ -179,7 +179,7 @@ slv2_values_contains(SLV2Values values, SLV2Value value);
  * modified by the caller in any way.
  *
  * Time = O(log2(n))
- * 
+ *
  * \return NULL if plugin with \a url not found in \a list.
  */
 SLV2UI

@@ -1,6 +1,6 @@
 /* SLV2
  * Copyright (C) 2007 Dave Robillard <http://drobilla.net>
- *  
+ *
  * This library is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
  * Software Foundation; either version 2 of the License, or (at your option)
@@ -71,7 +71,7 @@ slv2_uri_to_path(const char* uri)
 }
 
 
-char* 
+char*
 slv2_get_lang()
 {
 	static char lang[32];

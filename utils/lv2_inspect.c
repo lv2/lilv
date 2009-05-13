@@ -1,6 +1,6 @@
 /* lv2_inspect - Display information about an LV2 plugin.
  * Copyright (C) 2007 Dave Robillard <drobilla.net>
- *  
+ *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
  * Software Foundation; either version 2 of the License, or (at your option)
@@ -104,7 +104,7 @@ print_plugin(SLV2Plugin p)
 	val = slv2_plugin_get_name(p);
 	printf("\tName:              %s\n", slv2_value_as_string(val));
 	slv2_value_free(val);
-	
+
 	SLV2Value class_label = slv2_plugin_class_get_label(slv2_plugin_get_class(p));
 	printf("\tClass:             %s\n", slv2_value_as_string(class_label));
 
@@ -113,13 +113,13 @@ print_plugin(SLV2Plugin p)
 		printf("\tAuthor:            %s\n", slv2_value_as_string(val));
 		slv2_value_free(val);
 	}
-	
+
 	val = slv2_plugin_get_author_email(p);
 	if (val) {
 		printf("\tAuthor Email:      %s\n", slv2_value_as_uri(val));
 		slv2_value_free(val);
 	}
-	
+
 	val = slv2_plugin_get_author_homepage(p);
 	if (val) {
 		printf("\tAuthor Homepage:   %s\n", slv2_value_as_uri(val));
@@ -144,16 +144,16 @@ print_plugin(SLV2Plugin p)
 			printf("%s\n", slv2_value_as_uri(slv2_ui_get_uri(ui)));
 
 			const char* binary = slv2_value_as_uri(slv2_ui_get_binary_uri(ui));
-			
+
 			SLV2Values types = slv2_ui_get_classes(ui);
 			for (unsigned i=0; i < slv2_values_size(types); ++i) {
 				printf("\t                       Class:  %s\n",
 						slv2_value_as_uri(slv2_values_get_at(types, i)));
 			}
-	
+
 			if (binary)
 				printf("\t                       Binary: %s\n", binary);
-	
+
 			printf("\t                       Bundle: %s\n",
 					slv2_value_as_uri(slv2_ui_get_bundle_uri(ui)));
 		}
@@ -188,8 +188,8 @@ print_plugin(SLV2Plugin p)
 	if (features)
 		printf("\n");
 	slv2_values_free(features);
-	
-	
+
+
 	/* Optional Features */
 
 	features = slv2_plugin_get_optional_features(p);
@@ -204,7 +204,7 @@ print_plugin(SLV2Plugin p)
 	if (features)
 		printf("\n");
 	slv2_values_free(features);
-	
+
 
 	/* Presets */
 
@@ -219,7 +219,7 @@ SELECT ?name WHERE { <> lv2p:hasPreset ?preset . ?preset dc:title ?name }");
 		printf("\t         %s\n", slv2_value_as_string(name));
 	}
 	slv2_results_free(presets);
-	
+
 
 	/* Ports */
 
@@ -228,9 +228,9 @@ SELECT ?name WHERE { <> lv2p:hasPreset ?preset . ?preset dc:title ?name }");
 	float* maxes    = calloc(num_ports, sizeof(float));
 	float* defaults = calloc(num_ports, sizeof(float));
 	slv2_plugin_get_port_ranges_float(p, mins, maxes, defaults);
-	
+
 	//printf("\n\t# Ports: %d\n", num_ports);
-	
+
 	for (uint32_t i=0; i < num_ports; ++i)
 		print_port(p, i, mins, maxes, defaults);
 
@@ -258,7 +258,7 @@ print_usage()
 	printf("Show information about an installed LV2 plugin.\n");
 }
 
-	
+
 int
 main(int argc, char** argv)
 {
@@ -303,7 +303,7 @@ main(int argc, char** argv)
 	}
 
 	ret = (p != NULL ? 0 : -1);
-	
+
 	slv2_value_free(uri);
 	slv2_plugins_free(world, plugins);
 

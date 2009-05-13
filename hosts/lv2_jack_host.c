@@ -1,6 +1,6 @@
 /* jack_host - SLV2 Jack Host
  * Copyright (C) 2007 Dave Robillard <drobilla.net>
- *  
+ *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
  * Software Foundation; either version 2 of the License, or (at your option)
@@ -113,12 +113,12 @@ main(int argc, char** argv)
 	host.jack_client = NULL;
 	host.num_ports   = 0;
 	host.ports       = NULL;
-	
+
 	/* Find all installed plugins */
 	SLV2World world = slv2_world_new();
 	slv2_world_load_all(world);
 	SLV2Plugins plugins = slv2_world_get_all_plugins(world);
-	
+
 	/* Set up the port classes this app supports */
 	host.input_class = slv2_value_new_uri(world, SLV2_PORT_CLASS_INPUT);
 	host.output_class = slv2_value_new_uri(world, SLV2_PORT_CLASS_OUTPUT);
@@ -130,7 +130,7 @@ main(int argc, char** argv)
 
 	/* Find the plugin to run */
 	const char* plugin_uri_str = (argc == 2) ? argv[1] : NULL;
-	
+
 	if (!plugin_uri_str) {
 		fprintf(stderr, "\nYou must specify a plugin URI to load.\n");
 		fprintf(stderr, "\nKnown plugins:\n\n");
@@ -144,7 +144,7 @@ main(int argc, char** argv)
 	SLV2Value plugin_uri = slv2_value_new_uri(world, plugin_uri_str);
 	host.plugin = slv2_plugins_get_by_uri(plugins, plugin_uri);
 	slv2_value_free(plugin_uri);
-	
+
 	if (!host.plugin) {
 		fprintf(stderr, "Failed to find plugin %s.\n", plugin_uri_str);
 		slv2_world_free(world);
@@ -164,7 +164,7 @@ main(int argc, char** argv)
 	} else {
 		jack_name = strdup(name_str);
 	}
-	
+
 	/* Connect to JACK */
 	printf("JACK Name:\t%s\n", jack_name);
 	host.jack_client = jack_client_open(jack_name, JackNullOption, NULL);
@@ -176,7 +176,7 @@ main(int argc, char** argv)
 		die("Failed to connect to JACK.");
 	else
 		printf("Connected to JACK.\n");
-	
+
 	/* Instantiate the plugin */
 	host.instance = slv2_plugin_instantiate(
 		host.plugin, jack_get_sample_rate(host.jack_client), features);
@@ -186,11 +186,11 @@ main(int argc, char** argv)
 		printf("Succesfully instantiated plugin.\n");
 
 	jack_set_process_callback(host.jack_client, &jack_process_cb, (void*)(&host));
-	
+
 	/* Create ports */
 	host.num_ports = slv2_plugin_get_num_ports(host.plugin);
 	host.ports = calloc((size_t)host.num_ports, sizeof(struct Port));
-	float* default_values  = calloc(slv2_plugin_get_num_ports(host.plugin), 
+	float* default_values  = calloc(slv2_plugin_get_num_ports(host.plugin),
 					sizeof(float));
 	slv2_plugin_get_port_ranges_float(host.plugin, NULL, NULL, default_values);
 
@@ -198,19 +198,19 @@ main(int argc, char** argv)
 	  create_port(&host, i, default_values[i]);
 
 	free(default_values);
-	
+
 	/* Activate plugin and JACK */
 	slv2_instance_activate(host.instance);
 	jack_activate(host.jack_client);
-	
+
 	/* Run */
 	printf("Press enter to quit: ");
 	getc(stdin);
 	printf("\n");
-	
+
 	/* Deactivate JACK */
 	jack_deactivate(host.jack_client);
-	
+
 	printf("Shutting down JACK.\n");
 	for (unsigned long i=0; i < host.num_ports; ++i) {
 		if (host.ports[i].jack_port != NULL) {
@@ -222,11 +222,11 @@ main(int argc, char** argv)
 		}
 	}
 	jack_client_close(host.jack_client);
-	
+
 	/* Deactivate plugin */
 	slv2_instance_deactivate(host.instance);
 	slv2_instance_free(host.instance);
-	
+
 	/* Clean up */
 	free(host.ports);
 	slv2_value_free(host.input_class);
@@ -289,7 +289,7 @@ create_port(struct JackHost* host,
 	} else {
 		die("Mandatory port has unknown type (neither input or output)");
 	}
-	
+
 	/* Set control values */
 	if (slv2_port_is_a(host->plugin, port->slv2_port, host->control_class)) {
 		port->type = CONTROL;
@@ -362,7 +362,7 @@ jack_process_cb(jack_nframes_t nframes, void* data)
 			}
 		}
 	}
-	
+
 
 	/* Run plugin for this cycle */
 	slv2_instance_run(host->instance, nframes);

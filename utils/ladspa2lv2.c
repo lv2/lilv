@@ -1,6 +1,6 @@
 /* ladspa2lv2
  * Copyright (C) 2007 Dave Robillard <http://drobilla.net>
- *  
+ *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
  * Software Foundation; either version 2 of the License, or (at your option)
@@ -43,9 +43,9 @@ add_resource(librdf_model* model,
 {
 	librdf_node* predicate = librdf_new_node_from_uri_string(world, U(predicate_uri));
 	librdf_node* object    = librdf_new_node_from_uri_string(world, U(object_uri));
-	
+
 	librdf_statement* triple = librdf_new_statement_from_nodes(world, subject, predicate, object);
-	
+
 	librdf_model_add_statement(model, triple);
 
 	//librdf_free_statement(triple);
@@ -59,9 +59,9 @@ add_node(librdf_model* model,
              librdf_node*  object)
 {
 	librdf_node* predicate = librdf_new_node_from_uri_string(world, U(predicate_uri));
-	
+
 	librdf_statement* triple = librdf_new_statement_from_nodes(world, subject, predicate, object);
-	
+
 	librdf_model_add_statement(model, triple);
 
 	//librdf_free_statement(triple);
@@ -76,9 +76,9 @@ add_string(librdf_model* model,
 {
 	librdf_node* predicate = librdf_new_node_from_uri_string(world, U(predicate_uri));
 	librdf_node* object    = librdf_new_node_from_literal(world, U(object_string), NULL, 0);
-	
+
 	librdf_statement* triple = librdf_new_statement_from_nodes(world, subject, predicate, object);
-	
+
 	librdf_model_add_statement(model, triple);
 
 	//librdf_free_statement(triple);
@@ -99,9 +99,9 @@ add_int(librdf_model* model,
 
 	librdf_node* predicate = librdf_new_node_from_uri_string(world, U(predicate_uri));
 	librdf_node* object    = librdf_new_node_from_typed_literal(world, U(object_str), NULL, type);
-	
+
 	librdf_statement* triple = librdf_new_statement_from_nodes(world, subject, predicate, object);
-	
+
 	librdf_model_add_statement(model, triple);
 
 	//librdf_free_statement(triple);
@@ -123,9 +123,9 @@ add_float(librdf_model* model,
 
 	librdf_node* predicate = librdf_new_node_from_uri_string(world, U(predicate_uri));
 	librdf_node* object    = librdf_new_node_from_typed_literal(world, U(object_str), NULL, type);
-	
+
 	librdf_statement* triple = librdf_new_statement_from_nodes(world, subject, predicate, object);
-	
+
 	librdf_model_add_statement(model, triple);
 
 	//librdf_free_statement(triple);
@@ -146,7 +146,7 @@ load_ladspa_plugin(const char* lib_path, unsigned long index)
 	if (df == NULL) {
 		dlclose(handle);
 		return NULL;
-	}	
+	}
 
 	LADSPA_Descriptor* const descriptor = (LADSPA_Descriptor*)df(index);
 
@@ -174,14 +174,14 @@ add_port_range(LADSPA_Descriptor* plugin,
 		lower = plugin->PortRangeHints[port_index].LowerBound;
 		range_valid = true;
 	}
-	
+
 	if (LADSPA_IS_HINT_INTEGER(hint_descriptor)) {
 		add_resource(model, port, NS_LV2("portHint"), NS_LV2("integer"));
 		upper = plugin->PortRangeHints[port_index].UpperBound;
 		lower = plugin->PortRangeHints[port_index].LowerBound;
 		range_valid = true;
 	}
-	
+
 	if (LADSPA_IS_HINT_TOGGLED(hint_descriptor)) {
 		add_resource(model, port, NS_LV2("portHint"), NS_LV2("toggled"));
 		upper = 1.0;
@@ -236,12 +236,12 @@ add_port_range(LADSPA_Descriptor* plugin,
 		} else {
 			valid = false;
 		}
-		
+
 		if (valid)
 			add_float(model, port, NS_LV2("default"), normal);
 
 	} else {  // No default hint
-	
+
 		if (range_valid && LADSPA_IS_HINT_BOUNDED_BELOW(hint_descriptor)) {
 			normal = lower;
 			add_float(model, port, NS_LV2("default"), normal);
@@ -278,11 +278,11 @@ write_lv2_turtle(LADSPA_Descriptor* descriptor, const char* plugin_uri, const ch
 			U("http://xmlns.com/foaf/0.1/")), "foaf");
 	librdf_serializer_set_namespace(serializer, librdf_new_uri(world,
 			U("http://lv2plug.in/ns/lv2core#")), "lv2");
-	
+
 	add_resource(model, plugin,
 		NS_RDF("type"),
 		NS_LV2("Plugin"));
-	
+
 	add_string(model, plugin,
 		NS_DOAP("name"),
 		descriptor->Name);
@@ -291,7 +291,7 @@ write_lv2_turtle(LADSPA_Descriptor* descriptor, const char* plugin_uri, const ch
 		add_resource(model, plugin,
 			NS_LV2("optionalFeature"),
 		 	NS_LV2("hardRTCapable"));
-	
+
 	for (uint32_t i=0; i < descriptor->PortCount; ++i) {
 		char index_str[32];
 		snprintf(index_str, (size_t)32, "%u", i);
@@ -308,7 +308,7 @@ write_lv2_turtle(LADSPA_Descriptor* descriptor, const char* plugin_uri, const ch
 		add_int(model, port_node,
 			NS_LV2("index"),
 		 	(int)i);
-	
+
 		if (LADSPA_IS_PORT_INPUT(port_descriptor))
 			add_resource(model, port_node,
 				NS_RDF("type"),
@@ -317,7 +317,7 @@ write_lv2_turtle(LADSPA_Descriptor* descriptor, const char* plugin_uri, const ch
 			add_resource(model, port_node,
 				NS_RDF("type"),
 				NS_LV2("OutputPort"));
-		
+
 		if (LADSPA_IS_PORT_AUDIO(port_descriptor))
 			add_resource(model, port_node,
 				NS_RDF("type"),
@@ -326,7 +326,7 @@ write_lv2_turtle(LADSPA_Descriptor* descriptor, const char* plugin_uri, const ch
 			add_resource(model, port_node,
 				NS_RDF("type"),
 				NS_LV2("ControlPort"));
-		
+
 		add_string(model, port_node,
 			NS_LV2("name"),
 		 	descriptor->PortNames[i]);

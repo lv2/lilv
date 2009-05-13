@@ -222,7 +222,7 @@ test_value()
 	TEST_ASSERT(slv2_value_is_string(sval));
 	TEST_ASSERT(slv2_value_is_int(ival));
 	TEST_ASSERT(slv2_value_is_float(fval));
-	
+
 	TEST_ASSERT(!slv2_value_is_literal(uval));
 	TEST_ASSERT(slv2_value_is_literal(sval));
 	TEST_ASSERT(slv2_value_is_literal(ival));
@@ -245,7 +245,7 @@ test_value()
 	tok = slv2_value_get_turtle_token(fval);
 	TEST_ASSERT(!strncmp(tok, "1.6180", 6));
 	free(tok);
-	
+
 	SLV2Value uval_e = slv2_value_new_uri(world, "http://example.org");
 	SLV2Value sval_e = slv2_value_new_string(world, "Foo");
 	SLV2Value ival_e = slv2_value_new_int(world, 42);
@@ -259,23 +259,23 @@ test_value()
 	TEST_ASSERT(slv2_value_equals(sval, sval_e));
 	TEST_ASSERT(slv2_value_equals(ival, ival_e));
 	TEST_ASSERT(slv2_value_equals(fval, fval_e));
-	
+
 	TEST_ASSERT(!slv2_value_equals(uval, uval_ne));
 	TEST_ASSERT(!slv2_value_equals(sval, sval_ne));
 	TEST_ASSERT(!slv2_value_equals(ival, ival_ne));
 	TEST_ASSERT(!slv2_value_equals(fval, fval_ne));
-	
+
 	TEST_ASSERT(!slv2_value_equals(uval, sval));
 	TEST_ASSERT(!slv2_value_equals(sval, ival));
 	TEST_ASSERT(!slv2_value_equals(ival, fval));
-	
+
 	SLV2Value uval_dup = slv2_value_duplicate(uval);
 	TEST_ASSERT(slv2_value_equals(uval, uval_dup));
 
 	SLV2Value ifval = slv2_value_new_float(world, 42.0);
 	TEST_ASSERT(!slv2_value_equals(ival, ifval));
 	slv2_value_free(ifval);
-	
+
 	SLV2Value nil = NULL;
 	TEST_ASSERT(!slv2_value_equals(uval, nil));
 	TEST_ASSERT(!slv2_value_equals(nil, uval));
@@ -517,7 +517,7 @@ test_classes()
 	SLV2PluginClass plugin = slv2_world_get_plugin_class(world);
 	SLV2PluginClasses classes = slv2_world_get_plugin_classes(world);
 	SLV2PluginClasses children = slv2_plugin_class_get_children(plugin);
-	
+
 	TEST_ASSERT(slv2_plugin_class_get_parent_uri(plugin) == NULL);
 	TEST_ASSERT(slv2_plugin_classes_size(classes) > slv2_plugin_classes_size(children));
 	TEST_ASSERT(!strcmp(slv2_value_as_string(slv2_plugin_class_get_label(plugin)), "Plugin"));
@@ -533,9 +533,9 @@ test_classes()
 	SLV2Value some_uri = slv2_value_new_uri(world, "http://example.org/whatever");
 	TEST_ASSERT(slv2_plugin_classes_get_by_uri(classes, some_uri) == NULL);
 	slv2_value_free(some_uri);
-	
+
 	TEST_ASSERT(slv2_plugin_classes_get_at(classes, (unsigned)INT_MAX + 1) == NULL);
-	
+
 	slv2_plugin_classes_free(children);
 
 	cleanup_uris();
@@ -574,7 +574,7 @@ test_plugin()
 			"] . \n"
 			":thing doap:name \"Something else\" .\n"))
 		return 0;
-	
+
 	init_uris();
 	SLV2Plugins plugins = slv2_world_get_all_plugins(world);
 	SLV2Plugin plug = slv2_plugins_get_by_uri(plugins, plugin_uri_value);
@@ -587,17 +587,17 @@ test_plugin()
 
 	SLV2Value plug_bundle_uri = slv2_plugin_get_bundle_uri(plug);
 	TEST_ASSERT(!strcmp(slv2_value_as_string(plug_bundle_uri), bundle_dir_uri));
-	
+
 	SLV2Values data_uris = slv2_plugin_get_data_uris(plug);
 	TEST_ASSERT(slv2_values_size(data_uris) == 2);
-	
+
 	char* manifest_uri = (char*)malloc(TEST_PATH_MAX);
 	char* data_uri     = (char*)malloc(TEST_PATH_MAX);
 	snprintf(manifest_uri, TEST_PATH_MAX, "%s%s",
 			slv2_value_as_string(plug_bundle_uri), "manifest.ttl");
 	snprintf(data_uri, TEST_PATH_MAX, "%s%s",
 			slv2_value_as_string(plug_bundle_uri), "plugin.ttl");
-	
+
 	SLV2Value manifest_uri_val = slv2_value_new_uri(world, manifest_uri);
 	TEST_ASSERT(slv2_values_contains(data_uris, manifest_uri_val));
 	slv2_value_free(manifest_uri_val);
@@ -615,7 +615,7 @@ test_plugin()
 	TEST_ASSERT(mins[0] == -1.0f);
 	TEST_ASSERT(maxs[0] == 1.0f);
 	TEST_ASSERT(defs[0] == 0.5f);
-	
+
 	SLV2Value audio_class = slv2_value_new_uri(world,
 			"http://lv2plug.in/ns/lv2core#AudioPort");
 	SLV2Value control_class = slv2_value_new_uri(world,
@@ -661,7 +661,7 @@ test_plugin()
 	slv2_values_free(supported);
 	slv2_values_free(required);
 	slv2_values_free(optional);
-	
+
 	SLV2Value foo_p = slv2_value_new_uri(world, "http://example.org/foo");
 	SLV2Values foos = slv2_plugin_get_value(plug, foo_p);
 	TEST_ASSERT(slv2_values_size(foos) == 1);
@@ -672,11 +672,11 @@ test_plugin()
 	SLV2Value author_name = slv2_plugin_get_author_name(plug);
 	TEST_ASSERT(!strcmp(slv2_value_as_string(author_name), "David Robillard"));
 	slv2_value_free(author_name);
-	
+
 	SLV2Value author_email = slv2_plugin_get_author_email(plug);
 	TEST_ASSERT(!strcmp(slv2_value_as_string(author_email), "mailto:dave@drobilla.net"));
 	slv2_value_free(author_email);
-	
+
 	SLV2Value author_homepage = slv2_plugin_get_author_homepage(plug);
 	TEST_ASSERT(!strcmp(slv2_value_as_string(author_homepage), "http://drobilla.net"));
 	slv2_value_free(author_homepage);
@@ -689,10 +689,10 @@ test_plugin()
 	TEST_ASSERT(thing_name);
 	TEST_ASSERT(slv2_value_is_string(thing_name));
 	TEST_ASSERT(!strcmp(slv2_value_as_string(thing_name), "Something else"));
-	
+
 	SLV2UIs uis = slv2_plugin_get_uis(plug);
 	TEST_ASSERT(slv2_uis_size(uis) == 0);
-	
+
 	SLV2Results results = slv2_plugin_query_sparql(plug,
 "SELECT ?name WHERE { <> doap:maintainer [ foaf:name ?name ] }");
 	TEST_ASSERT(!slv2_results_finished(results));
@@ -758,7 +758,7 @@ test_port()
 	TEST_ASSERT(p != NULL);
 	TEST_ASSERT(p2 != NULL);
 	TEST_ASSERT(p == p2);
-	
+
 	SLV2Value nopsym = slv2_value_new_string(world, "thisaintnoportfoo");
 	SLV2Port p3 = slv2_plugin_get_port_by_symbol(plug, nopsym);
 	TEST_ASSERT(p3 == NULL);
@@ -777,7 +777,7 @@ test_port()
 	TEST_ASSERT(slv2_port_is_a(plug, p, control_class));
 	TEST_ASSERT(slv2_port_is_a(plug, p, in_class));
 	TEST_ASSERT(!slv2_port_is_a(plug, p, audio_class));
-	
+
 	TEST_ASSERT(slv2_values_size(slv2_port_get_properties(plug, p)) == 0);
 
 	TEST_ASSERT(!strcmp(slv2_value_as_string(slv2_port_get_symbol(plug, p)), "foo"));
@@ -794,7 +794,7 @@ test_port()
 	TEST_ASSERT(sp0);
 	SLV2ScalePoint sp1 = slv2_scale_points_get_at(points, 1);
 	TEST_ASSERT(sp1);
-	
+
 	TEST_ASSERT(!strcmp(slv2_value_as_string(slv2_scale_point_get_label(sp0)), "Sin"));
 	TEST_ASSERT(slv2_value_as_float(slv2_scale_point_get_value(sp0)) == 3);
 	TEST_ASSERT(!strcmp(slv2_value_as_string(slv2_scale_point_get_label(sp1)), "Cos"));
@@ -808,10 +808,10 @@ test_port()
 
 	TEST_ASSERT(slv2_plugin_query_count(plug, "SELECT DISTINCT ?bin WHERE {\n"
 			   "<> lv2:binary ?bin . }") == 1);
-	
+
 	TEST_ASSERT(slv2_plugin_query_count(plug, "SELECT DISTINCT ?parent WHERE {\n"
 			   "<> rdfs:subClassOf ?parent . }") == 0);
-	
+
 	SLV2Value min, max, def;
 	slv2_port_get_range(plug, p, &def, &min, &max);
 	TEST_ASSERT(def);
@@ -820,20 +820,20 @@ test_port()
 	TEST_ASSERT(slv2_value_as_float(def) == 0.5);
 	TEST_ASSERT(slv2_value_as_float(min) == -1.0);
 	TEST_ASSERT(slv2_value_as_float(max) == 1.0);
-	
+
 	SLV2Value integer_prop = slv2_value_new_uri(world, "http://lv2plug.in/ns/lv2core#integer");
 	SLV2Value toggled_prop = slv2_value_new_uri(world, "http://lv2plug.in/ns/lv2core#toggled");
 
 	TEST_ASSERT(slv2_port_has_property(plug, p, integer_prop));
 	TEST_ASSERT(!slv2_port_has_property(plug, p, toggled_prop));
-	
+
 	SLV2Port ep = slv2_plugin_get_port_by_index(plug, 1);
 
 	SLV2Value event_type = slv2_value_new_uri(world, "http://example.org/event");
 	SLV2Value event_type_2 = slv2_value_new_uri(world, "http://example.org/otherEvent");
 	TEST_ASSERT(slv2_port_supports_event(plug, ep, event_type));
 	TEST_ASSERT(!slv2_port_supports_event(plug, ep, event_type_2));
-	
+
 	SLV2Value name_p = slv2_value_new_uri(world, "http://lv2plug.in/ns/lv2core#name");
 	SLV2Values names = slv2_port_get_value(plug, p, name_p);
 	TEST_ASSERT(slv2_values_size(names) == 2);
@@ -928,16 +928,16 @@ test_ui()
 
 	SLV2UI ui0_2 = slv2_uis_get_by_uri(uis, ui_uri);
 	TEST_ASSERT(ui0 == ui0_2);
-	
+
 	SLV2UI ui2 = slv2_uis_get_by_uri(uis, ui2_uri);
 	TEST_ASSERT(ui2 != ui0);
-	
+
 	SLV2UI ui3 = slv2_uis_get_by_uri(uis, ui3_uri);
 	TEST_ASSERT(ui3 != ui0);
-	
+
 	SLV2UI noui = slv2_uis_get_by_uri(uis, noui_uri);
 	TEST_ASSERT(noui == NULL);
-	
+
 	SLV2Values classes = slv2_ui_get_classes(ui0);
 	TEST_ASSERT(slv2_values_size(classes) == 1);
 
@@ -946,7 +946,7 @@ test_ui()
 
 	TEST_ASSERT(slv2_value_equals(slv2_values_get_at(classes, 0), ui_class_uri));
 	TEST_ASSERT(slv2_ui_is_a(ui0, ui_class_uri));
-	
+
 	SLV2Value plug_bundle_uri = slv2_plugin_get_bundle_uri(plug);
 	SLV2Value ui_bundle_uri = slv2_ui_get_bundle_uri(ui0);
 	TEST_ASSERT(slv2_value_equals(plug_bundle_uri, ui_bundle_uri));

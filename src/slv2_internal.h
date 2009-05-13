@@ -1,6 +1,6 @@
 /* SLV2
  * Copyright (C) 2007 Dave Robillard <http://drobilla.net>
- *  
+ *
  * This library is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
  * Software Foundation; either version 2 of the License, or (at your option)
@@ -157,7 +157,7 @@ void
 slv2_world_load_path(SLV2World   world,
                      const char* search_path);
 
-	
+
 void
 slv2_world_load_specifications(SLV2World world);
 
@@ -210,7 +210,7 @@ SLV2Value   slv2_value_new_librdf_node(SLV2World world, librdf_node* node);
 SLV2Value   slv2_value_new_librdf_uri(SLV2World world, librdf_uri* uri);
 librdf_uri* slv2_value_as_librdf_uri(SLV2Value value);
 
-	
+
 /* ********* Values ********* */
 
 void slv2_values_set_at(SLV2Values list, unsigned index, void* value);

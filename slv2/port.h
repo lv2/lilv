@@ -1,6 +1,6 @@
 /* SLV2
  * Copyright (C) 2007 Dave Robillard <http://drobilla.net>
- *  
+ *
  * This library is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
  * Software Foundation; either version 2 of the License, or (at your option)
@@ -129,7 +129,7 @@ slv2_port_get_name(SLV2Plugin plugin,
 SLV2Values
 slv2_port_get_classes(SLV2Plugin plugin,
                       SLV2Port   port);
-                      
+
 
 /** Determine if a port is of a given class (input, output, audio, etc).
  *
@@ -158,7 +158,7 @@ slv2_port_is_a(SLV2Plugin plugin,
  * Time = Query
  */
 void
-slv2_port_get_range(SLV2Plugin plugin, 
+slv2_port_get_range(SLV2Plugin plugin,
                     SLV2Port   port,
                     SLV2Value* def,
                     SLV2Value* min,

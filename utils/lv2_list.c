@@ -1,6 +1,6 @@
 /* lv2_list - List system installed LV2 plugins.
  * Copyright (C) 2007 Dave Robillard <drobilla.net>
- *  
+ *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
  * Software Foundation; either version 2 of the License, or (at your option)
@@ -75,7 +75,7 @@ main(int argc, char** argv)
 	SLV2Plugins plugins = slv2_world_get_all_plugins(world);
 
 	list_plugins(plugins);
-	
+
 	slv2_plugins_free(world, plugins);
 	slv2_world_free(world);
 

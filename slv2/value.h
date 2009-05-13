@@ -1,6 +1,6 @@
 /* SLV2
  * Copyright (C) 2007 Dave Robillard <http://drobilla.net>
- *  
+ *
  * This library is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
  * Software Foundation; either version 2 of the License, or (at your option)
@@ -104,10 +104,10 @@ slv2_value_is_uri(SLV2Value value);
 
 
 /** Return this value as a URI string, e.g. "http://example.org/foo".
- * 
+ *
  * Valid to call only if slv2_value_is_uri(\a value) returns true.
  * Returned value is owned by \a value and must not be freed by caller.
- * 
+ *
  * Time = O(1)
  */
 const char*
@@ -127,10 +127,10 @@ slv2_value_is_qname(SLV2Value value);
 
 
 /** Return this value as a QName string, e.g. "lv2:Plugin".
- * 
+ *
  * Valid to call only if slv2_value_is_qname(\a value) returns true.
  * Returned value is owned by \a value and must not be freed by caller.
- * 
+ *
  * Time = O(1)
  */
 const char*
@@ -175,7 +175,7 @@ slv2_value_is_float(SLV2Value value);
 
 
 /** Return \a value as a float.
- * 
+ *
  * Valid to call only if slv2_value_is_float(\a value) or
  * slv2_value_is_int(\a value) returns true.
  *
@@ -186,7 +186,7 @@ slv2_value_as_float(SLV2Value value);
 
 
 /** Return whether this value is an integer literal.
- * 
+ *
  * Time = O(1)
  */
 bool
@@ -194,7 +194,7 @@ slv2_value_is_int(SLV2Value value);
 
 
 /** Return \a value as an integer.
- * 
+ *
  * Valid to call only if slv2_value_is_int(\a value) returns true.
  *
  * Time = O(1)

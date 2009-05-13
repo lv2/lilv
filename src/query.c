@@ -1,6 +1,6 @@
 /* SLV2
  * Copyright (C) 2007 Dave Robillard <http://drobilla.net>
- *  
+ *
  * This library is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
  * Software Foundation; either version 2 of the License, or (at your option)
@@ -137,24 +137,24 @@ slv2_plugin_query_sparql(SLV2Plugin  plugin,
 	char* query_str = slv2_strjoin(slv2_query_prefixes, sparql_str, NULL);
 
 	//printf("******** Query \n%s********\n", query_str);
-	
+
 	librdf_query* query = librdf_new_query(plugin->world->world, "sparql", NULL,
 			(const unsigned char*)query_str, base_uri);
-	
+
 	if (!query) {
 		fprintf(stderr, "ERROR: Could not create query\n");
 		return NULL;
 	}
-	
+
 	// FIXME: locale kludges to work around librdf bug
 	char* locale = strdup(setlocale(LC_NUMERIC, NULL));
 
 	setlocale(LC_NUMERIC, "POSIX");
 	librdf_query_results* results = librdf_query_execute(query, plugin->rdf);
 	setlocale(LC_NUMERIC, locale);
-	
+
 	free(locale);
-	
+
 	librdf_free_query(query);
 	free(query_str);
 
@@ -225,7 +225,7 @@ slv2_plugin_query_variable(SLV2Plugin  plugin,
 
 	SLV2Values ret = slv2_query_get_variable_bindings(plugin->world,
 			results, (int)variable);
-	
+
 	slv2_results_free(results);
 
 	return ret;
@@ -236,7 +236,7 @@ slv2_plugin_query_variable(SLV2Plugin  plugin,
  *
  * More efficient than slv2_plugin_simple_query if you're only interested
  * in the number of results (ie slv2_plugin_num_ports).
- * 
+ *
  * Note the result of this function is probably meaningless unless the query
  * is a SELECT DISTINCT.
  */

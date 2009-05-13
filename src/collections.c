@@ -1,6 +1,6 @@
 /* SLV2
  * Copyright (C) 2008 Dave Robillard <http://drobilla.net>
- *  
+ *
  * This library is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
  * Software Foundation; either version 2 of the License, or (at your option)
@@ -75,19 +75,19 @@ SLV2PluginClass
 slv2_plugin_classes_get_by_uri(SLV2PluginClasses list, SLV2Value uri)
 {
 	// good old fashioned binary search
-	
+
 	int lower = 0;
 	int upper = raptor_sequence_size(list) - 1;
 	int i;
-	
+
 	while (upper >= lower) {
 		i = lower + ((upper - lower) / 2);
 
 		SLV2PluginClass p = raptor_sequence_get_at(list, i);
-	
+
 		const int cmp = strcmp(slv2_value_as_uri(slv2_plugin_class_get_uri(p)),
 		                       slv2_value_as_uri(uri));
-		
+
 		if (cmp == 0)
 			return p;
 		else if (cmp > 0)
@@ -109,7 +109,7 @@ slv2_values_contains(SLV2Values list, SLV2Value value)
 	for (unsigned i=0; i < slv2_values_size(list); ++i)
 		if (slv2_value_equals(slv2_values_get_at(list, i), value))
 			return true;
-	
+
 	return false;
 }
 
@@ -129,11 +129,11 @@ SLV2UI
 slv2_uis_get_by_uri(SLV2UIs list, SLV2Value uri)
 {
 	// good old fashioned binary search
-	
+
 	int lower = 0;
 	int upper = raptor_sequence_size(list) - 1;
 	int i;
-	
+
 	while (upper >= lower) {
 		i = lower + ((upper - lower) / 2);
 

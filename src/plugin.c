@@ -1,6 +1,6 @@
 /* SLV2
  * Copyright (C) 2007 Dave Robillard <http://drobilla.net>
- *  
+ *
  * This library is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
  * Software Foundation; either version 2 of the License, or (at your option)
@@ -59,13 +59,13 @@ slv2_plugin_free(SLV2Plugin p)
 {
 	slv2_value_free(p->plugin_uri);
 	p->plugin_uri = NULL;
-	
+
 	slv2_value_free(p->bundle_uri);
 	p->bundle_uri = NULL;
-	
+
 	slv2_value_free(p->binary_uri);
 	p->binary_uri = NULL;
-	
+
 	if (p->ports)
 		raptor_free_sequence(p->ports);
 	p->ports = NULL;
@@ -74,12 +74,12 @@ slv2_plugin_free(SLV2Plugin p)
 		librdf_free_model(p->rdf);
 		p->rdf = NULL;
 	}
-	
+
 	if (p->storage) {
 		librdf_free_storage(p->storage);
 		p->storage = NULL;
 	}
-	
+
 	slv2_values_free(p->data_uris);
 	p->data_uris = NULL;
 
@@ -331,7 +331,7 @@ slv2_plugin_get_class(SLV2Plugin p)
 bool
 slv2_plugin_verify(SLV2Plugin plugin)
 {
-	char* query_str = 
+	char* query_str =
 		"SELECT DISTINCT ?type ?name ?license ?port WHERE {\n"
 		"<> a ?type ;\n"
 		"doap:name    ?name ;\n"
@@ -353,13 +353,13 @@ slv2_plugin_verify(SLV2Plugin plugin)
 
 		if (librdf_node_get_type(type_node) == LIBRDF_NODE_TYPE_RESOURCE)
 			has_type = true;
-		
+
 		if (name_node)
 			has_name = true;
-		
+
 		if (license_node)
 			has_license = true;
-		
+
 		if (port_node)
 			has_port = true;
 
@@ -388,7 +388,7 @@ slv2_plugin_get_name(SLV2Plugin plugin)
 {
 	SLV2Values results = slv2_plugin_get_value_by_qname_i18n(plugin, "doap:name");
 	SLV2Value  ret     = NULL;
-	
+
 	if (results) {
 		SLV2Value val = slv2_values_get_at(results, 0);
 		if (slv2_value_is_string(val))
@@ -411,7 +411,7 @@ slv2_plugin_get_value(SLV2Plugin p,
                       SLV2Value  predicate)
 {
 	char* query = NULL;
-	
+
 	/* Hack around broken RASQAL, full URI predicates don't work :/ */
 	query = slv2_strjoin(
 		"PREFIX slv2predicate: <", slv2_value_as_string(predicate), ">\n",
@@ -420,7 +420,7 @@ slv2_plugin_get_value(SLV2Plugin p,
 		"}\n", NULL);
 
 	SLV2Values result = slv2_plugin_query_variable(p, query, 0);
-	
+
 	free(query);
 
 	return result;
@@ -438,13 +438,13 @@ slv2_plugin_get_value_by_qname(SLV2Plugin  p,
 			"}\n", NULL);
 
 	SLV2Values result = slv2_plugin_query_variable(p, query, 0);
-	
+
 	free(query);
 
 	return result;
 }
 
-	
+
 /* internal: get i18n value if possible */
 SLV2Values
 slv2_plugin_get_value_by_qname_i18n(SLV2Plugin  p,
@@ -457,13 +457,13 @@ slv2_plugin_get_value_by_qname_i18n(SLV2Plugin  p,
 			"}\n", NULL);
 
 	SLV2Values result = slv2_plugin_query_variable(p, query, 0);
-	
+
 	free(query);
 
 	return result;
 }
 
-	
+
 SLV2Values
 slv2_plugin_get_value_for_subject(SLV2Plugin p,
                                   SLV2Value  subject,
@@ -489,7 +489,7 @@ slv2_plugin_get_value_for_subject(SLV2Plugin p,
 		"}\n", NULL);
 
 	SLV2Values result = slv2_plugin_query_variable(p, query, 0);
-	
+
 	free(query);
 	free(subject_token);
 
@@ -525,7 +525,7 @@ void
 slv2_plugin_get_port_float_values(SLV2Plugin  p,
                                   const char* qname,
                                   float*      values)
-{	
+{
 	slv2_plugin_load_ports_if_necessary(p);
 
 	for (int i = 0; i < raptor_sequence_size(p->ports); ++i)
@@ -565,8 +565,8 @@ slv2_plugin_get_port_float_values(SLV2Plugin  p,
 
 
 void
-slv2_plugin_get_port_ranges_float(SLV2Plugin p, 
-                                  float*     min_values, 
+slv2_plugin_get_port_ranges_float(SLV2Plugin p,
+                                  float*     min_values,
                                   float*     max_values,
                                   float*     def_values)
 {
@@ -596,7 +596,7 @@ slv2_plugin_get_num_ports_of_class(SLV2Plugin p,
 			continue;
 
 		va_start(args, class_1);
-		
+
 		bool matches = true;
 		for (SLV2Value class_i = NULL; (class_i = va_arg(args, SLV2Value)) != NULL ; ) {
 			if (!slv2_port_is_a(p, port, class_i)) {
@@ -619,7 +619,7 @@ slv2_plugin_get_num_ports_of_class(SLV2Plugin p,
 bool
 slv2_plugin_has_latency(SLV2Plugin p)
 {
-    const char* const query = 
+    const char* const query =
 		"SELECT ?index WHERE {\n"
 		"	<>      lv2:port         ?port .\n"
 		"	?port   lv2:portProperty lv2:reportsLatency ;\n"
@@ -629,7 +629,7 @@ slv2_plugin_has_latency(SLV2Plugin p)
 	SLV2Values results = slv2_plugin_query_variable(p, query, 0);
 	const bool latent = (slv2_values_size(results) > 0);
 	slv2_values_free(results);
-	
+
 	return latent;
 }
 
@@ -637,7 +637,7 @@ slv2_plugin_has_latency(SLV2Plugin p)
 uint32_t
 slv2_plugin_get_latency_port_index(SLV2Plugin p)
 {
-    const char* const query = 
+    const char* const query =
 		"SELECT ?index WHERE {\n"
 		"	<>      lv2:port         ?port .\n"
 		"	?port   lv2:portProperty lv2:reportsLatency ;\n"
@@ -645,7 +645,7 @@ slv2_plugin_get_latency_port_index(SLV2Plugin p)
 		"}\n";
 
 	SLV2Values result = slv2_plugin_query_variable(p, query, 0);
-	
+
 	// FIXME: need a sane error handling strategy
 	assert(slv2_values_size(result) > 0);
 	SLV2Value val = slv2_values_get_at(result, 0);
@@ -656,13 +656,13 @@ slv2_plugin_get_latency_port_index(SLV2Plugin p)
 	return ret;
 }
 
-	
+
 bool
 slv2_plugin_has_feature(SLV2Plugin p,
                         SLV2Value  feature)
 {
 	SLV2Values features = slv2_plugin_get_supported_features(p);
-	
+
 	const bool ret = features && feature && slv2_values_contains(features, feature);
 
 	slv2_values_free(features);
@@ -675,7 +675,7 @@ slv2_plugin_get_supported_features(SLV2Plugin p)
 {
 	SLV2Values optional = slv2_plugin_get_optional_features(p);
 	SLV2Values required = slv2_plugin_get_required_features(p);
-	
+
 	SLV2Values result = slv2_values_new();
 	unsigned n_optional = slv2_values_size(optional);
 	unsigned n_required = slv2_values_size(required);
@@ -687,7 +687,7 @@ slv2_plugin_get_supported_features(SLV2Plugin p)
 
 	slv2_values_free(optional);
 	slv2_values_free(required);
-	
+
 	return result;
 }
 
@@ -735,14 +735,14 @@ slv2_plugin_get_author_name(SLV2Plugin plugin)
 {
 	SLV2Value ret = NULL;
 
-    const char* const query = 
+    const char* const query =
 		"SELECT ?name WHERE {\n"
 		"	<>      doap:maintainer ?maint . \n"
 		"	?maint  foaf:name ?name . \n"
 		"}\n";
 
 	SLV2Values results = slv2_plugin_query_variable(plugin, query, 0);
-	
+
 	if (results && slv2_values_size(results) > 0) {
 		SLV2Value val = slv2_values_get_at(results, 0);
 		if (slv2_value_is_string(val))
@@ -761,14 +761,14 @@ slv2_plugin_get_author_email(SLV2Plugin plugin)
 {
 	SLV2Value ret = NULL;
 
-    const char* const query = 
+    const char* const query =
 		"SELECT ?email WHERE {\n"
 		"	<>      doap:maintainer ?maint . \n"
 		"	?maint  foaf:mbox ?email . \n"
 		"}\n";
-	
+
 	SLV2Values results = slv2_plugin_query_variable(plugin, query, 0);
-	
+
 	if (results && slv2_values_size(results) > 0) {
 		SLV2Value val = slv2_values_get_at(results, 0);
 		if (slv2_value_is_uri(val))
@@ -781,20 +781,20 @@ slv2_plugin_get_author_email(SLV2Plugin plugin)
 	return ret;
 }
 
-	
+
 SLV2Value
 slv2_plugin_get_author_homepage(SLV2Plugin plugin)
 {
 	SLV2Value ret = NULL;
 
-    const char* const query = 
+    const char* const query =
 		"SELECT ?page WHERE {\n"
 		"	<>      doap:maintainer ?maint . \n"
 		"	?maint  foaf:homepage ?page . \n"
 		"}\n";
-	
+
 	SLV2Values results = slv2_plugin_query_variable(plugin, query, 0);
-	
+
 	if (results && slv2_values_size(results) > 0) {
 		SLV2Value val = slv2_values_get_at(results, 0);
 		if (slv2_value_is_uri(val))

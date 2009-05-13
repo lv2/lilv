@@ -1,6 +1,6 @@
 /* SLV2
  * Copyright (C) 2007 Dave Robillard <http://drobilla.net>
- *  
+ *
  * This library is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
  * Software Foundation; either version 2 of the License, or (at your option)
@@ -55,7 +55,7 @@ typedef struct _Instance {
  * An SLV2Instance is an instantiated SLV2Plugin (ie a loaded dynamic
  * library).  These functions interact with the binary library code only,
  * they do not read data files in any way.
- * 
+ *
  * @{
  */
 
@@ -64,10 +64,10 @@ typedef struct _Instance {
  * The returned object represents shared library objects loaded into memory,
  * it must be cleaned up with slv2_instance_free when no longer
  * needed.
- * 
+ *
  * \a plugin is not modified or directly referenced by the returned object
  * (instances store only a copy of the plugin's URI).
- * 
+ *
  * \a host_features NULL-terminated array of features the host supports.
  * NULL may be passed if the host supports no additional features (unlike
  * the LV2 specification - SLV2 takes care of it).
@@ -190,7 +190,7 @@ slv2_instance_get_descriptor(SLV2Instance instance)
  *
  * Normally hosts should not need to access the LV2_Handle directly,
  * use the slv2_instance_* functions.
- * 
+ *
  * The returned handle is shared and must not be deleted.
  */
 static inline LV2_Handle

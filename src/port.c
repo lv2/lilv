@@ -1,6 +1,6 @@
 /* SLV2
  * Copyright (C) 2007 Dave Robillard <http://drobilla.net>
- *  
+ *
  * This library is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
  * Software Foundation; either version 2 of the License, or (at your option)
@@ -90,12 +90,12 @@ slv2_port_has_property(SLV2Plugin p,
 			"<", slv2_value_as_uri(p->plugin_uri), "> lv2:port ?port ."
 			"?port lv2:symbol \"", slv2_value_as_string(port->symbol), "\";\n",
 			"      lv2:portProperty <", slv2_value_as_uri(property), "> .\n}", NULL);
-			
+
 	SLV2Values results = slv2_plugin_query_variable(p, query, 0);
 	const bool ret = (slv2_values_size(results) > 0);
 	slv2_values_free(results);
 	free(query);
-	
+
 	return ret;
 }
 
@@ -113,7 +113,7 @@ slv2_port_supports_event(SLV2Plugin p,
 			"?port lv2:symbol \"", slv2_value_as_string(port->symbol), "\";\n",
 			"      lv2ev:supportsEvent <", slv2_value_as_uri(event), "> .\n"
 			"}", NULL);
-			
+
 	SLV2Results results = slv2_plugin_query_sparql(p, query);
 	assert(librdf_query_results_is_boolean(results->rdf_results));
 
@@ -121,7 +121,7 @@ slv2_port_supports_event(SLV2Plugin p,
 
 	free(query);
 	slv2_results_free(results);
-	
+
 	return ret;
 }
 
@@ -140,7 +140,7 @@ slv2_port_get_value_by_qname(SLV2Plugin  p,
 			"?port lv2:symbol \"", slv2_value_as_string(port->symbol), "\";\n\t",
 			property, " ?value .\n"
 			"FILTER(lang(?value) = \"\") }", NULL);
-			
+
 	results = slv2_plugin_query_variable(p, query, 0);
 
 	free(query);
@@ -154,7 +154,7 @@ slv2_port_get_value(SLV2Plugin p,
                     SLV2Value  predicate)
 {
 	char* query = NULL;
-	
+
 	/* Hack around broken RASQAL, full URI predicates don't work :/ */
 	query = slv2_strjoin(
 		"PREFIX slv2predicate: <", slv2_value_as_string(predicate), ">",
@@ -165,7 +165,7 @@ slv2_port_get_value(SLV2Plugin p,
 		"}\n", NULL);
 
 	SLV2Values result = slv2_plugin_query_variable(p, query, 0);
-	
+
 	free(query);
 
 	return result;
@@ -185,9 +185,9 @@ slv2_port_get_value_by_qname_i18n(SLV2Plugin  p,
 			"<", slv2_value_as_uri(p->plugin_uri), "> lv2:port ?port .\n"
 			"?port lv2:symbol \"", slv2_value_as_string(port->symbol), "\";\n\t",
 			property, " ?value .\n"
-			"FILTER(lang(?value) = \"", slv2_get_lang(), 
+			"FILTER(lang(?value) = \"", slv2_get_lang(),
 			"\") }", NULL);
-	
+
 	results = slv2_plugin_query_variable(p, query, 0);
 
 	free(query);
@@ -202,7 +202,7 @@ slv2_port_get_symbol(SLV2Plugin p,
 	return port->symbol;
 }
 
-	
+
 SLV2Value
 slv2_port_get_name(SLV2Plugin p,
                    SLV2Port   port)
@@ -217,13 +217,13 @@ slv2_port_get_name(SLV2Plugin p,
 		if (results && slv2_values_size(results) > 0)
 			ret = slv2_value_duplicate(slv2_values_get_at(results, 0));
 	}
-		
+
 	slv2_values_free(results);
 
 	return ret;
 }
 
-	
+
 SLV2Values
 slv2_port_get_classes(SLV2Plugin p,
                       SLV2Port   port)
@@ -233,7 +233,7 @@ slv2_port_get_classes(SLV2Plugin p,
 
 
 void
-slv2_port_get_range(SLV2Plugin p, 
+slv2_port_get_range(SLV2Plugin p,
                     SLV2Port   port,
                     SLV2Value* def,
                     SLV2Value* min,
@@ -254,7 +254,7 @@ slv2_port_get_range(SLV2Plugin p,
 			"OPTIONAL { ?port lv2:minimum ?min }\n",
 			"OPTIONAL { ?port lv2:maximum ?max }\n",
 			"\n}", NULL);
-	
+
 	SLV2Results results = slv2_plugin_query_sparql(p, query);
 
     while (!librdf_query_results_finished(results->rdf_results)) {
@@ -274,7 +274,7 @@ slv2_port_get_range(SLV2Plugin p,
 
 		librdf_query_results_next(results->rdf_results);
 	}
-	
+
 	slv2_results_free(results);
 
 	free(query);
@@ -293,9 +293,9 @@ slv2_port_get_scale_points(SLV2Plugin p,
 			"?point rdf:value ?value ;\n"
 			"       rdfs:label ?label .\n"
 			"\n} ORDER BY ?value", NULL);
-	
+
 	SLV2Results results = slv2_plugin_query_sparql(p, query);
-	
+
 	SLV2ScalePoints ret = NULL;
 
     if (!slv2_results_finished(results))
@@ -307,10 +307,10 @@ slv2_port_get_scale_points(SLV2Plugin p,
 
 		if (value && label)
 			raptor_sequence_push(ret, slv2_scale_point_new(value, label));
-		
+
 		slv2_results_next(results);
 	}
-			
+
 	slv2_results_free(results);
 
 	free(query);
