@@ -21,6 +21,7 @@
 #include <assert.h>
 #include <string.h>
 #include <stdlib.h>
+#include "slv2/types.h"
 #include "slv2/collections.h"
 #include "slv2_internal.h"
 

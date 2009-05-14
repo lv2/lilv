@@ -22,10 +22,10 @@
 #include <stdio.h>
 #include <string.h>
 #include <limits.h>
+#include "slv2/types.h"
 #include "slv2/collections.h"
 #include "slv2/port.h"
 #include "slv2/query.h"
-#include "slv2/types.h"
 #include "slv2/util.h"
 #include "slv2_internal.h"
 

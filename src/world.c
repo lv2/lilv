@@ -24,6 +24,7 @@
 #include <dirent.h>
 #include <string.h>
 #include <librdf.h>
+#include "slv2/types.h"
 #include "slv2/world.h"
 #include "slv2/slv2.h"
 #include "slv2/util.h"
