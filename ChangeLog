@@ -1,3 +1,11 @@
+slv2 (0.6.6) unstable; urgency=low
+
+  * Add manual pages for utilities
+  * Reduce plugin load overhead (on-demand querying with finer granularity)
+  * Fix compilation on Mac OS X
+ 
+ -- Dave Robillard <dave@drobilla.net>  Mon, 25 May 2009 23:30:49 -0400
+
 slv2 (0.6.4) unstable; urgency=low
 
   * Add generic query interface to allow arbitrary querying of data
