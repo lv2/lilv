@@ -12,7 +12,7 @@
  * (http://librdf.org).  It should be portable to any system with Redland, and
  * is tested on various GNU/Linux distributions (often), and MacOS X (occasionally).
  * 
- * The Data (RDF) and code (shared library) functionality in SLV2 is strictly
+ * The data (RDF) and code (shared library) functionality in SLV2 is strictly
  * separated so it is simple to control where each is used (e.g. it is
  * possible to discover/investigate plugins and related data without loading
  * any shared libraries, avoiding the associated risks).
@@ -41,7 +41,7 @@
  * (http://librdf.org).  It should be portable to any system with Redland, and
  * is tested on various GNU/Linux distributions (often), and MacOS X (occasionally).
  * 
- * The Data (RDF) and code (shared library) functionality in SLV2 is strictly
+ * The data (RDF) and code (shared library) functionality in SLV2 is strictly
  * separated so it is simple to control where each is used (e.g. it is
  * possible to discover/investigate plugins and related data without loading
  * any shared libraries, avoiding the associated risks).
