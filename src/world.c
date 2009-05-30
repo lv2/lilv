@@ -24,11 +24,15 @@
 #include <dirent.h>
 #include <string.h>
 #include <librdf.h>
+#include <dlfcn.h>
 #include "slv2/types.h"
 #include "slv2/world.h"
 #include "slv2/slv2.h"
 #include "slv2/util.h"
 #include "slv2_internal.h"
+#ifdef SLV2_DYN_MANIFEST
+#include "lv2_dyn_manifest.h"
+#endif
 
 
 /* private */
@@ -185,13 +189,56 @@ slv2_world_load_bundle(SLV2World world, SLV2Value bundle_uri)
 	librdf_parser_parse_into_model(world->parser, manifest_uri, NULL,
 			manifest_model);
 
-	/* Query statement: ?plugin a lv2:Plugin */
+#ifdef SLV2_DYN_MANIFEST
+	const unsigned char* const query_str = (const unsigned char* const)
+		"PREFIX : <http://lv2plug.in/ns/lv2core#>\n"
+		"PREFIX dynman: <http://naspro.atheme.org/rdf/dman#>\n"
+		"SELECT DISTINCT ?dynman ?binary WHERE {\n"
+		"?dynman a       dynman:DynManifest ;\n"
+		"        :binary ?binary .\n"
+		"}";
+
+	librdf_query* query = librdf_new_query(world->world, "sparql", NULL, query_str, NULL);
+	librdf_query_results* query_results = librdf_query_execute(query, manifest_model);
+	while (!librdf_query_results_finished(query_results)) {
+		librdf_node* dynman_node = librdf_query_results_get_binding_value(query_results, 0);
+		librdf_node* binary_node = librdf_query_results_get_binding_value(query_results, 1);
+
+		if (librdf_node_get_type(binary_node) == LIBRDF_NODE_TYPE_RESOURCE) {
+			const char* lib_path = slv2_uri_to_path(
+					(const char*)librdf_uri_as_string(librdf_node_get_uri(binary_node)));
+
+			if (lib_path) {
+				void* lib = dlopen(lib_path, RTLD_NOW);
+				typedef int (*DynManifestGetFunc)(FILE*);
+				DynManifestGetFunc func = (DynManifestGetFunc)dlsym(lib, "lv2_dyn_manifest_write");
+				if (func) {
+					printf("DYNAMIC MANIFEST <%s> @ <%s> {\n",
+							librdf_uri_as_string(librdf_node_get_uri(dynman_node)),
+							librdf_uri_as_string(librdf_node_get_uri(binary_node)));
+					FILE* dyn_manifest = fopen("/home/dave/dynmanifest.ttl", "w+");//tmpfile();
+					func(dyn_manifest);
+					rewind(dyn_manifest);
+					librdf_parser_parse_file_handle_into_model(world->parser,
+							dyn_manifest, 0, manifest_uri, manifest_model);
+					fclose(dyn_manifest);
+				}
+			}
+
+		}
+
+		librdf_query_results_next(query_results);
+	}
+	librdf_free_query_results(query_results);
+	librdf_free_query(query);
+#endif
+
+	/* ?plugin a lv2:Plugin */
 	librdf_statement* q = librdf_new_statement_from_nodes(world->world,
 			NULL, librdf_new_node_from_node(world->rdf_a_node),
 			      librdf_new_node_from_node(world->lv2_plugin_node));
 
 	librdf_stream* results = librdf_model_find_statements(manifest_model, q);
-
 	while (!librdf_stream_end(results)) {
 		librdf_statement* s = librdf_stream_get_object(results);
 
@@ -216,17 +263,16 @@ slv2_world_load_bundle(SLV2World world, SLV2Value bundle_uri)
 
 		librdf_stream_next(results);
 	}
-
 	librdf_free_stream(results);
 	librdf_free_statement(q);
 
-	/* Query statement: ?specification a lv2:Specification */
+
+	/* ?specification a lv2:Specification */
 	q = librdf_new_statement_from_nodes(world->world,
 			NULL, librdf_new_node_from_node(world->rdf_a_node),
 			      librdf_new_node_from_node(world->lv2_specification_node));
 
 	results = librdf_model_find_statements(manifest_model, q);
-
 	while (!librdf_stream_end(results)) {
 		librdf_statement* s = librdf_stream_get_object(results);
 
@@ -251,7 +297,6 @@ slv2_world_load_bundle(SLV2World world, SLV2Value bundle_uri)
 
 		librdf_stream_next(results);
 	}
-
 	librdf_free_stream(results);
 	librdf_free_statement(q);
 

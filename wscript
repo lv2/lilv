@@ -42,6 +42,8 @@ def set_options(opt):
 	autowaf.set_options(opt)
 	opt.add_option('--no-jack', action='store_true', default=False, dest='no_jack',
 			help="Do not build JACK clients")
+	opt.add_option('--dyn-manifest', action='store_true', default=False, dest='dyn_manifest',
+			help="Build support for dynamic manifest extension [false]")
 	opt.add_option('--test', action='store_true', default=False, dest='build_tests',
 			help="Build unit tests")
 
@@ -53,6 +55,8 @@ def configure(conf):
 	autowaf.check_pkg(conf, 'jack', uselib_store='JACK', atleast_version='0.107.0', mandatory=False)
 	conf.env.append_value('CCFLAGS', '-std=c99')
 	conf.define('SLV2_VERSION', SLV2_VERSION)
+	if Options.options.dyn_manifest:
+		conf.define('SLV2_DYN_MANIFEST', 1)
 	conf.write_config_header('slv2-config.h')
 
 	conf.env['USE_JACK'] = conf.env['HAVE_JACK'] and not Options.options.no_jack
