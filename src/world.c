@@ -216,7 +216,7 @@ slv2_world_load_bundle(SLV2World world, SLV2Value bundle_uri)
 					printf("DYNAMIC MANIFEST <%s> @ <%s> {\n",
 							librdf_uri_as_string(librdf_node_get_uri(dynman_node)),
 							librdf_uri_as_string(librdf_node_get_uri(binary_node)));
-					FILE* dyn_manifest = fopen("/home/dave/dynmanifest.ttl", "w+");//tmpfile();
+					FILE* dyn_manifest = tmpfile();
 					func(dyn_manifest);
 					rewind(dyn_manifest);
 					librdf_parser_parse_file_handle_into_model(world->parser,
