@@ -351,7 +351,7 @@ void
 slv2_world_load_specifications(SLV2World world)
 {
 	unsigned char* query_string = (unsigned char*)
-    	"PREFIX : <http://lv2plug.in/ns/lv2core#>\n"
+		"PREFIX : <http://lv2plug.in/ns/lv2core#>\n"
 		"PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>\n"
 		"SELECT DISTINCT ?spec ?data WHERE {\n"
 		"	?spec a            :Specification ;\n"
@@ -390,7 +390,7 @@ slv2_world_load_plugin_classes(SLV2World world)
 	// FIXME: This loads things that aren't plugin categories
 
 	unsigned char* query_string = (unsigned char*)
-    	"PREFIX : <http://lv2plug.in/ns/lv2core#>\n"
+		"PREFIX : <http://lv2plug.in/ns/lv2core#>\n"
 		"PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>\n"
 		"SELECT DISTINCT ?class ?parent ?label WHERE {\n"
 		//"	?plugin a ?class .\n"
@@ -473,7 +473,7 @@ slv2_world_load_all(SLV2World world)
 
 	// Find all plugins and associated data files
 	unsigned char* query_string = (unsigned char*)
-    	"PREFIX : <http://lv2plug.in/ns/lv2core#>\n"
+		"PREFIX : <http://lv2plug.in/ns/lv2core#>\n"
 		"PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>\n"
 		"PREFIX slv2: <http://drobilla.net/ns/slv2#>\n"
 		"SELECT DISTINCT ?plugin ?data ?bundle\n"
