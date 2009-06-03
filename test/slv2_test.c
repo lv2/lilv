@@ -554,7 +554,7 @@ test_plugin()
 			":plug a lv2:Plugin ; a lv2:CompressorPlugin ; "
 			PLUGIN_NAME("Test plugin") " ; "
 			LICENSE_GPL " ; "
-    		"lv2:optionalFeature lv2:hardRtCapable ; "
+			"lv2:optionalFeature lv2:hardRtCapable ; "
 		    "lv2:requiredFeature <http://lv2plug.in/ns/ext/event> ; "
 			":foo 1.6180 ; "
 			"doap:maintainer [ foaf:name \"David Robillard\" ; "

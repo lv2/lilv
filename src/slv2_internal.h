@@ -61,9 +61,10 @@ struct _SLV2Plugin {
 	SLV2Value            binary_uri; ///< lv2:binary
 	SLV2PluginClass      plugin_class;
 	raptor_sequence*     data_uris;  ///< rdfs::seeAlso
-	raptor_sequence*     ports;
+	SLV2Port*            ports;
 	librdf_storage*      storage;
 	librdf_model*        rdf;
+	uint32_t             num_ports;
 };
 
 SLV2Plugin slv2_plugin_new(SLV2World world, SLV2Value uri, librdf_uri* bundle_uri);

@@ -38,7 +38,6 @@ slv2_port_new(SLV2World world, uint32_t index, const char* symbol)
 	port->index = index;
 	port->symbol = slv2_value_new(world, SLV2_VALUE_STRING, symbol);
 	port->classes = slv2_values_new();
-	//port->node_id = strdup(node_id);
 	return port;
 }
 

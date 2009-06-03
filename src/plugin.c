@@ -48,6 +48,7 @@ slv2_plugin_new(SLV2World world, SLV2Value uri, librdf_uri* bundle_uri)
 	plugin->ports = NULL;
 	plugin->storage = NULL;
 	plugin->rdf = NULL;
+	plugin->num_ports = 0;
 
 	return plugin;
 }
@@ -66,9 +67,12 @@ slv2_plugin_free(SLV2Plugin p)
 	slv2_value_free(p->binary_uri);
 	p->binary_uri = NULL;
 
-	if (p->ports)
-		raptor_free_sequence(p->ports);
-	p->ports = NULL;
+	if (p->ports) {
+		for (uint32_t i = 0; i < p->num_ports; ++i)
+			slv2_port_free(p->ports[i]);
+		free(p->ports);
+		p->ports = NULL;
+	}
 
 	if (p->rdf) {
 		librdf_free_model(p->rdf);
@@ -122,7 +126,8 @@ slv2_plugin_load_ports_if_necessary(SLV2Plugin p)
 		slv2_plugin_load(p);
 
 	if (!p->ports) {
-		p->ports = raptor_new_sequence((void (*)(void*))&slv2_port_free, NULL);
+		p->ports = malloc(sizeof(SLV2Port*));
+		p->ports[0] = NULL;
 
 		const unsigned char* query = (const unsigned char*)
 			"PREFIX : <http://lv2plug.in/ns/lv2core#>\n"
@@ -143,17 +148,28 @@ slv2_plugin_load_ports_if_necessary(SLV2Plugin p)
 			librdf_node* symbol_node = librdf_query_results_get_binding_value(results, 1);
 			librdf_node* index_node = librdf_query_results_get_binding_value(results, 2);
 
-			if (librdf_node_is_literal(symbol_node) &&librdf_node_is_literal(index_node)) {
+			if (librdf_node_is_literal(symbol_node) && librdf_node_is_literal(index_node)) {
 				const char* symbol = (const char*)librdf_node_get_literal_value(symbol_node);
 				const char* index = (const char*)librdf_node_get_literal_value(index_node);
 
 				const int this_index = atoi(index);
-				SLV2Port  this_port  = raptor_sequence_get_at(p->ports, this_index);
+				SLV2Port  this_port  = NULL;
 
-				// Havn't seen this port yet, add it to sequence
+				assert(this_index >= 0);
+
+				if (p->num_ports > (unsigned)this_index) {
+					this_port = p->ports[this_index];
+				} else {
+					p->ports = realloc(p->ports, (this_index + 1) * sizeof(SLV2Port*));
+					memset(p->ports + p->num_ports, '\0',
+							(this_index - p->num_ports) * sizeof(SLV2Port));
+					p->num_ports = this_index + 1;
+				}
+
+				// Havn't seen this port yet, add it to array
 				if (!this_port) {
 					this_port = slv2_port_new(p->world, this_index, symbol);
-					raptor_sequence_set_at(p->ports, this_index, this_port);
+					p->ports[this_index] = this_port;
 				}
 
 				raptor_sequence_push(this_port->classes,
@@ -497,7 +513,7 @@ uint32_t
 slv2_plugin_get_num_ports(SLV2Plugin p)
 {
 	slv2_plugin_load_ports_if_necessary(p);
-	return raptor_sequence_size(p->ports);
+	return p->num_ports;
 }
 
 
@@ -508,7 +524,7 @@ slv2_plugin_get_port_float_values(SLV2Plugin  p,
 {
 	slv2_plugin_load_ports_if_necessary(p);
 
-	for (int i = 0; i < raptor_sequence_size(p->ports); ++i)
+	for (uint32_t i = 0; i < p->num_ports; ++i)
 		values[i] = NAN;
 
 	unsigned char* query = (unsigned char*)slv2_strjoin(
@@ -570,8 +586,8 @@ slv2_plugin_get_num_ports_of_class(SLV2Plugin p,
 	uint32_t ret = 0;
 	va_list  args;
 
-	for (unsigned i=0; i < slv2_plugin_get_num_ports(p); ++i) {
-		SLV2Port port = raptor_sequence_get_at(p->ports, i);
+	for (unsigned i=0; i < p->num_ports; ++i) {
+		SLV2Port port = p->ports[i];
 		if (!slv2_port_is_a(p, port, class_1))
 			continue;
 
@@ -691,7 +707,10 @@ slv2_plugin_get_port_by_index(SLV2Plugin p,
                               uint32_t   index)
 {
 	slv2_plugin_load_ports_if_necessary(p);
-	return raptor_sequence_get_at(p->ports, (int)index);
+	if (index < p->num_ports)
+		return p->ports[index];
+	else
+		return NULL;
 }
 
 
@@ -700,8 +719,8 @@ slv2_plugin_get_port_by_symbol(SLV2Plugin p,
                                SLV2Value  symbol)
 {
 	slv2_plugin_load_ports_if_necessary(p);
-	for (int i=0; i < raptor_sequence_size(p->ports); ++i) {
-		SLV2Port port = raptor_sequence_get_at(p->ports, i);
+	for (uint32_t i=0; i < p->num_ports; ++i) {
+		SLV2Port port = p->ports[i];
 		if (slv2_value_equals(port->symbol, symbol))
 			return port;
 	}
