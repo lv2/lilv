@@ -176,6 +176,11 @@ slv2_world_load_file(SLV2World world, librdf_uri* file_uri)
 void
 slv2_world_load_bundle(SLV2World world, SLV2Value bundle_uri)
 {
+	if (!slv2_value_is_uri(bundle_uri)) {
+		fprintf(stderr, "ERROR: slv2_world_load_bundle called with non-URI argument\n");
+		return;
+	}
+
 	librdf_uri* manifest_uri = librdf_new_uri_relative_to_base(
 			bundle_uri->val.uri_val, (const unsigned char*)"manifest.ttl");
 
@@ -464,8 +469,6 @@ slv2_world_load_plugin_classes(SLV2World world)
 					plugin_class = prev;
 			}
 
-			SLV2Value uri = slv2_value_new_librdf_uri(world, class_uri);
-
 			// If this class differs from the last, append a new one
 			if (!plugin_class) {
 				if (n_classes == 0) {
@@ -491,12 +494,14 @@ slv2_world_load_plugin_classes(SLV2World world)
 
 					// Otherwise the query engine is giving us unsorted results :/
 					} else {
+						SLV2Value uri = slv2_value_new_librdf_uri(world, class_uri);
 						plugin_class = slv2_plugin_classes_get_by_uri(classes, uri);
 						if (!plugin_class) {
 							plugin_class = slv2_plugin_class_new(world, parent_uri, class_uri, label);
 							raptor_sequence_push(classes, plugin_class);
 							raptor_sequence_sort(classes, slv2_plugin_class_compare_by_uri);
 						}
+						slv2_value_free(uri);
 					}
 				}
 			} else {
@@ -587,10 +592,9 @@ slv2_world_load_all(SLV2World world)
 					plugin = prev;
 			}
 
-			SLV2Value uri = slv2_value_new_librdf_uri(world, plugin_uri);
-
 			// If this plugin differs from the last, append a new one
 			if (!plugin) {
+				SLV2Value uri = slv2_value_new_librdf_uri(world, plugin_uri);
 				if (n_plugins == 0) {
 					plugin = slv2_plugin_new(world, uri, bundle_uri);
 					raptor_sequence_push(world->plugins, plugin);
@@ -619,6 +623,8 @@ slv2_world_load_all(SLV2World world)
 							plugin = slv2_plugin_new(world, uri, bundle_uri);
 							raptor_sequence_push(world->plugins, plugin);
 							raptor_sequence_sort(world->plugins, slv2_plugin_compare_by_uri);
+						} else {
+							slv2_value_free(uri);
 						}
 					}
 				}
