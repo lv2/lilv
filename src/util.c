@@ -28,34 +28,26 @@
 char*
 slv2_strjoin(const char* first, ...)
 {
-	/* FIXME: This is, in fact, as stupid as it looks */
-
 	size_t  len    = strlen(first);
-	char*   result = NULL;
+	char*   result = malloc(len + 1);
+
+	memcpy(result, first, len);
+
 	va_list args;
-
 	va_start(args, first);
 	while (1) {
 		const char* const s = va_arg(args, const char *);
 		if (s == NULL)
 			break;
-		len += strlen(s);
+
+		const size_t this_len = strlen(s);
+		result = realloc(result, len + this_len + 1);
+		memcpy(result + len, s, this_len);
+		len += this_len;
 	}
 	va_end(args);
 
-	result = malloc(len + 1);
-	if (!result)
-		return NULL;
-
-	strcpy(result, first);
-	va_start(args, first);
-	while (1) {
-		const char* const s = va_arg(args, const char *);
-		if (s == NULL)
-			break;
-		strcat(result, s);
-	}
-	va_end(args);
+	result[len] = '\0';
 
 	return result;
 }
