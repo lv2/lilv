@@ -430,7 +430,7 @@ void
 slv2_world_load_plugin_classes(SLV2World world)
 {
 	// FIXME: This will need to be a bit more clever when more data is around
-	// then the ontology (ie classes which aren't LV2 plugin_classes)
+	// than the ontology (ie classes which aren't LV2 plugin_classes)
 
 	// FIXME: This loads things that aren't plugin categories
 
@@ -438,9 +438,8 @@ slv2_world_load_plugin_classes(SLV2World world)
 		"PREFIX : <http://lv2plug.in/ns/lv2core#>\n"
 		"PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>\n"
 		"SELECT DISTINCT ?class ?parent ?label WHERE {\n"
-		//"	?plugin a ?class .\n"
 		"	?class a rdfs:Class; rdfs:subClassOf ?parent; rdfs:label ?label\n"
-		"}\n"; // ORDER BY ?class\n";
+		"}\n";
 
 	librdf_query* q = librdf_new_query(world->world, "sparql",
 		NULL, query_string, NULL);
@@ -562,14 +561,14 @@ slv2_world_load_all(SLV2World world)
 					// If the URI is > the last in the list, just append (avoid sort)
 					if (strcmp(
 							slv2_value_as_string(slv2_plugin_get_uri(prev)),
-							librdf_uri_as_string(plugin_uri)) < 0) {
+							(const char*)librdf_uri_as_string(plugin_uri)) < 0) {
 						plugin = slv2_plugin_new(world, uri, bundle_uri);
 						raptor_sequence_push(world->plugins, plugin);
 
 					// If the URI is < the first in the list, just prepend (avoid sort)
 					} else if (strcmp(
 							slv2_value_as_string(slv2_plugin_get_uri(first)),
-							librdf_uri_as_string(plugin_uri)) > 0) {
+							(const char*)librdf_uri_as_string(plugin_uri)) > 0) {
 						plugin = slv2_plugin_new(world, uri, bundle_uri);
 						raptor_sequence_shift(world->plugins, plugin);
 
