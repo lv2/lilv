@@ -400,7 +400,7 @@ slv2_world_load_specifications(SLV2World world)
 		"PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>\n"
 		"SELECT DISTINCT ?spec ?data WHERE {\n"
 		"	?spec a            :Specification ;\n"
-		"         rdfs:seeAlso ?data .\n"
+		"	      rdfs:seeAlso ?data .\n"
 		"}\n";
 
 	librdf_query* q = librdf_new_query(world->world, "sparql", NULL, query_string, NULL);
@@ -409,7 +409,6 @@ slv2_world_load_specifications(SLV2World world)
 
 	while (!librdf_query_results_finished(results)) {
 		librdf_node* spec_node = librdf_query_results_get_binding_value(results, 0);
-		//librdf_uri*  spec_uri  = librdf_node_get_uri(spec_node);
 		librdf_node* data_node = librdf_query_results_get_binding_value(results, 1);
 		librdf_uri*  data_uri  = librdf_node_get_uri(data_node);
 
@@ -430,9 +429,8 @@ void
 slv2_world_load_plugin_classes(SLV2World world)
 {
 	// FIXME: This will need to be a bit more clever when more data is around
-	// than the ontology (ie classes which aren't LV2 plugin_classes)
-
-	// FIXME: This loads things that aren't plugin categories
+	// than the ontology (ie classes which aren't LV2 plugin_classes), it
+	// currently loads things that aren't actually plugin classes
 
 	unsigned char* query_string = (unsigned char*)
 		"PREFIX : <http://lv2plug.in/ns/lv2core#>\n"
@@ -454,13 +452,57 @@ slv2_world_load_plugin_classes(SLV2World world)
 		librdf_node* label_node  = librdf_query_results_get_binding_value(results, 2);
 		const char*  label       = (const char*)librdf_node_get_literal_value(label_node);
 
-		assert(class_uri);
+		if (class_uri && parent_uri) {
+			SLV2PluginClass plugin_class = NULL;
 
-		SLV2PluginClass plugin_class = slv2_plugin_class_new(world,
-				parent_uri, class_uri, label);
-		raptor_sequence_push(world->plugin_classes, plugin_class);
-		// FIXME: Slow!  ORDER BY broken in certain versions of redland?
-		raptor_sequence_sort(world->plugin_classes, slv2_plugin_class_compare_by_uri);
+			// Check if this is another match for the last plugin (avoid search)
+			SLV2PluginClasses classes = world->plugin_classes;
+			const unsigned n_classes = raptor_sequence_size(classes);
+			if (n_classes >= 1) {
+				SLV2PluginClass prev = raptor_sequence_get_at(classes, n_classes - 1);
+				if (librdf_uri_equals(class_uri, prev->uri->val.uri_val))
+					plugin_class = prev;
+			}
+
+			SLV2Value uri = slv2_value_new_librdf_uri(world, class_uri);
+
+			// If this class differs from the last, append a new one
+			if (!plugin_class) {
+				if (n_classes == 0) {
+					plugin_class = slv2_plugin_class_new(world, parent_uri, class_uri, label);
+					raptor_sequence_push(classes, plugin_class);
+				} else {
+					SLV2PluginClass first = raptor_sequence_get_at(classes, 0);
+					SLV2PluginClass prev  = raptor_sequence_get_at(classes, n_classes - 1);
+
+					// If the URI is > the last in the list, just append (avoid sort)
+					if (strcmp(
+							slv2_value_as_string(slv2_plugin_class_get_uri(prev)),
+							(const char*)librdf_uri_as_string(class_uri)) < 0) {
+						plugin_class = slv2_plugin_class_new(world, parent_uri, class_uri, label);
+						raptor_sequence_push(classes, plugin_class);
+
+					// If the URI is < the first in the list, just prepend (avoid sort)
+					} else if (strcmp(
+							slv2_value_as_string(slv2_plugin_class_get_uri(first)),
+							(const char*)librdf_uri_as_string(class_uri)) > 0) {
+						plugin_class = slv2_plugin_class_new(world, parent_uri, class_uri, label);
+						raptor_sequence_shift(classes, plugin_class);
+
+					// Otherwise the query engine is giving us unsorted results :/
+					} else {
+						plugin_class = slv2_plugin_classes_get_by_uri(classes, uri);
+						if (!plugin_class) {
+							plugin_class = slv2_plugin_class_new(world, parent_uri, class_uri, label);
+							raptor_sequence_push(classes, plugin_class);
+							raptor_sequence_sort(classes, slv2_plugin_class_compare_by_uri);
+						}
+					}
+				}
+			} else {
+				// TODO: Support classes with several parents
+			}
+		}
 
 		librdf_free_node(class_node);
 		librdf_free_node(parent_node);
@@ -468,8 +510,6 @@ slv2_world_load_plugin_classes(SLV2World world)
 
 		librdf_query_results_next(results);
 	}
-
-	// FIXME: filter list here
 
 	librdf_free_query_results(results);
 	librdf_free_query(q);
@@ -549,7 +589,7 @@ slv2_world_load_all(SLV2World world)
 
 			SLV2Value uri = slv2_value_new_librdf_uri(world, plugin_uri);
 
-			// If this plugin differs from the last, append a new SLV2Plugin
+			// If this plugin differs from the last, append a new one
 			if (!plugin) {
 				if (n_plugins == 0) {
 					plugin = slv2_plugin_new(world, uri, bundle_uri);
