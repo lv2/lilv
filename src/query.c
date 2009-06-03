@@ -64,7 +64,7 @@ slv2_value_from_librdf_node(SLV2World world, librdf_node* node)
 						"http://www.w3.org/2001/XMLSchema#decimal"))
 				type = SLV2_VALUE_FLOAT;
 			else
-				fprintf(stderr, "Unknown datatype %s\n", librdf_uri_as_string(datatype_uri));
+				SLV2_ERRORF("Unknown datatype %s\n", librdf_uri_as_string(datatype_uri));
 		}
 		result = slv2_value_new(world, type, (const char*)librdf_node_get_literal_value(node));
 		break;
@@ -74,7 +74,7 @@ slv2_value_from_librdf_node(SLV2World world, librdf_node* node)
 		break;
 	case LIBRDF_NODE_TYPE_UNKNOWN:
 	default:
-		fprintf(stderr, "Unknown RDF node type %d\n", librdf_node_get_type(node));
+		SLV2_ERRORF("Unknown RDF node type %d\n", librdf_node_get_type(node));
 		break;
 	}
 
@@ -96,7 +96,7 @@ slv2_query_get_variable_bindings(SLV2World   world,
 		librdf_node* node = librdf_query_results_get_binding_value(results->rdf_results, variable);
 
 		if (node == NULL) {
-			fprintf(stderr, "SLV2 ERROR: Variable %d bound to NULL.\n", variable);
+			SLV2_ERRORF("Variable %d bound to NULL.\n", variable);
 			librdf_query_results_next(results->rdf_results);
 			continue;
 		}
@@ -137,21 +137,21 @@ slv2_plugin_query_sparql(SLV2Plugin  plugin,
 
 	char* query_str = slv2_strjoin(slv2_query_prefixes, sparql_str, NULL);
 
-	//printf("******** Query \n%s********\n", query_str);
-
 	librdf_query* query = librdf_new_query(plugin->world->world, "sparql", NULL,
 			(const unsigned char*)query_str, base_uri);
 
 	if (!query) {
-		fprintf(stderr, "ERROR: Could not create query\n");
+		SLV2_ERRORF("Failed to create query:\n%s", query_str);
 		return NULL;
 	}
 
-	// FIXME: locale kludges to work around librdf bug
+	// Reset numeric locale to correctly interpret turtle numeric constants
 	char* locale = strdup(setlocale(LC_NUMERIC, NULL));
-
 	setlocale(LC_NUMERIC, "POSIX");
+
 	librdf_query_results* results = librdf_query_execute(query, plugin->rdf);
+
+	// Restore numeric locale
 	setlocale(LC_NUMERIC, locale);
 
 	free(locale);

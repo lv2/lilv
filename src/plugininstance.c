@@ -53,14 +53,14 @@ slv2_plugin_instantiate(SLV2Plugin               plugin,
 	dlerror();
 	void* lib = dlopen(lib_path, RTLD_NOW);
 	if (!lib) {
-		fprintf(stderr, "Unable to open library %s (%s)\n", lib_path, dlerror());
+		SLV2_ERRORF("Unable to open library %s (%s)\n", lib_path, dlerror());
 		return NULL;
 	}
 
 	LV2_Descriptor_Function df = dlsym(lib, "lv2_descriptor");
 
 	if (!df) {
-		fprintf(stderr, "Could not find symbol 'lv2_descriptor', "
+		SLV2_ERRORF("Could not find symbol 'lv2_descriptor', "
 				"%s is not a LV2 plugin.\n", lib_path);
 		dlclose(lib);
 		return NULL;
@@ -71,24 +71,17 @@ slv2_plugin_instantiate(SLV2Plugin               plugin,
 		const char* bundle_path = slv2_uri_to_path(slv2_value_as_uri(
 					slv2_plugin_get_bundle_uri(plugin)));
 
-		//printf("Bundle path: %s\n", bundle_path);
-
 		for (uint32_t i=0; 1; ++i) {
 
 			const LV2_Descriptor* ld = df(i);
 
 			if (!ld) {
-				fprintf(stderr, "Did not find plugin %s in %s\n",
+				SLV2_ERRORF("Did not find plugin %s in %s\n",
 						slv2_value_as_uri(slv2_plugin_get_uri(plugin)), lib_path);
 				dlclose(lib);
 				break; // return NULL
 			} else if (!strcmp(ld->URI, slv2_value_as_uri(slv2_plugin_get_uri(plugin)))) {
-
 				assert(plugin->plugin_uri);
-
-				//printf("Found %s at index %u in:\n\t%s\n\n",
-				//		librdf_uri_as_string(plugin->plugin_uri), i, lib_path);
-
 				assert(ld->instantiate);
 
 				// Create SLV2Instance to return
@@ -110,7 +103,6 @@ slv2_plugin_instantiate(SLV2Plugin               plugin,
 
 		// Failed to instantiate
 		if (result->lv2_handle == NULL) {
-			//printf("Failed to instantiate %s\n", plugin->plugin_uri);
 			free(result);
 			return NULL;
 		}

@@ -96,14 +96,14 @@ slv2_value_new_librdf_node(SLV2World world, librdf_node* node)
 			else if (librdf_uri_equals(datatype_uri, librdf_node_get_uri(world->xsd_decimal_node)))
 				val->type = SLV2_VALUE_FLOAT;
 			else
-				fprintf(stderr, "Unknown datatype %s\n", librdf_uri_as_string(datatype_uri));
+				SLV2_ERRORF("Unknown datatype %s\n", librdf_uri_as_string(datatype_uri));
 		}
 		val->str_val = strdup((char*)librdf_node_get_literal_value(node));
 		break;
 	case LIBRDF_NODE_TYPE_BLANK:
 	case LIBRDF_NODE_TYPE_UNKNOWN:
 	default:
-		fprintf(stderr, "slv2_value_new_librdf_node error: Unknown node type.");
+		SLV2_ERROR("Unknown node type");
 		free(val);
 		val = NULL;
 		break;

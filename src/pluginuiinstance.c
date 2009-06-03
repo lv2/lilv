@@ -56,14 +56,14 @@ slv2_ui_instantiate(SLV2Plugin                     plugin,
 	dlerror();
 	void* lib = dlopen(lib_path, RTLD_NOW);
 	if (!lib) {
-		fprintf(stderr, "Unable to open UI library %s (%s)\n", lib_path, dlerror());
+		SLV2_ERRORF("Unable to open UI library %s (%s)\n", lib_path, dlerror());
 		return NULL;
 	}
 
 	LV2UI_DescriptorFunction df = dlsym(lib, "lv2ui_descriptor");
 
 	if (!df) {
-		fprintf(stderr, "Could not find symbol 'lv2ui_descriptor', "
+		SLV2_ERRORF("Could not find symbol 'lv2ui_descriptor', "
 				"%s is not a LV2 plugin UI.\n", lib_path);
 		dlclose(lib);
 		return NULL;
@@ -76,17 +76,12 @@ slv2_ui_instantiate(SLV2Plugin                     plugin,
 			const LV2UI_Descriptor* ld = df(i);
 
 			if (!ld) {
-				fprintf(stderr, "Did not find UI %s in %s\n",
+				SLV2_ERRORF("Did not find UI %s in %s\n",
 						slv2_value_as_uri(slv2_ui_get_uri(ui)), lib_path);
 				dlclose(lib);
 				break; // return NULL
 			} else if (!strcmp(ld->URI, slv2_value_as_uri(slv2_ui_get_uri(ui)))) {
-
 				assert(plugin->plugin_uri);
-
-				printf("Found UI %s at index %u in:\n\t%s\n\n",
-				       slv2_value_as_uri(plugin->plugin_uri), i, lib_path);
-
 				assert(ld->instantiate);
 
 				// Create SLV2UIInstance to return
@@ -110,7 +105,6 @@ slv2_ui_instantiate(SLV2Plugin                     plugin,
 
 	// Failed to instantiate
 	if (result == NULL || result->pimpl->lv2ui_handle == NULL) {
-		//printf("Failed to instantiate %s\n", plugin->plugin_uri);
 		free(result);
 		return NULL;
 	}

@@ -44,8 +44,8 @@ slv2_world_new_internal(SLV2World world)
 
 	world->storage = librdf_new_storage(world->world, "trees", NULL, NULL);
 	if (!world->storage) {
-		fprintf(stderr, "Warning: Unable to create \"trees\" RDF storage.\n"
-		                "Performance can be improved by upgrading librdf.\n");
+		SLV2_WARN("Warning: Unable to create \"trees\" RDF storage.\n"
+				"Performance can be improved by upgrading librdf.\n");
 		world->storage = librdf_new_storage(world->world, "hashes", NULL,
 				"hash-type='memory'");
 	}
@@ -177,7 +177,7 @@ void
 slv2_world_load_bundle(SLV2World world, SLV2Value bundle_uri)
 {
 	if (!slv2_value_is_uri(bundle_uri)) {
-		fprintf(stderr, "ERROR: slv2_world_load_bundle called with non-URI argument\n");
+		SLV2_ERROR("Bundle 'URI' is not a URI\n");
 		return;
 	}
 

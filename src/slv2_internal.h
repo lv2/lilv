@@ -240,6 +240,11 @@ struct _SLV2Results {
 char* slv2_strjoin(const char* first, ...);
 char* slv2_get_lang();
 
+#define SLV2_ERROR(str)       fprintf(stderr, "ERROR: %s: " str, __func__)
+#define SLV2_ERRORF(fmt, ...) fprintf(stderr, "ERROR: %s: " fmt, __func__, __VA_ARGS__)
+
+#define SLV2_WARN(str) fprintf(stderr, "WARNING: %s: " str, __func__)
+#define SLV2_WARNF(fmt, ...) fprintf(stderr, "WARNING: %s: " fmt, __func__, __VA_ARGS__)
 
 #ifdef __cplusplus
 }

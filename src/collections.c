@@ -53,7 +53,7 @@ prefix ## _size(CollType coll) \
 ElemType \
 prefix ## _get_at(CollType coll, unsigned index) \
 { \
-	if (index > INT_MAX) \
+	if (!coll || index > INT_MAX) \
 		return NULL; \
 	else \
 		return (ElemType)raptor_sequence_get_at(coll, (int)index); \

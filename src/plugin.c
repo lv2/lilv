@@ -153,8 +153,6 @@ slv2_plugin_load_ports_if_necessary(SLV2Plugin p)
 			const char* symbol = (const char*)librdf_node_get_literal_value(symbol_node);
 			const char* index = (const char*)librdf_node_get_literal_value(index_node);
 
-			//printf("PORT: %s %s %s\n", type, index, symbol);
-
 			const int this_index = atoi(index);
 			SLV2Port  this_port  = NULL;
 
@@ -372,8 +370,7 @@ slv2_plugin_verify(SLV2Plugin plugin)
 	slv2_results_free(results);
 
 	if ( ! (has_type && has_name && has_license && has_port) ) {
-		fprintf(stderr, "Invalid LV2 Plugin %s\n",
-				slv2_value_as_uri(slv2_plugin_get_uri(plugin)));
+		SLV2_WARNF("Invalid plugin <%s>\n", slv2_value_as_uri(slv2_plugin_get_uri(plugin)));
 		return false;
 	} else {
 		return true;
@@ -399,6 +396,10 @@ slv2_plugin_get_name(SLV2Plugin plugin)
 			ret = slv2_value_duplicate(val);
 		slv2_values_free(results);
 	}
+
+	if (!ret)
+		SLV2_WARNF("<%s> has no (mandatory) doap:name\n",
+				slv2_value_as_string(slv2_plugin_get_uri(plugin)));
 
 	return ret;
 }
@@ -468,8 +469,7 @@ slv2_plugin_get_value_for_subject(SLV2Plugin p,
                                   SLV2Value  predicate)
 {
 	if ( ! slv2_value_is_uri(subject)) {
-		fprintf(stderr, "slv2_plugin_get_value_for_subject error: "
-				"subject is not a URI\n");
+		SLV2_ERROR("slv2_plugin_get_value_for_subject: subject not a URI\n");
 		return NULL;
 	}
 

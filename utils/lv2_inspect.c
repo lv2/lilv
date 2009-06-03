@@ -102,11 +102,15 @@ print_plugin(SLV2Plugin p)
 	printf("%s\n\n", slv2_value_as_uri(slv2_plugin_get_uri(p)));
 
 	val = slv2_plugin_get_name(p);
-	printf("\tName:              %s\n", slv2_value_as_string(val));
-	slv2_value_free(val);
+	if (val) {
+		printf("\tName:              %s\n", slv2_value_as_string(val));
+		slv2_value_free(val);
+	}
 
 	SLV2Value class_label = slv2_plugin_class_get_label(slv2_plugin_get_class(p));
-	printf("\tClass:             %s\n", slv2_value_as_string(class_label));
+	if (class_label) {
+		printf("\tClass:             %s\n", slv2_value_as_string(class_label));
+	}
 
 	val = slv2_plugin_get_author_name(p);
 	if (val) {
