@@ -131,48 +131,31 @@ slv2_plugin_load_ports_if_necessary(SLV2Plugin p)
 			"?port a        ?type ;\n"
 			"      :symbol  ?symbol ;\n"
 			"      :index   ?index .\n"
-			"} ORDER BY (?index)";
+			"}";
 
 		librdf_query* q = librdf_new_query(p->world->world, "sparql",
 				NULL, query, slv2_value_as_librdf_uri(p->plugin_uri));
 
 		librdf_query_results* results = librdf_query_execute(q, p->rdf);
 
-		int num_ports  = 0;
-		int last_index = -1;
-
 		while (!librdf_query_results_finished(results)) {
-
 			librdf_node* type_node = librdf_query_results_get_binding_value(results, 0);
 			librdf_node* symbol_node = librdf_query_results_get_binding_value(results, 1);
 			librdf_node* index_node = librdf_query_results_get_binding_value(results, 2);
 
-			assert(librdf_node_is_literal(symbol_node));
-			assert(librdf_node_is_literal(index_node));
+			if (librdf_node_is_literal(symbol_node) &&librdf_node_is_literal(index_node)) {
+				const char* symbol = (const char*)librdf_node_get_literal_value(symbol_node);
+				const char* index = (const char*)librdf_node_get_literal_value(index_node);
 
-			const char* symbol = (const char*)librdf_node_get_literal_value(symbol_node);
-			const char* index = (const char*)librdf_node_get_literal_value(index_node);
+				const int this_index = atoi(index);
+				SLV2Port  this_port  = raptor_sequence_get_at(p->ports, this_index);
 
-			const int this_index = atoi(index);
-			SLV2Port  this_port  = NULL;
+				// Havn't seen this port yet, add it to sequence
+				if (!this_port) {
+					this_port = slv2_port_new(p->world, this_index, symbol);
+					raptor_sequence_set_at(p->ports, this_index, this_port);
+				}
 
-			// ORDER BY guarantees order
-			assert(this_index <= num_ports);
-
-			// Create a new SLV2Port, and add to template
-			if (this_index == num_ports) {
-				assert(this_index == last_index + 1);
-				this_port = slv2_port_new(p->world, (unsigned)atoi(index), symbol);
-				raptor_sequence_push(p->ports, this_port);
-				++num_ports;
-				++last_index;
-
-			// More information about a port we already created
-			} else if (this_index < num_ports) {
-				this_port = slv2_plugin_get_port_by_index(p, this_index);
-			}
-
-			if (this_port) {
 				raptor_sequence_push(this_port->classes,
 						slv2_value_new_librdf_uri(p->world, librdf_node_get_uri(type_node)));
 			}
@@ -180,7 +163,6 @@ slv2_plugin_load_ports_if_necessary(SLV2Plugin p)
 			librdf_free_node(type_node);
 			librdf_free_node(symbol_node);
 			librdf_free_node(index_node);
-
 			librdf_query_results_next(results);
 		}
 

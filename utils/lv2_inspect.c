@@ -34,6 +34,11 @@ print_port(SLV2Plugin p, uint32_t index, float* mins, float* maxes, float* defau
 
 	printf("\n\tPort %d:\n", index);
 
+	if (!port) {
+		printf("\t\tERROR: Illegal/nonexistent port\n");
+		return;
+	}
+
 	SLV2Values classes = slv2_port_get_classes(p, port);
 
 	printf("\t\tClasses:\n");
