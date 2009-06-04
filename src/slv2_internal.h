@@ -165,6 +165,9 @@ slv2_world_load_specifications(SLV2World world);
 void
 slv2_world_load_file(SLV2World world, librdf_uri* file_uri);
 
+librdf_storage*
+slv2_world_new_storage(SLV2World world);
+
 
 /* ********* Plugin UI ********* */
 

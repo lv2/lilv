@@ -226,6 +226,7 @@ SELECT ?name WHERE { <> lv2p:hasPreset ?preset . ?preset dc:title ?name }");
 	for (; !slv2_results_finished(presets); slv2_results_next(presets)) {
 		SLV2Value name = slv2_results_get_binding_value(presets, 0);
 		printf("\t         %s\n", slv2_value_as_string(name));
+		slv2_value_free(name);
 	}
 	slv2_results_free(presets);
 

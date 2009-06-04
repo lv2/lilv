@@ -195,9 +195,7 @@ slv2_plugin_load(SLV2Plugin p)
 
 	if (!p->storage) {
 		assert(!p->rdf);
-		p->storage = librdf_new_storage(p->world->world, "trees", NULL, NULL);
-		if (!p->storage)
-			p->storage = librdf_new_storage(p->world->world, "memory", NULL, NULL);
+		p->storage = slv2_world_new_storage(p->world);
 		p->rdf = librdf_new_model(p->world->world, p->storage, NULL);
 	}
 

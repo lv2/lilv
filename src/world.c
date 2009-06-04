@@ -42,14 +42,7 @@ slv2_world_new_internal(SLV2World world)
 	assert(world);
 	assert(world->world);
 
-	world->storage = librdf_new_storage(world->world, "trees", NULL, NULL);
-	if (!world->storage) {
-		SLV2_WARN("Warning: Unable to create \"trees\" RDF storage.\n"
-				"Performance can be improved by upgrading librdf.\n");
-		world->storage = librdf_new_storage(world->world, "hashes", NULL,
-				"hash-type='memory'");
-	}
-
+	world->storage = slv2_world_new_storage(world);
 	if (!world->storage)
 		goto fail;
 
@@ -88,6 +81,28 @@ slv2_world_new_internal(SLV2World world)
 fail:
 	/* keep on rockin' in the */ free(world);
 	return NULL;
+}
+
+
+/* private */
+librdf_storage*
+slv2_world_new_storage(SLV2World world)
+{
+	static bool warned = false;
+	librdf_hash* options = librdf_new_hash_from_string(world->world, NULL,
+			"index-spo='yes',index-ops='yes'");
+	librdf_storage* ret = librdf_new_storage_with_options(
+			world->world, "trees", NULL, options);
+	if (!ret) {
+		warned = true;
+		SLV2_WARN("Warning: Unable to create \"trees\" RDF storage.\n"
+				"Performance can be improved by upgrading librdf.\n");
+		ret = librdf_new_storage(world->world, "hashes", NULL,
+				"hash-type='memory'");
+	}
+
+	librdf_free_hash(options);
+	return ret;
 }
 
 
@@ -185,9 +200,7 @@ slv2_world_load_bundle(SLV2World world, SLV2Value bundle_uri)
 			bundle_uri->val.uri_val, (const unsigned char*)"manifest.ttl");
 
 	/* Parse the manifest into a temporary model */
-	librdf_storage* manifest_storage = librdf_new_storage(world->world, "trees", NULL, NULL);
-	if (manifest_storage == NULL)
-		manifest_storage = librdf_new_storage(world->world, "memory", NULL, NULL);
+	librdf_storage* manifest_storage = slv2_world_new_storage(world);
 
 	librdf_model* manifest_model = librdf_new_model(world->world,
 			manifest_storage, NULL);
