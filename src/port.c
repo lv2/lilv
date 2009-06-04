@@ -291,7 +291,7 @@ slv2_port_get_scale_points(SLV2Plugin p,
 			"       lv2:scalePoint ?point .\n"
 			"?point rdf:value ?value ;\n"
 			"       rdfs:label ?label .\n"
-			"\n} ORDER BY ?value", NULL);
+			"\n}", NULL);
 
 	SLV2Results results = slv2_plugin_query_sparql(p, query);
 
