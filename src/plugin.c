@@ -586,7 +586,7 @@ slv2_plugin_get_num_ports_of_class(SLV2Plugin p,
 
 	for (unsigned i=0; i < p->num_ports; ++i) {
 		SLV2Port port = p->ports[i];
-		if (!slv2_port_is_a(p, port, class_1))
+		if (!port || !slv2_port_is_a(p, port, class_1))
 			continue;
 
 		va_start(args, class_1);
