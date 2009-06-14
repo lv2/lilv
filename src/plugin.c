@@ -246,7 +246,7 @@ slv2_plugin_load(SLV2Plugin p)
 			get_data_func(handle, fd, slv2_value_as_string(p->plugin_uri));
 			rewind(fd);
 			librdf_parser_parse_file_handle_into_model(p->world->parser,
-					fd, 0, slv2_value_as_librdf_uri(p->plugin_uri), p->rdf);
+					fd, 0, slv2_value_as_librdf_uri(p->bundle_uri), p->rdf);
 			fclose(fd);
 		}
 

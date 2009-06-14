@@ -255,7 +255,7 @@ slv2_world_load_bundle(SLV2World world, SLV2Value bundle_uri)
 		get_subjects_func(handle, fd);
 		rewind(fd);
 		librdf_parser_parse_file_handle_into_model(world->parser,
-				fd, 0, librdf_node_get_uri(binary_node), dyn_manifest_model);
+				fd, 0, bundle_uri->val.uri_val, dyn_manifest_model);
 		fclose(fd);
 
 		// Query plugins from dynamic manifest
@@ -274,14 +274,10 @@ slv2_world_load_bundle(SLV2World world, SLV2Value bundle_uri)
 			librdf_node* predicate = librdf_new_node_from_uri_string(world->world,
 					(const unsigned char*)(SLV2_NS_RDFS "seeAlso"));
 			librdf_node* object = librdf_new_node_from_node(binary_node);
-			librdf_model_add(dyn_manifest_model, plugin, predicate, object);
+			librdf_model_add(manifest_model, plugin, predicate, object);
 		}
 		librdf_free_query_results(r);
 		librdf_free_query(dyn_query);
-
-		/*printf("*************************************************\n");
-		librdf_model_print(dyn_manifest_model, stdout);
-		printf("*************************************************\n");*/
 
 		// Merge dynamic model into main manifest model
 		librdf_stream* dyn_manifest_stream = librdf_model_as_stream(dyn_manifest_model);
