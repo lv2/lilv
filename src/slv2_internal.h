@@ -257,7 +257,7 @@ char* slv2_get_lang();
 
 /* ********* Dynamic Manifest ********* */
 #ifdef SLV2_DYN_MANIFEST
-static const LV2_Dyn_Manifest_Feature* const dman_features = { NULL };
+static const LV2_Feature* const dman_features = { NULL };
 #endif
 
 #define SLV2_ERROR(str)       fprintf(stderr, "ERROR: %s: " str, __func__)

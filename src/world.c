@@ -207,8 +207,7 @@ slv2_world_load_bundle(SLV2World world, SLV2Value bundle_uri)
 			manifest_model);
 
 #ifdef SLV2_DYN_MANIFEST
-	LV2_Dyn_Manifest_Handle               handle    = NULL;
-	const LV2_Dyn_Manifest_Feature* const features = { NULL };
+	LV2_Dyn_Manifest_Handle handle = NULL;
 
 	const unsigned char* const query_str = (const unsigned char* const)
 		"PREFIX : <http://lv2plug.in/ns/lv2core#>\n"
@@ -236,10 +235,10 @@ slv2_world_load_bundle(SLV2World world, SLV2Value bundle_uri)
 			continue;
 
 		// Open dynamic manifest
-		typedef int (*OpenFunc)(LV2_Dyn_Manifest_Handle*, const LV2_Dyn_Manifest_Feature *const *);
+		typedef int (*OpenFunc)(LV2_Dyn_Manifest_Handle*, const LV2_Feature *const *);
 		OpenFunc open_func = (OpenFunc)dlsym(lib, "lv2_dyn_manifest_open");
 		if (open_func)
-			open_func(&handle, &features);
+			open_func(&handle, &dman_features);
 
 		// Get subjects (the data that would be in manifest.ttl)
 		typedef int (*GetSubjectsFunc)(LV2_Dyn_Manifest_Handle, FILE*);
