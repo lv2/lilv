@@ -208,9 +208,12 @@ slv2_world_load_bundle(SLV2World world, SLV2Value bundle_uri)
 			manifest_model);
 
 #ifdef SLV2_DYN_MANIFEST
+	LV2_Dyn_Manifest_Handle               handle    = NULL;
+	const LV2_Dyn_Manifest_Feature* const features = { NULL };
+
 	const unsigned char* const query_str = (const unsigned char* const)
 		"PREFIX : <http://lv2plug.in/ns/lv2core#>\n"
-		"PREFIX dynman: <http://naspro.atheme.org/rdf/dman#>\n"
+		"PREFIX dynman: <http://lv2plug.in/ns/ext/dynmanifest#>\n"
 		"SELECT DISTINCT ?dynman ?binary WHERE {\n"
 		"?dynman a       dynman:DynManifest ;\n"
 		"        :binary ?binary .\n"
@@ -228,14 +231,24 @@ slv2_world_load_bundle(SLV2World world, SLV2Value bundle_uri)
 
 			if (lib_path) {
 				void* lib = dlopen(lib_path, RTLD_NOW);
-				typedef int (*DynManifestGetFunc)(FILE*);
-				DynManifestGetFunc func = (DynManifestGetFunc)dlsym(lib, "lv2_dyn_manifest_write");
-				if (func) {
+
+				// Open dynamic manifest
+				typedef int (*OpenFunc)(LV2_Dyn_Manifest_Handle*,
+			                        const LV2_Dyn_Manifest_Feature *const *);
+				OpenFunc open_func = (OpenFunc)dlsym(lib, "lv2_dyn_manifest_open");
+				open_func(&handle, &features);
+
+				// Get subjects (what would be in the manifest)
+				typedef int (*GetSubjectsFunc)(LV2_Dyn_Manifest_Handle, FILE*);
+				GetSubjectsFunc get_subjects_func = (GetSubjectsFunc)dlsym(lib,
+						"lv2_dyn_manifest_get_subjects");
+				if (get_subjects_func) {
 					printf("DYNAMIC MANIFEST <%s> @ <%s> {\n",
 							librdf_uri_as_string(librdf_node_get_uri(dynman_node)),
 							librdf_uri_as_string(librdf_node_get_uri(binary_node)));
-					FILE* dyn_manifest = tmpfile();
-					func(dyn_manifest);
+					//FILE* dyn_manifest = tmpfile();
+					FILE* dyn_manifest = fopen("/tmp/naspro.ttl", "w+");
+					get_subjects_func(handle, dyn_manifest);
 					rewind(dyn_manifest);
 					librdf_parser_parse_file_handle_into_model(world->parser,
 							dyn_manifest, 0, manifest_uri, manifest_model);
@@ -249,7 +262,7 @@ slv2_world_load_bundle(SLV2World world, SLV2Value bundle_uri)
 	}
 	librdf_free_query_results(query_results);
 	librdf_free_query(query);
-#endif
+#endif // SLV2_DYN_MANIFEST
 
 	/* ?plugin a lv2:Plugin */
 	librdf_statement* q = librdf_new_statement_from_nodes(world->world,
