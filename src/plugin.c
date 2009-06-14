@@ -231,7 +231,7 @@ slv2_plugin_load(SLV2Plugin p)
 			return;
 		}
 
-		typedef int (*OpenFunc)(LV2_Dyn_Manifest_Handle*, const LV2_Dyn_Manifest_Feature *const *);
+		typedef int (*OpenFunc)(LV2_Dyn_Manifest_Handle*, const LV2_Feature *const *);
 		OpenFunc open_func = (OpenFunc)dlsym(lib, "lv2_dyn_manifest_open");
 		LV2_Dyn_Manifest_Handle handle = NULL;
 		if (open_func)
