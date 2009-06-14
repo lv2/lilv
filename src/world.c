@@ -24,14 +24,13 @@
 #include <dirent.h>
 #include <string.h>
 #include <librdf.h>
-#include <dlfcn.h>
 #include "slv2/types.h"
 #include "slv2/world.h"
 #include "slv2/slv2.h"
 #include "slv2/util.h"
 #include "slv2_internal.h"
 #ifdef SLV2_DYN_MANIFEST
-#include "lv2_dyn_manifest.h"
+#include <dlfcn.h>
 #endif
 
 
@@ -221,44 +220,76 @@ slv2_world_load_bundle(SLV2World world, SLV2Value bundle_uri)
 
 	librdf_query* query = librdf_new_query(world->world, "sparql", NULL, query_str, NULL);
 	librdf_query_results* query_results = librdf_query_execute(query, manifest_model);
-	while (!librdf_query_results_finished(query_results)) {
-		librdf_node* dynman_node = librdf_query_results_get_binding_value(query_results, 0);
+	for (; !librdf_query_results_finished(query_results); librdf_query_results_next(query_results)) {
 		librdf_node* binary_node = librdf_query_results_get_binding_value(query_results, 1);
 
-		if (librdf_node_get_type(binary_node) == LIBRDF_NODE_TYPE_RESOURCE) {
-			const char* lib_path = slv2_uri_to_path(
-					(const char*)librdf_uri_as_string(librdf_node_get_uri(binary_node)));
+		if (librdf_node_get_type(binary_node) != LIBRDF_NODE_TYPE_RESOURCE)
+			continue;
 
-			if (lib_path) {
-				void* lib = dlopen(lib_path, RTLD_NOW);
+		const unsigned char* lib_uri  = librdf_uri_as_string(librdf_node_get_uri(binary_node));
+		const char*          lib_path = slv2_uri_to_path((const char*)lib_uri);
+		if (!lib_path)
+			continue;
 
-				// Open dynamic manifest
-				typedef int (*OpenFunc)(LV2_Dyn_Manifest_Handle*,
-			                        const LV2_Dyn_Manifest_Feature *const *);
-				OpenFunc open_func = (OpenFunc)dlsym(lib, "lv2_dyn_manifest_open");
-				open_func(&handle, &features);
+		void* lib = dlopen(lib_path, RTLD_LAZY);
+		if (!lib)
+			continue;
 
-				// Get subjects (what would be in the manifest)
-				typedef int (*GetSubjectsFunc)(LV2_Dyn_Manifest_Handle, FILE*);
-				GetSubjectsFunc get_subjects_func = (GetSubjectsFunc)dlsym(lib,
-						"lv2_dyn_manifest_get_subjects");
-				if (get_subjects_func) {
-					printf("DYNAMIC MANIFEST <%s> @ <%s> {\n",
-							librdf_uri_as_string(librdf_node_get_uri(dynman_node)),
-							librdf_uri_as_string(librdf_node_get_uri(binary_node)));
-					//FILE* dyn_manifest = tmpfile();
-					FILE* dyn_manifest = fopen("/tmp/naspro.ttl", "w+");
-					get_subjects_func(handle, dyn_manifest);
-					rewind(dyn_manifest);
-					librdf_parser_parse_file_handle_into_model(world->parser,
-							dyn_manifest, 0, manifest_uri, manifest_model);
-					fclose(dyn_manifest);
-				}
-			}
+		// Open dynamic manifest
+		typedef int (*OpenFunc)(LV2_Dyn_Manifest_Handle*, const LV2_Dyn_Manifest_Feature *const *);
+		OpenFunc open_func = (OpenFunc)dlsym(lib, "lv2_dyn_manifest_open");
+		if (open_func)
+			open_func(&handle, &features);
 
+		// Get subjects (the data that would be in manifest.ttl)
+		typedef int (*GetSubjectsFunc)(LV2_Dyn_Manifest_Handle, FILE*);
+		GetSubjectsFunc get_subjects_func = (GetSubjectsFunc)dlsym(lib,
+				"lv2_dyn_manifest_get_subjects");
+		if (!get_subjects_func)
+			continue;
+
+		librdf_storage* dyn_manifest_storage = slv2_world_new_storage(world);
+		librdf_model* dyn_manifest_model = librdf_new_model(world->world,
+			dyn_manifest_storage, NULL);
+
+		FILE* fd = tmpfile();
+		get_subjects_func(handle, fd);
+		rewind(fd);
+		librdf_parser_parse_file_handle_into_model(world->parser,
+				fd, 0, librdf_node_get_uri(binary_node), dyn_manifest_model);
+		fclose(fd);
+
+		// Query plugins from dynamic manifest
+		librdf_query* dyn_query = librdf_new_query(world->world, "sparql", NULL,
+				(const unsigned char*)
+				"PREFIX :       <http://lv2plug.in/ns/lv2core#>\n"
+				"PREFIX dynman: <http://lv2plug.in/ns/ext/dynmanifest#>\n"
+				"SELECT DISTINCT ?plugin WHERE {\n"
+				"	?plugin a :Plugin .\n"
+				"}", NULL);
+
+		// Add ?plugin rdfs:seeAlso ?binary to dynamic model
+		librdf_query_results* r = librdf_query_execute(dyn_query, dyn_manifest_model);
+		for (; !librdf_query_results_finished(r); librdf_query_results_next(r)) {
+			librdf_node* plugin = librdf_query_results_get_binding_value(r, 0);
+			librdf_node* predicate = librdf_new_node_from_uri_string(world->world,
+					(const unsigned char*)(SLV2_NS_RDFS "seeAlso"));
+			librdf_node* object = librdf_new_node_from_node(binary_node);
+			librdf_model_add(dyn_manifest_model, plugin, predicate, object);
 		}
+		librdf_free_query_results(r);
+		librdf_free_query(dyn_query);
 
-		librdf_query_results_next(query_results);
+		/*printf("*************************************************\n");
+		librdf_model_print(dyn_manifest_model, stdout);
+		printf("*************************************************\n");*/
+
+		// Merge dynamic model into main manifest model
+		librdf_stream* dyn_manifest_stream = librdf_model_as_stream(dyn_manifest_model);
+		librdf_model_add_statements(manifest_model, dyn_manifest_stream);
+		librdf_free_stream(dyn_manifest_stream);
+		librdf_free_model(dyn_manifest_model);
+		librdf_free_storage(dyn_manifest_storage);
 	}
 	librdf_free_query_results(query_results);
 	librdf_free_query(query);
@@ -278,16 +309,15 @@ slv2_world_load_bundle(SLV2World world, SLV2Value bundle_uri)
 		/* Add ?plugin rdfs:seeAlso <manifest.ttl>*/
 		librdf_node* subject = plugin_node;
 		librdf_node* predicate = librdf_new_node_from_uri_string(world->world,
-				(unsigned char*)"http://www.w3.org/2000/01/rdf-schema#seeAlso");
+				(const unsigned char*)(SLV2_NS_RDFS "seeAlso"));
 		librdf_node* object = librdf_new_node_from_uri(world->world,
 				manifest_uri);
-
 		librdf_model_add(world->model, subject, predicate, object);
 
 		/* Add ?plugin slv2:bundleURI <file://some/path> */
 		subject = librdf_new_node_from_node(plugin_node);
 		predicate = librdf_new_node_from_uri_string(world->world,
-				(unsigned char*)"http://drobilla.net/ns/slv2#bundleURI");
+				(const unsigned char*)(SLV2_NS_SLV2 "bundleURI"));
 		object = librdf_new_node_from_uri(world->world, bundle_uri->val.uri_val);
 
 		librdf_model_add(world->model, subject, predicate, object);
@@ -312,7 +342,7 @@ slv2_world_load_bundle(SLV2World world, SLV2Value bundle_uri)
 		/* Add ?specification rdfs:seeAlso <manifest.ttl> */
 		librdf_node* subject = spec_node;
 		librdf_node* predicate = librdf_new_node_from_uri_string(world->world,
-				(unsigned char*)"http://www.w3.org/2000/01/rdf-schema#seeAlso");
+				(const unsigned char*)(SLV2_NS_RDFS "seeAlso"));
 		librdf_node* object = librdf_new_node_from_uri(world->world,
 				manifest_uri);
 
@@ -321,7 +351,7 @@ slv2_world_load_bundle(SLV2World world, SLV2Value bundle_uri)
 		/* Add ?specification slv2:bundleURI <file://some/path> */
 		subject = librdf_new_node_from_node(spec_node);
 		predicate = librdf_new_node_from_uri_string(world->world,
-				(unsigned char*)"http://drobilla.net/ns/slv2#bundleURI");
+				(const unsigned char*)(SLV2_NS_SLV2 "bundleURI"));
 		object = librdf_new_node_from_uri(world->world, bundle_uri->val.uri_val);
 
 		librdf_model_add(world->model, subject, predicate, object);
@@ -591,8 +621,11 @@ slv2_world_load_all(SLV2World world)
 		"PREFIX : <http://lv2plug.in/ns/lv2core#>\n"
 		"PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>\n"
 		"PREFIX slv2: <http://drobilla.net/ns/slv2#>\n"
-		"SELECT DISTINCT ?plugin ?data ?bundle\n"
-		"WHERE { ?plugin a :Plugin; slv2:bundleURI ?bundle; rdfs:seeAlso ?data }\n";
+		"SELECT DISTINCT ?plugin ?data ?bundle WHERE {\n"
+		"	?plugin a                  :Plugin ;\n"
+		"           slv2:bundleURI     ?bundle ;\n"
+		"           rdfs:seeAlso       ?data .\n"
+		"}\n";
 
 	librdf_query* q = librdf_new_query(world->world, "sparql",
 		NULL, query_string, NULL);
@@ -658,9 +691,20 @@ slv2_world_load_all(SLV2World world)
 
 			plugin->world = world;
 
-			// FIXME: check for duplicates
-			raptor_sequence_push(plugin->data_uris,
-					slv2_value_new_librdf_uri(plugin->world, data_uri));
+#ifdef SLV2_DYN_MANIFEST
+			const char* const data_uri_str = (const char*)librdf_uri_as_string(data_uri);
+			void* lib = dlopen(slv2_uri_to_path(data_uri_str), RTLD_LAZY);
+			if (lib) {
+				plugin->dynman_uri = slv2_value_new_librdf_uri(world, data_uri);
+				librdf_query_results_next(results);
+			} else
+#endif
+			if (data_uri) {
+				assert(plugin->data_uris);
+				// FIXME: check for duplicates
+				raptor_sequence_push(plugin->data_uris,
+						slv2_value_new_librdf_uri(plugin->world, data_uri));
+			}
 		}
 
 		librdf_free_node(plugin_node);

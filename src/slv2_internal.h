@@ -16,6 +16,8 @@
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+#include "slv2-config.h"
+
 #ifndef __SLV2_INTERNAL_H__
 #define __SLV2_INTERNAL_H__
 
@@ -30,7 +32,12 @@ extern "C" {
 #include <librdf.h>
 #include "slv2/types.h"
 #include "slv2/lv2_ui.h"
+#ifdef SLV2_DYN_MANIFEST
+#include "lv2_dyn_manifest.h"
+#endif
 
+#define SLV2_NS_RDFS (const unsigned char*)"http://www.w3.org/2000/01/rdf-schema#"
+#define SLV2_NS_SLV2 (const unsigned char*)"http://drobilla.net/ns/slv2#"
 
 /* ********* PORT ********* */
 
@@ -59,6 +66,9 @@ struct _SLV2Plugin {
 	SLV2Value            plugin_uri;
 	SLV2Value            bundle_uri; ///< Bundle directory plugin was loaded from
 	SLV2Value            binary_uri; ///< lv2:binary
+//#ifdef SLV2_DYN_MANIFEST
+	SLV2Value            dynman_uri; ///< dynamic manifest binary
+//#endif
 	SLV2PluginClass      plugin_class;
 	raptor_sequence*     data_uris;  ///< rdfs::seeAlso
 	SLV2Port*            ports;
@@ -243,6 +253,12 @@ struct _SLV2Results {
 
 char* slv2_strjoin(const char* first, ...);
 char* slv2_get_lang();
+
+
+/* ********* Dynamic Manifest ********* */
+#ifdef SLV2_DYN_MANIFEST
+static const LV2_Dyn_Manifest_Feature* const dman_features = { NULL };
+#endif
 
 #define SLV2_ERROR(str)       fprintf(stderr, "ERROR: %s: " str, __func__)
 #define SLV2_ERRORF(fmt, ...) fprintf(stderr, "ERROR: %s: " fmt, __func__, __VA_ARGS__)

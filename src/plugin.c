@@ -30,6 +30,9 @@
 #include "slv2/query.h"
 #include "slv2/util.h"
 #include "slv2_internal.h"
+#ifdef SLV2_DYN_MANIFEST
+#include <dlfcn.h>
+#endif
 
 
 /* private
@@ -43,12 +46,19 @@ slv2_plugin_new(SLV2World world, SLV2Value uri, librdf_uri* bundle_uri)
 	plugin->plugin_uri = uri;
 	plugin->bundle_uri = slv2_value_new_librdf_uri(world, bundle_uri);
 	plugin->binary_uri = NULL;
+#ifdef SLV2_DYN_MANIFEST
+	plugin->dynman_uri = NULL;
+#endif
 	plugin->plugin_class = NULL;
 	plugin->data_uris = slv2_values_new();
 	plugin->ports = NULL;
 	plugin->storage = NULL;
 	plugin->rdf = NULL;
 	plugin->num_ports = 0;
+
+	/*printf("PLUGIN %s DATA URIs: %p\n",
+			slv2_value_as_string(plugin->plugin_uri),
+			(void*)plugin->data_uris);*/
 
 	return plugin;
 }
@@ -66,6 +76,11 @@ slv2_plugin_free(SLV2Plugin p)
 
 	slv2_value_free(p->binary_uri);
 	p->binary_uri = NULL;
+
+#ifdef SLV2_DYN_MANIFEST
+	slv2_value_free(p->dynman_uri);
+	p->dynman_uri = NULL;
+#endif
 
 	if (p->ports) {
 		for (uint32_t i = 0; i < p->num_ports; ++i)
@@ -205,6 +220,43 @@ slv2_plugin_load(SLV2Plugin p)
 		librdf_uri* data_uri = slv2_value_as_librdf_uri(data_uri_val);
 		librdf_parser_parse_into_model(p->world->parser, data_uri, NULL, p->rdf);
 	}
+
+#ifdef SLV2_DYN_MANIFEST
+	// Load and parse dynamic manifest data, if this is a library
+	if (p->dynman_uri) {
+		const char* lib_path = slv2_uri_to_path(slv2_value_as_string(p->dynman_uri));
+		void* lib = dlopen(lib_path, RTLD_LAZY);
+		if (!lib) {
+			SLV2_WARNF("Unable to open dynamic manifest %s\n", slv2_value_as_string(p->dynman_uri));
+			return;
+		}
+
+		typedef int (*OpenFunc)(LV2_Dyn_Manifest_Handle*, const LV2_Dyn_Manifest_Feature *const *);
+		OpenFunc open_func = (OpenFunc)dlsym(lib, "lv2_dyn_manifest_open");
+		LV2_Dyn_Manifest_Handle handle = NULL;
+		if (open_func)
+			open_func(&handle, &dman_features);
+
+		typedef int (*GetDataFunc)(LV2_Dyn_Manifest_Handle handle,
+		                           FILE*                   fp,
+		                           const char*             uri);
+		GetDataFunc get_data_func = (GetDataFunc)dlsym(lib, "lv2_dyn_manifest_get_data");
+		if (get_data_func) {
+			FILE* fd = tmpfile();
+			get_data_func(handle, fd, slv2_value_as_string(p->plugin_uri));
+			rewind(fd);
+			librdf_parser_parse_file_handle_into_model(p->world->parser,
+					fd, 0, slv2_value_as_librdf_uri(p->plugin_uri), p->rdf);
+			fclose(fd);
+		}
+
+		typedef int (*CloseFunc)(LV2_Dyn_Manifest_Handle);
+		CloseFunc close_func = (CloseFunc)dlsym(lib, "lv2_dyn_manifest_close");
+		if (close_func)
+			close_func(handle);
+	}
+#endif
+	assert(p->rdf);
 }
 
 
