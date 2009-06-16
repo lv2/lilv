@@ -20,7 +20,6 @@
 #include <assert.h>
 #include <librdf.h>
 #include <limits.h>
-#include <locale.h>
 #include <stdlib.h>
 #include <string.h>
 #include "slv2/types.h"

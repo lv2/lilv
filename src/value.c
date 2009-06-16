@@ -240,9 +240,9 @@ slv2_value_get_turtle_token(SLV2Value value)
 		result = strdup(value->str_val);
 		break;
 	case SLV2_VALUE_INT:
-	    // INT64_MAX is 9223372036854775807 (19 digits) + 1 for sign
-	    // FIXME: locale kludge, need a locale independent snprintf
-	    locale = strdup(setlocale(LC_NUMERIC, NULL));
+		// INT64_MAX is 9223372036854775807 (19 digits) + 1 for sign
+		// FIXME: locale kludge, need a locale independent snprintf
+		locale = strdup(setlocale(LC_NUMERIC, NULL));
 		len = 20;
 		result = calloc(len, sizeof(char));
 		setlocale(LC_NUMERIC, "POSIX");
@@ -250,8 +250,8 @@ slv2_value_get_turtle_token(SLV2Value value)
 		setlocale(LC_NUMERIC, locale);
 		break;
 	case SLV2_VALUE_FLOAT:
-	    // FIXME: locale kludge, need a locale independent snprintf
-	    locale = strdup(setlocale(LC_NUMERIC, NULL));
+		// FIXME: locale kludge, need a locale independent snprintf
+		locale = strdup(setlocale(LC_NUMERIC, NULL));
 		len = 20; // FIXME: proper maximum value?
 		result = calloc(len, sizeof(char));
 		setlocale(LC_NUMERIC, "POSIX");
