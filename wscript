@@ -128,7 +128,6 @@ def build(bld):
 	# JACK Hosts
 	hosts = '''
 		hosts/lv2_jack_host
-		hosts/lv2_simple_jack_host
 	'''
 	if bld.env['USE_JACK']:
 		for i in hosts.split():
