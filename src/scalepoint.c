@@ -21,7 +21,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
-#include <locale.h>
 #include <raptor.h>
 #include "slv2/types.h"
 #include "slv2/value.h"

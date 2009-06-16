@@ -145,16 +145,7 @@ slv2_plugin_query_sparql(SLV2Plugin  plugin,
 		return NULL;
 	}
 
-	// Reset numeric locale to correctly interpret turtle numeric constants
-	char* locale = strdup(setlocale(LC_NUMERIC, NULL));
-	setlocale(LC_NUMERIC, "POSIX");
-
 	librdf_query_results* results = librdf_query_execute(query, plugin->rdf);
-
-	// Restore numeric locale
-	setlocale(LC_NUMERIC, locale);
-
-	free(locale);
 
 	librdf_free_query(query);
 	free(query_str);

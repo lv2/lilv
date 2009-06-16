@@ -32,7 +32,7 @@
 static void
 slv2_value_set_numerics_from_string(SLV2Value val)
 {
-	// FIXME: locale kludges to work around librdf bug
+	// FIXME: locale kludge, need a locale independent strtol and strtod
 	char* locale = strdup(setlocale(LC_NUMERIC, NULL));
 
 	if (val->type == SLV2_VALUE_INT) {
@@ -227,9 +227,7 @@ slv2_value_get_turtle_token(SLV2Value value)
 {
 	size_t len    = 0;
 	char*  result = NULL;
-	char*  locale = strdup(setlocale(LC_NUMERIC, NULL));
-
-	// FIXME: locale kludges to work around librdf bug
+	char*  locale = NULL;
 
 	switch (value->type) {
 	case SLV2_VALUE_URI:
@@ -243,6 +241,8 @@ slv2_value_get_turtle_token(SLV2Value value)
 		break;
 	case SLV2_VALUE_INT:
 	    // INT64_MAX is 9223372036854775807 (19 digits) + 1 for sign
+	    // FIXME: locale kludge, need a locale independent snprintf
+	    locale = strdup(setlocale(LC_NUMERIC, NULL));
 		len = 20;
 		result = calloc(len, sizeof(char));
 		setlocale(LC_NUMERIC, "POSIX");
@@ -250,6 +250,8 @@ slv2_value_get_turtle_token(SLV2Value value)
 		setlocale(LC_NUMERIC, locale);
 		break;
 	case SLV2_VALUE_FLOAT:
+	    // FIXME: locale kludge, need a locale independent snprintf
+	    locale = strdup(setlocale(LC_NUMERIC, NULL));
 		len = 20; // FIXME: proper maximum value?
 		result = calloc(len, sizeof(char));
 		setlocale(LC_NUMERIC, "POSIX");
