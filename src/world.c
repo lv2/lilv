@@ -207,6 +207,7 @@ slv2_world_load_bundle(SLV2World world, SLV2Value bundle_uri)
 			manifest_model);
 
 #ifdef SLV2_DYN_MANIFEST
+	typedef void* LV2_Dyn_Manifest_Handle;
 	LV2_Dyn_Manifest_Handle handle = NULL;
 
 	const unsigned char* const query_str = (const unsigned char* const)

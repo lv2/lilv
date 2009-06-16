@@ -222,6 +222,7 @@ slv2_plugin_load(SLV2Plugin p)
 	}
 
 #ifdef SLV2_DYN_MANIFEST
+	typedef void* LV2_Dyn_Manifest_Handle;
 	// Load and parse dynamic manifest data, if this is a library
 	if (p->dynman_uri) {
 		const char* lib_path = slv2_uri_to_path(slv2_value_as_string(p->dynman_uri));
