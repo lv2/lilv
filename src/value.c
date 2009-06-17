@@ -72,47 +72,48 @@ slv2_value_new(SLV2World world, SLV2ValueType type, const char* str)
 }
 
 
-/* private */
+/** Create a new SLV2Value from a librdf_node, or return NULL if impossible */
 SLV2Value
 slv2_value_new_librdf_node(SLV2World world, librdf_node* node)
 {
-	SLV2Value val = (SLV2Value)malloc(sizeof(struct _SLV2Value));
-	val->type = SLV2_VALUE_STRING;
-	val->str_val = NULL;
+	SLV2Value result = NULL;
 
 	librdf_uri* datatype_uri = NULL;
+	SLV2ValueType type = SLV2_VALUE_STRING;
 
 	switch (librdf_node_get_type(node)) {
 	case LIBRDF_NODE_TYPE_RESOURCE:
-		val->type = SLV2_VALUE_URI;
-		val->val.uri_val = librdf_node_get_uri(node);
-		val->str_val = (char*)librdf_uri_as_string(val->val.uri_val);
+		type = SLV2_VALUE_URI;
+		result = slv2_value_new_librdf_uri(world, librdf_node_get_uri(node));
 		break;
 	case LIBRDF_NODE_TYPE_LITERAL:
 		datatype_uri = librdf_node_get_literal_value_datatype_uri(node);
 		if (datatype_uri) {
-			if (librdf_uri_equals(datatype_uri, librdf_node_get_uri(world->xsd_integer_node)))
-				val->type = SLV2_VALUE_INT;
-			else if (librdf_uri_equals(datatype_uri, librdf_node_get_uri(world->xsd_decimal_node)))
-				val->type = SLV2_VALUE_FLOAT;
+			if (!strcmp((const char*)librdf_uri_as_string(datatype_uri),
+						"http://www.w3.org/2001/XMLSchema#integer"))
+				type = SLV2_VALUE_INT;
+			else if (!strcmp((const char*)librdf_uri_as_string(datatype_uri),
+						"http://www.w3.org/2001/XMLSchema#decimal"))
+				type = SLV2_VALUE_FLOAT;
 			else
 				SLV2_ERRORF("Unknown datatype %s\n", librdf_uri_as_string(datatype_uri));
 		}
-		val->str_val = strdup((char*)librdf_node_get_literal_value(node));
+		result = slv2_value_new(world, type, (const char*)librdf_node_get_literal_value(node));
 		break;
 	case LIBRDF_NODE_TYPE_BLANK:
+		type = SLV2_VALUE_STRING;
+		result = slv2_value_new(world, type, (const char*)librdf_node_get_blank_identifier(node));
+		break;
 	case LIBRDF_NODE_TYPE_UNKNOWN:
 	default:
-		SLV2_ERROR("Unknown node type");
-		free(val);
-		val = NULL;
+		SLV2_ERRORF("Unknown RDF node type %d\n", librdf_node_get_type(node));
 		break;
 	}
 
-	if (val)
-		slv2_value_set_numerics_from_string(val);
+    if (result)
+		slv2_value_set_numerics_from_string(result);
 
-	return val;
+	return result;
 }
 
 

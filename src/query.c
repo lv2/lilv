@@ -39,48 +39,6 @@ static const char* slv2_query_prefixes =
 	"PREFIX lv2ev:  <http://lv2plug.in/ns/ext/event#>\n";
 
 
-/** Create a new SLV2Value from a librdf_node, or return NULL if impossible */
-SLV2Value
-slv2_value_from_librdf_node(SLV2World world, librdf_node* node)
-{
-	SLV2Value result = NULL;
-
-	librdf_uri* datatype_uri = NULL;
-	SLV2ValueType type = SLV2_VALUE_STRING;
-
-	switch (librdf_node_get_type(node)) {
-	case LIBRDF_NODE_TYPE_RESOURCE:
-		type = SLV2_VALUE_URI;
-		result = slv2_value_new_librdf_uri(world, librdf_node_get_uri(node));
-		break;
-	case LIBRDF_NODE_TYPE_LITERAL:
-		datatype_uri = librdf_node_get_literal_value_datatype_uri(node);
-		if (datatype_uri) {
-			if (!strcmp((const char*)librdf_uri_as_string(datatype_uri),
-						"http://www.w3.org/2001/XMLSchema#integer"))
-				type = SLV2_VALUE_INT;
-			else if (!strcmp((const char*)librdf_uri_as_string(datatype_uri),
-						"http://www.w3.org/2001/XMLSchema#decimal"))
-				type = SLV2_VALUE_FLOAT;
-			else
-				SLV2_ERRORF("Unknown datatype %s\n", librdf_uri_as_string(datatype_uri));
-		}
-		result = slv2_value_new(world, type, (const char*)librdf_node_get_literal_value(node));
-		break;
-	case LIBRDF_NODE_TYPE_BLANK:
-		type = SLV2_VALUE_STRING;
-		result = slv2_value_new(world, type, (const char*)librdf_node_get_blank_identifier(node));
-		break;
-	case LIBRDF_NODE_TYPE_UNKNOWN:
-	default:
-		SLV2_ERRORF("Unknown RDF node type %d\n", librdf_node_get_type(node));
-		break;
-	}
-
-	return result;
-}
-
-
 SLV2Values
 slv2_query_get_variable_bindings(SLV2World   world,
                                  SLV2Results results,
@@ -100,7 +58,7 @@ slv2_query_get_variable_bindings(SLV2World   world,
 			continue;
 		}
 
-		SLV2Value val = slv2_value_from_librdf_node(world, node);
+		SLV2Value val = slv2_value_new_librdf_node(world, node);
 		if (val)
 			raptor_sequence_push(result, val);
 
@@ -175,7 +133,7 @@ slv2_results_finished(SLV2Results results)
 SLV2Value
 slv2_results_get_binding_value(SLV2Results results, unsigned index)
 {
-	return slv2_value_from_librdf_node(results->world,
+	return slv2_value_new_librdf_node(results->world,
 			librdf_query_results_get_binding_value(
 					results->rdf_results, index));
 }
@@ -184,7 +142,7 @@ slv2_results_get_binding_value(SLV2Results results, unsigned index)
 SLV2Value
 slv2_results_get_binding_value_by_name(SLV2Results results, const char* name)
 {
-	return slv2_value_from_librdf_node(results->world,
+	return slv2_value_new_librdf_node(results->world,
 			librdf_query_results_get_binding_value_by_name(
 					results->rdf_results, name));
 }
