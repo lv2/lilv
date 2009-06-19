@@ -26,6 +26,15 @@
 
 SLV2Value event_class   = NULL;
 SLV2Value control_class = NULL;
+SLV2Value in_group_pred = NULL;
+SLV2Value role_pred     = NULL;
+
+void
+print_group(SLV2Plugin p, SLV2Value group, SLV2Value symbol)
+{
+	printf("\n\tGroup %s:\n", slv2_value_as_string(group));
+	printf("\t\tSymbol: %s\n", slv2_value_as_string(symbol));
+}
 
 void
 print_port(SLV2Plugin p, uint32_t index, float* mins, float* maxes, float* defaults)
@@ -41,9 +50,11 @@ print_port(SLV2Plugin p, uint32_t index, float* mins, float* maxes, float* defau
 
 	SLV2Values classes = slv2_port_get_classes(p, port);
 
-	printf("\t\tClasses:\n");
+	printf("\t\tType:       ");
 	for (unsigned i=0; i < slv2_values_size(classes); ++i) {
-		printf("\t\t\t%s\n", slv2_value_as_uri(slv2_values_get_at(classes, i)));
+		printf("%s", slv2_value_as_uri(slv2_values_get_at(classes, i)));
+		if (i != slv2_values_size(classes) - 1)
+			printf("\n\t\t            ");
 	}
 
 	if (slv2_port_is_a(p, port, event_class)) {
@@ -60,7 +71,7 @@ print_port(SLV2Plugin p, uint32_t index, float* mins, float* maxes, float* defau
 
 	SLV2ScalePoints points = slv2_port_get_scale_points(p, port);
 	if (points)
-		printf("\t\tScale Points:\n");
+		printf("\n\t\tScale Points:\n");
 	for (unsigned i=0; i < slv2_scale_points_size(points); ++i) {
 		SLV2ScalePoint p = slv2_scale_points_get_at(points, i);
 		printf("\t\t\t%s = \"%s\"\n",
@@ -75,6 +86,16 @@ print_port(SLV2Plugin p, uint32_t index, float* mins, float* maxes, float* defau
 	val = slv2_port_get_name(p, port);
 	printf("\t\tName:       %s\n", slv2_value_as_string(val));
 	slv2_value_free(val);
+
+	SLV2Values groups = slv2_port_get_value(p, port, in_group_pred);
+	if (slv2_values_size(groups) > 0)
+		printf("\t\tGroup:      %s\n", slv2_value_as_string(slv2_values_get_at(groups, 0)));
+	slv2_values_free(groups);
+
+	SLV2Values roles = slv2_port_get_value(p, port, role_pred);
+	if (slv2_values_size(roles) > 0)
+		printf("\t\tRole:       %s\n", slv2_value_as_string(slv2_values_get_at(roles, 0)));
+	slv2_values_free(roles);
 
 	if (slv2_port_is_a(p, port, control_class)) {
 		if (!isnan(mins[index]))
@@ -169,9 +190,6 @@ print_plugin(SLV2Plugin p)
 	}
 	slv2_uis_free(uis);
 
-	//SLV2Values ui = slv2_plugin_get_value_for_subject(p,
-	//		"<http://ll-plugins.nongnu.org/lv2/ext/gtk2ui#ui>");
-
 	printf("\tData URIs:         ");
 	SLV2Values data_uris = slv2_plugin_get_data_uris(p);
 	for (unsigned i=0; i < slv2_values_size(data_uris); ++i) {
@@ -231,6 +249,24 @@ SELECT ?name WHERE { <> lv2p:hasPreset ?preset . ?preset dc:title ?name }");
 	slv2_results_free(presets);
 
 
+	/* Groups */
+
+	SLV2Results groups = slv2_plugin_query_sparql(p, "\
+PREFIX pg: <http://lv2plug.in/ns/dev/port-groups#> \
+PREFIX dc:  <http://dublincore.org/documents/dcmi-namespace/> \
+SELECT DISTINCT ?group ?sym WHERE {\n"
+"	<>     lv2:port   ?port .\n"
+"	?port  pg:inGroup ?group .\n"
+"	?group lv2:symbol ?sym .\n"
+"}");
+	for (; !slv2_results_finished(groups); slv2_results_next(groups)) {
+		SLV2Value group  = slv2_results_get_binding_value(groups, 0);
+		SLV2Value symbol = slv2_results_get_binding_value(groups, 1);
+		print_group(p, group, symbol);
+	}
+	slv2_results_free(groups);
+
+
 	/* Ports */
 
 	const uint32_t num_ports = slv2_plugin_get_num_ports(p);
@@ -280,6 +316,8 @@ main(int argc, char** argv)
 
 	event_class = slv2_value_new_uri(world, SLV2_PORT_CLASS_EVENT);
 	control_class = slv2_value_new_uri(world, SLV2_PORT_CLASS_CONTROL);
+	in_group_pred = slv2_value_new_uri(world, "http://lv2plug.in/ns/dev/port-groups#inGroup");
+	role_pred = slv2_value_new_uri(world, "http://lv2plug.in/ns/dev/port-groups#role");
 
 	if (argc != 2) {
 		print_usage();
