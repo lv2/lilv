@@ -30,9 +30,10 @@ SLV2Value in_group_pred = NULL;
 SLV2Value role_pred     = NULL;
 
 void
-print_group(SLV2Plugin p, SLV2Value group, SLV2Value symbol)
+print_group(SLV2Plugin p, SLV2Value group, SLV2Value type, SLV2Value symbol)
 {
 	printf("\n\tGroup %s:\n", slv2_value_as_string(group));
+	printf("\t\tType: %s\n", slv2_value_as_string(type));
 	printf("\t\tSymbol: %s\n", slv2_value_as_string(symbol));
 }
 
@@ -254,15 +255,17 @@ SELECT ?name WHERE { <> lv2p:hasPreset ?preset . ?preset dc:title ?name }");
 	SLV2Results groups = slv2_plugin_query_sparql(p, "\
 PREFIX pg: <http://lv2plug.in/ns/dev/port-groups#> \
 PREFIX dc:  <http://dublincore.org/documents/dcmi-namespace/> \
-SELECT DISTINCT ?group ?sym WHERE {\n"
+SELECT DISTINCT ?group ?type ?sym WHERE {\n"
 "	<>     lv2:port   ?port .\n"
 "	?port  pg:inGroup ?group .\n"
-"	?group lv2:symbol ?sym .\n"
+"	?group rdf:type   ?type ;\n"
+"	       lv2:symbol ?sym .\n"
 "}");
 	for (; !slv2_results_finished(groups); slv2_results_next(groups)) {
 		SLV2Value group  = slv2_results_get_binding_value(groups, 0);
-		SLV2Value symbol = slv2_results_get_binding_value(groups, 1);
-		print_group(p, group, symbol);
+		SLV2Value type   = slv2_results_get_binding_value(groups, 1);
+		SLV2Value symbol = slv2_results_get_binding_value(groups, 2);
+		print_group(p, group, type, symbol);
 	}
 	slv2_results_free(groups);
 
