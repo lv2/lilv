@@ -120,7 +120,7 @@ def build(bld):
 	for i in utils.split():
 		obj = bld.new_task_gen('cc', 'program')
 		obj.source       = i + '.c'
-		obj.includes     = ['.', './src']
+		obj.includes     = ['.', './src', './utils']
 		obj.uselib_local = 'libslv2'
 		obj.target       = i
 		obj.install_path = '${BINDIR}'
@@ -133,7 +133,7 @@ def build(bld):
 		for i in hosts.split():
 			obj = bld.new_task_gen('cc', 'program')
 			obj.source       = i + '.c'
-			obj.includes     = ['.', './src']
+			obj.includes     = ['.', './src', './utils']
 			obj.uselib       = 'JACK'
 			obj.uselib_local = 'libslv2'
 			obj.target       = i

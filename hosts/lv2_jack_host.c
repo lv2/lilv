@@ -26,9 +26,9 @@
 #include <jack/jack.h>
 #include <jack/midiport.h>
 #include "slv2/slv2.h"
-#include "lv2_uri_map.h"
-#include "lv2_event.h"
-#include "lv2_event_helpers.h"
+#include "uri-map.lv2/uri-map.h"
+#include "event.lv2/event.h"
+#include "event.lv2/event-helpers.h"
 #include "jack_compat.h"
 
 #define MIDI_BUFFER_SIZE 1024
