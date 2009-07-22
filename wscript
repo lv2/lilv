@@ -49,7 +49,7 @@ def set_options(opt):
 
 def configure(conf):
 	autowaf.configure(conf)
-	autowaf.check_tool(conf, 'compiler_cc')
+	conf.check_tool('compiler_cc')
 	autowaf.check_pkg(conf, 'lv2core', uselib_store='LV2CORE', atleast_version='1.0', mandatory=True)
 	autowaf.check_pkg(conf, 'redland', uselib_store='REDLAND', atleast_version='1.0.6', mandatory=True)
 	autowaf.check_pkg(conf, 'jack', uselib_store='JACK', atleast_version='0.107.0', mandatory=False)
