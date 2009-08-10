@@ -301,7 +301,7 @@ create_port(struct JackHost* host,
 		port->type = EVENT;
 	}
 
-	/* Connect the port based on it's type */
+	/* Connect the port based on its type */
 	switch (port->type) {
 		case CONTROL:
 			slv2_instance_connect_port(host->instance, port_index, &port->control);
