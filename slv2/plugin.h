@@ -130,9 +130,10 @@ slv2_plugin_get_library_uri(SLV2Plugin plugin);
 
 /** Get the name of \a plugin.
  *
- * This is guaranteed to return the untranslated name (the doap:name in the
- * data file without a language tag).  Returned value must be freed by
- * the caller.
+ * This returns the name (doap:name) of the plugin.  The name may be
+ * translated according to the current locale, this value MUST NOT be used
+ * as a plugin identifier (use the URI for that).
+ * Returned value must be freed by the caller.
  *
  * Time = Query
  */
