@@ -260,6 +260,7 @@ SELECT DISTINCT ?group ?type ?sym WHERE {\n"
 "	?port  pg:inGroup ?group .\n"
 "	?group rdf:type   ?type ;\n"
 "	       lv2:symbol ?sym .\n"
+"FILTER(?type != pg:Group)\n"
 "}");
 	for (; !slv2_results_finished(groups); slv2_results_next(groups)) {
 		SLV2Value group  = slv2_results_get_binding_value(groups, 0);
