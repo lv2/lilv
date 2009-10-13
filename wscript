@@ -46,6 +46,8 @@ def set_options(opt):
 			help="Build support for dynamic manifest extension [false]")
 	opt.add_option('--test', action='store_true', default=False, dest='build_tests',
 			help="Build unit tests")
+	opt.add_option('--bash-completion', action='store_true', default=False, dest='bash_completion',
+			help="Install bash completion script in /etc/bash_completion.d")
 
 def configure(conf):
 	autowaf.configure(conf)
@@ -61,6 +63,7 @@ def configure(conf):
 
 	conf.env['USE_JACK'] = conf.env['HAVE_JACK'] and not Options.options.no_jack
 	conf.env['BUILD_TESTS'] = Options.options.build_tests
+	conf.env['BASH_COMPLETION'] = Options.options.bash_completion
 
 	autowaf.print_summary(conf)
 	autowaf.display_header('SLV2 Configuration')
@@ -148,6 +151,11 @@ def build(bld):
 	bld.install_files('${HTMLDIR}', blddir + '/default/doc/html/*')
 	bld.install_files('${MANDIR}/man3', blddir + '/default/doc/man/man3/*')
 	bld.install_files('${MANDIR}/man1', 'doc/*.1')
+
+	# Bash completion
+	if bld.env['BASH_COMPLETION']:
+		bld.install_as(
+			'/etc/bash_completion.d/slv2', 'utils/slv2.bash_completion')
 
 def shutdown():
 	autowaf.shutdown()
