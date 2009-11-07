@@ -120,6 +120,7 @@ def build(bld):
 	utils = '''
 		utils/lv2_inspect
 		utils/lv2_list
+		utils/lv2_test
 	'''
 	for i in utils.split():
 		obj = bld.new_task_gen('cc', 'program')
