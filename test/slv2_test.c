@@ -554,7 +554,7 @@ test_plugin()
 			":plug a lv2:Plugin ; a lv2:CompressorPlugin ; "
 			PLUGIN_NAME("Test plugin") " ; "
 			LICENSE_GPL " ; "
-			"lv2:optionalFeature lv2:hardRtCapable ; "
+			"lv2:optionalFeature lv2:hardRTCapable ; "
 		    "lv2:requiredFeature <http://lv2plug.in/ns/ext/event> ; "
 			":foo 1.6180 ; "
 			"doap:maintainer [ foaf:name \"David Robillard\" ; "
@@ -638,7 +638,7 @@ test_plugin()
 	TEST_ASSERT(slv2_plugin_get_latency_port_index(plug) == 2);
 
 	SLV2Value rt_feature = slv2_value_new_uri(world,
-			"http://lv2plug.in/ns/lv2core#hardRtCapable");
+			"http://lv2plug.in/ns/lv2core#hardRTCapable");
 	SLV2Value event_feature = slv2_value_new_uri(world,
 			"http://lv2plug.in/ns/ext/event");
 	SLV2Value pretend_feature = slv2_value_new_uri(world,
@@ -881,7 +881,7 @@ test_ui()
 			":plug a lv2:Plugin ; a lv2:CompressorPlugin ; "
 			PLUGIN_NAME("Test plugin") " ; "
 			LICENSE_GPL " ; "
-    		"lv2:optionalFeature lv2:hardRtCapable ; "
+			"lv2:optionalFeature lv2:hardRTCapable ; "
 		    "lv2:requiredFeature <http://lv2plug.in/ns/ext/event> ; "
 			"lv2ui:ui :ui , :ui2 , :ui3 , :ui4 ; "
 			"doap:maintainer [ foaf:name \"David Robillard\" ; "

@@ -131,7 +131,7 @@ slv2_instance_activate(SLV2Instance instance)
 
 /** Run \a instance for \a sample_count frames.
  *
- * If the hint lv2:hardRtCapable is set for this plugin, this function is
+ * If the hint lv2:hardRTCapable is set for this plugin, this function is
  * guaranteed not to block.
  */
 static inline void
