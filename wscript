@@ -104,6 +104,7 @@ def build(bld):
 	obj.target       = 'slv2'
 	obj.vnum         = SLV2_LIB_VERSION
 	obj.install_path = '${LIBDIR}'
+	obj.ccflags      = [ '-ldl' ]
 	autowaf.use_lib(bld, obj, 'REDLAND LV2CORE')
 
 	# Static library (for unit test code coverage)
