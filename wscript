@@ -51,6 +51,7 @@ def set_options(opt):
 
 def configure(conf):
 	autowaf.configure(conf)
+	autowaf.display_header('SLV2 Configuration')
 	conf.check_tool('compiler_cc')
 	autowaf.check_pkg(conf, 'lv2core', uselib_store='LV2CORE', mandatory=True)
 	autowaf.check_pkg(conf, 'redland', uselib_store='REDLAND', atleast_version='1.0.6', mandatory=True)
@@ -66,7 +67,6 @@ def configure(conf):
 	conf.env['BASH_COMPLETION'] = Options.options.bash_completion
 
 	autowaf.print_summary(conf)
-	autowaf.display_header('SLV2 Configuration')
 	autowaf.display_msg(conf, "Jack clients", str(conf.env['USE_JACK']))
 	autowaf.display_msg(conf, "Unit tests", str(conf.env['BUILD_TESTS']))
 	autowaf.display_msg(conf, "Dynamic Manifest Support", str(conf.env['SLV2_DYN_MANIFEST'] == 1))
