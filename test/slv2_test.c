@@ -996,7 +996,7 @@ run_tests()
 {
 	int i;
 	for (i = 0; tests[i].title; i++) {
-		printf("--- Test: %s\n", tests[i].title);
+		printf("*** Test %s\n", tests[i].title);
 		if (!tests[i].func()) {
 			printf("\nTest failed\n");
 			/* test case that wasn't able to be executed at all counts as 1 test + 1 error */
@@ -1018,7 +1018,7 @@ main(int argc, char *argv[])
 	init_tests();
 	run_tests();
 	cleanup();
-	printf("\n***\n*** Test Results: %d tests, %d errors\n***\n\n", test_count, error_count);
+	printf("\n*** Test Results: %d tests, %d errors\n\n", test_count, error_count);
 	return error_count ? 1 : 0;
 }
 

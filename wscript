@@ -72,6 +72,10 @@ def configure(conf):
 	autowaf.display_msg(conf, "Dynamic Manifest Support", str(conf.env['SLV2_DYN_MANIFEST'] == 1))
 	print
 
+tests = '''
+	test/slv2_test
+'''
+
 def build(bld):
 	# C Headers
 	bld.install_files('${INCLUDEDIR}/slv2', 'slv2/*.h')
@@ -107,8 +111,8 @@ def build(bld):
 	obj.ccflags      = [ '-ldl' ]
 	autowaf.use_lib(bld, obj, 'REDLAND LV2CORE')
 
-	# Static library (for unit test code coverage)
 	if bld.env['BUILD_TESTS']:
+		# Static library (for unit test code coverage)
 		obj = bld.new_task_gen('cc', 'staticlib')
 		obj.source       = lib_source
 		obj.includes     = ['.', './src']
@@ -116,6 +120,18 @@ def build(bld):
 		obj.target       = 'slv2_static'
 		obj.install_path = ''
 		obj.ccflags      = [ '-fprofile-arcs',  '-ftest-coverage' ]
+
+		# Unit tests
+		for i in tests.split():
+			obj = bld.new_task_gen('cc', 'program')
+			obj.source       = i + '.c'
+			obj.includes     = '..'
+			obj.uselib_local = 'libslv2_static'
+			obj.uselib       = 'REDLAND LV2CORE'
+			obj.libs         = 'gcov'
+			obj.target       = i
+			obj.install_path = ''
+			obj.ccflags      = [ '-fprofile-arcs',  '-ftest-coverage' ]
 
 	# Utilities
 	utils = '''
@@ -144,9 +160,6 @@ def build(bld):
 			obj.target       = i
 			obj.install_path = '${BINDIR}'
 
-	# Unit tests
-	bld.add_subdirs('test')
-
 	# Documentation
 	autowaf.build_dox(bld, 'SLV2', SLV2_VERSION, srcdir, blddir)
 	bld.install_files('${HTMLDIR}', blddir + '/default/doc/html/*')
@@ -158,6 +171,8 @@ def build(bld):
 		bld.install_as(
 			'/etc/bash_completion.d/slv2', 'utils/slv2.bash_completion')
 
+def test(ctx):
+	autowaf.run_tests(APPNAME, tests.split())
+
 def shutdown():
 	autowaf.shutdown()
-
