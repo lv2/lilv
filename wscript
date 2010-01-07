@@ -172,7 +172,7 @@ def build(bld):
 			'/etc/bash_completion.d/slv2', 'utils/slv2.bash_completion')
 
 def test(ctx):
-	autowaf.run_tests(APPNAME, tests.split())
+	autowaf.run_tests(ctx, APPNAME, tests.split())
 
 def shutdown():
 	autowaf.shutdown()
