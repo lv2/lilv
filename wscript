@@ -125,7 +125,7 @@ def build(bld):
 		for i in tests.split():
 			obj = bld.new_task_gen('cc', 'program')
 			obj.source       = i + '.c'
-			obj.includes     = '..'
+			obj.includes     = ['.', './src']
 			obj.uselib_local = 'libslv2_static'
 			obj.uselib       = 'REDLAND LV2CORE'
 			obj.libs         = 'gcov'
