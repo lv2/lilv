@@ -362,6 +362,8 @@ main(int argc, char** argv)
 done:
 	slv2_value_free(event_class);
 	slv2_value_free(control_class);
+	slv2_value_free(in_group_pred);
+	slv2_value_free(role_pred);
 	slv2_world_free(world);
 	return ret;
 }
