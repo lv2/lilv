@@ -67,7 +67,6 @@ slv2_plugin_instantiate(SLV2Plugin               plugin,
 	} else {
 		// Search for plugin by URI
 
-		// FIXME: Kludge to get bundle path (containing directory of binary)
 		const char* bundle_path = slv2_uri_to_path(slv2_value_as_uri(
 					slv2_plugin_get_bundle_uri(plugin)));
 
@@ -80,20 +79,29 @@ slv2_plugin_instantiate(SLV2Plugin               plugin,
 						slv2_value_as_uri(slv2_plugin_get_uri(plugin)), lib_path);
 				dlclose(lib);
 				break; // return NULL
-			} else if (!strcmp(ld->URI, slv2_value_as_uri(slv2_plugin_get_uri(plugin)))) {
-				assert(plugin->plugin_uri);
-				assert(ld->instantiate);
+			} else {
+				librdf_uri* absolute_uri = librdf_new_uri_relative_to_base(
+						slv2_value_as_librdf_uri(slv2_plugin_get_bundle_uri(plugin)),
+						(const unsigned char*)ld->URI);
+				if (!strcmp((const char*)librdf_uri_as_string(absolute_uri),
+				            slv2_value_as_uri(slv2_plugin_get_uri(plugin)))) {
+					assert(plugin->plugin_uri);
+					assert(ld->instantiate);
 
-				// Create SLV2Instance to return
-				result = malloc(sizeof(struct _Instance));
-				result->lv2_descriptor = ld;
-                result->lv2_handle = ld->instantiate(ld, sample_rate, (char*)bundle_path,
-						(features) ? features : local_features);
-                struct _InstanceImpl* impl = malloc(sizeof(struct _InstanceImpl));
-				impl->lib_handle = lib;
-				result->pimpl = impl;
+					// Create SLV2Instance to return
+					result = malloc(sizeof(struct _Instance));
+					result->lv2_descriptor = ld;
+					result->lv2_handle = ld->instantiate(ld, sample_rate, (char*)bundle_path,
+							(features) ? features : local_features);
+					struct _InstanceImpl* impl = malloc(sizeof(struct _InstanceImpl));
+					impl->lib_handle = lib;
+					result->pimpl = impl;
 
-				break;
+					librdf_free_uri(absolute_uri);
+					break;
+				} else {
+					librdf_free_uri(absolute_uri);
+				}
 			}
 		}
 	}

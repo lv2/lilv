@@ -1,3 +1,10 @@
+slv2 (0.6.7) unstable; urgency=low
+  * Parse all files with their own URI as a base URI (allowing proper
+    reference to other things in the same bundle)
+  * Support relative URIs returned from lv2_descriptor in libraries
+
+ -- Dave Robillard <dave@drobilla.net>  ?
+
 slv2 (0.6.6) unstable; urgency=low
 
   * Add manual pages for utilities

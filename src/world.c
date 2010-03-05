@@ -182,7 +182,7 @@ slv2_world_free(SLV2World world)
 void
 slv2_world_load_file(SLV2World world, librdf_uri* file_uri)
 {
-	librdf_parser_parse_into_model(world->parser, file_uri, NULL, world->model);
+	librdf_parser_parse_into_model(world->parser, file_uri, file_uri, world->model);
 }
 
 
@@ -203,8 +203,8 @@ slv2_world_load_bundle(SLV2World world, SLV2Value bundle_uri)
 
 	librdf_model* manifest_model = librdf_new_model(world->world,
 			manifest_storage, NULL);
-	librdf_parser_parse_into_model(world->parser, manifest_uri, NULL,
-			manifest_model);
+	librdf_parser_parse_into_model(world->parser, manifest_uri,
+			manifest_uri, manifest_model);
 
 #ifdef SLV2_DYN_MANIFEST
 	typedef void* LV2_Dyn_Manifest_Handle;

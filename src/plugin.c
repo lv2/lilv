@@ -218,7 +218,7 @@ slv2_plugin_load(SLV2Plugin p)
 	for (unsigned i=0; i < slv2_values_size(p->data_uris); ++i) {
 		SLV2Value data_uri_val = slv2_values_get_at(p->data_uris, i);
 		librdf_uri* data_uri = slv2_value_as_librdf_uri(data_uri_val);
-		librdf_parser_parse_into_model(p->world->parser, data_uri, NULL, p->rdf);
+		librdf_parser_parse_into_model(p->world->parser, data_uri, data_uri, p->rdf);
 	}
 
 #ifdef SLV2_DYN_MANIFEST
