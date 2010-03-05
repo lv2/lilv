@@ -34,6 +34,7 @@ extern "C" {
  *
  * Returned value is owned by \a point and must not be freed.
  */
+SLV2_API
 SLV2Value
 slv2_scale_point_get_label(SLV2ScalePoint point);
 
@@ -42,6 +43,7 @@ slv2_scale_point_get_label(SLV2ScalePoint point);
  *
  * Returned value is owned by \a point and must not be freed.
  */
+SLV2_API
 SLV2Value
 slv2_scale_point_get_value(SLV2ScalePoint point);
 

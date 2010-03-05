@@ -35,6 +35,7 @@ extern "C" {
  *
  * Returned value must be freed by caller with slv2_value_free.
  */
+SLV2_API
 SLV2Value
 slv2_value_new_uri(SLV2World world, const char* uri);
 
@@ -43,6 +44,7 @@ slv2_value_new_uri(SLV2World world, const char* uri);
  *
  * Returned value must be freed by caller with slv2_value_free.
  */
+SLV2_API
 SLV2Value
 slv2_value_new_string(SLV2World world, const char* str);
 
@@ -51,6 +53,7 @@ slv2_value_new_string(SLV2World world, const char* str);
  *
  * Returned value must be freed by caller with slv2_value_free.
  */
+SLV2_API
 SLV2Value
 slv2_value_new_int(SLV2World world, int val);
 
@@ -59,38 +62,43 @@ slv2_value_new_int(SLV2World world, int val);
  *
  * Returned value must be freed by caller with slv2_value_free.
  */
+SLV2_API
 SLV2Value
 slv2_value_new_float(SLV2World world, float val);
 
 
 /** Free an SLV2Value.
  */
+SLV2_API
 void
 slv2_value_free(SLV2Value val);
 
 
 /** Duplicate an SLV2Value.
  */
+SLV2_API
 SLV2Value
 slv2_value_duplicate(SLV2Value val);
 
 
 /** Return whether two values are equivalent.
  */
+SLV2_API
 bool
 slv2_value_equals(SLV2Value value, SLV2Value other);
 
 
 /** Return this value as a Turtle/SPARQL token.
  * Examples:
- * 	<http://example.org/foo>
- * 	doap:name
- * 	"this is a string"
- * 	1.0
- * 	1
+ *   <http://example.org/foo>
+ *   doap:name
+ *   "this is a string"
+ *   1.0
+ *   1
  *
  * Returned string is newly allocated and must be freed by caller.
  */
+SLV2_API
 char*
 slv2_value_get_turtle_token(SLV2Value value);
 
@@ -99,6 +107,7 @@ slv2_value_get_turtle_token(SLV2Value value);
  *
  * Time = O(1)
  */
+SLV2_API
 bool
 slv2_value_is_uri(SLV2Value value);
 
@@ -110,6 +119,7 @@ slv2_value_is_uri(SLV2Value value);
  *
  * Time = O(1)
  */
+SLV2_API
 const char*
 slv2_value_as_uri(SLV2Value value);
 
@@ -144,6 +154,7 @@ slv2_value_as_qname(SLV2Value value);
  *
  * Time = O(1)
  */
+SLV2_API
 bool
 slv2_value_is_literal(SLV2Value value);
 
@@ -154,6 +165,7 @@ slv2_value_is_literal(SLV2Value value);
  *
  * Time = O(1)
  */
+SLV2_API
 bool
 slv2_value_is_string(SLV2Value value);
 
@@ -162,6 +174,7 @@ slv2_value_is_string(SLV2Value value);
  *
  * Time = O(1)
  */
+SLV2_API
 const char*
 slv2_value_as_string(SLV2Value value);
 
@@ -170,6 +183,7 @@ slv2_value_as_string(SLV2Value value);
  *
  * Time = O(1)
  */
+SLV2_API
 bool
 slv2_value_is_float(SLV2Value value);
 
@@ -181,6 +195,7 @@ slv2_value_is_float(SLV2Value value);
  *
  * Time = O(1)
  */
+SLV2_API
 float
 slv2_value_as_float(SLV2Value value);
 
@@ -189,6 +204,7 @@ slv2_value_as_float(SLV2Value value);
  *
  * Time = O(1)
  */
+SLV2_API
 bool
 slv2_value_is_int(SLV2Value value);
 
@@ -199,6 +215,7 @@ slv2_value_is_int(SLV2Value value);
  *
  * Time = O(1)
  */
+SLV2_API
 int
 slv2_value_as_int(SLV2Value value);
 

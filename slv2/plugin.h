@@ -56,6 +56,7 @@ extern "C" {
  *
  * Time = Query
  */
+SLV2_API
 bool
 slv2_plugin_verify(SLV2Plugin plugin);
 
@@ -76,6 +77,7 @@ slv2_plugin_verify(SLV2Plugin plugin);
  *
  * Time = O(1)
  */
+SLV2_API
 SLV2Value
 slv2_plugin_get_uri(SLV2Plugin plugin);
 
@@ -95,6 +97,7 @@ slv2_plugin_get_uri(SLV2Plugin plugin);
  *
  * Time = O(1)
  */
+SLV2_API
 SLV2Value
 slv2_plugin_get_bundle_uri(SLV2Plugin plugin);
 
@@ -111,6 +114,7 @@ slv2_plugin_get_bundle_uri(SLV2Plugin plugin);
  *
  * Time = O(1)
  */
+SLV2_API
 SLV2Values
 slv2_plugin_get_data_uris(SLV2Plugin plugin);
 
@@ -124,6 +128,7 @@ slv2_plugin_get_data_uris(SLV2Plugin plugin);
  *
  * Time = O(1)
  */
+SLV2_API
 SLV2Value
 slv2_plugin_get_library_uri(SLV2Plugin plugin);
 
@@ -137,12 +142,14 @@ slv2_plugin_get_library_uri(SLV2Plugin plugin);
  *
  * Time = Query
  */
+SLV2_API
 SLV2Value
 slv2_plugin_get_name(SLV2Plugin plugin);
 
 
 /** Get the class this plugin belongs to (ie Filters).
  */
+SLV2_API
 SLV2PluginClass
 slv2_plugin_get_class(SLV2Plugin plugin);
 
@@ -163,6 +170,7 @@ slv2_plugin_get_class(SLV2Plugin plugin);
  *
  * Time = Query
  */
+SLV2_API
 SLV2Values
 slv2_plugin_get_value(SLV2Plugin p,
                       SLV2Value  predicate);
@@ -174,6 +182,7 @@ slv2_plugin_get_value(SLV2Plugin p,
  * string parameter for a predicate instead of an SLV2Value, which may be
  * more convenient.
  */
+SLV2_API
 SLV2Values
 slv2_plugin_get_value_by_qname(SLV2Plugin  p,
                                const char* predicate);
@@ -186,6 +195,7 @@ slv2_plugin_get_value_by_qname(SLV2Plugin  p,
  * more convenient. It returns the value translated to the current language
  * if possible.
  */
+SLV2_API
 SLV2Values
 slv2_plugin_get_value_by_qname_i18n(SLV2Plugin  p,
                                     const char* predicate);
@@ -210,6 +220,7 @@ slv2_plugin_get_value_by_qname_i18n(SLV2Plugin  p,
  *
  * Time = Query
  */
+SLV2_API
 SLV2Values
 slv2_plugin_get_value_for_subject(SLV2Plugin p,
                                   SLV2Value  subject_uri,
@@ -223,6 +234,7 @@ slv2_plugin_get_value_for_subject(SLV2Plugin p,
  *
  * Time = Query
  */
+SLV2_API
 bool
 slv2_plugin_has_feature(SLV2Plugin p,
                         SLV2Value  feature_uri);
@@ -240,6 +252,7 @@ slv2_plugin_has_feature(SLV2Plugin p,
  *
  * Time = Query
  */
+SLV2_API
 SLV2Values
 slv2_plugin_get_supported_features(SLV2Plugin p);
 
@@ -257,6 +270,7 @@ slv2_plugin_get_supported_features(SLV2Plugin p);
  *
  * Time = Query
  */
+SLV2_API
 SLV2Values
 slv2_plugin_get_required_features(SLV2Plugin p);
 
@@ -271,6 +285,7 @@ slv2_plugin_get_required_features(SLV2Plugin p);
  *
  * Time = Query
  */
+SLV2_API
 SLV2Values
 slv2_plugin_get_optional_features(SLV2Plugin p);
 
@@ -279,6 +294,7 @@ slv2_plugin_get_optional_features(SLV2Plugin p);
  *
  * Time = O(1)
  */
+SLV2_API
 uint32_t
 slv2_plugin_get_num_ports(SLV2Plugin p);
 
@@ -297,6 +313,7 @@ slv2_plugin_get_num_ports(SLV2Plugin p);
  * all float ports on a plugin, and may be significantly faster than
  * repeated calls to slv2_port_get_range.
  */
+SLV2_API
 void
 slv2_plugin_get_port_ranges_float(SLV2Plugin p,
                                   float*     min_values,
@@ -311,6 +328,7 @@ slv2_plugin_get_port_ranges_float(SLV2Plugin p,
  *
  * Time = O(1)
  */
+SLV2_API
 uint32_t
 slv2_plugin_get_num_ports_of_class(SLV2Plugin p,
                                    SLV2Value  class_1, ...);
@@ -322,6 +340,7 @@ slv2_plugin_get_num_ports_of_class(SLV2Plugin p,
  *
  * Time = Query
  */
+SLV2_API
 bool
 slv2_plugin_has_latency(SLV2Plugin p);
 
@@ -337,6 +356,7 @@ slv2_plugin_has_latency(SLV2Plugin p);
  *
  * Time = Query
  */
+SLV2_API
 uint32_t
 slv2_plugin_get_latency_port_index(SLV2Plugin p);
 
@@ -351,6 +371,7 @@ slv2_plugin_get_latency_port_index(SLV2Plugin p);
  *
  * Time = Query
  */
+SLV2_API
 SLV2Values
 slv2_plugin_query_variable(SLV2Plugin  plugin,
                            const char* sparql_str,
@@ -367,6 +388,7 @@ slv2_plugin_query_variable(SLV2Plugin  plugin,
  *
  * Time = Query
  */
+SLV2_API
 unsigned
 slv2_plugin_query_count(SLV2Plugin  plugin,
                         const char* sparql_str);
@@ -379,6 +401,7 @@ slv2_plugin_query_count(SLV2Plugin  plugin,
  *
  * Time = O(1)
  */
+SLV2_API
 SLV2Port
 slv2_plugin_get_port_by_index(SLV2Plugin plugin,
                               uint32_t   index);
@@ -393,6 +416,7 @@ slv2_plugin_get_port_by_index(SLV2Plugin plugin,
  *
  * Time = O(n)
  */
+SLV2_API
 SLV2Port
 slv2_plugin_get_port_by_symbol(SLV2Plugin plugin,
                                SLV2Value  symbol);
@@ -410,6 +434,7 @@ slv2_plugin_get_port_by_symbol(SLV2Plugin plugin,
  *
  * Time = Query
  */
+SLV2_API
 SLV2UIs
 slv2_plugin_get_uis(SLV2Plugin plugin);
 
@@ -421,6 +446,7 @@ slv2_plugin_get_uis(SLV2Plugin plugin);
  *
  * Time = Query
  */
+SLV2_API
 SLV2Value
 slv2_plugin_get_author_name(SLV2Plugin plugin);
 
@@ -432,6 +458,7 @@ slv2_plugin_get_author_name(SLV2Plugin plugin);
  *
  * Time = Query
  */
+SLV2_API
 SLV2Value
 slv2_plugin_get_author_email(SLV2Plugin plugin);
 
@@ -443,6 +470,7 @@ slv2_plugin_get_author_email(SLV2Plugin plugin);
  *
  * Time = Query
  */
+SLV2_API
 SLV2Value
 slv2_plugin_get_author_homepage(SLV2Plugin plugin);
 

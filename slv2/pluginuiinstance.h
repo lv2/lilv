@@ -59,6 +59,7 @@ typedef struct _SLV2UIInstance {
  *
  * \return NULL if instantiation failed.
  */
+SLV2_API
 SLV2UIInstance
 slv2_ui_instantiate(SLV2Plugin                plugin,
                     SLV2UI                    ui,
@@ -75,12 +76,14 @@ slv2_ui_instantiate(SLV2Plugin                plugin,
  *
  * \a instance is invalid after this call.
  */
+SLV2_API
 void
 slv2_ui_instance_free(SLV2UIInstance instance);
 
 
 /** Get the widget for the UI instance.
  */
+SLV2_API
 LV2UI_Widget
 slv2_ui_instance_get_widget(SLV2UIInstance instance);
 
@@ -92,6 +95,7 @@ slv2_ui_instance_get_widget(SLV2UIInstance instance);
  *
  * The returned descriptor is shared and must not be deleted.
  */
+SLV2_API
 const LV2UI_Descriptor*
 slv2_ui_instance_get_descriptor(SLV2UIInstance instance);
 
@@ -103,6 +107,7 @@ slv2_ui_instance_get_descriptor(SLV2UIInstance instance);
  *
  * The returned handle is shared and must not be deleted.
  */
+SLV2_API
 LV2UI_Handle
 slv2_ui_instance_get_handle(SLV2UIInstance instance);
 

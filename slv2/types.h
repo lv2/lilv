@@ -26,6 +26,24 @@ extern "C" {
 #include <stdint.h>
 #include <stdbool.h>
 
+#if defined _WIN32 || defined __CYGWIN__
+	#define SLV2_LIB_IMPORT __declspec(dllimport)
+	#define SLV2_LIB_EXPORT __declspec(dllexport)
+#else
+	#define SLV2_LIB_IMPORT __attribute__ ((visibility("default")))
+	#define SLV2_LIB_EXPORT __attribute__ ((visibility("default")))
+#endif
+
+#ifdef SLV2_SHARED // Building a shared library
+	#ifdef SLV2_INTERNAL // Building SLV2 (not using it)
+		#define SLV2_API SLV2_LIB_EXPORT
+	#else
+		#define SLV2_API SLV2_LIB_IMPORT
+	#endif
+#else // Building a static library
+	#define SLV2_API
+#endif // SLV2_DLL
+
 #define SLV2_NAMESPACE_LV2      "http://lv2plug.in/ns/lv2core#"
 #define SLV2_PORT_CLASS_PORT    "http://lv2plug.in/ns/lv2core#Port"
 #define SLV2_PORT_CLASS_INPUT   "http://lv2plug.in/ns/lv2core#InputPort"

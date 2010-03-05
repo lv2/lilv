@@ -24,6 +24,7 @@ extern "C" {
 #endif
 
 #include <stdarg.h>
+#include "slv2/types.h"
 
 
 /** \defgroup slv2_util Utility functions
@@ -37,6 +38,7 @@ extern "C" {
  * Return value is shared and must not be deleted by caller.
  * \return \a uri converted to a path, or NULL on failure (URI is not local).
  */
+SLV2_API
 const char* slv2_uri_to_path(const char* uri);
 
 

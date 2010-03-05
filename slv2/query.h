@@ -30,6 +30,7 @@ extern "C" {
 
 /** Query a plugin with an arbitrary SPARQL string.
  */
+SLV2_API
 SLV2Results
 slv2_plugin_query_sparql(SLV2Plugin  plugin,
                          const char* sparql_str);
@@ -37,6 +38,7 @@ slv2_plugin_query_sparql(SLV2Plugin  plugin,
 
 /** Free query results.
  */
+SLV2_API
 void
 slv2_results_free(SLV2Results results);
 
@@ -46,12 +48,14 @@ slv2_results_free(SLV2Results results);
  * iterate to the end of \a results and rewinding is impossible).
  * Instead, use slv2_results_next and slv2_results_finished repeatedly.
  */
+SLV2_API
 unsigned
 slv2_results_size(SLV2Results results);
 
 
 /** Return true iff the end of \a results has been reached.
  */
+SLV2_API
 bool
 slv2_results_finished(SLV2Results results);
 
@@ -61,6 +65,7 @@ slv2_results_finished(SLV2Results results);
  * Returned value must be freed by caller with slv2_value_free.
  * \return NULL if binding value can not be expressed as an SLV2Value.
  */
+SLV2_API
 SLV2Value
 slv2_results_get_binding_value(SLV2Results results, unsigned index);
 
@@ -70,6 +75,7 @@ slv2_results_get_binding_value(SLV2Results results, unsigned index);
  * Returned value must be freed by caller with slv2_value_free.
  * \return NULL if binding value can not be expressed as an SLV2Value.
  */
+SLV2_API
 SLV2Value
 slv2_results_get_binding_value_by_name(SLV2Results results, const char* name);
 
@@ -78,12 +84,14 @@ slv2_results_get_binding_value_by_name(SLV2Results results, const char* name);
  * Returned value is shared and must not be freed by caller.
  * Indices correspond to selected variables in the query in order of appearance.
  */
+SLV2_API
 const char*
 slv2_results_get_binding_name(SLV2Results results, unsigned index);
 
 
 /** Increment \a results to the next match.
  */
+SLV2_API
 void
 slv2_results_next(SLV2Results results);
 

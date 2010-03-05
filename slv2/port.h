@@ -37,6 +37,7 @@ extern "C" {
  *
  * Time = Query
  */
+SLV2_API
 SLV2Values
 slv2_port_get_value(SLV2Plugin plugin,
                     SLV2Port   port,
@@ -47,6 +48,7 @@ slv2_port_get_value(SLV2Plugin plugin,
  *
  * Time = Query
  */
+SLV2_API
 SLV2Values
 slv2_port_get_value_by_qname(SLV2Plugin  plugin,
                              SLV2Port    port,
@@ -57,6 +59,7 @@ slv2_port_get_value_by_qname(SLV2Plugin  plugin,
  *
  * Time = Query
  */
+SLV2_API
 SLV2Values
 slv2_port_get_value_by_qname_i18n(SLV2Plugin  plugin,
 				  SLV2Port    port,
@@ -67,6 +70,7 @@ slv2_port_get_value_by_qname_i18n(SLV2Plugin  plugin,
  *
  * Time = Query
  */
+SLV2_API
 SLV2Values
 slv2_port_get_properties(SLV2Plugin plugin,
                          SLV2Port   port);
@@ -76,6 +80,7 @@ slv2_port_get_properties(SLV2Plugin plugin,
  *
  * Time = Query
  */
+SLV2_API
 bool
 slv2_port_has_property(SLV2Plugin p,
                        SLV2Port   port,
@@ -86,6 +91,7 @@ slv2_port_has_property(SLV2Plugin p,
  *
  * Time = Query
  */
+SLV2_API
 bool
 slv2_port_supports_event(SLV2Plugin p,
                          SLV2Port   port,
@@ -99,6 +105,7 @@ slv2_port_supports_event(SLV2Plugin p,
  *
  * Time = Query
  */
+SLV2_API
 SLV2Value
 slv2_port_get_symbol(SLV2Plugin plugin,
                      SLV2Port   port);
@@ -111,6 +118,7 @@ slv2_port_get_symbol(SLV2Plugin plugin,
  *
  * Time = Query
  */
+SLV2_API
 SLV2Value
 slv2_port_get_name(SLV2Plugin plugin,
                    SLV2Port   port);
@@ -126,6 +134,7 @@ slv2_port_get_name(SLV2Plugin plugin,
  *
  * Time = O(1)
  */
+SLV2_API
 SLV2Values
 slv2_port_get_classes(SLV2Plugin plugin,
                       SLV2Port   port);
@@ -142,6 +151,7 @@ slv2_port_get_classes(SLV2Plugin plugin,
  * Time = O(n) (n pointer comparisons where n is the number of classes of
  * this port, so this method is suitable for realtime use on any sane port).
  */
+SLV2_API
 bool
 slv2_port_is_a(SLV2Plugin plugin,
                SLV2Port   port,
@@ -157,6 +167,7 @@ slv2_port_is_a(SLV2Plugin plugin,
  *
  * Time = Query
  */
+SLV2_API
 void
 slv2_port_get_range(SLV2Plugin plugin,
                     SLV2Port   port,
@@ -173,6 +184,7 @@ slv2_port_get_range(SLV2Plugin plugin,
  * Returned value may be NULL if @a port has no scale points, otherwise it
  * must be freed by caller with slv2_scale_points_free.
  */
+SLV2_API
 SLV2ScalePoints
 slv2_port_get_scale_points(SLV2Plugin plugin,
                            SLV2Port   port);

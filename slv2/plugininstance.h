@@ -74,6 +74,7 @@ typedef struct _Instance {
  *
  * \return NULL if instantiation failed.
  */
+SLV2_API
 SLV2Instance
 slv2_plugin_instantiate(SLV2Plugin               plugin,
                         double                   sample_rate,
@@ -84,10 +85,11 @@ slv2_plugin_instantiate(SLV2Plugin               plugin,
  *
  * \a instance is invalid after this call.
  */
+SLV2_API
 void
 slv2_instance_free(SLV2Instance instance);
 
-#ifndef LIBSLV2_SOURCE
+#ifndef SLV2_INTERNAL
 
 /** Get the URI of the plugin which \a instance is an instance of.
  *

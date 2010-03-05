@@ -35,6 +35,7 @@ extern "C" {
  *
  * Time = O(1)
  */
+SLV2_API
 SLV2Value
 slv2_ui_get_uri(SLV2UI ui);
 
@@ -46,6 +47,7 @@ slv2_ui_get_uri(SLV2UI ui);
  *
  * Time = O(1)
  */
+SLV2_API
 SLV2Values
 slv2_ui_get_classes(SLV2UI ui);
 
@@ -57,6 +59,7 @@ slv2_ui_get_classes(SLV2UI ui);
  *
  * Time = O(1)
  */
+SLV2_API
 bool
 slv2_ui_is_a(SLV2UI ui, SLV2Value class_uri);
 
@@ -68,6 +71,7 @@ slv2_ui_is_a(SLV2UI ui, SLV2Value class_uri);
  *
  * Time = O(1)
  */
+SLV2_API
 SLV2Value
 slv2_ui_get_bundle_uri(SLV2UI ui);
 
@@ -79,6 +83,7 @@ slv2_ui_get_bundle_uri(SLV2UI ui);
  *
  * Time = O(1)
  */
+SLV2_API
 SLV2Value
 slv2_ui_get_binary_uri(SLV2UI ui);
 

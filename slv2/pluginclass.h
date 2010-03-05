@@ -37,7 +37,9 @@ extern "C" {
  *
  * Time = O(1)
  */
-SLV2Value slv2_plugin_class_get_parent_uri(SLV2PluginClass plugin_class);
+SLV2_API
+SLV2Value
+slv2_plugin_class_get_parent_uri(SLV2PluginClass plugin_class);
 
 
 /** Get the URI of this plugin class.
@@ -46,7 +48,9 @@ SLV2Value slv2_plugin_class_get_parent_uri(SLV2PluginClass plugin_class);
  *
  * Time = O(1)
  */
-SLV2Value slv2_plugin_class_get_uri(SLV2PluginClass plugin_class);
+SLV2_API
+SLV2Value
+slv2_plugin_class_get_uri(SLV2PluginClass plugin_class);
 
 
 /** Get the label of this plugin class, ie "Oscillators".
@@ -55,6 +59,7 @@ SLV2Value slv2_plugin_class_get_uri(SLV2PluginClass plugin_class);
  *
  * Time = O(1)
  */
+SLV2_API
 SLV2Value slv2_plugin_class_get_label(SLV2PluginClass plugin_class);
 
 

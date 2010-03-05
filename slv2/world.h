@@ -50,12 +50,14 @@ extern "C" {
  *
  * If initialization fails, NULL is returned.
  */
+SLV2_API
 SLV2World
 slv2_world_new();
 
 
 /** Initialize a new, empty world, using an existing Redland context.
  */
+SLV2_API
 SLV2World
 slv2_world_new_using_rdf_world(librdf_world* world);
 
@@ -66,6 +68,7 @@ slv2_world_new_using_rdf_world(librdf_world* world);
  * plugins, etc.  Do not destroy the world until you are finished with all
  * objects that came from it.
  */
+SLV2_API
 void
 slv2_world_free(SLV2World world);
 
@@ -83,6 +86,7 @@ slv2_world_free(SLV2World world);
  *
  * Time = Query
  */
+SLV2_API
 void
 slv2_world_load_all(SLV2World world);
 
@@ -105,6 +109,7 @@ slv2_world_load_all(SLV2World world);
  *
  * Time = Query
  */
+SLV2_API
 void
 slv2_world_load_bundle(SLV2World world,
                        SLV2Value bundle_uri);
@@ -114,6 +119,7 @@ slv2_world_load_bundle(SLV2World world,
  *
  * Time = O(1)
  */
+SLV2_API
 SLV2PluginClass
 slv2_world_get_plugin_class(SLV2World world);
 
@@ -124,6 +130,7 @@ slv2_world_get_plugin_class(SLV2World world);
  *
  * Time = O(1)
  */
+SLV2_API
 SLV2PluginClasses
 slv2_world_get_plugin_classes(SLV2World world);
 
@@ -141,6 +148,7 @@ slv2_world_get_plugin_classes(SLV2World world);
  *
  * Time = O(1)
  */
+SLV2_API
 SLV2Plugins
 slv2_world_get_all_plugins(SLV2World world);
 
@@ -156,6 +164,7 @@ slv2_world_get_all_plugins(SLV2World world);
  *
  * Time = O(n * Time(include))
  */
+SLV2_API
 SLV2Plugins
 slv2_world_get_plugins_by_filter(SLV2World world,
                                  bool (*include)(SLV2Plugin));
