@@ -16,18 +16,25 @@
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "slv2-config.h"
 #include <stdio.h>
 #include <string.h>
+#include <stdbool.h>
+#include "slv2-config.h"
 #include "slv2/slv2.h"
 
 
 void
-list_plugins(SLV2Plugins list)
+list_plugins(SLV2Plugins list, bool show_names)
 {
 	for (unsigned i=0; i < slv2_plugins_size(list); ++i) {
 		SLV2Plugin p = slv2_plugins_get_at(list, i);
-		printf("%s\n", slv2_value_as_uri(slv2_plugin_get_uri(p)));
+		if (show_names) {
+			SLV2Value n = slv2_plugin_get_name(p);
+			printf("%s\n", slv2_value_as_string(n));
+			slv2_value_free(n);
+		} else {
+			printf("%s\n", slv2_value_as_uri(slv2_plugin_get_uri(p)));
+		}
 	}
 }
 
@@ -46,8 +53,13 @@ print_version()
 void
 print_usage()
 {
-	printf("Usage: lv2_list\n");
+	printf("Usage: lv2_list [OPTIONS]\n");
 	printf("List all installed LV2 plugins.\n");
+	printf("\n");
+	printf("  -n, --names    Show names instead of URIs\n");
+	printf("  --help         Display this help and exit\n");
+	printf("  --version      Output version information and exit\n");
+	printf("\n");
 	printf("The environment variable LV2_PATH can be used to control where\n");
 	printf("this (and all other slv2 based LV2 hosts) will search for plugins.\n");
 }
@@ -56,16 +68,19 @@ print_usage()
 int
 main(int argc, char** argv)
 {
-	if (argc > 1) {
-		if (argc == 2 && !strcmp(argv[1], "--version")) {
+	bool show_names = false;
+	for (int i = 1; i < argc; ++i) {
+		if (!strcmp(argv[i], "--names") || !strcmp(argv[i], "-n")) {
+			show_names = true;
+		} else if (!strcmp(argv[i], "--version")) {
 			print_version();
 			return 0;
-		} else if (argc == 2 && !strcmp(argv[1], "--help")) {
+		} else if (!strcmp(argv[i], "--help")) {
 			print_usage();
 			return 0;
 		} else {
 			print_usage();
-			return -1;
+			return 1;
 		}
 	}
 
@@ -74,7 +89,7 @@ main(int argc, char** argv)
 
 	SLV2Plugins plugins = slv2_world_get_all_plugins(world);
 
-	list_plugins(plugins);
+	list_plugins(plugins, show_names);
 
 	slv2_plugins_free(world, plugins);
 	slv2_world_free(world);
