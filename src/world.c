@@ -95,8 +95,7 @@ slv2_world_new_storage(SLV2World world)
 			world->world, "trees", NULL, options);
 	if (!ret) {
 		warned = true;
-		SLV2_WARN("Warning: Unable to create \"trees\" RDF storage.\n"
-				"Performance can be improved by upgrading librdf.\n");
+		SLV2_WARN("Unable to create \"trees\" RDF storage, you should upgrade librdf.\n");
 		ret = librdf_new_storage(world->world, "hashes", NULL,
 				"hash-type='memory'");
 	}

@@ -498,7 +498,7 @@ slv2_plugin_get_value_for_subject(SLV2Plugin p,
                                   SLV2Value  predicate)
 {
 	if ( ! slv2_value_is_uri(subject)) {
-		SLV2_ERROR("slv2_plugin_get_value_for_subject: subject not a URI\n");
+		SLV2_ERROR("Subject is not a URI\n");
 		return NULL;
 	}
 
