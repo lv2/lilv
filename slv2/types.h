@@ -42,7 +42,7 @@ extern "C" {
 	#endif
 #else // Building a static library
 	#define SLV2_API
-#endif // SLV2_DLL
+#endif
 
 #define SLV2_NAMESPACE_LV2      "http://lv2plug.in/ns/lv2core#"
 #define SLV2_PORT_CLASS_PORT    "http://lv2plug.in/ns/lv2core#Port"
