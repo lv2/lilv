@@ -50,7 +50,6 @@ struct _SLV2Port {
 
 
 SLV2Port slv2_port_new(SLV2World world, uint32_t index, const char* symbol);
-//SLV2Port slv2_port_duplicate(SLV2Port port);
 void     slv2_port_free(SLV2Port port);
 
 
@@ -66,9 +65,7 @@ struct _SLV2Plugin {
 	SLV2Value            plugin_uri;
 	SLV2Value            bundle_uri; ///< Bundle directory plugin was loaded from
 	SLV2Value            binary_uri; ///< lv2:binary
-//#ifdef SLV2_DYN_MANIFEST
 	SLV2Value            dynman_uri; ///< dynamic manifest binary
-//#endif
 	SLV2PluginClass      plugin_class;
 	raptor_sequence*     data_uris;  ///< rdfs::seeAlso
 	SLV2Port*            ports;

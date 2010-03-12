@@ -170,45 +170,6 @@ slv2_world_get_plugins_by_filter(SLV2World world,
                                  bool (*include)(SLV2Plugin));
 
 
-#if 0
-/** Return a list of found plugins in a given class.
- *
- * Returned list must be freed by user with slv2_plugins_free.  The contained
- * plugins are owned by \a world and must not be freed by caller.
- *
- * Time = O(n)
- */
-SLV2Plugins
-slv2_world_get_plugins_by_class(SLV2World       world,
-                                SLV2PluginClass plugin_class);
-#endif
-
-#if 0
-/** Get plugins filtered by a user-defined SPARQL query.
- *
- * This is much faster than using slv2_world_get_plugins_by_filter with a
- * filter function which calls the various slv2_plugin_* functions.
- *
- * \param query A valid SPARQL query which SELECTs a single variable, which
- * should match the URI of plugins to be loaded.
- *
- * \b Example: Get all plugins with at least 1 audio input and output:
-<tt> \verbatim
-PREFIX : <http://lv2plug.in/ns/lv2core#>
-SELECT DISTINCT ?plugin WHERE {
-    ?plugin  :port  [ a :AudioPort; a :InputPort ] ;
-             :port  [ a :AudioPort; a :OutputPort ] .
-}
-\endverbatim </tt>
- *
- * Returned plugins contain a reference to this world, world must not be
- * destroyed until plugins are finished with.
- */
-SLV2Plugins
-slv2_world_get_plugins_by_query(SLV2World   world,
-                                const char* query);
-#endif
-
 /** @} */
 
 #ifdef __cplusplus

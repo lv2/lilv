@@ -106,24 +106,6 @@ slv2_plugin_free(SLV2Plugin p)
 }
 
 
-/** comparator for sorting */
-#if 0
-static int
-slv2_port_compare_by_index(const void* a, const void* b)
-{
-	SLV2Port port_a = *(SLV2Port*)a;
-	SLV2Port port_b = *(SLV2Port*)b;
-
-	if (port_a->index < port_b->index)
-		return -1;
-	else if (port_a->index == port_b->index)
-		return 0;
-	else //if (port_a->index > port_b->index)
-		return 1;
-}
-#endif
-
-
 /* private */
 void
 slv2_plugin_load_if_necessary(SLV2Plugin p)
@@ -206,8 +188,6 @@ slv2_plugin_load_ports_if_necessary(SLV2Plugin p)
 void
 slv2_plugin_load(SLV2Plugin p)
 {
-	//printf("Loading cache for %s\n", slv2_value_as_string(p->plugin_uri));
-
 	if (!p->storage) {
 		assert(!p->rdf);
 		p->storage = slv2_world_new_storage(p->world);

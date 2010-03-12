@@ -33,7 +33,6 @@
 SLV2Plugins
 slv2_plugins_new()
 {
-	//return raptor_new_sequence((void (*)(void*))&slv2_plugin_free, NULL);
 	return raptor_new_sequence(NULL, NULL);
 }
 
@@ -44,20 +43,6 @@ slv2_plugins_free(SLV2World world, SLV2Plugins list)
 	if (list && list != world->plugins)
 		raptor_free_sequence(list);
 }
-
-#if 0
-void
-slv2_plugins_filter(SLV2Plugins dest, SLV2Plugins source, bool (*include)(SLV2Plugin))
-{
-	assert(dest);
-
-	for (int i=0; i < raptor_sequence_size(source); ++i) {
-		SLV2Plugin p = raptor_sequence_get_at(source, i);
-		if (include(p))
-			raptor_sequence_push(dest, slv2_plugin_duplicate(p));
-	}
-}
-#endif
 
 
 unsigned

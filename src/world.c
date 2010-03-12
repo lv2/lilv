@@ -730,27 +730,6 @@ slv2_world_load_all(SLV2World world)
 }
 
 
-#if 0
-void
-slv2_world_serialize(const char* filename)
-{
-	librdf_uri* lv2_uri = librdf_new_uri(slv2_rdf_world,
-			(unsigned char*)"http://lv2plug.in/ns/lv2core#");
-
-	librdf_uri* rdfs_uri = librdf_new_uri(slv2_rdf_world,
-			(unsigned char*)"http://www.w3.org/2000/01/rdf-schema#");
-
-	// Write out test file
-	librdf_serializer* serializer = librdf_new_serializer(slv2_rdf_world,
-			"turtle", NULL, NULL);
-	librdf_serializer_set_namespace(serializer, lv2_uri, "");
-	librdf_serializer_set_namespace(serializer, rdfs_uri, "rdfs");
-	librdf_serializer_serialize_world_to_file(serializer, filename, NULL, slv2_model);
-	librdf_free_serializer(serializer);
-}
-#endif
-
-
 SLV2PluginClass
 slv2_world_get_plugin_class(SLV2World world)
 {
@@ -785,43 +764,4 @@ slv2_world_get_plugins_by_filter(SLV2World world, bool (*include)(SLV2Plugin))
 
 	return result;
 }
-
-
-#if 0
-SLV2Plugins
-slv2_world_get_plugins_by_query(SLV2World world, const char* query)
-{
-	SLV2Plugins list = slv2_plugins_new();
-
-	librdf_query* rq = librdf_new_query(world->world, "sparql",
-		NULL, (const unsigned char*)query, NULL);
-
-	librdf_query_results* results = librdf_query_execute(rq, world->model);
-
-	while (!librdf_query_results_finished(results)) {
-		librdf_node* plugin_node = librdf_query_results_get_binding_value(results, 0);
-		librdf_uri*  plugin_uri  = librdf_node_get_uri(plugin_node);
-
-		SLV2Plugin plugin = slv2_plugins_get_by_uri(list,
-				(const char*)librdf_uri_as_string(plugin_uri));
-
-		/* Create a new SLV2Plugin */
-		if (!plugin) {
-			SLV2Plugin new_plugin = slv2_plugin_new(world, plugin_uri);
-			raptor_sequence_push(list, new_plugin);
-		}
-
-		librdf_free_node(plugin_node);
-
-		librdf_query_results_next(results);
-	}
-
-	if (results)
-		librdf_free_query_results(results);
-
-	librdf_free_query(rq);
-
-	return list;
-}
-#endif
 

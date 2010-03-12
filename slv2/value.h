@@ -124,30 +124,6 @@ const char*
 slv2_value_as_uri(SLV2Value value);
 
 
-#if 0
-/** Return whether the value is a QName ("qualified name", a prefixed URI).
- *
- * A QName will return true for both this, and slv2_value_is_uri.
- * slv2_value_as_uri and slv2_value_as_qname will both return appropriately.
- *
- * Time = O(1)
- */
-bool
-slv2_value_is_qname(SLV2Value value);
-
-
-/** Return this value as a QName string, e.g. "lv2:Plugin".
- *
- * Valid to call only if slv2_value_is_qname(\a value) returns true.
- * Returned value is owned by \a value and must not be freed by caller.
- *
- * Time = O(1)
- */
-const char*
-slv2_value_as_qname(SLV2Value value);
-#endif
-
-
 /** Return whether this value is a literal (i.e. not a URI).
  *
  * Returns true if \a value is a string or numeric value.

@@ -52,19 +52,6 @@ slv2_port_free(SLV2Port port)
 }
 
 
-/* private */
-#if 0
-SLV2Port
-slv2_port_duplicate(SLV2Port port)
-{
-	SLV2Port ret = malloc(sizeof(struct _SLV2Port));
-	ret->index = port->index;
-	ret->symbol = slv2_value_duplicate(port->symbol);
-	return ret;
-}
-#endif
-
-
 bool
 slv2_port_is_a(SLV2Plugin plugin,
                SLV2Port   port,
