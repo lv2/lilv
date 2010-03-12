@@ -32,41 +32,59 @@
 static void
 slv2_value_set_numerics_from_string(SLV2Value val)
 {
-	// FIXME: locale kludge, need a locale independent strtol and strtod
-	char* locale = strdup(setlocale(LC_NUMERIC, NULL));
+	char* locale;
+	char* endptr;
 
-	if (val->type == SLV2_VALUE_INT) {
-		char* endptr = 0;
+	switch (val->type) {
+	case SLV2_VALUE_URI:
+	case SLV2_VALUE_QNAME_UNUSED:
+	case SLV2_VALUE_STRING:
+		break;
+	case SLV2_VALUE_INT:
+		// FIXME: locale kludge, need a locale independent strtol
+		locale = strdup(setlocale(LC_NUMERIC, NULL));
 		setlocale(LC_NUMERIC, "POSIX");
 		val->val.int_val = strtol(val->str_val, &endptr, 10);
 		setlocale(LC_NUMERIC, locale);
-	} else if (val->type == SLV2_VALUE_FLOAT) {
-		char* endptr = 0;
+		free(locale);
+		break;
+	case SLV2_VALUE_FLOAT:
+		// FIXME: locale kludge, need a locale independent strtod
+		locale = strdup(setlocale(LC_NUMERIC, NULL));
 		setlocale(LC_NUMERIC, "POSIX");
 		val->val.float_val = strtod(val->str_val, &endptr);
 		setlocale(LC_NUMERIC, locale);
+		free(locale);
+		break;
 	}
-
-	free(locale);
 }
 
 
-/* private */
+/* private
+ * Note that if type is numeric, slv2_value_set_numerics_from_string MUST be
+ * called or the returned value will be corrupt!  It is not automatically
+ * called from here to avoid the parsing overhead and imprecision when the
+ * true numeric value is already known.
+ */
 SLV2Value
 slv2_value_new(SLV2World world, SLV2ValueType type, const char* str)
 {
 	SLV2Value val = (SLV2Value)malloc(sizeof(struct _SLV2Value));
 	val->type = type;
 
-	if (type == SLV2_VALUE_URI) {
+	switch (type) {
+	case SLV2_VALUE_URI:
 		val->val.uri_val = librdf_new_uri(world->world, (const unsigned char*)str);
 		assert(val->val.uri_val);
 		val->str_val = (char*)librdf_uri_as_string(val->val.uri_val);
-	} else {
+		break;
+	case SLV2_VALUE_QNAME_UNUSED:
+	case SLV2_VALUE_STRING:
+	case SLV2_VALUE_INT:
+	case SLV2_VALUE_FLOAT:
 		val->str_val = strdup(str);
+		break;
 	}
-
-	slv2_value_set_numerics_from_string(val);
 
 	return val;
 }
@@ -89,16 +107,23 @@ slv2_value_new_librdf_node(SLV2World world, librdf_node* node)
 	case LIBRDF_NODE_TYPE_LITERAL:
 		datatype_uri = librdf_node_get_literal_value_datatype_uri(node);
 		if (datatype_uri) {
-			if (!strcmp((const char*)librdf_uri_as_string(datatype_uri),
-						"http://www.w3.org/2001/XMLSchema#integer"))
+			if (librdf_uri_equals(datatype_uri, librdf_node_get_uri(world->xsd_integer_node)))
 				type = SLV2_VALUE_INT;
-			else if (!strcmp((const char*)librdf_uri_as_string(datatype_uri),
-						"http://www.w3.org/2001/XMLSchema#decimal"))
+			else if (librdf_uri_equals(datatype_uri, librdf_node_get_uri(world->xsd_decimal_node)))
 				type = SLV2_VALUE_FLOAT;
 			else
 				SLV2_ERRORF("Unknown datatype %s\n", librdf_uri_as_string(datatype_uri));
 		}
 		result = slv2_value_new(world, type, (const char*)librdf_node_get_literal_value(node));
+		switch (result->type) {
+		case SLV2_VALUE_URI:
+		case SLV2_VALUE_STRING:
+		case SLV2_VALUE_QNAME_UNUSED:
+			break;
+		case SLV2_VALUE_INT:
+		case SLV2_VALUE_FLOAT:
+			slv2_value_set_numerics_from_string(result);
+		}
 		break;
 	case LIBRDF_NODE_TYPE_BLANK:
 		type = SLV2_VALUE_STRING;
@@ -109,9 +134,6 @@ slv2_value_new_librdf_node(SLV2World world, librdf_node* node)
 		SLV2_ERRORF("Unknown RDF node type %d\n", librdf_node_get_type(node));
 		break;
 	}
-
-    if (result)
-		slv2_value_set_numerics_from_string(result);
 
 	return result;
 }
@@ -149,7 +171,9 @@ slv2_value_new_int(SLV2World world, int val)
 {
 	char str[32];
 	snprintf(str, 32, "%d", val);
-	return slv2_value_new(world, SLV2_VALUE_INT, str);
+	SLV2Value ret = slv2_value_new(world, SLV2_VALUE_INT, str);
+	ret->val.int_val = val;
+	return ret;
 }
 
 
@@ -158,7 +182,9 @@ slv2_value_new_float(SLV2World world, float val)
 {
 	char str[32];
 	snprintf(str, 32, "%f", val);
-	return slv2_value_new(world, SLV2_VALUE_FLOAT, str);
+	SLV2Value ret = slv2_value_new(world, SLV2_VALUE_FLOAT, str);
+	ret->val.float_val = val;
+	return ret;
 }
 
 
