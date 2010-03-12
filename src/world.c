@@ -22,6 +22,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <dirent.h>
+#include <wordexp.h>
 #include <string.h>
 #include <librdf.h>
 #include "slv2/types.h"
@@ -583,21 +584,33 @@ slv2_world_load_all(SLV2World world)
 	if (lv2_path) {
 		slv2_world_load_path(world, lv2_path);
 	} else {
-		const char* const home = getenv("HOME");
-		if (home) {
-#ifdef __APPLE__
-			const char* const suffix = "/Library/Audio/Plug-Ins/LV2:/Library/Audio/Plug-Ins/LV2"
-				":/usr/local/lib/lv2:/usr/lib/lv2";
-#else
-			const char* const suffix = "/.lv2:/usr/local/lib/lv2:/usr/lib/lv2";
-#endif
-			lv2_path = slv2_strjoin(home, suffix, NULL);
-		} else {
-#ifdef __APPLE__
-			lv2_path = strdup("/Library/Audio/Plug-Ins/LV2:/usr/local/lib/lv2:/usr/lib/lv2");
-#else
-			lv2_path = strdup("/usr/local/lib/lv2:/usr/lib/lv2");
-#endif
+		char default_path[sizeof(SLV2_DEFAULT_LV2_PATH)];
+		memcpy(default_path, SLV2_DEFAULT_LV2_PATH, sizeof(SLV2_DEFAULT_LV2_PATH));
+		char* dir = default_path;
+		size_t lv2_path_len = 0;
+		while (*dir != '\0') {
+			char* colon = strchr(dir, ':');
+			if (colon)
+				*colon = '\0';
+			wordexp_t p;
+			wordexp(dir, &p, 0);
+			for (unsigned i = 0; i < p.we_wordc; i++) {
+				const size_t word_len = strlen(p.we_wordv[i]);
+				if (!lv2_path) {
+					lv2_path = strdup(p.we_wordv[i]);
+					lv2_path_len = word_len;
+				} else {
+					lv2_path = (char*)realloc(lv2_path, lv2_path_len + word_len + 2);
+					*(lv2_path + lv2_path_len) = ':';
+					strcpy(lv2_path + lv2_path_len + 1, p.we_wordv[i]);
+					lv2_path_len += word_len + 1;
+				}
+			}
+			wordfree(&p);
+			if (colon)
+				dir = colon + 1;
+			else
+				*dir = '\0';
 		}
 
 		slv2_world_load_path(world, lv2_path);

@@ -49,6 +49,8 @@ def set_options(opt):
 			help="Build unit tests")
 	opt.add_option('--bash-completion', action='store_true', default=False, dest='bash_completion',
 			help="Install bash completion script in /etc/bash_completion.d")
+	opt.add_option('--default-lv2-path', type='string', default='', dest='default_lv2_path',
+			help="Default LV2 path to use if $LV2_PATH is unset (globs and ~ supported)")
 
 def configure(conf):
 	autowaf.configure(conf)
@@ -61,16 +63,27 @@ def configure(conf):
 	conf.define('SLV2_VERSION', SLV2_VERSION)
 	if Options.options.dyn_manifest:
 		conf.define('SLV2_DYN_MANIFEST', 1)
-	conf.write_config_header('slv2-config.h')
+
+	if Options.options.default_lv2_path == '':
+		if Options.platform == 'darwin':
+			Options.options.default_lv2_path = "~/Library/Audio/Plug-Ins/LV2:/Library/Audio/Plug-Ins/LV2:~/.lv2:/usr/local/lib/lv2:/usr/lib/lv2"
+		elif Options.platform == 'haiku':
+			Options.options.default_lv2_path = "~/Library/Audio/Plug-Ins/LV2:/Library/Audio/Plug-Ins/LV2:~/.lv2:/usr/local/lib/lv2:/usr/lib/lv2"
+		else:
+			Options.options.default_lv2_path = "~/.lv2:/usr/local/" + conf.env['LIBDIRNAME'] + '/lv2:' + conf.env['LIBDIR'] + '/lv2'
 
 	conf.env['USE_JACK'] = conf.env['HAVE_JACK'] and not Options.options.no_jack
 	conf.env['BUILD_TESTS'] = Options.options.build_tests
 	conf.env['BASH_COMPLETION'] = Options.options.bash_completion
+	conf.define('SLV2_DEFAULT_LV2_PATH', Options.options.default_lv2_path)
+	
+	conf.write_config_header('slv2-config.h')
 
 	autowaf.print_summary(conf)
 	autowaf.display_msg(conf, "Jack clients", str(conf.env['USE_JACK']))
 	autowaf.display_msg(conf, "Unit tests", str(conf.env['BUILD_TESTS']))
 	autowaf.display_msg(conf, "Dynamic Manifest Support", str(conf.env['SLV2_DYN_MANIFEST'] == 1))
+	autowaf.display_msg(conf, "Default LV2_PATH", str(conf.env['SLV2_DEFAULT_LV2_PATH']))
 	print
 
 tests = '''
