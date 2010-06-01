@@ -79,7 +79,6 @@ def configure(conf):
 	
 	conf.write_config_header('slv2-config.h')
 
-	autowaf.print_summary(conf)
 	autowaf.display_msg(conf, "Jack clients", str(conf.env['USE_JACK']))
 	autowaf.display_msg(conf, "Unit tests", str(conf.env['BUILD_TESTS']))
 	autowaf.display_msg(conf, "Dynamic Manifest Support", str(conf.env['SLV2_DYN_MANIFEST'] == 1))
