@@ -133,7 +133,8 @@ def build(bld):
 		obj.target       = 'slv2_static'
 		obj.install_path = ''
 		obj.ccflags      = [ '-fprofile-arcs',  '-ftest-coverage' ]
-
+		autowaf.use_lib(bld, obj, 'REDLAND LV2CORE')
+		
 		# Unit tests
 		for i in tests.split():
 			obj = bld.new_task_gen('cc', 'program')
