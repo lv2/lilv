@@ -1,1 +1,1 @@
-../autowaf.py
+../common/autowaf.py
