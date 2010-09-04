@@ -1,15 +1,15 @@
-This package was debianized by Dave Robillard <dave@drobilla.net> on
+This package was debianized by David Robillard <d@drobilla.net> on
 Mon, 30 Mar 2009 10:48:42 -0400
 
 It was downloaded from <http://drobilla.net/software/slv2>
 
 Upstream Author: 
 
-	Dave Robillard <dave@drobilla.net>
+	David Robillard <d@drobilla.net>
 
 Copyright: 
 
-    Copyright (C) 2009 Dave Robillard
+    Copyright (C) 2009 David Robillard
 
 License:
 
@@ -30,6 +30,6 @@ License:
 On Debian systems, the complete text of the GNU General
 Public License can be found in `/usr/share/common-licenses/GPL'.
 
-The Debian packaging is (C) 2009, Dave Robillard <dave@drobilla.net> and
+The Debian packaging is (C) 2009, David Robillard <d@drobilla.net> and
 is licensed under the GPL, see above.
 

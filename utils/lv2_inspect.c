@@ -1,5 +1,5 @@
 /* lv2_inspect - Display information about an LV2 plugin.
- * Copyright (C) 2007-2009 Dave Robillard <drobilla.net>
+ * Copyright (C) 2007-2009 David Robillard <drobilla.net>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -294,7 +294,7 @@ void
 print_version()
 {
 	printf("lv2_inspect (slv2) " SLV2_VERSION "\n");
-	printf("Copyright (C) 2007-2009 Dave Robillard <http://drobilla.net>\n");
+	printf("Copyright (C) 2007-2009 David Robillard <http://drobilla.net>\n");
 	printf("License: GNU GPL version 2 or later <http://gnu.org/licenses/gpl.html>\n");
 	printf("This is free software: you are free to change and redistribute it.\n");
 	printf("There is NO WARRANTY, to the extent permitted by law.\n");

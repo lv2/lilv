@@ -11,7 +11,7 @@
         rdfs:seeAlso <http://drobilla.net/drobilla.rdf> ;
         foaf:homepage <http://drobilla.net> ;
         foaf:mbox_sha1sum "253b3c58086250260bac1232d744d150274ad308" ;
-        foaf:name "Dave Robillard"
+        foaf:name "David Robillard"
     ] ;
     :download-page <http://download.drobilla.net> ;
     :homepage <http://drobilla.net/software/slv2> ;

@@ -1,5 +1,5 @@
 /* SLV2 Tests
- * Copyright (C) 2008-2009 Dave Robillard <http://drobilla.net>
+ * Copyright (C) 2008-2009 David Robillard <http://drobilla.net>
  * Copyright (C) 2008 Krzysztof Foltman
  *
  * This library is free software; you can redistribute it and/or modify it
@@ -558,7 +558,7 @@ test_plugin()
 		    "lv2:requiredFeature <http://lv2plug.in/ns/ext/event> ; "
 			":foo 1.6180 ; "
 			"doap:maintainer [ foaf:name \"David Robillard\" ; "
-			"  foaf:homepage <http://drobilla.net> ; foaf:mbox <mailto:dave@drobilla.net> ] ; "
+			"  foaf:homepage <http://drobilla.net> ; foaf:mbox <mailto:d@drobilla.net> ] ; "
 			"lv2:port [ "
 			"  a lv2:ControlPort ; a lv2:InputPort ; "
 			"  lv2:index 0 ; lv2:symbol \"foo\" ; lv2:name \"bar\" ; "
@@ -674,7 +674,7 @@ test_plugin()
 	slv2_value_free(author_name);
 
 	SLV2Value author_email = slv2_plugin_get_author_email(plug);
-	TEST_ASSERT(!strcmp(slv2_value_as_string(author_email), "mailto:dave@drobilla.net"));
+	TEST_ASSERT(!strcmp(slv2_value_as_string(author_email), "mailto:d@drobilla.net"));
 	slv2_value_free(author_email);
 
 	SLV2Value author_homepage = slv2_plugin_get_author_homepage(plug);
@@ -885,7 +885,7 @@ test_ui()
 		    "lv2:requiredFeature <http://lv2plug.in/ns/ext/event> ; "
 			"lv2ui:ui :ui , :ui2 , :ui3 , :ui4 ; "
 			"doap:maintainer [ foaf:name \"David Robillard\" ; "
-			"  foaf:homepage <http://drobilla.net> ; foaf:mbox <mailto:dave@drobilla.net> ] ; "
+			"  foaf:homepage <http://drobilla.net> ; foaf:mbox <mailto:d@drobilla.net> ] ; "
 			"lv2:port [ "
 			"  a lv2:ControlPort ; a lv2:InputPort ; "
 			"  lv2:index 0 ; lv2:symbol \"foo\" ; lv2:name \"bar\" ; "
