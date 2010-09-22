@@ -237,7 +237,7 @@ print_plugin(SLV2Plugin p)
 	/* Presets */
 
 	SLV2Results presets = slv2_plugin_query_sparql(p, "\
-PREFIX lv2p: <http://lv2plug.in/ns/dev/presets#> \
+PREFIX lv2p: <http://lv2plug.in/ns/ext/presets#> \
 PREFIX dc:  <http://dublincore.org/documents/dcmi-namespace/> \
 SELECT ?name WHERE { <> lv2p:hasPreset ?preset . ?preset dc:title ?name }");
 	if (!slv2_results_finished(presets))
@@ -253,7 +253,7 @@ SELECT ?name WHERE { <> lv2p:hasPreset ?preset . ?preset dc:title ?name }");
 	/* Groups */
 
 	SLV2Results groups = slv2_plugin_query_sparql(p, "\
-PREFIX pg: <http://lv2plug.in/ns/dev/port-groups#> \
+PREFIX pg: <http://lv2plug.in/ns/ext/port-groups#> \
 PREFIX dc:  <http://dublincore.org/documents/dcmi-namespace/> \
 SELECT DISTINCT ?group ?type ?sym WHERE {\n"
 "	<>     lv2:port   ?port .\n"
@@ -320,8 +320,8 @@ main(int argc, char** argv)
 
 	event_class = slv2_value_new_uri(world, SLV2_PORT_CLASS_EVENT);
 	control_class = slv2_value_new_uri(world, SLV2_PORT_CLASS_CONTROL);
-	in_group_pred = slv2_value_new_uri(world, "http://lv2plug.in/ns/dev/port-groups#inGroup");
-	role_pred = slv2_value_new_uri(world, "http://lv2plug.in/ns/dev/port-groups#role");
+	in_group_pred = slv2_value_new_uri(world, "http://lv2plug.in/ns/ext/port-groups#inGroup");
+	role_pred = slv2_value_new_uri(world, "http://lv2plug.in/ns/ext/port-groups#role");
 
 	if (argc != 2) {
 		print_usage();
