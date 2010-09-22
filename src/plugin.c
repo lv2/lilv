@@ -56,10 +56,6 @@ slv2_plugin_new(SLV2World world, SLV2Value uri, librdf_uri* bundle_uri)
 	plugin->rdf = NULL;
 	plugin->num_ports = 0;
 
-	/*printf("PLUGIN %s DATA URIs: %p\n",
-			slv2_value_as_string(plugin->plugin_uri),
-			(void*)plugin->data_uris);*/
-
 	return plugin;
 }
 
