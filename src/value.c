@@ -170,7 +170,7 @@ SLV2Value
 slv2_value_new_int(SLV2World world, int val)
 {
 	char str[32];
-	snprintf(str, 32, "%d", val);
+	snprintf(str, sizeof(str), "%d", val);
 	SLV2Value ret = slv2_value_new(world, SLV2_VALUE_INT, str);
 	ret->val.int_val = val;
 	return ret;
@@ -181,7 +181,7 @@ SLV2Value
 slv2_value_new_float(SLV2World world, float val)
 {
 	char str[32];
-	snprintf(str, 32, "%f", val);
+	snprintf(str, sizeof(str), "%f", val);
 	SLV2Value ret = slv2_value_new(world, SLV2_VALUE_FLOAT, str);
 	ret->val.float_val = val;
 	return ret;
@@ -259,7 +259,7 @@ slv2_value_get_turtle_token(SLV2Value value)
 	switch (value->type) {
 	case SLV2_VALUE_URI:
 		len = strlen(value->str_val) + 3;
-		result = calloc(len, sizeof(char));
+		result = calloc(len, 1);
 		snprintf(result, len, "<%s>", value->str_val);
 		break;
 	case SLV2_VALUE_STRING:
@@ -271,7 +271,7 @@ slv2_value_get_turtle_token(SLV2Value value)
 		// FIXME: locale kludge, need a locale independent snprintf
 		locale = strdup(setlocale(LC_NUMERIC, NULL));
 		len = 20;
-		result = calloc(len, sizeof(char));
+		result = calloc(len, 1);
 		setlocale(LC_NUMERIC, "POSIX");
 		snprintf(result, len, "%d", value->val.int_val);
 		setlocale(LC_NUMERIC, locale);
@@ -280,7 +280,7 @@ slv2_value_get_turtle_token(SLV2Value value)
 		// FIXME: locale kludge, need a locale independent snprintf
 		locale = strdup(setlocale(LC_NUMERIC, NULL));
 		len = 20; // FIXME: proper maximum value?
-		result = calloc(len, sizeof(char));
+		result = calloc(len, 1);
 		setlocale(LC_NUMERIC, "POSIX");
 		snprintf(result, len, "%f", value->val.float_val);
 		setlocale(LC_NUMERIC, locale);

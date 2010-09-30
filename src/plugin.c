@@ -22,6 +22,9 @@
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>
+#ifdef SLV2_DYN_MANIFEST
+#include <dlfcn.h>
+#endif
 #include <librdf.h>
 #include "slv2/types.h"
 #include "slv2/collections.h"
@@ -30,9 +33,6 @@
 #include "slv2/query.h"
 #include "slv2/util.h"
 #include "slv2_internal.h"
-#ifdef SLV2_DYN_MANIFEST
-#include <dlfcn.h>
-#endif
 
 
 /* private

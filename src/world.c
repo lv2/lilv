@@ -16,24 +16,21 @@
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "slv2-config.h"
-
 #define _XOPEN_SOURCE 500
-#include <string.h>
 #include <stdlib.h>
 #include <dirent.h>
 #include <wordexp.h>
 #include <string.h>
+#ifdef SLV2_DYN_MANIFEST
+#include <dlfcn.h>
+#endif
 #include <librdf.h>
 #include "slv2/types.h"
 #include "slv2/world.h"
 #include "slv2/slv2.h"
 #include "slv2/util.h"
+#include "slv2-config.h"
 #include "slv2_internal.h"
-#ifdef SLV2_DYN_MANIFEST
-#include <dlfcn.h>
-#endif
-
 
 /* private */
 static SLV2World
@@ -291,7 +288,7 @@ slv2_world_load_bundle(SLV2World world, SLV2Value bundle_uri)
 	librdf_free_query(query);
 #endif // SLV2_DYN_MANIFEST
 
-	/* ?plugin a lv2:Plugin */
+	// ?plugin a lv2:Plugin
 	librdf_statement* q = librdf_new_statement_from_nodes(world->world,
 			NULL, librdf_new_node_from_node(world->rdf_a_node),
 			      librdf_new_node_from_node(world->lv2_plugin_node));
@@ -302,7 +299,7 @@ slv2_world_load_bundle(SLV2World world, SLV2Value bundle_uri)
 
 		librdf_node* plugin_node = librdf_new_node_from_node(librdf_statement_get_subject(s));
 
-		/* Add ?plugin rdfs:seeAlso <manifest.ttl>*/
+		// Add ?plugin rdfs:seeAlso <manifest.ttl>
 		librdf_node* subject = plugin_node;
 		librdf_node* predicate = librdf_new_node_from_uri_string(world->world,
 				(const unsigned char*)(SLV2_NS_RDFS "seeAlso"));
@@ -310,7 +307,7 @@ slv2_world_load_bundle(SLV2World world, SLV2Value bundle_uri)
 				manifest_uri);
 		librdf_model_add(world->model, subject, predicate, object);
 
-		/* Add ?plugin slv2:bundleURI <file://some/path> */
+		// Add ?plugin slv2:bundleURI <file://some/path>
 		subject = librdf_new_node_from_node(plugin_node);
 		predicate = librdf_new_node_from_uri_string(world->world,
 				(const unsigned char*)(SLV2_NS_SLV2 "bundleURI"));
@@ -324,7 +321,7 @@ slv2_world_load_bundle(SLV2World world, SLV2Value bundle_uri)
 	librdf_free_statement(q);
 
 
-	/* ?specification a lv2:Specification */
+	// ?specification a lv2:Specification
 	q = librdf_new_statement_from_nodes(world->world,
 			NULL, librdf_new_node_from_node(world->rdf_a_node),
 			      librdf_new_node_from_node(world->lv2_specification_node));
@@ -335,7 +332,7 @@ slv2_world_load_bundle(SLV2World world, SLV2Value bundle_uri)
 
 		librdf_node* spec_node = librdf_new_node_from_node(librdf_statement_get_subject(s));
 
-		/* Add ?specification rdfs:seeAlso <manifest.ttl> */
+		// Add ?specification rdfs:seeAlso <manifest.ttl>
 		librdf_node* subject = spec_node;
 		librdf_node* predicate = librdf_new_node_from_uri_string(world->world,
 				(const unsigned char*)(SLV2_NS_RDFS "seeAlso"));
@@ -344,7 +341,7 @@ slv2_world_load_bundle(SLV2World world, SLV2Value bundle_uri)
 
 		librdf_model_add(world->model, subject, predicate, object);
 
-		/* Add ?specification slv2:bundleURI <file://some/path> */
+		// Add ?specification slv2:bundleURI <file://some/path>
 		subject = librdf_new_node_from_node(spec_node);
 		predicate = librdf_new_node_from_uri_string(world->world,
 				(const unsigned char*)(SLV2_NS_SLV2 "bundleURI"));
@@ -357,7 +354,7 @@ slv2_world_load_bundle(SLV2World world, SLV2Value bundle_uri)
 	librdf_free_stream(results);
 	librdf_free_statement(q);
 
-	/* Join the temporary model to the main model */
+	// Join the temporary model to the main model
 	librdf_stream* manifest_stream = librdf_model_as_stream(manifest_model);
 	librdf_model_add_statements(world->model, manifest_stream);
 	librdf_free_stream(manifest_stream);
