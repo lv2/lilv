@@ -16,8 +16,8 @@
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef __SLV2_PLUGINS_H__
-#define __SLV2_PLUGINS_H__
+#ifndef __SLV2_COLLECTIONS_H__
+#define __SLV2_COLLECTIONS_H__
 
 #ifdef __cplusplus
 extern "C" {
