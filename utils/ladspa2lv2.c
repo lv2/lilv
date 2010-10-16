@@ -24,7 +24,7 @@
 #include <float.h>
 #include <math.h>
 #include <dlfcn.h>
-#include <librdf.h>
+#include <redland.h>
 #include "ladspa.h"
 
 #define U(x) ((const unsigned char*)(x))

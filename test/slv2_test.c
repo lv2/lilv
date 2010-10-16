@@ -24,7 +24,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
-#include <librdf.h>
+#include <redland.h>
 #include <sys/stat.h>
 #include <limits.h>
 #include <float.h>

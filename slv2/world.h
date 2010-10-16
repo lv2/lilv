@@ -23,7 +23,7 @@
 extern "C" {
 #endif
 
-#include <librdf.h>
+#include <redland.h>
 #include "slv2/collections.h"
 
 /** \defgroup slv2_world Global library state

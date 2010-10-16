@@ -25,7 +25,7 @@
 #ifdef SLV2_DYN_MANIFEST
 #include <dlfcn.h>
 #endif
-#include <librdf.h>
+#include <redland.h>
 #include "slv2/types.h"
 #include "slv2/collections.h"
 #include "slv2/plugin.h"

@@ -29,7 +29,7 @@ extern "C" {
 #include <stddef.h>
 #include <stdlib.h>
 #include <inttypes.h>
-#include <librdf.h>
+#include <redland.h>
 #include "slv2/types.h"
 #include "slv2/lv2_ui.h"
 #ifdef SLV2_DYN_MANIFEST

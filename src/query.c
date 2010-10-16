@@ -18,7 +18,7 @@
 
 #define _XOPEN_SOURCE 500
 #include <assert.h>
-#include <librdf.h>
+#include <redland.h>
 #include <limits.h>
 #include <stdlib.h>
 #include <string.h>
