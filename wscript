@@ -121,7 +121,8 @@ def build(bld):
 	obj.target       = 'slv2'
 	obj.vnum         = SLV2_LIB_VERSION
 	obj.install_path = '${LIBDIR}'
-	obj.ccflags      = [ '-ldl', '-fvisibility=hidden', '-DSLV2_SHARED', '-DSLV2_INTERNAL' ]
+	obj.ccflags      = [ '-fvisibility=hidden', '-DSLV2_SHARED', '-DSLV2_INTERNAL' ]
+	obj.ldflags      = [ '-ldl' ]
 	autowaf.use_lib(bld, obj, 'REDLAND LV2CORE')
 
 	if bld.env['BUILD_TESTS']:
