@@ -426,32 +426,7 @@ SLV2Values
 slv2_plugin_get_value(SLV2Plugin p,
                       SLV2Value  predicate)
 {
-	// <plugin> <predicate> ?value
-	librdf_stream* results = slv2_plugin_find_statements(
-		p,
-		librdf_new_node_from_uri(p->world->world, p->plugin_uri->val.uri_val),
-		librdf_new_node_from_uri(p->world->world, predicate->val.uri_val),
-		NULL);
-
-	if (librdf_stream_end(results)) {
-		librdf_free_stream(results);
-		return NULL;
-	}
-
-	SLV2Values result = slv2_values_new();
-	while (!librdf_stream_end(results)) {
-		librdf_statement* s          = librdf_stream_get_object(results);
-		librdf_node*      value_node = librdf_statement_get_object(s);
-
-		SLV2Value value = slv2_value_new_librdf_node(p->world, value_node);
-		if (value)
-			raptor_sequence_push(result, value);
-
-		librdf_stream_next(results);
-	}
-	
-	librdf_free_stream(results);
-	return result;
+	return slv2_plugin_get_value_for_subject(p, p->plugin_uri, predicate);
 }
 
 
@@ -499,21 +474,36 @@ slv2_plugin_get_value_for_subject(SLV2Plugin p,
 		SLV2_ERROR("Subject is not a URI\n");
 		return NULL;
 	}
+	if ( ! slv2_value_is_uri(predicate)) {
+		SLV2_ERROR("Subject is not a URI\n");
+		return NULL;
+	}
 
-	char* subject_token = slv2_value_get_turtle_token(subject);
+	// <subject> <predicate> ?value
+	librdf_stream* results = slv2_plugin_find_statements(
+		p,
+		librdf_new_node_from_uri(p->world->world, subject->val.uri_val),
+		librdf_new_node_from_uri(p->world->world, predicate->val.uri_val),
+		NULL);
 
-	/* Hack around broken RASQAL, full URI predicates don't work :/ */
-	char* query = slv2_strjoin(
-		"PREFIX slv2predicate: <", slv2_value_as_string(predicate), ">\n",
-		"SELECT DISTINCT ?value WHERE {\n",
-		subject_token, " slv2predicate: ?value .\n"
-		"}\n", NULL);
+	if (librdf_stream_end(results)) {
+		librdf_free_stream(results);
+		return NULL;
+	}
 
-	SLV2Values result = slv2_plugin_query_variable(p, query, 0);
+	SLV2Values result = slv2_values_new();
+	while (!librdf_stream_end(results)) {
+		librdf_statement* s          = librdf_stream_get_object(results);
+		librdf_node*      value_node = librdf_statement_get_object(s);
 
-	free(query);
-	free(subject_token);
+		SLV2Value value = slv2_value_new_librdf_node(p->world, value_node);
+		if (value)
+			raptor_sequence_push(result, value);
 
+		librdf_stream_next(results);
+	}
+	
+	librdf_free_stream(results);
 	return result;
 }
 
