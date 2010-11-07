@@ -455,7 +455,6 @@ slv2_plugin_get_value(SLV2Plugin p,
 }
 
 
-/* internal */
 SLV2Values
 slv2_plugin_get_value_by_qname(SLV2Plugin  p,
                                const char* predicate)
@@ -473,7 +472,6 @@ slv2_plugin_get_value_by_qname(SLV2Plugin  p,
 }
 
 
-/* internal: get i18n value if possible */
 SLV2Values
 slv2_plugin_get_value_by_qname_i18n(SLV2Plugin  p,
                                     const char* predicate)
