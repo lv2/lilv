@@ -61,6 +61,9 @@ slv2_world_new_internal(SLV2World world)
 	world->lv2_plugin_node = librdf_new_node_from_uri_string(world->world,
 			(const unsigned char*)"http://lv2plug.in/ns/lv2core#Plugin");
 
+	world->lv2_binary_node = librdf_new_node_from_uri_string(world->world,
+			(const unsigned char*)"http://lv2plug.in/ns/lv2core#binary");
+
 	world->rdf_a_node = librdf_new_node_from_uri_string(world->world,
 			(const unsigned char*)"http://www.w3.org/1999/02/22-rdf-syntax-ns#type");
 
@@ -144,6 +147,7 @@ slv2_world_free(SLV2World world)
 
 	librdf_free_node(world->lv2_specification_node);
 	librdf_free_node(world->lv2_plugin_node);
+	librdf_free_node(world->lv2_binary_node);
 	librdf_free_node(world->rdf_a_node);
 	librdf_free_node(world->xsd_integer_node);
 	librdf_free_node(world->xsd_decimal_node);

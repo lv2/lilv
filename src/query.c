@@ -205,3 +205,15 @@ slv2_plugin_query_count(SLV2Plugin  plugin,
 	return ret;
 }
 
+librdf_stream*
+slv2_plugin_find_statements(SLV2Plugin   plugin,
+                            librdf_node* subject,
+                            librdf_node* predicate,
+                            librdf_node* object)
+{
+	librdf_statement* q = librdf_new_statement_from_nodes(
+		plugin->world->world, subject, predicate, object);
+	librdf_stream* results = librdf_model_find_statements(plugin->rdf, q);
+	librdf_free_statement(q);
+	return results;
+}

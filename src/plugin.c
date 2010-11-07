@@ -258,32 +258,27 @@ slv2_plugin_get_bundle_uri(SLV2Plugin p)
 SLV2Value
 slv2_plugin_get_library_uri(SLV2Plugin p)
 {
-	assert(p);
 	slv2_plugin_load_if_necessary(p);
 	if (!p->binary_uri) {
-		const unsigned char* query = (const unsigned char*)
-			"PREFIX : <http://lv2plug.in/ns/lv2core#>\n"
-			"SELECT ?binary WHERE { <> :binary ?binary . }";
-
-		librdf_query* q = librdf_new_query(p->world->world, "sparql",
-				NULL, query, slv2_value_as_librdf_uri(p->plugin_uri));
-
-		librdf_query_results* results = librdf_query_execute(q, p->rdf);
-
-		if (!librdf_query_results_finished(results)) {
-			librdf_node* binary_node = librdf_query_results_get_binding_value(results, 0);
-			librdf_uri* binary_uri = librdf_node_get_uri(binary_node);
+		// <plugin> lv2:binary ?binary
+		librdf_stream* results = slv2_plugin_find_statements(
+			p,
+			librdf_new_node_from_uri(p->world->world, p->plugin_uri->val.uri_val),
+			librdf_new_node_from_node(p->world->lv2_binary_node),
+			NULL);
+		while (!librdf_stream_end(results)) {
+			librdf_statement* s           = librdf_stream_get_object(results);
+			librdf_node*      binary_node = librdf_statement_get_object(s);
+			librdf_uri*       binary_uri  = librdf_node_get_uri(binary_node);
 
 			if (binary_uri) {
-				SLV2Value binary = slv2_value_new_librdf_uri(p->world, binary_uri);
-				p->binary_uri = binary;
+				p->binary_uri = slv2_value_new_librdf_uri(p->world, binary_uri);
+				break;
 			}
 
-			librdf_free_node(binary_node);
+			librdf_stream_next(results);
 		}
-
-		librdf_free_query_results(results);
-		librdf_free_query(q);
+		librdf_free_stream(results);
 	}
 	return p->binary_uri;
 }
@@ -301,20 +296,19 @@ slv2_plugin_get_class(SLV2Plugin p)
 {
 	slv2_plugin_load_if_necessary(p);
 	if (!p->plugin_class) {
-		const unsigned char* query = (const unsigned char*)
-			"SELECT DISTINCT ?class WHERE { <> a ?class }";
-
-		librdf_query* q = librdf_new_query(p->world->world, "sparql",
-				NULL, query, slv2_value_as_librdf_uri(p->plugin_uri));
-
-		librdf_query_results* results = librdf_query_execute(q, p->rdf);
-
-		while (!librdf_query_results_finished(results)) {
-			librdf_node* class_node = librdf_query_results_get_binding_value(results, 0);
-			librdf_uri*  class_uri  = librdf_node_get_uri(class_node);
+		// <plugin> a ?class
+		librdf_stream* results = slv2_plugin_find_statements(
+			p,
+			librdf_new_node_from_uri(p->world->world, p->plugin_uri->val.uri_val),
+			librdf_new_node_from_node(p->world->rdf_a_node),
+			NULL);
+		while (!librdf_stream_end(results)) {
+			librdf_statement* s          = librdf_stream_get_object(results);
+			librdf_node*      class_node = librdf_new_node_from_node(librdf_statement_get_object(s));
+			librdf_uri*       class_uri  = librdf_node_get_uri(class_node);
 
 			if (!class_uri) {
-				librdf_query_results_next(results);
+				librdf_stream_next(results);
 				continue;
 			}
 
@@ -335,16 +329,14 @@ slv2_plugin_get_class(SLV2Plugin p)
 			}
 
 			slv2_value_free(class);
-			librdf_query_results_next(results);
+			librdf_stream_next(results);
 		}
 
 		if (p->plugin_class == NULL)
 			p->plugin_class = p->world->lv2_plugin_class;
 
-		librdf_free_query_results(results);
-		librdf_free_query(q);
+		librdf_free_stream(results);
 	}
-
 	return p->plugin_class;
 }
 
@@ -434,19 +426,31 @@ SLV2Values
 slv2_plugin_get_value(SLV2Plugin p,
                       SLV2Value  predicate)
 {
-	char* query = NULL;
+	// <plugin> <predicate> ?value
+	librdf_stream* results = slv2_plugin_find_statements(
+		p,
+		librdf_new_node_from_uri(p->world->world, p->plugin_uri->val.uri_val),
+		librdf_new_node_from_uri(p->world->world, predicate->val.uri_val),
+		NULL);
 
-	/* Hack around broken RASQAL, full URI predicates don't work :/ */
-	query = slv2_strjoin(
-		"PREFIX slv2predicate: <", slv2_value_as_string(predicate), ">\n",
-		"SELECT DISTINCT ?value WHERE {\n"
-		"<> slv2predicate: ?value .\n"
-		"}\n", NULL);
+	if (librdf_stream_end(results)) {
+		librdf_free_stream(results);
+		return NULL;
+	}
 
-	SLV2Values result = slv2_plugin_query_variable(p, query, 0);
+	SLV2Values result = slv2_values_new();
+	while (!librdf_stream_end(results)) {
+		librdf_statement* s          = librdf_stream_get_object(results);
+		librdf_node*      value_node = librdf_statement_get_object(s);
 
-	free(query);
+		SLV2Value value = slv2_value_new_librdf_node(p->world, value_node);
+		if (value)
+			raptor_sequence_push(result, value);
 
+		librdf_stream_next(results);
+	}
+	
+	librdf_free_stream(results);
 	return result;
 }
 
@@ -498,14 +502,10 @@ slv2_plugin_get_value_for_subject(SLV2Plugin p,
 		return NULL;
 	}
 
-	char* query = NULL;
-
-
-
 	char* subject_token = slv2_value_get_turtle_token(subject);
 
 	/* Hack around broken RASQAL, full URI predicates don't work :/ */
-	query = slv2_strjoin(
+	char* query = slv2_strjoin(
 		"PREFIX slv2predicate: <", slv2_value_as_string(predicate), ">\n",
 		"SELECT DISTINCT ?value WHERE {\n",
 		subject_token, " slv2predicate: ?value .\n"
