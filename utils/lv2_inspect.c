@@ -209,7 +209,7 @@ print_plugin(SLV2Plugin p)
 		printf("\tRequired Features: ");
 	for (unsigned i=0; i < slv2_values_size(features); ++i) {
 		if (i > 0) {
-			printf("\n\t            ");
+			printf("\n\t                   ");
 		}
 		printf("%s", slv2_value_as_uri(slv2_values_get_at(features, i)));
 	}
