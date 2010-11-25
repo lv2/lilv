@@ -69,6 +69,7 @@ SLV2Value slv2_plugin_class_get_label(SLV2PluginClass plugin_class);
  *
  * Time = O(nclasses)
  */
+SLV2_API
 SLV2PluginClasses
 slv2_plugin_class_get_children(SLV2PluginClass plugin_class);
 
