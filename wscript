@@ -53,6 +53,7 @@ def set_options(opt):
 			help="Default LV2 path to use if $LV2_PATH is unset (globs and ~ supported)")
 
 def configure(conf):
+	conf.line_just = max(conf.line_just, 59)
 	autowaf.configure(conf)
 	autowaf.display_header('SLV2 Configuration')
 	conf.check_tool('compiler_cc')
@@ -76,10 +77,15 @@ def configure(conf):
 	conf.env['BUILD_TESTS'] = Options.options.build_tests
 	conf.env['BASH_COMPLETION'] = Options.options.bash_completion
 	conf.define('SLV2_DEFAULT_LV2_PATH', Options.options.default_lv2_path)
+
+	if conf.env['USE_JACK']:
+		autowaf.check_header(conf, 'lv2/lv2plug.in/ns/ext/event/event.h', 'HAVE_LV2_EVENT')
+		autowaf.check_header(conf, 'lv2/lv2plug.in/ns/ext/uri-map/uri-map.h', 'HAVE_LV2_URI_MAP')
+		conf.env['USE_JACK'] = conf.env['HAVE_LV2_EVENT'] and conf.env['HAVE_LV2_URI_MAP']
 	
 	conf.write_config_header('slv2-config.h')
 
-	autowaf.display_msg(conf, "Jack clients", str(conf.env['USE_JACK']))
+	autowaf.display_msg(conf, "Jack clients", str(conf.env['USE_JACK'] == 1))
 	autowaf.display_msg(conf, "Unit tests", str(conf.env['BUILD_TESTS']))
 	autowaf.display_msg(conf, "Dynamic Manifest Support", str(conf.env['SLV2_DYN_MANIFEST'] == 1))
 	autowaf.display_msg(conf, "Default LV2_PATH", str(conf.env['SLV2_DEFAULT_LV2_PATH']))
@@ -149,22 +155,21 @@ def build(bld):
 			obj.ccflags      = [ '-fprofile-arcs',  '-ftest-coverage' ]
 
 	# Utilities
-	utils = '''
-		utils/lv2_inspect
-		utils/lv2_list
-	'''
-	for i in utils.split():
-		obj = bld.new_task_gen('cc', 'program')
-		obj.source       = i + '.c'
-		obj.includes     = ['.', './src', './utils']
-		obj.uselib_local = 'libslv2'
-		obj.target       = i
-		obj.install_path = '${BINDIR}'
-
+	if bld.env['BUILD_UTILS']:
+		utils = '''
+			utils/lv2_inspect
+			utils/lv2_list
+		'''
+		for i in utils.split():
+			obj = bld.new_task_gen('cc', 'program')
+			obj.source       = i + '.c'
+			obj.includes     = ['.', './src', './utils']
+			obj.uselib_local = 'libslv2'
+			obj.target       = i
+			obj.install_path = '${BINDIR}'
+			
 	# JACK Hosts
-	hosts = '''
-		hosts/lv2_jack_host
-	'''
+	hosts = 'hosts/lv2_jack_host'
 	if bld.env['USE_JACK']:
 		for i in hosts.split():
 			obj = bld.new_task_gen('cc', 'program')
