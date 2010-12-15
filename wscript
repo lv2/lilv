@@ -167,7 +167,7 @@ def build(bld):
 			obj.uselib_local = 'libslv2'
 			obj.target       = i
 			obj.install_path = '${BINDIR}'
-			
+
 	# JACK Hosts
 	hosts = 'hosts/lv2_jack_host'
 	if bld.env['USE_JACK']:
