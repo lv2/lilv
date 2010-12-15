@@ -69,7 +69,7 @@ def configure(conf):
 		if Options.platform == 'darwin':
 			Options.options.default_lv2_path = "~/Library/Audio/Plug-Ins/LV2:/Library/Audio/Plug-Ins/LV2:~/.lv2:/usr/local/lib/lv2:/usr/lib/lv2"
 		elif Options.platform == 'haiku':
-			Options.options.default_lv2_path = "~/Library/Audio/Plug-Ins/LV2:/Library/Audio/Plug-Ins/LV2:~/.lv2:/usr/local/lib/lv2:/usr/lib/lv2"
+			Options.options.default_lv2_path = "~/.lv2:/boot/common/add-ons/lv2"
 		else:
 			Options.options.default_lv2_path = "~/.lv2:/usr/local/" + conf.env['LIBDIRNAME'] + '/lv2:' + conf.env['LIBDIR'] + '/lv2'
 
@@ -82,7 +82,7 @@ def configure(conf):
 		autowaf.check_header(conf, 'lv2/lv2plug.in/ns/ext/event/event.h', 'HAVE_LV2_EVENT')
 		autowaf.check_header(conf, 'lv2/lv2plug.in/ns/ext/uri-map/uri-map.h', 'HAVE_LV2_URI_MAP')
 		conf.env['USE_JACK'] = conf.env['HAVE_LV2_EVENT'] and conf.env['HAVE_LV2_URI_MAP']
-	
+
 	conf.write_config_header('slv2-config.h')
 
 	autowaf.display_msg(conf, "Jack clients", str(conf.env['USE_JACK'] == 1))
