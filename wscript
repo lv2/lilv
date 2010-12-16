@@ -36,10 +36,10 @@ APPNAME = 'slv2'
 VERSION = SLV2_VERSION
 
 # Mandatory variables
-srcdir = '.'
-blddir = 'build'
+top = '.'
+out = 'build'
 
-def set_options(opt):
+def options(opt):
 	autowaf.set_options(opt)
 	opt.add_option('--no-jack', action='store_true', default=False, dest='no_jack',
 			help="Do not build JACK clients")
@@ -60,7 +60,7 @@ def configure(conf):
 	autowaf.check_pkg(conf, 'lv2core', uselib_store='LV2CORE', mandatory=True)
 	autowaf.check_pkg(conf, 'redland', uselib_store='REDLAND', atleast_version='1.0.6', mandatory=True)
 	autowaf.check_pkg(conf, 'jack', uselib_store='JACK', atleast_version='0.107.0', mandatory=False)
-	conf.env.append_value('CCFLAGS', '-std=c99')
+	conf.env.append_value('CFLAGS', '-std=c99')
 	conf.define('SLV2_VERSION', SLV2_VERSION)
 	if Options.options.dyn_manifest:
 		conf.define('SLV2_DYN_MANIFEST', 1)
@@ -83,7 +83,7 @@ def configure(conf):
 		autowaf.check_header(conf, 'lv2/lv2plug.in/ns/ext/uri-map/uri-map.h', 'HAVE_LV2_URI_MAP')
 		conf.env['USE_JACK'] = conf.env['HAVE_LV2_EVENT'] and conf.env['HAVE_LV2_URI_MAP']
 
-	conf.write_config_header('slv2-config.h')
+	conf.write_config_header('slv2-config.h', remove=False)
 
 	autowaf.display_msg(conf, "Jack clients", str(conf.env['USE_JACK'] == 1))
 	autowaf.display_msg(conf, "Unit tests", str(conf.env['BUILD_TESTS']))
@@ -97,7 +97,7 @@ tests = '''
 
 def build(bld):
 	# C Headers
-	bld.install_files('${INCLUDEDIR}/slv2', 'slv2/*.h')
+	bld.install_files('${INCLUDEDIR}/slv2', bld.path.ant_glob('slv2/*.h'))
 
 	# Pkgconfig file
 	autowaf.build_pc(bld, 'SLV2', SLV2_VERSION, ['REDLAND'])
@@ -119,40 +119,40 @@ def build(bld):
 	'''
 
 	# Library
-	obj = bld.new_task_gen('cc', 'shlib')
-	obj.export_incdirs = ['.']
-	obj.source       = lib_source
-	obj.includes     = ['.', './src']
-	obj.name         = 'libslv2'
-	obj.target       = 'slv2'
-	obj.vnum         = SLV2_LIB_VERSION
-	obj.install_path = '${LIBDIR}'
-	obj.ccflags      = [ '-fvisibility=hidden', '-DSLV2_SHARED', '-DSLV2_INTERNAL' ]
-	obj.ldflags      = [ '-ldl' ]
+	obj = bld(features = 'c cshlib')
+	obj.export_includes = ['.']
+	obj.source          = lib_source
+	obj.includes        = ['.', './src']
+	obj.name            = 'libslv2'
+	obj.target          = 'slv2'
+	obj.vnum            = SLV2_LIB_VERSION
+	obj.install_path    = '${LIBDIR}'
+	obj.cflags          = [ '-fvisibility=hidden', '-DSLV2_SHARED', '-DSLV2_INTERNAL' ]
+	obj.ldflags         = [ '-ldl' ]
 	autowaf.use_lib(bld, obj, 'REDLAND LV2CORE')
 
 	if bld.env['BUILD_TESTS']:
 		# Static library (for unit test code coverage)
-		obj = bld.new_task_gen('cc', 'staticlib')
+		obj = bld(features = 'c cstaticlib')
 		obj.source       = lib_source
 		obj.includes     = ['.', './src']
 		obj.name         = 'libslv2_static'
 		obj.target       = 'slv2_static'
 		obj.install_path = ''
-		obj.ccflags      = [ '-fprofile-arcs',  '-ftest-coverage' ]
+		obj.cflags       = [ '-fprofile-arcs',  '-ftest-coverage' ]
 		autowaf.use_lib(bld, obj, 'REDLAND LV2CORE')
-		
+
 		# Unit tests
 		for i in tests.split():
-			obj = bld.new_task_gen('cc', 'program')
+			obj = bld(features = 'c cprogram')
 			obj.source       = i + '.c'
 			obj.includes     = ['.', './src']
-			obj.uselib_local = 'libslv2_static'
+			obj.use          = 'libslv2_static'
 			obj.uselib       = 'REDLAND LV2CORE'
 			obj.libs         = 'gcov'
 			obj.target       = i
 			obj.install_path = ''
-			obj.ccflags      = [ '-fprofile-arcs',  '-ftest-coverage' ]
+			obj.cflags       = [ '-fprofile-arcs',  '-ftest-coverage' ]
 
 	# Utilities
 	if bld.env['BUILD_UTILS']:
@@ -161,10 +161,10 @@ def build(bld):
 			utils/lv2_list
 		'''
 		for i in utils.split():
-			obj = bld.new_task_gen('cc', 'program')
+			obj = bld(features = 'c cprogram')
 			obj.source       = i + '.c'
 			obj.includes     = ['.', './src', './utils']
-			obj.uselib_local = 'libslv2'
+			obj.use          = 'libslv2'
 			obj.target       = i
 			obj.install_path = '${BINDIR}'
 
@@ -172,19 +172,19 @@ def build(bld):
 	hosts = 'hosts/lv2_jack_host'
 	if bld.env['USE_JACK']:
 		for i in hosts.split():
-			obj = bld.new_task_gen('cc', 'program')
+			obj = bld(features = 'c cprogram')
 			obj.source       = i + '.c'
 			obj.includes     = ['.', './src', './utils']
 			obj.uselib       = 'JACK'
-			obj.uselib_local = 'libslv2'
+			obj.use          = 'libslv2'
 			obj.target       = i
 			obj.install_path = '${BINDIR}'
 
 	# Documentation
-	autowaf.build_dox(bld, 'SLV2', SLV2_VERSION, srcdir, blddir)
-	bld.install_files('${HTMLDIR}', blddir + '/default/doc/html/*')
-	bld.install_files('${MANDIR}/man3', blddir + '/default/doc/man/man3/*')
-	bld.install_files('${MANDIR}/man1', 'doc/*.1')
+	autowaf.build_dox(bld, 'SLV2', SLV2_VERSION, top, out)
+	#bld.install_files('${HTMLDIR}',     bld.path.ant_glob(out + '/default/doc/html/*'))
+	#bld.install_files('${MANDIR}/man3', bld.path.ant_glob(out + '/default/doc/man/man3/*'))
+	#bld.install_files('${MANDIR}/man1', bld.path.ant_glob('doc/*.1'))
 
 	# Bash completion
 	if bld.env['BASH_COMPLETION']:
@@ -194,5 +194,5 @@ def build(bld):
 def test(ctx):
 	autowaf.run_tests(ctx, APPNAME, tests.split())
 
-def shutdown():
+def shutdown(self):
 	autowaf.shutdown()
