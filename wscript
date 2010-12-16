@@ -61,9 +61,9 @@ def configure(conf):
 	autowaf.check_pkg(conf, 'redland', uselib_store='REDLAND', atleast_version='1.0.6', mandatory=True)
 	autowaf.check_pkg(conf, 'jack', uselib_store='JACK', atleast_version='0.107.0', mandatory=False)
 	conf.env.append_value('CFLAGS', '-std=c99')
-	conf.define('SLV2_VERSION', SLV2_VERSION)
+	autowaf.define(conf, 'SLV2_VERSION', SLV2_VERSION)
 	if Options.options.dyn_manifest:
-		conf.define('SLV2_DYN_MANIFEST', 1)
+		autowaf.define(conf, 'SLV2_DYN_MANIFEST', 1)
 
 	if Options.options.default_lv2_path == '':
 		if Options.platform == 'darwin':
@@ -76,7 +76,7 @@ def configure(conf):
 	conf.env['USE_JACK'] = conf.env['HAVE_JACK'] and not Options.options.no_jack
 	conf.env['BUILD_TESTS'] = Options.options.build_tests
 	conf.env['BASH_COMPLETION'] = Options.options.bash_completion
-	conf.define('SLV2_DEFAULT_LV2_PATH', Options.options.default_lv2_path)
+	autowaf.define(conf, 'SLV2_DEFAULT_LV2_PATH', Options.options.default_lv2_path)
 
 	if conf.env['USE_JACK']:
 		autowaf.check_header(conf, 'lv2/lv2plug.in/ns/ext/event/event.h', 'HAVE_LV2_EVENT')
