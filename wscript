@@ -182,9 +182,6 @@ def build(bld):
 
 	# Documentation
 	autowaf.build_dox(bld, 'SLV2', SLV2_VERSION, top, out)
-	#bld.install_files('${HTMLDIR}',     bld.path.ant_glob(out + '/default/doc/html/*'))
-	#bld.install_files('${MANDIR}/man3', bld.path.ant_glob(out + '/default/doc/man/man3/*'))
-	#bld.install_files('${MANDIR}/man1', bld.path.ant_glob('doc/*.1'))
 
 	# Bash completion
 	if bld.env['BASH_COMPLETION']:
