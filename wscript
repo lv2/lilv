@@ -188,8 +188,7 @@ def build(bld):
 		bld.install_as(
 			'/etc/bash_completion.d/slv2', 'utils/slv2.bash_completion')
 
+	bld.add_post_fun(autowaf.run_ldconfig)
+
 def test(ctx):
 	autowaf.run_tests(ctx, APPNAME, tests.split())
-
-def shutdown(self):
-	autowaf.shutdown()
