@@ -75,6 +75,7 @@ def configure(conf):
 
 	conf.env['USE_JACK'] = conf.env['HAVE_JACK'] and not Options.options.no_jack
 	conf.env['BUILD_TESTS'] = Options.options.build_tests
+	conf.env['BUILD_UTILS'] = 1
 	conf.env['BASH_COMPLETION'] = Options.options.bash_completion
 	autowaf.define(conf, 'SLV2_DEFAULT_LV2_PATH', Options.options.default_lv2_path)
 
@@ -85,6 +86,7 @@ def configure(conf):
 
 	conf.write_config_header('slv2-config.h', remove=False)
 
+	autowaf.display_msg(conf, "Utilities", str(conf.env['BUILD_UTILS'] == 1))
 	autowaf.display_msg(conf, "Jack clients", str(conf.env['USE_JACK'] == 1))
 	autowaf.display_msg(conf, "Unit tests", str(conf.env['BUILD_TESTS']))
 	autowaf.display_msg(conf, "Dynamic Manifest Support", str(conf.env['SLV2_DYN_MANIFEST'] == 1))
