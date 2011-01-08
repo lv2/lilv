@@ -135,7 +135,7 @@ def build(bld):
 
 	if bld.env['BUILD_TESTS']:
 		# Static library (for unit test code coverage)
-		obj = bld(features = 'c cstaticlib')
+		obj = bld(features = 'c cstlib')
 		obj.source       = lib_source
 		obj.includes     = ['.', './src']
 		obj.name         = 'libslv2_static'
@@ -151,7 +151,7 @@ def build(bld):
 			obj.includes     = ['.', './src']
 			obj.use          = 'libslv2_static'
 			obj.uselib       = 'REDLAND LV2CORE'
-			obj.libs         = 'gcov'
+			obj.linkflags    = '-lgcov'
 			obj.target       = i
 			obj.install_path = ''
 			obj.cflags       = [ '-fprofile-arcs',  '-ftest-coverage' ]
