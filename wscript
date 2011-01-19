@@ -41,6 +41,8 @@ out = 'build'
 
 def options(opt):
 	autowaf.set_options(opt)
+	opt.add_option('--no-utils', action='store_true', default=False, dest='no_utils',
+			help="Do not build command line utilities")
 	opt.add_option('--no-jack', action='store_true', default=False, dest='no_jack',
 			help="Do not build JACK clients")
 	opt.add_option('--dyn-manifest', action='store_true', default=False, dest='dyn_manifest',
@@ -75,7 +77,7 @@ def configure(conf):
 
 	conf.env['USE_JACK'] = conf.env['HAVE_JACK'] and not Options.options.no_jack
 	conf.env['BUILD_TESTS'] = Options.options.build_tests
-	conf.env['BUILD_UTILS'] = 1
+	conf.env['BUILD_UTILS'] = not Options.options.no_utils
 	conf.env['BASH_COMPLETION'] = Options.options.bash_completion
 	autowaf.define(conf, 'SLV2_DEFAULT_LV2_PATH', Options.options.default_lv2_path)
 
@@ -193,4 +195,4 @@ def build(bld):
 	bld.add_post_fun(autowaf.run_ldconfig)
 
 def test(ctx):
-	autowaf.run_tests(ctx, APPNAME, tests.split())
+	autowaf.run_tests(ctx, APPNAME, tests.split(), dirs=['./src','./test'])
