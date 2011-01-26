@@ -195,4 +195,6 @@ def build(bld):
 	bld.add_post_fun(autowaf.run_ldconfig)
 
 def test(ctx):
+	autowaf.pre_test(ctx, APPNAME)
 	autowaf.run_tests(ctx, APPNAME, tests.split(), dirs=['./src','./test'])
+	autowaf.post_test(ctx, APPNAME)
