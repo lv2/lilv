@@ -74,7 +74,7 @@ slv2_value_new(SLV2World world, SLV2ValueType type, const char* str)
 
 	switch (type) {
 	case SLV2_VALUE_URI:
-		val->val.uri_val = librdf_new_uri(world->world, (const unsigned char*)str);
+		val->val.uri_val = librdf_new_uri(world->world, (const uint8_t*)str);
 		assert(val->val.uri_val);
 		val->str_val = (char*)librdf_uri_as_string(val->val.uri_val);
 		break;

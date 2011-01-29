@@ -572,7 +572,7 @@ slv2_plugin_get_port_float_values(SLV2Plugin  p,
 	for (uint32_t i = 0; i < p->num_ports; ++i)
 		values[i] = NAN;
 
-	unsigned char* query = (unsigned char*)slv2_strjoin(
+	uint8_t* query = (uint8_t*)slv2_strjoin(
 			"PREFIX : <http://lv2plug.in/ns/lv2core#>\n"
 			"SELECT DISTINCT ?index ?value WHERE {\n"
 			"<>    :port    ?port .\n"

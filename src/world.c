@@ -208,7 +208,7 @@ slv2_world_load_bundle(SLV2World world, SLV2Value bundle_uri)
 	}
 
 	librdf_uri* manifest_uri = librdf_new_uri_relative_to_base(
-			bundle_uri->val.uri_val, (const unsigned char*)"manifest.ttl");
+			bundle_uri->val.uri_val, (const uint8_t*)"manifest.ttl");
 
 	/* Parse the manifest into a temporary model */
 	librdf_storage* manifest_storage = slv2_world_new_storage(world);
@@ -222,7 +222,7 @@ slv2_world_load_bundle(SLV2World world, SLV2Value bundle_uri)
 	typedef void* LV2_Dyn_Manifest_Handle;
 	LV2_Dyn_Manifest_Handle handle = NULL;
 
-	const unsigned char* const query_str = (const unsigned char* const)
+	const uint8_t* const query_str = (const uint8_t* const)
 		"PREFIX : <http://lv2plug.in/ns/lv2core#>\n"
 		"PREFIX dynman: <http://lv2plug.in/ns/ext/dynmanifest#>\n"
 		"SELECT DISTINCT ?dynman ?binary WHERE {\n"
@@ -238,8 +238,8 @@ slv2_world_load_bundle(SLV2World world, SLV2Value bundle_uri)
 		if (librdf_node_get_type(binary_node) != LIBRDF_NODE_TYPE_RESOURCE)
 			continue;
 
-		const unsigned char* lib_uri  = librdf_uri_as_string(librdf_node_get_uri(binary_node));
-		const char*          lib_path = slv2_uri_to_path((const char*)lib_uri);
+		const uint8_t* lib_uri  = librdf_uri_as_string(librdf_node_get_uri(binary_node));
+		const char*    lib_path = slv2_uri_to_path((const char*)lib_uri);
 		if (!lib_path)
 			continue;
 
@@ -489,7 +489,7 @@ slv2_world_load_plugin_classes(SLV2World world)
 	// than the ontology (ie classes which aren't LV2 plugin_classes), it
 	// currently loads things that aren't actually plugin classes
 
-	unsigned char* query_string = (unsigned char*)
+	uint8_t* query_string = (uint8_t*)
 		"PREFIX : <http://lv2plug.in/ns/lv2core#>\n"
 		"PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>\n"
 		"SELECT DISTINCT ?class ?parent ?label WHERE {\n"
@@ -625,7 +625,7 @@ slv2_world_load_all(SLV2World world)
 	slv2_world_load_plugin_classes(world);
 
 	// Find all plugins and associated data files
-	const unsigned char* query_string = (unsigned char*)
+	const uint8_t* query_string = (uint8_t*)
 		"PREFIX : <http://lv2plug.in/ns/lv2core#>\n"
 		"PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>\n"
 		"PREFIX slv2: <http://drobilla.net/ns/slv2#>\n"

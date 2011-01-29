@@ -95,7 +95,7 @@ slv2_plugin_query_sparql(SLV2Plugin  plugin,
 	char* query_str = slv2_strjoin(slv2_query_prefixes, sparql_str, NULL);
 
 	librdf_query* query = librdf_new_query(plugin->world->world, "sparql", NULL,
-			(const unsigned char*)query_str, base_uri);
+			(const uint8_t*)query_str, base_uri);
 
 	if (!query) {
 		SLV2_ERRORF("Failed to create query:\n%s", query_str);

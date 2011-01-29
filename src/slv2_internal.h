@@ -27,6 +27,7 @@ extern "C" {
 
 #include <stdbool.h>
 #include <stddef.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <inttypes.h>
 #include <redland.h>
@@ -36,11 +37,11 @@ extern "C" {
 #include "lv2/lv2plug.in/ns/ext/dyn-manifest/dyn-manifest.h"
 #endif
 
-#define SLV2_NS_RDFS (const unsigned char*)"http://www.w3.org/2000/01/rdf-schema#"
-#define SLV2_NS_SLV2 (const unsigned char*)"http://drobilla.net/ns/slv2#"
-#define SLV2_NS_LV2  (const unsigned char*)"http://lv2plug.in/ns/lv2core#"
-#define SLV2_NS_XSD  (const unsigned char*)"http://www.w3.org/2001/XMLSchema#"
-#define SLV2_NS_RDF  (const unsigned char*)"http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+#define SLV2_NS_RDFS (const uint8_t*)"http://www.w3.org/2000/01/rdf-schema#"
+#define SLV2_NS_SLV2 (const uint8_t*)"http://drobilla.net/ns/slv2#"
+#define SLV2_NS_LV2  (const uint8_t*)"http://lv2plug.in/ns/lv2core#"
+#define SLV2_NS_XSD  (const uint8_t*)"http://www.w3.org/2001/XMLSchema#"
+#define SLV2_NS_RDF  (const uint8_t*)"http://www.w3.org/1999/02/22-rdf-syntax-ns#"
 
 /* ********* PORT ********* */
 
