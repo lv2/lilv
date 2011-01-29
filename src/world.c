@@ -185,7 +185,19 @@ slv2_world_load_file(SLV2World world, librdf_uri* file_uri)
 	librdf_parser_parse_into_model(world->parser, file_uri, file_uri, world->model);
 }
 
-
+static librdf_stream*
+slv2_world_find_statements(SLV2World     world,
+                           librdf_model* model,
+                           librdf_node*  subject,
+                           librdf_node*  predicate,
+                           librdf_node*  object)
+{
+	librdf_statement* q = librdf_new_statement_from_nodes(
+		world->world, subject, predicate, object);
+	librdf_stream* results = librdf_model_find_statements(model, q);
+	librdf_free_statement(q);
+	return results;
+}
 
 void
 slv2_world_load_bundle(SLV2World world, SLV2Value bundle_uri)
@@ -292,18 +304,18 @@ slv2_world_load_bundle(SLV2World world, SLV2Value bundle_uri)
 #endif // SLV2_DYN_MANIFEST
 
 	// ?plugin a lv2:Plugin
-	librdf_statement* q = librdf_new_statement_from_nodes(world->world,
-			NULL, librdf_new_node_from_node(world->rdf_a_node),
-			      librdf_new_node_from_node(world->lv2_plugin_node));
-
-	librdf_stream* results = librdf_model_find_statements(manifest_model, q);
+	librdf_stream* results = slv2_world_find_statements(
+		world, manifest_model,
+		NULL,
+		librdf_new_node_from_node(world->rdf_a_node),
+		librdf_new_node_from_node(world->lv2_plugin_node));
 	while (!librdf_stream_end(results)) {
 		librdf_statement* s = librdf_stream_get_object(results);
 
-		librdf_node* plugin_node = librdf_new_node_from_node(librdf_statement_get_subject(s));
+		librdf_node* plugin_node = librdf_statement_get_subject(s);
 
 		// Add ?plugin rdfs:seeAlso <manifest.ttl>
-		librdf_node* subject = plugin_node;
+		librdf_node* subject = librdf_new_node_from_node(plugin_node);
 		librdf_node* predicate = librdf_new_node_from_uri_string(world->world,
 				(const unsigned char*)(SLV2_NS_RDFS "seeAlso"));
 		librdf_node* object = librdf_new_node_from_uri(world->world,
@@ -321,15 +333,14 @@ slv2_world_load_bundle(SLV2World world, SLV2Value bundle_uri)
 		librdf_stream_next(results);
 	}
 	librdf_free_stream(results);
-	librdf_free_statement(q);
 
 
 	// ?specification a lv2:Specification
-	q = librdf_new_statement_from_nodes(world->world,
-			NULL, librdf_new_node_from_node(world->rdf_a_node),
-			      librdf_new_node_from_node(world->lv2_specification_node));
-
-	results = librdf_model_find_statements(manifest_model, q);
+	results = slv2_world_find_statements(
+		world, manifest_model,
+		NULL,
+		librdf_new_node_from_node(world->rdf_a_node),
+		librdf_new_node_from_node(world->lv2_specification_node));
 	while (!librdf_stream_end(results)) {
 		librdf_statement* s = librdf_stream_get_object(results);
 
@@ -355,7 +366,6 @@ slv2_world_load_bundle(SLV2World world, SLV2Value bundle_uri)
 		librdf_stream_next(results);
 	}
 	librdf_free_stream(results);
-	librdf_free_statement(q);
 
 	// Join the temporary model to the main model
 	librdf_stream* manifest_stream = librdf_model_as_stream(manifest_model);
@@ -452,24 +462,20 @@ slv2_plugin_class_compare_by_uri(const void* a, const void* b)
 void
 slv2_world_load_specifications(SLV2World world)
 {
-	librdf_statement* q = librdf_new_statement_from_nodes(
-		world->world,
+	librdf_stream* specs = slv2_world_find_statements(
+		world, world->model,
 		NULL,
 		librdf_new_node_from_node(world->rdf_a_node),
 		librdf_new_node_from_node(world->lv2_specification_node));
-
-	librdf_stream* specs = librdf_model_find_statements(world->model, q);
 	while (!librdf_stream_end(specs)) {
 		librdf_statement* s         = librdf_stream_get_object(specs);
 		librdf_node*      spec_node = librdf_statement_get_subject(s);
 
-		librdf_statement* r = librdf_new_statement_from_nodes(
-			world->world,
+		librdf_stream* files = slv2_world_find_statements(
+			world, world->model,
 			librdf_new_node_from_node(spec_node),
 			librdf_new_node_from_node(world->rdfs_seealso_node),
 			NULL);
-
-		librdf_stream* files = librdf_model_find_statements(world->model, r);
 		while (!librdf_stream_end(files)) {
 			librdf_statement* t         = librdf_stream_get_object(files);
 			librdf_node*      file_node = librdf_statement_get_object(t);
@@ -480,12 +486,10 @@ slv2_world_load_specifications(SLV2World world)
 			librdf_stream_next(files);
 		}
 		librdf_free_stream(files);
-		librdf_free_statement(r);
 
 		librdf_stream_next(specs);
 	}
 	librdf_free_stream(specs);
-	librdf_free_statement(q);
 }
 
 
