@@ -344,54 +344,30 @@ slv2_plugin_get_class(SLV2Plugin p)
 bool
 slv2_plugin_verify(SLV2Plugin plugin)
 {
-	char* query_str =
-		"SELECT DISTINCT ?type ?name ?license ?port WHERE {\n"
-		"<> a ?type ;\n"
-		"doap:name    ?name ;\n"
-		"doap:license ?license ;\n"
-		"lv2:port     [ lv2:index ?port ] .\n}";
-
-	SLV2Results results = slv2_plugin_query_sparql(plugin, query_str);
-
-	bool has_type    = false;
-	bool has_name    = false;
-	bool has_license = false;
-	bool has_port    = false;
-
-	while (!librdf_query_results_finished(results->rdf_results)) {
-		librdf_node* type_node = librdf_query_results_get_binding_value(results->rdf_results, 0);
-		librdf_node* name_node = librdf_query_results_get_binding_value(results->rdf_results, 1);
-		librdf_node* license_node = librdf_query_results_get_binding_value(results->rdf_results, 2);
-		librdf_node* port_node = librdf_query_results_get_binding_value(results->rdf_results, 3);
-
-		if (librdf_node_get_type(type_node) == LIBRDF_NODE_TYPE_RESOURCE)
-			has_type = true;
-
-		if (name_node)
-			has_name = true;
-
-		if (license_node)
-			has_license = true;
-
-		if (port_node)
-			has_port = true;
-
-		librdf_free_node(type_node);
-		librdf_free_node(name_node);
-		librdf_free_node(license_node);
-		librdf_free_node(port_node);
-
-		librdf_query_results_next(results->rdf_results);
-	}
-
-	slv2_results_free(results);
-
-	if ( ! (has_type && has_name && has_license && has_port) ) {
-		SLV2_WARNF("Invalid plugin <%s>\n", slv2_value_as_uri(slv2_plugin_get_uri(plugin)));
+	SLV2Values results = slv2_plugin_get_value_by_qname(plugin, "rdf:type");
+	if (!results) {
 		return false;
-	} else {
-		return true;
 	}
+
+	slv2_values_free(results);
+	results = slv2_plugin_get_value_by_qname(plugin, "doap:name");
+	if (!results) {
+		return false;
+	}
+
+	slv2_values_free(results);
+	results = slv2_plugin_get_value_by_qname(plugin, "doap:license");
+	if (!results) {
+		return false;
+	}
+
+	slv2_values_free(results);
+	results = slv2_plugin_get_value_by_qname(plugin, "lv2:port");
+	if (!results) {
+		return false;
+	}
+
+	return true;
 }
 
 
