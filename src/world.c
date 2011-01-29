@@ -312,7 +312,7 @@ slv2_world_load_bundle(SLV2World world, SLV2Value bundle_uri)
 			NULL,
 			librdf_new_node_from_node(world->rdf_a_node),
 			librdf_new_node_from_node(world->lv2_plugin_node));
-		while (!librdf_stream_end(dyn_plugins)) {
+		for (; !librdf_stream_end(dyn_plugins); librdf_stream_next(dyn_plugins)) {
 			librdf_statement* s      = librdf_stream_get_object(dyn_plugins);
 			librdf_node*      plugin = librdf_statement_get_subject(s);
 
@@ -340,7 +340,7 @@ slv2_world_load_bundle(SLV2World world, SLV2Value bundle_uri)
 		NULL,
 		librdf_new_node_from_node(world->rdf_a_node),
 		librdf_new_node_from_node(world->lv2_plugin_node));
-	while (!librdf_stream_end(results)) {
+	for (; !librdf_stream_end(results); librdf_stream_next(results)) {
 		librdf_statement* s      = librdf_stream_get_object(results);
 		librdf_node*      plugin = librdf_statement_get_subject(s);
 
@@ -357,8 +357,6 @@ slv2_world_load_bundle(SLV2World world, SLV2Value bundle_uri)
 			librdf_new_node_from_node(plugin),
 			librdf_new_node_from_uri_string(world->world, SLV2_NS_SLV2 "bundleURI"),
 			librdf_new_node_from_uri(world->world, bundle_uri->val.uri_val));
-
-		librdf_stream_next(results);
 	}
 	librdf_free_stream(results);
 
@@ -368,7 +366,7 @@ slv2_world_load_bundle(SLV2World world, SLV2Value bundle_uri)
 		NULL,
 		librdf_new_node_from_node(world->rdf_a_node),
 		librdf_new_node_from_node(world->lv2_specification_node));
-	while (!librdf_stream_end(results)) {
+	for (; !librdf_stream_end(results); librdf_stream_next(results)) {
 		librdf_statement* s    = librdf_stream_get_object(results);
 		librdf_node*      spec = librdf_statement_get_subject(s);
 
@@ -385,8 +383,6 @@ slv2_world_load_bundle(SLV2World world, SLV2Value bundle_uri)
 			librdf_new_node_from_node(spec),
 			librdf_new_node_from_uri_string(world->world, SLV2_NS_SLV2 "bundleURI"),
 			librdf_new_node_from_uri(world->world, bundle_uri->val.uri_val));
-
-		librdf_stream_next(results);
 	}
 	librdf_free_stream(results);
 
@@ -490,7 +486,7 @@ slv2_world_load_specifications(SLV2World world)
 		NULL,
 		librdf_new_node_from_node(world->rdf_a_node),
 		librdf_new_node_from_node(world->lv2_specification_node));
-	while (!librdf_stream_end(specs)) {
+	for (; !librdf_stream_end(specs); librdf_stream_next(specs)) {
 		librdf_statement* s         = librdf_stream_get_object(specs);
 		librdf_node*      spec_node = librdf_statement_get_subject(s);
 
@@ -499,18 +495,14 @@ slv2_world_load_specifications(SLV2World world)
 			librdf_new_node_from_node(spec_node),
 			librdf_new_node_from_node(world->rdfs_seealso_node),
 			NULL);
-		while (!librdf_stream_end(files)) {
+		for (; !librdf_stream_end(files); librdf_stream_next(files)) {
 			librdf_statement* t         = librdf_stream_get_object(files);
 			librdf_node*      file_node = librdf_statement_get_object(t);
 			librdf_uri*       file_uri  = librdf_node_get_uri(file_node);
 
 			slv2_world_load_file(world, file_uri);
-
-			librdf_stream_next(files);
 		}
 		librdf_free_stream(files);
-
-		librdf_stream_next(specs);
 	}
 	librdf_free_stream(specs);
 }
@@ -700,23 +692,23 @@ slv2_world_load_all(SLV2World world)
 
 #ifdef SLV2_DYN_MANIFEST
 		{
-				librdf_stream* dmanifests = slv2_world_find_statements(
-					world, world->model,
-					librdf_new_node_from_node(plugin_node),
-					librdf_new_node_from_node(world->slv2_dmanifest_node),
-					NULL);
-				for (; !librdf_stream_end(dmanifests); librdf_stream_next(dmanifests)) {
-					librdf_statement* s        = librdf_stream_get_object(dmanifests);
-					librdf_node*      lib_node = librdf_statement_get_object(s);
-					librdf_uri*       lib_uri  = librdf_node_get_uri(lib_node);
+			librdf_stream* dmanifests = slv2_world_find_statements(
+				world, world->model,
+				librdf_new_node_from_node(plugin_node),
+				librdf_new_node_from_node(world->slv2_dmanifest_node),
+				NULL);
+			for (; !librdf_stream_end(dmanifests); librdf_stream_next(dmanifests)) {
+				librdf_statement* s        = librdf_stream_get_object(dmanifests);
+				librdf_node*      lib_node = librdf_statement_get_object(s);
+				librdf_uri*       lib_uri  = librdf_node_get_uri(lib_node);
 
-					if (dlopen(
-						    slv2_uri_to_path((const char*)librdf_uri_as_string(lib_uri)),
-						    RTLD_LAZY)) {
-						plugin->dynman_uri = slv2_value_new_librdf_uri(world, lib_uri);
-					}
+				if (dlopen(
+					    slv2_uri_to_path((const char*)librdf_uri_as_string(lib_uri)),
+					    RTLD_LAZY)) {
+					plugin->dynman_uri = slv2_value_new_librdf_uri(world, lib_uri);
 				}
-				librdf_free_stream(dmanifests);
+			}
+			librdf_free_stream(dmanifests);
 		}
 #endif
 		librdf_stream* files = slv2_world_find_statements(
