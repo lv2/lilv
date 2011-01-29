@@ -657,48 +657,20 @@ slv2_world_load_all(SLV2World world)
 		librdf_free_stream(bundles);
 
 		// Add a new plugin to the world
-		SLV2Plugin     plugin    = NULL;
 		SLV2Value      uri       = slv2_value_new_librdf_uri(world, plugin_uri);
 		const unsigned n_plugins = raptor_sequence_size(world->plugins);
-		if (n_plugins == 0) {
-			plugin = slv2_plugin_new(world, uri, bundle_uri);
-			raptor_sequence_push(world->plugins, plugin);
-		} else {
-			SLV2Plugin first = raptor_sequence_get_at(world->plugins, 0);
-			SLV2Plugin prev  = raptor_sequence_get_at(world->plugins, n_plugins - 1);
-
-			/* TODO: It should be (is?) guaranteed the plugin results are in order,
-			   is this necessary?  IIRC old redland didn't for the old SPARQL query
-			   that was here, but this no longer applies...
-			*/
-			if (strcmp(
-				    slv2_value_as_string(slv2_plugin_get_uri(prev)),
-				    (const char*)librdf_uri_as_string(plugin_uri)) < 0) {
-				// If the URI is > the last in the list, just append (avoid sort)
-				plugin = slv2_plugin_new(world, uri, bundle_uri);
-				raptor_sequence_push(world->plugins, plugin);
-
-			} else if (strcmp(
-				           slv2_value_as_string(slv2_plugin_get_uri(first)),
-				           (const char*)librdf_uri_as_string(plugin_uri)) > 0) {
-				// If the URI is < the first in the list, just prepend (avoid sort)
-				plugin = slv2_plugin_new(world, uri, bundle_uri);
-				raptor_sequence_shift(world->plugins, plugin);
-
-			} else {
-				// Otherwise we're getting unsorted results, append and sort :/
-				plugin = slv2_plugins_get_by_uri(world->plugins, uri);
-				if (!plugin) {
-					plugin = slv2_plugin_new(world, uri, bundle_uri);
-					raptor_sequence_push(world->plugins, plugin);
-					raptor_sequence_sort(world->plugins, slv2_plugin_compare_by_uri);
-				} else {
-					slv2_value_free(uri);
-				}
-			}
+#ifndef NDEBUG
+		if (n_plugins > 0) {
+			// Plugin results are in increasing sorted order
+			SLV2Plugin prev = raptor_sequence_get_at(world->plugins, n_plugins - 1);
+			assert(strcmp(
+				       slv2_value_as_string(slv2_plugin_get_uri(prev)),
+				       (const char*)librdf_uri_as_string(plugin_uri)) < 0);
 		}
+#endif
 
-		plugin->world = world;
+		SLV2Plugin plugin = slv2_plugin_new(world, uri, bundle_uri);
+		raptor_sequence_push(world->plugins, plugin);
 
 #ifdef SLV2_DYN_MANIFEST
 		const char* const data_uri_str = (const char*)librdf_uri_as_string(data_uri);
