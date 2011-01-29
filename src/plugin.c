@@ -152,6 +152,19 @@ slv2_plugin_get_unique(SLV2Plugin p, librdf_node* subject, librdf_node* predicat
 	slv2_values_free(values);
 	return ret;
 }
+
+
+static SLV2Value
+slv2_plugin_get_one(SLV2Plugin p, librdf_node* subject, librdf_node* predicate)
+{
+	SLV2Values values = slv2_plugin_query_node(p, subject, predicate);
+	if (!values) {
+		return NULL;
+	}
+	SLV2Value ret = slv2_value_duplicate(slv2_values_get_at(values, 0));
+	slv2_values_free(values);
+	return ret;
+}
 	
 	
 /* private */
@@ -832,82 +845,67 @@ slv2_plugin_get_port_by_symbol(SLV2Plugin p,
 	return NULL;
 }
 
+#define NS_DOAP (const uint8_t*)"http://usefulinc.com/ns/doap#"
+#define NS_FOAF (const uint8_t*)"http://xmlns.com/foaf/0.1/"
+
+static librdf_node*
+slv2_plugin_get_author(SLV2Plugin p)
+{
+
+	librdf_stream* maintainers = slv2_plugin_find_statements(
+		p,
+		librdf_new_node_from_uri(p->world->world, p->plugin_uri->val.uri_val),
+		librdf_new_node_from_uri_string(p->world->world, NS_DOAP "maintainer"),
+		NULL);
+
+	if (librdf_stream_end(maintainers)) {
+		return NULL;
+	}
+
+	librdf_node* author = librdf_new_node_from_node(
+		librdf_statement_get_object(librdf_stream_get_object(maintainers)));
+
+	librdf_free_stream(maintainers);
+	return author;
+}
+
 
 SLV2Value
 slv2_plugin_get_author_name(SLV2Plugin plugin)
 {
-	SLV2Value ret = NULL;
-
-    const char* const query =
-		"SELECT ?name WHERE {\n"
-		"	<>      doap:maintainer ?maint . \n"
-		"	?maint  foaf:name ?name . \n"
-		"}\n";
-
-	SLV2Values results = slv2_plugin_query_variable(plugin, query, 0);
-
-	if (results && slv2_values_size(results) > 0) {
-		SLV2Value val = slv2_values_get_at(results, 0);
-		if (slv2_value_is_string(val))
-			ret = slv2_value_duplicate(val);
+	librdf_node* author = slv2_plugin_get_author(plugin);
+	if (author) {
+		return slv2_plugin_get_one(
+			plugin, author, librdf_new_node_from_uri_string(
+				plugin->world->world, NS_FOAF "name"));
 	}
-
-	if (results)
-		slv2_values_free(results);
-
-	return ret;
+	return NULL;
 }
 
 
 SLV2Value
 slv2_plugin_get_author_email(SLV2Plugin plugin)
 {
-	SLV2Value ret = NULL;
-
-    const char* const query =
-		"SELECT ?email WHERE {\n"
-		"	<>      doap:maintainer ?maint . \n"
-		"	?maint  foaf:mbox ?email . \n"
-		"}\n";
-
-	SLV2Values results = slv2_plugin_query_variable(plugin, query, 0);
-
-	if (results && slv2_values_size(results) > 0) {
-		SLV2Value val = slv2_values_get_at(results, 0);
-		if (slv2_value_is_uri(val))
-			ret = slv2_value_duplicate(val);
+	librdf_node* author = slv2_plugin_get_author(plugin);
+	if (author) {
+		return slv2_plugin_get_one(
+			plugin, author, librdf_new_node_from_uri_string(
+				plugin->world->world, NS_FOAF "mbox"));
 	}
-
-	if (results)
-		slv2_values_free(results);
-
-	return ret;
+	return NULL;
 }
 
 
 SLV2Value
 slv2_plugin_get_author_homepage(SLV2Plugin plugin)
 {
-	SLV2Value ret = NULL;
-
-    const char* const query =
-		"SELECT ?page WHERE {\n"
-		"	<>      doap:maintainer ?maint . \n"
-		"	?maint  foaf:homepage ?page . \n"
-		"}\n";
-
-	SLV2Values results = slv2_plugin_query_variable(plugin, query, 0);
-
-	if (results && slv2_values_size(results) > 0) {
-		SLV2Value val = slv2_values_get_at(results, 0);
-		if (slv2_value_is_uri(val))
-			ret = slv2_value_duplicate(val);
+	librdf_node* author = slv2_plugin_get_author(plugin);
+	if (author) {
+		return slv2_plugin_get_one(
+			plugin, author, librdf_new_node_from_uri_string(
+				plugin->world->world, NS_FOAF "homepage"));
 	}
-
-	if (results)
-		slv2_values_free(results);
-
-	return ret;
+	return NULL;
 }
 
 
