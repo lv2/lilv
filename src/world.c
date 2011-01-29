@@ -65,6 +65,7 @@ slv2_world_new_internal(SLV2World world)
 	world->lv2_symbol_node        = NEW_URI(SLV2_NS_LV2  "symbol");
 	world->rdf_a_node             = NEW_URI(SLV2_NS_RDF  "type");
 	world->rdfs_seealso_node      = NEW_URI(SLV2_NS_RDFS "seeAlso");
+	world->slv2_bundleuri_node    = NEW_URI(SLV2_NS_SLV2 "bundleURI");
 	world->xsd_integer_node       = NEW_URI(SLV2_NS_XSD  "integer");
 	world->xsd_decimal_node       = NEW_URI(SLV2_NS_XSD  "decimal");
 
@@ -148,6 +149,7 @@ slv2_world_free(SLV2World world)
 	librdf_free_node(world->lv2_symbol_node);
 	librdf_free_node(world->rdf_a_node);
 	librdf_free_node(world->rdfs_seealso_node);
+	librdf_free_node(world->slv2_bundleuri_node);
 	librdf_free_node(world->xsd_integer_node);
 	librdf_free_node(world->xsd_decimal_node);
 
@@ -624,108 +626,115 @@ slv2_world_load_all(SLV2World world)
 
 	slv2_world_load_plugin_classes(world);
 
-	// Find all plugins and associated data files
-	const uint8_t* query_string = (uint8_t*)
-		"PREFIX : <http://lv2plug.in/ns/lv2core#>\n"
-		"PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>\n"
-		"PREFIX slv2: <http://drobilla.net/ns/slv2#>\n"
-		"SELECT DISTINCT ?plugin ?data ?bundle WHERE {\n"
-		"	?plugin a                  :Plugin ;\n"
-		"           slv2:bundleURI     ?bundle ;\n"
-		"           rdfs:seeAlso       ?data .\n"
-		"}\n";
+	librdf_stream* plugins = slv2_world_find_statements(
+		world, world->model,
+		NULL,
+		librdf_new_node_from_node(world->rdf_a_node),
+		librdf_new_node_from_node(world->lv2_plugin_node));
+	for (; !librdf_stream_end(plugins); librdf_stream_next(plugins)) {
+		librdf_statement* s           = librdf_stream_get_object(plugins);
+		librdf_node*      plugin_node = librdf_statement_get_subject(s);
+		librdf_uri*       plugin_uri  = librdf_node_get_uri(plugin_node);
 
-	librdf_query* q = librdf_new_query(world->world, "sparql",
-		NULL, query_string, NULL);
+		librdf_stream* bundles = slv2_world_find_statements(
+			world, world->model,
+			librdf_new_node_from_node(plugin_node),
+			librdf_new_node_from_node(world->slv2_bundleuri_node),
+			NULL);
 
-	librdf_query_results* results = librdf_query_execute(q, world->model);
+		if (librdf_stream_end(bundles)) {
+			librdf_free_stream(bundles);
+			SLV2_ERRORF("Plugin <%s> somehow has no bundle, ignored\n",
+			            librdf_uri_as_string(plugin_uri));
+			continue;
+		}
+		
+		librdf_node* bundle_node = librdf_new_node_from_node(
+			librdf_statement_get_object(
+				librdf_stream_get_object(bundles)));
+		librdf_uri* bundle_uri = librdf_node_get_uri(bundle_node);
 
-	while (!librdf_query_results_finished(results)) {
-		librdf_node* plugin_node = librdf_query_results_get_binding_value(results, 0);
-		librdf_uri*  plugin_uri  = librdf_node_get_uri(plugin_node);
-		librdf_node* data_node   = librdf_query_results_get_binding_value(results, 1);
-		librdf_uri*  data_uri    = librdf_node_get_uri(data_node);
-		librdf_node* bundle_node = librdf_query_results_get_binding_value(results, 2);
-		librdf_uri*  bundle_uri  = librdf_node_get_uri(bundle_node);
+		librdf_stream_next(bundles);
+		if (!librdf_stream_end(bundles)) {
+			librdf_free_stream(bundles);
+			SLV2_ERRORF("Plugin <%s> found in several bundles, ignored\n",
+			            librdf_uri_as_string(plugin_uri));
+			continue;
+		}
 
-		if (plugin_uri && data_uri) {
-			SLV2Plugin plugin = NULL;
+		librdf_free_stream(bundles);
 
-			// Check if this is another match for the last plugin (avoid search)
-			const unsigned n_plugins = raptor_sequence_size(world->plugins);
-			if (n_plugins >= 1) {
-				SLV2Plugin prev = raptor_sequence_get_at(world->plugins, n_plugins - 1);
-				if (librdf_uri_equals(plugin_uri, prev->plugin_uri->val.uri_val))
-					plugin = prev;
-			}
+		// Add a new plugin to the world
+		SLV2Plugin     plugin    = NULL;
+		SLV2Value      uri       = slv2_value_new_librdf_uri(world, plugin_uri);
+		const unsigned n_plugins = raptor_sequence_size(world->plugins);
+		if (n_plugins == 0) {
+			plugin = slv2_plugin_new(world, uri, bundle_uri);
+			raptor_sequence_push(world->plugins, plugin);
+		} else {
+			SLV2Plugin first = raptor_sequence_get_at(world->plugins, 0);
+			SLV2Plugin prev  = raptor_sequence_get_at(world->plugins, n_plugins - 1);
 
-			// If this plugin differs from the last, append a new one
-			if (!plugin) {
-				SLV2Value uri = slv2_value_new_librdf_uri(world, plugin_uri);
-				if (n_plugins == 0) {
+			/* TODO: It should be (is?) guaranteed the plugin results are in order,
+			   is this necessary?  IIRC old redland didn't for the old SPARQL query
+			   that was here, but this no longer applies...
+			*/
+			if (strcmp(
+				    slv2_value_as_string(slv2_plugin_get_uri(prev)),
+				    (const char*)librdf_uri_as_string(plugin_uri)) < 0) {
+				// If the URI is > the last in the list, just append (avoid sort)
+				plugin = slv2_plugin_new(world, uri, bundle_uri);
+				raptor_sequence_push(world->plugins, plugin);
+
+			} else if (strcmp(
+				           slv2_value_as_string(slv2_plugin_get_uri(first)),
+				           (const char*)librdf_uri_as_string(plugin_uri)) > 0) {
+				// If the URI is < the first in the list, just prepend (avoid sort)
+				plugin = slv2_plugin_new(world, uri, bundle_uri);
+				raptor_sequence_shift(world->plugins, plugin);
+
+			} else {
+				// Otherwise we're getting unsorted results, append and sort :/
+				plugin = slv2_plugins_get_by_uri(world->plugins, uri);
+				if (!plugin) {
 					plugin = slv2_plugin_new(world, uri, bundle_uri);
 					raptor_sequence_push(world->plugins, plugin);
+					raptor_sequence_sort(world->plugins, slv2_plugin_compare_by_uri);
 				} else {
-					SLV2Plugin first = raptor_sequence_get_at(world->plugins, 0);
-					SLV2Plugin prev  = raptor_sequence_get_at(world->plugins, n_plugins - 1);
-
-					// If the URI is > the last in the list, just append (avoid sort)
-					if (strcmp(
-							slv2_value_as_string(slv2_plugin_get_uri(prev)),
-							(const char*)librdf_uri_as_string(plugin_uri)) < 0) {
-						plugin = slv2_plugin_new(world, uri, bundle_uri);
-						raptor_sequence_push(world->plugins, plugin);
-
-					// If the URI is < the first in the list, just prepend (avoid sort)
-					} else if (strcmp(
-							slv2_value_as_string(slv2_plugin_get_uri(first)),
-							(const char*)librdf_uri_as_string(plugin_uri)) > 0) {
-						plugin = slv2_plugin_new(world, uri, bundle_uri);
-						raptor_sequence_shift(world->plugins, plugin);
-
-					// Otherwise the query engine is giving us unsorted results :/
-					} else {
-						plugin = slv2_plugins_get_by_uri(world->plugins, uri);
-						if (!plugin) {
-							plugin = slv2_plugin_new(world, uri, bundle_uri);
-							raptor_sequence_push(world->plugins, plugin);
-							raptor_sequence_sort(world->plugins, slv2_plugin_compare_by_uri);
-						} else {
-							slv2_value_free(uri);
-						}
-					}
+					slv2_value_free(uri);
 				}
-			}
-
-			plugin->world = world;
-
-#ifdef SLV2_DYN_MANIFEST
-			const char* const data_uri_str = (const char*)librdf_uri_as_string(data_uri);
-			void* lib = dlopen(slv2_uri_to_path(data_uri_str), RTLD_LAZY);
-			if (lib) {
-				plugin->dynman_uri = slv2_value_new_librdf_uri(world, data_uri);
-				librdf_query_results_next(results);
-			} else
-#endif
-			if (data_uri) {
-				assert(plugin->data_uris);
-				// FIXME: check for duplicates
-				raptor_sequence_push(plugin->data_uris,
-						slv2_value_new_librdf_uri(plugin->world, data_uri));
 			}
 		}
 
-		librdf_free_node(plugin_node);
-		librdf_free_node(data_node);
+		plugin->world = world;
+
+#ifdef SLV2_DYN_MANIFEST
+		const char* const data_uri_str = (const char*)librdf_uri_as_string(data_uri);
+		void* lib = dlopen(slv2_uri_to_path(data_uri_str), RTLD_LAZY);
+		if (lib) {
+			plugin->dynman_uri = slv2_value_new_librdf_uri(world, data_uri);
+			librdf_query_results_next(results);
+		} else
+#endif
+		{
+			librdf_stream* files = slv2_world_find_statements(
+				world, world->model,
+				librdf_new_node_from_node(plugin_node),
+				librdf_new_node_from_node(world->rdfs_seealso_node),
+				NULL);
+			for (; !librdf_stream_end(files); librdf_stream_next(files)) {
+				librdf_statement* s         = librdf_stream_get_object(files);
+				librdf_node*      file_node = librdf_statement_get_object(s);
+				librdf_uri*       file_uri  = librdf_node_get_uri(file_node);
+				raptor_sequence_push(plugin->data_uris,
+				                     slv2_value_new_librdf_uri(world, file_uri));
+			}
+			librdf_free_stream(files);
+		}
+
 		librdf_free_node(bundle_node);
-
-		librdf_query_results_next(results);
 	}
-
-	if (results)
-		librdf_free_query_results(results);
-
-	librdf_free_query(q);
+	librdf_free_stream(plugins);
 }
 
 
