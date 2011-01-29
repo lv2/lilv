@@ -519,11 +519,11 @@ SLV2Values
 slv2_plugin_get_value_by_qname(SLV2Plugin  p,
                                const char* predicate)
 {
-	char*      predicate_uri   = slv2_qname_expand(p, predicate);
-	SLV2Value  predicate_value = slv2_value_new_uri(p->world, predicate_uri);
-	SLV2Values ret             = slv2_plugin_get_value(p, predicate_value);
-	slv2_value_free(predicate_value);
-	free(predicate_uri);
+	char*      pred_uri   = slv2_qname_expand(p, predicate);
+	SLV2Value  pred_value = slv2_value_new_uri(p->world, pred_uri);
+	SLV2Values ret        = slv2_plugin_get_value(p, pred_value);
+	slv2_value_free(pred_value);
+	free(pred_uri);
 	return ret;
 }
 
@@ -532,16 +532,46 @@ SLV2Values
 slv2_plugin_get_value_by_qname_i18n(SLV2Plugin  p,
                                     const char* predicate)
 {
-	char* query = slv2_strjoin(
-			"SELECT DISTINCT ?value WHERE { \n"
-			"<> ", predicate, " ?value . \n"
-			"FILTER(lang(?value) = \"", slv2_get_lang(), "\") \n"
-			"}\n", NULL);
+	char*        pred_uri  = slv2_qname_expand(p, predicate);
+	librdf_node* pred_node = librdf_new_node_from_uri_string(p->world->world,
+	                                                         (const uint8_t*)pred_uri);
+	SLV2Values     result  = slv2_values_new();
+	librdf_node*   nolang  = NULL;
+	librdf_stream* results = slv2_plugin_find_statements(
+		p,
+		librdf_new_node_from_uri(p->world->world, p->plugin_uri->val.uri_val),
+		pred_node,
+		NULL);
+	for (; !librdf_stream_end(results); librdf_stream_next(results)) {
+		librdf_statement* s     = librdf_stream_get_object(results);
+		librdf_node*      value = librdf_statement_get_object(s);
 
-	SLV2Values result = slv2_plugin_query_variable(p, query, 0);
+		const char* lang = librdf_node_get_literal_value_language(value);
+		if (lang) {
+			if (!strcmp(lang, slv2_get_lang())) {
+				raptor_sequence_push(
+					result, slv2_value_new_string(
+						p->world, (const char*)librdf_node_get_literal_value(value)));
+			}
+		} else {
+			nolang = value;
+		}
+		break;
+	}
+	librdf_free_stream(results);
 
-	free(query);
+	free(pred_uri);
 
+	if (slv2_values_size(result) == 0) {
+		if (nolang) {
+			raptor_sequence_push(
+				result, slv2_value_new_string(
+					p->world, (const char*)librdf_node_get_literal_value(nolang)));
+		} else {
+			slv2_values_free(result);
+			result = NULL;
+		}
+	}
 	return result;
 }
 

@@ -63,7 +63,7 @@ slv2_uri_to_path(const char* uri)
 }
 
 
-char*
+const char*
 slv2_get_lang()
 {
 	static char lang[32];

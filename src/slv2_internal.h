@@ -268,8 +268,8 @@ struct _SLV2Results {
 
 /* ********* Utilities ********* */
 
-char* slv2_strjoin(const char* first, ...);
-char* slv2_get_lang();
+char*       slv2_strjoin(const char* first, ...);
+const char* slv2_get_lang();
 
 
 /* ********* Dynamic Manifest ********* */
