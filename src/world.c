@@ -55,23 +55,22 @@ slv2_world_new_internal(SLV2World world)
 
 	world->plugins = slv2_plugins_new();
 
-	world->lv2_specification_node = librdf_new_node_from_uri_string(world->world,
-			(const unsigned char*)"http://lv2plug.in/ns/lv2core#Specification");
+#define NEW_URI(uri) librdf_new_node_from_uri_string(world->world, \
+                                                     (const unsigned char*)uri);
+	
+#define NS_LV2 "http://lv2plug.in/ns/lv2core#"
+#define NS_XSD "http://www.w3.org/2001/XMLSchema#"
+#define NS_RDF "http://www.w3.org/1999/02/22-rdf-syntax-ns#"
 
-	world->lv2_plugin_node = librdf_new_node_from_uri_string(world->world,
-			(const unsigned char*)"http://lv2plug.in/ns/lv2core#Plugin");
-
-	world->lv2_binary_node = librdf_new_node_from_uri_string(world->world,
-			(const unsigned char*)"http://lv2plug.in/ns/lv2core#binary");
-
-	world->rdf_a_node = librdf_new_node_from_uri_string(world->world,
-			(const unsigned char*)"http://www.w3.org/1999/02/22-rdf-syntax-ns#type");
-
-	world->xsd_integer_node = librdf_new_node_from_uri_string(world->world,
-			(const unsigned char*)"http://www.w3.org/2001/XMLSchema#integer");
-
-	world->xsd_decimal_node = librdf_new_node_from_uri_string(world->world,
-			(const unsigned char*)"http://www.w3.org/2001/XMLSchema#decimal");
+	world->lv2_specification_node = NEW_URI(NS_LV2 "Specification");
+	world->lv2_plugin_node        = NEW_URI(NS_LV2 "Plugin");
+	world->lv2_binary_node        = NEW_URI(NS_LV2 "binary");
+	world->lv2_port_node          = NEW_URI(NS_LV2 "port");
+	world->lv2_index_node         = NEW_URI(NS_LV2 "index");
+	world->lv2_symbol_node        = NEW_URI(NS_LV2 "symbol");
+	world->rdf_a_node             = NEW_URI(NS_RDF "type");
+	world->xsd_integer_node       = NEW_URI(NS_XSD "integer");
+	world->xsd_decimal_node       = NEW_URI(NS_XSD "decimal");
 
 	world->lv2_plugin_class = slv2_plugin_class_new(world, NULL,
 			librdf_node_get_uri(world->lv2_plugin_node), "Plugin");
@@ -148,6 +147,9 @@ slv2_world_free(SLV2World world)
 	librdf_free_node(world->lv2_specification_node);
 	librdf_free_node(world->lv2_plugin_node);
 	librdf_free_node(world->lv2_binary_node);
+	librdf_free_node(world->lv2_port_node);
+	librdf_free_node(world->lv2_index_node);
+	librdf_free_node(world->lv2_symbol_node);
 	librdf_free_node(world->rdf_a_node);
 	librdf_free_node(world->xsd_integer_node);
 	librdf_free_node(world->xsd_decimal_node);

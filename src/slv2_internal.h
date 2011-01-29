@@ -152,6 +152,9 @@ struct _SLV2World {
 	librdf_node*      lv2_specification_node;
 	librdf_node*      lv2_plugin_node;
 	librdf_node*      lv2_binary_node;
+	librdf_node*      lv2_port_node;
+	librdf_node*      lv2_index_node;
+	librdf_node*      lv2_symbol_node;
 	librdf_node*      rdf_a_node;
 	librdf_node*      xsd_integer_node;
 	librdf_node*      xsd_decimal_node;
