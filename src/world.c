@@ -64,7 +64,10 @@ slv2_world_new_internal(SLV2World world)
 	world->lv2_index_node         = NEW_URI(SLV2_NS_LV2  "index");
 	world->lv2_symbol_node        = NEW_URI(SLV2_NS_LV2  "symbol");
 	world->rdf_a_node             = NEW_URI(SLV2_NS_RDF  "type");
+	world->rdfs_class_node        = NEW_URI(SLV2_NS_RDFS "Class");
+	world->rdfs_label_node        = NEW_URI(SLV2_NS_RDFS "label");
 	world->rdfs_seealso_node      = NEW_URI(SLV2_NS_RDFS "seeAlso");
+	world->rdfs_subclassof_node   = NEW_URI(SLV2_NS_RDFS "subClassOf");
 	world->slv2_bundleuri_node    = NEW_URI(SLV2_NS_SLV2 "bundleURI");
 	world->xsd_integer_node       = NEW_URI(SLV2_NS_XSD  "integer");
 	world->xsd_decimal_node       = NEW_URI(SLV2_NS_XSD  "decimal");
@@ -148,7 +151,10 @@ slv2_world_free(SLV2World world)
 	librdf_free_node(world->lv2_index_node);
 	librdf_free_node(world->lv2_symbol_node);
 	librdf_free_node(world->rdf_a_node);
+	librdf_free_node(world->rdfs_label_node);
 	librdf_free_node(world->rdfs_seealso_node);
+	librdf_free_node(world->rdfs_subclassof_node);
+	librdf_free_node(world->rdfs_class_node);
 	librdf_free_node(world->slv2_bundleuri_node);
 	librdf_free_node(world->xsd_integer_node);
 	librdf_free_node(world->xsd_decimal_node);
@@ -487,91 +493,77 @@ slv2_world_load_specifications(SLV2World world)
 void
 slv2_world_load_plugin_classes(SLV2World world)
 {
-	// FIXME: This will need to be a bit more clever when more data is around
-	// than the ontology (ie classes which aren't LV2 plugin_classes), it
-	// currently loads things that aren't actually plugin classes
+	/* FIXME: This loads all classes, not just lv2:Plugin subclasses.
+	   However, if the host gets all the classes via slv2_plugin_class_get_children
+	   starting with lv2:Plugin as the root (which is e.g. how a host would build
+	   a menu), they won't be seen anyway...
+	*/
 
-	uint8_t* query_string = (uint8_t*)
-		"PREFIX : <http://lv2plug.in/ns/lv2core#>\n"
-		"PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>\n"
-		"SELECT DISTINCT ?class ?parent ?label WHERE {\n"
-		"	?class a rdfs:Class; rdfs:subClassOf ?parent; rdfs:label ?label\n"
-		"}\n";
+	librdf_stream* classes = slv2_world_find_statements(
+		world, world->model,
+		NULL,
+		librdf_new_node_from_node(world->rdf_a_node),
+		librdf_new_node_from_node(world->rdfs_class_node));
+	for (; !librdf_stream_end(classes); librdf_stream_next(classes)) {
+		librdf_statement* s          = librdf_stream_get_object(classes);
+		librdf_node*      class_node = librdf_statement_get_subject(s);
+		librdf_uri*       class_uri  = librdf_node_get_uri(class_node);
 
-	librdf_query* q = librdf_new_query(world->world, "sparql",
-		NULL, query_string, NULL);
+		// Get parents (superclasses)
+		librdf_stream* parents = slv2_world_find_statements(
+			world, world->model,
+			librdf_new_node_from_node(class_node),
+			librdf_new_node_from_node(world->rdfs_subclassof_node),
+			NULL);
 
-	librdf_query_results* results = librdf_query_execute(q, world->model);
-
-	while (!librdf_query_results_finished(results)) {
-		librdf_node* class_node  = librdf_query_results_get_binding_value(results, 0);
-		librdf_uri*  class_uri   = librdf_node_get_uri(class_node);
-		librdf_node* parent_node = librdf_query_results_get_binding_value(results, 1);
-		librdf_uri*  parent_uri  = librdf_node_get_uri(parent_node);
-		librdf_node* label_node  = librdf_query_results_get_binding_value(results, 2);
-		const char*  label       = (const char*)librdf_node_get_literal_value(label_node);
-
-		if (class_uri && parent_uri) {
-			SLV2PluginClass plugin_class = NULL;
-
-			// Check if this is another match for the last plugin (avoid search)
-			SLV2PluginClasses classes = world->plugin_classes;
-			const unsigned n_classes = raptor_sequence_size(classes);
-			if (n_classes >= 1) {
-				SLV2PluginClass prev = raptor_sequence_get_at(classes, n_classes - 1);
-				if (librdf_uri_equals(class_uri, prev->uri->val.uri_val))
-					plugin_class = prev;
-			}
-
-			// If this class differs from the last, append a new one
-			if (!plugin_class) {
-				if (n_classes == 0) {
-					plugin_class = slv2_plugin_class_new(world, parent_uri, class_uri, label);
-					raptor_sequence_push(classes, plugin_class);
-				} else {
-					SLV2PluginClass first = raptor_sequence_get_at(classes, 0);
-					SLV2PluginClass prev  = raptor_sequence_get_at(classes, n_classes - 1);
-
-					// If the URI is > the last in the list, just append (avoid sort)
-					if (strcmp(
-							slv2_value_as_string(slv2_plugin_class_get_uri(prev)),
-							(const char*)librdf_uri_as_string(class_uri)) < 0) {
-						plugin_class = slv2_plugin_class_new(world, parent_uri, class_uri, label);
-						raptor_sequence_push(classes, plugin_class);
-
-					// If the URI is < the first in the list, just prepend (avoid sort)
-					} else if (strcmp(
-							slv2_value_as_string(slv2_plugin_class_get_uri(first)),
-							(const char*)librdf_uri_as_string(class_uri)) > 0) {
-						plugin_class = slv2_plugin_class_new(world, parent_uri, class_uri, label);
-						raptor_sequence_shift(classes, plugin_class);
-
-					// Otherwise the query engine is giving us unsorted results :/
-					} else {
-						SLV2Value uri = slv2_value_new_librdf_uri(world, class_uri);
-						plugin_class = slv2_plugin_classes_get_by_uri(classes, uri);
-						if (!plugin_class) {
-							plugin_class = slv2_plugin_class_new(world, parent_uri, class_uri, label);
-							raptor_sequence_push(classes, plugin_class);
-							raptor_sequence_sort(classes, slv2_plugin_class_compare_by_uri);
-						}
-						slv2_value_free(uri);
-					}
-				}
-			} else {
-				// TODO: Support classes with several parents
-			}
+		if (librdf_stream_end(parents)) {
+			librdf_free_stream(parents);
+			continue;
 		}
 
-		librdf_free_node(class_node);
+		librdf_node* parent_node = librdf_new_node_from_node(
+			librdf_statement_get_object(
+				librdf_stream_get_object(parents)));
+		librdf_uri* parent_uri = librdf_node_get_uri(parent_node);
+		librdf_free_stream(parents);
+
+		// Get labels
+		librdf_stream* labels = slv2_world_find_statements(
+			world, world->model,
+			librdf_new_node_from_node(class_node),
+			librdf_new_node_from_node(world->rdfs_label_node),
+			NULL);
+
+		if (librdf_stream_end(labels)) {
+			librdf_free_stream(labels);
+			continue;
+		}
+
+		librdf_node* label_node = librdf_new_node_from_node(
+			librdf_statement_get_object(
+				librdf_stream_get_object(labels)));
+		const uint8_t* label = librdf_node_get_literal_value(label_node);
+		librdf_free_stream(labels);
+
+		SLV2PluginClasses classes   = world->plugin_classes;
+		const unsigned    n_classes = raptor_sequence_size(classes);
+#ifndef NDEBUG
+		if (n_classes > 0) {
+			// Class results are in increasing sorted order
+			SLV2PluginClass prev = raptor_sequence_get_at(classes, n_classes - 1);
+			assert(strcmp(
+				       slv2_value_as_string(slv2_plugin_class_get_uri(prev)),
+				       (const char*)librdf_uri_as_string(class_uri)) < 0);
+		}
+#endif
+		raptor_sequence_push(classes, slv2_plugin_class_new(
+			                     world, parent_uri, class_uri, (const char*)label));
+
+		//librdf_free_node(class_node);
 		librdf_free_node(parent_node);
 		librdf_free_node(label_node);
-
-		librdf_query_results_next(results);
 	}
-
-	librdf_free_query_results(results);
-	librdf_free_query(q);
+	librdf_free_stream(classes);
 }
 
 
