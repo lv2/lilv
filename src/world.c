@@ -79,6 +79,15 @@ slv2_world_new_internal(SLV2World world)
 	world->lv2_plugin_class = slv2_plugin_class_new(world, NULL,
 			librdf_node_get_uri(world->lv2_plugin_node), "Plugin");
 
+	world->namespaces = librdf_new_hash_from_string(
+		world->world, NULL,
+		"rdf='http://www.w3.org/1999/02/22-rdf-syntax-ns#',"
+		"rdfs='http://www.w3.org/2000/01/rdf-schema#',"
+		"doap='http://usefulinc.com/ns/doap#',"
+		"foaf='http://xmlns.com/foaf/0.1/',"
+		"lv2='http://lv2plug.in/ns/lv2core#',"
+		"lv2ev='http://lv2plug.in/ns/ext/event#'");
+
 	return world;
 
 fail:
@@ -181,6 +190,8 @@ slv2_world_free(SLV2World world)
 
 	librdf_free_storage(world->storage);
 	world->storage = NULL;
+
+	librdf_free_hash(world->namespaces);
 
 	if (world->local_world)
 		librdf_free_world(world->world);

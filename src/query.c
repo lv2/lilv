@@ -211,6 +211,7 @@ slv2_plugin_find_statements(SLV2Plugin   plugin,
                             librdf_node* predicate,
                             librdf_node* object)
 {
+	slv2_plugin_load_if_necessary(plugin);
 	librdf_statement* q = librdf_new_statement_from_nodes(
 		plugin->world->world, subject, predicate, object);
 	librdf_stream* results = librdf_model_find_statements(plugin->rdf, q);

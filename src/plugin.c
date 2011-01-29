@@ -119,7 +119,6 @@ slv2_plugin_query_node(SLV2Plugin p, librdf_node* subject, librdf_node* predicat
 		p, subject, predicate, NULL);
 
 	if (librdf_stream_end(results)) {
-		librdf_free_stream(results);
 		return NULL;
 	}
 
@@ -482,20 +481,50 @@ slv2_plugin_get_value(SLV2Plugin p,
 }
 
 
+static char*
+slv2_qname_expand(SLV2Plugin p, const char* qname)
+{
+	char* colon = strchr(qname, ':');
+	if (!colon || colon == qname) {
+		SLV2_ERRORF("Invalid QName `%s'\n", qname);
+		return NULL;
+	}
+
+	const size_t prefix_len = colon - qname;
+	char*        prefix     = malloc(prefix_len + 1);
+	memcpy(prefix, qname, prefix_len);
+	prefix[prefix_len] = '\0';
+
+	char* namespace = librdf_hash_get(p->world->namespaces, prefix);
+	free(prefix);
+	if (!namespace) {
+		SLV2_ERRORF("QName `%s' has Undefined prefix\n", qname);
+		return NULL;
+	}
+
+	const size_t qname_len     = strlen(qname);
+	const size_t suffix_len    = qname_len - prefix_len - 1;
+	const size_t namespace_len = strlen(namespace);
+	char*        uri           = malloc(namespace_len + suffix_len + 1);
+	memcpy(uri, namespace, namespace_len);
+	memcpy(uri + namespace_len, colon + 1, qname_len - prefix_len - 1);
+	uri[namespace_len + suffix_len] = '\0';
+
+	free(namespace);
+	return uri;
+}
+
+
 SLV2Values
 slv2_plugin_get_value_by_qname(SLV2Plugin  p,
                                const char* predicate)
 {
-	char* query = slv2_strjoin(
-			"SELECT DISTINCT ?value WHERE { \n"
-			"<> ", predicate, " ?value . \n"
-			"}\n", NULL);
-
-	SLV2Values result = slv2_plugin_query_variable(p, query, 0);
-
-	free(query);
-
-	return result;
+	char*      predicate_uri   = slv2_qname_expand(p, predicate);
+	SLV2Value  predicate_value = slv2_value_new_uri(p->world, predicate_uri);
+	SLV2Values ret             = slv2_plugin_get_value(p, predicate_value);
+	slv2_value_free(predicate_value);
+	free(predicate_uri);
+	return ret;
 }
 
 

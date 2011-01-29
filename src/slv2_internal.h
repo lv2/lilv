@@ -150,6 +150,7 @@ struct _SLV2World {
 	librdf_storage*   storage;
 	librdf_model*     model;
 	librdf_parser*    parser;
+	librdf_hash*      namespaces;
 	SLV2PluginClass   lv2_plugin_class;
 	SLV2PluginClasses plugin_classes;
 	SLV2Plugins       plugins;
