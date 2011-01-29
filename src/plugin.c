@@ -86,7 +86,7 @@ slv2_plugin_free(SLV2Plugin p)
 	}
 
 	if (p->rdf) {
-		//librdf_free_model(p->rdf);  // FIXME: memory leak
+		librdf_free_model(p->rdf);
 		p->rdf = NULL;
 	}
 
@@ -174,11 +174,12 @@ slv2_plugin_load_ports_if_necessary(SLV2Plugin p)
 
 		while (!librdf_stream_end(ports)) {
 			librdf_statement* s    = librdf_stream_get_object(ports);
-			librdf_node*      port = librdf_new_node_from_node(
-				librdf_statement_get_object(s));
+			librdf_node*      port = librdf_statement_get_object(s);
 
 			SLV2Value symbol = slv2_plugin_get_unique(
-				p, port, p->world->lv2_symbol_node);
+				p,
+				librdf_new_node_from_node(port),
+				librdf_new_node_from_node(p->world->lv2_symbol_node));
 
 			if (!slv2_value_is_string(symbol)) {
 				SLV2_ERROR("port has a non-string symbol\n");
@@ -187,7 +188,9 @@ slv2_plugin_load_ports_if_necessary(SLV2Plugin p)
 			}
 
 			SLV2Value index = slv2_plugin_get_unique(
-				p, port, p->world->lv2_index_node);
+				p,
+				librdf_new_node_from_node(port),
+				librdf_new_node_from_node(p->world->lv2_index_node));
 
 			if (!slv2_value_is_int(index)) {
 				SLV2_ERROR("port has a non-integer index\n");
@@ -215,7 +218,10 @@ slv2_plugin_load_ports_if_necessary(SLV2Plugin p)
 			}
 
 			librdf_stream* types = slv2_plugin_find_statements(
-				p, port, p->world->rdf_a_node, NULL);
+				p,
+				librdf_new_node_from_node(port),
+				librdf_new_node_from_node(p->world->rdf_a_node),
+				NULL);
 			while (!librdf_stream_end(types)) {
 				librdf_node* type = librdf_statement_get_object(
 					librdf_stream_get_object(types));
