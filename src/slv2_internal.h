@@ -33,7 +33,7 @@ extern "C" {
 #include "slv2/types.h"
 #include "slv2/lv2_ui.h"
 #ifdef SLV2_DYN_MANIFEST
-#include "lv2_dyn_manifest.h"
+#include "lv2/lv2plug.in/ns/ext/dyn-manifest/dyn-manifest.h"
 #endif
 
 #define SLV2_NS_RDFS (const unsigned char*)"http://www.w3.org/2000/01/rdf-schema#"
