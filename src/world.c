@@ -57,15 +57,16 @@ slv2_world_new_internal(SLV2World world)
 
 #define NEW_URI(uri) librdf_new_node_from_uri_string(world->world, uri);
 
-	world->lv2_specification_node = NEW_URI(SLV2_NS_LV2 "Specification");
-	world->lv2_plugin_node        = NEW_URI(SLV2_NS_LV2 "Plugin");
-	world->lv2_binary_node        = NEW_URI(SLV2_NS_LV2 "binary");
-	world->lv2_port_node          = NEW_URI(SLV2_NS_LV2 "port");
-	world->lv2_index_node         = NEW_URI(SLV2_NS_LV2 "index");
-	world->lv2_symbol_node        = NEW_URI(SLV2_NS_LV2 "symbol");
-	world->rdf_a_node             = NEW_URI(SLV2_NS_RDF "type");
-	world->xsd_integer_node       = NEW_URI(SLV2_NS_XSD "integer");
-	world->xsd_decimal_node       = NEW_URI(SLV2_NS_XSD "decimal");
+	world->lv2_specification_node = NEW_URI(SLV2_NS_LV2  "Specification");
+	world->lv2_plugin_node        = NEW_URI(SLV2_NS_LV2  "Plugin");
+	world->lv2_binary_node        = NEW_URI(SLV2_NS_LV2  "binary");
+	world->lv2_port_node          = NEW_URI(SLV2_NS_LV2  "port");
+	world->lv2_index_node         = NEW_URI(SLV2_NS_LV2  "index");
+	world->lv2_symbol_node        = NEW_URI(SLV2_NS_LV2  "symbol");
+	world->rdf_a_node             = NEW_URI(SLV2_NS_RDF  "type");
+	world->rdfs_seealso_node      = NEW_URI(SLV2_NS_RDFS "seeAlso");
+	world->xsd_integer_node       = NEW_URI(SLV2_NS_XSD  "integer");
+	world->xsd_decimal_node       = NEW_URI(SLV2_NS_XSD  "decimal");
 
 	world->lv2_plugin_class = slv2_plugin_class_new(world, NULL,
 			librdf_node_get_uri(world->lv2_plugin_node), "Plugin");
@@ -146,6 +147,7 @@ slv2_world_free(SLV2World world)
 	librdf_free_node(world->lv2_index_node);
 	librdf_free_node(world->lv2_symbol_node);
 	librdf_free_node(world->rdf_a_node);
+	librdf_free_node(world->rdfs_seealso_node);
 	librdf_free_node(world->xsd_integer_node);
 	librdf_free_node(world->xsd_decimal_node);
 
@@ -450,33 +452,40 @@ slv2_plugin_class_compare_by_uri(const void* a, const void* b)
 void
 slv2_world_load_specifications(SLV2World world)
 {
-	unsigned char* query_string = (unsigned char*)
-		"PREFIX : <http://lv2plug.in/ns/lv2core#>\n"
-		"PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>\n"
-		"SELECT DISTINCT ?spec ?data WHERE {\n"
-		"	?spec a            :Specification ;\n"
-		"	      rdfs:seeAlso ?data .\n"
-		"}\n";
+	librdf_statement* q = librdf_new_statement_from_nodes(
+		world->world,
+		NULL,
+		librdf_new_node_from_node(world->rdf_a_node),
+		librdf_new_node_from_node(world->lv2_specification_node));
 
-	librdf_query* q = librdf_new_query(world->world, "sparql", NULL, query_string, NULL);
+	librdf_stream* specs = librdf_model_find_statements(world->model, q);
+	while (!librdf_stream_end(specs)) {
+		librdf_statement* s         = librdf_stream_get_object(specs);
+		librdf_node*      spec_node = librdf_statement_get_subject(s);
 
-	librdf_query_results* results = librdf_query_execute(q, world->model);
+		librdf_statement* r = librdf_new_statement_from_nodes(
+			world->world,
+			librdf_new_node_from_node(spec_node),
+			librdf_new_node_from_node(world->rdfs_seealso_node),
+			NULL);
 
-	while (!librdf_query_results_finished(results)) {
-		librdf_node* spec_node = librdf_query_results_get_binding_value(results, 0);
-		librdf_node* data_node = librdf_query_results_get_binding_value(results, 1);
-		librdf_uri*  data_uri  = librdf_node_get_uri(data_node);
+		librdf_stream* files = librdf_model_find_statements(world->model, r);
+		while (!librdf_stream_end(files)) {
+			librdf_statement* t         = librdf_stream_get_object(files);
+			librdf_node*      file_node = librdf_statement_get_object(t);
+			librdf_uri*       file_uri  = librdf_node_get_uri(file_node);
 
-		slv2_world_load_file(world, data_uri);
+			slv2_world_load_file(world, file_uri);
 
-		librdf_free_node(spec_node);
-		librdf_free_node(data_node);
+			librdf_stream_next(files);
+		}
+		librdf_free_stream(files);
+		librdf_free_statement(r);
 
-		librdf_query_results_next(results);
+		librdf_stream_next(specs);
 	}
-
-	librdf_free_query_results(results);
-	librdf_free_query(q);
+	librdf_free_stream(specs);
+	librdf_free_statement(q);
 }
 
 

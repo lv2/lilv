@@ -159,6 +159,7 @@ struct _SLV2World {
 	librdf_node*      lv2_index_node;
 	librdf_node*      lv2_symbol_node;
 	librdf_node*      rdf_a_node;
+	librdf_node*      rdfs_seealso_node;
 	librdf_node*      xsd_integer_node;
 	librdf_node*      xsd_decimal_node;
 };
