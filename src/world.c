@@ -55,8 +55,11 @@ slv2_world_new_internal(SLV2World world)
 
 	world->plugins = slv2_plugins_new();
 
+#define NS_DYNMAN (const uint8_t*)"http://lv2plug.in/ns/ext/dynmanifest#"
+
 #define NEW_URI(uri) librdf_new_node_from_uri_string(world->world, uri);
 
+	world->dyn_manifest_node      = NEW_URI(NS_DYNMAN    "DynManifest");
 	world->lv2_specification_node = NEW_URI(SLV2_NS_LV2  "Specification");
 	world->lv2_plugin_node        = NEW_URI(SLV2_NS_LV2  "Plugin");
 	world->lv2_binary_node        = NEW_URI(SLV2_NS_LV2  "binary");
@@ -69,6 +72,7 @@ slv2_world_new_internal(SLV2World world)
 	world->rdfs_seealso_node      = NEW_URI(SLV2_NS_RDFS "seeAlso");
 	world->rdfs_subclassof_node   = NEW_URI(SLV2_NS_RDFS "subClassOf");
 	world->slv2_bundleuri_node    = NEW_URI(SLV2_NS_SLV2 "bundleURI");
+	world->slv2_dmanifest_node    = NEW_URI(SLV2_NS_SLV2 "dynamic-manifest");
 	world->xsd_integer_node       = NEW_URI(SLV2_NS_XSD  "integer");
 	world->xsd_decimal_node       = NEW_URI(SLV2_NS_XSD  "decimal");
 
@@ -144,6 +148,7 @@ slv2_world_free(SLV2World world)
 	slv2_plugin_class_free(world->lv2_plugin_class);
 	world->lv2_plugin_class = NULL;
 
+	librdf_free_node(world->dyn_manifest_node);
 	librdf_free_node(world->lv2_specification_node);
 	librdf_free_node(world->lv2_plugin_node);
 	librdf_free_node(world->lv2_binary_node);
@@ -156,6 +161,7 @@ slv2_world_free(SLV2World world)
 	librdf_free_node(world->rdfs_subclassof_node);
 	librdf_free_node(world->rdfs_class_node);
 	librdf_free_node(world->slv2_bundleuri_node);
+	librdf_free_node(world->slv2_dmanifest_node);
 	librdf_free_node(world->xsd_integer_node);
 	librdf_free_node(world->xsd_decimal_node);
 
@@ -230,23 +236,33 @@ slv2_world_load_bundle(SLV2World world, SLV2Value bundle_uri)
 	typedef void* LV2_Dyn_Manifest_Handle;
 	LV2_Dyn_Manifest_Handle handle = NULL;
 
-	const uint8_t* const query_str = (const uint8_t* const)
-		"PREFIX : <http://lv2plug.in/ns/lv2core#>\n"
-		"PREFIX dynman: <http://lv2plug.in/ns/ext/dynmanifest#>\n"
-		"SELECT DISTINCT ?dynman ?binary WHERE {\n"
-		"?dynman a       dynman:DynManifest ;\n"
-		"        :binary ?binary .\n"
-		"}";
+	librdf_stream* dmanifests = slv2_world_find_statements(
+		world, world->model,
+		NULL,
+		librdf_new_node_from_node(world->rdf_a_node),
+		librdf_new_node_from_node(world->dyn_manifest_node));
+	for (; !librdf_stream_end(dmanifests); librdf_stream_next(dmanifests)) {
+		librdf_statement* s         = librdf_stream_get_object(dmanifests);
+		librdf_node*      dmanifest = librdf_statement_get_subject(s);
 
-	librdf_query* query = librdf_new_query(world->world, "sparql", NULL, query_str, NULL);
-	librdf_query_results* query_results = librdf_query_execute(query, manifest_model);
-	for (; !librdf_query_results_finished(query_results); librdf_query_results_next(query_results)) {
-		librdf_node* binary_node = librdf_query_results_get_binding_value(query_results, 1);
-
-		if (librdf_node_get_type(binary_node) != LIBRDF_NODE_TYPE_RESOURCE)
+		librdf_stream* binaries = slv2_world_find_statements(
+			world, world->model,
+			librdf_new_node_from_node(dmanifest),
+			librdf_new_node_from_node(world->lv2_binary_node),
+			NULL);
+		if (librdf_stream_end(binaries)) {
+			librdf_free_stream(binaries);
+			SLV2_ERRORF("Dynamic manifest in <%s> has no binaries, ignored\n",
+			            slv2_value_as_uri(bundle_uri));
 			continue;
+		}
 
-		const uint8_t* lib_uri  = librdf_uri_as_string(librdf_node_get_uri(binary_node));
+		librdf_node* binary_node = librdf_new_node_from_node(
+			librdf_statement_get_object(
+				librdf_stream_get_object(binaries)));
+		librdf_uri* binary_uri = librdf_node_get_uri(binary_node);
+
+		const uint8_t* lib_uri  = librdf_uri_as_string(binary_uri);
 		const char*    lib_path = slv2_uri_to_path((const char*)lib_uri);
 		if (!lib_path)
 			continue;
@@ -289,7 +305,7 @@ slv2_world_load_bundle(SLV2World world, SLV2Value bundle_uri)
 			librdf_statement* s      = librdf_stream_get_object(dyn_plugins);
 			librdf_node*      plugin = librdf_statement_get_subject(s);
 
-			// Add ?plugin rdfs:seeAlso ?binary to dynamic model
+			// Add ?plugin slv2:dynamic-manifest ?binary to dynamic model
 			librdf_model_add(
 				manifest_model, plugin,
 				librdf_new_node_from_uri_string(world->world, SLV2_NS_RDFS "seeAlso"),
@@ -304,8 +320,7 @@ slv2_world_load_bundle(SLV2World world, SLV2Value bundle_uri)
 		librdf_free_model(dyn_manifest_model);
 		librdf_free_storage(dyn_manifest_storage);
 	}
-	librdf_free_query_results(query_results);
-	librdf_free_query(query);
+	librdf_free_stream(dmanifests);
 #endif // SLV2_DYN_MANIFEST
 
 	// ?plugin a lv2:Plugin
@@ -673,29 +688,41 @@ slv2_world_load_all(SLV2World world)
 		raptor_sequence_push(world->plugins, plugin);
 
 #ifdef SLV2_DYN_MANIFEST
-		const char* const data_uri_str = (const char*)librdf_uri_as_string(data_uri);
-		void* lib = dlopen(slv2_uri_to_path(data_uri_str), RTLD_LAZY);
-		if (lib) {
-			plugin->dynman_uri = slv2_value_new_librdf_uri(world, data_uri);
-			librdf_query_results_next(results);
-		} else
-#endif
 		{
-			librdf_stream* files = slv2_world_find_statements(
-				world, world->model,
-				librdf_new_node_from_node(plugin_node),
-				librdf_new_node_from_node(world->rdfs_seealso_node),
-				NULL);
-			for (; !librdf_stream_end(files); librdf_stream_next(files)) {
-				librdf_statement* s         = librdf_stream_get_object(files);
-				librdf_node*      file_node = librdf_statement_get_object(s);
-				librdf_uri*       file_uri  = librdf_node_get_uri(file_node);
-				raptor_sequence_push(plugin->data_uris,
-				                     slv2_value_new_librdf_uri(world, file_uri));
-			}
-			librdf_free_stream(files);
-		}
+				librdf_stream* dmanifests = slv2_world_find_statements(
+					world, world->model,
+					librdf_new_node_from_node(plugin_node),
+					librdf_new_node_from_node(world->slv2_dmanifest_node),
+					NULL);
+				for (; !librdf_stream_end(dmanifests); librdf_stream_next(dmanifests)) {
+					librdf_statement* s        = librdf_stream_get_object(dmanifests);
+					librdf_node*      lib_node = librdf_statement_get_object(s);
+					librdf_uri*       lib_uri  = librdf_node_get_uri(lib_node);
 
+					if (dlopen(
+						    slv2_uri_to_path((const char*)librdf_uri_as_string(lib_uri)),
+						    RTLD_LAZY)) {
+						plugin->dynman_uri = slv2_value_new_librdf_uri(world, lib_uri);
+					}
+				}
+				librdf_free_stream(dmanifests);
+		}
+#endif
+		librdf_stream* files = slv2_world_find_statements(
+			world, world->model,
+			librdf_new_node_from_node(plugin_node),
+			librdf_new_node_from_node(world->rdfs_seealso_node),
+			NULL);
+		for (; !librdf_stream_end(files); librdf_stream_next(files)) {
+			librdf_statement* s         = librdf_stream_get_object(files);
+			librdf_node*      file_node = librdf_statement_get_object(s);
+			librdf_uri*       file_uri  = librdf_node_get_uri(file_node);
+
+			raptor_sequence_push(plugin->data_uris,
+			                     slv2_value_new_librdf_uri(world, file_uri));
+		}
+		librdf_free_stream(files);
+		
 		librdf_free_node(bundle_node);
 	}
 	librdf_free_stream(plugins);

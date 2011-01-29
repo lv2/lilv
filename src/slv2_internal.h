@@ -153,6 +153,7 @@ struct _SLV2World {
 	SLV2PluginClass   lv2_plugin_class;
 	SLV2PluginClasses plugin_classes;
 	SLV2Plugins       plugins;
+	librdf_node*      dyn_manifest_node;
 	librdf_node*      lv2_specification_node;
 	librdf_node*      lv2_plugin_node;
 	librdf_node*      lv2_binary_node;
@@ -165,6 +166,7 @@ struct _SLV2World {
 	librdf_node*      rdfs_seealso_node;
 	librdf_node*      rdfs_subclassof_node;
 	librdf_node*      slv2_bundleuri_node;
+	librdf_node*      slv2_dmanifest_node;
 	librdf_node*      xsd_integer_node;
 	librdf_node*      xsd_decimal_node;
 };
