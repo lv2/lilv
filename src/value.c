@@ -37,6 +37,7 @@ slv2_value_set_numerics_from_string(SLV2Value val)
 
 	switch (val->type) {
 	case SLV2_VALUE_URI:
+	case SLV2_VALUE_BLANK:
 	case SLV2_VALUE_QNAME_UNUSED:
 	case SLV2_VALUE_STRING:
 		break;
@@ -79,6 +80,7 @@ slv2_value_new(SLV2World world, SLV2ValueType type, const char* str)
 		val->str_val = (char*)librdf_uri_as_string(val->val.uri_val);
 		break;
 	case SLV2_VALUE_QNAME_UNUSED:
+	case SLV2_VALUE_BLANK:
 	case SLV2_VALUE_STRING:
 	case SLV2_VALUE_INT:
 	case SLV2_VALUE_FLOAT:
@@ -117,6 +119,7 @@ slv2_value_new_librdf_node(SLV2World world, librdf_node* node)
 		result = slv2_value_new(world, type, (const char*)librdf_node_get_literal_value(node));
 		switch (result->type) {
 		case SLV2_VALUE_URI:
+		case SLV2_VALUE_BLANK:
 		case SLV2_VALUE_STRING:
 		case SLV2_VALUE_QNAME_UNUSED:
 			break;
@@ -126,7 +129,7 @@ slv2_value_new_librdf_node(SLV2World world, librdf_node* node)
 		}
 		break;
 	case LIBRDF_NODE_TYPE_BLANK:
-		type = SLV2_VALUE_STRING;
+		type = SLV2_VALUE_BLANK;
 		result = slv2_value_new(world, type, (const char*)librdf_node_get_blank_identifier(node));
 		break;
 	case LIBRDF_NODE_TYPE_UNKNOWN:
@@ -236,6 +239,7 @@ slv2_value_equals(SLV2Value value, SLV2Value other)
 	switch (value->type) {
 	case SLV2_VALUE_URI:
 		return (librdf_uri_equals(value->val.uri_val, other->val.uri_val) != 0);
+	case SLV2_VALUE_BLANK:
 	case SLV2_VALUE_STRING:
 	case SLV2_VALUE_QNAME_UNUSED:
 		return ! strcmp(value->str_val, other->str_val);
@@ -261,6 +265,11 @@ slv2_value_get_turtle_token(SLV2Value value)
 		len = strlen(value->str_val) + 3;
 		result = calloc(len, 1);
 		snprintf(result, len, "<%s>", value->str_val);
+		break;
+	case SLV2_VALUE_BLANK:
+		len = strlen(value->str_val) + 3;
+		result = calloc(len, 1);
+		snprintf(result, len, "_:%s", value->str_val);
 		break;
 	case SLV2_VALUE_STRING:
 	case SLV2_VALUE_QNAME_UNUSED:
@@ -314,6 +323,21 @@ slv2_value_as_librdf_uri(SLV2Value value)
 {
 	assert(slv2_value_is_uri(value));
 	return value->val.uri_val;
+}
+
+
+bool
+slv2_value_is_blank(SLV2Value value)
+{
+	return (value && value->type == SLV2_VALUE_BLANK);
+}
+
+
+const char*
+slv2_value_as_blank(SLV2Value value)
+{
+	assert(slv2_value_is_blank(value));
+	return value->str_val;
 }
 
 

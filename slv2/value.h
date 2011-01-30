@@ -124,6 +124,27 @@ const char*
 slv2_value_as_uri(SLV2Value value);
 
 
+/** Return whether the value is a blank node (resource with no URI).
+ *
+ * Time = O(1)
+ */
+SLV2_API
+bool
+slv2_value_is_blank(SLV2Value value);
+
+
+/** Return this value as a blank node identifier, e.g. "genid03".
+ *
+ * Valid to call only if slv2_value_is_blank(\a value) returns true.
+ * Returned value is owned by \a value and must not be freed by caller.
+ *
+ * Time = O(1)
+ */
+SLV2_API
+const char*
+slv2_value_as_blank(SLV2Value value);
+
+
 /** Return whether this value is a literal (i.e. not a URI).
  *
  * Returns true if \a value is a string or numeric value.

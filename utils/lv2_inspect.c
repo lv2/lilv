@@ -28,6 +28,8 @@ SLV2Value event_class   = NULL;
 SLV2Value control_class = NULL;
 SLV2Value in_group_pred = NULL;
 SLV2Value role_pred     = NULL;
+SLV2Value preset_pred   = NULL;
+SLV2Value title_pred    = NULL;
 
 void
 print_group(SLV2Plugin p, SLV2Value group, SLV2Value type, SLV2Value symbol)
@@ -236,41 +238,19 @@ print_plugin(SLV2Plugin p)
 
 	/* Presets */
 
-	SLV2Results presets = slv2_plugin_query_sparql(p, "\
-PREFIX lv2p: <http://lv2plug.in/ns/ext/presets#> \
-PREFIX dc:  <http://dublincore.org/documents/dcmi-namespace/> \
-SELECT ?name WHERE { <> lv2p:hasPreset ?preset . ?preset dc:title ?name }");
-	if (!slv2_results_finished(presets))
+	SLV2Values presets = slv2_plugin_get_value(p, preset_pred);
+	if (presets)
 		printf("\tPresets: \n");
-	for (; !slv2_results_finished(presets); slv2_results_next(presets)) {
-		SLV2Value name = slv2_results_get_binding_value(presets, 0);
-		printf("\t         %s\n", slv2_value_as_string(name));
-		slv2_value_free(name);
+	for (unsigned i=0; i < slv2_values_size(presets); ++i) {
+		SLV2Values titles = slv2_plugin_get_value_for_subject(
+			p, slv2_values_get_at(presets, i), title_pred);
+		if (titles) {
+			SLV2Value title = slv2_values_get_at(titles, 0);
+			printf("\t         %s\n", slv2_value_as_string(title));
+		}
 	}
-	slv2_results_free(presets);
 
-
-	/* Groups */
-
-	SLV2Results groups = slv2_plugin_query_sparql(p, "\
-PREFIX pg: <http://lv2plug.in/ns/ext/port-groups#> \
-PREFIX dc:  <http://dublincore.org/documents/dcmi-namespace/> \
-SELECT DISTINCT ?group ?type ?sym WHERE {\n"
-"	<>     lv2:port   ?port .\n"
-"	?port  pg:inGroup ?group .\n"
-"	?group rdf:type   ?type ;\n"
-"	       lv2:symbol ?sym .\n"
-"FILTER(?type != pg:Group)\n"
-"}");
-	for (; !slv2_results_finished(groups); slv2_results_next(groups)) {
-		SLV2Value group  = slv2_results_get_binding_value(groups, 0);
-		SLV2Value type   = slv2_results_get_binding_value(groups, 1);
-		SLV2Value symbol = slv2_results_get_binding_value(groups, 2);
-		print_group(p, group, type, symbol);
-	}
-	slv2_results_free(groups);
-
-
+	
 	/* Ports */
 
 	const uint32_t num_ports = slv2_plugin_get_num_ports(p);
@@ -322,6 +302,8 @@ main(int argc, char** argv)
 	control_class = slv2_value_new_uri(world, SLV2_PORT_CLASS_CONTROL);
 	in_group_pred = slv2_value_new_uri(world, "http://lv2plug.in/ns/ext/port-groups#inGroup");
 	role_pred = slv2_value_new_uri(world, "http://lv2plug.in/ns/ext/port-groups#role");
+	preset_pred = slv2_value_new_uri(world, "http://lv2plug.in/ns/dev/presets#hasPreset");
+	title_pred = slv2_value_new_uri(world, "http://dublincore.org/documents/dcmi-namespace/title");
 
 	if (argc != 2) {
 		print_usage();

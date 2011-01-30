@@ -522,8 +522,8 @@ slv2_plugin_get_value_for_subject(SLV2Plugin p,
                                   SLV2Value  subject,
                                   SLV2Value  predicate)
 {
-	if ( ! slv2_value_is_uri(subject)) {
-		SLV2_ERROR("Subject is not a URI\n");
+	if ( ! slv2_value_is_uri(subject) && ! slv2_value_is_blank(subject)) {
+		SLV2_ERROR("Subject is not a resource\n");
 		return NULL;
 	}
 	if ( ! slv2_value_is_uri(predicate)) {
@@ -531,9 +531,15 @@ slv2_plugin_get_value_for_subject(SLV2Plugin p,
 		return NULL;
 	}
 
+	librdf_node* subject_node = (slv2_value_is_uri(subject))
+		? librdf_new_node_from_uri(
+			p->world->world, subject->val.uri_val)
+		: librdf_new_node_from_blank_identifier(
+			p->world->world, (const uint8_t*)slv2_value_as_blank(subject));
+
 	return slv2_plugin_query_node(
 		p,
-		librdf_new_node_from_uri(p->world->world, subject->val.uri_val),
+		subject_node,
 		librdf_new_node_from_uri(p->world->world, predicate->val.uri_val));
 }
 

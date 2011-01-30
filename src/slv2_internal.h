@@ -242,6 +242,7 @@ typedef enum _SLV2ValueType {
 	SLV2_VALUE_STRING,
 	SLV2_VALUE_INT,
 	SLV2_VALUE_FLOAT,
+	SLV2_VALUE_BLANK
 } SLV2ValueType;
 
 struct _SLV2Value {
