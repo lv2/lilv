@@ -3,3 +3,6 @@ Author:
 
 GTK2 GUI and I18N support:
 	Lars Luthman <lars.luthman@gmail.com>
+
+Dynamic manifest support:
+	Stefano D'Angelo
