@@ -626,62 +626,26 @@ slv2_plugin_get_num_ports(SLV2Plugin p)
 
 
 void
-slv2_plugin_get_port_float_values(SLV2Plugin  p,
-                                  const char* qname,
-                                  float*      values)
-{
-	slv2_plugin_load_ports_if_necessary(p);
-
-	for (uint32_t i = 0; i < p->num_ports; ++i)
-		values[i] = NAN;
-
-	uint8_t* query = (uint8_t*)slv2_strjoin(
-			"PREFIX : <http://lv2plug.in/ns/lv2core#>\n"
-			"SELECT DISTINCT ?index ?value WHERE {\n"
-			"<>    :port    ?port .\n"
-			"?port :index   ?index .\n"
-			"?port ", qname, " ?value .\n"
-			"} ", NULL);
-
-	librdf_query* q = librdf_new_query(p->world->world, "sparql",
-			NULL, query, slv2_value_as_librdf_uri(p->plugin_uri));
-
-	librdf_query_results* results = librdf_query_execute(q, p->rdf);
-
-	while (!librdf_query_results_finished(results)) {
-		librdf_node* idx_node = librdf_query_results_get_binding_value(results, 0);
-		librdf_node* val_node = librdf_query_results_get_binding_value(results, 1);
-		if (idx_node && val_node && librdf_node_is_literal(idx_node)
-				&& librdf_node_is_literal(val_node)) {
-			const int idx = atoi((const char*)librdf_node_get_literal_value(idx_node));
-			const float val = atof((const char*)librdf_node_get_literal_value(val_node));
-			values[idx] = val;
-			librdf_free_node(idx_node);
-			librdf_free_node(val_node);
-		}
-		librdf_query_results_next(results);
-	}
-
-	librdf_free_query_results(results);
-	librdf_free_query(q);
-	free(query);
-}
-
-
-void
 slv2_plugin_get_port_ranges_float(SLV2Plugin p,
                                   float*     min_values,
                                   float*     max_values,
                                   float*     def_values)
 {
-	if (min_values)
-		slv2_plugin_get_port_float_values(p, ":minimum", min_values);
+	slv2_plugin_load_ports_if_necessary(p);
+	for (unsigned i = 0; i < p->num_ports; ++i) {
+		SLV2Port port = p->ports[i];
+		SLV2Value def, min, max;
+		slv2_port_get_range(p, port, &def, &min, &max);
+		
+		if (min && min_values)
+			min_values[i] = slv2_value_as_float(min);
 
-	if (max_values)
-		slv2_plugin_get_port_float_values(p, ":maximum", max_values);
+		if (max && max_values)
+			max_values[i] = slv2_value_as_float(max);
 
-	if (def_values)
-		slv2_plugin_get_port_float_values(p, ":default", def_values);
+		if (def && def_values)
+			def_values[i] = slv2_value_as_float(def);
+	}
 }
 
 
