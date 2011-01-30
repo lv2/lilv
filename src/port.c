@@ -307,40 +307,40 @@ slv2_port_get_range(SLV2Plugin p,
 
 SLV2ScalePoints
 slv2_port_get_scale_points(SLV2Plugin p,
-                           SLV2Port port)
+                           SLV2Port   port)
 {
-	char* query = slv2_strjoin(
-			"SELECT DISTINCT ?value ?label WHERE {\n"
-			"<", slv2_value_as_uri(p->plugin_uri), "> lv2:port ?port .\n"
-			"?port  lv2:symbol \"", slv2_value_as_string(port->symbol), "\" ;\n",
-			"       lv2:scalePoint ?point .\n"
-			"?point rdf:value ?value ;\n"
-			"       rdfs:label ?label .\n"
-			"\n}", NULL);
-
-	SLV2Results results = slv2_plugin_query_sparql(p, query);
+	librdf_node*   port_node = slv2_port_get_node(p, port);
+	librdf_stream* points    = slv2_plugin_find_statements(
+		p,
+		port_node,
+		librdf_new_node_from_uri_string(p->world->world, SLV2_NS_LV2 "scalePoint"),
+		NULL);
 
 	SLV2ScalePoints ret = NULL;
-
-    if (!slv2_results_finished(results))
+	if (!librdf_stream_end(points))
 		ret = slv2_scale_points_new();
 
-    while (!slv2_results_finished(results)) {
-		SLV2Value value = slv2_results_get_binding_value(results, 0);
-		SLV2Value label = slv2_results_get_binding_value(results, 1);
+	for (; !librdf_stream_end(points); librdf_stream_next(points)) {
+		librdf_statement* s     = librdf_stream_get_object(points);
+		librdf_node*      point = librdf_statement_get_object(s);
 
-		if (value && label)
+		SLV2Value value = slv2_plugin_get_unique(
+			p,
+			librdf_new_node_from_node(point),
+			librdf_new_node_from_node(p->world->rdf_value_node));
+
+		SLV2Value label = slv2_plugin_get_unique(
+			p,
+			librdf_new_node_from_node(point),
+			librdf_new_node_from_node(p->world->rdfs_label_node));
+
+		if (value && label) {
 			raptor_sequence_push(ret, slv2_scale_point_new(value, label));
-
-		slv2_results_next(results);
+		}
 	}
-
-	slv2_results_free(results);
-
-	free(query);
+	librdf_free_stream(points);
 
 	assert(!ret || slv2_values_size(ret) > 0);
-
 	return ret;
 }
 

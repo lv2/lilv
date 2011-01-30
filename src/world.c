@@ -71,6 +71,7 @@ slv2_world_new_internal(SLV2World world)
 	world->lv2_index_node         = NEW_URI(SLV2_NS_LV2  "index");
 	world->lv2_symbol_node        = NEW_URI(SLV2_NS_LV2  "symbol");
 	world->rdf_a_node             = NEW_URI(SLV2_NS_RDF  "type");
+	world->rdf_value_node         = NEW_URI(SLV2_NS_RDF  "value");
 	world->rdfs_class_node        = NEW_URI(SLV2_NS_RDFS "Class");
 	world->rdfs_label_node        = NEW_URI(SLV2_NS_RDFS "label");
 	world->rdfs_seealso_node      = NEW_URI(SLV2_NS_RDFS "seeAlso");
@@ -173,6 +174,7 @@ slv2_world_free(SLV2World world)
 	librdf_free_node(world->lv2_index_node);
 	librdf_free_node(world->lv2_symbol_node);
 	librdf_free_node(world->rdf_a_node);
+	librdf_free_node(world->rdf_value_node);
 	librdf_free_node(world->rdfs_label_node);
 	librdf_free_node(world->rdfs_seealso_node);
 	librdf_free_node(world->rdfs_subclassof_node);
