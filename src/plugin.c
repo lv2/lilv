@@ -893,40 +893,48 @@ slv2_plugin_get_author_homepage(SLV2Plugin plugin)
 
 
 SLV2UIs
-slv2_plugin_get_uis(SLV2Plugin plugin)
+slv2_plugin_get_uis(SLV2Plugin p)
 {
-    const char* const query_str =
-		"PREFIX uiext: <http://lv2plug.in/ns/extensions/ui#>\n"
-		"SELECT DISTINCT ?uri ?type ?binary WHERE {\n"
-		"<>   uiext:ui     ?uri .\n"
-		"?uri a            ?type ;\n"
-		"     uiext:binary ?binary .\n"
-		"}\n";
+#define NS_UI (const uint8_t*)"http://lv2plug.in/ns/extensions/ui#"
 
-	SLV2Results results = slv2_plugin_query_sparql(plugin, query_str);
+	SLV2UIs        result = slv2_uis_new();
+	librdf_stream* uis    = slv2_plugin_find_statements(
+		p,
+		librdf_new_node_from_uri(p->world->world, p->plugin_uri->val.uri_val),
+		librdf_new_node_from_uri_string(p->world->world, NS_UI "ui"),
+		NULL);
+	for (; !librdf_stream_end(uis); librdf_stream_next(uis)) {
+		librdf_statement* s  = librdf_stream_get_object(uis);
+		librdf_node*      ui = librdf_statement_get_object(s);
 
-	SLV2UIs result = slv2_uis_new();
+		SLV2Value type = slv2_plugin_get_unique(
+			p,
+			librdf_new_node_from_node(ui),
+			librdf_new_node_from_node(p->world->rdf_a_node));
 
-	while (!librdf_query_results_finished(results->rdf_results)) {
-		librdf_node* uri_node    = librdf_query_results_get_binding_value(results->rdf_results, 0);
-		librdf_node* type_node   = librdf_query_results_get_binding_value(results->rdf_results, 1);
-		librdf_node* binary_node = librdf_query_results_get_binding_value(results->rdf_results, 2);
+		SLV2Value binary = slv2_plugin_get_unique(
+			p,
+			librdf_new_node_from_node(ui),
+			librdf_new_node_from_uri_string(p->world->world, NS_UI "binary"));
 
-		SLV2UI ui = slv2_ui_new(plugin->world,
-				librdf_node_get_uri(uri_node),
-				librdf_node_get_uri(type_node),
-				librdf_node_get_uri(binary_node));
+		if (!librdf_node_is_resource(ui)
+		    || !slv2_value_is_uri(type)
+		    || !slv2_value_is_uri(binary)) {
+			SLV2_ERROR("Corrupt UI\n");
+			continue;
+		}
+		
+		SLV2UI slv2_ui = slv2_ui_new(p->world,
+		                             librdf_node_get_uri(ui),
+		                             slv2_value_as_librdf_uri(type),
+		                             slv2_value_as_librdf_uri(binary));
 
-		raptor_sequence_push(result, ui);
+		raptor_sequence_push(result, slv2_ui);
 
-		librdf_free_node(uri_node);
-		librdf_free_node(type_node);
-		librdf_free_node(binary_node);
-
-		librdf_query_results_next(results->rdf_results);
+		slv2_value_free(binary);
+		slv2_value_free(type);
 	}
-
-	slv2_results_free(results);
+	librdf_free_stream(uis);
 
 	if (slv2_uis_size(result) > 0) {
 		return result;
