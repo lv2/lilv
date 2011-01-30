@@ -205,6 +205,7 @@ slv2_plugin_query_count(SLV2Plugin  plugin,
 	return ret;
 }
 
+
 librdf_stream*
 slv2_plugin_find_statements(SLV2Plugin   plugin,
                             librdf_node* subject,
@@ -217,4 +218,45 @@ slv2_plugin_find_statements(SLV2Plugin   plugin,
 	librdf_stream* results = librdf_model_find_statements(plugin->rdf, q);
 	librdf_free_statement(q);
 	return results;
+}
+
+
+SLV2Values
+slv2_values_from_stream_i18n(SLV2Plugin     p,
+                             librdf_stream* stream)
+{
+	SLV2Values   values  = slv2_values_new();
+	librdf_node* nolang  = NULL;
+	for (; !librdf_stream_end(stream); librdf_stream_next(stream)) {
+		librdf_statement* s     = librdf_stream_get_object(stream);
+		librdf_node*      value = librdf_statement_get_object(s);
+		if (librdf_node_is_literal(value)) {
+			const char* lang = librdf_node_get_literal_value_language(value);
+			if (lang) {
+				if (!strcmp(lang, slv2_get_lang())) {
+					raptor_sequence_push(
+						values, slv2_value_new_string(
+							p->world, (const char*)librdf_node_get_literal_value(value)));
+				}
+			} else {
+				nolang = value;
+			}
+		}
+		break;
+	}
+	librdf_free_stream(stream);
+
+	if (slv2_values_size(values) == 0) {
+		// No value with a matching language, use untranslated default
+		if (nolang) {
+			raptor_sequence_push(
+				values, slv2_value_new_string(
+					p->world, (const char*)librdf_node_get_literal_value(nolang)));
+		} else {
+			slv2_values_free(values);
+			values = NULL;
+		}
+	}
+
+	return values;
 }

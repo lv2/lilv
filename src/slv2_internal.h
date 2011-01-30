@@ -268,12 +268,15 @@ struct _SLV2Results {
 	librdf_query_results* rdf_results;
 };
 
+SLV2Values slv2_values_from_stream_i18n(SLV2Plugin     p,
+                                        librdf_stream* stream);
+
 
 /* ********* Utilities ********* */
 
 char*       slv2_strjoin(const char* first, ...);
 const char* slv2_get_lang();
-
+char*       slv2_qname_expand(SLV2Plugin p, const char* qname);
 
 /* ********* Dynamic Manifest ********* */
 #ifdef SLV2_DYN_MANIFEST

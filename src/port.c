@@ -134,25 +134,46 @@ slv2_port_supports_event(SLV2Plugin p,
 }
 
 
+static SLV2Values
+slv2_values_from_stream_objects(SLV2Plugin p, librdf_stream* stream)
+{
+	if (librdf_stream_end(stream)) {
+		return NULL;
+	}
+
+	SLV2Values values = slv2_values_new();
+	for (; !librdf_stream_end(stream); librdf_stream_next(stream)) {
+		raptor_sequence_push(
+			values,
+			slv2_value_new_librdf_node(
+				p->world,
+				librdf_statement_get_object(
+					librdf_stream_get_object(stream))));
+	}
+	librdf_free_stream(stream);
+	return values;
+}
+
+
 SLV2Values
 slv2_port_get_value_by_qname(SLV2Plugin  p,
                              SLV2Port    port,
-                             const char* property)
+                             const char* predicate)
 {
-	assert(property);
-	SLV2Values results = NULL;
+	assert(predicate);
+	char* pred_uri = slv2_qname_expand(p, predicate);
+	if (!pred_uri) {
+		return NULL;
+	}
 
-	char* query = slv2_strjoin(
-			"SELECT DISTINCT ?value WHERE {\n"
-			"<", slv2_value_as_uri(p->plugin_uri), "> lv2:port ?port .\n"
-			"?port lv2:symbol \"", slv2_value_as_string(port->symbol), "\";\n\t",
-			property, " ?value .\n"
-			"FILTER(lang(?value) = \"\") }", NULL);
+	librdf_node*   port_node = slv2_port_get_node(p, port);
+	librdf_stream* results   = slv2_plugin_find_statements(
+		p,
+		port_node,
+		librdf_new_node_from_uri_string(p->world->world, (const uint8_t*)pred_uri),
+		NULL);
 
-	results = slv2_plugin_query_variable(p, query, 0);
-
-	free(query);
-	return results;
+	return slv2_values_from_stream_objects(p, results);
 }
 
 
@@ -161,45 +182,41 @@ slv2_port_get_value(SLV2Plugin p,
                     SLV2Port   port,
                     SLV2Value  predicate)
 {
-	char* query = NULL;
+	if ( ! slv2_value_is_uri(predicate)) {
+		SLV2_ERROR("Predicate is not a URI\n");
+		return NULL;
+	}
 
-	/* Hack around broken RASQAL, full URI predicates don't work :/ */
-	query = slv2_strjoin(
-		"PREFIX slv2predicate: <", slv2_value_as_string(predicate), ">",
-		"SELECT DISTINCT ?value WHERE { \n"
-		"<", slv2_value_as_uri(p->plugin_uri), "> lv2:port ?port .\n"
-		"?port lv2:symbol \"", slv2_value_as_string(port->symbol), "\";\n\t",
-			" slv2predicate: ?value .\n"
-		"}\n", NULL);
+	librdf_node*   port_node = slv2_port_get_node(p, port);
+	librdf_stream* results   = slv2_plugin_find_statements(
+		p,
+		port_node,
+		librdf_new_node_from_uri(p->world->world, slv2_value_as_librdf_uri(predicate)),
+		NULL);
 
-	SLV2Values result = slv2_plugin_query_variable(p, query, 0);
-
-	free(query);
-
-	return result;
+	return slv2_values_from_stream_objects(p, results);
 }
 
 
 SLV2Values
 slv2_port_get_value_by_qname_i18n(SLV2Plugin  p,
                                   SLV2Port    port,
-                                  const char* property)
+                                  const char* predicate)
 {
-	assert(property);
-	SLV2Values results = NULL;
+	assert(predicate);
+	char* pred_uri = slv2_qname_expand(p, predicate);
+	if (!pred_uri) {
+		return NULL;
+	}
 
-	char* query = slv2_strjoin(
-			"SELECT DISTINCT ?value WHERE {\n"
-			"<", slv2_value_as_uri(p->plugin_uri), "> lv2:port ?port .\n"
-			"?port lv2:symbol \"", slv2_value_as_string(port->symbol), "\";\n\t",
-			property, " ?value .\n"
-			"FILTER(lang(?value) = \"", slv2_get_lang(),
-			"\") }", NULL);
+	librdf_node*   port_node = slv2_port_get_node(p, port);
+	librdf_stream* results   = slv2_plugin_find_statements(
+		p,
+		port_node,
+		librdf_new_node_from_uri_string(p->world->world, (const uint8_t*)pred_uri),
+		NULL);
 
-	results = slv2_plugin_query_variable(p, query, 0);
-
-	free(query);
-	return results;
+	return slv2_values_from_stream_i18n(p, results);
 }
 
 

@@ -485,45 +485,14 @@ slv2_plugin_get_value(SLV2Plugin p,
 }
 
 
-static char*
-slv2_qname_expand(SLV2Plugin p, const char* qname)
-{
-	char* colon = strchr(qname, ':');
-	if (!colon || colon == qname) {
-		SLV2_ERRORF("Invalid QName `%s'\n", qname);
-		return NULL;
-	}
-
-	const size_t prefix_len = colon - qname;
-	char*        prefix     = malloc(prefix_len + 1);
-	memcpy(prefix, qname, prefix_len);
-	prefix[prefix_len] = '\0';
-
-	char* namespace = librdf_hash_get(p->world->namespaces, prefix);
-	free(prefix);
-	if (!namespace) {
-		SLV2_ERRORF("QName `%s' has Undefined prefix\n", qname);
-		return NULL;
-	}
-
-	const size_t qname_len     = strlen(qname);
-	const size_t suffix_len    = qname_len - prefix_len - 1;
-	const size_t namespace_len = strlen(namespace);
-	char*        uri           = malloc(namespace_len + suffix_len + 1);
-	memcpy(uri, namespace, namespace_len);
-	memcpy(uri + namespace_len, colon + 1, qname_len - prefix_len - 1);
-	uri[namespace_len + suffix_len] = '\0';
-
-	free(namespace);
-	return uri;
-}
-
-
 SLV2Values
 slv2_plugin_get_value_by_qname(SLV2Plugin  p,
                                const char* predicate)
 {
-	char*      pred_uri   = slv2_qname_expand(p, predicate);
+	char* pred_uri = slv2_qname_expand(p, predicate);
+	if (!pred_uri) {
+		return NULL;
+	}
 	SLV2Value  pred_value = slv2_value_new_uri(p->world, pred_uri);
 	SLV2Values ret        = slv2_plugin_get_value(p, pred_value);
 	slv2_value_free(pred_value);
@@ -536,47 +505,23 @@ SLV2Values
 slv2_plugin_get_value_by_qname_i18n(SLV2Plugin  p,
                                     const char* predicate)
 {
-	char*        pred_uri  = slv2_qname_expand(p, predicate);
-	librdf_node* pred_node = librdf_new_node_from_uri_string(p->world->world,
-	                                                         (const uint8_t*)pred_uri);
-	SLV2Values     result  = slv2_values_new();
-	librdf_node*   nolang  = NULL;
+	char* pred_uri = slv2_qname_expand(p, predicate);
+	if (!pred_uri) {
+		return NULL;
+	}
+
+	librdf_node* pred_node = librdf_new_node_from_uri_string(
+		p->world->world, (const uint8_t*)pred_uri);
+
 	librdf_stream* results = slv2_plugin_find_statements(
 		p,
 		librdf_new_node_from_uri(p->world->world, p->plugin_uri->val.uri_val),
 		pred_node,
 		NULL);
-	for (; !librdf_stream_end(results); librdf_stream_next(results)) {
-		librdf_statement* s     = librdf_stream_get_object(results);
-		librdf_node*      value = librdf_statement_get_object(s);
-
-		const char* lang = librdf_node_get_literal_value_language(value);
-		if (lang) {
-			if (!strcmp(lang, slv2_get_lang())) {
-				raptor_sequence_push(
-					result, slv2_value_new_string(
-						p->world, (const char*)librdf_node_get_literal_value(value)));
-			}
-		} else {
-			nolang = value;
-		}
-		break;
-	}
-	librdf_free_stream(results);
 
 	free(pred_uri);
 
-	if (slv2_values_size(result) == 0) {
-		if (nolang) {
-			raptor_sequence_push(
-				result, slv2_value_new_string(
-					p->world, (const char*)librdf_node_get_literal_value(nolang)));
-		} else {
-			slv2_values_free(result);
-			result = NULL;
-		}
-	}
-	return result;
+	return slv2_values_from_stream_i18n(p, results);
 }
 
 
