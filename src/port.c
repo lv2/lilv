@@ -65,23 +65,50 @@ slv2_port_is_a(SLV2Plugin plugin,
 }
 
 
+static librdf_node*
+slv2_port_get_node(SLV2Plugin p,
+                   SLV2Port   port)
+{
+	librdf_stream* ports = slv2_plugin_find_statements(
+		p,
+		librdf_new_node_from_uri(p->world->world, p->plugin_uri->val.uri_val),
+		librdf_new_node_from_node(p->world->lv2_port_node),
+		NULL);
+	librdf_node* ret = NULL;
+	for (; !librdf_stream_end(ports); librdf_stream_next(ports)) {
+		librdf_statement* s    = librdf_stream_get_object(ports);
+		librdf_node*      node = librdf_statement_get_object(s);
+
+		SLV2Value symbol = slv2_plugin_get_unique(
+			p,
+			librdf_new_node_from_node(node),
+			librdf_new_node_from_node(p->world->lv2_symbol_node));
+
+		if (slv2_value_equals(symbol, slv2_port_get_symbol(p, port))) {
+			ret = librdf_new_node_from_node(node);
+			break;
+		}
+	}
+	assert(ret);
+	return ret;
+}
+
+
 bool
 slv2_port_has_property(SLV2Plugin p,
                        SLV2Port   port,
                        SLV2Value  property)
 {
 	assert(property);
-	char* query = slv2_strjoin(
-			"SELECT DISTINCT ?port WHERE {\n"
-			"<", slv2_value_as_uri(p->plugin_uri), "> lv2:port ?port ."
-			"?port lv2:symbol \"", slv2_value_as_string(port->symbol), "\";\n",
-			"      lv2:portProperty <", slv2_value_as_uri(property), "> .\n}", NULL);
+	librdf_node*   port_node = slv2_port_get_node(p, port);
+	librdf_stream* results   = slv2_plugin_find_statements(
+		p,
+		port_node,
+		librdf_new_node_from_uri_string(p->world->world, SLV2_NS_LV2 "portProperty"),
+		librdf_new_node_from_uri(p->world->world, slv2_value_as_librdf_uri(property)));
 
-	SLV2Values results = slv2_plugin_query_variable(p, query, 0);
-	const bool ret = (slv2_values_size(results) > 0);
-	slv2_values_free(results);
-	free(query);
-
+	const bool ret = !librdf_stream_end(results);
+	librdf_free_stream(results);
 	return ret;
 }
 
@@ -91,23 +118,18 @@ slv2_port_supports_event(SLV2Plugin p,
                          SLV2Port   port,
                          SLV2Value  event)
 {
+#define NS_EV (const uint8_t*)"http://lv2plug.in/ns/ext/event#"
+
 	assert(event);
+	librdf_node*   port_node = slv2_port_get_node(p, port);
+	librdf_stream* results   = slv2_plugin_find_statements(
+		p,
+		port_node,
+		librdf_new_node_from_uri_string(p->world->world, NS_EV "supportsEvent"),
+		librdf_new_node_from_uri(p->world->world, slv2_value_as_librdf_uri(event)));
 
-	char* query = slv2_strjoin(
-			"ASK WHERE {\n"
-			"<", slv2_value_as_uri(p->plugin_uri), "> lv2:port ?port ."
-			"?port lv2:symbol \"", slv2_value_as_string(port->symbol), "\";\n",
-			"      lv2ev:supportsEvent <", slv2_value_as_uri(event), "> .\n"
-			"}", NULL);
-
-	SLV2Results results = slv2_plugin_query_sparql(p, query);
-	assert(librdf_query_results_is_boolean(results->rdf_results));
-
-	const bool ret = librdf_query_results_get_boolean(results->rdf_results);
-
-	free(query);
-	slv2_results_free(results);
-
+	const bool ret = !librdf_stream_end(results);
+	librdf_free_stream(results);
 	return ret;
 }
 

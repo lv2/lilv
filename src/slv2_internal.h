@@ -89,6 +89,11 @@ librdf_stream* slv2_plugin_find_statements(SLV2Plugin   plugin,
                                            librdf_node* predicate,
                                            librdf_node* object);
 
+SLV2Value
+slv2_plugin_get_unique(SLV2Plugin   p,
+                       librdf_node* subject,
+                       librdf_node* predicate);
+
 /* ********* Plugins ********* */
 
 /** Create a new, empty plugin list.

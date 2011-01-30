@@ -137,7 +137,7 @@ slv2_plugin_query_node(SLV2Plugin p, librdf_node* subject, librdf_node* predicat
 }
 
 
-static SLV2Value
+SLV2Value
 slv2_plugin_get_unique(SLV2Plugin p, librdf_node* subject, librdf_node* predicate)
 {
 	SLV2Values values = slv2_plugin_query_node(p, subject, predicate);
