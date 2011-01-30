@@ -538,22 +538,6 @@ slv2_plugin_get_value_for_subject(SLV2Plugin p,
 }
 
 
-SLV2Values
-slv2_plugin_get_properties(SLV2Plugin p)
-{
-	// FIXME: APIBREAK: This predicate does not even exist.  Remove this function.
-	return slv2_plugin_get_value_by_qname(p, "lv2:pluginProperty");
-}
-
-
-SLV2Values
-slv2_plugin_get_hints(SLV2Plugin p)
-{
-	// FIXME: APIBREAK: This predicate does not even exist.  Remove this function.
-	return slv2_plugin_get_value_by_qname(p, "lv2:pluginHint");
-}
-
-
 uint32_t
 slv2_plugin_get_num_ports(SLV2Plugin p)
 {

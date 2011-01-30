@@ -2,8 +2,9 @@ slv2 (0.6.7) unstable; urgency=low
   * Parse all files with their own URI as a base URI (allowing proper
     reference to other things in the same bundle)
   * Support relative URIs returned from lv2_descriptor in libraries
+  * Remove nonsensical slv2_plugin_get_properties and slv2_plugin_get_hints
 
- -- David Robillard <d@drobilla.net>  ?
+ -- David Robillard <d@drobilla.net>  (UNRELEASED)
 
 slv2 (0.6.6) unstable; urgency=low
 
