@@ -576,7 +576,6 @@ INPUT                  = @SLV2_SRCDIR@/doc/mainpage.dox \
                          @SLV2_SRCDIR@/slv2/pluginui.h \
                          @SLV2_SRCDIR@/slv2/pluginuiinstance.h \
                          @SLV2_SRCDIR@/slv2/port.h \
-                         @SLV2_SRCDIR@/slv2/query.h \
                          @SLV2_SRCDIR@/slv2/scalepoint.h \
                          @SLV2_SRCDIR@/slv2/slv2.h \
                          @SLV2_SRCDIR@/slv2/types.h \

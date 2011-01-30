@@ -30,7 +30,6 @@ extern "C" {
 #include "slv2/pluginui.h"
 #include "slv2/pluginuiinstance.h"
 #include "slv2/port.h"
-#include "slv2/query.h"
 #include "slv2/scalepoint.h"
 #include "slv2/types.h"
 #include "slv2/util.h"

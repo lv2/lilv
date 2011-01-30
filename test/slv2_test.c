@@ -693,19 +693,6 @@ test_plugin()
 	SLV2UIs uis = slv2_plugin_get_uis(plug);
 	TEST_ASSERT(slv2_uis_size(uis) == 0);
 
-	SLV2Results results = slv2_plugin_query_sparql(plug,
-"SELECT ?name WHERE { <> doap:maintainer [ foaf:name ?name ] }");
-	TEST_ASSERT(!slv2_results_finished(results));
-	TEST_ASSERT(!strcmp(slv2_results_get_binding_name(results, 0), "name"));
-	SLV2Value val = slv2_results_get_binding_value(results, 0);
-	TEST_ASSERT(!strcmp(slv2_value_as_string(val), "David Robillard"));
-	slv2_value_free(val);
-	val = slv2_results_get_binding_value_by_name(results, "name");
-	TEST_ASSERT(!strcmp(slv2_value_as_string(val), "David Robillard"));
-	slv2_value_free(val);
-
-	slv2_results_free(results);
-
 	slv2_uis_free(uis);
 	slv2_values_free(thing_names);
 	slv2_value_free(thing_uri);
@@ -805,12 +792,6 @@ test_port()
 	TEST_ASSERT(slv2_values_size(homepages) == 1);
 	TEST_ASSERT(!strcmp(slv2_value_as_string(slv2_values_get_at(homepages, 0)),
 			"http://example.org/someplug"));
-
-	TEST_ASSERT(slv2_plugin_query_count(plug, "SELECT DISTINCT ?bin WHERE {\n"
-			   "<> lv2:binary ?bin . }") == 1);
-
-	TEST_ASSERT(slv2_plugin_query_count(plug, "SELECT DISTINCT ?parent WHERE {\n"
-			   "<> rdfs:subClassOf ?parent . }") == 0);
 
 	SLV2Value min, max, def;
 	slv2_port_get_range(plug, p, &def, &min, &max);

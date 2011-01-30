@@ -279,11 +279,6 @@ void           slv2_scale_point_free(SLV2ScalePoint point);
 
 /* ********* Query Results********* */
 
-struct _SLV2Results {
-	SLV2World             world;
-	librdf_query_results* rdf_results;
-};
-
 SLV2Values slv2_values_from_stream_i18n(SLV2Plugin     p,
                                         librdf_stream* stream);
 
