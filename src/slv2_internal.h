@@ -221,10 +221,10 @@ struct _SLV2UI {
 
 SLV2UIs slv2_uis_new();
 SLV2UI
-slv2_ui_new(SLV2World   world,
-            librdf_uri* uri,
-            librdf_uri* type_uri,
-            librdf_uri* binary_uri);
+slv2_ui_new(SLV2World world,
+            SLV2Value uri,
+            SLV2Value type_uri,
+            SLV2Value binary_uri);
 
 void slv2_ui_free(SLV2UI ui);
 

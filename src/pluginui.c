@@ -29,31 +29,29 @@
 
 /* private */
 SLV2UI
-slv2_ui_new(SLV2World   world,
-            librdf_uri* uri,
-            librdf_uri* type_uri,
-            librdf_uri* binary_uri)
+slv2_ui_new(SLV2World world,
+            SLV2Value uri,
+            SLV2Value type_uri,
+            SLV2Value binary_uri)
 {
 	assert(uri);
 	assert(type_uri);
 	assert(binary_uri);
 
 	struct _SLV2UI* ui = malloc(sizeof(struct _SLV2UI));
-	ui->world = world;
-	ui->uri = slv2_value_new_librdf_uri(world, uri);
-	ui->binary_uri = slv2_value_new_librdf_uri(world, binary_uri);
-
-	assert(ui->binary_uri);
+	ui->world      = world;
+	ui->uri        = uri;
+	ui->binary_uri = binary_uri;
 
 	// FIXME: kludge
-	char* bundle = strdup(slv2_value_as_string(ui->binary_uri));
+	char* bundle     = strdup(slv2_value_as_string(ui->binary_uri));
 	char* last_slash = strrchr(bundle, '/') + 1;
 	*last_slash = '\0';
 	ui->bundle_uri = slv2_value_new_uri(world, bundle);
 	free(bundle);
 
 	ui->classes = slv2_values_new();
-	raptor_sequence_push(ui->classes, slv2_value_new_librdf_uri(world, type_uri));
+	raptor_sequence_push(ui->classes, type_uri);
 
 	return ui;
 }

@@ -841,19 +841,19 @@ slv2_plugin_get_uis(SLV2Plugin p)
 		if (!librdf_node_is_resource(ui)
 		    || !slv2_value_is_uri(type)
 		    || !slv2_value_is_uri(binary)) {
+			slv2_value_free(binary);
+			slv2_value_free(type);
 			SLV2_ERROR("Corrupt UI\n");
 			continue;
 		}
 		
-		SLV2UI slv2_ui = slv2_ui_new(p->world,
-		                             librdf_node_get_uri(ui),
-		                             slv2_value_as_librdf_uri(type),
-		                             slv2_value_as_librdf_uri(binary));
+		SLV2UI slv2_ui = slv2_ui_new(
+			p->world,
+			slv2_value_new_librdf_uri(p->world, librdf_node_get_uri(ui)),
+			type,
+			binary);
 
 		raptor_sequence_push(result, slv2_ui);
-
-		slv2_value_free(binary);
-		slv2_value_free(type);
 	}
 	END_MATCH(uis);
 
