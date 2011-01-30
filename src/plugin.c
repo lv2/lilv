@@ -723,41 +723,69 @@ slv2_plugin_get_num_ports_of_class(SLV2Plugin p,
 bool
 slv2_plugin_has_latency(SLV2Plugin p)
 {
-    const char* const query =
-		"SELECT ?index WHERE {\n"
-		"	<>      lv2:port         ?port .\n"
-		"	?port   lv2:portProperty lv2:reportsLatency ;\n"
-		"	        lv2:index        ?index .\n"
-		"}\n";
+	librdf_stream* ports = slv2_plugin_find_statements(
+		p,
+		librdf_new_node_from_uri(p->world->world, p->plugin_uri->val.uri_val),
+		librdf_new_node_from_node(p->world->lv2_port_node),
+		NULL);
 
-	SLV2Values results = slv2_plugin_query_variable(p, query, 0);
-	const bool latent = (slv2_values_size(results) > 0);
-	slv2_values_free(results);
+	bool ret = false;
+	for (; !librdf_stream_end(ports); librdf_stream_next(ports)) {
+		librdf_statement* s    = librdf_stream_get_object(ports);
+		librdf_node*      port = librdf_statement_get_object(s);
 
-	return latent;
+		librdf_stream* reports_latency = slv2_plugin_find_statements(
+			p,
+			librdf_new_node_from_node(port),
+			librdf_new_node_from_node(p->world->lv2_portproperty_node),
+			librdf_new_node_from_uri_string(p->world->world,
+			                                SLV2_NS_LV2 "reportsLatency"));
+
+		if (!librdf_stream_end(reports_latency)) {
+			ret = true;
+			break;
+		}
+
+		librdf_free_stream(reports_latency);
+	}
+
+	return ret;
 }
 
 
 uint32_t
 slv2_plugin_get_latency_port_index(SLV2Plugin p)
 {
-    const char* const query =
-		"SELECT ?index WHERE {\n"
-		"	<>      lv2:port         ?port .\n"
-		"	?port   lv2:portProperty lv2:reportsLatency ;\n"
-		"	        lv2:index        ?index .\n"
-		"}\n";
+	librdf_stream* ports = slv2_plugin_find_statements(
+		p,
+		librdf_new_node_from_uri(p->world->world, p->plugin_uri->val.uri_val),
+		librdf_new_node_from_node(p->world->lv2_port_node),
+		NULL);
 
-	SLV2Values result = slv2_plugin_query_variable(p, query, 0);
+	uint32_t ret = 0;
+	for (; !librdf_stream_end(ports); librdf_stream_next(ports)) {
+		librdf_statement* s    = librdf_stream_get_object(ports);
+		librdf_node*      port = librdf_statement_get_object(s);
 
-	// FIXME: need a sane error handling strategy
-	assert(slv2_values_size(result) > 0);
-	SLV2Value val = slv2_values_get_at(result, 0);
-	assert(slv2_value_is_int(val));
+		librdf_stream* reports_latency = slv2_plugin_find_statements(
+			p,
+			librdf_new_node_from_node(port),
+			librdf_new_node_from_node(p->world->lv2_portproperty_node),
+			librdf_new_node_from_uri_string(p->world->world,
+			                                SLV2_NS_LV2 "reportsLatency"));
 
-	int ret = slv2_value_as_int(val);
-	slv2_values_free(result);
-	return ret;
+		if (!librdf_stream_end(reports_latency)) {
+			SLV2Value index = slv2_plugin_get_unique(
+				p,
+				librdf_new_node_from_node(port),
+				librdf_new_node_from_node(p->world->lv2_index_node));
+			ret = slv2_value_as_int(index);
+			slv2_value_free(index);
+			break;
+		}
+	}
+
+	return ret;  // FIXME: error handling
 }
 
 
