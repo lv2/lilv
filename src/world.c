@@ -680,7 +680,9 @@ slv2_world_load_all(SLV2World world)
 		}
 #endif
 
-		SLV2Plugin plugin = slv2_plugin_new(world, uri, bundle_uri);
+		SLV2Plugin plugin = slv2_plugin_new(
+			world, uri, slv2_value_new_librdf_uri(world, bundle_uri));
+
 		raptor_sequence_push(world->plugins, plugin);
 
 #ifdef SLV2_DYN_MANIFEST

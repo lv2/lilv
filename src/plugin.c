@@ -37,13 +37,13 @@
 /* private
  * ownership of uri is taken */
 SLV2Plugin
-slv2_plugin_new(SLV2World world, SLV2Value uri, librdf_uri* bundle_uri)
+slv2_plugin_new(SLV2World world, SLV2Value uri, SLV2Value bundle_uri)
 {
 	assert(bundle_uri);
 	struct _SLV2Plugin* plugin = malloc(sizeof(struct _SLV2Plugin));
 	plugin->world = world;
 	plugin->plugin_uri = uri;
-	plugin->bundle_uri = slv2_value_new_librdf_uri(world, bundle_uri);
+	plugin->bundle_uri = bundle_uri;
 	plugin->binary_uri = NULL;
 #ifdef SLV2_DYN_MANIFEST
 	plugin->dynman_uri = NULL;

@@ -89,7 +89,7 @@ struct _SLV2Plugin {
 	uint32_t             num_ports;
 };
 
-SLV2Plugin slv2_plugin_new(SLV2World world, SLV2Value uri, librdf_uri* bundle_uri);
+SLV2Plugin slv2_plugin_new(SLV2World world, SLV2Value uri, SLV2Value bundle_uri);
 void       slv2_plugin_load(SLV2Plugin p);
 void       slv2_plugin_load_if_necessary(SLV2Plugin p);
 void       slv2_plugin_load_ports_if_necessary(SLV2Plugin p);
