@@ -114,10 +114,10 @@ static SLV2Values
 slv2_plugin_query_node(SLV2Plugin p, librdf_node* subject, librdf_node* predicate)
 {
 	// <subject> <predicate> ?value
-	librdf_stream* results = slv2_plugin_find_statements(
+	SLV2Matches results = slv2_plugin_find_statements(
 		p, subject, predicate, NULL);
 
-	if (librdf_stream_end(results)) {
+	if (slv2_matches_end(results)) {
 		return NULL;
 	}
 
@@ -173,7 +173,7 @@ slv2_plugin_load_ports_if_necessary(SLV2Plugin p)
 		p->ports = malloc(sizeof(SLV2Port*));
 		p->ports[0] = NULL;
 
-		librdf_stream* ports = slv2_plugin_find_statements(
+		SLV2Matches ports = slv2_plugin_find_statements(
 			p,
 			librdf_new_node_from_uri(p->world->world, p->plugin_uri->val.uri_val),
 			librdf_new_node_from_node(p->world->lv2_port_node),
@@ -222,7 +222,7 @@ slv2_plugin_load_ports_if_necessary(SLV2Plugin p)
 				p->ports[this_index] = this_port;
 			}
 
-			librdf_stream* types = slv2_plugin_find_statements(
+			SLV2Matches types = slv2_plugin_find_statements(
 				p,
 				librdf_new_node_from_node(port),
 				librdf_new_node_from_node(p->world->rdf_a_node),
@@ -337,7 +337,7 @@ slv2_plugin_get_library_uri(SLV2Plugin p)
 	slv2_plugin_load_if_necessary(p);
 	if (!p->binary_uri) {
 		// <plugin> lv2:binary ?binary
-		librdf_stream* results = slv2_plugin_find_statements(
+		SLV2Matches results = slv2_plugin_find_statements(
 			p,
 			librdf_new_node_from_uri(p->world->world, p->plugin_uri->val.uri_val),
 			librdf_new_node_from_node(p->world->lv2_binary_node),
@@ -370,7 +370,7 @@ slv2_plugin_get_class(SLV2Plugin p)
 	slv2_plugin_load_if_necessary(p);
 	if (!p->plugin_class) {
 		// <plugin> a ?class
-		librdf_stream* results = slv2_plugin_find_statements(
+		SLV2Matches results = slv2_plugin_find_statements(
 			p,
 			librdf_new_node_from_uri(p->world->world, p->plugin_uri->val.uri_val),
 			librdf_new_node_from_node(p->world->rdf_a_node),
@@ -504,7 +504,7 @@ slv2_plugin_get_value_by_qname_i18n(SLV2Plugin  p,
 	librdf_node* pred_node = librdf_new_node_from_uri_string(
 		p->world->world, (const uint8_t*)pred_uri);
 
-	librdf_stream* results = slv2_plugin_find_statements(
+	SLV2Matches results = slv2_plugin_find_statements(
 		p,
 		librdf_new_node_from_uri(p->world->world, p->plugin_uri->val.uri_val),
 		pred_node,
@@ -613,7 +613,7 @@ slv2_plugin_get_num_ports_of_class(SLV2Plugin p,
 bool
 slv2_plugin_has_latency(SLV2Plugin p)
 {
-	librdf_stream* ports = slv2_plugin_find_statements(
+	SLV2Matches ports = slv2_plugin_find_statements(
 		p,
 		librdf_new_node_from_uri(p->world->world, p->plugin_uri->val.uri_val),
 		librdf_new_node_from_node(p->world->lv2_port_node),
@@ -621,15 +621,15 @@ slv2_plugin_has_latency(SLV2Plugin p)
 
 	bool ret = false;
 	FOREACH_MATCH(ports) {
-		librdf_node*   port            = MATCH_OBJECT(ports);
-		librdf_stream* reports_latency = slv2_plugin_find_statements(
+		librdf_node* port            = MATCH_OBJECT(ports);
+		SLV2Matches  reports_latency = slv2_plugin_find_statements(
 			p,
 			librdf_new_node_from_node(port),
 			librdf_new_node_from_node(p->world->lv2_portproperty_node),
 			librdf_new_node_from_uri_string(p->world->world,
 			                                SLV2_NS_LV2 "reportsLatency"));
 
-		if (!librdf_stream_end(reports_latency)) {
+		if (!slv2_matches_end(reports_latency)) {
 			ret = true;
 			break;
 		}
@@ -645,7 +645,7 @@ slv2_plugin_has_latency(SLV2Plugin p)
 uint32_t
 slv2_plugin_get_latency_port_index(SLV2Plugin p)
 {
-	librdf_stream* ports = slv2_plugin_find_statements(
+	SLV2Matches ports = slv2_plugin_find_statements(
 		p,
 		librdf_new_node_from_uri(p->world->world, p->plugin_uri->val.uri_val),
 		librdf_new_node_from_node(p->world->lv2_port_node),
@@ -653,15 +653,15 @@ slv2_plugin_get_latency_port_index(SLV2Plugin p)
 
 	uint32_t ret = 0;
 	FOREACH_MATCH(ports) {
-		librdf_node*   port            = MATCH_OBJECT(ports);
-		librdf_stream* reports_latency = slv2_plugin_find_statements(
+		librdf_node* port            = MATCH_OBJECT(ports);
+		SLV2Matches  reports_latency = slv2_plugin_find_statements(
 			p,
 			librdf_new_node_from_node(port),
 			librdf_new_node_from_node(p->world->lv2_portproperty_node),
 			librdf_new_node_from_uri_string(p->world->world,
 			                                SLV2_NS_LV2 "reportsLatency"));
 
-		if (!librdf_stream_end(reports_latency)) {
+		if (!slv2_matches_end(reports_latency)) {
 			SLV2Value index = slv2_plugin_get_unique(
 				p,
 				librdf_new_node_from_node(port),
@@ -758,19 +758,17 @@ slv2_plugin_get_port_by_symbol(SLV2Plugin p,
 static librdf_node*
 slv2_plugin_get_author(SLV2Plugin p)
 {
-
-	librdf_stream* maintainers = slv2_plugin_find_statements(
+	SLV2Matches maintainers = slv2_plugin_find_statements(
 		p,
 		librdf_new_node_from_uri(p->world->world, p->plugin_uri->val.uri_val),
 		librdf_new_node_from_uri_string(p->world->world, NS_DOAP "maintainer"),
 		NULL);
 
-	if (librdf_stream_end(maintainers)) {
+	if (slv2_matches_end(maintainers)) {
 		return NULL;
 	}
 
-	librdf_node* author = librdf_new_node_from_node(
-		librdf_statement_get_object(librdf_stream_get_object(maintainers)));
+	librdf_node* author = librdf_new_node_from_node(MATCH_OBJECT(maintainers));
 
 	librdf_free_stream(maintainers);
 	return author;
@@ -821,8 +819,8 @@ slv2_plugin_get_uis(SLV2Plugin p)
 {
 #define NS_UI (const uint8_t*)"http://lv2plug.in/ns/extensions/ui#"
 
-	SLV2UIs        result = slv2_uis_new();
-	librdf_stream* uis    = slv2_plugin_find_statements(
+	SLV2UIs     result = slv2_uis_new();
+	SLV2Matches uis    = slv2_plugin_find_statements(
 		p,
 		librdf_new_node_from_uri(p->world->world, p->plugin_uri->val.uri_val),
 		librdf_new_node_from_uri_string(p->world->world, NS_UI "ui"),

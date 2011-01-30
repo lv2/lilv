@@ -95,11 +95,6 @@ void       slv2_plugin_load_if_necessary(SLV2Plugin p);
 void       slv2_plugin_load_ports_if_necessary(SLV2Plugin p);
 void       slv2_plugin_free(SLV2Plugin plugin);
 
-librdf_stream* slv2_plugin_find_statements(SLV2Plugin   plugin,
-                                           librdf_node* subject,
-                                           librdf_node* predicate,
-                                           librdf_node* object);
-
 SLV2Value
 slv2_plugin_get_unique(SLV2Plugin   p,
                        librdf_node* subject,
@@ -279,8 +274,23 @@ void           slv2_scale_point_free(SLV2ScalePoint point);
 
 /* ********* Query Results********* */
 
-SLV2Values slv2_values_from_stream_i18n(SLV2Plugin     p,
-                                        librdf_stream* stream);
+typedef librdf_stream* SLV2Matches;
+
+SLV2Matches slv2_plugin_find_statements(SLV2Plugin   plugin,
+                                        librdf_node* subject,
+                                        librdf_node* predicate,
+                                        librdf_node* object);
+
+static inline bool slv2_matches_next(SLV2Matches matches) {
+	return librdf_stream_next(matches);
+}
+
+static inline bool slv2_matches_end(SLV2Matches matches) {
+	return librdf_stream_end(matches);
+}
+
+SLV2Values slv2_values_from_stream_i18n(SLV2Plugin  p,
+                                        SLV2Matches stream);
 
 
 /* ********* Utilities ********* */

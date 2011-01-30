@@ -29,7 +29,7 @@
 #include "slv2_internal.h"
 
 
-librdf_stream*
+SLV2Matches
 slv2_plugin_find_statements(SLV2Plugin   plugin,
                             librdf_node* subject,
                             librdf_node* predicate,
@@ -45,14 +45,13 @@ slv2_plugin_find_statements(SLV2Plugin   plugin,
 
 
 SLV2Values
-slv2_values_from_stream_i18n(SLV2Plugin     p,
-                             librdf_stream* stream)
+slv2_values_from_stream_i18n(SLV2Plugin  p,
+                             SLV2Matches stream)
 {
 	SLV2Values   values  = slv2_values_new();
 	librdf_node* nolang  = NULL;
-	for (; !librdf_stream_end(stream); librdf_stream_next(stream)) {
-		librdf_statement* s     = librdf_stream_get_object(stream);
-		librdf_node*      value = librdf_statement_get_object(s);
+	FOREACH_MATCH(stream) {
+		librdf_node* value = MATCH_OBJECT(stream);
 		if (librdf_node_is_literal(value)) {
 			const char* lang = librdf_node_get_literal_value_language(value);
 			if (lang) {
@@ -67,7 +66,7 @@ slv2_values_from_stream_i18n(SLV2Plugin     p,
 		}
 		break;
 	}
-	librdf_free_stream(stream);
+	END_MATCH(stream);
 
 	if (slv2_values_size(values) == 0) {
 		// No value with a matching language, use untranslated default
