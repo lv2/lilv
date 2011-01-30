@@ -43,6 +43,11 @@ extern "C" {
 #define SLV2_NS_XSD  (const uint8_t*)"http://www.w3.org/2001/XMLSchema#"
 #define SLV2_NS_RDF  (const uint8_t*)"http://www.w3.org/1999/02/22-rdf-syntax-ns#"
 
+#define FOREACH_MATCH(stream) \
+	for (; !librdf_stream_end(stream); librdf_stream_next(stream))
+
+#define END_MATCH(stream) librdf_free_stream(stream)
+
 /* ********* PORT ********* */
 
 /** Reference to a port on some plugin. */

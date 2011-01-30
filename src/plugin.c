@@ -123,7 +123,7 @@ slv2_plugin_query_node(SLV2Plugin p, librdf_node* subject, librdf_node* predicat
 	}
 
 	SLV2Values result = slv2_values_new();
-	for (; !librdf_stream_end(results); librdf_stream_next(results)) {
+	FOREACH_MATCH(results) {
 		librdf_statement* s          = librdf_stream_get_object(results);
 		librdf_node*      value_node = librdf_statement_get_object(s);
 
@@ -131,8 +131,8 @@ slv2_plugin_query_node(SLV2Plugin p, librdf_node* subject, librdf_node* predicat
 		if (value)
 			raptor_sequence_push(result, value);
 	}
-	
-	librdf_free_stream(results);
+	END_MATCH(results);
+
 	return result;
 }
 
@@ -182,7 +182,7 @@ slv2_plugin_load_ports_if_necessary(SLV2Plugin p)
 			librdf_new_node_from_node(p->world->lv2_port_node),
 			NULL);
 
-		for (; !librdf_stream_end(ports); librdf_stream_next(ports)) {
+		FOREACH_MATCH(ports) {
 			librdf_statement* s    = librdf_stream_get_object(ports);
 			librdf_node*      port = librdf_statement_get_object(s);
 
@@ -232,7 +232,7 @@ slv2_plugin_load_ports_if_necessary(SLV2Plugin p)
 				librdf_new_node_from_node(port),
 				librdf_new_node_from_node(p->world->rdf_a_node),
 				NULL);
-			for (; !librdf_stream_end(types); librdf_stream_next(types)) {
+			FOREACH_MATCH(types) {
 				librdf_node* type = librdf_statement_get_object(
 					librdf_stream_get_object(types));
 				if (librdf_node_is_resource(type)) {
@@ -243,7 +243,7 @@ slv2_plugin_load_ports_if_necessary(SLV2Plugin p)
 					SLV2_WARN("port has non-URI rdf:type\n");
 				}
 			}
-			librdf_free_stream(types);
+			END_MATCH(types);
 
 		error:
 			slv2_value_free(symbol);
@@ -258,7 +258,7 @@ slv2_plugin_load_ports_if_necessary(SLV2Plugin p)
 				break; // Invalid plugin
 			}
 		}
-		librdf_free_stream(ports);
+		END_MATCH(ports);
 	}
 }
 
@@ -348,7 +348,7 @@ slv2_plugin_get_library_uri(SLV2Plugin p)
 			librdf_new_node_from_uri(p->world->world, p->plugin_uri->val.uri_val),
 			librdf_new_node_from_node(p->world->lv2_binary_node),
 			NULL);
-		for (; !librdf_stream_end(results); librdf_stream_next(results)) {
+		FOREACH_MATCH(results) {
 			librdf_statement* s           = librdf_stream_get_object(results);
 			librdf_node*      binary_node = librdf_statement_get_object(s);
 			librdf_uri*       binary_uri  = librdf_node_get_uri(binary_node);
@@ -358,7 +358,7 @@ slv2_plugin_get_library_uri(SLV2Plugin p)
 				break;
 			}
 		}
-		librdf_free_stream(results);
+		END_MATCH(results);
 	}
 	return p->binary_uri;
 }
@@ -382,7 +382,7 @@ slv2_plugin_get_class(SLV2Plugin p)
 			librdf_new_node_from_uri(p->world->world, p->plugin_uri->val.uri_val),
 			librdf_new_node_from_node(p->world->rdf_a_node),
 			NULL);
-		for (; !librdf_stream_end(results); librdf_stream_next(results)) {
+		FOREACH_MATCH(results) {
 			librdf_statement* s          = librdf_stream_get_object(results);
 			librdf_node*      class_node = librdf_new_node_from_node(librdf_statement_get_object(s));
 			librdf_uri*       class_uri  = librdf_node_get_uri(class_node);
@@ -409,11 +409,10 @@ slv2_plugin_get_class(SLV2Plugin p)
 
 			slv2_value_free(class);
 		}
+		END_MATCH(results);
 
 		if (p->plugin_class == NULL)
 			p->plugin_class = p->world->lv2_plugin_class;
-
-		librdf_free_stream(results);
 	}
 	return p->plugin_class;
 }
@@ -639,7 +638,7 @@ slv2_plugin_has_latency(SLV2Plugin p)
 		NULL);
 
 	bool ret = false;
-	for (; !librdf_stream_end(ports); librdf_stream_next(ports)) {
+	FOREACH_MATCH(ports) {
 		librdf_statement* s    = librdf_stream_get_object(ports);
 		librdf_node*      port = librdf_statement_get_object(s);
 
@@ -657,6 +656,7 @@ slv2_plugin_has_latency(SLV2Plugin p)
 
 		librdf_free_stream(reports_latency);
 	}
+	END_MATCH(ports);
 
 	return ret;
 }
@@ -672,7 +672,7 @@ slv2_plugin_get_latency_port_index(SLV2Plugin p)
 		NULL);
 
 	uint32_t ret = 0;
-	for (; !librdf_stream_end(ports); librdf_stream_next(ports)) {
+	FOREACH_MATCH(ports) {
 		librdf_statement* s    = librdf_stream_get_object(ports);
 		librdf_node*      port = librdf_statement_get_object(s);
 
@@ -693,6 +693,7 @@ slv2_plugin_get_latency_port_index(SLV2Plugin p)
 			break;
 		}
 	}
+	END_MATCH(ports);
 
 	return ret;  // FIXME: error handling
 }
@@ -848,7 +849,7 @@ slv2_plugin_get_uis(SLV2Plugin p)
 		librdf_new_node_from_uri(p->world->world, p->plugin_uri->val.uri_val),
 		librdf_new_node_from_uri_string(p->world->world, NS_UI "ui"),
 		NULL);
-	for (; !librdf_stream_end(uis); librdf_stream_next(uis)) {
+	FOREACH_MATCH(uis) {
 		librdf_statement* s  = librdf_stream_get_object(uis);
 		librdf_node*      ui = librdf_statement_get_object(s);
 
@@ -879,7 +880,7 @@ slv2_plugin_get_uis(SLV2Plugin p)
 		slv2_value_free(binary);
 		slv2_value_free(type);
 	}
-	librdf_free_stream(uis);
+	END_MATCH(uis);
 
 	if (slv2_uis_size(result) > 0) {
 		return result;

@@ -75,7 +75,7 @@ slv2_port_get_node(SLV2Plugin p,
 		librdf_new_node_from_node(p->world->lv2_port_node),
 		NULL);
 	librdf_node* ret = NULL;
-	for (; !librdf_stream_end(ports); librdf_stream_next(ports)) {
+	FOREACH_MATCH(ports) {
 		librdf_statement* s    = librdf_stream_get_object(ports);
 		librdf_node*      node = librdf_statement_get_object(s);
 
@@ -89,6 +89,7 @@ slv2_port_get_node(SLV2Plugin p,
 			break;
 		}
 	}
+	END_MATCH(ports);
 	assert(ret);
 	return ret;
 }
@@ -142,7 +143,7 @@ slv2_values_from_stream_objects(SLV2Plugin p, librdf_stream* stream)
 	}
 
 	SLV2Values values = slv2_values_new();
-	for (; !librdf_stream_end(stream); librdf_stream_next(stream)) {
+	FOREACH_MATCH(stream) {
 		raptor_sequence_push(
 			values,
 			slv2_value_new_librdf_node(
@@ -150,7 +151,7 @@ slv2_values_from_stream_objects(SLV2Plugin p, librdf_stream* stream)
 				librdf_statement_get_object(
 					librdf_stream_get_object(stream))));
 	}
-	librdf_free_stream(stream);
+	END_MATCH(stream);
 	return values;
 }
 
@@ -320,7 +321,7 @@ slv2_port_get_scale_points(SLV2Plugin p,
 	if (!librdf_stream_end(points))
 		ret = slv2_scale_points_new();
 
-	for (; !librdf_stream_end(points); librdf_stream_next(points)) {
+	FOREACH_MATCH(points) {
 		librdf_statement* s     = librdf_stream_get_object(points);
 		librdf_node*      point = librdf_statement_get_object(s);
 
@@ -338,7 +339,7 @@ slv2_port_get_scale_points(SLV2Plugin p,
 			raptor_sequence_push(ret, slv2_scale_point_new(value, label));
 		}
 	}
-	librdf_free_stream(points);
+	END_MATCH(points);
 
 	assert(!ret || slv2_values_size(ret) > 0);
 	return ret;

@@ -262,7 +262,7 @@ slv2_world_load_bundle(SLV2World world, SLV2Value bundle_uri)
 		NULL,
 		librdf_new_node_from_node(world->rdf_a_node),
 		librdf_new_node_from_node(world->dyn_manifest_node));
-	for (; !librdf_stream_end(dmanifests); librdf_stream_next(dmanifests)) {
+	FOREACH_MATCH(dmanifests) {
 		librdf_statement* s         = librdf_stream_get_object(dmanifests);
 		librdf_node*      dmanifest = librdf_statement_get_subject(s);
 
@@ -322,7 +322,7 @@ slv2_world_load_bundle(SLV2World world, SLV2Value bundle_uri)
 			NULL,
 			librdf_new_node_from_node(world->rdf_a_node),
 			librdf_new_node_from_node(world->lv2_plugin_node));
-		for (; !librdf_stream_end(dyn_plugins); librdf_stream_next(dyn_plugins)) {
+		FOREACH_MATCH(dyn_plugins) {
 			librdf_statement* s      = librdf_stream_get_object(dyn_plugins);
 			librdf_node*      plugin = librdf_statement_get_subject(s);
 
@@ -332,7 +332,7 @@ slv2_world_load_bundle(SLV2World world, SLV2Value bundle_uri)
 				librdf_new_node_from_uri_string(world->world, SLV2_NS_RDFS "seeAlso"),
 				librdf_new_node_from_node(binary_node));
 		}
-		librdf_free_stream(dyn_plugins);
+		END_MATCH(dyn_plugins);
 
 		// Merge dynamic model into main manifest model
 		librdf_stream* dyn_manifest_stream = librdf_model_as_stream(dyn_manifest_model);
@@ -341,7 +341,7 @@ slv2_world_load_bundle(SLV2World world, SLV2Value bundle_uri)
 		librdf_free_model(dyn_manifest_model);
 		librdf_free_storage(dyn_manifest_storage);
 	}
-	librdf_free_stream(dmanifests);
+	END_MATCH(dmanifests);
 #endif // SLV2_DYN_MANIFEST
 
 	// ?plugin a lv2:Plugin
@@ -350,7 +350,7 @@ slv2_world_load_bundle(SLV2World world, SLV2Value bundle_uri)
 		NULL,
 		librdf_new_node_from_node(world->rdf_a_node),
 		librdf_new_node_from_node(world->lv2_plugin_node));
-	for (; !librdf_stream_end(results); librdf_stream_next(results)) {
+	FOREACH_MATCH(results) {
 		librdf_statement* s      = librdf_stream_get_object(results);
 		librdf_node*      plugin = librdf_statement_get_subject(s);
 
@@ -368,7 +368,7 @@ slv2_world_load_bundle(SLV2World world, SLV2Value bundle_uri)
 			librdf_new_node_from_uri_string(world->world, SLV2_NS_SLV2 "bundleURI"),
 			librdf_new_node_from_uri(world->world, bundle_uri->val.uri_val));
 	}
-	librdf_free_stream(results);
+	END_MATCH(results);
 
 	// ?specification a lv2:Specification
 	results = slv2_world_find_statements(
@@ -376,7 +376,7 @@ slv2_world_load_bundle(SLV2World world, SLV2Value bundle_uri)
 		NULL,
 		librdf_new_node_from_node(world->rdf_a_node),
 		librdf_new_node_from_node(world->lv2_specification_node));
-	for (; !librdf_stream_end(results); librdf_stream_next(results)) {
+	FOREACH_MATCH(results) {
 		librdf_statement* s    = librdf_stream_get_object(results);
 		librdf_node*      spec = librdf_statement_get_subject(s);
 
@@ -394,7 +394,7 @@ slv2_world_load_bundle(SLV2World world, SLV2Value bundle_uri)
 			librdf_new_node_from_uri_string(world->world, SLV2_NS_SLV2 "bundleURI"),
 			librdf_new_node_from_uri(world->world, bundle_uri->val.uri_val));
 	}
-	librdf_free_stream(results);
+	END_MATCH(results);
 
 	// Join the temporary model to the main model
 	librdf_stream* manifest_stream = librdf_model_as_stream(manifest_model);
@@ -496,7 +496,7 @@ slv2_world_load_specifications(SLV2World world)
 		NULL,
 		librdf_new_node_from_node(world->rdf_a_node),
 		librdf_new_node_from_node(world->lv2_specification_node));
-	for (; !librdf_stream_end(specs); librdf_stream_next(specs)) {
+	FOREACH_MATCH(specs) {
 		librdf_statement* s         = librdf_stream_get_object(specs);
 		librdf_node*      spec_node = librdf_statement_get_subject(s);
 
@@ -505,16 +505,16 @@ slv2_world_load_specifications(SLV2World world)
 			librdf_new_node_from_node(spec_node),
 			librdf_new_node_from_node(world->rdfs_seealso_node),
 			NULL);
-		for (; !librdf_stream_end(files); librdf_stream_next(files)) {
+		FOREACH_MATCH(files) {
 			librdf_statement* t         = librdf_stream_get_object(files);
 			librdf_node*      file_node = librdf_statement_get_object(t);
 			librdf_uri*       file_uri  = librdf_node_get_uri(file_node);
 
 			slv2_world_load_file(world, file_uri);
 		}
-		librdf_free_stream(files);
+		END_MATCH(files);
 	}
-	librdf_free_stream(specs);
+	END_MATCH(specs);
 }
 
 
@@ -532,7 +532,7 @@ slv2_world_load_plugin_classes(SLV2World world)
 		NULL,
 		librdf_new_node_from_node(world->rdf_a_node),
 		librdf_new_node_from_node(world->rdfs_class_node));
-	for (; !librdf_stream_end(classes); librdf_stream_next(classes)) {
+	FOREACH_MATCH(classes) {
 		librdf_statement* s          = librdf_stream_get_object(classes);
 		librdf_node*      class_node = librdf_statement_get_subject(s);
 		librdf_uri*       class_uri  = librdf_node_get_uri(class_node);
@@ -591,7 +591,7 @@ slv2_world_load_plugin_classes(SLV2World world)
 		librdf_free_node(parent_node);
 		librdf_free_node(label_node);
 	}
-	librdf_free_stream(classes);
+	END_MATCH(classes);
 }
 
 
@@ -651,7 +651,7 @@ slv2_world_load_all(SLV2World world)
 		NULL,
 		librdf_new_node_from_node(world->rdf_a_node),
 		librdf_new_node_from_node(world->lv2_plugin_node));
-	for (; !librdf_stream_end(plugins); librdf_stream_next(plugins)) {
+	FOREACH_MATCH(plugins) {
 		librdf_statement* s           = librdf_stream_get_object(plugins);
 		librdf_node*      plugin_node = librdf_statement_get_subject(s);
 		librdf_uri*       plugin_uri  = librdf_node_get_uri(plugin_node);
@@ -707,7 +707,7 @@ slv2_world_load_all(SLV2World world)
 				librdf_new_node_from_node(plugin_node),
 				librdf_new_node_from_node(world->slv2_dmanifest_node),
 				NULL);
-			for (; !librdf_stream_end(dmanifests); librdf_stream_next(dmanifests)) {
+			FOREACH_MATCH(dmanifests) {
 				librdf_statement* s        = librdf_stream_get_object(dmanifests);
 				librdf_node*      lib_node = librdf_statement_get_object(s);
 				librdf_uri*       lib_uri  = librdf_node_get_uri(lib_node);
@@ -718,7 +718,7 @@ slv2_world_load_all(SLV2World world)
 					plugin->dynman_uri = slv2_value_new_librdf_uri(world, lib_uri);
 				}
 			}
-			librdf_free_stream(dmanifests);
+			END_MATCH(dmanifests);
 		}
 #endif
 		librdf_stream* files = slv2_world_find_statements(
@@ -726,7 +726,7 @@ slv2_world_load_all(SLV2World world)
 			librdf_new_node_from_node(plugin_node),
 			librdf_new_node_from_node(world->rdfs_seealso_node),
 			NULL);
-		for (; !librdf_stream_end(files); librdf_stream_next(files)) {
+		FOREACH_MATCH(files) {
 			librdf_statement* s         = librdf_stream_get_object(files);
 			librdf_node*      file_node = librdf_statement_get_object(s);
 			librdf_uri*       file_uri  = librdf_node_get_uri(file_node);
@@ -734,11 +734,11 @@ slv2_world_load_all(SLV2World world)
 			raptor_sequence_push(plugin->data_uris,
 			                     slv2_value_new_librdf_uri(world, file_uri));
 		}
-		librdf_free_stream(files);
+		END_MATCH(files);
 		
 		librdf_free_node(bundle_node);
 	}
-	librdf_free_stream(plugins);
+	END_MATCH(plugins);
 }
 
 
