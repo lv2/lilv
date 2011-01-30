@@ -63,6 +63,9 @@ slv2_world_new_internal(SLV2World world)
 	world->lv2_specification_node = NEW_URI(SLV2_NS_LV2  "Specification");
 	world->lv2_plugin_node        = NEW_URI(SLV2_NS_LV2  "Plugin");
 	world->lv2_binary_node        = NEW_URI(SLV2_NS_LV2  "binary");
+	world->lv2_default_node       = NEW_URI(SLV2_NS_LV2  "default");
+	world->lv2_minimum_node       = NEW_URI(SLV2_NS_LV2  "minimum");
+	world->lv2_maximum_node       = NEW_URI(SLV2_NS_LV2  "maximum");
 	world->lv2_port_node          = NEW_URI(SLV2_NS_LV2  "port");
 	world->lv2_portproperty_node  = NEW_URI(SLV2_NS_LV2  "portProperty");
 	world->lv2_index_node         = NEW_URI(SLV2_NS_LV2  "index");
@@ -162,6 +165,9 @@ slv2_world_free(SLV2World world)
 	librdf_free_node(world->lv2_specification_node);
 	librdf_free_node(world->lv2_plugin_node);
 	librdf_free_node(world->lv2_binary_node);
+	librdf_free_node(world->lv2_default_node);
+	librdf_free_node(world->lv2_minimum_node);
+	librdf_free_node(world->lv2_maximum_node);
 	librdf_free_node(world->lv2_port_node);
 	librdf_free_node(world->lv2_portproperty_node);
 	librdf_free_node(world->lv2_index_node);

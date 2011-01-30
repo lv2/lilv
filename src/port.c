@@ -177,6 +177,24 @@ slv2_port_get_value_by_qname(SLV2Plugin  p,
 }
 
 
+static SLV2Values
+slv2_port_get_value_by_node(SLV2Plugin   p,
+                            SLV2Port     port,
+                            librdf_node* predicate)
+{
+	assert(librdf_node_is_resource(predicate));
+
+	librdf_node*   port_node = slv2_port_get_node(p, port);
+	librdf_stream* results   = slv2_plugin_find_statements(
+		p,
+		port_node,
+		predicate,
+		NULL);
+
+	return slv2_values_from_stream_objects(p, results);
+}
+
+
 SLV2Values
 slv2_port_get_value(SLV2Plugin p,
                     SLV2Port   port,
@@ -187,14 +205,10 @@ slv2_port_get_value(SLV2Plugin p,
 		return NULL;
 	}
 
-	librdf_node*   port_node = slv2_port_get_node(p, port);
-	librdf_stream* results   = slv2_plugin_find_statements(
-		p,
-		port_node,
-		librdf_new_node_from_uri(p->world->world, slv2_value_as_librdf_uri(predicate)),
-		NULL);
-
-	return slv2_values_from_stream_objects(p, results);
+	return slv2_port_get_value_by_node(
+		p, port, 
+		librdf_new_node_from_uri(p->world->world,
+		                         slv2_value_as_librdf_uri(predicate)));
 }
 
 
@@ -264,45 +278,30 @@ slv2_port_get_range(SLV2Plugin p,
                     SLV2Value* min,
                     SLV2Value* max)
 {
-	if (def)
-		*def = NULL;
-	if (min)
-		*min = NULL;
-	if (max)
-		*max = NULL;
-
-	char* query = slv2_strjoin(
-			"SELECT DISTINCT ?def ?min ?max WHERE {\n"
-			"<", slv2_value_as_uri(p->plugin_uri), "> lv2:port ?port .\n"
-			"?port lv2:symbol \"", slv2_value_as_string(port->symbol), "\".\n",
-			"OPTIONAL { ?port lv2:default ?def }\n",
-			"OPTIONAL { ?port lv2:minimum ?min }\n",
-			"OPTIONAL { ?port lv2:maximum ?max }\n",
-			"\n}", NULL);
-
-	SLV2Results results = slv2_plugin_query_sparql(p, query);
-
-    while (!librdf_query_results_finished(results->rdf_results)) {
-		librdf_node* def_node = librdf_query_results_get_binding_value(results->rdf_results, 0);
-		librdf_node* min_node = librdf_query_results_get_binding_value(results->rdf_results, 1);
-		librdf_node* max_node = librdf_query_results_get_binding_value(results->rdf_results, 2);
-
-		if (def && def_node && !*def)
-			*def = slv2_value_new_librdf_node(p->world, def_node);
-		if (min && min_node && !*min)
-			*min = slv2_value_new_librdf_node(p->world, min_node);
-		if (max && max_node && !*max)
-			*max = slv2_value_new_librdf_node(p->world, max_node);
-
-		if ((!def || *def) && (!min || *min) && (!max || *max))
-			break;
-
-		librdf_query_results_next(results->rdf_results);
+	if (def) {
+		SLV2Values defaults = slv2_port_get_value_by_node(
+			p, port, p->world->lv2_default_node);
+		*def = defaults
+			? slv2_value_duplicate(slv2_values_get_at(defaults, 0))
+			: NULL;
+		slv2_values_free(defaults);
 	}
-
-	slv2_results_free(results);
-
-	free(query);
+	if (min) {
+		SLV2Values minimums = slv2_port_get_value_by_node(
+			p, port, p->world->lv2_minimum_node);
+		*min = minimums
+			? slv2_value_duplicate(slv2_values_get_at(minimums, 0))
+			: NULL;
+		slv2_values_free(minimums);
+	}
+	if (max) {
+		SLV2Values maximums = slv2_port_get_value_by_node(
+			p, port, p->world->lv2_maximum_node);
+		*max = maximums
+			? slv2_value_duplicate(slv2_values_get_at(maximums, 0))
+			: NULL;
+		slv2_values_free(maximums);
+	}
 }
 
 
