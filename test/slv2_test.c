@@ -778,7 +778,7 @@ test_port()
 	TEST_ASSERT(slv2_port_is_a(plug, p, in_class));
 	TEST_ASSERT(!slv2_port_is_a(plug, p, audio_class));
 
-	TEST_ASSERT(slv2_values_size(slv2_port_get_properties(plug, p)) == 0);
+	TEST_ASSERT(slv2_values_size(slv2_port_get_properties(plug, p)) == 1);
 
 	TEST_ASSERT(!strcmp(slv2_value_as_string(slv2_port_get_symbol(plug, p)), "foo"));
 	SLV2Value name = slv2_port_get_name(plug, p);
