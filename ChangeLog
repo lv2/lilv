@@ -10,7 +10,7 @@ slv2 (0.6.6) unstable; urgency=low
   * Add manual pages for utilities
   * Reduce plugin load overhead (on-demand querying with finer granularity)
   * Fix compilation on Mac OS X
- 
+
  -- David Robillard <d@drobilla.net>  Mon, 25 May 2009 23:30:49 -0400
 
 slv2 (0.6.4) unstable; urgency=low
@@ -19,7 +19,7 @@ slv2 (0.6.4) unstable; urgency=low
   * Combine similar headers (reduce code duplication)
   * Upgrade to waf 1.5.6
   * Add man pages for utilities
- 
+
  -- David Robillard <d@drobilla.net>  Mon, 04 May 2009 18:11:06 -0400
 
 slv2 (0.6.3) unstable; urgency=low
@@ -28,14 +28,14 @@ slv2 (0.6.3) unstable; urgency=low
   * Fix slv2_plugin_get_value_for_subject
   * Add test suite and coverage instrumentation
   * Upgrade to waf 1.5.1
- 
+
  -- David Robillard <d@drobilla.net>  Sat, 13 Dec 2008 14:13:43 -0500
 
 slv2 (0.6.2) unstable; urgency=high
 
   * Fix bug introduced with I18N in 0.6.1 which broke feature detection.
   * Add waf configure --no-jack option to avoid building Jack clients.
- 
+
  -- David Robillard <d@drobilla.net>  Sun, 30 Nov 2008 19:40:27 -0500
 
 slv2 (0.6.1) unstable; urgency=low
@@ -44,7 +44,7 @@ slv2 (0.6.1) unstable; urgency=low
   * Add slv2_port_get_value (analogous to slv2_plugin_get_value).
   * Add slv2_instance_get_extension_data.
   * Fix slv2_plugin_get_supported_features (previously non-functional).
- 
+
  -- David Robillard <d@drobilla.net>  Sat, 08 Nov 2008 14:27:10 -0500
 
 slv2 (0.6.0) unstable; urgency=low
@@ -56,14 +56,14 @@ slv2 (0.6.0) unstable; urgency=low
   * Add support for scale points
   * Use new Redland "trees" store for dramatic performance improvements
   * *** API BREAK ***
- 
+
  -- David Robillard <d@drobilla.net>  Sun, 06 Jul 2008 13:11:15 -0400
 
 slv2 (0.5.0) unstable; urgency=low
 
   * Update LV2 UI header (API break)
   * *** API BREAK ***
- 
+
  -- David Robillard <d@drobilla.net>  Thu, 17 Jan 2008 18:34:29 -0500
 
 slv2 (0.4.5) unstable; urgency=low
@@ -71,7 +71,7 @@ slv2 (0.4.5) unstable; urgency=low
   * Fix redland librdf_free_query_results warning
   * Use "memory" store instead of "hashes" store for plugin RDF data,
     resulting in extreme speedups in some cases.
- 
+
  -- David Robillard <d@drobilla.net>  Tue, 15 Jan 2008 19:22:21 -0500
 
 slv2 (0.4.4) unstable; urgency=low
@@ -80,40 +80,40 @@ slv2 (0.4.4) unstable; urgency=low
   * Add slv2_plugin_has_feature
   * Add plugin template and port signature interface for much faster plugin
     discovery with port input/output/type inspection.
- 
+
  -- David Robillard <d@drobilla.net>  Tue, 15 Jan 2008 10:43:00 -0500
- 
+
 slv2 (0.4.3) unstable; urgency=low
 
   * Fix lv2_inspect command line handling bug (always prints help)
   * Fix case where multiple plugins are described in the same file
     (avoid port symbol clashing).
- 
+
  -- David Robillard <d@drobilla.net>  Thu, 10 Jan 2008 20:03:19 -0500
- 
+
 slv2 (0.4.2) unstable; urgency=low
 
   * Update for LV2 specification release 1
- 
+
  -- David Robillard <d@drobilla.net>  Tue, 08 Jan 2008 20:16:56 -0500
- 
+
 slv2 (0.4.1) unstable; urgency=low
 
   * Debian packaging (no functional changes)
- 
+
  -- David Robillard <d@drobilla.net>  Sun, 6 Jan 2008 18:39:57 -0500
- 
+
 slv2 (0.4.0) unstable; urgency=low
 
   * Update for most recent LV2 GUI specification
   * Fix plugin detection bugs
- 
+
  -- David Robillard <d@drobilla.net>  Sun, 6 Jan 2008 17:11:18 -0500
 
 slv2 (0.3.2) unstable; urgency=low
 
   * Build man pages
- 
+
  -- David Robillard <d@drobilla.net>  Wed, 30 Nov 2007 18:19:00 -0500
 
 slv2 (0.3.1) unstable; urgency=low
