@@ -76,10 +76,8 @@ slv2_port_get_node(SLV2Plugin p,
 		NULL);
 	librdf_node* ret = NULL;
 	FOREACH_MATCH(ports) {
-		librdf_statement* s    = librdf_stream_get_object(ports);
-		librdf_node*      node = librdf_statement_get_object(s);
-
-		SLV2Value symbol = slv2_plugin_get_unique(
+		librdf_node* node   = MATCH_OBJECT(ports);
+		SLV2Value    symbol = slv2_plugin_get_unique(
 			p,
 			librdf_new_node_from_node(node),
 			librdf_new_node_from_node(p->world->lv2_symbol_node));
@@ -148,8 +146,7 @@ slv2_values_from_stream_objects(SLV2Plugin p, librdf_stream* stream)
 			values,
 			slv2_value_new_librdf_node(
 				p->world,
-				librdf_statement_get_object(
-					librdf_stream_get_object(stream))));
+				MATCH_OBJECT(stream)));
 	}
 	END_MATCH(stream);
 	return values;
@@ -322,8 +319,7 @@ slv2_port_get_scale_points(SLV2Plugin p,
 		ret = slv2_scale_points_new();
 
 	FOREACH_MATCH(points) {
-		librdf_statement* s     = librdf_stream_get_object(points);
-		librdf_node*      point = librdf_statement_get_object(s);
+		librdf_node* point = MATCH_OBJECT(points);
 
 		SLV2Value value = slv2_plugin_get_unique(
 			p,

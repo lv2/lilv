@@ -46,6 +46,12 @@ extern "C" {
 #define FOREACH_MATCH(stream) \
 	for (; !librdf_stream_end(stream); librdf_stream_next(stream))
 
+#define MATCH_SUBJECT(stream)	  \
+	librdf_statement_get_subject(librdf_stream_get_object(stream))
+
+#define MATCH_OBJECT(stream) \
+	librdf_statement_get_object(librdf_stream_get_object(stream))
+
 #define END_MATCH(stream) librdf_free_stream(stream)
 
 /* ********* PORT ********* */
