@@ -137,7 +137,10 @@ slv2_plugin_query_node(SLV2Plugin p, librdf_node* subject, librdf_node* predicat
 SLV2Value
 slv2_plugin_get_unique(SLV2Plugin p, librdf_node* subject, librdf_node* predicate)
 {
-	SLV2Values values = slv2_plugin_query_node(p, subject, predicate);
+	SLV2Values values = slv2_plugin_query_node(
+		p,
+		librdf_new_node_from_node(subject),
+		librdf_new_node_from_node(predicate));
 	if (!values || slv2_values_size(values) != 1) {
 		SLV2_ERRORF("Port does not have exactly one `%s' property\n",
 		            librdf_uri_as_string(librdf_node_get_uri(predicate)));
@@ -182,9 +185,7 @@ slv2_plugin_load_ports_if_necessary(SLV2Plugin p)
 		FOREACH_MATCH(ports) {
 			librdf_node* port   = MATCH_OBJECT(ports);
 			SLV2Value    symbol = slv2_plugin_get_unique(
-				p,
-				librdf_new_node_from_node(port),
-				librdf_new_node_from_node(p->world->lv2_symbol_node));
+				p, port, p->world->lv2_symbol_node);
 
 			if (!slv2_value_is_string(symbol)) {
 				SLV2_ERROR("port has a non-string symbol\n");
@@ -193,9 +194,7 @@ slv2_plugin_load_ports_if_necessary(SLV2Plugin p)
 			}
 
 			SLV2Value index = slv2_plugin_get_unique(
-				p,
-				librdf_new_node_from_node(port),
-				librdf_new_node_from_node(p->world->lv2_index_node));
+				p, port, p->world->lv2_index_node);
 
 			if (!slv2_value_is_int(index)) {
 				SLV2_ERROR("port has a non-integer index\n");
@@ -663,9 +662,8 @@ slv2_plugin_get_latency_port_index(SLV2Plugin p)
 
 		if (!slv2_matches_end(reports_latency)) {
 			SLV2Value index = slv2_plugin_get_unique(
-				p,
-				librdf_new_node_from_node(port),
-				librdf_new_node_from_node(p->world->lv2_index_node));
+				p, port, p->world->lv2_index_node);
+
 			ret = slv2_value_as_int(index);
 			slv2_value_free(index);
 			break;
@@ -829,14 +827,15 @@ slv2_plugin_get_uis(SLV2Plugin p)
 		librdf_node* ui = MATCH_OBJECT(uis);
 
 		SLV2Value type = slv2_plugin_get_unique(
-			p,
-			librdf_new_node_from_node(ui),
-			librdf_new_node_from_node(p->world->rdf_a_node));
+			p, ui, p->world->rdf_a_node);
+
+		librdf_node* ui_binary_node = librdf_new_node_from_uri_string(
+			p->world->world, NS_UI "binary");
 
 		SLV2Value binary = slv2_plugin_get_unique(
-			p,
-			librdf_new_node_from_node(ui),
-			librdf_new_node_from_uri_string(p->world->world, NS_UI "binary"));
+			p, ui, ui_binary_node);
+
+		librdf_free_node(ui_binary_node);
 
 		if (!librdf_node_is_resource(ui)
 		    || !slv2_value_is_uri(type)
