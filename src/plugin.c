@@ -231,7 +231,7 @@ slv2_plugin_load_ports_if_necessary(SLV2Plugin p)
 				if (librdf_node_is_resource(type)) {
 					raptor_sequence_push(
 						this_port->classes,
-						slv2_value_new_librdf_uri(p->world, librdf_node_get_uri(type)));
+						slv2_value_new_librdf_uri(p->world, type));
 				} else {
 					SLV2_WARN("port has non-URI rdf:type\n");
 				}
@@ -343,10 +343,8 @@ slv2_plugin_get_library_uri(SLV2Plugin p)
 			NULL);
 		FOREACH_MATCH(results) {
 			librdf_node* binary_node = MATCH_OBJECT(results);
-			librdf_uri*  binary_uri  = librdf_node_get_uri(binary_node);
-
-			if (binary_uri) {
-				p->binary_uri = slv2_value_new_librdf_uri(p->world, binary_uri);
+			if (librdf_node_is_resource(binary_node)) {
+				p->binary_uri = slv2_value_new_librdf_uri(p->world, binary_node);
 				break;
 			}
 		}
@@ -376,14 +374,11 @@ slv2_plugin_get_class(SLV2Plugin p)
 			NULL);
 		FOREACH_MATCH(results) {
 			librdf_node* class_node = librdf_new_node_from_node(MATCH_OBJECT(results));
-			librdf_uri*  class_uri  = librdf_node_get_uri(class_node);
-
-			if (!class_uri) {
+			if (!librdf_node_is_resource(class_node)) {
 				continue;
 			}
 
-			SLV2Value class = slv2_value_new_librdf_uri(p->world, class_uri);
-
+			SLV2Value class = slv2_value_new_librdf_uri(p->world, class_node);
 			if ( ! slv2_value_equals(class, p->world->lv2_plugin_class->uri)) {
 
 				SLV2PluginClass plugin_class = slv2_plugin_classes_get_by_uri(
@@ -848,7 +843,7 @@ slv2_plugin_get_uis(SLV2Plugin p)
 		
 		SLV2UI slv2_ui = slv2_ui_new(
 			p->world,
-			slv2_value_new_librdf_uri(p->world, librdf_node_get_uri(ui)),
+			slv2_value_new_librdf_uri(p->world, ui),
 			type,
 			binary);
 

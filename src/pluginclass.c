@@ -29,11 +29,16 @@
 
 /* private */
 SLV2PluginClass
-slv2_plugin_class_new(SLV2World world, librdf_uri* parent_uri, librdf_uri* uri, const char* label)
+slv2_plugin_class_new(SLV2World    world,
+                      librdf_node* parent_node,
+                      librdf_node* uri,
+                      const char*  label)
 {
+	assert(!parent_node || librdf_node_is_resource(parent_node));
+	librdf_uri* parent_uri = parent_node ? librdf_node_get_uri(parent_node) : NULL;
 	SLV2PluginClass pc = (SLV2PluginClass)malloc(sizeof(struct _SLV2PluginClass));
 	pc->world = world;
-	pc->parent_uri = (parent_uri ? slv2_value_new_librdf_uri(world, parent_uri) : NULL);
+	pc->parent_uri = (parent_uri ? slv2_value_new_librdf_uri(world, parent_node) : NULL);
 	pc->uri = slv2_value_new_librdf_uri(world, uri);
 	pc->label = slv2_value_new(world, SLV2_VALUE_STRING, label);
 	return pc;

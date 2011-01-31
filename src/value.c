@@ -104,7 +104,7 @@ slv2_value_new_librdf_node(SLV2World world, librdf_node* node)
 	switch (librdf_node_get_type(node)) {
 	case LIBRDF_NODE_TYPE_RESOURCE:
 		type = SLV2_VALUE_URI;
-		result = slv2_value_new_librdf_uri(world, librdf_node_get_uri(node));
+		result = slv2_value_new_librdf_uri(world, node);
 		break;
 	case LIBRDF_NODE_TYPE_LITERAL:
 		datatype_uri = librdf_node_get_literal_value_datatype_uri(node);
@@ -144,8 +144,11 @@ slv2_value_new_librdf_node(SLV2World world, librdf_node* node)
 
 /* private */
 SLV2Value
-slv2_value_new_librdf_uri(SLV2World world, librdf_uri* uri)
+slv2_value_new_librdf_uri(SLV2World world, librdf_node* node)
 {
+	assert(node);
+	assert(librdf_node_is_resource(node));
+	librdf_uri* uri = librdf_node_get_uri(node);
 	assert(uri);
 	SLV2Value val = (SLV2Value)malloc(sizeof(struct _SLV2Value));
 	val->type = SLV2_VALUE_URI;
