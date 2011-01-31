@@ -263,7 +263,8 @@ slv2_plugin_load(SLV2Plugin p)
 	// Parse all the plugin's data files into RDF model
 	for (unsigned i=0; i < slv2_values_size(p->data_uris); ++i) {
 		SLV2Value   data_uri_val = slv2_values_get_at(p->data_uris, i);
-		librdf_uri* data_uri     = slv2_value_as_librdf_uri(data_uri_val);
+		librdf_uri* data_uri     = librdf_node_get_uri(
+			slv2_value_as_node(data_uri_val));
 		librdf_parser_parse_into_model(p->world->parser, data_uri, data_uri, p->rdf);
 	}
 
@@ -292,8 +293,10 @@ slv2_plugin_load(SLV2Plugin p)
 			FILE* fd = tmpfile();
 			get_data_func(handle, fd, slv2_value_as_string(p->plugin_uri));
 			rewind(fd);
-			librdf_parser_parse_file_handle_into_model(p->world->parser,
-					fd, 0, slv2_value_as_librdf_uri(p->bundle_uri), p->rdf);
+			librdf_parser_parse_file_handle_into_model(
+				p->world->parser, fd, 0,
+				librdf_node_get_value(slv2_value_as_node(p->bundle_uri)),
+				p->rdf);
 			fclose(fd);
 		}
 

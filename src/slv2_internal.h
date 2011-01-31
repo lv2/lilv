@@ -258,9 +258,9 @@ struct _SLV2Value {
 	} val;
 };
 
-SLV2Value   slv2_value_new(SLV2World world, SLV2ValueType type, const char* val);
-SLV2Value   slv2_value_new_from_node(SLV2World world, SLV2Node node);
-librdf_uri* slv2_value_as_librdf_uri(SLV2Value value);
+SLV2Value slv2_value_new(SLV2World world, SLV2ValueType type, const char* val);
+SLV2Value slv2_value_new_from_node(SLV2World world, SLV2Node node);
+SLV2Node  slv2_value_as_node(SLV2Value value);
 
 static inline SLV2Node slv2_node_copy(SLV2Node node) {
 	return librdf_new_node_from_node(node);
@@ -290,10 +290,10 @@ void           slv2_scale_point_free(SLV2ScalePoint point);
 
 typedef librdf_stream* SLV2Matches;
 
-SLV2Matches slv2_plugin_find_statements(SLV2Plugin   plugin,
-                                        librdf_node* subject,
-                                        librdf_node* predicate,
-                                        librdf_node* object);
+SLV2Matches slv2_plugin_find_statements(SLV2Plugin plugin,
+                                        SLV2Node   subject,
+                                        SLV2Node   predicate,
+                                        SLV2Node   object);
 
 static inline bool slv2_matches_next(SLV2Matches matches) {
 	return librdf_stream_next(matches);

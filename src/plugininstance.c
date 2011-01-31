@@ -81,7 +81,8 @@ slv2_plugin_instantiate(SLV2Plugin               plugin,
 				break; // return NULL
 			} else {
 				librdf_uri* absolute_uri = librdf_new_uri_relative_to_base(
-						slv2_value_as_librdf_uri(slv2_plugin_get_bundle_uri(plugin)),
+					librdf_node_get_uri(slv2_value_as_node(
+						                    slv2_plugin_get_bundle_uri(plugin))),
 						(const uint8_t*)ld->URI);
 				if (!strcmp((const char*)librdf_uri_as_string(absolute_uri),
 				            slv2_value_as_uri(slv2_plugin_get_uri(plugin)))) {

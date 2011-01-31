@@ -107,7 +107,7 @@ slv2_port_has_property(SLV2Plugin p,
 		p,
 		port_node,
 		librdf_new_node_from_uri_string(p->world->world, SLV2_NS_LV2 "portProperty"),
-		librdf_new_node_from_uri(p->world->world, slv2_value_as_librdf_uri(property)));
+		slv2_value_as_node(property));
 
 	const bool ret = !slv2_matches_end(results);
 	END_MATCH(results);
@@ -128,7 +128,7 @@ slv2_port_supports_event(SLV2Plugin p,
 		p,
 		port_node,
 		librdf_new_node_from_uri_string(p->world->world, NS_EV "supportsEvent"),
-		librdf_new_node_from_uri(p->world->world, slv2_value_as_librdf_uri(event)));
+		slv2_value_as_node(event));
 
 	const bool ret = !slv2_matches_end(results);
 	END_MATCH(results);
@@ -210,8 +210,7 @@ slv2_port_get_value(SLV2Plugin p,
 
 	return slv2_port_get_value_by_node(
 		p, port, 
-		librdf_new_node_from_uri(p->world->world,
-		                         slv2_value_as_librdf_uri(predicate)));
+		slv2_value_as_node(predicate));
 }
 
 

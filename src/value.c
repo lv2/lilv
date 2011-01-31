@@ -310,12 +310,11 @@ slv2_value_as_uri(SLV2Value value)
 }
 
 
-/* private */
-librdf_uri*
-slv2_value_as_librdf_uri(SLV2Value value)
+SLV2Node
+slv2_value_as_node(SLV2Value value)
 {
 	assert(slv2_value_is_uri(value));
-	return librdf_node_get_uri(value->val.uri_val);
+	return value->val.uri_val;
 }
 
 
