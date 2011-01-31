@@ -146,14 +146,11 @@ slv2_value_new_librdf_node(SLV2World world, librdf_node* node)
 SLV2Value
 slv2_value_new_librdf_uri(SLV2World world, librdf_node* node)
 {
-	assert(node);
-	assert(librdf_node_is_resource(node));
-	librdf_uri* uri = librdf_node_get_uri(node);
-	assert(uri);
+	assert(node && librdf_node_is_resource(node));
 	SLV2Value val = (SLV2Value)malloc(sizeof(struct _SLV2Value));
-	val->type = SLV2_VALUE_URI;
-	val->val.uri_val = librdf_new_uri_from_uri(uri);
-	val->str_val = (char*)librdf_uri_as_string(val->val.uri_val);
+	val->type        = SLV2_VALUE_URI;
+	val->val.uri_val = librdf_new_uri_from_uri(librdf_node_get_uri(node));
+	val->str_val     = (char*)librdf_uri_as_string(val->val.uri_val);
 	return val;
 }
 

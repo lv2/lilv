@@ -640,7 +640,8 @@ slv2_world_load_all(SLV2World world)
 		librdf_new_node_from_node(world->lv2_plugin_node));
 	FOREACH_MATCH(plugins) {
 		librdf_node* plugin_node = MATCH_SUBJECT(plugins);
-		librdf_uri*  plugin_uri  = librdf_node_get_uri(plugin_node);
+		const char*  plugin_uri  = (const char*)librdf_uri_as_string(
+			librdf_node_get_uri(plugin_node));
 
 		SLV2Matches bundles = slv2_world_find_statements(
 			world, world->model,
@@ -650,8 +651,7 @@ slv2_world_load_all(SLV2World world)
 
 		if (slv2_matches_end(bundles)) {
 			END_MATCH(bundles);
-			SLV2_ERRORF("Plugin <%s> somehow has no bundle, ignored\n",
-			            librdf_uri_as_string(plugin_uri));
+			SLV2_ERRORF("Plugin <%s> has no bundle, ignored\n", plugin_uri);
 			continue;
 		}
 		
@@ -661,7 +661,7 @@ slv2_world_load_all(SLV2World world)
 		if (!slv2_matches_end(bundles)) {
 			END_MATCH(bundles);
 			SLV2_ERRORF("Plugin <%s> found in several bundles, ignored\n",
-			            librdf_uri_as_string(plugin_uri));
+			            plugin_uri);
 			continue;
 		}
 
@@ -674,9 +674,8 @@ slv2_world_load_all(SLV2World world)
 		if (n_plugins > 0) {
 			// Plugin results are in increasing sorted order
 			SLV2Plugin prev = raptor_sequence_get_at(world->plugins, n_plugins - 1);
-			assert(strcmp(
-				       slv2_value_as_string(slv2_plugin_get_uri(prev)),
-				       (const char*)librdf_uri_as_string(plugin_uri)) < 0);
+			assert(strcmp(slv2_value_as_string(slv2_plugin_get_uri(prev)),
+			              plugin_uri) < 0);
 		}
 #endif
 
@@ -694,11 +693,10 @@ slv2_world_load_all(SLV2World world)
 				NULL);
 			FOREACH_MATCH(dmanifests) {
 				librdf_node* lib_node = MATCH_OBJECT(dmanifests);
-				librdf_uri*  lib_uri  = librdf_node_get_uri(lib_node);
+				const char*  lib_uri  = (const char*)librdf_uri_as_string(
+					librdf_node_get_uri(lib_node));
 
-				if (dlopen(
-					    slv2_uri_to_path((const char*)librdf_uri_as_string(lib_uri)),
-					    RTLD_LAZY)) {
+				if (dlopen(slv2_uri_to_path(lib_uri, RTLD_LAZY))) {
 					plugin->dynman_uri = slv2_value_new_librdf_uri(world, lib_node);
 				}
 			}
