@@ -151,7 +151,7 @@ slv2_value_new_librdf_uri(SLV2World world, librdf_node* node)
 	assert(node && librdf_node_is_resource(node));
 	SLV2Value val = (SLV2Value)malloc(sizeof(struct _SLV2Value));
 	val->type        = SLV2_VALUE_URI;
-	val->val.uri_val = librdf_new_node_from_node(node);
+	val->val.uri_val = slv2_node_copy(node);
 	val->str_val     = (char*)librdf_uri_as_string(
 		librdf_node_get_uri(val->val.uri_val));
 	return val;
@@ -204,7 +204,7 @@ slv2_value_duplicate(SLV2Value val)
 	result->type = val->type;
 
 	if (val->type == SLV2_VALUE_URI) {
-		result->val.uri_val = librdf_new_node_from_node(val->val.uri_val);
+		result->val.uri_val = slv2_node_copy(val->val.uri_val);
 		result->str_val = (char*)librdf_uri_as_string(
 			librdf_node_get_uri(val->val.uri_val));
 	} else {

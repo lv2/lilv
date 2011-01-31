@@ -368,7 +368,7 @@ slv2_plugin_get_class(SLV2Plugin p)
 			p->world->rdf_a_node,
 			NULL);
 		FOREACH_MATCH(results) {
-			librdf_node* class_node = librdf_new_node_from_node(MATCH_OBJECT(results));
+			librdf_node* class_node = slv2_node_copy(MATCH_OBJECT(results));
 			if (!librdf_node_is_resource(class_node)) {
 				continue;
 			}
@@ -521,7 +521,7 @@ slv2_plugin_get_value_for_subject(SLV2Plugin p,
 	}
 
 	librdf_node* subject_node = (slv2_value_is_uri(subject))
-		? librdf_new_node_from_node(subject->val.uri_val)
+		? slv2_node_copy(subject->val.uri_val)
 		: librdf_new_node_from_blank_identifier(
 			p->world->world, (const uint8_t*)slv2_value_as_blank(subject));
 
@@ -762,7 +762,7 @@ slv2_plugin_get_author(SLV2Plugin p)
 		return NULL;
 	}
 
-	librdf_node* author = librdf_new_node_from_node(MATCH_OBJECT(maintainers));
+	librdf_node* author = slv2_node_copy(MATCH_OBJECT(maintainers));
 
 	librdf_free_stream(maintainers);
 	return author;

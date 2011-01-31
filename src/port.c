@@ -70,23 +70,23 @@ slv2_port_get_node(SLV2Plugin p,
 {
 	SLV2Matches ports = slv2_plugin_find_statements(
 		p,
-		librdf_new_node_from_node(p->plugin_uri->val.uri_val),
-		librdf_new_node_from_node(p->world->lv2_port_node),
+		slv2_node_copy(p->plugin_uri->val.uri_val),
+		slv2_node_copy(p->world->lv2_port_node),
 		NULL);
 	librdf_node* ret = NULL;
 	FOREACH_MATCH(ports) {
 		librdf_node* node   = MATCH_OBJECT(ports);
 		SLV2Value    symbol = slv2_plugin_get_unique(
 			p,
-			librdf_new_node_from_node(node),
-			librdf_new_node_from_node(p->world->lv2_symbol_node));
+			slv2_node_copy(node),
+			slv2_node_copy(p->world->lv2_symbol_node));
 
 		const bool matches = slv2_value_equals(symbol,
 		                                       slv2_port_get_symbol(p, port));
 
 		slv2_value_free(symbol);
 		if (matches) {
-			ret = librdf_new_node_from_node(node);
+			ret = slv2_node_copy(node);
 			break;
 		}
 	}
@@ -329,13 +329,13 @@ slv2_port_get_scale_points(SLV2Plugin p,
 
 		SLV2Value value = slv2_plugin_get_unique(
 			p,
-			librdf_new_node_from_node(point),
-			librdf_new_node_from_node(p->world->rdf_value_node));
+			slv2_node_copy(point),
+			slv2_node_copy(p->world->rdf_value_node));
 
 		SLV2Value label = slv2_plugin_get_unique(
 			p,
-			librdf_new_node_from_node(point),
-			librdf_new_node_from_node(p->world->rdfs_label_node));
+			slv2_node_copy(point),
+			slv2_node_copy(p->world->rdfs_label_node));
 
 		if (value && label) {
 			raptor_sequence_push(ret, slv2_scale_point_new(value, label));

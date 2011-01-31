@@ -259,6 +259,9 @@ SLV2Value   slv2_value_new_librdf_node(SLV2World world, librdf_node* node);
 SLV2Value   slv2_value_new_librdf_uri(SLV2World world, librdf_node* node);
 librdf_uri* slv2_value_as_librdf_uri(SLV2Value value);
 
+static inline librdf_node* slv2_node_copy(librdf_node* node) {
+	return librdf_new_node_from_node(node);
+}
 
 /* ********* Values ********* */
 
