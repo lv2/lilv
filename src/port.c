@@ -106,7 +106,7 @@ slv2_port_has_property(SLV2Plugin p,
 	SLV2Matches results   = slv2_plugin_find_statements(
 		p,
 		port_node,
-		librdf_new_node_from_uri_string(p->world->world, SLV2_NS_LV2 "portProperty"),
+		p->world->lv2_portproperty_node,
 		slv2_value_as_node(property));
 
 	const bool ret = !slv2_matches_end(results);

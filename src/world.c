@@ -225,12 +225,15 @@ slv2_world_load_file(SLV2World world, librdf_uri* file_uri)
 static SLV2Matches
 slv2_world_find_statements(SLV2World     world,
                            librdf_model* model,
-                           librdf_node*  subject,
-                           librdf_node*  predicate,
-                           librdf_node*  object)
+                           SLV2Node      subject,
+                           SLV2Node      predicate,
+                           SLV2Node      object)
 {
 	librdf_statement* q = librdf_new_statement_from_nodes(
-		world->world, subject, predicate, object);
+		world->world,
+		subject ? slv2_node_copy(subject) : NULL,
+		predicate ? slv2_node_copy(predicate) : NULL,
+		object ? slv2_node_copy(object) : NULL);
 	SLV2Matches results = librdf_model_find_statements(model, q);
 	librdf_free_statement(q);
 	return results;
@@ -263,14 +266,14 @@ slv2_world_load_bundle(SLV2World world, SLV2Value bundle_uri)
 	SLV2Matches dmanifests = slv2_world_find_statements(
 		world, world->model,
 		NULL,
-		slv2_node_copy(world->rdf_a_node),
-		slv2_node_copy(world->dyn_manifest_node));
+		world->rdf_a_node,
+		world->dyn_manifest_node);
 	FOREACH_MATCH(dmanifests) {
 		SLV2Node    dmanifest = MATCH_SUBJECT(dmanifests);
 		SLV2Matches binaries  = slv2_world_find_statements(
 			world, world->model,
-			slv2_node_copy(dmanifest),
-			slv2_node_copy(world->lv2_binary_node),
+			dmanifest,
+			world->lv2_binary_node,
 			NULL);
 		if (slv2_matches_end(binaries)) {
 			END_MATCH(binaries);
@@ -319,8 +322,8 @@ slv2_world_load_bundle(SLV2World world, SLV2Value bundle_uri)
 		SLV2Matches dyn_plugins = slv2_world_find_statements(
 			world, dyn_manifest_model,
 			NULL,
-			slv2_node_copy(world->rdf_a_node),
-			slv2_node_copy(world->lv2_plugin_node));
+			world->rdf_a_node,
+			world->lv2_plugin_node);
 		FOREACH_MATCH(dyn_plugins) {
 			SLV2Node plugin = MATCH_SUBJECT(dyn_plugins);
 
@@ -346,8 +349,8 @@ slv2_world_load_bundle(SLV2World world, SLV2Value bundle_uri)
 	SLV2Matches results = slv2_world_find_statements(
 		world, manifest_model,
 		NULL,
-		slv2_node_copy(world->rdf_a_node),
-		slv2_node_copy(world->lv2_plugin_node));
+		world->rdf_a_node,
+		world->lv2_plugin_node);
 	FOREACH_MATCH(results) {
 		SLV2Node plugin = MATCH_SUBJECT(results);
 
@@ -371,8 +374,8 @@ slv2_world_load_bundle(SLV2World world, SLV2Value bundle_uri)
 	results = slv2_world_find_statements(
 		world, manifest_model,
 		NULL,
-		slv2_node_copy(world->rdf_a_node),
-		slv2_node_copy(world->lv2_specification_node));
+		world->rdf_a_node,
+		world->lv2_specification_node);
 	FOREACH_MATCH(results) {
 		SLV2Node spec = MATCH_SUBJECT(results);
 
@@ -490,14 +493,14 @@ slv2_world_load_specifications(SLV2World world)
 	SLV2Matches specs = slv2_world_find_statements(
 		world, world->model,
 		NULL,
-		slv2_node_copy(world->rdf_a_node),
-		slv2_node_copy(world->lv2_specification_node));
+		world->rdf_a_node,
+		world->lv2_specification_node);
 	FOREACH_MATCH(specs) {
 		SLV2Node    spec_node = MATCH_SUBJECT(specs);
 		SLV2Matches files     = slv2_world_find_statements(
 			world, world->model,
-			slv2_node_copy(spec_node),
-			slv2_node_copy(world->rdfs_seealso_node),
+			spec_node,
+			world->rdfs_seealso_node,
 			NULL);
 		FOREACH_MATCH(files) {
 			SLV2Node file_node = MATCH_OBJECT(files);
@@ -521,16 +524,16 @@ slv2_world_load_plugin_classes(SLV2World world)
 	SLV2Matches classes = slv2_world_find_statements(
 		world, world->model,
 		NULL,
-		slv2_node_copy(world->rdf_a_node),
-		slv2_node_copy(world->rdfs_class_node));
+		world->rdf_a_node,
+		world->rdfs_class_node);
 	FOREACH_MATCH(classes) {
 		SLV2Node class_node = MATCH_SUBJECT(classes);
 
 		// Get parents (superclasses)
 		SLV2Matches parents = slv2_world_find_statements(
 			world, world->model,
-			slv2_node_copy(class_node),
-			slv2_node_copy(world->rdfs_subclassof_node),
+			class_node,
+			world->rdfs_subclassof_node,
 			NULL);
 
 		if (slv2_matches_end(parents)) {
@@ -549,8 +552,8 @@ slv2_world_load_plugin_classes(SLV2World world)
 		// Get labels
 		SLV2Matches labels = slv2_world_find_statements(
 			world, world->model,
-			slv2_node_copy(class_node),
-			slv2_node_copy(world->rdfs_label_node),
+			class_node,
+			world->rdfs_label_node,
 			NULL);
 
 		if (slv2_matches_end(labels)) {
@@ -641,8 +644,8 @@ slv2_world_load_all(SLV2World world)
 	SLV2Matches plugins = slv2_world_find_statements(
 		world, world->model,
 		NULL,
-		slv2_node_copy(world->rdf_a_node),
-		slv2_node_copy(world->lv2_plugin_node));
+		world->rdf_a_node,
+		world->lv2_plugin_node);
 	FOREACH_MATCH(plugins) {
 		SLV2Node    plugin_node = MATCH_SUBJECT(plugins);
 		const char* plugin_uri  = (const char*)librdf_uri_as_string(
@@ -650,8 +653,8 @@ slv2_world_load_all(SLV2World world)
 
 		SLV2Matches bundles = slv2_world_find_statements(
 			world, world->model,
-			slv2_node_copy(plugin_node),
-			slv2_node_copy(world->slv2_bundleuri_node),
+			plugin_node,
+			world->slv2_bundleuri_node,
 			NULL);
 
 		if (slv2_matches_end(bundles)) {
@@ -693,8 +696,8 @@ slv2_world_load_all(SLV2World world)
 		{
 			SLV2Matches dmanifests = slv2_world_find_statements(
 				world, world->model,
-				slv2_node_copy(plugin_node),
-				slv2_node_copy(world->slv2_dmanifest_node),
+				plugin_node,
+				world->slv2_dmanifest_node,
 				NULL);
 			FOREACH_MATCH(dmanifests) {
 				SLV2Node    lib_node = MATCH_OBJECT(dmanifests);
@@ -710,8 +713,8 @@ slv2_world_load_all(SLV2World world)
 #endif
 		SLV2Matches files = slv2_world_find_statements(
 			world, world->model,
-			slv2_node_copy(plugin_node),
-			slv2_node_copy(world->rdfs_seealso_node),
+			plugin_node,
+			world->rdfs_seealso_node,
 			NULL);
 		FOREACH_MATCH(files) {
 			SLV2Node file_node = MATCH_OBJECT(files);
