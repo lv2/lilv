@@ -38,9 +38,9 @@ slv2_plugin_find_statements(SLV2Plugin   plugin,
 	slv2_plugin_load_if_necessary(plugin);
 	librdf_statement* q = librdf_new_statement_from_nodes(
 		plugin->world->world,
-		subject ? librdf_new_node_from_node(subject) : NULL,
+		subject   ? librdf_new_node_from_node(subject)   : NULL,
 		predicate ? librdf_new_node_from_node(predicate) : NULL,
-		object ? librdf_new_node_from_node(object) : NULL);
+		object    ? librdf_new_node_from_node(object)    : NULL);
 	librdf_stream* results = librdf_model_find_statements(plugin->rdf, q);
 	librdf_free_statement(q);
 	return results;
