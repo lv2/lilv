@@ -75,9 +75,11 @@ slv2_value_new(SLV2World world, SLV2ValueType type, const char* str)
 
 	switch (type) {
 	case SLV2_VALUE_URI:
-		val->val.uri_val = librdf_new_uri(world->world, (const uint8_t*)str);
+		val->val.uri_val = librdf_new_node_from_uri_string(
+			world->world, (const uint8_t*)str);
 		assert(val->val.uri_val);
-		val->str_val = (char*)librdf_uri_as_string(val->val.uri_val);
+		val->str_val = (char*)librdf_uri_as_string(
+			librdf_node_get_uri(val->val.uri_val));
 		break;
 	case SLV2_VALUE_QNAME_UNUSED:
 	case SLV2_VALUE_BLANK:
@@ -149,8 +151,9 @@ slv2_value_new_librdf_uri(SLV2World world, librdf_node* node)
 	assert(node && librdf_node_is_resource(node));
 	SLV2Value val = (SLV2Value)malloc(sizeof(struct _SLV2Value));
 	val->type        = SLV2_VALUE_URI;
-	val->val.uri_val = librdf_new_uri_from_uri(librdf_node_get_uri(node));
-	val->str_val     = (char*)librdf_uri_as_string(val->val.uri_val);
+	val->val.uri_val = librdf_new_node_from_node(node);
+	val->str_val     = (char*)librdf_uri_as_string(
+		librdf_node_get_uri(val->val.uri_val));
 	return val;
 }
 
@@ -201,8 +204,9 @@ slv2_value_duplicate(SLV2Value val)
 	result->type = val->type;
 
 	if (val->type == SLV2_VALUE_URI) {
-		result->val.uri_val = librdf_new_uri_from_uri(val->val.uri_val);
-		result->str_val = (char*)librdf_uri_as_string(val->val.uri_val);
+		result->val.uri_val = librdf_new_node_from_node(val->val.uri_val);
+		result->str_val = (char*)librdf_uri_as_string(
+			librdf_node_get_uri(val->val.uri_val));
 	} else {
 		result->str_val = strdup(val->str_val);
 		result->val = val->val;
@@ -217,7 +221,7 @@ slv2_value_free(SLV2Value val)
 {
 	if (val) {
 		if (val->type == SLV2_VALUE_URI)
-			librdf_free_uri(val->val.uri_val);
+			librdf_free_node(val->val.uri_val);
 		else
 			free(val->str_val);
 
@@ -238,7 +242,7 @@ slv2_value_equals(SLV2Value value, SLV2Value other)
 
 	switch (value->type) {
 	case SLV2_VALUE_URI:
-		return (librdf_uri_equals(value->val.uri_val, other->val.uri_val) != 0);
+		return (librdf_node_equals(value->val.uri_val, other->val.uri_val) != 0);
 	case SLV2_VALUE_BLANK:
 	case SLV2_VALUE_STRING:
 	case SLV2_VALUE_QNAME_UNUSED:
@@ -322,7 +326,7 @@ librdf_uri*
 slv2_value_as_librdf_uri(SLV2Value value)
 {
 	assert(slv2_value_is_uri(value));
-	return value->val.uri_val;
+	return librdf_node_get_uri(value->val.uri_val);
 }
 
 

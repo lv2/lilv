@@ -59,27 +59,28 @@ slv2_world_new_internal(SLV2World world)
 
 #define NEW_URI(uri) librdf_new_node_from_uri_string(world->world, uri);
 
-	world->dyn_manifest_node      = NEW_URI(NS_DYNMAN    "DynManifest");
-	world->lv2_specification_node = NEW_URI(SLV2_NS_LV2  "Specification");
-	world->lv2_plugin_node        = NEW_URI(SLV2_NS_LV2  "Plugin");
-	world->lv2_binary_node        = NEW_URI(SLV2_NS_LV2  "binary");
-	world->lv2_default_node       = NEW_URI(SLV2_NS_LV2  "default");
-	world->lv2_minimum_node       = NEW_URI(SLV2_NS_LV2  "minimum");
-	world->lv2_maximum_node       = NEW_URI(SLV2_NS_LV2  "maximum");
-	world->lv2_port_node          = NEW_URI(SLV2_NS_LV2  "port");
-	world->lv2_portproperty_node  = NEW_URI(SLV2_NS_LV2  "portProperty");
-	world->lv2_index_node         = NEW_URI(SLV2_NS_LV2  "index");
-	world->lv2_symbol_node        = NEW_URI(SLV2_NS_LV2  "symbol");
-	world->rdf_a_node             = NEW_URI(SLV2_NS_RDF  "type");
-	world->rdf_value_node         = NEW_URI(SLV2_NS_RDF  "value");
-	world->rdfs_class_node        = NEW_URI(SLV2_NS_RDFS "Class");
-	world->rdfs_label_node        = NEW_URI(SLV2_NS_RDFS "label");
-	world->rdfs_seealso_node      = NEW_URI(SLV2_NS_RDFS "seeAlso");
-	world->rdfs_subclassof_node   = NEW_URI(SLV2_NS_RDFS "subClassOf");
-	world->slv2_bundleuri_node    = NEW_URI(SLV2_NS_SLV2 "bundleURI");
-	world->slv2_dmanifest_node    = NEW_URI(SLV2_NS_SLV2 "dynamic-manifest");
-	world->xsd_integer_node       = NEW_URI(SLV2_NS_XSD  "integer");
-	world->xsd_decimal_node       = NEW_URI(SLV2_NS_XSD  "decimal");
+	world->dyn_manifest_node       = NEW_URI(NS_DYNMAN    "DynManifest");
+	world->lv2_specification_node  = NEW_URI(SLV2_NS_LV2  "Specification");
+	world->lv2_plugin_node         = NEW_URI(SLV2_NS_LV2  "Plugin");
+	world->lv2_binary_node         = NEW_URI(SLV2_NS_LV2  "binary");
+	world->lv2_default_node        = NEW_URI(SLV2_NS_LV2  "default");
+	world->lv2_minimum_node        = NEW_URI(SLV2_NS_LV2  "minimum");
+	world->lv2_maximum_node        = NEW_URI(SLV2_NS_LV2  "maximum");
+	world->lv2_port_node           = NEW_URI(SLV2_NS_LV2  "port");
+	world->lv2_portproperty_node   = NEW_URI(SLV2_NS_LV2  "portProperty");
+	world->lv2_reportslatency_node = NEW_URI(SLV2_NS_LV2  "reportsLatency");
+	world->lv2_index_node          = NEW_URI(SLV2_NS_LV2  "index");
+	world->lv2_symbol_node         = NEW_URI(SLV2_NS_LV2  "symbol");
+	world->rdf_a_node              = NEW_URI(SLV2_NS_RDF  "type");
+	world->rdf_value_node          = NEW_URI(SLV2_NS_RDF  "value");
+	world->rdfs_class_node         = NEW_URI(SLV2_NS_RDFS "Class");
+	world->rdfs_label_node         = NEW_URI(SLV2_NS_RDFS "label");
+	world->rdfs_seealso_node       = NEW_URI(SLV2_NS_RDFS "seeAlso");
+	world->rdfs_subclassof_node    = NEW_URI(SLV2_NS_RDFS "subClassOf");
+	world->slv2_bundleuri_node     = NEW_URI(SLV2_NS_SLV2 "bundleURI");
+	world->slv2_dmanifest_node     = NEW_URI(SLV2_NS_SLV2 "dynamic-manifest");
+	world->xsd_integer_node        = NEW_URI(SLV2_NS_XSD  "integer");
+	world->xsd_decimal_node        = NEW_URI(SLV2_NS_XSD  "decimal");
 
 	world->lv2_plugin_class = slv2_plugin_class_new(
 		world, NULL, world->lv2_plugin_node, "Plugin");
@@ -171,6 +172,7 @@ slv2_world_free(SLV2World world)
 	librdf_free_node(world->lv2_maximum_node);
 	librdf_free_node(world->lv2_port_node);
 	librdf_free_node(world->lv2_portproperty_node);
+	librdf_free_node(world->lv2_reportslatency_node);
 	librdf_free_node(world->lv2_index_node);
 	librdf_free_node(world->lv2_symbol_node);
 	librdf_free_node(world->rdf_a_node);
@@ -243,7 +245,8 @@ slv2_world_load_bundle(SLV2World world, SLV2Value bundle_uri)
 	}
 
 	librdf_uri* manifest_uri = librdf_new_uri_relative_to_base(
-			bundle_uri->val.uri_val, (const uint8_t*)"manifest.ttl");
+		librdf_node_get_uri(bundle_uri->val.uri_val),
+		(const uint8_t*)"manifest.ttl");
 
 	/* Parse the manifest into a temporary model */
 	librdf_storage* manifest_storage = slv2_world_new_storage(world);
@@ -307,8 +310,10 @@ slv2_world_load_bundle(SLV2World world, SLV2Value bundle_uri)
 		FILE* fd = tmpfile();
 		get_subjects_func(handle, fd);
 		rewind(fd);
-		librdf_parser_parse_file_handle_into_model(world->parser,
-				fd, 0, bundle_uri->val.uri_val, dyn_manifest_model);
+		librdf_parser_parse_file_handle_into_model(
+			world->parser, fd, 0,
+			librdf_node_get_uri(bundle_uri->val.uri_val),
+			dyn_manifest_model);
 		fclose(fd);
 
 		// ?plugin a lv2:Plugin
@@ -359,7 +364,7 @@ slv2_world_load_bundle(SLV2World world, SLV2Value bundle_uri)
 			world->model,
 			librdf_new_node_from_node(plugin),
 			librdf_new_node_from_uri_string(world->world, SLV2_NS_SLV2 "bundleURI"),
-			librdf_new_node_from_uri(world->world, bundle_uri->val.uri_val));
+			librdf_new_node_from_node(bundle_uri->val.uri_val));
 	}
 	END_MATCH(results);
 
@@ -384,7 +389,7 @@ slv2_world_load_bundle(SLV2World world, SLV2Value bundle_uri)
 			world->model,
 			librdf_new_node_from_node(spec),
 			librdf_new_node_from_uri_string(world->world, SLV2_NS_SLV2 "bundleURI"),
-			librdf_new_node_from_uri(world->world, bundle_uri->val.uri_val));
+			librdf_new_node_from_node(bundle_uri->val.uri_val));
 	}
 	END_MATCH(results);
 

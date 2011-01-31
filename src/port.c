@@ -70,7 +70,7 @@ slv2_port_get_node(SLV2Plugin p,
 {
 	SLV2Matches ports = slv2_plugin_find_statements(
 		p,
-		librdf_new_node_from_uri(p->world->world, p->plugin_uri->val.uri_val),
+		librdf_new_node_from_node(p->plugin_uri->val.uri_val),
 		librdf_new_node_from_node(p->world->lv2_port_node),
 		NULL);
 	librdf_node* ret = NULL;

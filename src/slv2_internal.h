@@ -174,6 +174,7 @@ struct _SLV2World {
 	librdf_node*      lv2_maximum_node;
 	librdf_node*      lv2_port_node;
 	librdf_node*      lv2_portproperty_node;
+	librdf_node*      lv2_reportslatency_node;
 	librdf_node*      lv2_index_node;
 	librdf_node*      lv2_symbol_node;
 	librdf_node*      rdf_a_node;
@@ -247,9 +248,9 @@ struct _SLV2Value {
 	SLV2ValueType type;
 	char*         str_val; ///< always present
 	union {
-		int         int_val;
-		float       float_val;
-		librdf_uri* uri_val;
+		int          int_val;
+		float        float_val;
+		librdf_node* uri_val;
 	} val;
 };
 
