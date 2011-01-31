@@ -163,28 +163,28 @@ slv2_world_free(SLV2World world)
 	slv2_plugin_class_free(world->lv2_plugin_class);
 	world->lv2_plugin_class = NULL;
 
-	librdf_free_node(world->dyn_manifest_node);
-	librdf_free_node(world->lv2_specification_node);
-	librdf_free_node(world->lv2_plugin_node);
-	librdf_free_node(world->lv2_binary_node);
-	librdf_free_node(world->lv2_default_node);
-	librdf_free_node(world->lv2_minimum_node);
-	librdf_free_node(world->lv2_maximum_node);
-	librdf_free_node(world->lv2_port_node);
-	librdf_free_node(world->lv2_portproperty_node);
-	librdf_free_node(world->lv2_reportslatency_node);
-	librdf_free_node(world->lv2_index_node);
-	librdf_free_node(world->lv2_symbol_node);
-	librdf_free_node(world->rdf_a_node);
-	librdf_free_node(world->rdf_value_node);
-	librdf_free_node(world->rdfs_label_node);
-	librdf_free_node(world->rdfs_seealso_node);
-	librdf_free_node(world->rdfs_subclassof_node);
-	librdf_free_node(world->rdfs_class_node);
-	librdf_free_node(world->slv2_bundleuri_node);
-	librdf_free_node(world->slv2_dmanifest_node);
-	librdf_free_node(world->xsd_integer_node);
-	librdf_free_node(world->xsd_decimal_node);
+	slv2_node_free(world->dyn_manifest_node);
+	slv2_node_free(world->lv2_specification_node);
+	slv2_node_free(world->lv2_plugin_node);
+	slv2_node_free(world->lv2_binary_node);
+	slv2_node_free(world->lv2_default_node);
+	slv2_node_free(world->lv2_minimum_node);
+	slv2_node_free(world->lv2_maximum_node);
+	slv2_node_free(world->lv2_port_node);
+	slv2_node_free(world->lv2_portproperty_node);
+	slv2_node_free(world->lv2_reportslatency_node);
+	slv2_node_free(world->lv2_index_node);
+	slv2_node_free(world->lv2_symbol_node);
+	slv2_node_free(world->rdf_a_node);
+	slv2_node_free(world->rdf_value_node);
+	slv2_node_free(world->rdfs_label_node);
+	slv2_node_free(world->rdfs_seealso_node);
+	slv2_node_free(world->rdfs_subclassof_node);
+	slv2_node_free(world->rdfs_class_node);
+	slv2_node_free(world->slv2_bundleuri_node);
+	slv2_node_free(world->slv2_dmanifest_node);
+	slv2_node_free(world->xsd_integer_node);
+	slv2_node_free(world->xsd_decimal_node);
 
 	for (int i=0; i < raptor_sequence_size(world->plugins); ++i)
 		slv2_plugin_free(raptor_sequence_get_at(world->plugins, i));
@@ -580,8 +580,8 @@ slv2_world_load_plugin_classes(SLV2World world)
 		                                           class_node,
 		                                           (const char*)label));
 
-		librdf_free_node(parent_node);
-		librdf_free_node(label_node);
+		slv2_node_free(parent_node);
+		slv2_node_free(label_node);
 	}
 	END_MATCH(classes);
 }
@@ -720,7 +720,7 @@ slv2_world_load_all(SLV2World world)
 		}
 		END_MATCH(files);
 		
-		librdf_free_node(bundle_node);
+		slv2_node_free(bundle_node);
 	}
 	END_MATCH(plugins);
 }

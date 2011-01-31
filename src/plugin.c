@@ -379,7 +379,7 @@ slv2_plugin_get_class(SLV2Plugin p)
 				SLV2PluginClass plugin_class = slv2_plugin_classes_get_by_uri(
 						p->world->plugin_classes, class);
 
-				librdf_free_node(class_node);
+				slv2_node_free(class_node);
 
 				if (plugin_class) {
 					p->plugin_class = plugin_class;
@@ -500,7 +500,7 @@ slv2_plugin_get_value_by_qname_i18n(SLV2Plugin  p,
 		pred_node,
 		NULL);
 
-	librdf_free_node(pred_node);
+	slv2_node_free(pred_node);
 	free(pred_uri);
 	return slv2_values_from_stream_i18n(p, results);
 }
@@ -756,7 +756,7 @@ slv2_plugin_get_author(SLV2Plugin p)
 		doap_maintainer,
 		NULL);
 
-	librdf_free_node(doap_maintainer);
+	slv2_node_free(doap_maintainer);
 
 	if (slv2_matches_end(maintainers)) {
 		return NULL;
@@ -835,7 +835,7 @@ slv2_plugin_get_uis(SLV2Plugin p)
 		SLV2Value binary = slv2_plugin_get_unique(
 			p, ui, ui_binary_node);
 
-		librdf_free_node(ui_binary_node);
+		slv2_node_free(ui_binary_node);
 
 		if (!librdf_node_is_resource(ui)
 		    || !slv2_value_is_uri(type)
@@ -856,7 +856,7 @@ slv2_plugin_get_uis(SLV2Plugin p)
 	}
 	END_MATCH(uis);
 
-	librdf_free_node(ui_ui);
+	slv2_node_free(ui_ui);
 
 	if (slv2_uis_size(result) > 0) {
 		return result;

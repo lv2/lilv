@@ -221,7 +221,7 @@ slv2_value_free(SLV2Value val)
 {
 	if (val) {
 		if (val->type == SLV2_VALUE_URI)
-			librdf_free_node(val->val.uri_val);
+			slv2_node_free(val->val.uri_val);
 		else
 			free(val->str_val);
 

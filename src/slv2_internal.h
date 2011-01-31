@@ -263,6 +263,10 @@ static inline librdf_node* slv2_node_copy(librdf_node* node) {
 	return librdf_new_node_from_node(node);
 }
 
+static inline void slv2_node_free(librdf_node* node) {
+	librdf_free_node(node);
+}
+
 /* ********* Values ********* */
 
 void slv2_values_set_at(SLV2Values list, unsigned index, void* value);
