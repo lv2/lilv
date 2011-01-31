@@ -259,8 +259,7 @@ struct _SLV2Value {
 };
 
 SLV2Value   slv2_value_new(SLV2World world, SLV2ValueType type, const char* val);
-SLV2Value   slv2_value_new_librdf_node(SLV2World world, SLV2Node node);
-SLV2Value   slv2_value_new_librdf_uri(SLV2World world, SLV2Node node);
+SLV2Value   slv2_value_new_from_node(SLV2World world, SLV2Node node);
 librdf_uri* slv2_value_as_librdf_uri(SLV2Value value);
 
 static inline SLV2Node slv2_node_copy(SLV2Node node) {

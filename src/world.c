@@ -673,7 +673,7 @@ slv2_world_load_all(SLV2World world)
 		END_MATCH(bundles);
 
 		// Add a new plugin to the world
-		SLV2Value      uri       = slv2_value_new_librdf_uri(world, plugin_node);
+		SLV2Value      uri       = slv2_value_new_from_node(world, plugin_node);
 		const unsigned n_plugins = raptor_sequence_size(world->plugins);
 #ifndef NDEBUG
 		if (n_plugins > 0) {
@@ -685,7 +685,7 @@ slv2_world_load_all(SLV2World world)
 #endif
 
 		SLV2Plugin plugin = slv2_plugin_new(
-			world, uri, slv2_value_new_librdf_uri(world, bundle_node));
+			world, uri, slv2_value_new_from_node(world, bundle_node));
 
 		raptor_sequence_push(world->plugins, plugin);
 
@@ -702,7 +702,7 @@ slv2_world_load_all(SLV2World world)
 					librdf_node_get_uri(lib_node));
 
 				if (dlopen(slv2_uri_to_path(lib_uri, RTLD_LAZY))) {
-					plugin->dynman_uri = slv2_value_new_librdf_uri(world, lib_node);
+					plugin->dynman_uri = slv2_value_new_from_node(world, lib_node);
 				}
 			}
 			END_MATCH(dmanifests);
@@ -716,7 +716,7 @@ slv2_world_load_all(SLV2World world)
 		FOREACH_MATCH(files) {
 			SLV2Node file_node = MATCH_OBJECT(files);
 			raptor_sequence_push(plugin->data_uris,
-			                     slv2_value_new_librdf_uri(world, file_node));
+			                     slv2_value_new_from_node(world, file_node));
 		}
 		END_MATCH(files);
 		

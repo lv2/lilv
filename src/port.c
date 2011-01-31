@@ -148,7 +148,7 @@ slv2_values_from_stream_objects(SLV2Plugin p, SLV2Matches stream)
 	FOREACH_MATCH(stream) {
 		raptor_sequence_push(
 			values,
-			slv2_value_new_librdf_node(
+			slv2_value_new_from_node(
 				p->world,
 				MATCH_OBJECT(stream)));
 	}
