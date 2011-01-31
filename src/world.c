@@ -535,6 +535,7 @@ slv2_world_load_plugin_classes(SLV2World world)
 			NULL);
 
 		if (slv2_matches_end(parents)) {
+			END_MATCH(parents);
 			continue;
 		}
 

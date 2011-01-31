@@ -81,7 +81,11 @@ slv2_port_get_node(SLV2Plugin p,
 			librdf_new_node_from_node(node),
 			librdf_new_node_from_node(p->world->lv2_symbol_node));
 
-		if (slv2_value_equals(symbol, slv2_port_get_symbol(p, port))) {
+		const bool matches = slv2_value_equals(symbol,
+		                                       slv2_port_get_symbol(p, port));
+
+		slv2_value_free(symbol);
+		if (matches) {
 			ret = librdf_new_node_from_node(node);
 			break;
 		}
@@ -136,6 +140,7 @@ static SLV2Values
 slv2_values_from_stream_objects(SLV2Plugin p, SLV2Matches stream)
 {
 	if (slv2_matches_end(stream)) {
+		END_MATCH(stream);
 		return NULL;
 	}
 
@@ -170,6 +175,7 @@ slv2_port_get_value_by_qname(SLV2Plugin  p,
 		librdf_new_node_from_uri_string(p->world->world, (const uint8_t*)pred_uri),
 		NULL);
 
+	free(pred_uri);
 	return slv2_values_from_stream_objects(p, results);
 }
 
@@ -227,6 +233,7 @@ slv2_port_get_value_by_qname_i18n(SLV2Plugin  p,
 		librdf_new_node_from_uri_string(p->world->world, (const uint8_t*)pred_uri),
 		NULL);
 
+	free(pred_uri);
 	return slv2_values_from_stream_i18n(p, results);
 }
 

@@ -118,6 +118,7 @@ slv2_plugin_query_node(SLV2Plugin p, librdf_node* subject, librdf_node* predicat
 		p, subject, predicate, NULL);
 
 	if (slv2_matches_end(results)) {
+		END_MATCH(results);
 		return NULL;
 	}
 
@@ -137,10 +138,7 @@ slv2_plugin_query_node(SLV2Plugin p, librdf_node* subject, librdf_node* predicat
 SLV2Value
 slv2_plugin_get_unique(SLV2Plugin p, librdf_node* subject, librdf_node* predicate)
 {
-	SLV2Values values = slv2_plugin_query_node(
-		p,
-		librdf_new_node_from_node(subject),
-		librdf_new_node_from_node(predicate));
+	SLV2Values values = slv2_plugin_query_node(p, subject, predicate);
 	if (!values || slv2_values_size(values) != 1) {
 		SLV2_ERRORF("Port does not have exactly one `%s' property\n",
 		            librdf_uri_as_string(librdf_node_get_uri(predicate)));
@@ -477,6 +475,7 @@ slv2_plugin_get_value_by_qname(SLV2Plugin  p,
 	}
 	SLV2Value  pred_value = slv2_value_new_uri(p->world, pred_uri);
 	SLV2Values ret        = slv2_plugin_get_value(p, pred_value);
+
 	slv2_value_free(pred_value);
 	free(pred_uri);
 	return ret;
@@ -503,7 +502,6 @@ slv2_plugin_get_value_by_qname_i18n(SLV2Plugin  p,
 
 	librdf_free_node(pred_node);
 	free(pred_uri);
-
 	return slv2_values_from_stream_i18n(p, results);
 }
 
@@ -527,10 +525,9 @@ slv2_plugin_get_value_for_subject(SLV2Plugin p,
 		: librdf_new_node_from_blank_identifier(
 			p->world->world, (const uint8_t*)slv2_value_as_blank(subject));
 
-	return slv2_plugin_query_node(
-		p,
-		subject_node,
-		librdf_new_node_from_node(predicate->val.uri_val));
+	return slv2_plugin_query_node(p,
+	                              subject_node,
+	                              predicate->val.uri_val);
 }
 
 
@@ -562,6 +559,10 @@ slv2_plugin_get_port_ranges_float(SLV2Plugin p,
 
 		if (def && def_values)
 			def_values[i] = slv2_value_as_float(def);
+
+		slv2_value_free(def);
+		slv2_value_free(min);
+		slv2_value_free(max);
 	}
 }
 
@@ -618,12 +619,12 @@ slv2_plugin_has_latency(SLV2Plugin p)
 			port,
 			p->world->lv2_portproperty_node,
 			p->world->lv2_reportslatency_node);
-		if (!slv2_matches_end(reports_latency)) {
+		const bool end = slv2_matches_end(reports_latency);
+		librdf_free_stream(reports_latency);
+		if (!end) {
 			ret = true;
 			break;
 		}
-
-		librdf_free_stream(reports_latency);
 	}
 	END_MATCH(ports);
 
@@ -654,8 +655,10 @@ slv2_plugin_get_latency_port_index(SLV2Plugin p)
 
 			ret = slv2_value_as_int(index);
 			slv2_value_free(index);
+			END_MATCH(reports_latency);
 			break;
 		}
+		END_MATCH(reports_latency);
 	}
 	END_MATCH(ports);
 

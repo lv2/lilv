@@ -765,7 +765,9 @@ test_port()
 	TEST_ASSERT(slv2_port_is_a(plug, p, in_class));
 	TEST_ASSERT(!slv2_port_is_a(plug, p, audio_class));
 
-	TEST_ASSERT(slv2_values_size(slv2_port_get_properties(plug, p)) == 1);
+	SLV2Values port_properties = slv2_port_get_properties(plug, p);
+	TEST_ASSERT(slv2_values_size(port_properties) == 1);
+	slv2_values_free(port_properties);
 
 	TEST_ASSERT(!strcmp(slv2_value_as_string(slv2_port_get_symbol(plug, p)), "foo"));
 	SLV2Value name = slv2_port_get_name(plug, p);
@@ -819,12 +821,12 @@ test_port()
 	SLV2Values names = slv2_port_get_value(plug, p, name_p);
 	TEST_ASSERT(slv2_values_size(names) == 2);
 	TEST_ASSERT(!strcmp(slv2_value_as_string(slv2_values_get_at(names, 0)),
-			"bar"));
+	                    "bar"));
 	slv2_values_free(names);
 	names = slv2_port_get_value(plug, ep, name_p);
 	TEST_ASSERT(slv2_values_size(names) == 1);
 	TEST_ASSERT(!strcmp(slv2_value_as_string(slv2_values_get_at(names, 0)),
-			"Event Input"));
+	                    "Event Input"));
 	slv2_values_free(names);
 	slv2_value_free(name_p);
 
