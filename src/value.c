@@ -94,14 +94,13 @@ slv2_value_new(SLV2World world, SLV2ValueType type, const char* str)
 }
 
 
-/** Create a new SLV2Value from a librdf_node, or return NULL if impossible */
+/** Create a new SLV2Value from @a node, or return NULL if impossible */
 SLV2Value
 slv2_value_new_librdf_node(SLV2World world, librdf_node* node)
 {
-	SLV2Value result = NULL;
-
-	librdf_uri* datatype_uri = NULL;
-	SLV2ValueType type = SLV2_VALUE_STRING;
+	SLV2Value     result       = NULL;
+	librdf_uri*   datatype_uri = NULL;
+	SLV2ValueType type         = SLV2_VALUE_STRING;
 
 	switch (librdf_node_get_type(node)) {
 	case LIBRDF_NODE_TYPE_RESOURCE:

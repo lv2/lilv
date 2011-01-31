@@ -54,6 +54,10 @@ extern "C" {
 
 #define END_MATCH(stream) librdf_free_stream(stream)
 
+
+typedef librdf_node* SLV2Node;  ///< RDF node
+
+
 /* ********* PORT ********* */
 
 /** Reference to a port on some plugin. */
@@ -96,9 +100,9 @@ void       slv2_plugin_load_ports_if_necessary(SLV2Plugin p);
 void       slv2_plugin_free(SLV2Plugin plugin);
 
 SLV2Value
-slv2_plugin_get_unique(SLV2Plugin   p,
-                       librdf_node* subject,
-                       librdf_node* predicate);
+slv2_plugin_get_unique(SLV2Plugin p,
+                       SLV2Node   subject,
+                       SLV2Node   predicate);
 
 /* ********* Plugins ********* */
 
@@ -137,10 +141,10 @@ struct _SLV2PluginClass {
 	SLV2Value          label;
 };
 
-SLV2PluginClass slv2_plugin_class_new(SLV2World    world,
-                                      librdf_node* parent_uri,
-                                      librdf_node* uri,
-                                      const char*  label);
+SLV2PluginClass slv2_plugin_class_new(SLV2World   world,
+                                      SLV2Node    parent_uri,
+                                      SLV2Node    uri,
+                                      const char* label);
 
 void slv2_plugin_class_free(SLV2PluginClass plugin_class);
 
@@ -165,28 +169,28 @@ struct _SLV2World {
 	SLV2PluginClass   lv2_plugin_class;
 	SLV2PluginClasses plugin_classes;
 	SLV2Plugins       plugins;
-	librdf_node*      dyn_manifest_node;
-	librdf_node*      lv2_specification_node;
-	librdf_node*      lv2_plugin_node;
-	librdf_node*      lv2_binary_node;
-	librdf_node*      lv2_default_node;
-	librdf_node*      lv2_minimum_node;
-	librdf_node*      lv2_maximum_node;
-	librdf_node*      lv2_port_node;
-	librdf_node*      lv2_portproperty_node;
-	librdf_node*      lv2_reportslatency_node;
-	librdf_node*      lv2_index_node;
-	librdf_node*      lv2_symbol_node;
-	librdf_node*      rdf_a_node;
-	librdf_node*      rdf_value_node;
-	librdf_node*      rdfs_class_node;
-	librdf_node*      rdfs_label_node;
-	librdf_node*      rdfs_seealso_node;
-	librdf_node*      rdfs_subclassof_node;
-	librdf_node*      slv2_bundleuri_node;
-	librdf_node*      slv2_dmanifest_node;
-	librdf_node*      xsd_integer_node;
-	librdf_node*      xsd_decimal_node;
+	SLV2Node          dyn_manifest_node;
+	SLV2Node          lv2_specification_node;
+	SLV2Node          lv2_plugin_node;
+	SLV2Node          lv2_binary_node;
+	SLV2Node          lv2_default_node;
+	SLV2Node          lv2_minimum_node;
+	SLV2Node          lv2_maximum_node;
+	SLV2Node          lv2_port_node;
+	SLV2Node          lv2_portproperty_node;
+	SLV2Node          lv2_reportslatency_node;
+	SLV2Node          lv2_index_node;
+	SLV2Node          lv2_symbol_node;
+	SLV2Node          rdf_a_node;
+	SLV2Node          rdf_value_node;
+	SLV2Node          rdfs_class_node;
+	SLV2Node          rdfs_label_node;
+	SLV2Node          rdfs_seealso_node;
+	SLV2Node          rdfs_subclassof_node;
+	SLV2Node          slv2_bundleuri_node;
+	SLV2Node          slv2_dmanifest_node;
+	SLV2Node          xsd_integer_node;
+	SLV2Node          xsd_decimal_node;
 };
 
 /** Load all bundles found in \a search_path.
@@ -248,22 +252,22 @@ struct _SLV2Value {
 	SLV2ValueType type;
 	char*         str_val; ///< always present
 	union {
-		int          int_val;
-		float        float_val;
-		librdf_node* uri_val;
+		int       int_val;
+		float     float_val;
+		SLV2Node  uri_val;
 	} val;
 };
 
 SLV2Value   slv2_value_new(SLV2World world, SLV2ValueType type, const char* val);
-SLV2Value   slv2_value_new_librdf_node(SLV2World world, librdf_node* node);
-SLV2Value   slv2_value_new_librdf_uri(SLV2World world, librdf_node* node);
+SLV2Value   slv2_value_new_librdf_node(SLV2World world, SLV2Node node);
+SLV2Value   slv2_value_new_librdf_uri(SLV2World world, SLV2Node node);
 librdf_uri* slv2_value_as_librdf_uri(SLV2Value value);
 
-static inline librdf_node* slv2_node_copy(librdf_node* node) {
+static inline SLV2Node slv2_node_copy(SLV2Node node) {
 	return librdf_new_node_from_node(node);
 }
 
-static inline void slv2_node_free(librdf_node* node) {
+static inline void slv2_node_free(SLV2Node node) {
 	librdf_free_node(node);
 }
 

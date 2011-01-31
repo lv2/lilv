@@ -111,7 +111,7 @@ slv2_plugin_load_if_necessary(SLV2Plugin p)
 
 
 static SLV2Values
-slv2_plugin_query_node(SLV2Plugin p, librdf_node* subject, librdf_node* predicate)
+slv2_plugin_query_node(SLV2Plugin p, SLV2Node subject, SLV2Node predicate)
 {
 	// <subject> <predicate> ?value
 	SLV2Matches results = slv2_plugin_find_statements(
@@ -124,8 +124,8 @@ slv2_plugin_query_node(SLV2Plugin p, librdf_node* subject, librdf_node* predicat
 
 	SLV2Values result = slv2_values_new();
 	FOREACH_MATCH(results) {
-		librdf_node* node  = MATCH_OBJECT(results);
-		SLV2Value    value = slv2_value_new_librdf_node(p->world, node);
+		SLV2Node  node  = MATCH_OBJECT(results);
+		SLV2Value value = slv2_value_new_librdf_node(p->world, node);
 		if (value)
 			raptor_sequence_push(result, value);
 	}
@@ -136,7 +136,7 @@ slv2_plugin_query_node(SLV2Plugin p, librdf_node* subject, librdf_node* predicat
 
 
 SLV2Value
-slv2_plugin_get_unique(SLV2Plugin p, librdf_node* subject, librdf_node* predicate)
+slv2_plugin_get_unique(SLV2Plugin p, SLV2Node subject, SLV2Node predicate)
 {
 	SLV2Values values = slv2_plugin_query_node(p, subject, predicate);
 	if (!values || slv2_values_size(values) != 1) {
@@ -151,7 +151,7 @@ slv2_plugin_get_unique(SLV2Plugin p, librdf_node* subject, librdf_node* predicat
 
 
 static SLV2Value
-slv2_plugin_get_one(SLV2Plugin p, librdf_node* subject, librdf_node* predicate)
+slv2_plugin_get_one(SLV2Plugin p, SLV2Node subject, SLV2Node predicate)
 {
 	SLV2Values values = slv2_plugin_query_node(p, subject, predicate);
 	if (!values) {
@@ -181,8 +181,8 @@ slv2_plugin_load_ports_if_necessary(SLV2Plugin p)
 			NULL);
 
 		FOREACH_MATCH(ports) {
-			librdf_node* port   = MATCH_OBJECT(ports);
-			SLV2Value    symbol = slv2_plugin_get_unique(
+			SLV2Node  port   = MATCH_OBJECT(ports);
+			SLV2Value symbol = slv2_plugin_get_unique(
 				p, port, p->world->lv2_symbol_node);
 
 			if (!slv2_value_is_string(symbol)) {
@@ -222,7 +222,7 @@ slv2_plugin_load_ports_if_necessary(SLV2Plugin p)
 			SLV2Matches types = slv2_plugin_find_statements(
 				p, port, p->world->rdf_a_node, NULL);
 			FOREACH_MATCH(types) {
-				librdf_node* type = MATCH_OBJECT(types);
+				SLV2Node type = MATCH_OBJECT(types);
 				if (librdf_node_is_resource(type)) {
 					raptor_sequence_push(
 						this_port->classes,
@@ -337,7 +337,7 @@ slv2_plugin_get_library_uri(SLV2Plugin p)
 			p->world->lv2_binary_node,
 			NULL);
 		FOREACH_MATCH(results) {
-			librdf_node* binary_node = MATCH_OBJECT(results);
+			SLV2Node binary_node = MATCH_OBJECT(results);
 			if (librdf_node_is_resource(binary_node)) {
 				p->binary_uri = slv2_value_new_librdf_uri(p->world, binary_node);
 				break;
@@ -368,7 +368,7 @@ slv2_plugin_get_class(SLV2Plugin p)
 			p->world->rdf_a_node,
 			NULL);
 		FOREACH_MATCH(results) {
-			librdf_node* class_node = slv2_node_copy(MATCH_OBJECT(results));
+			SLV2Node class_node = slv2_node_copy(MATCH_OBJECT(results));
 			if (!librdf_node_is_resource(class_node)) {
 				continue;
 			}
@@ -491,7 +491,7 @@ slv2_plugin_get_value_by_qname_i18n(SLV2Plugin  p,
 		return NULL;
 	}
 
-	librdf_node* pred_node = librdf_new_node_from_uri_string(
+	SLV2Node pred_node = librdf_new_node_from_uri_string(
 		p->world->world, (const uint8_t*)pred_uri);
 
 	SLV2Matches results = slv2_plugin_find_statements(
@@ -520,7 +520,7 @@ slv2_plugin_get_value_for_subject(SLV2Plugin p,
 		return NULL;
 	}
 
-	librdf_node* subject_node = (slv2_value_is_uri(subject))
+	SLV2Node subject_node = (slv2_value_is_uri(subject))
 		? slv2_node_copy(subject->val.uri_val)
 		: librdf_new_node_from_blank_identifier(
 			p->world->world, (const uint8_t*)slv2_value_as_blank(subject));
@@ -613,14 +613,14 @@ slv2_plugin_has_latency(SLV2Plugin p)
 
 	bool ret = false;
 	FOREACH_MATCH(ports) {
-		librdf_node* port            = MATCH_OBJECT(ports);
-		SLV2Matches  reports_latency = slv2_plugin_find_statements(
+		SLV2Node    port            = MATCH_OBJECT(ports);
+		SLV2Matches reports_latency = slv2_plugin_find_statements(
 			p,
 			port,
 			p->world->lv2_portproperty_node,
 			p->world->lv2_reportslatency_node);
 		const bool end = slv2_matches_end(reports_latency);
-		librdf_free_stream(reports_latency);
+		END_MATCH(reports_latency);
 		if (!end) {
 			ret = true;
 			break;
@@ -643,8 +643,8 @@ slv2_plugin_get_latency_port_index(SLV2Plugin p)
 
 	uint32_t ret = 0;
 	FOREACH_MATCH(ports) {
-		librdf_node* port            = MATCH_OBJECT(ports);
-		SLV2Matches  reports_latency = slv2_plugin_find_statements(
+		SLV2Node    port            = MATCH_OBJECT(ports);
+		SLV2Matches reports_latency = slv2_plugin_find_statements(
 			p,
 			port,
 			p->world->lv2_portproperty_node,
@@ -744,10 +744,10 @@ slv2_plugin_get_port_by_symbol(SLV2Plugin p,
 #define NS_DOAP (const uint8_t*)"http://usefulinc.com/ns/doap#"
 #define NS_FOAF (const uint8_t*)"http://xmlns.com/foaf/0.1/"
 
-static librdf_node*
+static SLV2Node
 slv2_plugin_get_author(SLV2Plugin p)
 {
-	librdf_node* doap_maintainer = librdf_new_node_from_uri_string(
+	SLV2Node doap_maintainer = librdf_new_node_from_uri_string(
 		p->world->world, NS_DOAP "maintainer");
 
 	SLV2Matches maintainers = slv2_plugin_find_statements(
@@ -762,9 +762,9 @@ slv2_plugin_get_author(SLV2Plugin p)
 		return NULL;
 	}
 
-	librdf_node* author = slv2_node_copy(MATCH_OBJECT(maintainers));
+	SLV2Node author = slv2_node_copy(MATCH_OBJECT(maintainers));
 
-	librdf_free_stream(maintainers);
+	END_MATCH(maintainers);
 	return author;
 }
 
@@ -772,7 +772,7 @@ slv2_plugin_get_author(SLV2Plugin p)
 SLV2Value
 slv2_plugin_get_author_name(SLV2Plugin plugin)
 {
-	librdf_node* author = slv2_plugin_get_author(plugin);
+	SLV2Node author = slv2_plugin_get_author(plugin);
 	if (author) {
 		return slv2_plugin_get_one(
 			plugin, author, librdf_new_node_from_uri_string(
@@ -785,7 +785,7 @@ slv2_plugin_get_author_name(SLV2Plugin plugin)
 SLV2Value
 slv2_plugin_get_author_email(SLV2Plugin plugin)
 {
-	librdf_node* author = slv2_plugin_get_author(plugin);
+	SLV2Node author = slv2_plugin_get_author(plugin);
 	if (author) {
 		return slv2_plugin_get_one(
 			plugin, author, librdf_new_node_from_uri_string(
@@ -798,7 +798,7 @@ slv2_plugin_get_author_email(SLV2Plugin plugin)
 SLV2Value
 slv2_plugin_get_author_homepage(SLV2Plugin plugin)
 {
-	librdf_node* author = slv2_plugin_get_author(plugin);
+	SLV2Node author = slv2_plugin_get_author(plugin);
 	if (author) {
 		return slv2_plugin_get_one(
 			plugin, author, librdf_new_node_from_uri_string(
@@ -813,7 +813,7 @@ slv2_plugin_get_uis(SLV2Plugin p)
 {
 #define NS_UI (const uint8_t*)"http://lv2plug.in/ns/extensions/ui#"
 
-	librdf_node* ui_ui = librdf_new_node_from_uri_string(
+	SLV2Node ui_ui = librdf_new_node_from_uri_string(
 		p->world->world, NS_UI "ui");
 
 	SLV2UIs     result = slv2_uis_new();
@@ -824,12 +824,12 @@ slv2_plugin_get_uis(SLV2Plugin p)
 		NULL);
 
 	FOREACH_MATCH(uis) {
-		librdf_node* ui = MATCH_OBJECT(uis);
+		SLV2Node ui = MATCH_OBJECT(uis);
 
 		SLV2Value type = slv2_plugin_get_unique(
 			p, ui, p->world->rdf_a_node);
 
-		librdf_node* ui_binary_node = librdf_new_node_from_uri_string(
+		SLV2Node ui_binary_node = librdf_new_node_from_uri_string(
 			p->world->world, NS_UI "binary");
 
 		SLV2Value binary = slv2_plugin_get_unique(

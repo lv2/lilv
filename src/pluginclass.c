@@ -29,10 +29,10 @@
 
 /* private */
 SLV2PluginClass
-slv2_plugin_class_new(SLV2World    world,
-                      librdf_node* parent_node,
-                      librdf_node* uri,
-                      const char*  label)
+slv2_plugin_class_new(SLV2World   world,
+                      SLV2Node    parent_node,
+                      SLV2Node    uri,
+                      const char* label)
 {
 	assert(!parent_node || librdf_node_is_resource(parent_node));
 	SLV2PluginClass pc = (SLV2PluginClass)malloc(sizeof(struct _SLV2PluginClass));

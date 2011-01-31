@@ -30,10 +30,10 @@
 
 
 SLV2Matches
-slv2_plugin_find_statements(SLV2Plugin   plugin,
-                            librdf_node* subject,
-                            librdf_node* predicate,
-                            librdf_node* object)
+slv2_plugin_find_statements(SLV2Plugin plugin,
+                            SLV2Node   subject,
+                            SLV2Node   predicate,
+                            SLV2Node   object)
 {
 	slv2_plugin_load_if_necessary(plugin);
 	librdf_statement* q = librdf_new_statement_from_nodes(
@@ -51,10 +51,10 @@ SLV2Values
 slv2_values_from_stream_i18n(SLV2Plugin  p,
                              SLV2Matches stream)
 {
-	SLV2Values   values  = slv2_values_new();
-	librdf_node* nolang  = NULL;
+	SLV2Values values = slv2_values_new();
+	SLV2Node   nolang = NULL;
 	FOREACH_MATCH(stream) {
-		librdf_node* value = MATCH_OBJECT(stream);
+		SLV2Node value = MATCH_OBJECT(stream);
 		if (librdf_node_is_literal(value)) {
 			const char* lang = librdf_node_get_literal_value_language(value);
 			if (lang) {
