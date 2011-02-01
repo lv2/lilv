@@ -75,7 +75,7 @@ slv2_port_get_node(SLV2Plugin p,
 		NULL);
 	SLV2Node ret = NULL;
 	FOREACH_MATCH(ports) {
-		SLV2Node  node   = MATCH_OBJECT(ports);
+		SLV2Node  node   = slv2_match_object(ports);
 		SLV2Value symbol = slv2_plugin_get_unique(
 			p,
 			slv2_node_copy(node),
@@ -90,7 +90,7 @@ slv2_port_get_node(SLV2Plugin p,
 			break;
 		}
 	}
-	END_MATCH(ports);
+	slv2_match_end(ports);
 	assert(ret);
 	return ret;
 }
@@ -110,7 +110,7 @@ slv2_port_has_property(SLV2Plugin p,
 		slv2_value_as_node(property));
 
 	const bool ret = !slv2_matches_end(results);
-	END_MATCH(results);
+	slv2_match_end(results);
 	return ret;
 }
 
@@ -131,7 +131,7 @@ slv2_port_supports_event(SLV2Plugin p,
 		slv2_value_as_node(event));
 
 	const bool ret = !slv2_matches_end(results);
-	END_MATCH(results);
+	slv2_match_end(results);
 	return ret;
 }
 
@@ -140,7 +140,7 @@ static SLV2Values
 slv2_values_from_stream_objects(SLV2Plugin p, SLV2Matches stream)
 {
 	if (slv2_matches_end(stream)) {
-		END_MATCH(stream);
+		slv2_match_end(stream);
 		return NULL;
 	}
 
@@ -150,9 +150,9 @@ slv2_values_from_stream_objects(SLV2Plugin p, SLV2Matches stream)
 			values,
 			slv2_value_new_from_node(
 				p->world,
-				MATCH_OBJECT(stream)));
+				slv2_match_object(stream)));
 	}
-	END_MATCH(stream);
+	slv2_match_end(stream);
 	return values;
 }
 
@@ -324,7 +324,7 @@ slv2_port_get_scale_points(SLV2Plugin p,
 		ret = slv2_scale_points_new();
 
 	FOREACH_MATCH(points) {
-		SLV2Node point = MATCH_OBJECT(points);
+		SLV2Node point = slv2_match_object(points);
 
 		SLV2Value value = slv2_plugin_get_unique(
 			p,
@@ -340,7 +340,7 @@ slv2_port_get_scale_points(SLV2Plugin p,
 			raptor_sequence_push(ret, slv2_scale_point_new(value, label));
 		}
 	}
-	END_MATCH(points);
+	slv2_match_end(points);
 
 	assert(!ret || slv2_values_size(ret) > 0);
 	return ret;

@@ -118,18 +118,18 @@ slv2_plugin_query_node(SLV2Plugin p, SLV2Node subject, SLV2Node predicate)
 		p, subject, predicate, NULL);
 
 	if (slv2_matches_end(results)) {
-		END_MATCH(results);
+		slv2_match_end(results);
 		return NULL;
 	}
 
 	SLV2Values result = slv2_values_new();
 	FOREACH_MATCH(results) {
-		SLV2Node  node  = MATCH_OBJECT(results);
+		SLV2Node  node  = slv2_match_object(results);
 		SLV2Value value = slv2_value_new_from_node(p->world, node);
 		if (value)
 			raptor_sequence_push(result, value);
 	}
-	END_MATCH(results);
+	slv2_match_end(results);
 
 	return result;
 }
@@ -181,7 +181,7 @@ slv2_plugin_load_ports_if_necessary(SLV2Plugin p)
 			NULL);
 
 		FOREACH_MATCH(ports) {
-			SLV2Node  port   = MATCH_OBJECT(ports);
+			SLV2Node  port   = slv2_match_object(ports);
 			SLV2Value symbol = slv2_plugin_get_unique(
 				p, port, p->world->lv2_symbol_node);
 
@@ -222,7 +222,7 @@ slv2_plugin_load_ports_if_necessary(SLV2Plugin p)
 			SLV2Matches types = slv2_plugin_find_statements(
 				p, port, p->world->rdf_a_node, NULL);
 			FOREACH_MATCH(types) {
-				SLV2Node type = MATCH_OBJECT(types);
+				SLV2Node type = slv2_match_object(types);
 				if (librdf_node_is_resource(type)) {
 					raptor_sequence_push(
 						this_port->classes,
@@ -231,7 +231,7 @@ slv2_plugin_load_ports_if_necessary(SLV2Plugin p)
 					SLV2_WARN("port has non-URI rdf:type\n");
 				}
 			}
-			END_MATCH(types);
+			slv2_match_end(types);
 
 		error:
 			slv2_value_free(symbol);
@@ -246,7 +246,7 @@ slv2_plugin_load_ports_if_necessary(SLV2Plugin p)
 				break; // Invalid plugin
 			}
 		}
-		END_MATCH(ports);
+		slv2_match_end(ports);
 	}
 }
 
@@ -340,13 +340,13 @@ slv2_plugin_get_library_uri(SLV2Plugin p)
 			p->world->lv2_binary_node,
 			NULL);
 		FOREACH_MATCH(results) {
-			SLV2Node binary_node = MATCH_OBJECT(results);
+			SLV2Node binary_node = slv2_match_object(results);
 			if (librdf_node_is_resource(binary_node)) {
 				p->binary_uri = slv2_value_new_from_node(p->world, binary_node);
 				break;
 			}
 		}
-		END_MATCH(results);
+		slv2_match_end(results);
 	}
 	return p->binary_uri;
 }
@@ -371,7 +371,7 @@ slv2_plugin_get_class(SLV2Plugin p)
 			p->world->rdf_a_node,
 			NULL);
 		FOREACH_MATCH(results) {
-			SLV2Node class_node = slv2_node_copy(MATCH_OBJECT(results));
+			SLV2Node class_node = slv2_node_copy(slv2_match_object(results));
 			if (!librdf_node_is_resource(class_node)) {
 				continue;
 			}
@@ -393,7 +393,7 @@ slv2_plugin_get_class(SLV2Plugin p)
 
 			slv2_value_free(class);
 		}
-		END_MATCH(results);
+		slv2_match_end(results);
 
 		if (p->plugin_class == NULL)
 			p->plugin_class = p->world->lv2_plugin_class;
@@ -616,20 +616,20 @@ slv2_plugin_has_latency(SLV2Plugin p)
 
 	bool ret = false;
 	FOREACH_MATCH(ports) {
-		SLV2Node    port            = MATCH_OBJECT(ports);
+		SLV2Node    port            = slv2_match_object(ports);
 		SLV2Matches reports_latency = slv2_plugin_find_statements(
 			p,
 			port,
 			p->world->lv2_portproperty_node,
 			p->world->lv2_reportslatency_node);
 		const bool end = slv2_matches_end(reports_latency);
-		END_MATCH(reports_latency);
+		slv2_match_end(reports_latency);
 		if (!end) {
 			ret = true;
 			break;
 		}
 	}
-	END_MATCH(ports);
+	slv2_match_end(ports);
 
 	return ret;
 }
@@ -646,7 +646,7 @@ slv2_plugin_get_latency_port_index(SLV2Plugin p)
 
 	uint32_t ret = 0;
 	FOREACH_MATCH(ports) {
-		SLV2Node    port            = MATCH_OBJECT(ports);
+		SLV2Node    port            = slv2_match_object(ports);
 		SLV2Matches reports_latency = slv2_plugin_find_statements(
 			p,
 			port,
@@ -658,12 +658,12 @@ slv2_plugin_get_latency_port_index(SLV2Plugin p)
 
 			ret = slv2_value_as_int(index);
 			slv2_value_free(index);
-			END_MATCH(reports_latency);
+			slv2_match_end(reports_latency);
 			break;
 		}
-		END_MATCH(reports_latency);
+		slv2_match_end(reports_latency);
 	}
-	END_MATCH(ports);
+	slv2_match_end(ports);
 
 	return ret;  // FIXME: error handling
 }
@@ -765,9 +765,9 @@ slv2_plugin_get_author(SLV2Plugin p)
 		return NULL;
 	}
 
-	SLV2Node author = slv2_node_copy(MATCH_OBJECT(maintainers));
+	SLV2Node author = slv2_node_copy(slv2_match_object(maintainers));
 
-	END_MATCH(maintainers);
+	slv2_match_end(maintainers);
 	return author;
 }
 
@@ -827,7 +827,7 @@ slv2_plugin_get_uis(SLV2Plugin p)
 		NULL);
 
 	FOREACH_MATCH(uis) {
-		SLV2Node ui = MATCH_OBJECT(uis);
+		SLV2Node ui = slv2_match_object(uis);
 
 		SLV2Value type = slv2_plugin_get_unique(
 			p, ui, p->world->rdf_a_node);
@@ -857,7 +857,7 @@ slv2_plugin_get_uis(SLV2Plugin p)
 
 		raptor_sequence_push(result, slv2_ui);
 	}
-	END_MATCH(uis);
+	slv2_match_end(uis);
 
 	slv2_node_free(ui_ui);
 

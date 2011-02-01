@@ -43,19 +43,28 @@ extern "C" {
 #define SLV2_NS_XSD  (const uint8_t*)"http://www.w3.org/2001/XMLSchema#"
 #define SLV2_NS_RDF  (const uint8_t*)"http://www.w3.org/1999/02/22-rdf-syntax-ns#"
 
+typedef librdf_stream* SLV2Matches;
+typedef librdf_node*   SLV2Node;  ///< RDF node
+
 #define FOREACH_MATCH(stream) \
 	for (; !librdf_stream_end(stream); librdf_stream_next(stream))
 
-#define MATCH_SUBJECT(stream)	  \
-	librdf_statement_get_subject(librdf_stream_get_object(stream))
+static inline SLV2Node
+slv2_match_subject(SLV2Matches stream) {
+	return librdf_statement_get_subject(librdf_stream_get_object(stream));
+}
 
-#define MATCH_OBJECT(stream) \
-	librdf_statement_get_object(librdf_stream_get_object(stream))
+static inline SLV2Node
+slv2_match_object(SLV2Matches stream) {
+	return librdf_statement_get_object(librdf_stream_get_object(stream));
+}
 
-#define END_MATCH(stream) librdf_free_stream(stream)
+static inline void
+slv2_match_end(SLV2Matches stream)
+{
+	librdf_free_stream(stream);
+}
 
-
-typedef librdf_node* SLV2Node;  ///< RDF node
 
 
 /* ********* PORT ********* */
@@ -287,8 +296,6 @@ void           slv2_scale_point_free(SLV2ScalePoint point);
 
 
 /* ********* Query Results********* */
-
-typedef librdf_stream* SLV2Matches;
 
 SLV2Matches slv2_plugin_find_statements(SLV2Plugin plugin,
                                         SLV2Node   subject,

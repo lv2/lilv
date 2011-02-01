@@ -54,7 +54,7 @@ slv2_values_from_stream_i18n(SLV2Plugin  p,
 	SLV2Values values = slv2_values_new();
 	SLV2Node   nolang = NULL;
 	FOREACH_MATCH(stream) {
-		SLV2Node value = MATCH_OBJECT(stream);
+		SLV2Node value = slv2_match_object(stream);
 		if (librdf_node_is_literal(value)) {
 			const char* lang = librdf_node_get_literal_value_language(value);
 			if (lang) {
@@ -69,7 +69,7 @@ slv2_values_from_stream_i18n(SLV2Plugin  p,
 		}
 		break;
 	}
-	END_MATCH(stream);
+	slv2_match_end(stream);
 
 	if (slv2_values_size(values) == 0) {
 		// No value with a matching language, use untranslated default
