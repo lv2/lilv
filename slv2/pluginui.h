@@ -27,7 +27,6 @@ extern "C" {
  * @{
  */
 
-
 /** Get the URI of a Plugin UI.
  *
  * \param ui The Plugin UI
@@ -38,7 +37,6 @@ extern "C" {
 SLV2_API
 SLV2Value
 slv2_ui_get_uri(SLV2UI ui);
-
 
 /** Get the types (URIs of RDF classes) of a Plugin UI.
  *
@@ -51,7 +49,6 @@ SLV2_API
 SLV2Values
 slv2_ui_get_classes(SLV2UI ui);
 
-
 /** Check whether a plugin UI is a given type.
  *
  * \param ui        The Plugin UI
@@ -62,7 +59,6 @@ slv2_ui_get_classes(SLV2UI ui);
 SLV2_API
 bool
 slv2_ui_is_a(SLV2UI ui, SLV2Value class_uri);
-
 
 /** Get the URI for a Plugin UI's bundle.
  *
@@ -75,7 +71,6 @@ SLV2_API
 SLV2Value
 slv2_ui_get_bundle_uri(SLV2UI ui);
 
-
 /** Get the URI for a Plugin UI's shared library.
  *
  * \param ui The Plugin UI
@@ -87,7 +82,6 @@ SLV2_API
 SLV2Value
 slv2_ui_get_binary_uri(SLV2UI ui);
 
-
 /** @} */
 
 #ifdef __cplusplus
@@ -95,4 +89,3 @@ slv2_ui_get_binary_uri(SLV2UI ui);
 #endif
 
 #endif /* __SLV2_PLUGIN_UI_H__ */
-

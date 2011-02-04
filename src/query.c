@@ -27,7 +27,6 @@
 #include "slv2/util.h"
 #include "slv2_internal.h"
 
-
 SLV2Matches
 slv2_plugin_find_statements(SLV2Plugin plugin,
                             SLV2Node   subject,
@@ -38,7 +37,6 @@ slv2_plugin_find_statements(SLV2Plugin plugin,
 	SordTuple pat = { subject, predicate, object, NULL };
 	return sord_find(plugin->world->model, pat);
 }
-
 
 SLV2Values
 slv2_values_from_stream_i18n(SLV2Plugin  p,

@@ -29,7 +29,6 @@ extern "C" {
  * @{
  */
 
-
 /** Get the label of this scale point (enumeration value)
  *
  * Returned value is owned by \a point and must not be freed.
@@ -38,7 +37,6 @@ SLV2_API
 SLV2Value
 slv2_scale_point_get_label(SLV2ScalePoint point);
 
-
 /** Get the value of this scale point (enumeration value)
  *
  * Returned value is owned by \a point and must not be freed.
@@ -46,7 +44,6 @@ slv2_scale_point_get_label(SLV2ScalePoint point);
 SLV2_API
 SLV2Value
 slv2_scale_point_get_value(SLV2ScalePoint point);
-
 
 /** @} */
 

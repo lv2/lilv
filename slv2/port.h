@@ -32,7 +32,6 @@ extern "C" {
  * @{
  */
 
-
 /** Port analog of slv2_plugin_get_value.
  *
  * Time = Query
@@ -42,7 +41,6 @@ SLV2Values
 slv2_port_get_value(SLV2Plugin plugin,
                     SLV2Port   port,
                     SLV2Value  predicate);
-
 
 /** Port analog of slv2_plugin_get_value_by_qname.
  *
@@ -54,7 +52,6 @@ slv2_port_get_value_by_qname(SLV2Plugin  plugin,
                              SLV2Port    port,
                              const char* property_uri);
 
-
 /** Port analog of slv2_plugin_get_value_by_qname_i18n.
  *
  * Time = Query
@@ -65,7 +62,6 @@ slv2_port_get_value_by_qname_i18n(SLV2Plugin  plugin,
 				  SLV2Port    port,
 				  const char* property_uri);
 
-
 /** Return the LV2 port properties of a port.
  *
  * Time = Query
@@ -74,7 +70,6 @@ SLV2_API
 SLV2Values
 slv2_port_get_properties(SLV2Plugin plugin,
                          SLV2Port   port);
-
 
 /** Return whether a port has a certain property.
  *
@@ -86,7 +81,6 @@ slv2_port_has_property(SLV2Plugin p,
                        SLV2Port   port,
                        SLV2Value  property_uri);
 
-
 /** Return whether a port is an event port and supports a certain event type.
  *
  * Time = Query
@@ -96,7 +90,6 @@ bool
 slv2_port_supports_event(SLV2Plugin p,
                          SLV2Port   port,
                          SLV2Value  event_uri);
-
 
 /** Get the symbol of a port.
  *
@@ -123,7 +116,6 @@ SLV2Value
 slv2_port_get_name(SLV2Plugin plugin,
                    SLV2Port   port);
 
-
 /** Get all the classes of a port.
  *
  * This can be used to determine if a port is an input, output, audio,
@@ -138,7 +130,6 @@ SLV2_API
 SLV2Values
 slv2_port_get_classes(SLV2Plugin plugin,
                       SLV2Port   port);
-
 
 /** Determine if a port is of a given class (input, output, audio, etc).
  *
@@ -157,7 +148,6 @@ slv2_port_is_a(SLV2Plugin plugin,
                SLV2Port   port,
                SLV2Value  port_class);
 
-
 /** Get the default, minimum, and maximum values of a port.
  *
  * @a def, @a min, and @a max are outputs, pass pointers to uninitialized
@@ -175,7 +165,6 @@ slv2_port_get_range(SLV2Plugin plugin,
                     SLV2Value* min,
                     SLV2Value* max);
 
-
 /** Get the scale points (enumeration values) of a port.
  *
  * This returns a collection of 'interesting' named values of a port
@@ -188,7 +177,6 @@ SLV2_API
 SLV2ScalePoints
 slv2_port_get_scale_points(SLV2Plugin plugin,
                            SLV2Port   port);
-
 
 /** @} */
 

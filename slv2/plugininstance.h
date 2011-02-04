@@ -49,7 +49,6 @@ typedef struct _Instance {
 
 /** \endcond */
 
-
 /** \defgroup slv2_library Plugin library access
  *
  * An SLV2Instance is an instantiated SLV2Plugin (ie a loaded dynamic
@@ -80,7 +79,6 @@ slv2_plugin_instantiate(SLV2Plugin               plugin,
                         double                   sample_rate,
                         const LV2_Feature*const* features);
 
-
 /** Free a plugin instance.
  *
  * \a instance is invalid after this call.
@@ -101,7 +99,6 @@ slv2_instance_get_uri(SLV2Instance instance)
 	return instance->lv2_descriptor->URI;
 }
 
-
 /** Connect a port to a data location.
  *
  * This may be called regardless of whether the plugin is activated,
@@ -116,7 +113,6 @@ slv2_instance_connect_port(SLV2Instance instance,
 		(instance->lv2_handle, port_index, data_location);
 }
 
-
 /** Activate a plugin instance.
  *
  * This resets all state information in the plugin, except for port data
@@ -129,7 +125,6 @@ slv2_instance_activate(SLV2Instance instance)
 	if (instance->lv2_descriptor->activate)
 		instance->lv2_descriptor->activate(instance->lv2_handle);
 }
-
 
 /** Run \a instance for \a sample_count frames.
  *
@@ -144,7 +139,6 @@ slv2_instance_run(SLV2Instance instance,
 		instance->lv2_descriptor->run(instance->lv2_handle, sample_count);
 }
 
-
 /** Deactivate a plugin instance.
  *
  * Note that to run the plugin after this you must activate it, which will
@@ -156,7 +150,6 @@ slv2_instance_deactivate(SLV2Instance instance)
 	if (instance->lv2_descriptor->deactivate)
 		instance->lv2_descriptor->deactivate(instance->lv2_handle);
 }
-
 
 /** Get extension data from the plugin instance.
  *
@@ -173,7 +166,6 @@ slv2_instance_get_extension_data(SLV2Instance instance,
 		return NULL;
 }
 
-
 /** Get the LV2_Descriptor of the plugin instance.
  *
  * Normally hosts should not need to access the LV2_Descriptor directly,
@@ -186,7 +178,6 @@ slv2_instance_get_descriptor(SLV2Instance instance)
 {
 	return instance->lv2_descriptor;
 }
-
 
 /** Get the LV2_Handle of the plugin instance.
  *
@@ -209,6 +200,4 @@ slv2_instance_get_handle(SLV2Instance instance)
 } /* extern "C" */
 #endif
 
-
 #endif /* __SLV2_PLUGININSTANCE_H__ */
-

@@ -30,7 +30,6 @@
 #include "slv2/value.h"
 #include "slv2_internal.h"
 
-
 SLV2Instance
 slv2_plugin_instantiate(SLV2Plugin               plugin,
                         double                   sample_rate,
@@ -146,7 +145,6 @@ slv2_plugin_instantiate(SLV2Plugin               plugin,
 	return result;
 }
 
-
 void
 slv2_instance_free(SLV2Instance instance)
 {
@@ -162,5 +160,4 @@ slv2_instance_free(SLV2Instance instance)
 	i->pimpl = NULL;
 	free(i);
 }
-
 

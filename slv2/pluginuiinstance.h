@@ -38,11 +38,9 @@ typedef struct _SLV2UIInstance {
 	SLV2UIInstanceImpl pimpl; ///< Private implementation
 }* SLV2UIInstance;
 
-
 /** \addtogroup slv2_library
  * @{
  */
-
 
 /** Instantiate a plugin UI.
  *
@@ -67,7 +65,6 @@ slv2_ui_instantiate(SLV2Plugin                plugin,
                     LV2UI_Controller          controller,
                     const LV2_Feature* const* features);
 
-
 /** Free a plugin UI instance.
  *
  * It is the caller's responsibility to ensure all references to the UI
@@ -80,13 +77,11 @@ SLV2_API
 void
 slv2_ui_instance_free(SLV2UIInstance instance);
 
-
 /** Get the widget for the UI instance.
  */
 SLV2_API
 LV2UI_Widget
 slv2_ui_instance_get_widget(SLV2UIInstance instance);
-
 
 /** Get the LV2UI_Descriptor of the plugin UI instance.
  *
@@ -99,7 +94,6 @@ SLV2_API
 const LV2UI_Descriptor*
 slv2_ui_instance_get_descriptor(SLV2UIInstance instance);
 
-
 /** Get the LV2UI_Handle of the plugin UI instance.
  *
  * Normally hosts should not need to access the LV2UI_Handle directly,
@@ -111,13 +105,10 @@ SLV2_API
 LV2UI_Handle
 slv2_ui_instance_get_handle(SLV2UIInstance instance);
 
-
 /** @} */
 
 #ifdef __cplusplus
 } /* extern "C" */
 #endif
 
-
 #endif /* __SLV2_PLUGINUIINSTANCE_H__ */
-

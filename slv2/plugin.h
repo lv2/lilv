@@ -41,7 +41,6 @@ extern "C" {
  * @{
  */
 
-
 /** Check if this plugin is valid.
  *
  * This is used by plugin lists to avoid loading plugins that are not valid
@@ -59,7 +58,6 @@ extern "C" {
 SLV2_API
 bool
 slv2_plugin_verify(SLV2Plugin plugin);
-
 
 /** Get the URI of \a plugin.
  *
@@ -81,7 +79,6 @@ SLV2_API
 SLV2Value
 slv2_plugin_get_uri(SLV2Plugin plugin);
 
-
 /** Get the (resolvable) URI of the plugins "main" bundle.
  *
  * This returns the URI of the bundle where the plugin itself was found.
@@ -101,7 +98,6 @@ SLV2_API
 SLV2Value
 slv2_plugin_get_bundle_uri(SLV2Plugin plugin);
 
-
 /** Get the (resolvable) URIs of the RDF data files that define a plugin.
  *
  * Typical hosts should not need to use this function.
@@ -118,7 +114,6 @@ SLV2_API
 SLV2Values
 slv2_plugin_get_data_uris(SLV2Plugin plugin);
 
-
 /** Get the (resolvable) URI of the shared library for \a plugin.
  *
  * Note this always returns a fully qualified URI.  If you want a local
@@ -131,7 +126,6 @@ slv2_plugin_get_data_uris(SLV2Plugin plugin);
 SLV2_API
 SLV2Value
 slv2_plugin_get_library_uri(SLV2Plugin plugin);
-
 
 /** Get the name of \a plugin.
  *
@@ -146,13 +140,11 @@ SLV2_API
 SLV2Value
 slv2_plugin_get_name(SLV2Plugin plugin);
 
-
 /** Get the class this plugin belongs to (ie Filters).
  */
 SLV2_API
 SLV2PluginClass
 slv2_plugin_get_class(SLV2Plugin plugin);
-
 
 /** Get a value associated with the plugin in a plugin's data files.
  *
@@ -175,7 +167,6 @@ SLV2Values
 slv2_plugin_get_value(SLV2Plugin p,
                       SLV2Value  predicate);
 
-
 /** Get a value associated with the plugin in a plugin's data files.
  *
  * This function is identical to slv2_plugin_get_value, but takes a QName
@@ -186,7 +177,6 @@ SLV2_API
 SLV2Values
 slv2_plugin_get_value_by_qname(SLV2Plugin  p,
                                const char* predicate);
-
 
 /** Get a translated value associated with the plugin in a plugin's data files.
  *
@@ -199,7 +189,6 @@ SLV2_API
 SLV2Values
 slv2_plugin_get_value_by_qname_i18n(SLV2Plugin  p,
                                     const char* predicate);
-
 
 /** Get a value associated with some subject in a plugin's data files.
  *
@@ -226,7 +215,6 @@ slv2_plugin_get_value_for_subject(SLV2Plugin p,
                                   SLV2Value  subject_uri,
                                   SLV2Value  predicate_uri);
 
-
 /** Return whether a feature is supported by a plugin.
  *
  * This will return true if the feature is an optional or required feature
@@ -238,7 +226,6 @@ SLV2_API
 bool
 slv2_plugin_has_feature(SLV2Plugin p,
                         SLV2Value  feature_uri);
-
 
 /** Get the LV2 Features supported (required or optionally) by a plugin.
  *
@@ -255,7 +242,6 @@ slv2_plugin_has_feature(SLV2Plugin p,
 SLV2_API
 SLV2Values
 slv2_plugin_get_supported_features(SLV2Plugin p);
-
 
 /** Get the LV2 Features required by a plugin.
  *
@@ -274,7 +260,6 @@ SLV2_API
 SLV2Values
 slv2_plugin_get_required_features(SLV2Plugin p);
 
-
 /** Get the LV2 Features optionally supported by a plugin.
  *
  * Hosts MAY ignore optional plugin features for whatever reasons.  Plugins
@@ -289,7 +274,6 @@ SLV2_API
 SLV2Values
 slv2_plugin_get_optional_features(SLV2Plugin p);
 
-
 /** Get the number of ports on this plugin.
  *
  * Time = O(1)
@@ -297,7 +281,6 @@ slv2_plugin_get_optional_features(SLV2Plugin p);
 SLV2_API
 uint32_t
 slv2_plugin_get_num_ports(SLV2Plugin p);
-
 
 /** Get the port ranges (minimum, maximum and default values) for all ports.
  *
@@ -344,7 +327,6 @@ SLV2_API
 bool
 slv2_plugin_has_latency(SLV2Plugin p);
 
-
 /** Return the index of the plugin's latency port.
  *
  * It is a fatal error to call this on a plugin without checking if the port
@@ -359,7 +341,6 @@ slv2_plugin_has_latency(SLV2Plugin p);
 SLV2_API
 uint32_t
 slv2_plugin_get_latency_port_index(SLV2Plugin p);
-
 
 /** Query a plugin for a single variable (i.e. SELECT a single ?value).
  *
@@ -377,7 +358,6 @@ slv2_plugin_query_variable(SLV2Plugin  plugin,
                            const char* sparql_str,
                            unsigned    variable);
 
-
 /** Query a plugin and return the number of results found.
  *
  * Note that this function will work, but is mostly meaningless for queries
@@ -393,7 +373,6 @@ unsigned
 slv2_plugin_query_count(SLV2Plugin  plugin,
                         const char* sparql_str);
 
-
 /** Get a port on this plugin by \a index.
  *
  * To perform multiple calls on a port, the returned value should
@@ -405,7 +384,6 @@ SLV2_API
 SLV2Port
 slv2_plugin_get_port_by_index(SLV2Plugin plugin,
                               uint32_t   index);
-
 
 /** Get a port on this plugin by \a symbol.
  *
@@ -420,7 +398,6 @@ SLV2_API
 SLV2Port
 slv2_plugin_get_port_by_symbol(SLV2Plugin plugin,
                                SLV2Value  symbol);
-
 
 /** Get a list of all UIs available for this plugin.
  *
@@ -438,7 +415,6 @@ SLV2_API
 SLV2UIs
 slv2_plugin_get_uis(SLV2Plugin plugin);
 
-
 /** Get the full name of the plugin's author.
  *
  * Returns NULL if author name is not present.
@@ -449,7 +425,6 @@ slv2_plugin_get_uis(SLV2Plugin plugin);
 SLV2_API
 SLV2Value
 slv2_plugin_get_author_name(SLV2Plugin plugin);
-
 
 /** Get the email address of the plugin's author.
  *
@@ -462,7 +437,6 @@ SLV2_API
 SLV2Value
 slv2_plugin_get_author_email(SLV2Plugin plugin);
 
-
 /** Get the email address of the plugin's author.
  *
  * Returns NULL if author homepage is not present.
@@ -473,7 +447,6 @@ slv2_plugin_get_author_email(SLV2Plugin plugin);
 SLV2_API
 SLV2Value
 slv2_plugin_get_author_homepage(SLV2Plugin plugin);
-
 
 /** @} */
 

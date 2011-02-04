@@ -53,7 +53,6 @@ slv2_strjoin(const char* first, ...)
 	return result;
 }
 
-
 const char*
 slv2_uri_to_path(const char* uri)
 {
@@ -62,7 +61,6 @@ slv2_uri_to_path(const char* uri)
 	else
 		return NULL;
 }
-
 
 const char*
 slv2_get_lang()
@@ -87,7 +85,6 @@ slv2_get_lang()
 
 	return lang;
 }
-
 
 char*
 slv2_qname_expand(SLV2Plugin p, const char* qname)

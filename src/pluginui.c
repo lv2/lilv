@@ -26,7 +26,6 @@
 #include "slv2/pluginui.h"
 #include "slv2_internal.h"
 
-
 /* private */
 SLV2UI
 slv2_ui_new(SLV2World world,
@@ -56,7 +55,6 @@ slv2_ui_new(SLV2World world,
 	return ui;
 }
 
-
 /* private */
 void
 slv2_ui_free(SLV2UI ui)
@@ -75,7 +73,6 @@ slv2_ui_free(SLV2UI ui)
 	free(ui);
 }
 
-
 SLV2Value
 slv2_ui_get_uri(SLV2UI ui)
 {
@@ -84,20 +81,17 @@ slv2_ui_get_uri(SLV2UI ui)
 	return ui->uri;
 }
 
-
 SLV2Values
 slv2_ui_get_classes(SLV2UI ui)
 {
 	return ui->classes;
 }
 
-
 bool
 slv2_ui_is_a(SLV2UI ui, SLV2Value ui_class_uri)
 {
 	return slv2_values_contains(ui->classes, ui_class_uri);
 }
-
 
 SLV2Value
 slv2_ui_get_bundle_uri(SLV2UI ui)
@@ -106,7 +100,6 @@ slv2_ui_get_bundle_uri(SLV2UI ui)
 	assert(ui->bundle_uri);
 	return ui->bundle_uri;
 }
-
 
 SLV2Value
 slv2_ui_get_binary_uri(SLV2UI ui)

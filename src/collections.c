@@ -67,7 +67,6 @@ SLV2_COLLECTION_IMPL(SLV2Values, SLV2Value,
 SLV2_COLLECTION_IMPL(SLV2UIs, SLV2UI,
 		slv2_uis, &slv2_ui_free)
 
-
 /* **** PLUGIN CLASSES **** */
 
 SLV2PluginClass
@@ -98,8 +97,6 @@ slv2_plugin_classes_get_by_uri(SLV2PluginClasses list, SLV2Value uri)
 	return NULL;
 }
 
-
-
 /* **** VALUES **** */
 
 bool
@@ -112,15 +109,12 @@ slv2_values_contains(SLV2Values list, SLV2Value value)
 	return false;
 }
 
-
 void
 slv2_values_set_at(SLV2Values list, unsigned index, void* value)
 {
 	if (index <= INT_MAX)
 		raptor_sequence_set_at(list, index, value);
 }
-
-
 
 /* **** PLUGIN UIS **** */
 

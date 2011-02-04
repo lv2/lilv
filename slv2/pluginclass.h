@@ -29,7 +29,6 @@ extern "C" {
  * @{
  */
 
-
 /** Get the URI of this class' superclass.
  *
  * Returned value is owned by \a plugin_class and must not be freed by caller.
@@ -41,7 +40,6 @@ SLV2_API
 SLV2Value
 slv2_plugin_class_get_parent_uri(SLV2PluginClass plugin_class);
 
-
 /** Get the URI of this plugin class.
  *
  * Returned value is owned by \a plugin_class and must not be freed by caller.
@@ -52,7 +50,6 @@ SLV2_API
 SLV2Value
 slv2_plugin_class_get_uri(SLV2PluginClass plugin_class);
 
-
 /** Get the label of this plugin class, ie "Oscillators".
  *
  * Returned value is owned by \a plugin_class and must not be freed by caller.
@@ -61,7 +58,6 @@ slv2_plugin_class_get_uri(SLV2PluginClass plugin_class);
  */
 SLV2_API
 SLV2Value slv2_plugin_class_get_label(SLV2PluginClass plugin_class);
-
 
 /** Get the subclasses of this plugin class.
  *
@@ -72,7 +68,6 @@ SLV2Value slv2_plugin_class_get_label(SLV2PluginClass plugin_class);
 SLV2_API
 SLV2PluginClasses
 slv2_plugin_class_get_children(SLV2PluginClass plugin_class);
-
 
 /** @} */
 

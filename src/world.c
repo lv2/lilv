@@ -106,14 +106,12 @@ fail:
 	return NULL;
 }
 
-
 SLV2World
 slv2_world_new()
 {
 	SLV2World world = (SLV2World)malloc(sizeof(struct _SLV2World));
 	return slv2_world_new_internal(world);
 }
-
 
 void
 slv2_world_free(SLV2World world)
@@ -160,7 +158,6 @@ slv2_world_free(SLV2World world)
 	free(world);
 }
 
-
 static SLV2Matches
 slv2_world_find_statements(SLV2World world,
                            Sord      model,
@@ -203,7 +200,6 @@ slv2_world_blank_node_prefix(SLV2World world)
 	return (const uint8_t*)str;
 }
 
-
 /** Comparator for sorting SLV2Plugins */
 int
 slv2_plugin_compare_by_uri(const void* a, const void* b)
@@ -215,7 +211,6 @@ slv2_plugin_compare_by_uri(const void* a, const void* b)
                   slv2_value_as_uri(plugin_b->plugin_uri));
 }
 
-
 /** Comparator for sorting SLV2PluginClasses */
 int
 slv2_plugin_class_compare_by_uri(const void* a, const void* b)
@@ -226,7 +221,6 @@ slv2_plugin_class_compare_by_uri(const void* a, const void* b)
     return strcmp(slv2_value_as_uri(class_a->uri),
                   slv2_value_as_uri(class_b->uri));
 }
-
 
 void
 slv2_world_load_bundle(SLV2World world, SLV2Value bundle_uri)
@@ -415,7 +409,6 @@ slv2_world_load_bundle(SLV2World world, SLV2Value bundle_uri)
 	slv2_match_end(spec_results);
 }
 
-
 /** Load all bundles under a directory.
  * Private.
  */
@@ -449,7 +442,6 @@ slv2_world_load_directory(SLV2World world, const char* dir)
 	closedir(pdir);
 }
 
-
 void
 slv2_world_load_path(SLV2World   world,
                      const char* lv2_path)
@@ -471,7 +463,6 @@ slv2_world_load_path(SLV2World   world,
 
 	free(path);
 }
-
 
 void
 slv2_world_load_specifications(SLV2World world)
@@ -501,7 +492,6 @@ slv2_world_load_specifications(SLV2World world)
 	}
 	slv2_match_end(specs);
 }
-
 
 void
 slv2_world_load_plugin_classes(SLV2World world)
@@ -585,7 +575,6 @@ slv2_world_load_plugin_classes(SLV2World world)
 	slv2_match_end(classes);
 }
 
-
 void
 slv2_world_load_all(SLV2World world)
 {
@@ -630,7 +619,6 @@ slv2_world_load_all(SLV2World world)
 		free(lv2_path);
 	}
 
-
 	/* 2. Query out things to cache */
 
 	slv2_world_load_specifications(world);
@@ -660,13 +648,11 @@ slv2_world_load_all(SLV2World world)
 */
 }
 
-
 SLV2PluginClass
 slv2_world_get_plugin_class(SLV2World world)
 {
 	return world->lv2_plugin_class;
 }
-
 
 SLV2PluginClasses
 slv2_world_get_plugin_classes(SLV2World world)
@@ -674,13 +660,11 @@ slv2_world_get_plugin_classes(SLV2World world)
 	return world->plugin_classes;
 }
 
-
 SLV2Plugins
 slv2_world_get_all_plugins(SLV2World world)
 {
 	return world->plugins;
 }
-
 
 SLV2Plugins
 slv2_world_get_plugins_by_filter(SLV2World world, bool (*include)(SLV2Plugin))

@@ -26,7 +26,6 @@
 #include "slv2/value.h"
 #include "slv2_internal.h"
 
-
 /* private */
 SLV2PluginClass
 slv2_plugin_class_new(SLV2World   world,
@@ -47,7 +46,6 @@ slv2_plugin_class_new(SLV2World   world,
 	return pc;
 }
 
-
 void
 slv2_plugin_class_free(SLV2PluginClass plugin_class)
 {
@@ -58,7 +56,6 @@ slv2_plugin_class_free(SLV2PluginClass plugin_class)
 	free(plugin_class);
 }
 
-
 SLV2Value
 slv2_plugin_class_get_parent_uri(SLV2PluginClass plugin_class)
 {
@@ -68,7 +65,6 @@ slv2_plugin_class_get_parent_uri(SLV2PluginClass plugin_class)
 		return NULL;
 }
 
-
 SLV2Value
 slv2_plugin_class_get_uri(SLV2PluginClass plugin_class)
 {
@@ -76,13 +72,11 @@ slv2_plugin_class_get_uri(SLV2PluginClass plugin_class)
 	return plugin_class->uri;
 }
 
-
 SLV2Value
 slv2_plugin_class_get_label(SLV2PluginClass plugin_class)
 {
 	return plugin_class->label;
 }
-
 
 SLV2PluginClasses
 slv2_plugin_class_get_children(SLV2PluginClass plugin_class)

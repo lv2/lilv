@@ -26,12 +26,10 @@ extern "C" {
 #include <stdarg.h>
 #include "slv2/types.h"
 
-
 /** \defgroup slv2_util Utility functions
  *
  * @{
  */
-
 
 /** Convert a full URI (eg file://foo/bar/baz.ttl) to a local path (e.g. /foo/bar/baz.ttl).
  *
@@ -41,7 +39,6 @@ extern "C" {
 SLV2_API
 const char* slv2_uri_to_path(const char* uri);
 
-
 /** @} */
 
 #ifdef __cplusplus
@@ -49,4 +46,3 @@ const char* slv2_uri_to_path(const char* uri);
 #endif
 
 #endif /* __SLV2_UTIL_H__ */
-

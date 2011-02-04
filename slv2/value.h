@@ -30,7 +30,6 @@ extern "C" {
  * @{
  */
 
-
 /** Create a new URI value.
  *
  * Returned value must be freed by caller with slv2_value_free.
@@ -38,7 +37,6 @@ extern "C" {
 SLV2_API
 SLV2Value
 slv2_value_new_uri(SLV2World world, const char* uri);
-
 
 /** Create a new string value (with no language).
  *
@@ -48,7 +46,6 @@ SLV2_API
 SLV2Value
 slv2_value_new_string(SLV2World world, const char* str);
 
-
 /** Create a new integer value.
  *
  * Returned value must be freed by caller with slv2_value_free.
@@ -56,7 +53,6 @@ slv2_value_new_string(SLV2World world, const char* str);
 SLV2_API
 SLV2Value
 slv2_value_new_int(SLV2World world, int val);
-
 
 /** Create a new floating point value.
  *
@@ -66,13 +62,11 @@ SLV2_API
 SLV2Value
 slv2_value_new_float(SLV2World world, float val);
 
-
 /** Free an SLV2Value.
  */
 SLV2_API
 void
 slv2_value_free(SLV2Value val);
-
 
 /** Duplicate an SLV2Value.
  */
@@ -80,13 +74,11 @@ SLV2_API
 SLV2Value
 slv2_value_duplicate(SLV2Value val);
 
-
 /** Return whether two values are equivalent.
  */
 SLV2_API
 bool
 slv2_value_equals(SLV2Value value, SLV2Value other);
-
 
 /** Return this value as a Turtle/SPARQL token.
  * Examples:
@@ -102,7 +94,6 @@ SLV2_API
 char*
 slv2_value_get_turtle_token(SLV2Value value);
 
-
 /** Return whether the value is a URI (resource).
  *
  * Time = O(1)
@@ -110,7 +101,6 @@ slv2_value_get_turtle_token(SLV2Value value);
 SLV2_API
 bool
 slv2_value_is_uri(SLV2Value value);
-
 
 /** Return this value as a URI string, e.g. "http://example.org/foo".
  *
@@ -123,7 +113,6 @@ SLV2_API
 const char*
 slv2_value_as_uri(SLV2Value value);
 
-
 /** Return whether the value is a blank node (resource with no URI).
  *
  * Time = O(1)
@@ -131,7 +120,6 @@ slv2_value_as_uri(SLV2Value value);
 SLV2_API
 bool
 slv2_value_is_blank(SLV2Value value);
-
 
 /** Return this value as a blank node identifier, e.g. "genid03".
  *
@@ -144,7 +132,6 @@ SLV2_API
 const char*
 slv2_value_as_blank(SLV2Value value);
 
-
 /** Return whether this value is a literal (i.e. not a URI).
  *
  * Returns true if \a value is a string or numeric value.
@@ -154,7 +141,6 @@ slv2_value_as_blank(SLV2Value value);
 SLV2_API
 bool
 slv2_value_is_literal(SLV2Value value);
-
 
 /** Return whether this value is a string literal.
  *
@@ -166,7 +152,6 @@ SLV2_API
 bool
 slv2_value_is_string(SLV2Value value);
 
-
 /** Return \a value as a string.
  *
  * Time = O(1)
@@ -175,7 +160,6 @@ SLV2_API
 const char*
 slv2_value_as_string(SLV2Value value);
 
-
 /** Return whether this value is a decimal literal.
  *
  * Time = O(1)
@@ -183,7 +167,6 @@ slv2_value_as_string(SLV2Value value);
 SLV2_API
 bool
 slv2_value_is_float(SLV2Value value);
-
 
 /** Return \a value as a float.
  *
@@ -196,7 +179,6 @@ SLV2_API
 float
 slv2_value_as_float(SLV2Value value);
 
-
 /** Return whether this value is an integer literal.
  *
  * Time = O(1)
@@ -204,7 +186,6 @@ slv2_value_as_float(SLV2Value value);
 SLV2_API
 bool
 slv2_value_is_int(SLV2Value value);
-
 
 /** Return \a value as an integer.
  *
@@ -215,7 +196,6 @@ slv2_value_is_int(SLV2Value value);
 SLV2_API
 int
 slv2_value_as_int(SLV2Value value);
-
 
 /** @} */
 

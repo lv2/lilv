@@ -44,7 +44,6 @@ extern "C" {
  * @{
  */
 
-
 /** Initialize a new, empty world.
  *
  * If initialization fails, NULL is returned.
@@ -52,7 +51,6 @@ extern "C" {
 SLV2_API
 SLV2World
 slv2_world_new();
-
 
 /** Destroy the world, mwahaha.
  *
@@ -63,7 +61,6 @@ slv2_world_new();
 SLV2_API
 void
 slv2_world_free(SLV2World world);
-
 
 /** Load all installed LV2 bundles on the system.
  *
@@ -81,7 +78,6 @@ slv2_world_free(SLV2World world);
 SLV2_API
 void
 slv2_world_load_all(SLV2World world);
-
 
 /** Load a specific bundle.
  *
@@ -106,7 +102,6 @@ void
 slv2_world_load_bundle(SLV2World world,
                        SLV2Value bundle_uri);
 
-
 /** Get the parent of all other plugin classes, lv2:Plugin.
  *
  * Time = O(1)
@@ -114,7 +109,6 @@ slv2_world_load_bundle(SLV2World world,
 SLV2_API
 SLV2PluginClass
 slv2_world_get_plugin_class(SLV2World world);
-
 
 /** Return a list of all found plugin classes.
  *
@@ -125,7 +119,6 @@ slv2_world_get_plugin_class(SLV2World world);
 SLV2_API
 SLV2PluginClasses
 slv2_world_get_plugin_classes(SLV2World world);
-
 
 /** Return a list of all found plugins.
  *
@@ -144,7 +137,6 @@ SLV2_API
 SLV2Plugins
 slv2_world_get_all_plugins(SLV2World world);
 
-
 /** Return a list of found plugins filtered by a user-defined filter function.
  *
  * All plugins currently found in \a world that return true when passed to
@@ -161,7 +153,6 @@ SLV2Plugins
 slv2_world_get_plugins_by_filter(SLV2World world,
                                  bool (*include)(SLV2Plugin));
 
-
 /** @} */
 
 #ifdef __cplusplus
@@ -169,4 +160,3 @@ slv2_world_get_plugins_by_filter(SLV2World world,
 #endif
 
 #endif /* __SLV2_WORLD_H__ */
-

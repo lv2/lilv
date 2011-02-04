@@ -34,7 +34,6 @@ extern "C" {
  * @{
  */
 
-
 /* **** GENERIC COLLECTION FUNCTIONS **** */
 
 #define SLV2_COLLECTION(CollType, ElemType, prefix) \
@@ -78,8 +77,6 @@ SLV2_COLLECTION(SLV2ScalePoints, SLV2ScalePoint, slv2_scale_points)
 SLV2_COLLECTION(SLV2Values, SLV2Value, slv2_values)
 SLV2_COLLECTION(SLV2UIs, SLV2UI, slv2_uis)
 
-
-
 /* **** PLUGINS **** */
 
 /** Free a plugin collection.
@@ -93,14 +90,12 @@ void
 slv2_plugins_free(SLV2World   world,
                   SLV2Plugins plugins);
 
-
 /** Get the number of plugins in the collection.
  * Time = O(1)
  */
 SLV2_API
 unsigned
 slv2_plugins_size(SLV2Plugins plugins);
-
 
 /** Get a plugin from the collection by URI.
  *
@@ -115,7 +110,6 @@ SLV2_API
 SLV2Plugin
 slv2_plugins_get_by_uri(SLV2Plugins plugins,
                         SLV2Value   uri);
-
 
 /** Get a plugin from the plugins by index.
  *
@@ -133,8 +127,6 @@ SLV2Plugin
 slv2_plugins_get_at(SLV2Plugins plugins,
                     unsigned    index);
 
-
-
 /* **** PLUGIN CLASSES **** */
 
 /** Get a plugin class from the collection by URI.
@@ -151,8 +143,6 @@ SLV2PluginClass
 slv2_plugin_classes_get_by_uri(SLV2PluginClasses classes,
                                SLV2Value         uri);
 
-
-
 /* **** SCALE POINTS **** */
 
 /** Allocate a new, empty SLV2ScalePoints
@@ -160,8 +150,6 @@ slv2_plugin_classes_get_by_uri(SLV2PluginClasses classes,
 SLV2_API
 SLV2ScalePoints
 slv2_scale_points_new();
-
-
 
 /* **** VALUES **** */
 
@@ -171,7 +159,6 @@ SLV2_API
 SLV2Values
 slv2_values_new();
 
-
 /** Return whether \a values contains \a value.
  *
  * Time = O(n)
@@ -179,8 +166,6 @@ slv2_values_new();
 SLV2_API
 bool
 slv2_values_contains(SLV2Values values, SLV2Value value);
-
-
 
 /* **** PLUGIN UIS **** */
 
@@ -197,7 +182,6 @@ SLV2_API
 SLV2UI
 slv2_uis_get_by_uri(SLV2UIs   list,
                     SLV2Value uri);
-
 
 /** @} */
 

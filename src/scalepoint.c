@@ -27,7 +27,6 @@
 #include "slv2/value.h"
 #include "slv2_internal.h"
 
-
 /* private - ownership of value and label is taken */
 SLV2ScalePoint
 slv2_scale_point_new(SLV2Value value, SLV2Value label)
@@ -38,7 +37,6 @@ slv2_scale_point_new(SLV2Value value, SLV2Value label)
 	return point;
 }
 
-
 /* private */
 void
 slv2_scale_point_free(SLV2ScalePoint point)
@@ -48,13 +46,11 @@ slv2_scale_point_free(SLV2ScalePoint point)
 	free(point);
 }
 
-
 SLV2Value
 slv2_scale_point_get_value(SLV2ScalePoint p)
 {
 	return p->value;
 }
-
 
 SLV2Value
 slv2_scale_point_get_label(SLV2ScalePoint p)

@@ -32,7 +32,6 @@
 #include "slv2/util.h"
 #include "slv2_internal.h"
 
-
 /* private
  * ownership of uri is taken */
 SLV2Plugin
@@ -55,7 +54,6 @@ slv2_plugin_new(SLV2World world, SLV2Value uri, SLV2Value bundle_uri)
 
 	return plugin;
 }
-
 
 /* private */
 void
@@ -88,7 +86,6 @@ slv2_plugin_free(SLV2Plugin p)
 	free(p);
 }
 
-
 /* private */
 void
 slv2_plugin_load_if_necessary(SLV2Plugin p)
@@ -96,7 +93,6 @@ slv2_plugin_load_if_necessary(SLV2Plugin p)
 	if (!p->loaded)
 		slv2_plugin_load(p);
 }
-
 
 static SLV2Values
 slv2_plugin_query_node(SLV2Plugin p, SLV2Node subject, SLV2Node predicate)
@@ -123,7 +119,6 @@ slv2_plugin_query_node(SLV2Plugin p, SLV2Node subject, SLV2Node predicate)
 	return result;
 }
 
-
 SLV2Value
 slv2_plugin_get_unique(SLV2Plugin p, SLV2Node subject, SLV2Node predicate)
 {
@@ -137,7 +132,6 @@ slv2_plugin_get_unique(SLV2Plugin p, SLV2Node subject, SLV2Node predicate)
 	slv2_values_free(values);
 	return ret;
 }
-
 
 static SLV2Value
 slv2_plugin_get_one(SLV2Plugin p, SLV2Node subject, SLV2Node predicate)
@@ -239,7 +233,6 @@ slv2_plugin_load_ports_if_necessary(SLV2Plugin p)
 	}
 }
 
-
 void
 slv2_plugin_load(SLV2Plugin p)
 {
@@ -290,7 +283,6 @@ slv2_plugin_load(SLV2Plugin p)
 	p->loaded = true;
 }
 
-
 SLV2Value
 slv2_plugin_get_uri(SLV2Plugin p)
 {
@@ -299,7 +291,6 @@ slv2_plugin_get_uri(SLV2Plugin p)
 	return p->plugin_uri;
 }
 
-
 SLV2Value
 slv2_plugin_get_bundle_uri(SLV2Plugin p)
 {
@@ -307,7 +298,6 @@ slv2_plugin_get_bundle_uri(SLV2Plugin p)
 	assert(p->bundle_uri);
 	return p->bundle_uri;
 }
-
 
 SLV2Value
 slv2_plugin_get_library_uri(SLV2Plugin p)
@@ -332,13 +322,11 @@ slv2_plugin_get_library_uri(SLV2Plugin p)
 	return p->binary_uri;
 }
 
-
 SLV2Values
 slv2_plugin_get_data_uris(SLV2Plugin p)
 {
 	return p->data_uris;
 }
-
 
 SLV2PluginClass
 slv2_plugin_get_class(SLV2Plugin p)
@@ -382,7 +370,6 @@ slv2_plugin_get_class(SLV2Plugin p)
 	return p->plugin_class;
 }
 
-
 bool
 slv2_plugin_verify(SLV2Plugin plugin)
 {
@@ -413,7 +400,6 @@ slv2_plugin_verify(SLV2Plugin plugin)
 	return true;
 }
 
-
 SLV2Value
 slv2_plugin_get_name(SLV2Plugin plugin)
 {
@@ -440,14 +426,12 @@ slv2_plugin_get_name(SLV2Plugin plugin)
 	return ret;
 }
 
-
 SLV2Values
 slv2_plugin_get_value(SLV2Plugin p,
                       SLV2Value  predicate)
 {
 	return slv2_plugin_get_value_for_subject(p, p->plugin_uri, predicate);
 }
-
 
 SLV2Values
 slv2_plugin_get_value_by_qname(SLV2Plugin  p,
@@ -464,7 +448,6 @@ slv2_plugin_get_value_by_qname(SLV2Plugin  p,
 	free(pred_uri);
 	return ret;
 }
-
 
 SLV2Values
 slv2_plugin_get_value_by_qname_i18n(SLV2Plugin  p,
@@ -488,7 +471,6 @@ slv2_plugin_get_value_by_qname_i18n(SLV2Plugin  p,
 	free(pred_uri);
 	return slv2_values_from_stream_i18n(p, results);
 }
-
 
 SLV2Values
 slv2_plugin_get_value_for_subject(SLV2Plugin p,
@@ -519,14 +501,12 @@ slv2_plugin_get_value_for_subject(SLV2Plugin p,
 	                              predicate->val.uri_val);
 }
 
-
 uint32_t
 slv2_plugin_get_num_ports(SLV2Plugin p)
 {
 	slv2_plugin_load_ports_if_necessary(p);
 	return p->num_ports;
 }
-
 
 void
 slv2_plugin_get_port_ranges_float(SLV2Plugin p,
@@ -554,7 +534,6 @@ slv2_plugin_get_port_ranges_float(SLV2Plugin p,
 		slv2_value_free(max);
 	}
 }
-
 
 uint32_t
 slv2_plugin_get_num_ports_of_class(SLV2Plugin p,
@@ -590,7 +569,6 @@ slv2_plugin_get_num_ports_of_class(SLV2Plugin p,
 	return ret;
 }
 
-
 bool
 slv2_plugin_has_latency(SLV2Plugin p)
 {
@@ -619,7 +597,6 @@ slv2_plugin_has_latency(SLV2Plugin p)
 
 	return ret;
 }
-
 
 uint32_t
 slv2_plugin_get_latency_port_index(SLV2Plugin p)
@@ -654,7 +631,6 @@ slv2_plugin_get_latency_port_index(SLV2Plugin p)
 	return ret;  // FIXME: error handling
 }
 
-
 bool
 slv2_plugin_has_feature(SLV2Plugin p,
                         SLV2Value  feature)
@@ -666,7 +642,6 @@ slv2_plugin_has_feature(SLV2Plugin p,
 	slv2_values_free(features);
 	return ret;
 }
-
 
 SLV2Values
 slv2_plugin_get_supported_features(SLV2Plugin p)
@@ -689,20 +664,17 @@ slv2_plugin_get_supported_features(SLV2Plugin p)
 	return result;
 }
 
-
 SLV2Values
 slv2_plugin_get_optional_features(SLV2Plugin p)
 {
 	return slv2_plugin_get_value_by_qname(p, "lv2:optionalFeature");
 }
 
-
 SLV2Values
 slv2_plugin_get_required_features(SLV2Plugin p)
 {
 	return slv2_plugin_get_value_by_qname(p, "lv2:requiredFeature");
 }
-
 
 SLV2Port
 slv2_plugin_get_port_by_index(SLV2Plugin p,
@@ -714,7 +686,6 @@ slv2_plugin_get_port_by_index(SLV2Plugin p,
 	else
 		return NULL;
 }
-
 
 SLV2Port
 slv2_plugin_get_port_by_symbol(SLV2Plugin p,
@@ -757,7 +728,6 @@ slv2_plugin_get_author(SLV2Plugin p)
 	return author;
 }
 
-
 SLV2Value
 slv2_plugin_get_author_name(SLV2Plugin plugin)
 {
@@ -769,7 +739,6 @@ slv2_plugin_get_author_name(SLV2Plugin plugin)
 	}
 	return NULL;
 }
-
 
 SLV2Value
 slv2_plugin_get_author_email(SLV2Plugin plugin)
@@ -783,7 +752,6 @@ slv2_plugin_get_author_email(SLV2Plugin plugin)
 	return NULL;
 }
 
-
 SLV2Value
 slv2_plugin_get_author_homepage(SLV2Plugin plugin)
 {
@@ -795,7 +763,6 @@ slv2_plugin_get_author_homepage(SLV2Plugin plugin)
 	}
 	return NULL;
 }
-
 
 SLV2UIs
 slv2_plugin_get_uis(SLV2Plugin p)

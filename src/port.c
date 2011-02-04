@@ -28,7 +28,6 @@
 #include "slv2/util.h"
 #include "slv2_internal.h"
 
-
 /* private */
 SLV2Port
 slv2_port_new(SLV2World world, uint32_t index, const char* symbol)
@@ -40,7 +39,6 @@ slv2_port_new(SLV2World world, uint32_t index, const char* symbol)
 	return port;
 }
 
-
 /* private */
 void
 slv2_port_free(SLV2Port port)
@@ -49,7 +47,6 @@ slv2_port_free(SLV2Port port)
 	slv2_value_free(port->symbol);
 	free(port);
 }
-
 
 bool
 slv2_port_is_a(SLV2Plugin plugin,
@@ -62,7 +59,6 @@ slv2_port_is_a(SLV2Plugin plugin,
 
 	return false;
 }
-
 
 static SLV2Node
 slv2_port_get_node(SLV2Plugin p,
@@ -95,7 +91,6 @@ slv2_port_get_node(SLV2Plugin p,
 	return ret;
 }
 
-
 bool
 slv2_port_has_property(SLV2Plugin p,
                        SLV2Port   port,
@@ -113,7 +108,6 @@ slv2_port_has_property(SLV2Plugin p,
 	slv2_match_end(results);
 	return ret;
 }
-
 
 bool
 slv2_port_supports_event(SLV2Plugin p,
@@ -135,7 +129,6 @@ slv2_port_supports_event(SLV2Plugin p,
 	return ret;
 }
 
-
 static SLV2Values
 slv2_values_from_stream_objects(SLV2Plugin p, SLV2Matches stream)
 {
@@ -155,7 +148,6 @@ slv2_values_from_stream_objects(SLV2Plugin p, SLV2Matches stream)
 	slv2_match_end(stream);
 	return values;
 }
-
 
 SLV2Values
 slv2_port_get_value_by_qname(SLV2Plugin  p,
@@ -179,7 +171,6 @@ slv2_port_get_value_by_qname(SLV2Plugin  p,
 	return slv2_values_from_stream_objects(p, results);
 }
 
-
 static SLV2Values
 slv2_port_get_value_by_node(SLV2Plugin p,
                             SLV2Port   port,
@@ -197,7 +188,6 @@ slv2_port_get_value_by_node(SLV2Plugin p,
 	return slv2_values_from_stream_objects(p, results);
 }
 
-
 SLV2Values
 slv2_port_get_value(SLV2Plugin p,
                     SLV2Port   port,
@@ -212,7 +202,6 @@ slv2_port_get_value(SLV2Plugin p,
 		p, port, 
 		slv2_value_as_node(predicate));
 }
-
 
 SLV2Values
 slv2_port_get_value_by_qname_i18n(SLV2Plugin  p,
@@ -236,14 +225,12 @@ slv2_port_get_value_by_qname_i18n(SLV2Plugin  p,
 	return slv2_values_from_stream_i18n(p, results);
 }
 
-
 SLV2Value
 slv2_port_get_symbol(SLV2Plugin p,
                      SLV2Port   port)
 {
 	return port->symbol;
 }
-
 
 SLV2Value
 slv2_port_get_name(SLV2Plugin p,
@@ -265,14 +252,12 @@ slv2_port_get_name(SLV2Plugin p,
 	return ret;
 }
 
-
 SLV2Values
 slv2_port_get_classes(SLV2Plugin p,
                       SLV2Port   port)
 {
 	return port->classes;
 }
-
 
 void
 slv2_port_get_range(SLV2Plugin p,
@@ -306,7 +291,6 @@ slv2_port_get_range(SLV2Plugin p,
 		slv2_values_free(maximums);
 	}
 }
-
 
 SLV2ScalePoints
 slv2_port_get_scale_points(SLV2Plugin p,
@@ -345,8 +329,6 @@ slv2_port_get_scale_points(SLV2Plugin p,
 	assert(!ret || slv2_values_size(ret) > 0);
 	return ret;
 }
-
-
 
 SLV2Values
 slv2_port_get_properties(SLV2Plugin p,

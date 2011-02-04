@@ -53,62 +53,47 @@ extern "C" {
 #define SLV2_PORT_CLASS_EVENT   "http://lv2plug.in/ns/ext/event#EventPort"
 #define SLV2_EVENT_CLASS_MIDI   "http://lv2plug.in/ns/ext/midi#MidiEvent"
 
-
 /** A port on a plugin.  Opaque, but valid to compare to NULL. */
 typedef struct _SLV2Port* SLV2Port;
-
 
 /** A plugin.  Opaque, but valid to compare to NULL. */
 typedef struct _SLV2Plugin* SLV2Plugin;
 
-
 /** A collection of plugins.  Opaque, but valid to compare to NULL. */
 typedef void* SLV2Plugins;
-
 
 /** The world.  Opaque, but valid to compare to NULL. */
 typedef struct _SLV2World* SLV2World;
 
-
 /** A plugin class.  Opaque, but valid to compare to NULL. */
 typedef struct _SLV2PluginClass* SLV2PluginClass;
-
 
 /** A collection of plugin classes.  Opaque, but valid to compare to NULL. */
 typedef void* SLV2PluginClasses;
 
-
 /** A typed value */
 typedef struct _SLV2Value* SLV2Value;
-
 
 /** A collection of typed values. */
 typedef void* SLV2Values;
 
-
 /** A scale point */
 typedef struct _SLV2ScalePoint* SLV2ScalePoint;
-
 
 /** A collection of scale points. */
 typedef void* SLV2ScalePoints;
 
-
 /** A plugin UI */
 typedef struct _SLV2UI* SLV2UI;
-
 
 /** A collection of plugin UIs. */
 typedef void* SLV2UIs;
 
-
 /** A set of query results (conceptually a table) */
 typedef struct _SLV2Results* SLV2Results;
-
 
 #ifdef __cplusplus
 } /* extern "C" */
 #endif
 
 #endif /* __SLV2_TYPES_H__ */
-

@@ -31,7 +31,6 @@
 #include "slv2/util.h"
 #include "slv2_internal.h"
 
-
 SLV2UIInstance
 slv2_ui_instantiate(SLV2Plugin                     plugin,
                     SLV2UI                         ui,
@@ -102,7 +101,6 @@ slv2_ui_instantiate(SLV2Plugin                     plugin,
 		}
 	}
 
-
 	// Failed to instantiate
 	if (result == NULL || result->pimpl->lv2ui_handle == NULL) {
 		free(result);
@@ -122,7 +120,6 @@ slv2_ui_instantiate(SLV2Plugin                     plugin,
 	return result;
 }
 
-
 void
 slv2_ui_instance_free(SLV2UIInstance instance)
 {
@@ -139,18 +136,15 @@ slv2_ui_instance_free(SLV2UIInstance instance)
 	free(i);
 }
 
-
 LV2UI_Widget
 slv2_ui_instance_get_widget(SLV2UIInstance instance) {
 	return instance->pimpl->widget;
 }
 
-
 const LV2UI_Descriptor*
 slv2_ui_instance_get_descriptor(SLV2UIInstance instance) {
 	return instance->pimpl->lv2ui_descriptor;
 }
-
 
 LV2UI_Handle
 slv2_ui_instance_get_handle(SLV2UIInstance instance) {

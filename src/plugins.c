@@ -28,13 +28,11 @@
 #include "slv2/util.h"
 #include "slv2_internal.h"
 
-
 SLV2Plugins
 slv2_plugins_new()
 {
 	return raptor_new_sequence(NULL, NULL);
 }
-
 
 void
 slv2_plugins_free(SLV2World world, SLV2Plugins list)
@@ -43,13 +41,11 @@ slv2_plugins_free(SLV2World world, SLV2Plugins list)
 		raptor_free_sequence(list);
 }
 
-
 unsigned
 slv2_plugins_size(SLV2Plugins list)
 {
 	return (list ? raptor_sequence_size(list) : 0);
 }
-
 
 SLV2Plugin
 slv2_plugins_get_by_uri(SLV2Plugins list, SLV2Value uri)
@@ -78,7 +74,6 @@ slv2_plugins_get_by_uri(SLV2Plugins list, SLV2Value uri)
 
 	return NULL;
 }
-
 
 SLV2Plugin
 slv2_plugins_get_at(SLV2Plugins list, unsigned index)
