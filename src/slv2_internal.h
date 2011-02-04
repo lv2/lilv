@@ -30,7 +30,9 @@ extern "C" {
 #include <stdint.h>
 #include <stdlib.h>
 #include <inttypes.h>
-#include <redland.h>
+#include <raptor.h>
+#include "serd/serd.h"
+#include "sord/sord.h"
 #include "slv2/types.h"
 #include "slv2/lv2_ui.h"
 #ifdef SLV2_DYN_MANIFEST
@@ -43,26 +45,29 @@ extern "C" {
 #define SLV2_NS_XSD  (const uint8_t*)"http://www.w3.org/2001/XMLSchema#"
 #define SLV2_NS_RDF  (const uint8_t*)"http://www.w3.org/1999/02/22-rdf-syntax-ns#"
 
-typedef librdf_stream* SLV2Matches;
-typedef librdf_node*   SLV2Node;  ///< RDF node
+typedef SordIter SLV2Matches;
+typedef SordNode SLV2Node;
 
-#define FOREACH_MATCH(stream) \
-	for (; !librdf_stream_end(stream); librdf_stream_next(stream))
+#define FOREACH_MATCH(iter) \
+	for (; !sord_iter_end(iter); sord_iter_next(iter))
 
 static inline SLV2Node
-slv2_match_subject(SLV2Matches stream) {
-	return librdf_statement_get_subject(librdf_stream_get_object(stream));
+slv2_match_subject(SLV2Matches iter) {
+	SordTuple tup;
+	sord_iter_get(iter, tup);
+	return tup[SORD_SUBJECT];
 }
 
 static inline SLV2Node
-slv2_match_object(SLV2Matches stream) {
-	return librdf_statement_get_object(librdf_stream_get_object(stream));
+slv2_match_object(SLV2Matches iter) {
+	SordTuple tup;
+	sord_iter_get(iter, tup);
+	return tup[SORD_OBJECT];
 }
 
 static inline void
-slv2_match_end(SLV2Matches stream)
+slv2_match_end(SLV2Matches iter)
 {
-	librdf_free_stream(stream);
 }
 
 
@@ -89,17 +94,16 @@ void     slv2_port_free(SLV2Port port);
  * paths of relevant files, the actual data therein isn't loaded into memory.
  */
 struct _SLV2Plugin {
-	struct _SLV2World*   world;
-	SLV2Value            plugin_uri;
-	SLV2Value            bundle_uri; ///< Bundle directory plugin was loaded from
-	SLV2Value            binary_uri; ///< lv2:binary
-	SLV2Value            dynman_uri; ///< dynamic manifest binary
-	SLV2PluginClass      plugin_class;
-	raptor_sequence*     data_uris;  ///< rdfs::seeAlso
-	SLV2Port*            ports;
-	librdf_storage*      storage;
-	librdf_model*        rdf;
-	uint32_t             num_ports;
+	struct _SLV2World* world;
+	SLV2Value          plugin_uri;
+	SLV2Value          bundle_uri; ///< Bundle directory plugin was loaded from
+	SLV2Value          binary_uri; ///< lv2:binary
+	SLV2Value          dynman_uri; ///< dynamic manifest binary
+	SLV2PluginClass    plugin_class;
+	raptor_sequence*   data_uris; ///< rdfs::seeAlso
+	SLV2Port*          ports;
+	uint32_t           num_ports;
+	bool               loaded;
 };
 
 SLV2Plugin slv2_plugin_new(SLV2World world, SLV2Value uri, SLV2Value bundle_uri);
@@ -169,12 +173,10 @@ void              slv2_plugin_classes_free();
 /** Model of LV2 (RDF) data loaded from bundles.
  */
 struct _SLV2World {
-	bool              local_world;
-	librdf_world*     world;
-	librdf_storage*   storage;
-	librdf_model*     model;
-	librdf_parser*    parser;
-	librdf_hash*      namespaces;
+	Sord              model;
+	SerdReader        reader;
+	SerdEnv           namespaces;
+	unsigned          n_read_files;
 	SLV2PluginClass   lv2_plugin_class;
 	SLV2PluginClasses plugin_classes;
 	SLV2Plugins       plugins;
@@ -202,6 +204,9 @@ struct _SLV2World {
 	SLV2Node          xsd_decimal_node;
 };
 
+const uint8_t*
+slv2_world_blank_node_prefix(SLV2World world);
+
 /** Load all bundles found in \a search_path.
  *
  * \param search_path A colon-delimited list of directories.  These directories
@@ -220,10 +225,7 @@ void
 slv2_world_load_specifications(SLV2World world);
 
 void
-slv2_world_load_file(SLV2World world, librdf_uri* file_uri);
-
-librdf_storage*
-slv2_world_new_storage(SLV2World world);
+slv2_world_load_file(SLV2World world, const char* file_uri);
 
 
 /* ********* Plugin UI ********* */
@@ -272,11 +274,10 @@ SLV2Value slv2_value_new_from_node(SLV2World world, SLV2Node node);
 SLV2Node  slv2_value_as_node(SLV2Value value);
 
 static inline SLV2Node slv2_node_copy(SLV2Node node) {
-	return librdf_new_node_from_node(node);
+	return node;
 }
 
 static inline void slv2_node_free(SLV2Node node) {
-	librdf_free_node(node);
 }
 
 /* ********* Values ********* */
@@ -303,11 +304,11 @@ SLV2Matches slv2_plugin_find_statements(SLV2Plugin plugin,
                                         SLV2Node   object);
 
 static inline bool slv2_matches_next(SLV2Matches matches) {
-	return librdf_stream_next(matches);
+	return sord_iter_next(matches);
 }
 
 static inline bool slv2_matches_end(SLV2Matches matches) {
-	return librdf_stream_end(matches);
+	return sord_iter_end(matches);
 }
 
 SLV2Values slv2_values_from_stream_i18n(SLV2Plugin  p,

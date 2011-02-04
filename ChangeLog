@@ -1,9 +1,12 @@
-slv2 (0.6.9) unstable; urgency=low
+slv2 (UNRELEASED) unstable; urgency=low
   * Parse all files with their own URI as a base URI (allowing proper
     reference to other things in the same bundle)
   * Support relative URIs returned from lv2_descriptor in libraries
   * Remove nonsensical slv2_plugin_get_properties and slv2_plugin_get_hints
   * Remove all use of SPARQL (including API that provided SPARQL support)
+  * Remove use of redland (librdf) in favour of Serd and Sord
+  * *** API BREAK *** (remove slv2_world_new_using_rdf_world and
+    slv2_plugin_query_sparql)
 
  -- David Robillard <d@drobilla.net>  (UNRELEASED)
 

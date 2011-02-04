@@ -44,7 +44,7 @@ slv2_plugin_instantiate(SLV2Plugin               plugin,
 		local_features[0] = NULL;
 	}
 
-	const char* const lib_uri = slv2_value_as_uri(slv2_plugin_get_library_uri(plugin));
+	const char* const lib_uri  = slv2_value_as_uri(slv2_plugin_get_library_uri(plugin));
 	const char* const lib_path = slv2_uri_to_path(lib_uri);
 
 	if (!lib_path)
@@ -80,11 +80,31 @@ slv2_plugin_instantiate(SLV2Plugin               plugin,
 				dlclose(lib);
 				break; // return NULL
 			} else {
-				librdf_uri* absolute_uri = librdf_new_uri_relative_to_base(
-					librdf_node_get_uri(slv2_value_as_node(
-						                    slv2_plugin_get_bundle_uri(plugin))),
-						(const uint8_t*)ld->URI);
-				if (!strcmp((const char*)librdf_uri_as_string(absolute_uri),
+				// FIXME: duplicated/common code, put this in serd
+				SerdURI uri;
+				if (!serd_uri_parse((const uint8_t*)ld->URI, &uri)) {
+					SLV2_ERROR("Failed to parse library URI\n");
+					dlclose(lib);
+					break;
+				}
+
+				SerdURI base_uri;
+				if (!serd_uri_parse(
+					    (const uint8_t*)slv2_value_as_uri(slv2_plugin_get_bundle_uri(plugin)),
+					    &base_uri)) {
+					dlclose(lib);
+					break;
+				}
+
+				SerdURI abs_uri;
+				if (!serd_uri_resolve(&uri, &base_uri, &abs_uri)) {
+					fprintf(stderr, "error: failed to resolve new base URI\n");
+					return false;
+				}
+
+				SerdNode abs_uri_node = serd_node_new_uri(&abs_uri, &base_uri);
+
+				if (!strcmp((const char*)abs_uri_node.buf,
 				            slv2_value_as_uri(slv2_plugin_get_uri(plugin)))) {
 					assert(plugin->plugin_uri);
 					assert(ld->instantiate);
@@ -98,10 +118,10 @@ slv2_plugin_instantiate(SLV2Plugin               plugin,
 					impl->lib_handle = lib;
 					result->pimpl = impl;
 
-					librdf_free_uri(absolute_uri);
+					serd_node_free(&abs_uri_node);
 					break;
 				} else {
-					librdf_free_uri(absolute_uri);
+					serd_node_free(&abs_uri_node);
 				}
 			}
 		}

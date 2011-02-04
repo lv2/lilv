@@ -75,11 +75,9 @@ slv2_value_new(SLV2World world, SLV2ValueType type, const char* str)
 
 	switch (type) {
 	case SLV2_VALUE_URI:
-		val->val.uri_val = librdf_new_node_from_uri_string(
-			world->world, (const uint8_t*)str);
+		val->val.uri_val = sord_get_uri(world->model, true, str);
 		assert(val->val.uri_val);
-		val->str_val = (char*)librdf_uri_as_string(
-			librdf_node_get_uri(val->val.uri_val));
+		val->str_val = (char*)sord_node_get_string(val->val.uri_val);
 		break;
 	case SLV2_VALUE_QNAME_UNUSED:
 	case SLV2_VALUE_BLANK:
@@ -96,51 +94,45 @@ slv2_value_new(SLV2World world, SLV2ValueType type, const char* str)
 
 /** Create a new SLV2Value from @a node, or return NULL if impossible */
 SLV2Value
-slv2_value_new_from_node(SLV2World world, librdf_node* node)
+slv2_value_new_from_node(SLV2World world, SordNode node)
 {
 	SLV2Value     result       = NULL;
-	librdf_uri*   datatype_uri = NULL;
+	SordNode      datatype_uri = NULL;
 	SLV2ValueType type         = SLV2_VALUE_STRING;
 
-	switch (librdf_node_get_type(node)) {
-	case LIBRDF_NODE_TYPE_RESOURCE:
+	switch (sord_node_get_type(node)) {
+	case SORD_URI:
 		type                = SLV2_VALUE_URI;
 		result              = (SLV2Value)malloc(sizeof(struct _SLV2Value));
 		result->type        = SLV2_VALUE_URI;
 		result->val.uri_val = slv2_node_copy(node);
-		result->str_val     = (char*)librdf_uri_as_string(
-			librdf_node_get_uri(result->val.uri_val));
+		result->str_val     = (char*)sord_node_get_string(result->val.uri_val);
 		break;
-	case LIBRDF_NODE_TYPE_LITERAL:
-		datatype_uri = librdf_node_get_literal_value_datatype_uri(node);
+	case SORD_LITERAL:
+		datatype_uri = sord_literal_get_datatype(node);
 		if (datatype_uri) {
-			if (librdf_uri_equals(datatype_uri, librdf_node_get_uri(world->xsd_integer_node)))
+			if (sord_node_equals(datatype_uri, world->xsd_integer_node))
 				type = SLV2_VALUE_INT;
-			else if (librdf_uri_equals(datatype_uri, librdf_node_get_uri(world->xsd_decimal_node)))
+			else if (sord_node_equals(datatype_uri, world->xsd_decimal_node))
 				type = SLV2_VALUE_FLOAT;
 			else
-				SLV2_ERRORF("Unknown datatype %s\n", librdf_uri_as_string(datatype_uri));
+				SLV2_ERRORF("Unknown datatype %s\n", sord_node_get_string(datatype_uri));
 		}
-		result = slv2_value_new(world, type, (const char*)librdf_node_get_literal_value(node));
+		result = slv2_value_new(world, type, (const char*)sord_node_get_string(node));
 		switch (result->type) {
-		case SLV2_VALUE_URI:
-		case SLV2_VALUE_BLANK:
-		case SLV2_VALUE_STRING:
-		case SLV2_VALUE_QNAME_UNUSED:
-			break;
 		case SLV2_VALUE_INT:
 		case SLV2_VALUE_FLOAT:
 			slv2_value_set_numerics_from_string(result);
+		default:
+			break;
 		}
 		break;
-	case LIBRDF_NODE_TYPE_BLANK:
-		type = SLV2_VALUE_BLANK;
-		result = slv2_value_new(world, type, (const char*)librdf_node_get_blank_identifier(node));
+	case SORD_BLANK:
+		type   = SLV2_VALUE_BLANK;
+		result = slv2_value_new(world, type, (const char*)sord_node_get_string(node));
 		break;
-	case LIBRDF_NODE_TYPE_UNKNOWN:
 	default:
-		SLV2_ERRORF("Unknown RDF node type %d\n", librdf_node_get_type(node));
-		break;
+		assert(false);
 	}
 
 	return result;
@@ -194,8 +186,7 @@ slv2_value_duplicate(SLV2Value val)
 
 	if (val->type == SLV2_VALUE_URI) {
 		result->val.uri_val = slv2_node_copy(val->val.uri_val);
-		result->str_val = (char*)librdf_uri_as_string(
-			librdf_node_get_uri(val->val.uri_val));
+		result->str_val = (char*)sord_node_get_string(result->val.uri_val);
 	} else {
 		result->str_val = strdup(val->str_val);
 		result->val = val->val;
@@ -231,11 +222,11 @@ slv2_value_equals(SLV2Value value, SLV2Value other)
 
 	switch (value->type) {
 	case SLV2_VALUE_URI:
-		return (librdf_node_equals(value->val.uri_val, other->val.uri_val) != 0);
+		return sord_node_equals(value->val.uri_val, other->val.uri_val);
 	case SLV2_VALUE_BLANK:
 	case SLV2_VALUE_STRING:
 	case SLV2_VALUE_QNAME_UNUSED:
-		return ! strcmp(value->str_val, other->str_val);
+		return !strcmp(value->str_val, other->str_val);
 	case SLV2_VALUE_INT:
 		return (value->val.int_val == other->val.int_val);
 	case SLV2_VALUE_FLOAT:

@@ -92,32 +92,21 @@ slv2_get_lang()
 char*
 slv2_qname_expand(SLV2Plugin p, const char* qname)
 {
-	char* colon = strchr(qname, ':');
-	if (!colon || colon == qname) {
-		SLV2_ERRORF("Invalid QName `%s'\n", qname);
+	const size_t qname_len  = strlen(qname);
+	SerdNode     qname_node = { SERD_CURIE, qname_len + 1, qname_len,
+	                            (const uint8_t*)qname };
+
+	SerdChunk uri_prefix;
+	SerdChunk uri_suffix;
+	if (serd_env_expand(p->world->namespaces, &qname_node, &uri_prefix, &uri_suffix)) {
+		const size_t uri_len = uri_prefix.len + uri_suffix.len;
+		char*        uri     = malloc(uri_len + 1);
+		memcpy(uri,                  uri_prefix.buf, uri_prefix.len);
+		memcpy(uri + uri_prefix.len, uri_suffix.buf, uri_suffix.len);
+		uri[uri_len] = '\0';
+		return uri;
+	} else {
+		SLV2_ERRORF("Failed to expand QName `%s'\n", qname);
 		return NULL;
 	}
-
-	const size_t prefix_len = colon - qname;
-	char*        prefix     = malloc(prefix_len + 1);
-	memcpy(prefix, qname, prefix_len);
-	prefix[prefix_len] = '\0';
-
-	char* namespace = librdf_hash_get(p->world->namespaces, prefix);
-	free(prefix);
-	if (!namespace) {
-		SLV2_ERRORF("QName `%s' has Undefined prefix\n", qname);
-		return NULL;
-	}
-
-	const size_t qname_len     = strlen(qname);
-	const size_t suffix_len    = qname_len - prefix_len - 1;
-	const size_t namespace_len = strlen(namespace);
-	char*        uri           = malloc(namespace_len + suffix_len + 1);
-	memcpy(uri, namespace, namespace_len);
-	memcpy(uri + namespace_len, colon + 1, qname_len - prefix_len - 1);
-	uri[namespace_len + suffix_len] = '\0';
-
-	free(namespace);
-	return uri;
 }

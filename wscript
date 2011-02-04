@@ -3,7 +3,7 @@ import autowaf
 import Options
 
 # Version of this package (even if built as a child)
-SLV2_VERSION = '0.6.9'
+SLV2_VERSION = '0.7.0alpha'
 
 # Library version (UNIX style major, minor, micro)
 # major increment <=> incompatible changes
@@ -59,7 +59,9 @@ def configure(conf):
 	autowaf.display_header('SLV2 Configuration')
 	conf.check_tool('compiler_cc')
 	autowaf.check_pkg(conf, 'lv2core', uselib_store='LV2CORE', mandatory=True)
-	autowaf.check_pkg(conf, 'redland', uselib_store='REDLAND', atleast_version='1.0.6', mandatory=True)
+	autowaf.check_pkg(conf, 'raptor', uselib_store='RAPTOR', mandatory=True)
+	autowaf.check_pkg(conf, 'serd', uselib_store='SERD', atleast_version='0.1.0', mandatory=True)
+	autowaf.check_pkg(conf, 'sord', uselib_store='SORD', atleast_version='0.1.0', mandatory=True)
 	autowaf.check_pkg(conf, 'jack', uselib_store='JACK', atleast_version='0.107.0', mandatory=False)
 	conf.env.append_value('CFLAGS', '-std=c99')
 	autowaf.define(conf, 'SLV2_VERSION', SLV2_VERSION)
@@ -72,7 +74,8 @@ def configure(conf):
 		elif Options.platform == 'haiku':
 			Options.options.default_lv2_path = "~/.lv2:/boot/common/add-ons/lv2"
 		else:
-			Options.options.default_lv2_path = "~/.lv2:/usr/local/" + conf.env['LIBDIRNAME'] + '/lv2:' + conf.env['LIBDIR'] + '/lv2'
+			Options.options.default_lv2_path = "~/.lv2:/usr/%s/lv2:/usr/local/%s/lv2" % (
+				conf.env['LIBDIRNAME'], conf.env['LIBDIRNAME'])
 
 	conf.env['USE_JACK'] = conf.env['HAVE_JACK'] and not Options.options.no_jack
 	conf.env['BUILD_TESTS'] = Options.options.build_tests
@@ -103,7 +106,7 @@ def build(bld):
 	bld.install_files('${INCLUDEDIR}/slv2', bld.path.ant_glob('slv2/*.h'))
 
 	# Pkgconfig file
-	autowaf.build_pc(bld, 'SLV2', SLV2_VERSION, ['REDLAND'])
+	autowaf.build_pc(bld, 'SLV2', SLV2_VERSION, ['SORD','RAPTOR'])
 
 	lib_source = '''
 		src/collections.c
@@ -132,7 +135,7 @@ def build(bld):
 	obj.install_path    = '${LIBDIR}'
 	obj.cflags          = [ '-fvisibility=hidden', '-DSLV2_SHARED', '-DSLV2_INTERNAL' ]
 	obj.linkflags       = [ '-ldl' ]
-	autowaf.use_lib(bld, obj, 'REDLAND LV2CORE')
+	autowaf.use_lib(bld, obj, 'SORD SERD LV2CORE RAPTOR')
 
 	if bld.env['BUILD_TESTS']:
 		# Static library (for unit test code coverage)
@@ -143,7 +146,7 @@ def build(bld):
 		obj.target       = 'slv2_static'
 		obj.install_path = ''
 		obj.cflags       = [ '-fprofile-arcs',  '-ftest-coverage' ]
-		autowaf.use_lib(bld, obj, 'REDLAND LV2CORE')
+		autowaf.use_lib(bld, obj, 'SORD SERD LV2CORE RAPTOR')
 
 		# Unit tests
 		for i in tests.split():
@@ -151,7 +154,7 @@ def build(bld):
 			obj.source       = i + '.c'
 			obj.includes     = ['.', './src']
 			obj.use          = 'libslv2_static'
-			obj.uselib       = 'REDLAND LV2CORE'
+			obj.uselib       = 'SORD SERD LV2CORE'
 			obj.linkflags    = '-lgcov'
 			obj.target       = i
 			obj.install_path = ''

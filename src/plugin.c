@@ -25,7 +25,6 @@
 #ifdef SLV2_DYN_MANIFEST
 #include <dlfcn.h>
 #endif
-#include <redland.h>
 #include "slv2/types.h"
 #include "slv2/collections.h"
 #include "slv2/plugin.h"
@@ -41,19 +40,18 @@ slv2_plugin_new(SLV2World world, SLV2Value uri, SLV2Value bundle_uri)
 {
 	assert(bundle_uri);
 	struct _SLV2Plugin* plugin = malloc(sizeof(struct _SLV2Plugin));
-	plugin->world = world;
-	plugin->plugin_uri = uri;
-	plugin->bundle_uri = bundle_uri;
-	plugin->binary_uri = NULL;
+	plugin->world        = world;
+	plugin->plugin_uri   = uri;
+	plugin->bundle_uri   = bundle_uri;
+	plugin->binary_uri   = NULL;
 #ifdef SLV2_DYN_MANIFEST
-	plugin->dynman_uri = NULL;
+	plugin->dynman_uri   = NULL;
 #endif
 	plugin->plugin_class = NULL;
-	plugin->data_uris = slv2_values_new();
-	plugin->ports = NULL;
-	plugin->storage = NULL;
-	plugin->rdf = NULL;
-	plugin->num_ports = 0;
+	plugin->data_uris    = slv2_values_new();
+	plugin->ports        = NULL;
+	plugin->num_ports    = 0;
+	plugin->loaded       = false;
 
 	return plugin;
 }
@@ -84,16 +82,6 @@ slv2_plugin_free(SLV2Plugin p)
 		p->ports = NULL;
 	}
 
-	if (p->rdf) {
-		librdf_free_model(p->rdf);
-		p->rdf = NULL;
-	}
-
-	if (p->storage) {
-		librdf_free_storage(p->storage);
-		p->storage = NULL;
-	}
-
 	slv2_values_free(p->data_uris);
 	p->data_uris = NULL;
 
@@ -105,7 +93,7 @@ slv2_plugin_free(SLV2Plugin p)
 void
 slv2_plugin_load_if_necessary(SLV2Plugin p)
 {
-	if (!p->rdf)
+	if (!p->loaded)
 		slv2_plugin_load(p);
 }
 
@@ -113,6 +101,7 @@ slv2_plugin_load_if_necessary(SLV2Plugin p)
 static SLV2Values
 slv2_plugin_query_node(SLV2Plugin p, SLV2Node subject, SLV2Node predicate)
 {
+	slv2_plugin_load_if_necessary(p);
 	// <subject> <predicate> ?value
 	SLV2Matches results = slv2_plugin_find_statements(
 		p, subject, predicate, NULL);
@@ -141,7 +130,7 @@ slv2_plugin_get_unique(SLV2Plugin p, SLV2Node subject, SLV2Node predicate)
 	SLV2Values values = slv2_plugin_query_node(p, subject, predicate);
 	if (!values || slv2_values_size(values) != 1) {
 		SLV2_ERRORF("Port does not have exactly one `%s' property\n",
-		            librdf_uri_as_string(librdf_node_get_uri(predicate)));
+		            sord_node_get_string(predicate));
 		return NULL;
 	}
 	SLV2Value ret = slv2_value_duplicate(slv2_values_get_at(values, 0));
@@ -167,7 +156,7 @@ slv2_plugin_get_one(SLV2Plugin p, SLV2Node subject, SLV2Node predicate)
 void
 slv2_plugin_load_ports_if_necessary(SLV2Plugin p)
 {
-	if (!p->rdf)
+	if (!p->loaded)
 		slv2_plugin_load(p);
 
 	if (!p->ports) {
@@ -223,7 +212,7 @@ slv2_plugin_load_ports_if_necessary(SLV2Plugin p)
 				p, port, p->world->rdf_a_node, NULL);
 			FOREACH_MATCH(types) {
 				SLV2Node type = slv2_match_object(types);
-				if (librdf_node_is_resource(type)) {
+				if (sord_node_get_type(type) == SORD_URI) {
 					raptor_sequence_push(
 						this_port->classes,
 						slv2_value_new_from_node(p->world, type));
@@ -254,18 +243,13 @@ slv2_plugin_load_ports_if_necessary(SLV2Plugin p)
 void
 slv2_plugin_load(SLV2Plugin p)
 {
-	if (!p->storage) {
-		assert(!p->rdf);
-		p->storage = slv2_world_new_storage(p->world);
-		p->rdf = librdf_new_model(p->world->world, p->storage, NULL);
-	}
-
 	// Parse all the plugin's data files into RDF model
 	for (unsigned i=0; i < slv2_values_size(p->data_uris); ++i) {
-		SLV2Value   data_uri_val = slv2_values_get_at(p->data_uris, i);
-		librdf_uri* data_uri     = librdf_node_get_uri(
-			slv2_value_as_node(data_uri_val));
-		librdf_parser_parse_into_model(p->world->parser, data_uri, data_uri, p->rdf);
+		SLV2Value data_uri_val = slv2_values_get_at(p->data_uris, i);
+		sord_read_file(p->world->model,
+		               sord_node_get_string(data_uri_val->val.uri_val),
+		               p->bundle_uri->val.uri_val,
+		               slv2_world_blank_node_prefix(p->world));
 	}
 
 #ifdef SLV2_DYN_MANIFEST
@@ -293,10 +277,7 @@ slv2_plugin_load(SLV2Plugin p)
 			FILE* fd = tmpfile();
 			get_data_func(handle, fd, slv2_value_as_string(p->plugin_uri));
 			rewind(fd);
-			librdf_parser_parse_file_handle_into_model(
-				p->world->parser, fd, 0,
-				librdf_node_get_value(slv2_value_as_node(p->bundle_uri)),
-				p->rdf);
+			sord_read_file_handle(p->world->model, fd, p->bundle_uri);
 			fclose(fd);
 		}
 
@@ -306,7 +287,7 @@ slv2_plugin_load(SLV2Plugin p)
 			close_func(handle);
 	}
 #endif
-	assert(p->rdf);
+	p->loaded = true;
 }
 
 
@@ -341,7 +322,7 @@ slv2_plugin_get_library_uri(SLV2Plugin p)
 			NULL);
 		FOREACH_MATCH(results) {
 			SLV2Node binary_node = slv2_match_object(results);
-			if (librdf_node_is_resource(binary_node)) {
+			if (sord_node_get_type(binary_node) == SORD_URI) {
 				p->binary_uri = slv2_value_new_from_node(p->world, binary_node);
 				break;
 			}
@@ -372,7 +353,7 @@ slv2_plugin_get_class(SLV2Plugin p)
 			NULL);
 		FOREACH_MATCH(results) {
 			SLV2Node class_node = slv2_node_copy(slv2_match_object(results));
-			if (!librdf_node_is_resource(class_node)) {
+			if (sord_node_get_type(class_node) != SORD_URI) {
 				continue;
 			}
 
@@ -494,8 +475,8 @@ slv2_plugin_get_value_by_qname_i18n(SLV2Plugin  p,
 		return NULL;
 	}
 
-	SLV2Node pred_node = librdf_new_node_from_uri_string(
-		p->world->world, (const uint8_t*)pred_uri);
+	SLV2Node pred_node = sord_get_uri(
+		p->world->model, true, (const uint8_t*)pred_uri);
 
 	SLV2Matches results = slv2_plugin_find_statements(
 		p,
@@ -525,8 +506,13 @@ slv2_plugin_get_value_for_subject(SLV2Plugin p,
 
 	SLV2Node subject_node = (slv2_value_is_uri(subject))
 		? slv2_node_copy(subject->val.uri_val)
-		: librdf_new_node_from_blank_identifier(
-			p->world->world, (const uint8_t*)slv2_value_as_blank(subject));
+		: sord_get_blank(p->world->model, false,
+		                 (const uint8_t*)slv2_value_as_blank(subject));
+
+	if (!subject_node) {
+		fprintf(stderr, "No such subject\n");
+		return NULL;
+	}
 
 	return slv2_plugin_query_node(p,
 	                              subject_node,
@@ -750,8 +736,8 @@ slv2_plugin_get_port_by_symbol(SLV2Plugin p,
 static SLV2Node
 slv2_plugin_get_author(SLV2Plugin p)
 {
-	SLV2Node doap_maintainer = librdf_new_node_from_uri_string(
-		p->world->world, NS_DOAP "maintainer");
+	SLV2Node doap_maintainer = sord_get_uri(
+		p->world->model, true, NS_DOAP "maintainer");
 
 	SLV2Matches maintainers = slv2_plugin_find_statements(
 		p,
@@ -778,8 +764,8 @@ slv2_plugin_get_author_name(SLV2Plugin plugin)
 	SLV2Node author = slv2_plugin_get_author(plugin);
 	if (author) {
 		return slv2_plugin_get_one(
-			plugin, author, librdf_new_node_from_uri_string(
-				plugin->world->world, NS_FOAF "name"));
+			plugin, author, sord_get_uri(
+				plugin->world->model, true, NS_FOAF "name"));
 	}
 	return NULL;
 }
@@ -791,8 +777,8 @@ slv2_plugin_get_author_email(SLV2Plugin plugin)
 	SLV2Node author = slv2_plugin_get_author(plugin);
 	if (author) {
 		return slv2_plugin_get_one(
-			plugin, author, librdf_new_node_from_uri_string(
-				plugin->world->world, NS_FOAF "mbox"));
+			plugin, author, sord_get_uri(
+				plugin->world->model, true, NS_FOAF "mbox"));
 	}
 	return NULL;
 }
@@ -804,8 +790,8 @@ slv2_plugin_get_author_homepage(SLV2Plugin plugin)
 	SLV2Node author = slv2_plugin_get_author(plugin);
 	if (author) {
 		return slv2_plugin_get_one(
-			plugin, author, librdf_new_node_from_uri_string(
-				plugin->world->world, NS_FOAF "homepage"));
+			plugin, author, sord_get_uri(
+				plugin->world->model, true, NS_FOAF "homepage"));
 	}
 	return NULL;
 }
@@ -816,8 +802,8 @@ slv2_plugin_get_uis(SLV2Plugin p)
 {
 #define NS_UI (const uint8_t*)"http://lv2plug.in/ns/extensions/ui#"
 
-	SLV2Node ui_ui = librdf_new_node_from_uri_string(
-		p->world->world, NS_UI "ui");
+	SLV2Node ui_ui = sord_get_uri(
+		p->world->model, true, NS_UI "ui");
 
 	SLV2UIs     result = slv2_uis_new();
 	SLV2Matches uis    = slv2_plugin_find_statements(
@@ -832,15 +818,15 @@ slv2_plugin_get_uis(SLV2Plugin p)
 		SLV2Value type = slv2_plugin_get_unique(
 			p, ui, p->world->rdf_a_node);
 
-		SLV2Node ui_binary_node = librdf_new_node_from_uri_string(
-			p->world->world, NS_UI "binary");
+		SLV2Node ui_binary_node = sord_get_uri(
+			p->world->model, true, NS_UI "binary");
 
 		SLV2Value binary = slv2_plugin_get_unique(
 			p, ui, ui_binary_node);
 
 		slv2_node_free(ui_binary_node);
 
-		if (!librdf_node_is_resource(ui)
+		if (sord_node_get_type(ui) != SORD_URI
 		    || !slv2_value_is_uri(type)
 		    || !slv2_value_is_uri(binary)) {
 			slv2_value_free(binary);

@@ -22,7 +22,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
-#include <redland.h>
 #include "slv2/types.h"
 #include "slv2/plugin.h"
 #include "slv2/collections.h"

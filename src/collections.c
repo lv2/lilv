@@ -20,7 +20,6 @@
 
 #include <string.h>
 #include <limits.h>
-#include <redland.h>
 #include "slv2/collections.h"
 #include "slv2/pluginclass.h"
 #include "slv2/pluginui.h"

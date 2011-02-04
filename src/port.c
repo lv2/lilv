@@ -127,7 +127,7 @@ slv2_port_supports_event(SLV2Plugin p,
 	SLV2Matches results   = slv2_plugin_find_statements(
 		p,
 		port_node,
-		librdf_new_node_from_uri_string(p->world->world, NS_EV "supportsEvent"),
+		sord_get_uri(p->world->model, true, NS_EV "supportsEvent"),
 		slv2_value_as_node(event));
 
 	const bool ret = !slv2_matches_end(results);
@@ -172,7 +172,7 @@ slv2_port_get_value_by_qname(SLV2Plugin  p,
 	SLV2Matches results   = slv2_plugin_find_statements(
 		p,
 		port_node,
-		librdf_new_node_from_uri_string(p->world->world, (const uint8_t*)pred_uri),
+		sord_get_uri(p->world->model, true, (const uint8_t*)pred_uri),
 		NULL);
 
 	free(pred_uri);
@@ -181,11 +181,11 @@ slv2_port_get_value_by_qname(SLV2Plugin  p,
 
 
 static SLV2Values
-slv2_port_get_value_by_node(SLV2Plugin   p,
-                            SLV2Port     port,
-                            SLV2Node predicate)
+slv2_port_get_value_by_node(SLV2Plugin p,
+                            SLV2Port   port,
+                            SLV2Node   predicate)
 {
-	assert(librdf_node_is_resource(predicate));
+	assert(sord_node_get_type(predicate) == SORD_URI);
 
 	SLV2Node    port_node = slv2_port_get_node(p, port);
 	SLV2Matches results   = slv2_plugin_find_statements(
@@ -229,7 +229,7 @@ slv2_port_get_value_by_qname_i18n(SLV2Plugin  p,
 	SLV2Matches results   = slv2_plugin_find_statements(
 		p,
 		port_node,
-		librdf_new_node_from_uri_string(p->world->world, (const uint8_t*)pred_uri),
+		sord_get_uri(p->world->model, true, pred_uri),
 		NULL);
 
 	free(pred_uri);
@@ -316,7 +316,7 @@ slv2_port_get_scale_points(SLV2Plugin p,
 	SLV2Matches  points    = slv2_plugin_find_statements(
 		p,
 		port_node,
-		librdf_new_node_from_uri_string(p->world->world, SLV2_NS_LV2 "scalePoint"),
+		sord_get_uri(p->world->model, true, SLV2_NS_LV2 "scalePoint"),
 		NULL);
 
 	SLV2ScalePoints ret = NULL;

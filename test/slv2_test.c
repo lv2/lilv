@@ -24,7 +24,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
-#include <redland.h>
 #include <sys/stat.h>
 #include <limits.h>
 #include <float.h>
@@ -151,12 +150,13 @@ struct TestCase {
 #define PREFIX_LV2 "@prefix lv2: <http://lv2plug.in/ns/lv2core#> .\n"
 #define PREFIX_LV2EV "@prefix lv2ev: <http://lv2plug.in/ns/ext/event#> . \n"
 #define PREFIX_LV2UI "@prefix lv2ui: <http://lv2plug.in/ns/extensions/ui#> .\n"
+#define PREFIX_RDF "@prefix rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .\n"
 #define PREFIX_RDFS "@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .\n"
 #define PREFIX_FOAF "@prefix foaf: <http://xmlns.com/foaf/0.1/> .\n"
 #define PREFIX_DOAP "@prefix doap: <http://usefulinc.com/ns/doap#> .\n"
 
 #define MANIFEST_PREFIXES PREFIX_LINE PREFIX_LV2 PREFIX_RDFS
-#define BUNDLE_PREFIXES PREFIX_LINE PREFIX_LV2 PREFIX_RDFS PREFIX_FOAF PREFIX_DOAP
+#define BUNDLE_PREFIXES PREFIX_LINE PREFIX_LV2 PREFIX_RDF PREFIX_RDFS PREFIX_FOAF PREFIX_DOAP
 #define PLUGIN_NAME(name) "doap:name \"" name "\""
 #define LICENSE_GPL "doap:license <http://usefulinc.com/doap/licenses/gpl>"
 

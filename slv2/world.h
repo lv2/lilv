@@ -23,7 +23,6 @@
 extern "C" {
 #endif
 
-#include <redland.h>
 #include "slv2/collections.h"
 
 /** \defgroup slv2_world Global library state
@@ -53,13 +52,6 @@ extern "C" {
 SLV2_API
 SLV2World
 slv2_world_new();
-
-
-/** Initialize a new, empty world, using an existing Redland context.
- */
-SLV2_API
-SLV2World
-slv2_world_new_using_rdf_world(librdf_world* world);
 
 
 /** Destroy the world, mwahaha.

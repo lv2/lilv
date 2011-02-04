@@ -18,7 +18,6 @@
 
 #define _XOPEN_SOURCE 500
 #include <assert.h>
-#include <redland.h>
 #include <limits.h>
 #include <stdlib.h>
 #include <string.h>
@@ -36,14 +35,8 @@ slv2_plugin_find_statements(SLV2Plugin plugin,
                             SLV2Node   object)
 {
 	slv2_plugin_load_if_necessary(plugin);
-	librdf_statement* q = librdf_new_statement_from_nodes(
-		plugin->world->world,
-		subject   ? slv2_node_copy(subject)   : NULL,
-		predicate ? slv2_node_copy(predicate) : NULL,
-		object    ? slv2_node_copy(object)    : NULL);
-	librdf_stream* results = librdf_model_find_statements(plugin->rdf, q);
-	librdf_free_statement(q);
-	return results;
+	SordTuple pat = { subject, predicate, object, NULL };
+	return sord_find(plugin->world->model, pat);
 }
 
 
@@ -55,13 +48,13 @@ slv2_values_from_stream_i18n(SLV2Plugin  p,
 	SLV2Node   nolang = NULL;
 	FOREACH_MATCH(stream) {
 		SLV2Node value = slv2_match_object(stream);
-		if (librdf_node_is_literal(value)) {
-			const char* lang = librdf_node_get_literal_value_language(value);
+		if (sord_node_get_type(value) == SORD_LITERAL) {
+			const char* lang = sord_literal_get_lang(value);
 			if (lang) {
 				if (!strcmp(lang, slv2_get_lang())) {
 					raptor_sequence_push(
 						values, slv2_value_new_string(
-							p->world, (const char*)librdf_node_get_literal_value(value)));
+							p->world, sord_node_get_string(value)));
 				}
 			} else {
 				nolang = value;
@@ -76,7 +69,7 @@ slv2_values_from_stream_i18n(SLV2Plugin  p,
 		if (nolang) {
 			raptor_sequence_push(
 				values, slv2_value_new_string(
-					p->world, (const char*)librdf_node_get_literal_value(nolang)));
+					p->world, sord_node_get_string(nolang)));
 		} else {
 			slv2_values_free(values);
 			values = NULL;
