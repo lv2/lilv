@@ -541,9 +541,9 @@ slv2_world_load_plugin_classes(SLV2World world)
 		const uint8_t* label      = (const uint8_t*)sord_node_get_string(label_node);
 		slv2_match_end(labels);
 
-		SLV2PluginClasses classes   = world->plugin_classes;
-		const unsigned    n_classes = ((GPtrArray*)classes)->len;
+		SLV2PluginClasses classes = world->plugin_classes;
 #ifndef NDEBUG
+		const unsigned n_classes = ((GPtrArray*)classes)->len;
 		if (n_classes > 0) {
 			// Class results are in increasing sorted order
 			SLV2PluginClass prev = g_ptr_array_index((GPtrArray*)classes,

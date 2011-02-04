@@ -164,6 +164,7 @@ slv2_plugin_load_ports_if_necessary(SLV2Plugin p)
 			NULL);
 
 		FOREACH_MATCH(ports) {
+			SLV2Value index  = NULL;
 			SLV2Node  port   = slv2_match_object(ports);
 			SLV2Value symbol = slv2_plugin_get_unique(
 				p, port, p->world->lv2_symbol_node);
@@ -174,8 +175,7 @@ slv2_plugin_load_ports_if_necessary(SLV2Plugin p)
 				goto error;
 			}
 
-			SLV2Value index = slv2_plugin_get_unique(
-				p, port, p->world->lv2_index_node);
+			index = slv2_plugin_get_unique(p, port, p->world->lv2_index_node);
 
 			if (!slv2_value_is_int(index)) {
 				SLV2_ERROR("port has a non-integer index\n");
