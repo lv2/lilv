@@ -68,6 +68,7 @@ slv2_match_object(SLV2Matches iter) {
 static inline void
 slv2_match_end(SLV2Matches iter)
 {
+	sord_iter_free(iter);
 }
 
 
