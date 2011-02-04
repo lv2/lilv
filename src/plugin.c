@@ -112,7 +112,7 @@ slv2_plugin_query_node(SLV2Plugin p, SLV2Node subject, SLV2Node predicate)
 		SLV2Node  node  = slv2_match_object(results);
 		SLV2Value value = slv2_value_new_from_node(p->world, node);
 		if (value)
-			raptor_sequence_push(result, value);
+			g_ptr_array_add(result, value);
 	}
 	slv2_match_end(results);
 
@@ -207,7 +207,7 @@ slv2_plugin_load_ports_if_necessary(SLV2Plugin p)
 			FOREACH_MATCH(types) {
 				SLV2Node type = slv2_match_object(types);
 				if (sord_node_get_type(type) == SORD_URI) {
-					raptor_sequence_push(
+					g_ptr_array_add(
 						this_port->classes,
 						slv2_value_new_from_node(p->world, type));
 				} else {
@@ -651,14 +651,13 @@ slv2_plugin_get_supported_features(SLV2Plugin p)
 	SLV2Values result     = slv2_values_new();
 	unsigned   n_optional = slv2_values_size(optional);
 	unsigned   n_required = slv2_values_size(required);
-	unsigned   i          = 0;
-	for ( ; i < n_optional; ++i)
-		slv2_values_set_at(result, i, raptor_sequence_pop(optional));
-	for ( ; i < n_optional + n_required; ++i)
-		slv2_values_set_at(result, i, raptor_sequence_pop(required));
+	for (unsigned i = 0 ; i < n_optional; ++i)
+		g_ptr_array_add(result, slv2_values_get_at(optional, i));
+	for (unsigned i = 0 ; i < n_required; ++i)
+		g_ptr_array_add(result, slv2_values_get_at(required, i));
 
-	slv2_values_free(optional);
-	slv2_values_free(required);
+	free(((GPtrArray*)optional)->pdata);
+	free(((GPtrArray*)required)->pdata);
 
 	return result;
 }
@@ -801,7 +800,7 @@ slv2_plugin_get_uis(SLV2Plugin p)
 			type,
 			binary);
 
-		raptor_sequence_push(result, slv2_ui);
+		g_ptr_array_add(result, slv2_ui);
 	}
 	slv2_match_end(uis);
 

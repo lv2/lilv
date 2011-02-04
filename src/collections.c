@@ -30,7 +30,7 @@
 CollType \
 prefix ## _new() \
 { \
-	return raptor_new_sequence((void (*)(void*))free_func, NULL); \
+	return g_ptr_array_new_with_free_func((GDestroyNotify)free_func); \
 } \
 \
 \
@@ -38,24 +38,24 @@ void \
 prefix ## _free(CollType coll) \
 { \
 	if (coll) \
-		raptor_free_sequence(coll); \
+		g_ptr_array_unref((GPtrArray*)coll); \
 } \
 \
 \
 unsigned \
 prefix ## _size(CollType coll) \
 { \
-	return (coll ? raptor_sequence_size(coll) : 0); \
+	return (coll ? ((GPtrArray*)coll)->len : 0); \
 } \
 \
 \
 ElemType \
 prefix ## _get_at(CollType coll, unsigned index) \
 { \
-	if (!coll || index > INT_MAX) \
+	if (!coll || index >= ((GPtrArray*)coll)->len) \
 		return NULL; \
 	else \
-		return (ElemType)raptor_sequence_get_at(coll, (int)index); \
+		return (ElemType)g_ptr_array_index((GPtrArray*)coll, (int)index); \
 }
 
 SLV2_COLLECTION_IMPL(SLV2PluginClasses, SLV2PluginClass,
@@ -75,13 +75,13 @@ slv2_plugin_classes_get_by_uri(SLV2PluginClasses list, SLV2Value uri)
 	// good old fashioned binary search
 
 	int lower = 0;
-	int upper = raptor_sequence_size(list) - 1;
+	int upper = ((GPtrArray*)list)->len - 1;
 	int i;
 
 	while (upper >= lower) {
 		i = lower + ((upper - lower) / 2);
 
-		SLV2PluginClass p = raptor_sequence_get_at(list, i);
+		SLV2PluginClass p = g_ptr_array_index(((GPtrArray*)list), i);
 
 		const int cmp = strcmp(slv2_value_as_uri(slv2_plugin_class_get_uri(p)),
 		                       slv2_value_as_uri(uri));
@@ -113,7 +113,7 @@ void
 slv2_values_set_at(SLV2Values list, unsigned index, void* value)
 {
 	if (index <= INT_MAX)
-		raptor_sequence_set_at(list, index, value);
+		((GPtrArray*)list)->pdata[index] = value;
 }
 
 /* **** PLUGIN UIS **** */
@@ -124,13 +124,13 @@ slv2_uis_get_by_uri(SLV2UIs list, SLV2Value uri)
 	// good old fashioned binary search
 
 	int lower = 0;
-	int upper = raptor_sequence_size(list) - 1;
+	int upper = ((GPtrArray*)list)->len - 1;
 	int i;
 
 	while (upper >= lower) {
 		i = lower + ((upper - lower) / 2);
 
-		SLV2UI ui = raptor_sequence_get_at(list, i);
+		SLV2UI ui = g_ptr_array_index((GPtrArray*)list, i);
 
 		const int cmp = strcmp(slv2_value_as_uri(slv2_ui_get_uri(ui)),
 		                       slv2_value_as_uri(uri));

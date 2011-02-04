@@ -50,7 +50,7 @@ slv2_ui_new(SLV2World world,
 	free(bundle);
 
 	ui->classes = slv2_values_new();
-	raptor_sequence_push(ui->classes, type_uri);
+	g_ptr_array_add(ui->classes, type_uri);
 
 	return ui;
 }

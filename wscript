@@ -59,7 +59,8 @@ def configure(conf):
 	autowaf.display_header('SLV2 Configuration')
 	conf.check_tool('compiler_cc')
 	autowaf.check_pkg(conf, 'lv2core', uselib_store='LV2CORE', mandatory=True)
-	autowaf.check_pkg(conf, 'raptor', uselib_store='RAPTOR', mandatory=True)
+	autowaf.check_pkg(conf, 'glib-2.0', uselib_store='GLIB',
+	                  atleast_version='2.0.0', mandatory=True)
 	autowaf.check_pkg(conf, 'serd', uselib_store='SERD',
 	                  atleast_version='0.1.0', mandatory=True)
 	autowaf.check_pkg(conf, 'sord', uselib_store='SORD',
@@ -109,7 +110,7 @@ def build(bld):
 	bld.install_files('${INCLUDEDIR}/slv2', bld.path.ant_glob('slv2/*.h'))
 
 	# Pkgconfig file
-	autowaf.build_pc(bld, 'SLV2', SLV2_VERSION, ['SORD','RAPTOR'])
+	autowaf.build_pc(bld, 'SLV2', SLV2_VERSION, ['SORD','GLIB'])
 
 	lib_source = '''
 		src/collections.c
@@ -138,7 +139,7 @@ def build(bld):
 	obj.install_path    = '${LIBDIR}'
 	obj.cflags          = [ '-fvisibility=hidden', '-DSLV2_SHARED', '-DSLV2_INTERNAL' ]
 	obj.linkflags       = [ '-ldl' ]
-	autowaf.use_lib(bld, obj, 'SORD SERD LV2CORE RAPTOR')
+	autowaf.use_lib(bld, obj, 'SORD SERD LV2CORE GLIB')
 
 	if bld.env['BUILD_TESTS']:
 		# Static library (for unit test code coverage)
@@ -149,7 +150,7 @@ def build(bld):
 		obj.target       = 'slv2_static'
 		obj.install_path = ''
 		obj.cflags       = [ '-fprofile-arcs',  '-ftest-coverage' ]
-		autowaf.use_lib(bld, obj, 'SORD SERD LV2CORE RAPTOR')
+		autowaf.use_lib(bld, obj, 'SORD SERD LV2CORE GLIB')
 
 		# Unit tests
 		for i in tests.split():

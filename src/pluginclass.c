@@ -82,13 +82,14 @@ SLV2PluginClasses
 slv2_plugin_class_get_children(SLV2PluginClass plugin_class)
 {
 	// Returned list doesn't own categories
-	SLV2PluginClasses result = raptor_new_sequence(NULL, NULL);
+	SLV2PluginClasses result = g_ptr_array_new();
 
-	for (int i = 0; i < raptor_sequence_size(plugin_class->world->plugin_classes); ++i) {
-		SLV2PluginClass c = raptor_sequence_get_at(plugin_class->world->plugin_classes, i);
+	for (unsigned i = 0; i < ((GPtrArray*)plugin_class->world->plugin_classes)->len; ++i) {
+		SLV2PluginClass c = g_ptr_array_index(
+			(GPtrArray*)plugin_class->world->plugin_classes, i);
 		SLV2Value parent = slv2_plugin_class_get_parent_uri(c);
 		if (parent && slv2_value_equals(slv2_plugin_class_get_uri(plugin_class), parent))
-			raptor_sequence_push(result, c);
+			g_ptr_array_add(result, c);
 	}
 
 	return result;

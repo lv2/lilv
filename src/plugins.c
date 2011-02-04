@@ -31,20 +31,20 @@
 SLV2Plugins
 slv2_plugins_new()
 {
-	return raptor_new_sequence(NULL, NULL);
+	return g_ptr_array_new();
 }
 
 void
 slv2_plugins_free(SLV2World world, SLV2Plugins list)
 {
 	if (list && list != world->plugins)
-		raptor_free_sequence(list);
+		g_ptr_array_unref(list);
 }
 
 unsigned
 slv2_plugins_size(SLV2Plugins list)
 {
-	return (list ? raptor_sequence_size(list) : 0);
+	return (list ? ((GPtrArray*)list)->len : 0);
 }
 
 SLV2Plugin
@@ -53,13 +53,13 @@ slv2_plugins_get_by_uri(SLV2Plugins list, SLV2Value uri)
 	// good old fashioned binary search
 
 	int lower = 0;
-	int upper = raptor_sequence_size(list) - 1;
+	int upper = ((GPtrArray*)list)->len - 1;
 	int i;
 
 	while (upper >= lower) {
 		i = lower + ((upper - lower) / 2);
 
-		SLV2Plugin p = raptor_sequence_get_at(list, i);
+		SLV2Plugin p = g_ptr_array_index((GPtrArray*)list, i);
 
 		const int cmp = strcmp(slv2_value_as_uri(slv2_plugin_get_uri(p)),
 		                       slv2_value_as_uri(uri));
@@ -81,6 +81,6 @@ slv2_plugins_get_at(SLV2Plugins list, unsigned index)
 	if (index > INT_MAX)
 		return NULL;
 	else
-		return (SLV2Plugin)raptor_sequence_get_at(list, (int)index);
+		return (SLV2Plugin)g_ptr_array_index((GPtrArray*)list, (int)index);
 }
 

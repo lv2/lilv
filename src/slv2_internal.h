@@ -30,7 +30,7 @@ extern "C" {
 #include <stdint.h>
 #include <stdlib.h>
 #include <inttypes.h>
-#include <raptor.h>
+#include <glib.h>
 #include "serd/serd.h"
 #include "sord/sord.h"
 #include "slv2/types.h"
@@ -100,7 +100,7 @@ struct _SLV2Plugin {
 	SLV2Value          binary_uri; ///< lv2:binary
 	SLV2Value          dynman_uri; ///< dynamic manifest binary
 	SLV2PluginClass    plugin_class;
-	raptor_sequence*   data_uris; ///< rdfs::seeAlso
+	GPtrArray*         data_uris; ///< rdfs::seeAlso
 	SLV2Port*          ports;
 	uint32_t           num_ports;
 	bool               loaded;

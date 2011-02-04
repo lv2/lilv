@@ -139,7 +139,7 @@ slv2_values_from_stream_objects(SLV2Plugin p, SLV2Matches stream)
 
 	SLV2Values values = slv2_values_new();
 	FOREACH_MATCH(stream) {
-		raptor_sequence_push(
+		g_ptr_array_add(
 			values,
 			slv2_value_new_from_node(
 				p->world,
@@ -321,7 +321,7 @@ slv2_port_get_scale_points(SLV2Plugin p,
 			slv2_node_copy(p->world->rdfs_label_node));
 
 		if (value && label) {
-			raptor_sequence_push(ret, slv2_scale_point_new(value, label));
+			g_ptr_array_add(ret, slv2_scale_point_new(value, label));
 		}
 	}
 	slv2_match_end(points);

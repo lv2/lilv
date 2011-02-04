@@ -22,7 +22,7 @@
 #include <string.h>
 #include <assert.h>
 #include <locale.h>
-#include <raptor.h>
+#include <glib.h>
 #include "slv2/types.h"
 #include "slv2/value.h"
 #include "slv2_internal.h"
