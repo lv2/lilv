@@ -60,9 +60,12 @@ def configure(conf):
 	conf.check_tool('compiler_cc')
 	autowaf.check_pkg(conf, 'lv2core', uselib_store='LV2CORE', mandatory=True)
 	autowaf.check_pkg(conf, 'raptor', uselib_store='RAPTOR', mandatory=True)
-	autowaf.check_pkg(conf, 'serd', uselib_store='SERD', atleast_version='0.1.0', mandatory=True)
-	autowaf.check_pkg(conf, 'sord', uselib_store='SORD', atleast_version='0.1.0', mandatory=True)
-	autowaf.check_pkg(conf, 'jack', uselib_store='JACK', atleast_version='0.107.0', mandatory=False)
+	autowaf.check_pkg(conf, 'serd', uselib_store='SERD',
+	                  atleast_version='0.1.0', mandatory=True)
+	autowaf.check_pkg(conf, 'sord', uselib_store='SORD',
+	                  atleast_version='0.1.0', mandatory=True)
+	autowaf.check_pkg(conf, 'jack', uselib_store='JACK',
+	                  atleast_version='0.107.0', mandatory=False)
 	conf.env.append_value('CFLAGS', '-std=c99')
 	autowaf.define(conf, 'SLV2_VERSION', SLV2_VERSION)
 	if Options.options.dyn_manifest:
