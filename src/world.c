@@ -158,7 +158,7 @@ slv2_world_find_statements(SLV2World world,
                            SLV2Node  object,
                            SLV2Node  graph)
 {
-	SordTuple pat = { subject, predicate, object, graph };
+	SordQuad pat = { subject, predicate, object, graph };
 	return sord_find(model, pat);
 }
 
@@ -381,7 +381,7 @@ slv2_world_load_bundle(SLV2World world, SLV2Value bundle_uri)
 		SLV2Node spec = slv2_match_subject(spec_results);
 
 		// Add ?specification rdfs:seeAlso <manifest.ttl>
-		SordTuple see_also_tup = {
+		SordQuad see_also_tup = {
 			slv2_node_copy(spec),
 			world->rdfs_seealso_node,
 			sord_get_uri(world->model, true, manifest_uri.buf),
@@ -390,7 +390,7 @@ slv2_world_load_bundle(SLV2World world, SLV2Value bundle_uri)
 		sord_add(world->model, see_also_tup);
 
 		// Add ?specification slv2:bundleURI <file://some/path>
-		SordTuple bundle_uri_tup = {
+		SordQuad bundle_uri_tup = {
 			slv2_node_copy(spec),
 			slv2_node_copy(world->slv2_bundleuri_node),
 			slv2_node_copy(bundle_uri->val.uri_val),

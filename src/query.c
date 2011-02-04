@@ -34,7 +34,7 @@ slv2_plugin_find_statements(SLV2Plugin plugin,
                             SLV2Node   object)
 {
 	slv2_plugin_load_if_necessary(plugin);
-	SordTuple pat = { subject, predicate, object, NULL };
+	SordQuad pat = { subject, predicate, object, NULL };
 	return sord_find(plugin->world->model, pat);
 }
 

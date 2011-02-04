@@ -54,14 +54,14 @@ typedef SordNode SLV2Node;
 
 static inline SLV2Node
 slv2_match_subject(SLV2Matches iter) {
-	SordTuple tup;
+	SordQuad tup;
 	sord_iter_get(iter, tup);
 	return tup[SORD_SUBJECT];
 }
 
 static inline SLV2Node
 slv2_match_object(SLV2Matches iter) {
-	SordTuple tup;
+	SordQuad tup;
 	sord_iter_get(iter, tup);
 	return tup[SORD_OBJECT];
 }
