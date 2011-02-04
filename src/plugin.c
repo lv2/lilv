@@ -237,7 +237,7 @@ void
 slv2_plugin_load(SLV2Plugin p)
 {
 	// Parse all the plugin's data files into RDF model
-	for (unsigned i=0; i < slv2_values_size(p->data_uris); ++i) {
+	for (unsigned i = 0; i < slv2_values_size(p->data_uris); ++i) {
 		SLV2Value data_uri_val = slv2_values_get_at(p->data_uris, i);
 		sord_read_file(p->world->model,
 		               sord_node_get_string(data_uri_val->val.uri_val),
@@ -544,7 +544,7 @@ slv2_plugin_get_num_ports_of_class(SLV2Plugin p,
 	uint32_t ret = 0;
 	va_list  args;
 
-	for (unsigned i=0; i < p->num_ports; ++i) {
+	for (unsigned i = 0; i < p->num_ports; ++i) {
 		SLV2Port port = p->ports[i];
 		if (!port || !slv2_port_is_a(p, port, class_1))
 			continue;
@@ -691,7 +691,7 @@ slv2_plugin_get_port_by_symbol(SLV2Plugin p,
                                SLV2Value  symbol)
 {
 	slv2_plugin_load_ports_if_necessary(p);
-	for (uint32_t i=0; i < p->num_ports; ++i) {
+	for (uint32_t i = 0; i < p->num_ports; ++i) {
 		SLV2Port port = p->ports[i];
 		if (slv2_value_equals(port->symbol, symbol))
 			return port;

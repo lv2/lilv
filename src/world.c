@@ -41,11 +41,10 @@ slv2_world_set_prefix(SLV2World world, const char* name, const char* uri)
 	serd_env_add(world->namespaces, &name_node, &uri_node);
 }
 
-/* private */
-static SLV2World
-slv2_world_new_internal(SLV2World world)
+SLV2World
+slv2_world_new()
 {
-	assert(world);
+	SLV2World world = (SLV2World)malloc(sizeof(struct _SLV2World));
 
 	world->model = sord_new();
 	if (!world->model)
@@ -106,13 +105,6 @@ fail:
 	return NULL;
 }
 
-SLV2World
-slv2_world_new()
-{
-	SLV2World world = (SLV2World)malloc(sizeof(struct _SLV2World));
-	return slv2_world_new_internal(world);
-}
-
 void
 slv2_world_free(SLV2World world)
 {
@@ -142,7 +134,7 @@ slv2_world_free(SLV2World world)
 	slv2_node_free(world->xsd_integer_node);
 	slv2_node_free(world->xsd_decimal_node);
 
-	for (int i=0; i < raptor_sequence_size(world->plugins); ++i)
+	for (int i = 0; i < raptor_sequence_size(world->plugins); ++i)
 		slv2_plugin_free(raptor_sequence_get_at(world->plugins, i));
 	raptor_free_sequence(world->plugins);
 	world->plugins = NULL;
@@ -669,7 +661,7 @@ slv2_world_get_plugins_by_filter(SLV2World world, bool (*include)(SLV2Plugin))
 {
 	SLV2Plugins result = slv2_plugins_new();
 
-	for (int i=0; i < raptor_sequence_size(world->plugins); ++i) {
+	for (int i = 0; i < raptor_sequence_size(world->plugins); ++i) {
 		SLV2Plugin p = raptor_sequence_get_at(world->plugins, i);
 		if (include(p))
 			raptor_sequence_push(result, p);

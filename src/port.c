@@ -53,7 +53,7 @@ slv2_port_is_a(SLV2Plugin plugin,
                SLV2Port   port,
                SLV2Value  port_class)
 {
-	for (unsigned i=0; i < slv2_values_size(port->classes); ++i)
+	for (unsigned i = 0; i < slv2_values_size(port->classes); ++i)
 		if (slv2_value_equals(slv2_values_get_at(port->classes, i), port_class))
 			return true;
 

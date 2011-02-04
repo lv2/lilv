@@ -84,7 +84,7 @@ slv2_plugin_class_get_children(SLV2PluginClass plugin_class)
 	// Returned list doesn't own categories
 	SLV2PluginClasses result = raptor_new_sequence(NULL, NULL);
 
-	for (int i=0; i < raptor_sequence_size(plugin_class->world->plugin_classes); ++i) {
+	for (int i = 0; i < raptor_sequence_size(plugin_class->world->plugin_classes); ++i) {
 		SLV2PluginClass c = raptor_sequence_get_at(plugin_class->world->plugin_classes, i);
 		SLV2Value parent = slv2_plugin_class_get_parent_uri(c);
 		if (parent && slv2_value_equals(slv2_plugin_class_get_uri(plugin_class), parent))
