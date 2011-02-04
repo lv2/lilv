@@ -149,7 +149,7 @@ slv2_plugin_classes_get_by_uri(SLV2PluginClasses classes,
  */
 SLV2_API
 SLV2ScalePoints
-slv2_scale_points_new();
+slv2_scale_points_new(void);
 
 /* **** VALUES **** */
 
@@ -157,7 +157,7 @@ slv2_scale_points_new();
  */
 SLV2_API
 SLV2Values
-slv2_values_new();
+slv2_values_new(void);
 
 /** Return whether \a values contains \a value.
  *

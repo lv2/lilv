@@ -50,7 +50,7 @@ extern "C" {
  */
 SLV2_API
 SLV2World
-slv2_world_new();
+slv2_world_new(void);
 
 /** Destroy the world, mwahaha.
  *
