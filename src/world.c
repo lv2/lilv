@@ -560,10 +560,8 @@ slv2_world_load_plugin_classes(SLV2World world)
 				       (const char*)sord_node_get_string(class_node)) < 0);
 		}
 #endif
-		SLV2PluginClass pclass = slv2_plugin_class_new(world,
-		                                               parent_node,
-		                                               class_node,
-		                                               (const char*)label);
+		SLV2PluginClass pclass = slv2_plugin_class_new(
+			world, parent_node, class_node, (const char*)label);
 
 		if (pclass) {
 			raptor_sequence_push(classes, pclass);
@@ -587,7 +585,7 @@ slv2_world_load_all(SLV2World world)
 	} else {
 		char default_path[sizeof(SLV2_DEFAULT_LV2_PATH)];
 		memcpy(default_path, SLV2_DEFAULT_LV2_PATH, sizeof(SLV2_DEFAULT_LV2_PATH));
-		char* dir = default_path;
+		char*  dir          = default_path;
 		size_t lv2_path_len = 0;
 		while (*dir != '\0') {
 			char* colon = strchr(dir, ':');

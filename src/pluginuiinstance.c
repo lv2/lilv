@@ -46,7 +46,7 @@ slv2_ui_instantiate(SLV2Plugin                     plugin,
 		((LV2_Feature**)features)[0] = NULL;
 	}
 
-	const char* const lib_uri = slv2_value_as_string(slv2_ui_get_binary_uri(ui));
+	const char* const lib_uri  = slv2_value_as_string(slv2_ui_get_binary_uri(ui));
 	const char* const lib_path = slv2_uri_to_path(lib_uri);
 
 	if (!lib_path)

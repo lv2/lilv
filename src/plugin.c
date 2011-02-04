@@ -646,13 +646,12 @@ slv2_plugin_has_feature(SLV2Plugin p,
 SLV2Values
 slv2_plugin_get_supported_features(SLV2Plugin p)
 {
-	SLV2Values optional = slv2_plugin_get_optional_features(p);
-	SLV2Values required = slv2_plugin_get_required_features(p);
-
-	SLV2Values result = slv2_values_new();
-	unsigned n_optional = slv2_values_size(optional);
-	unsigned n_required = slv2_values_size(required);
-	unsigned i = 0;
+	SLV2Values optional   = slv2_plugin_get_optional_features(p);
+	SLV2Values required   = slv2_plugin_get_required_features(p);
+	SLV2Values result     = slv2_values_new();
+	unsigned   n_optional = slv2_values_size(optional);
+	unsigned   n_required = slv2_values_size(required);
+	unsigned   i          = 0;
 	for ( ; i < n_optional; ++i)
 		slv2_values_set_at(result, i, raptor_sequence_pop(optional));
 	for ( ; i < n_optional + n_required; ++i)
@@ -772,6 +771,9 @@ slv2_plugin_get_uis(SLV2Plugin p)
 	SLV2Node ui_ui = sord_get_uri(
 		p->world->model, true, NS_UI "ui");
 
+	SLV2Node ui_binary_node = sord_get_uri(
+		p->world->model, true, NS_UI "binary");
+
 	SLV2UIs     result = slv2_uis_new();
 	SLV2Matches uis    = slv2_plugin_find_statements(
 		p,
@@ -780,18 +782,9 @@ slv2_plugin_get_uis(SLV2Plugin p)
 		NULL);
 
 	FOREACH_MATCH(uis) {
-		SLV2Node ui = slv2_match_object(uis);
-
-		SLV2Value type = slv2_plugin_get_unique(
-			p, ui, p->world->rdf_a_node);
-
-		SLV2Node ui_binary_node = sord_get_uri(
-			p->world->model, true, NS_UI "binary");
-
-		SLV2Value binary = slv2_plugin_get_unique(
-			p, ui, ui_binary_node);
-
-		slv2_node_free(ui_binary_node);
+		SLV2Node  ui     = slv2_match_object(uis);
+		SLV2Value type   = slv2_plugin_get_unique(p, ui, p->world->rdf_a_node);
+		SLV2Value binary = slv2_plugin_get_unique(p, ui, ui_binary_node);
 
 		if (sord_node_get_type(ui) != SORD_URI
 		    || !slv2_value_is_uri(type)
@@ -812,6 +805,7 @@ slv2_plugin_get_uis(SLV2Plugin p)
 	}
 	slv2_match_end(uis);
 
+	slv2_node_free(ui_binary_node);
 	slv2_node_free(ui_ui);
 
 	if (slv2_uis_size(result) > 0) {

@@ -296,8 +296,8 @@ SLV2ScalePoints
 slv2_port_get_scale_points(SLV2Plugin p,
                            SLV2Port   port)
 {
-	SLV2Node     port_node = slv2_port_get_node(p, port);
-	SLV2Matches  points    = slv2_plugin_find_statements(
+	SLV2Node    port_node = slv2_port_get_node(p, port);
+	SLV2Matches points    = slv2_plugin_find_statements(
 		p,
 		port_node,
 		sord_get_uri(p->world->model, true, SLV2_NS_LV2 "scalePoint"),
