@@ -46,16 +46,12 @@ slv2_world_new()
 {
 	SLV2World world = (SLV2World)malloc(sizeof(struct _SLV2World));
 
-	world->model = sord_new();
+	world->model = sord_new(SORD_SPO|SORD_OPS, true);
 	if (!world->model)
 		goto fail;
 
-	if (!sord_open(world->model))
-		goto fail;
-	
 	world->plugin_classes = slv2_plugin_classes_new();
-
-	world->plugins = slv2_plugins_new();
+	world->plugins        = slv2_plugins_new();
 
 #define NS_DYNMAN (const uint8_t*)"http://lv2plug.in/ns/ext/dynmanifest#"
 
