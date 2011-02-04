@@ -437,7 +437,7 @@ SLV2Values
 slv2_plugin_get_value_by_qname(SLV2Plugin  p,
                                const char* predicate)
 {
-	char* pred_uri = slv2_qname_expand(p, predicate);
+	char* pred_uri = (char*)slv2_qname_expand(p, predicate);
 	if (!pred_uri) {
 		return NULL;
 	}
@@ -453,7 +453,7 @@ SLV2Values
 slv2_plugin_get_value_by_qname_i18n(SLV2Plugin  p,
                                     const char* predicate)
 {
-	char* pred_uri = slv2_qname_expand(p, predicate);
+	uint8_t* pred_uri = slv2_qname_expand(p, predicate);
 	if (!pred_uri) {
 		return NULL;
 	}

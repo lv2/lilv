@@ -86,7 +86,7 @@ slv2_get_lang()
 	return lang;
 }
 
-char*
+uint8_t*
 slv2_qname_expand(SLV2Plugin p, const char* qname)
 {
 	const size_t qname_len  = strlen(qname);
@@ -101,7 +101,7 @@ slv2_qname_expand(SLV2Plugin p, const char* qname)
 		memcpy(uri,                  uri_prefix.buf, uri_prefix.len);
 		memcpy(uri + uri_prefix.len, uri_suffix.buf, uri_suffix.len);
 		uri[uri_len] = '\0';
-		return uri;
+		return (uint8_t*)uri;
 	} else {
 		SLV2_ERRORF("Failed to expand QName `%s'\n", qname);
 		return NULL;

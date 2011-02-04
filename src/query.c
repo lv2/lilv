@@ -51,8 +51,8 @@ slv2_values_from_stream_i18n(SLV2Plugin  p,
 			if (lang) {
 				if (!strcmp(lang, slv2_get_lang())) {
 					g_ptr_array_add(
-						values, slv2_value_new_string(
-							p->world, sord_node_get_string(value)));
+						values, (uint8_t*)slv2_value_new_string(
+							p->world, (const char*)sord_node_get_string(value)));
 				}
 			} else {
 				nolang = value;
@@ -66,8 +66,8 @@ slv2_values_from_stream_i18n(SLV2Plugin  p,
 		// No value with a matching language, use untranslated default
 		if (nolang) {
 			g_ptr_array_add(
-				values, slv2_value_new_string(
-					p->world, sord_node_get_string(nolang)));
+				values, (uint8_t*)slv2_value_new_string(
+					p->world, (const char*)sord_node_get_string(nolang)));
 		} else {
 			slv2_values_free(values);
 			values = NULL;

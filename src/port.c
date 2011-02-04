@@ -155,7 +155,7 @@ slv2_port_get_value_by_qname(SLV2Plugin  p,
                              const char* predicate)
 {
 	assert(predicate);
-	char* pred_uri = slv2_qname_expand(p, predicate);
+	uint8_t* pred_uri = slv2_qname_expand(p, predicate);
 	if (!pred_uri) {
 		return NULL;
 	}
@@ -164,7 +164,7 @@ slv2_port_get_value_by_qname(SLV2Plugin  p,
 	SLV2Matches results   = slv2_plugin_find_statements(
 		p,
 		port_node,
-		sord_get_uri(p->world->model, true, (const uint8_t*)pred_uri),
+		sord_get_uri(p->world->model, true, pred_uri),
 		NULL);
 
 	free(pred_uri);
@@ -209,7 +209,7 @@ slv2_port_get_value_by_qname_i18n(SLV2Plugin  p,
                                   const char* predicate)
 {
 	assert(predicate);
-	char* pred_uri = slv2_qname_expand(p, predicate);
+	uint8_t* pred_uri = slv2_qname_expand(p, predicate);
 	if (!pred_uri) {
 		return NULL;
 	}
