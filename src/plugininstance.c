@@ -69,10 +69,8 @@ slv2_plugin_instantiate(SLV2Plugin               plugin,
 		const char* bundle_path = slv2_uri_to_path(slv2_value_as_uri(
 					slv2_plugin_get_bundle_uri(plugin)));
 
-		for (uint32_t i=0; 1; ++i) {
-
+		for (uint32_t i = 0; true; ++i) {
 			const LV2_Descriptor* ld = df(i);
-
 			if (!ld) {
 				SLV2_ERRORF("Did not find plugin %s in %s\n",
 						slv2_value_as_uri(slv2_plugin_get_uri(plugin)), lib_path);
@@ -136,7 +134,7 @@ slv2_plugin_instantiate(SLV2Plugin               plugin,
 		}
 
 		// "Connect" all ports to NULL (catches bugs)
-		for (uint32_t i=0; i < slv2_plugin_get_num_ports(plugin); ++i)
+		for (uint32_t i = 0; i < slv2_plugin_get_num_ports(plugin); ++i)
 			result->lv2_descriptor->connect_port(result->lv2_handle, i, NULL);
 	}
 

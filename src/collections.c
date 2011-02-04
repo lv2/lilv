@@ -102,7 +102,7 @@ slv2_plugin_classes_get_by_uri(SLV2PluginClasses list, SLV2Value uri)
 bool
 slv2_values_contains(SLV2Values list, SLV2Value value)
 {
-	for (unsigned i=0; i < slv2_values_size(list); ++i)
+	for (unsigned i = 0; i < slv2_values_size(list); ++i)
 		if (slv2_value_equals(slv2_values_get_at(list, i), value))
 			return true;
 

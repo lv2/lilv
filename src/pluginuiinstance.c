@@ -70,10 +70,8 @@ slv2_ui_instantiate(SLV2Plugin                     plugin,
 
 		const char* bundle_path = slv2_uri_to_path(slv2_value_as_uri(slv2_ui_get_bundle_uri(ui)));
 
-		for (uint32_t i=0; 1; ++i) {
-
+		for (uint32_t i = 0; true; ++i) {
 			const LV2UI_Descriptor* ld = df(i);
-
 			if (!ld) {
 				SLV2_ERRORF("Did not find UI %s in %s\n",
 						slv2_value_as_uri(slv2_ui_get_uri(ui)), lib_path);
