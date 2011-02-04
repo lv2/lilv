@@ -30,6 +30,7 @@ extern "C" {
 #include <stdint.h>
 #include <stdlib.h>
 #include <inttypes.h>
+#include <dlfcn.h>
 #include <glib.h>
 #include "serd/serd.h"
 #include "sord/sord.h"
@@ -321,6 +322,17 @@ SLV2Values slv2_values_from_stream_i18n(SLV2Plugin  p,
 char*       slv2_strjoin(const char* first, ...);
 const char* slv2_get_lang();
 uint8_t*    slv2_qname_expand(SLV2Plugin p, const char* qname);
+
+typedef void (*VoidFunc)();
+
+/** dlsym wrapper to return a function pointer (without annoying warning) */
+static inline VoidFunc
+slv2_dlfunc(void* handle, const char* symbol)
+{
+	typedef VoidFunc (*VoidFuncGetter)(void*, const char*);
+	VoidFuncGetter dlfunc = (VoidFuncGetter)dlsym;
+	return dlfunc(handle, symbol);
+}
 
 /* ********* Dynamic Manifest ********* */
 #ifdef SLV2_DYN_MANIFEST

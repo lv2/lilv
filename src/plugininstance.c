@@ -22,13 +22,13 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
-#include <dlfcn.h>
 #include "slv2/plugin.h"
 #include "slv2/plugininstance.h"
 #include "slv2/types.h"
 #include "slv2/util.h"
 #include "slv2/value.h"
 #include "slv2_internal.h"
+
 
 SLV2Instance
 slv2_plugin_instantiate(SLV2Plugin               plugin,
@@ -56,7 +56,8 @@ slv2_plugin_instantiate(SLV2Plugin               plugin,
 		return NULL;
 	}
 
-	LV2_Descriptor_Function df = dlsym(lib, "lv2_descriptor");
+	LV2_Descriptor_Function df = (LV2_Descriptor_Function)
+		slv2_dlfunc(lib, "lv2_descriptor");
 
 	if (!df) {
 		SLV2_ERRORF("Could not find symbol 'lv2_descriptor', "

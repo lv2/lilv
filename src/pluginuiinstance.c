@@ -59,7 +59,8 @@ slv2_ui_instantiate(SLV2Plugin                     plugin,
 		return NULL;
 	}
 
-	LV2UI_DescriptorFunction df = dlsym(lib, "lv2ui_descriptor");
+	LV2UI_DescriptorFunction df = (LV2UI_DescriptorFunction)
+		slv2_dlfunc(lib, "lv2ui_descriptor");
 
 	if (!df) {
 		SLV2_ERRORF("Could not find symbol 'lv2ui_descriptor', "

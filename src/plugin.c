@@ -257,7 +257,7 @@ slv2_plugin_load(SLV2Plugin p)
 		}
 
 		typedef int (*OpenFunc)(LV2_Dyn_Manifest_Handle*, const LV2_Feature *const *);
-		OpenFunc open_func = (OpenFunc)dlsym(lib, "lv2_dyn_manifest_open");
+		OpenFunc open_func = (OpenFunc)slv2_dlfunc(lib, "lv2_dyn_manifest_open");
 		LV2_Dyn_Manifest_Handle handle = NULL;
 		if (open_func)
 			open_func(&handle, &dman_features);
@@ -265,7 +265,7 @@ slv2_plugin_load(SLV2Plugin p)
 		typedef int (*GetDataFunc)(LV2_Dyn_Manifest_Handle handle,
 		                           FILE*                   fp,
 		                           const char*             uri);
-		GetDataFunc get_data_func = (GetDataFunc)dlsym(lib, "lv2_dyn_manifest_get_data");
+		GetDataFunc get_data_func = (GetDataFunc)slv2_dlfunc(lib, "lv2_dyn_manifest_get_data");
 		if (get_data_func) {
 			FILE* fd = tmpfile();
 			get_data_func(handle, fd, slv2_value_as_string(p->plugin_uri));
@@ -275,7 +275,7 @@ slv2_plugin_load(SLV2Plugin p)
 		}
 
 		typedef int (*CloseFunc)(LV2_Dyn_Manifest_Handle);
-		CloseFunc close_func = (CloseFunc)dlsym(lib, "lv2_dyn_manifest_close");
+		CloseFunc close_func = (CloseFunc)slv2_dlfunc(lib, "lv2_dyn_manifest_close");
 		if (close_func)
 			close_func(handle);
 	}
@@ -656,8 +656,12 @@ slv2_plugin_get_supported_features(SLV2Plugin p)
 	for (unsigned i = 0 ; i < n_required; ++i)
 		g_ptr_array_add(result, slv2_values_get_at(required, i));
 
-	free(((GPtrArray*)optional)->pdata);
-	free(((GPtrArray*)required)->pdata);
+	if (optional) {
+		free(((GPtrArray*)optional)->pdata);
+	}
+	if (required) {
+		free(((GPtrArray*)required)->pdata);
+	}
 
 	return result;
 }
