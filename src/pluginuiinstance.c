@@ -1,5 +1,5 @@
 /* SLV2
- * Copyright (C) 2007-2009 David Robillard <http://drobilla.net>
+ * Copyright (C) 2007-2011 David Robillard <http://drobilla.net>
  * Author: Lars Luthman
  *
  * This library is free software; you can redistribute it and/or modify it

@@ -1,5 +1,5 @@
 /* SLV2
- * Copyright (C) 2007-2009 David Robillard <http://drobilla.net>
+ * Copyright (C) 2007-2011 David Robillard <http://drobilla.net>
  *
  * This library is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -378,7 +378,7 @@ slv2_world_load_bundle(SLV2World world, SLV2Value bundle_uri)
 			                     slv2_value_new_from_node(world, file_node));
 		}
 
-		// Add plugin to world plugin list
+		// Add plugin to world plugin list (FIXME: slow, use real data structure)
 		raptor_sequence_push(world->plugins, plugin);
 		raptor_sequence_sort(world->plugins, slv2_plugin_compare_by_uri);
 	}
