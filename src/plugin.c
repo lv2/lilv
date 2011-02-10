@@ -252,7 +252,8 @@ slv2_plugin_load(SLV2Plugin p)
 		const char* lib_path = slv2_uri_to_path(slv2_value_as_string(p->dynman_uri));
 		void* lib = dlopen(lib_path, RTLD_LAZY);
 		if (!lib) {
-			SLV2_WARNF("Unable to open dynamic manifest %s\n", slv2_value_as_string(p->dynman_uri));
+			SLV2_WARNF("Unable to open dynamic manifest %s\n",
+			           slv2_value_as_string(p->dynman_uri));
 			return;
 		}
 

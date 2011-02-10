@@ -64,7 +64,7 @@ slv2_ui_instantiate(SLV2Plugin                     plugin,
 
 	if (!df) {
 		SLV2_ERRORF("Could not find symbol 'lv2ui_descriptor', "
-				"%s is not a LV2 plugin UI.\n", lib_path);
+		            "%s is not a LV2 plugin UI.\n", lib_path);
 		dlclose(lib);
 		return NULL;
 	} else {
@@ -75,7 +75,7 @@ slv2_ui_instantiate(SLV2Plugin                     plugin,
 			const LV2UI_Descriptor* ld = df(i);
 			if (!ld) {
 				SLV2_ERRORF("Did not find UI %s in %s\n",
-						slv2_value_as_uri(slv2_ui_get_uri(ui)), lib_path);
+				            slv2_value_as_uri(slv2_ui_get_uri(ui)), lib_path);
 				dlclose(lib);
 				break; // return NULL
 			} else if (!strcmp(ld->URI, slv2_value_as_uri(slv2_ui_get_uri(ui)))) {

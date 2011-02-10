@@ -61,7 +61,7 @@ slv2_plugin_instantiate(SLV2Plugin               plugin,
 
 	if (!df) {
 		SLV2_ERRORF("Could not find symbol 'lv2_descriptor', "
-				"%s is not a LV2 plugin.\n", lib_path);
+		            "%s is not a LV2 plugin.\n", lib_path);
 		dlclose(lib);
 		return NULL;
 	} else {
