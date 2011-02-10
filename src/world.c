@@ -161,23 +161,13 @@ slv2_world_find_statements(SLV2World world,
 static SerdNode
 slv2_new_uri_relative_to_base(const uint8_t* uri_str, const uint8_t* base_uri_str)
 {
-	SerdURI uri;
-	if (!serd_uri_parse(uri_str, &uri)) {
-		return SERD_NODE_NULL;
-	}
-
 	SerdURI base_uri;
 	if (!serd_uri_parse(base_uri_str, &base_uri)) {
 		return SERD_NODE_NULL;
 	}
 
-	SerdURI abs_uri;
-	if (!serd_uri_resolve(&uri, &base_uri, &abs_uri)) {
-		return SERD_NODE_NULL;
-	}
-
 	SerdURI ignored;
-	return serd_node_new_uri(&abs_uri, &ignored);
+	return serd_node_new_uri_from_string(uri_str, &base_uri, &ignored);
 }
 
 const uint8_t*
@@ -397,27 +387,53 @@ slv2_world_load_bundle(SLV2World world, SLV2Value bundle_uri)
 	slv2_match_end(spec_results);
 }
 
-/** Load all bundles under a directory.
- * Private.
- */
-void
-slv2_world_load_directory(SLV2World world, const char* dir)
+// Expand POSIX things in path (particularly ~)
+static char*
+expand(const char* path)
 {
-	DIR* pdir = opendir(dir);
-	if (!pdir)
+	char*     ret = NULL;
+	wordexp_t p;
+
+	wordexp(path, &p, 0);
+	if (p.we_wordc == 0) {
+		// Literal directory path (e.g. no variables or ~)
+		ret = strdup(path);
+	} else if (p.we_wordc == 1) {
+		// Directory path expands (e.g. contains ~ or $FOO)
+		ret = strdup(p.we_wordv[0]);
+	} else {
+		// Multiple expansions in a single directory path?
+		fprintf(stderr, "lv2config: malformed path `%s' ignored\n", path);
+	}
+
+	wordfree(&p);
+	return ret;
+}
+
+/** Load all bundles in the directory at @a dir_path. */
+static void
+slv2_world_load_directory(SLV2World world, const char* dir_path)
+{
+	char* path = expand(dir_path);
+	if (!path) {
 		return;
+	}
+
+	DIR* pdir = opendir(path);
+	if (!pdir) {
+		free(path);
+		return;
+	}
 
 	struct dirent* pfile;
 	while ((pfile = readdir(pdir))) {
 		if (!strcmp(pfile->d_name, ".") || !strcmp(pfile->d_name, ".."))
 			continue;
 
-		char* uri = slv2_strjoin("file://", dir, "/", pfile->d_name, "/", NULL);
+		char* uri = slv2_strjoin("file://", path, "/", pfile->d_name, "/", NULL);
 
-		// FIXME: Probably a better way to check if a dir exists
-		DIR* bundle_dir = opendir(uri + 7);
-
-		if (bundle_dir != NULL) {
+		DIR* const bundle_dir = opendir(uri + 7);
+		if (bundle_dir) {
 			closedir(bundle_dir);
 			SLV2Value uri_val = slv2_value_new_uri(world, uri);
 			slv2_world_load_bundle(world, uri_val);
@@ -427,6 +443,7 @@ slv2_world_load_directory(SLV2World world, const char* dir)
 		free(uri);
 	}
 
+	free(path);
 	closedir(pdir);
 }
 
@@ -434,22 +451,22 @@ void
 slv2_world_load_path(SLV2World   world,
                      const char* lv2_path)
 {
-	char* path = slv2_strjoin(lv2_path, ":", NULL);
-	char* dir  = path; // Pointer into path
-
-	// Go through string replacing ':' with '\0', using the substring,
-	// then replacing it with 'X' and moving on.  i.e. strtok on crack.
-	while (strchr(path, ':') != NULL) {
-		char* delim = strchr(path, ':');
-		*delim = '\0';
-
-		slv2_world_load_directory(world, dir);
-
-		*delim = 'X';
-		dir = delim + 1;
+	static const char SLV2_PATH_SEP = ':';
+	while (lv2_path[0] != '\0') {
+		const char* const sep = strchr(lv2_path, SLV2_PATH_SEP);
+		if (sep) {
+			const size_t dir_len = sep - lv2_path;
+			char* const  dir     = malloc(dir_len + 1);
+			memcpy(dir, lv2_path, dir_len);
+			dir[dir_len] = '\0';
+			slv2_world_load_directory(world, dir);
+			free(dir);
+			lv2_path += dir_len + 1;
+		} else {
+			slv2_world_load_directory(world, lv2_path);
+			lv2_path = "\0";
+		}
 	}
-
-	free(path);
 }
 
 void
@@ -565,51 +582,15 @@ slv2_world_load_plugin_classes(SLV2World world)
 void
 slv2_world_load_all(SLV2World world)
 {
-	char* lv2_path = getenv("LV2_PATH");
+	const char* lv2_path = getenv("LV2_PATH");
+	if (!lv2_path)
+		lv2_path = SLV2_DEFAULT_LV2_PATH;
 
-	/* 1. Read all manifest files into model */
+	// Discover bundles and read all manifest files into model
+	slv2_world_load_path(world, lv2_path);
 
-	if (lv2_path) {
-		slv2_world_load_path(world, lv2_path);
-	} else {
-		char default_path[sizeof(SLV2_DEFAULT_LV2_PATH)];
-		memcpy(default_path, SLV2_DEFAULT_LV2_PATH, sizeof(SLV2_DEFAULT_LV2_PATH));
-		char*  dir          = default_path;
-		size_t lv2_path_len = 0;
-		while (*dir != '\0') {
-			char* colon = strchr(dir, ':');
-			if (colon)
-				*colon = '\0';
-			wordexp_t p;
-			wordexp(dir, &p, 0);
-			for (unsigned i = 0; i < p.we_wordc; i++) {
-				const size_t word_len = strlen(p.we_wordv[i]);
-				if (!lv2_path) {
-					lv2_path = strdup(p.we_wordv[i]);
-					lv2_path_len = word_len;
-				} else {
-					lv2_path = (char*)realloc(lv2_path, lv2_path_len + word_len + 2);
-					*(lv2_path + lv2_path_len) = ':';
-					strcpy(lv2_path + lv2_path_len + 1, p.we_wordv[i]);
-					lv2_path_len += word_len + 1;
-				}
-			}
-			wordfree(&p);
-			if (colon)
-				dir = colon + 1;
-			else
-				*dir = '\0';
-		}
-
-		slv2_world_load_path(world, lv2_path);
-
-		free(lv2_path);
-	}
-
-	/* 2. Query out things to cache */
-
+	// Query out things to cache
 	slv2_world_load_specifications(world);
-
 	slv2_world_load_plugin_classes(world);
 
 /* FIXME: move this to slv2_world_load_bundle

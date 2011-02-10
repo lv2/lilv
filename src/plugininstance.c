@@ -78,35 +78,27 @@ slv2_plugin_instantiate(SLV2Plugin               plugin,
 				dlclose(lib);
 				break; // return NULL
 			} else {
-				// FIXME: duplicated/common code, put this in serd
-				SerdURI uri;
-				if (!serd_uri_parse((const uint8_t*)ld->URI, &uri)) {
-					SLV2_ERROR("Failed to parse library URI\n");
+				// Parse bundle URI to use as base URI
+				const SLV2Value bundle_uri     = slv2_plugin_get_bundle_uri(plugin);
+				const char*     bundle_uri_str = slv2_value_as_uri(bundle_uri);
+				SerdURI         base_uri;
+				if (!serd_uri_parse((const uint8_t*)bundle_uri_str, &base_uri)) {
 					dlclose(lib);
 					break;
 				}
 
-				SerdURI base_uri;
-				if (!serd_uri_parse(
-					    (const uint8_t*)slv2_value_as_uri(slv2_plugin_get_bundle_uri(plugin)),
-					    &base_uri)) {
+				// Resolve library plugin URI against base URI
+				SerdURI  abs_uri;
+				SerdNode abs_uri_node = serd_node_new_uri_from_string(
+					(const uint8_t*)ld->URI, &base_uri, &abs_uri);
+				if (!abs_uri_node.buf) {
+					SLV2_ERRORF("Failed to parse library plugin URI `%s'\n", ld->URI);
 					dlclose(lib);
 					break;
 				}
-
-				SerdURI abs_uri;
-				if (!serd_uri_resolve(&uri, &base_uri, &abs_uri)) {
-					fprintf(stderr, "error: failed to resolve new base URI\n");
-					return false;
-				}
-
-				SerdNode abs_uri_node = serd_node_new_uri(&abs_uri, &base_uri);
 
 				if (!strcmp((const char*)abs_uri_node.buf,
 				            slv2_value_as_uri(slv2_plugin_get_uri(plugin)))) {
-					assert(plugin->plugin_uri);
-					assert(ld->instantiate);
-
 					// Create SLV2Instance to return
 					result = malloc(sizeof(struct _Instance));
 					result->lv2_descriptor = ld;
@@ -115,7 +107,6 @@ slv2_plugin_instantiate(SLV2Plugin               plugin,
 					struct _InstanceImpl* impl = malloc(sizeof(struct _InstanceImpl));
 					impl->lib_handle = lib;
 					result->pimpl = impl;
-
 					serd_node_free(&abs_uri_node);
 					break;
 				} else {
