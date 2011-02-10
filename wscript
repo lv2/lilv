@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import autowaf
+import sys
 import Options
 
 # Version of this package (even if built as a child)
@@ -86,6 +87,13 @@ def configure(conf):
 	conf.env['BUILD_UTILS'] = not Options.options.no_utils
 	conf.env['BASH_COMPLETION'] = Options.options.bash_completion
 	autowaf.define(conf, 'SLV2_DEFAULT_LV2_PATH', Options.options.default_lv2_path)
+
+	if sys.platform == 'win32':
+		autowaf.define(conf, 'SLV2_PATH_SEP', ';')
+		autowaf.define(conf, 'SLV2_DIR_SEP',  '\\')
+	else:
+		autowaf.define(conf, 'SLV2_PATH_SEP', ':')
+		autowaf.define(conf, 'SLV2_DIR_SEP',  '/')
 
 	if conf.env['USE_JACK']:
 		autowaf.check_header(conf, 'lv2/lv2plug.in/ns/ext/event/event.h', 'HAVE_LV2_EVENT')

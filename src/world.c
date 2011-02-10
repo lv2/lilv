@@ -316,9 +316,6 @@ slv2_world_load_bundle(SLV2World world, SLV2Value bundle_uri)
 		SLV2Node  plugin_node = slv2_match_subject(plug_results);
 		SLV2Value plugin_uri  = slv2_value_new_from_node(world, plugin_node);
 
-		//fprintf(stderr, "Add <%s> in %s\n", sord_node_get_string(plugin_node),
-		//    sord_node_get_string(bundle_uri->val.uri_val));
-
 		SLV2Plugin existing = slv2_plugins_get_by_uri(world->plugins, plugin_uri);
 		if (existing) {
 			SLV2_ERRORF("Duplicate plugin <%s>\n", slv2_value_as_uri(plugin_uri));
@@ -430,7 +427,10 @@ slv2_world_load_directory(SLV2World world, const char* dir_path)
 		if (!strcmp(pfile->d_name, ".") || !strcmp(pfile->d_name, ".."))
 			continue;
 
-		char* uri = slv2_strjoin("file://", path, "/", pfile->d_name, "/", NULL);
+		char* uri = slv2_strjoin("file://",
+		                         path, SLV2_DIR_SEP,
+		                         pfile->d_name, SLV2_DIR_SEP,
+		                         NULL);
 
 		DIR* const bundle_dir = opendir(uri + 7);
 		if (bundle_dir) {
@@ -451,9 +451,8 @@ void
 slv2_world_load_path(SLV2World   world,
                      const char* lv2_path)
 {
-	static const char SLV2_PATH_SEP = ':';
 	while (lv2_path[0] != '\0') {
-		const char* const sep = strchr(lv2_path, SLV2_PATH_SEP);
+		const char* const sep = strchr(lv2_path, SLV2_PATH_SEP[0]);
 		if (sep) {
 			const size_t dir_len = sep - lv2_path;
 			char* const  dir     = malloc(dir_len + 1);
