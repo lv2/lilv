@@ -56,7 +56,9 @@ slv2_world_new()
 
 #define NS_DYNMAN (const uint8_t*)"http://lv2plug.in/ns/ext/dynmanifest#"
 
-#define NEW_URI(uri) sord_get_uri(world->model, true, uri)
+#define NEW_URI(uri)     sord_get_uri(world->model, true, uri)
+#define NEW_URI_VAL(uri) slv2_value_new_from_node( \
+		world,sord_get_uri(world->model, true, uri));
 
 	world->dyn_manifest_node       = NEW_URI(NS_DYNMAN    "DynManifest");
 	world->lv2_specification_node  = NEW_URI(SLV2_NS_LV2  "Specification");
@@ -80,6 +82,9 @@ slv2_world_new()
 	world->slv2_dmanifest_node     = NEW_URI(SLV2_NS_SLV2 "dynamic-manifest");
 	world->xsd_integer_node        = NEW_URI(SLV2_NS_XSD  "integer");
 	world->xsd_decimal_node        = NEW_URI(SLV2_NS_XSD  "decimal");
+
+	world->doap_name_val = NEW_URI_VAL(SLV2_NS_DOAP "name");
+	world->lv2_name_val  = NEW_URI_VAL(SLV2_NS_LV2  "name");
 
 	world->lv2_plugin_class = slv2_plugin_class_new(
 		world, NULL, world->lv2_plugin_node, "Plugin");
@@ -132,6 +137,9 @@ slv2_world_free(SLV2World world)
 	slv2_node_free(world->slv2_dmanifest_node);
 	slv2_node_free(world->xsd_integer_node);
 	slv2_node_free(world->xsd_decimal_node);
+
+	slv2_value_free(world->doap_name_val);
+	slv2_value_free(world->lv2_name_val);
 
 	for (unsigned i = 0; i < ((GPtrArray*)world->plugins)->len; ++i)
 		slv2_plugin_free(g_ptr_array_index((GPtrArray*)world->plugins, i));

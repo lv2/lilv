@@ -40,6 +40,7 @@ extern "C" {
 #include "lv2/lv2plug.in/ns/ext/dyn-manifest/dyn-manifest.h"
 #endif
 
+#define SLV2_NS_DOAP (const uint8_t*)"http://usefulinc.com/ns/doap#"
 #define SLV2_NS_RDFS (const uint8_t*)"http://www.w3.org/2000/01/rdf-schema#"
 #define SLV2_NS_SLV2 (const uint8_t*)"http://drobilla.net/ns/slv2#"
 #define SLV2_NS_LV2  (const uint8_t*)"http://lv2plug.in/ns/lv2core#"
@@ -202,6 +203,8 @@ struct _SLV2World {
 	SLV2Node          slv2_dmanifest_node;
 	SLV2Node          xsd_integer_node;
 	SLV2Node          xsd_decimal_node;
+	SLV2Value         doap_name_val;
+	SLV2Value         lv2_name_val;
 	bool              filter_language;
 };
 

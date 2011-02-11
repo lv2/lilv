@@ -199,19 +199,21 @@ SLV2Value
 slv2_port_get_name(SLV2Plugin p,
                    SLV2Port   port)
 {
-	SLV2Value  ret     = NULL;
-	SLV2Values results = slv2_port_get_value_by_qname(p, port, "lv2:name");
-
-	if (results && slv2_values_size(results) > 0) {
-		ret = slv2_value_duplicate(slv2_values_get_at(results, 0));
-	} else {
-		results = slv2_port_get_value_by_qname(p, port, "lv2:name");
-		if (results && slv2_values_size(results) > 0)
-			ret = slv2_value_duplicate(slv2_values_get_at(results, 0));
+	SLV2Values results = slv2_port_get_value(p, port,
+	                                         p->world->lv2_name_val);
+ 
+	SLV2Value ret = NULL;
+	if (results) {
+		SLV2Value val = slv2_values_get_at(results, 0);
+		if (slv2_value_is_string(val))
+			ret = slv2_value_duplicate(val);
+		slv2_values_free(results);
 	}
 
-	slv2_values_free(results);
-
+	if (!ret)
+		SLV2_WARNF("<%s> has no (mandatory) doap:name\n",
+		           slv2_value_as_string(slv2_plugin_get_uri(p)));
+	
 	return ret;
 }
 
@@ -301,6 +303,10 @@ SLV2Values
 slv2_port_get_properties(SLV2Plugin p,
                          SLV2Port   port)
 {
-	return slv2_port_get_value_by_qname(p, port, "lv2:portProperty");
+	SLV2Value pred = slv2_value_new_from_node(
+		p->world, p->world->lv2_portproperty_node);
+	SLV2Values ret = slv2_port_get_value(p, port, pred);
+	slv2_value_free(pred);
+	return ret;
 }
 

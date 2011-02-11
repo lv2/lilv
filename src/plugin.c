@@ -381,7 +381,7 @@ slv2_plugin_verify(SLV2Plugin plugin)
 	}
 
 	slv2_values_free(results);
-	results = slv2_plugin_get_value_by_qname(plugin, "doap:name");
+	results = slv2_plugin_get_value(plugin, plugin->world->doap_name_val);
 	if (!results) {
 		return false;
 	}
@@ -406,9 +406,10 @@ SLV2_API
 SLV2Value
 slv2_plugin_get_name(SLV2Plugin plugin)
 {
-	SLV2Values results = slv2_plugin_get_value_by_qname(plugin, "doap:name");
-	SLV2Value  ret     = NULL;
+	SLV2Values results = slv2_plugin_get_value(plugin,
+	                                           plugin->world->doap_name_val);
 
+	SLV2Value ret = NULL;
 	if (results) {
 		SLV2Value val = slv2_values_get_at(results, 0);
 		if (slv2_value_is_string(val))
@@ -418,7 +419,7 @@ slv2_plugin_get_name(SLV2Plugin plugin)
 
 	if (!ret)
 		SLV2_WARNF("<%s> has no (mandatory) doap:name\n",
-				slv2_value_as_string(slv2_plugin_get_uri(plugin)));
+		           slv2_value_as_string(slv2_plugin_get_uri(plugin)));
 
 	return ret;
 }
