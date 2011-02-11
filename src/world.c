@@ -41,6 +41,7 @@ slv2_world_set_prefix(SLV2World world, const char* name, const char* uri)
 	serd_env_add(world->namespaces, &name_node, &uri_node);
 }
 
+SLV2_API
 SLV2World
 slv2_world_new()
 {
@@ -101,6 +102,7 @@ fail:
 	return NULL;
 }
 
+SLV2_API
 void
 slv2_world_free(SLV2World world)
 {
@@ -179,7 +181,7 @@ slv2_world_blank_node_prefix(SLV2World world)
 }
 
 /** Comparator for sorting SLV2Plugins */
-int
+static int
 slv2_plugin_compare_by_uri(const void* a, const void* b)
 {
     SLV2Plugin plugin_a = *(SLV2Plugin*)a;
@@ -189,17 +191,7 @@ slv2_plugin_compare_by_uri(const void* a, const void* b)
                   slv2_value_as_uri(plugin_b->plugin_uri));
 }
 
-/** Comparator for sorting SLV2PluginClasses */
-int
-slv2_plugin_class_compare_by_uri(const void* a, const void* b)
-{
-    SLV2PluginClass class_a = *(SLV2PluginClass*)a;
-    SLV2PluginClass class_b = *(SLV2PluginClass*)b;
-
-    return strcmp(slv2_value_as_uri(class_a->uri),
-                  slv2_value_as_uri(class_b->uri));
-}
-
+SLV2_API
 void
 slv2_world_load_bundle(SLV2World world, SLV2Value bundle_uri)
 {
@@ -447,7 +439,12 @@ slv2_world_load_directory(SLV2World world, const char* dir_path)
 	closedir(pdir);
 }
 
-void
+/** Load all bundles found in @a lv2_path.
+ * @param lv2_path A colon-delimited list of directories.  These directories
+ * should contain LV2 bundle directories (ie the search path is a list of
+ * parent directories of bundles, not a list of bundle directories).
+ */
+static void
 slv2_world_load_path(SLV2World   world,
                      const char* lv2_path)
 {
@@ -468,7 +465,7 @@ slv2_world_load_path(SLV2World   world,
 	}
 }
 
-void
+static void
 slv2_world_load_specifications(SLV2World world)
 {
 	SLV2Matches specs = slv2_world_find_statements(
@@ -497,7 +494,7 @@ slv2_world_load_specifications(SLV2World world)
 	slv2_match_end(specs);
 }
 
-void
+static void
 slv2_world_load_plugin_classes(SLV2World world)
 {
 	/* FIXME: This loads all classes, not just lv2:Plugin subclasses.
@@ -578,6 +575,7 @@ slv2_world_load_plugin_classes(SLV2World world)
 	slv2_match_end(classes);
 }
 
+SLV2_API
 void
 slv2_world_load_all(SLV2World world)
 {
@@ -615,24 +613,28 @@ slv2_world_load_all(SLV2World world)
 */
 }
 
+SLV2_API
 SLV2PluginClass
 slv2_world_get_plugin_class(SLV2World world)
 {
 	return world->lv2_plugin_class;
 }
 
+SLV2_API
 SLV2PluginClasses
 slv2_world_get_plugin_classes(SLV2World world)
 {
 	return world->plugin_classes;
 }
 
+SLV2_API
 SLV2Plugins
 slv2_world_get_all_plugins(SLV2World world)
 {
 	return world->plugins;
 }
 
+SLV2_API
 SLV2Plugins
 slv2_world_get_plugins_by_filter(SLV2World world, bool (*include)(SLV2Plugin))
 {
@@ -647,4 +649,3 @@ slv2_world_get_plugins_by_filter(SLV2World world, bool (*include)(SLV2Plugin))
 
 	return result;
 }
-

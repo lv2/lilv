@@ -33,7 +33,7 @@ prefix ## _new() \
 	return g_ptr_array_new_with_free_func((GDestroyNotify)free_func); \
 } \
 \
-\
+SLV2_API \
 void \
 prefix ## _free(CollType coll) \
 { \
@@ -41,14 +41,14 @@ prefix ## _free(CollType coll) \
 		g_ptr_array_unref((GPtrArray*)coll); \
 } \
 \
-\
+SLV2_API \
 unsigned \
 prefix ## _size(CollType coll) \
 { \
 	return (coll ? ((GPtrArray*)coll)->len : 0); \
 } \
 \
-\
+SLV2_API \
 ElemType \
 prefix ## _get_at(CollType coll, unsigned index) \
 { \
@@ -69,6 +69,7 @@ SLV2_COLLECTION_IMPL(SLV2UIs, SLV2UI,
 
 /* **** PLUGIN CLASSES **** */
 
+SLV2_API
 SLV2PluginClass
 slv2_plugin_classes_get_by_uri(SLV2PluginClasses list, SLV2Value uri)
 {
@@ -99,6 +100,7 @@ slv2_plugin_classes_get_by_uri(SLV2PluginClasses list, SLV2Value uri)
 
 /* **** VALUES **** */
 
+SLV2_API
 bool
 slv2_values_contains(SLV2Values list, SLV2Value value)
 {
@@ -109,15 +111,9 @@ slv2_values_contains(SLV2Values list, SLV2Value value)
 	return false;
 }
 
-void
-slv2_values_set_at(SLV2Values list, unsigned index, void* value)
-{
-	if (index <= INT_MAX)
-		((GPtrArray*)list)->pdata[index] = value;
-}
-
 /* **** PLUGIN UIS **** */
 
+SLV2_API
 SLV2UI
 slv2_uis_get_by_uri(SLV2UIs list, SLV2Value uri)
 {

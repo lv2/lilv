@@ -32,8 +32,7 @@
 #include "slv2/util.h"
 #include "slv2_internal.h"
 
-/* private
- * ownership of uri is taken */
+/** Ownership of @a uri is taken */
 SLV2Plugin
 slv2_plugin_new(SLV2World world, SLV2Value uri, SLV2Value bundle_uri)
 {
@@ -55,7 +54,6 @@ slv2_plugin_new(SLV2World world, SLV2Value uri, SLV2Value bundle_uri)
 	return plugin;
 }
 
-/* private */
 void
 slv2_plugin_free(SLV2Plugin p)
 {
@@ -84,14 +82,6 @@ slv2_plugin_free(SLV2Plugin p)
 	p->data_uris = NULL;
 
 	free(p);
-}
-
-/* private */
-void
-slv2_plugin_load_if_necessary(SLV2Plugin p)
-{
-	if (!p->loaded)
-		slv2_plugin_load(p);
 }
 
 static SLV2Values
@@ -144,10 +134,59 @@ slv2_plugin_get_one(SLV2Plugin p, SLV2Node subject, SLV2Node predicate)
 	slv2_values_free(values);
 	return ret;
 }
-	
-	
-/* private */
-void
+
+static void
+slv2_plugin_load(SLV2Plugin p)
+{
+	// Parse all the plugin's data files into RDF model
+	for (unsigned i = 0; i < slv2_values_size(p->data_uris); ++i) {
+		SLV2Value data_uri_val = slv2_values_get_at(p->data_uris, i);
+		sord_read_file(p->world->model,
+		               sord_node_get_string(data_uri_val->val.uri_val),
+		               p->bundle_uri->val.uri_val,
+		               slv2_world_blank_node_prefix(p->world));
+	}
+
+#ifdef SLV2_DYN_MANIFEST
+	typedef void* LV2_Dyn_Manifest_Handle;
+	// Load and parse dynamic manifest data, if this is a library
+	if (p->dynman_uri) {
+		const char* lib_path = slv2_uri_to_path(slv2_value_as_string(p->dynman_uri));
+		void* lib = dlopen(lib_path, RTLD_LAZY);
+		if (!lib) {
+			SLV2_WARNF("Unable to open dynamic manifest %s\n",
+			           slv2_value_as_string(p->dynman_uri));
+			return;
+		}
+
+		typedef int (*OpenFunc)(LV2_Dyn_Manifest_Handle*, const LV2_Feature *const *);
+		OpenFunc open_func = (OpenFunc)slv2_dlfunc(lib, "lv2_dyn_manifest_open");
+		LV2_Dyn_Manifest_Handle handle = NULL;
+		if (open_func)
+			open_func(&handle, &dman_features);
+
+		typedef int (*GetDataFunc)(LV2_Dyn_Manifest_Handle handle,
+		                           FILE*                   fp,
+		                           const char*             uri);
+		GetDataFunc get_data_func = (GetDataFunc)slv2_dlfunc(lib, "lv2_dyn_manifest_get_data");
+		if (get_data_func) {
+			FILE* fd = tmpfile();
+			get_data_func(handle, fd, slv2_value_as_string(p->plugin_uri));
+			rewind(fd);
+			sord_read_file_handle(p->world->model, fd, p->bundle_uri);
+			fclose(fd);
+		}
+
+		typedef int (*CloseFunc)(LV2_Dyn_Manifest_Handle);
+		CloseFunc close_func = (CloseFunc)slv2_dlfunc(lib, "lv2_dyn_manifest_close");
+		if (close_func)
+			close_func(handle);
+	}
+#endif
+	p->loaded = true;
+}
+
+static void
 slv2_plugin_load_ports_if_necessary(SLV2Plugin p)
 {
 	if (!p->loaded)
@@ -234,56 +273,13 @@ slv2_plugin_load_ports_if_necessary(SLV2Plugin p)
 }
 
 void
-slv2_plugin_load(SLV2Plugin p)
+slv2_plugin_load_if_necessary(SLV2Plugin p)
 {
-	// Parse all the plugin's data files into RDF model
-	for (unsigned i = 0; i < slv2_values_size(p->data_uris); ++i) {
-		SLV2Value data_uri_val = slv2_values_get_at(p->data_uris, i);
-		sord_read_file(p->world->model,
-		               sord_node_get_string(data_uri_val->val.uri_val),
-		               p->bundle_uri->val.uri_val,
-		               slv2_world_blank_node_prefix(p->world));
-	}
-
-#ifdef SLV2_DYN_MANIFEST
-	typedef void* LV2_Dyn_Manifest_Handle;
-	// Load and parse dynamic manifest data, if this is a library
-	if (p->dynman_uri) {
-		const char* lib_path = slv2_uri_to_path(slv2_value_as_string(p->dynman_uri));
-		void* lib = dlopen(lib_path, RTLD_LAZY);
-		if (!lib) {
-			SLV2_WARNF("Unable to open dynamic manifest %s\n",
-			           slv2_value_as_string(p->dynman_uri));
-			return;
-		}
-
-		typedef int (*OpenFunc)(LV2_Dyn_Manifest_Handle*, const LV2_Feature *const *);
-		OpenFunc open_func = (OpenFunc)slv2_dlfunc(lib, "lv2_dyn_manifest_open");
-		LV2_Dyn_Manifest_Handle handle = NULL;
-		if (open_func)
-			open_func(&handle, &dman_features);
-
-		typedef int (*GetDataFunc)(LV2_Dyn_Manifest_Handle handle,
-		                           FILE*                   fp,
-		                           const char*             uri);
-		GetDataFunc get_data_func = (GetDataFunc)slv2_dlfunc(lib, "lv2_dyn_manifest_get_data");
-		if (get_data_func) {
-			FILE* fd = tmpfile();
-			get_data_func(handle, fd, slv2_value_as_string(p->plugin_uri));
-			rewind(fd);
-			sord_read_file_handle(p->world->model, fd, p->bundle_uri);
-			fclose(fd);
-		}
-
-		typedef int (*CloseFunc)(LV2_Dyn_Manifest_Handle);
-		CloseFunc close_func = (CloseFunc)slv2_dlfunc(lib, "lv2_dyn_manifest_close");
-		if (close_func)
-			close_func(handle);
-	}
-#endif
-	p->loaded = true;
+	if (!p->loaded)
+		slv2_plugin_load(p);
 }
 
+SLV2_API
 SLV2Value
 slv2_plugin_get_uri(SLV2Plugin p)
 {
@@ -292,6 +288,7 @@ slv2_plugin_get_uri(SLV2Plugin p)
 	return p->plugin_uri;
 }
 
+SLV2_API
 SLV2Value
 slv2_plugin_get_bundle_uri(SLV2Plugin p)
 {
@@ -300,6 +297,7 @@ slv2_plugin_get_bundle_uri(SLV2Plugin p)
 	return p->bundle_uri;
 }
 
+SLV2_API
 SLV2Value
 slv2_plugin_get_library_uri(SLV2Plugin p)
 {
@@ -323,12 +321,14 @@ slv2_plugin_get_library_uri(SLV2Plugin p)
 	return p->binary_uri;
 }
 
+SLV2_API
 SLV2Values
 slv2_plugin_get_data_uris(SLV2Plugin p)
 {
 	return p->data_uris;
 }
 
+SLV2_API
 SLV2PluginClass
 slv2_plugin_get_class(SLV2Plugin p)
 {
@@ -371,6 +371,7 @@ slv2_plugin_get_class(SLV2Plugin p)
 	return p->plugin_class;
 }
 
+SLV2_API
 bool
 slv2_plugin_verify(SLV2Plugin plugin)
 {
@@ -401,6 +402,7 @@ slv2_plugin_verify(SLV2Plugin plugin)
 	return true;
 }
 
+SLV2_API
 SLV2Value
 slv2_plugin_get_name(SLV2Plugin plugin)
 {
@@ -427,6 +429,7 @@ slv2_plugin_get_name(SLV2Plugin plugin)
 	return ret;
 }
 
+SLV2_API
 SLV2Values
 slv2_plugin_get_value(SLV2Plugin p,
                       SLV2Value  predicate)
@@ -434,6 +437,7 @@ slv2_plugin_get_value(SLV2Plugin p,
 	return slv2_plugin_get_value_for_subject(p, p->plugin_uri, predicate);
 }
 
+SLV2_API
 SLV2Values
 slv2_plugin_get_value_by_qname(SLV2Plugin  p,
                                const char* predicate)
@@ -450,6 +454,7 @@ slv2_plugin_get_value_by_qname(SLV2Plugin  p,
 	return ret;
 }
 
+SLV2_API
 SLV2Values
 slv2_plugin_get_value_by_qname_i18n(SLV2Plugin  p,
                                     const char* predicate)
@@ -473,6 +478,7 @@ slv2_plugin_get_value_by_qname_i18n(SLV2Plugin  p,
 	return slv2_values_from_stream_i18n(p, results);
 }
 
+SLV2_API
 SLV2Values
 slv2_plugin_get_value_for_subject(SLV2Plugin p,
                                   SLV2Value  subject,
@@ -502,6 +508,7 @@ slv2_plugin_get_value_for_subject(SLV2Plugin p,
 	                              predicate->val.uri_val);
 }
 
+SLV2_API
 uint32_t
 slv2_plugin_get_num_ports(SLV2Plugin p)
 {
@@ -509,6 +516,7 @@ slv2_plugin_get_num_ports(SLV2Plugin p)
 	return p->num_ports;
 }
 
+SLV2_API
 void
 slv2_plugin_get_port_ranges_float(SLV2Plugin p,
                                   float*     min_values,
@@ -536,6 +544,7 @@ slv2_plugin_get_port_ranges_float(SLV2Plugin p,
 	}
 }
 
+SLV2_API
 uint32_t
 slv2_plugin_get_num_ports_of_class(SLV2Plugin p,
                                    SLV2Value  class_1, ...)
@@ -570,6 +579,7 @@ slv2_plugin_get_num_ports_of_class(SLV2Plugin p,
 	return ret;
 }
 
+SLV2_API
 bool
 slv2_plugin_has_latency(SLV2Plugin p)
 {
@@ -599,6 +609,7 @@ slv2_plugin_has_latency(SLV2Plugin p)
 	return ret;
 }
 
+SLV2_API
 uint32_t
 slv2_plugin_get_latency_port_index(SLV2Plugin p)
 {
@@ -632,6 +643,7 @@ slv2_plugin_get_latency_port_index(SLV2Plugin p)
 	return ret;  // FIXME: error handling
 }
 
+SLV2_API
 bool
 slv2_plugin_has_feature(SLV2Plugin p,
                         SLV2Value  feature)
@@ -644,6 +656,7 @@ slv2_plugin_has_feature(SLV2Plugin p,
 	return ret;
 }
 
+SLV2_API
 SLV2Values
 slv2_plugin_get_supported_features(SLV2Plugin p)
 {
@@ -667,18 +680,21 @@ slv2_plugin_get_supported_features(SLV2Plugin p)
 	return result;
 }
 
+SLV2_API
 SLV2Values
 slv2_plugin_get_optional_features(SLV2Plugin p)
 {
 	return slv2_plugin_get_value_by_qname(p, "lv2:optionalFeature");
 }
 
+SLV2_API
 SLV2Values
 slv2_plugin_get_required_features(SLV2Plugin p)
 {
 	return slv2_plugin_get_value_by_qname(p, "lv2:requiredFeature");
 }
 
+SLV2_API
 SLV2Port
 slv2_plugin_get_port_by_index(SLV2Plugin p,
                               uint32_t   index)
@@ -690,6 +706,7 @@ slv2_plugin_get_port_by_index(SLV2Plugin p,
 		return NULL;
 }
 
+SLV2_API
 SLV2Port
 slv2_plugin_get_port_by_symbol(SLV2Plugin p,
                                SLV2Value  symbol)
@@ -731,6 +748,7 @@ slv2_plugin_get_author(SLV2Plugin p)
 	return author;
 }
 
+SLV2_API
 SLV2Value
 slv2_plugin_get_author_name(SLV2Plugin plugin)
 {
@@ -743,6 +761,7 @@ slv2_plugin_get_author_name(SLV2Plugin plugin)
 	return NULL;
 }
 
+SLV2_API
 SLV2Value
 slv2_plugin_get_author_email(SLV2Plugin plugin)
 {
@@ -755,6 +774,7 @@ slv2_plugin_get_author_email(SLV2Plugin plugin)
 	return NULL;
 }
 
+SLV2_API
 SLV2Value
 slv2_plugin_get_author_homepage(SLV2Plugin plugin)
 {
@@ -767,6 +787,7 @@ slv2_plugin_get_author_homepage(SLV2Plugin plugin)
 	return NULL;
 }
 
+SLV2_API
 SLV2UIs
 slv2_plugin_get_uis(SLV2Plugin p)
 {

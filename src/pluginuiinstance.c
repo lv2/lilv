@@ -31,12 +31,13 @@
 #include "slv2/util.h"
 #include "slv2_internal.h"
 
+SLV2_API
 SLV2UIInstance
-slv2_ui_instantiate(SLV2Plugin                     plugin,
-                    SLV2UI                         ui,
-                    LV2UI_Write_Function           write_function,
-                    LV2UI_Controller               controller,
-                    const LV2_Feature* const*      features)
+slv2_ui_instantiate(SLV2Plugin                plugin,
+                    SLV2UI                    ui,
+                    LV2UI_Write_Function      write_function,
+                    LV2UI_Controller          controller,
+                    const LV2_Feature* const* features)
 {
 	struct _SLV2UIInstance* result = NULL;
 
@@ -119,6 +120,7 @@ slv2_ui_instantiate(SLV2Plugin                     plugin,
 	return result;
 }
 
+SLV2_API
 void
 slv2_ui_instance_free(SLV2UIInstance instance)
 {
@@ -135,16 +137,19 @@ slv2_ui_instance_free(SLV2UIInstance instance)
 	free(i);
 }
 
+SLV2_API
 LV2UI_Widget
 slv2_ui_instance_get_widget(SLV2UIInstance instance) {
 	return instance->pimpl->widget;
 }
 
+SLV2_API
 const LV2UI_Descriptor*
 slv2_ui_instance_get_descriptor(SLV2UIInstance instance) {
 	return instance->pimpl->lv2ui_descriptor;
 }
 
+SLV2_API
 LV2UI_Handle
 slv2_ui_instance_get_handle(SLV2UIInstance instance) {
 	return instance->pimpl->lv2ui_handle;

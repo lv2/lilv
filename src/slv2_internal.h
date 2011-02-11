@@ -109,9 +109,7 @@ struct _SLV2Plugin {
 };
 
 SLV2Plugin slv2_plugin_new(SLV2World world, SLV2Value uri, SLV2Value bundle_uri);
-void       slv2_plugin_load(SLV2Plugin p);
 void       slv2_plugin_load_if_necessary(SLV2Plugin p);
-void       slv2_plugin_load_ports_if_necessary(SLV2Plugin p);
 void       slv2_plugin_free(SLV2Plugin plugin);
 
 SLV2Value
@@ -209,23 +207,6 @@ struct _SLV2World {
 const uint8_t*
 slv2_world_blank_node_prefix(SLV2World world);
 
-/** Load all bundles found in \a search_path.
- *
- * \param search_path A colon-delimited list of directories.  These directories
- * should contain LV2 bundle directories (ie the search path is a list of
- * parent directories of bundles, not a list of bundle directories).
- *
- * If \a search_path is NULL, \a world will be unmodified.
- * Use of this function is \b not recommended.  Use \ref slv2_world_load_all.
- */
-void
-slv2_world_load_path(SLV2World   world,
-                     const char* search_path);
-
-
-void
-slv2_world_load_specifications(SLV2World world);
-
 void
 slv2_world_load_file(SLV2World world, const char* file_uri);
 
@@ -281,10 +262,6 @@ static inline SLV2Node slv2_node_copy(SLV2Node node) {
 
 static inline void slv2_node_free(SLV2Node node) {
 }
-
-/* ********* Values ********* */
-
-void slv2_values_set_at(SLV2Values list, unsigned index, void* value);
 
 
 /* ********* Scale Points ********* */

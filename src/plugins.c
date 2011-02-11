@@ -34,6 +34,7 @@ slv2_plugins_new()
 	return g_ptr_array_new();
 }
 
+SLV2_API
 void
 slv2_plugins_free(SLV2World world, SLV2Plugins list)
 {
@@ -41,12 +42,14 @@ slv2_plugins_free(SLV2World world, SLV2Plugins list)
 		g_ptr_array_unref(list);
 }
 
+SLV2_API
 unsigned
 slv2_plugins_size(SLV2Plugins list)
 {
 	return (list ? ((GPtrArray*)list)->len : 0);
 }
 
+SLV2_API
 SLV2Plugin
 slv2_plugins_get_by_uri(SLV2Plugins list, SLV2Value uri)
 {
@@ -75,6 +78,7 @@ slv2_plugins_get_by_uri(SLV2Plugins list, SLV2Value uri)
 	return NULL;
 }
 
+SLV2_API
 SLV2Plugin
 slv2_plugins_get_at(SLV2Plugins list, unsigned index)
 {

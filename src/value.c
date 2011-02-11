@@ -27,7 +27,6 @@
 #include "slv2/value.h"
 #include "slv2_internal.h"
 
-/* private */
 static void
 slv2_value_set_numerics_from_string(SLV2Value val)
 {
@@ -59,8 +58,7 @@ slv2_value_set_numerics_from_string(SLV2Value val)
 	}
 }
 
-/* private
- * Note that if type is numeric, slv2_value_set_numerics_from_string MUST be
+/** Note that if @a type is numeric, slv2_value_set_numerics_from_string MUST be
  * called or the returned value will be corrupt!  It is not automatically
  * called from here to avoid the parsing overhead and imprecision when the
  * true numeric value is already known.
@@ -135,18 +133,21 @@ slv2_value_new_from_node(SLV2World world, SordNode node)
 	return result;
 }
 
+SLV2_API
 SLV2Value
 slv2_value_new_uri(SLV2World world, const char* uri)
 {
 	return slv2_value_new(world, SLV2_VALUE_URI, uri);
 }
 
+SLV2_API
 SLV2Value
 slv2_value_new_string(SLV2World world, const char* str)
 {
 	return slv2_value_new(world, SLV2_VALUE_STRING, str);
 }
 
+SLV2_API
 SLV2Value
 slv2_value_new_int(SLV2World world, int val)
 {
@@ -157,6 +158,7 @@ slv2_value_new_int(SLV2World world, int val)
 	return ret;
 }
 
+SLV2_API
 SLV2Value
 slv2_value_new_float(SLV2World world, float val)
 {
@@ -167,6 +169,7 @@ slv2_value_new_float(SLV2World world, float val)
 	return ret;
 }
 
+SLV2_API
 SLV2Value
 slv2_value_duplicate(SLV2Value val)
 {
@@ -187,6 +190,7 @@ slv2_value_duplicate(SLV2Value val)
 	return result;
 }
 
+SLV2_API
 void
 slv2_value_free(SLV2Value val)
 {
@@ -200,6 +204,7 @@ slv2_value_free(SLV2Value val)
 	}
 }
 
+SLV2_API
 bool
 slv2_value_equals(SLV2Value value, SLV2Value other)
 {
@@ -226,6 +231,7 @@ slv2_value_equals(SLV2Value value, SLV2Value other)
 	return false; /* shouldn't get here */
 }
 
+SLV2_API
 char*
 slv2_value_get_turtle_token(SLV2Value value)
 {
@@ -274,12 +280,14 @@ slv2_value_get_turtle_token(SLV2Value value)
 	return result;
 }
 
+SLV2_API
 bool
 slv2_value_is_uri(SLV2Value value)
 {
 	return (value && value->type == SLV2_VALUE_URI);
 }
 
+SLV2_API
 const char*
 slv2_value_as_uri(SLV2Value value)
 {
@@ -294,12 +302,14 @@ slv2_value_as_node(SLV2Value value)
 	return value->val.uri_val;
 }
 
+SLV2_API
 bool
 slv2_value_is_blank(SLV2Value value)
 {
 	return (value && value->type == SLV2_VALUE_BLANK);
 }
 
+SLV2_API
 const char*
 slv2_value_as_blank(SLV2Value value)
 {
@@ -307,31 +317,45 @@ slv2_value_as_blank(SLV2Value value)
 	return value->str_val;
 }
 
+SLV2_API
 bool
 slv2_value_is_literal(SLV2Value value)
 {
-	// No blank nodes
-	return (value && value->type != SLV2_VALUE_URI);
+	if (!value)
+		return false;
+
+	switch (value->type) {
+	case SLV2_VALUE_STRING:
+	case SLV2_VALUE_INT:
+	case SLV2_VALUE_FLOAT:
+		return true;
+	default:
+		return false;
+	}
 }
 
+SLV2_API
 bool
 slv2_value_is_string(SLV2Value value)
 {
 	return (value && value->type == SLV2_VALUE_STRING);
 }
 
+SLV2_API
 const char*
 slv2_value_as_string(SLV2Value value)
 {
 	return value->str_val;
 }
 
+SLV2_API
 bool
 slv2_value_is_int(SLV2Value value)
 {
 	return (value && value->type == SLV2_VALUE_INT);
 }
 
+SLV2_API
 int
 slv2_value_as_int(SLV2Value value)
 {
@@ -340,12 +364,14 @@ slv2_value_as_int(SLV2Value value)
 	return value->val.int_val;
 }
 
+SLV2_API
 bool
 slv2_value_is_float(SLV2Value value)
 {
 	return (value && value->type == SLV2_VALUE_FLOAT);
 }
 
+SLV2_API
 float
 slv2_value_as_float(SLV2Value value)
 {
@@ -355,4 +381,3 @@ slv2_value_as_float(SLV2Value value)
 	else // slv2_value_is_int(value)
 		return (float)value->val.int_val;
 }
-

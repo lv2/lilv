@@ -29,7 +29,7 @@
 #include "slv2/value.h"
 #include "slv2_internal.h"
 
-
+SLV2_API
 SLV2Instance
 slv2_plugin_instantiate(SLV2Plugin               plugin,
                         double                   sample_rate,
@@ -135,6 +135,7 @@ slv2_plugin_instantiate(SLV2Plugin               plugin,
 	return result;
 }
 
+SLV2_API
 void
 slv2_instance_free(SLV2Instance instance)
 {
