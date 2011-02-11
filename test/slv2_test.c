@@ -557,6 +557,8 @@ test_plugin()
 			"lv2:optionalFeature lv2:hardRTCapable ; "
 		    "lv2:requiredFeature <http://lv2plug.in/ns/ext/event> ; "
 			":foo 1.6180 ; "
+			":bar true ; "
+			":baz false ; "
 			"doap:maintainer [ foaf:name \"David Robillard\" ; "
 			"  foaf:homepage <http://drobilla.net> ; foaf:mbox <mailto:d@drobilla.net> ] ; "
 			"lv2:port [ "
@@ -662,12 +664,26 @@ test_plugin()
 	slv2_values_free(required);
 	slv2_values_free(optional);
 
-	SLV2Value foo_p = slv2_value_new_uri(world, "http://example.org/foo");
-	SLV2Values foos = slv2_plugin_get_value(plug, foo_p);
+	SLV2Value  foo_p = slv2_value_new_uri(world, "http://example.org/foo");
+	SLV2Values foos  = slv2_plugin_get_value(plug, foo_p);
 	TEST_ASSERT(slv2_values_size(foos) == 1);
 	TEST_ASSERT(fabs(slv2_value_as_float(slv2_values_get_at(foos, 0)) - 1.6180) < FLT_EPSILON);
 	slv2_value_free(foo_p);
 	slv2_values_free(foos);
+
+	SLV2Value  bar_p = slv2_value_new_uri(world, "http://example.org/bar");
+	SLV2Values bars  = slv2_plugin_get_value(plug, bar_p);
+	TEST_ASSERT(slv2_values_size(bars) == 1);
+	TEST_ASSERT(slv2_value_as_bool(slv2_values_get_at(bars, 0)) == true);
+	slv2_value_free(bar_p);
+	slv2_values_free(bars);
+
+	SLV2Value  baz_p = slv2_value_new_uri(world, "http://example.org/baz");
+	SLV2Values bazs  = slv2_plugin_get_value(plug, baz_p);
+	TEST_ASSERT(slv2_values_size(bazs) == 1);
+	TEST_ASSERT(slv2_value_as_bool(slv2_values_get_at(bazs, 0)) == false);
+	slv2_value_free(baz_p);
+	slv2_values_free(bazs);
 
 	SLV2Value author_name = slv2_plugin_get_author_name(plug);
 	TEST_ASSERT(!strcmp(slv2_value_as_string(author_name), "David Robillard"));
@@ -854,11 +870,17 @@ test_port()
 	                    "store"));
 	slv2_values_free(names);
 
-	slv2_world_filter_language(world, false);
+	SLV2Value true_val  = slv2_value_new_bool(world, true);
+	SLV2Value false_val = slv2_value_new_bool(world, false);
+
+	slv2_world_set_option(world, SLV2_OPTION_FILTER_LANG, false_val);
 	names = slv2_port_get_value(plug, p, name_p);
 	TEST_ASSERT(slv2_values_size(names) == 4);
 	slv2_values_free(names);
-	slv2_world_filter_language(world, true);
+	slv2_world_set_option(world, SLV2_OPTION_FILTER_LANG, true_val);
+
+	slv2_value_free(false_val);
+	slv2_value_free(true_val);
 
 	names = slv2_port_get_value(plug, ep, name_p);
 	TEST_ASSERT(slv2_values_size(names) == 1);

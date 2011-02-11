@@ -83,8 +83,9 @@ slv2_world_new()
 	world->rdfs_subclassof_node    = NEW_URI(SLV2_NS_RDFS "subClassOf");
 	world->slv2_bundleuri_node     = NEW_URI(SLV2_NS_SLV2 "bundleURI");
 	world->slv2_dmanifest_node     = NEW_URI(SLV2_NS_SLV2 "dynamic-manifest");
-	world->xsd_integer_node        = NEW_URI(SLV2_NS_XSD  "integer");
+	world->xsd_boolean_node        = NEW_URI(SLV2_NS_XSD  "boolean");
 	world->xsd_decimal_node        = NEW_URI(SLV2_NS_XSD  "decimal");
+	world->xsd_integer_node        = NEW_URI(SLV2_NS_XSD  "integer");
 
 	world->doap_name_val = NEW_URI_VAL(SLV2_NS_DOAP "name");
 	world->lv2_name_val  = NEW_URI_VAL(SLV2_NS_LV2  "name");
@@ -138,20 +139,26 @@ slv2_world_free(SLV2World world)
 	slv2_node_free(world->rdfs_class_node);
 	slv2_node_free(world->slv2_bundleuri_node);
 	slv2_node_free(world->slv2_dmanifest_node);
-	slv2_node_free(world->xsd_integer_node);
+	slv2_node_free(world->xsd_boolean_node);
 	slv2_node_free(world->xsd_decimal_node);
+	slv2_node_free(world->xsd_integer_node);
 
 	slv2_value_free(world->doap_name_val);
 	slv2_value_free(world->lv2_name_val);
 
-	/*
-	for (unsigned i = 0; i < ((GPtrArray*)world->plugins)->len; ++i)
-		slv2_plugin_free(g_ptr_array_index((GPtrArray*)world->plugins, i));
-	g_ptr_array_unref(world->plugins);
-	*/
+#define SLV2_FOREACH(iter, seq) \
+	for (GSequenceIter* (iter) = g_sequence_get_begin_iter(seq); \
+	     (iter) != g_sequence_get_end_iter(seq); \
+	     (iter) = g_sequence_iter_next(iter))
+
+	SLV2_FOREACH(i, world->plugins) {
+		SLV2Plugin p = g_sequence_get(i);
+		slv2_plugin_free(p);
+	}
+	g_sequence_free(world->plugins);
 	world->plugins = NULL;
 
-	//g_ptr_array_unref(world->plugin_classes);
+	g_sequence_free(world->plugin_classes);
 	world->plugin_classes = NULL;
 
 	sord_free(world->model);
@@ -164,11 +171,19 @@ slv2_world_free(SLV2World world)
 
 SLV2_API
 void
-slv2_world_filter_language(SLV2World world, bool filter)
+slv2_world_set_option(SLV2World       world,
+                      const char*     option,
+                      const SLV2Value value)
 {
-	world->filter_language = filter;
+	if (!strcmp(option, SLV2_OPTION_FILTER_LANG)) {
+		if (slv2_value_is_bool(value)) {
+			world->filter_language = slv2_value_as_bool(value);
+			return;
+		}
+	} else {
+		SLV2_WARNF("Unrecognized or invalid option `%s'\n", option);
+	}
 }
-
 
 static SLV2Matches
 slv2_world_find_statements(SLV2World world,
@@ -434,6 +449,8 @@ slv2_world_load_bundle(SLV2World world, SLV2Value bundle_uri)
 		sord_add(world->model, bundle_uri_tup);
 	}
 	slv2_match_end(spec_results);
+
+	serd_node_free(&manifest_uri);
 }
 
 // Expand POSIX things in path (particularly ~)

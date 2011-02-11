@@ -214,8 +214,9 @@ struct _SLV2World {
 	SLV2Node          rdfs_subclassof_node;
 	SLV2Node          slv2_bundleuri_node;
 	SLV2Node          slv2_dmanifest_node;
-	SLV2Node          xsd_integer_node;
+	SLV2Node          xsd_boolean_node;
 	SLV2Node          xsd_decimal_node;
+	SLV2Node          xsd_integer_node;
 	SLV2Value         doap_name_val;
 	SLV2Value         lv2_name_val;
 	bool              filter_language;
@@ -256,6 +257,7 @@ typedef enum _SLV2ValueType {
 	SLV2_VALUE_STRING,
 	SLV2_VALUE_INT,
 	SLV2_VALUE_FLOAT,
+	SLV2_VALUE_BOOL,
 	SLV2_VALUE_BLANK
 } SLV2ValueType;
 
@@ -265,6 +267,7 @@ struct _SLV2Value {
 	union {
 		int       int_val;
 		float     float_val;
+		bool      bool_val;
 		SLV2Node  uri_val;
 	} val;
 };

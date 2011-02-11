@@ -52,14 +52,21 @@ SLV2_API
 SLV2World
 slv2_world_new(void);
 
-/** Enable/disable language filtering for @a world.
+/** Enable/disable language filtering.
+ * Language filtering applies to any functions that return (a) value(s).
  * With filtering enabled, SLV2 will automatically return the best value(s)
  * for the current LANG.  With filtering disabled, all matching values will
  * be returned regardless of language tag.  Filtering is enabled by default.
  */
+#define SLV2_OPTION_FILTER_LANG "http://drobilla.net/ns/slv2#filter-lang"
+
+/** Set an SLV2 option for @a world.
+ */
 SLV2_API
 void
-slv2_world_filter_language(SLV2World world, bool filter);
+slv2_world_set_option(SLV2World       world,
+                      const char*     uri,
+                      const SLV2Value value);
 
 /** Destroy the world, mwahaha.
  *

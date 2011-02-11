@@ -57,13 +57,16 @@ slv2_value_set_numerics_from_string(SLV2Value val)
 		setlocale(LC_NUMERIC, locale);
 		free(locale);
 		break;
+	case SLV2_VALUE_BOOL:
+		val->val.bool_val = (!strcmp(val->str_val, "true"));
+		break;
 	}
 }
 
-/** Note that if @a type is numeric, slv2_value_set_numerics_from_string MUST be
- * called or the returned value will be corrupt!  It is not automatically
- * called from here to avoid the parsing overhead and imprecision when the
- * true numeric value is already known.
+/** Note that if @a type is numeric or boolean, the returned value is corrupt
+ * until slv2_value_set_numerics_from_string is called.  It is not
+ * automatically called from here to avoid overhead and imprecision when the
+ * exact string value is known.
  */
 SLV2Value
 slv2_value_new(SLV2World world, SLV2ValueType type, const char* str)
@@ -82,6 +85,7 @@ slv2_value_new(SLV2World world, SLV2ValueType type, const char* str)
 	case SLV2_VALUE_STRING:
 	case SLV2_VALUE_INT:
 	case SLV2_VALUE_FLOAT:
+	case SLV2_VALUE_BOOL:
 		val->str_val = strdup(str);
 		break;
 	}
@@ -108,10 +112,12 @@ slv2_value_new_from_node(SLV2World world, SordNode node)
 	case SORD_LITERAL:
 		datatype_uri = sord_literal_get_datatype(node);
 		if (datatype_uri) {
-			if (sord_node_equals(datatype_uri, world->xsd_integer_node))
-				type = SLV2_VALUE_INT;
+			if (sord_node_equals(datatype_uri, world->xsd_boolean_node))
+				type = SLV2_VALUE_BOOL;
 			else if (sord_node_equals(datatype_uri, world->xsd_decimal_node))
 				type = SLV2_VALUE_FLOAT;
+			else if (sord_node_equals(datatype_uri, world->xsd_integer_node))
+				type = SLV2_VALUE_INT;
 			else
 				SLV2_ERRORF("Unknown datatype %s\n", sord_node_get_string(datatype_uri));
 		}
@@ -119,6 +125,7 @@ slv2_value_new_from_node(SLV2World world, SordNode node)
 		switch (result->type) {
 		case SLV2_VALUE_INT:
 		case SLV2_VALUE_FLOAT:
+		case SLV2_VALUE_BOOL:
 			slv2_value_set_numerics_from_string(result);
 		default:
 			break;
@@ -168,6 +175,15 @@ slv2_value_new_float(SLV2World world, float val)
 	snprintf(str, sizeof(str), "%f", val);
 	SLV2Value ret = slv2_value_new(world, SLV2_VALUE_FLOAT, str);
 	ret->val.float_val = val;
+	return ret;
+}
+
+SLV2_API
+SLV2Value
+slv2_value_new_bool(SLV2World world, bool val)
+{
+	SLV2Value ret = slv2_value_new(world, SLV2_VALUE_BOOL, val ? "true" : "false");
+	ret->val.bool_val = val;
 	return ret;
 }
 
@@ -228,6 +244,8 @@ slv2_value_equals(SLV2Value value, SLV2Value other)
 		return (value->val.int_val == other->val.int_val);
 	case SLV2_VALUE_FLOAT:
 		return (value->val.float_val == other->val.float_val);
+	case SLV2_VALUE_BOOL:
+		return (value->val.bool_val == other->val.bool_val);
 	}
 
 	return false; /* shouldn't get here */
@@ -254,6 +272,7 @@ slv2_value_get_turtle_token(SLV2Value value)
 		break;
 	case SLV2_VALUE_STRING:
 	case SLV2_VALUE_QNAME_UNUSED:
+	case SLV2_VALUE_BOOL:
 		result = strdup(value->str_val);
 		break;
 	case SLV2_VALUE_INT:
@@ -382,4 +401,20 @@ slv2_value_as_float(SLV2Value value)
 		return value->val.float_val;
 	else // slv2_value_is_int(value)
 		return (float)value->val.int_val;
+}
+
+SLV2_API
+bool
+slv2_value_is_bool(SLV2Value value)
+{
+	return (value && value->type == SLV2_VALUE_BOOL);
+}
+
+SLV2_API
+bool
+slv2_value_as_bool(SLV2Value value)
+{
+	assert(value);
+	assert(slv2_value_is_bool(value));
+	return value->val.bool_val;
 }

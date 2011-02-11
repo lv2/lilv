@@ -62,6 +62,14 @@ SLV2_API
 SLV2Value
 slv2_value_new_float(SLV2World world, float val);
 
+/** Create a new boolean value.
+ *
+ * Returned value must be freed by caller with slv2_value_free.
+ */
+SLV2_API
+SLV2Value
+slv2_value_new_bool(SLV2World world, bool val);
+
 /** Free an SLV2Value.
  */
 SLV2_API
@@ -196,6 +204,24 @@ slv2_value_is_int(SLV2Value value);
 SLV2_API
 int
 slv2_value_as_int(SLV2Value value);
+
+/** Return whether this value is a boolean.
+ *
+ * Time = O(1)
+ */
+SLV2_API
+bool
+slv2_value_is_bool(SLV2Value value);
+
+/** Return \a value as a bool.
+ *
+ * Valid to call only if slv2_value_is_bool(\a value) returns true.
+ *
+ * Time = O(1)
+ */
+SLV2_API
+bool
+slv2_value_as_bool(SLV2Value value);
 
 /** @} */
 
