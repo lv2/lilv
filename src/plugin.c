@@ -414,12 +414,6 @@ slv2_plugin_get_name(SLV2Plugin plugin)
 		if (slv2_value_is_string(val))
 			ret = slv2_value_duplicate(val);
 		slv2_values_free(results);
-	} else {
-		results = slv2_plugin_get_value_by_qname(plugin, "doap:name");
-		SLV2Value val = slv2_values_get_at(results, 0);
-		if (slv2_value_is_string(val))
-			ret = slv2_value_duplicate(val);
-		slv2_values_free(results);
 	}
 
 	if (!ret)
