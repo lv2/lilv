@@ -242,6 +242,55 @@ slv2_sequence_get_by_uri(GSequence* seq,
 	return NULL;
 }
 
+static void
+slv2_world_add_plugin(SLV2World world,
+                      SLV2Node  plugin_node,
+                      SerdNode* manifest_uri,
+                      SLV2Node  dyn_manifest_lib,
+                      SLV2Node  bundle_node)
+{
+	SLV2Value plugin_uri  = slv2_value_new_from_node(world, plugin_node);
+
+	SLV2Plugin last = slv2_plugins_get_by_uri(world->plugins, plugin_uri);
+	if (last) {
+		SLV2_ERRORF("Duplicate plugin <%s>\n", slv2_value_as_uri(plugin_uri));
+		SLV2_ERRORF("... found in %s\n", slv2_value_as_string(
+			            slv2_plugin_get_bundle_uri(last)));
+		SLV2_ERRORF("... and      %s\n", sord_node_get_string(bundle_node));
+		slv2_value_free(plugin_uri);
+		return;
+	}
+
+	// Create SLV2Plugin
+	SLV2Value  bundle_uri = slv2_value_new_from_node(world, bundle_node);
+	SLV2Plugin plugin     = slv2_plugin_new(world, plugin_uri, bundle_uri);
+
+	// Add manifest as plugin data file (as if it were rdfs:seeAlso)
+	slv2_array_append(plugin->data_uris,
+	                  slv2_value_new_uri(world, (const char*)manifest_uri->buf));
+
+	// Set dynamic manifest library URI, if applicable
+	if (dyn_manifest_lib) {
+		plugin->dynman_uri = slv2_value_new_from_node(world, dyn_manifest_lib);
+	}
+		
+	// Add all plugin data files (rdfs:seeAlso)
+	SLV2Matches files = slv2_world_find_statements(
+		world, world->model,
+		plugin_node,
+		world->rdfs_seealso_node,
+		NULL,
+		NULL);
+	FOREACH_MATCH(files) {
+		SLV2Node file_node = slv2_match_object(files);
+		slv2_array_append(plugin->data_uris,
+		                  slv2_value_new_from_node(world, file_node));
+	}
+
+	// Add plugin to world plugin sequence
+	slv2_sequence_insert(world->plugins, plugin);
+}
+
 SLV2_API
 void
 slv2_world_load_bundle(SLV2World world, SLV2Value bundle_uri)
@@ -260,10 +309,25 @@ slv2_world_load_bundle(SLV2World world, SLV2Value bundle_uri)
 	sord_read_file(world->model, manifest_uri.buf, bundle_node,
 	               slv2_world_blank_node_prefix(world));
 
+	// ?plugin a lv2:Plugin
+	SLV2Matches plug_results = slv2_world_find_statements(
+		world, world->model,
+		NULL,
+		world->rdf_a_node,
+		world->lv2_plugin_node,
+		bundle_node);
+	FOREACH_MATCH(plug_results) {
+		SLV2Node plugin_node = slv2_match_subject(plug_results);
+		slv2_world_add_plugin(world, plugin_node,
+		                      &manifest_uri, NULL, bundle_node);
+	}
+	slv2_match_end(plug_results);
+
 #ifdef SLV2_DYN_MANIFEST
 	typedef void* LV2_Dyn_Manifest_Handle;
 	LV2_Dyn_Manifest_Handle handle = NULL;
 
+	// ?dman a dynman:DynManifest
 	SLV2Matches dmanifests = slv2_world_find_statements(
 		world, world->model,
 		NULL,
@@ -271,11 +335,14 @@ slv2_world_load_bundle(SLV2World world, SLV2Value bundle_uri)
 		world->dyn_manifest_node,
 		bundle_node);
 	FOREACH_MATCH(dmanifests) {
-		SLV2Node    dmanifest = slv2_match_subject(dmanifests);
+		SLV2Node dmanifest = slv2_match_subject(dmanifests);
+
+		// ?dman lv2:binary ?binary
 		SLV2Matches binaries  = slv2_world_find_statements(
 			world, world->model,
 			dmanifest,
 			world->lv2_binary_node,
+			NULL,
 			bundle_node);
 		if (slv2_matches_end(binaries)) {
 			slv2_match_end(binaries);
@@ -284,12 +351,14 @@ slv2_world_load_bundle(SLV2World world, SLV2Value bundle_uri)
 			continue;
 		}
 
+		// Get binary path
 		SLV2Node       binary   = slv2_node_copy(slv2_match_object(binaries));
 		const uint8_t* lib_uri  = sord_node_get_string(binary);
 		const char*    lib_path = slv2_uri_to_path((const char*)lib_uri);
 		if (!lib_path)
 			continue;
 
+		// Open library
 		void* lib = dlopen(lib_path, RTLD_LAZY);
 		if (!lib)
 			continue;
@@ -307,94 +376,35 @@ slv2_world_load_bundle(SLV2World world, SLV2Value bundle_uri)
 		if (!get_subjects_func)
 			continue;
 
-		librdf_storage* dyn_manifest_storage = slv2_world_new_storage(world);
-		librdf_model*   dyn_manifest_model   = librdf_new_model(world->world,
-			dyn_manifest_storage, NULL);
-
+		// Generate data file
 		FILE* fd = tmpfile();
 		get_subjects_func(handle, fd);
 		rewind(fd);
-		librdf_parser_parse_file_handle_into_model(
-			world->parser, fd, 0,
-			librdf_node_get_uri(bundle_uri->val.uri_val),
-			dyn_manifest_model);
+
+		// Parse generated data file
+		sord_read_file_handle(world->model, fd, lib_uri, bundle_node,
+		                      slv2_world_blank_node_prefix(world));
+
+		// Close (and automatically delete) temporary data file
 		fclose(fd);
 
 		// ?plugin a lv2:Plugin
-		SLV2Matches dyn_plugins = slv2_world_find_statements(
-			world, dyn_manifest_model,
+		SLV2Matches plug_results = slv2_world_find_statements(
+			world, world->model,
 			NULL,
 			world->rdf_a_node,
 			world->lv2_plugin_node,
 			bundle_node);
-		FOREACH_MATCH(dyn_plugins) {
-			SLV2Node plugin = slv2_match_subject(dyn_plugins);
-
-			// Add ?plugin slv2:dynamic-manifest ?binary to dynamic model
-			librdf_model_add(
-				manifest_model, plugin,
-				world->slv2_dmanifest_node,
-				slv2_node_copy(binary));
+		FOREACH_MATCH(plug_results) {
+			SLV2Node plugin_node = slv2_match_subject(plug_results);
+			slv2_world_add_plugin(world, plugin_node,
+			                      &manifest_uri, binary, bundle_node);
 		}
-		slv2_match_end(dyn_plugins);
-
-		// Merge dynamic model into main manifest model
-		librdf_stream* dyn_manifest_stream = librdf_model_as_stream(dyn_manifest_model);
-		librdf_model_add_statements(manifest_model, dyn_manifest_stream);
-		librdf_free_stream(dyn_manifest_stream);
-		librdf_free_model(dyn_manifest_model);
-		librdf_free_storage(dyn_manifest_storage);
+		slv2_match_end(plug_results);
 	}
 	slv2_match_end(dmanifests);
 #endif // SLV2_DYN_MANIFEST
-
-	// ?plugin a lv2:Plugin
-	SLV2Matches plug_results = slv2_world_find_statements(
-		world, world->model,
-		NULL,
-		world->rdf_a_node,
-		world->lv2_plugin_node,
-		bundle_node);
-	FOREACH_MATCH(plug_results) {
-		SLV2Node  plugin_node = slv2_match_subject(plug_results);
-		SLV2Value plugin_uri  = slv2_value_new_from_node(world, plugin_node);
-
-		SLV2Plugin last = slv2_plugins_get_by_uri(world->plugins, plugin_uri);
-		if (last) {
-			SLV2_ERRORF("Duplicate plugin <%s>\n", slv2_value_as_uri(plugin_uri));
-			SLV2_ERRORF("... found in %s\n", slv2_value_as_string(
-				            slv2_plugin_get_bundle_uri(last)));
-			SLV2_ERRORF("... and      %s\n", sord_node_get_string(bundle_node));
-			slv2_value_free(plugin_uri);
-			continue;
-		}
-
-		// Create SLV2Plugin
-		SLV2Value  bundle_uri = slv2_value_new_from_node(world, bundle_node);
-		SLV2Plugin plugin     = slv2_plugin_new(world, plugin_uri, bundle_uri);
-
-		// Add manifest as plugin data file (as if it were rdfs:seeAlso)
-		slv2_array_append(plugin->data_uris,
-		                  slv2_value_new_uri(world, (const char*)manifest_uri.buf));
-
-		// Add all plugin data files (rdfs:seeAlso)
-		SLV2Matches files = slv2_world_find_statements(
-			world, world->model,
-			plugin_node,
-			world->rdfs_seealso_node,
-			NULL,
-			NULL);
-		FOREACH_MATCH(files) {
-			SLV2Node file_node = slv2_match_object(files);
-			slv2_array_append(plugin->data_uris,
-			                  slv2_value_new_from_node(world, file_node));
-		}
-
-		// Add plugin to world plugin sequence
-		slv2_sequence_insert(world->plugins, plugin);
-	}
-	slv2_match_end(plug_results);
-
+	
 	// ?specification a lv2:Specification
 	SLV2Matches spec_results = slv2_world_find_statements(
 		world, world->model,
@@ -628,28 +638,6 @@ slv2_world_load_all(SLV2World world)
 	// Query out things to cache
 	slv2_world_load_specifications(world);
 	slv2_world_load_plugin_classes(world);
-
-/* FIXME: move this to slv2_world_load_bundle
-#ifdef SLV2_DYN_MANIFEST
-		{
-			SLV2Matches dmanifests = slv2_world_find_statements(
-				world, world->model,
-				plugin_node,
-				world->slv2_dmanifest_node,
-				NULL,
-				NULL);
-			FOREACH_MATCH(dmanifests) {
-				SLV2Node    lib_node = slv2_match_object(dmanifests);
-				const char* lib_uri  = (const char*)sord_node_get_string(lib_node);
-
-				if (dlopen(slv2_uri_to_path(lib_uri, RTLD_LAZY))) {
-					plugin->dynman_uri = slv2_value_new_from_node(world, lib_node);
-				}
-			}
-			slv2_match_end(dmanifests);
-		}
-#endif
-*/
 }
 
 SLV2_API

@@ -170,12 +170,17 @@ slv2_plugin_load(SLV2Plugin p)
 		typedef int (*GetDataFunc)(LV2_Dyn_Manifest_Handle handle,
 		                           FILE*                   fp,
 		                           const char*             uri);
-		GetDataFunc get_data_func = (GetDataFunc)slv2_dlfunc(lib, "lv2_dyn_manifest_get_data");
+		GetDataFunc get_data_func = (GetDataFunc)slv2_dlfunc(
+			lib, "lv2_dyn_manifest_get_data");
 		if (get_data_func) {
 			FILE* fd = tmpfile();
 			get_data_func(handle, fd, slv2_value_as_string(p->plugin_uri));
 			rewind(fd);
-			sord_read_file_handle(p->world->model, fd, p->bundle_uri);
+			sord_read_file_handle(p->world->model,
+			                      fd,
+			                      (const uint8_t*)slv2_value_as_uri(p->dynman_uri),
+			                      p->bundle_uri->val.uri_val,
+			                      slv2_world_blank_node_prefix(p->world));
 			fclose(fd);
 		}
 
@@ -185,6 +190,7 @@ slv2_plugin_load(SLV2Plugin p)
 			close_func(handle);
 	}
 #endif
+
 	p->loaded = true;
 }
 

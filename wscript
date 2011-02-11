@@ -158,6 +158,7 @@ def build(bld):
 		obj.target       = 'slv2_static'
 		obj.install_path = ''
 		obj.cflags       = [ '-fprofile-arcs',  '-ftest-coverage' ]
+		obj.linkflags    = [ '-ldl' ]
 		autowaf.use_lib(bld, obj, 'SORD SERD LV2CORE GLIB')
 
 		# Unit tests
@@ -167,7 +168,7 @@ def build(bld):
 			obj.includes     = ['.', './src']
 			obj.use          = 'libslv2_static'
 			obj.uselib       = 'SORD SERD LV2CORE'
-			obj.linkflags    = '-lgcov'
+			obj.linkflags    = '-lgcov -ldl'
 			obj.target       = i
 			obj.install_path = ''
 			obj.cflags       = [ '-fprofile-arcs',  '-ftest-coverage' ]
