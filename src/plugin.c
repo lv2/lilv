@@ -102,7 +102,7 @@ slv2_plugin_query_node(SLV2Plugin p, SLV2Node subject, SLV2Node predicate)
 		SLV2Node  node  = slv2_match_object(results);
 		SLV2Value value = slv2_value_new_from_node(p->world, node);
 		if (value)
-			g_ptr_array_add(result, value);
+			slv2_array_append(result, value);
 	}
 	slv2_match_end(results);
 
@@ -246,7 +246,7 @@ slv2_plugin_load_ports_if_necessary(SLV2Plugin p)
 			FOREACH_MATCH(types) {
 				SLV2Node type = slv2_match_object(types);
 				if (sord_node_get_type(type) == SORD_URI) {
-					g_ptr_array_add(
+					slv2_array_append(
 						this_port->classes,
 						slv2_value_new_from_node(p->world, type));
 				} else {
@@ -637,9 +637,9 @@ slv2_plugin_get_supported_features(SLV2Plugin p)
 	unsigned   n_optional = slv2_values_size(optional);
 	unsigned   n_required = slv2_values_size(required);
 	for (unsigned i = 0 ; i < n_optional; ++i)
-		g_ptr_array_add(result, slv2_values_get_at(optional, i));
+		slv2_array_append(result, slv2_values_get_at(optional, i));
 	for (unsigned i = 0 ; i < n_required; ++i)
-		g_ptr_array_add(result, slv2_values_get_at(required, i));
+		slv2_array_append(result, slv2_values_get_at(required, i));
 
 	if (optional) {
 		free(((GPtrArray*)optional)->pdata);
@@ -797,7 +797,7 @@ slv2_plugin_get_uis(SLV2Plugin p)
 			type,
 			binary);
 
-		g_ptr_array_add(result, slv2_ui);
+		slv2_sequence_insert(result, slv2_ui);
 	}
 	slv2_match_end(uis);
 

@@ -141,12 +141,14 @@ slv2_world_free(SLV2World world)
 	slv2_value_free(world->doap_name_val);
 	slv2_value_free(world->lv2_name_val);
 
+	/*
 	for (unsigned i = 0; i < ((GPtrArray*)world->plugins)->len; ++i)
 		slv2_plugin_free(g_ptr_array_index((GPtrArray*)world->plugins, i));
 	g_ptr_array_unref(world->plugins);
+	*/
 	world->plugins = NULL;
 
-	g_ptr_array_unref(world->plugin_classes);
+	//g_ptr_array_unref(world->plugin_classes);
 	world->plugin_classes = NULL;
 
 	sord_free(world->model);
@@ -197,15 +199,44 @@ slv2_world_blank_node_prefix(SLV2World world)
 	return (const uint8_t*)str;
 }
 
-/** Comparator for sorting SLV2Plugins */
-static int
-slv2_plugin_compare_by_uri(const void* a, const void* b)
+/** Comparator for sequences (e.g. world->plugins). */
+int
+slv2_header_compare_by_uri(const void* a, const void* b, void* user_data)
 {
-    SLV2Plugin plugin_a = *(SLV2Plugin*)a;
-    SLV2Plugin plugin_b = *(SLV2Plugin*)b;
+	const struct _SLV2Header* const header_a = (const struct _SLV2Header*)a;
+	const struct _SLV2Header* const header_b = (const struct _SLV2Header*)b;
+	return strcmp(slv2_value_as_uri(header_a->uri),
+	              slv2_value_as_uri(header_b->uri));
+}
 
-    return strcmp(slv2_value_as_uri(plugin_a->plugin_uri),
-                  slv2_value_as_uri(plugin_b->plugin_uri));
+/** Get an element of a sequence of any object with an SLV2Header by URI. */
+struct _SLV2Header*
+slv2_sequence_get_by_uri(GSequence* seq,
+                         SLV2Value  uri)
+{
+	struct _SLV2Header key = { NULL, uri }; 
+	GSequenceIter*     i   = g_sequence_search(
+		seq, &key, slv2_header_compare_by_uri, NULL);
+
+	// i points to where plugin would be inserted (not necessarily a match)
+
+	if (!g_sequence_iter_is_end(i)) {
+		SLV2Plugin p = g_sequence_get(i);
+		if (slv2_value_equals(slv2_plugin_get_uri(p), uri)) {
+			return (struct _SLV2Header*)p;
+		}
+	}
+
+	if (!g_sequence_iter_is_begin(i)) {
+		// Check if i is just past a match
+		i = g_sequence_iter_prev(i);
+		SLV2Plugin p = g_sequence_get(i);
+		if (slv2_value_equals(slv2_plugin_get_uri(p), uri)) {
+			return (struct _SLV2Header*)p;
+		}
+	}
+
+	return NULL;
 }
 
 SLV2_API
@@ -325,11 +356,11 @@ slv2_world_load_bundle(SLV2World world, SLV2Value bundle_uri)
 		SLV2Node  plugin_node = slv2_match_subject(plug_results);
 		SLV2Value plugin_uri  = slv2_value_new_from_node(world, plugin_node);
 
-		SLV2Plugin existing = slv2_plugins_get_by_uri(world->plugins, plugin_uri);
-		if (existing) {
+		SLV2Plugin last = slv2_plugins_get_by_uri(world->plugins, plugin_uri);
+		if (last) {
 			SLV2_ERRORF("Duplicate plugin <%s>\n", slv2_value_as_uri(plugin_uri));
 			SLV2_ERRORF("... found in %s\n", slv2_value_as_string(
-				            slv2_plugin_get_bundle_uri(existing)));
+				            slv2_plugin_get_bundle_uri(last)));
 			SLV2_ERRORF("... and      %s\n", sord_node_get_string(bundle_node));
 			slv2_value_free(plugin_uri);
 			continue;
@@ -340,8 +371,8 @@ slv2_world_load_bundle(SLV2World world, SLV2Value bundle_uri)
 		SLV2Plugin plugin     = slv2_plugin_new(world, plugin_uri, bundle_uri);
 
 		// Add manifest as plugin data file (as if it were rdfs:seeAlso)
-		g_ptr_array_add(plugin->data_uris,
-		                slv2_value_new_uri(world, (const char*)manifest_uri.buf));
+		slv2_array_append(plugin->data_uris,
+		                  slv2_value_new_uri(world, (const char*)manifest_uri.buf));
 
 		// Add all plugin data files (rdfs:seeAlso)
 		SLV2Matches files = slv2_world_find_statements(
@@ -352,13 +383,12 @@ slv2_world_load_bundle(SLV2World world, SLV2Value bundle_uri)
 			NULL);
 		FOREACH_MATCH(files) {
 			SLV2Node file_node = slv2_match_object(files);
-			g_ptr_array_add(plugin->data_uris,
-			                slv2_value_new_from_node(world, file_node));
+			slv2_array_append(plugin->data_uris,
+			                  slv2_value_new_from_node(world, file_node));
 		}
 
-		// Add plugin to world plugin list (FIXME: slow, use real data structure)
-		g_ptr_array_add(world->plugins, plugin);
-		g_ptr_array_sort(world->plugins, slv2_plugin_compare_by_uri);
+		// Add plugin to world plugin sequence
+		slv2_sequence_insert(world->plugins, plugin);
 	}
 	slv2_match_end(plug_results);
 
@@ -568,22 +598,11 @@ slv2_world_load_plugin_classes(SLV2World world)
 		slv2_match_end(labels);
 
 		SLV2PluginClasses classes = world->plugin_classes;
-#ifndef NDEBUG
-		const unsigned n_classes = ((GPtrArray*)classes)->len;
-		if (n_classes > 0) {
-			// Class results are in increasing sorted order
-			SLV2PluginClass prev = g_ptr_array_index((GPtrArray*)classes,
-			                                         n_classes - 1);
-			assert(strcmp(
-				       slv2_value_as_string(slv2_plugin_class_get_uri(prev)),
-				       (const char*)sord_node_get_string(class_node)) < 0);
-		}
-#endif
-		SLV2PluginClass pclass = slv2_plugin_class_new(
+		SLV2PluginClass   pclass  = slv2_plugin_class_new(
 			world, parent_node, class_node, (const char*)label);
 
 		if (pclass) {
-			g_ptr_array_add(classes, pclass);
+			slv2_sequence_insert(classes, pclass);
 		}
 
 		slv2_node_free(parent_node);
@@ -661,7 +680,7 @@ slv2_world_get_plugins_by_filter(SLV2World world, bool (*include)(SLV2Plugin))
 	for (unsigned i = 0; i < n; ++i) {
 		SLV2Plugin p = slv2_plugins_get_at(world->plugins, i);
 		if (include(p))
-			g_ptr_array_add(result, p);
+			slv2_sequence_insert(result, p);
 	}
 
 	return result;

@@ -70,7 +70,7 @@ prefix ## _size(CollType collection); \
 SLV2_API \
 ElemType \
 prefix ## _get_at(CollType collection, \
-                  unsigned    index);
+                  unsigned index);
 
 SLV2_COLLECTION(SLV2PluginClasses, SLV2PluginClass, slv2_plugin_classes)
 SLV2_COLLECTION(SLV2ScalePoints, SLV2ScalePoint, slv2_scale_points)

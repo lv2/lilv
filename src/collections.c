@@ -25,7 +25,9 @@
 #include "slv2/pluginui.h"
 #include "slv2_internal.h"
 
-#define SLV2_COLLECTION_IMPL(CollType, ElemType, prefix, free_func) \
+/* ARRAYS */
+
+#define SLV2_ARRAY_IMPL(CollType, ElemType, prefix, free_func) \
 \
 CollType \
 prefix ## _new() \
@@ -58,47 +60,63 @@ prefix ## _get_at(CollType coll, unsigned index) \
 		return (ElemType)g_ptr_array_index((GPtrArray*)coll, (int)index); \
 }
 
-SLV2_COLLECTION_IMPL(SLV2PluginClasses, SLV2PluginClass,
-		slv2_plugin_classes, &slv2_plugin_class_free)
-SLV2_COLLECTION_IMPL(SLV2ScalePoints, SLV2ScalePoint,
+SLV2_ARRAY_IMPL(SLV2ScalePoints, SLV2ScalePoint,
 		slv2_scale_points, &slv2_scale_point_free)
-SLV2_COLLECTION_IMPL(SLV2Values, SLV2Value,
+SLV2_ARRAY_IMPL(SLV2Values, SLV2Value,
 		slv2_values, &slv2_value_free)
-SLV2_COLLECTION_IMPL(SLV2UIs, SLV2UI,
-		slv2_uis, &slv2_ui_free)
 
-/* **** PLUGIN CLASSES **** */
 
-SLV2_API
-SLV2PluginClass
-slv2_plugin_classes_get_by_uri(SLV2PluginClasses list, SLV2Value uri)
-{
-	// good old fashioned binary search
+/* SEQUENCE */
 
-	int lower = 0;
-	int upper = ((GPtrArray*)list)->len - 1;
-	int i;
-
-	while (upper >= lower) {
-		i = lower + ((upper - lower) / 2);
-
-		SLV2PluginClass p = g_ptr_array_index(((GPtrArray*)list), i);
-
-		const int cmp = strcmp(slv2_value_as_uri(slv2_plugin_class_get_uri(p)),
-		                       slv2_value_as_uri(uri));
-
-		if (cmp == 0)
-			return p;
-		else if (cmp > 0)
-			upper = i - 1;
-		else
-			lower = i + 1;
-	}
-
-	return NULL;
+#define SLV2_SEQUENCE_IMPL(CollType, ElemType, prefix, free_func) \
+\
+CollType \
+prefix ## _new() \
+{ \
+	return g_sequence_new((GDestroyNotify)free_func); \
+} \
+\
+SLV2_API \
+void \
+prefix ## _free(CollType coll) \
+{ \
+	if (coll) \
+		g_sequence_free((GSequence*)coll); \
+} \
+\
+SLV2_API \
+unsigned \
+prefix ## _size(CollType coll) \
+{ \
+	return (coll ? g_sequence_get_length((GSequence*)coll) : 0); \
+} \
+\
+SLV2_API \
+ElemType \
+prefix ## _get_at(CollType coll, unsigned index) \
+{ \
+	if (!coll || index >= prefix ## _size(coll)) { \
+		return NULL; \
+	} else { \
+		GSequenceIter* i = g_sequence_get_iter_at_pos((GSequence*)coll, (int)index); \
+		return (ElemType)g_sequence_get(i); \
+	} \
+} \
+\
+SLV2_API \
+ElemType \
+prefix ## _get_by_uri(CollType coll, SLV2Value uri) \
+{ \
+	return (ElemType)slv2_sequence_get_by_uri(coll, uri); \
 }
 
-/* **** VALUES **** */
+SLV2_SEQUENCE_IMPL(SLV2PluginClasses, SLV2PluginClass,
+		slv2_plugin_classes, &slv2_plugin_class_free)
+SLV2_SEQUENCE_IMPL(SLV2UIs, SLV2UI,
+		slv2_uis, &slv2_ui_free)
+
+
+/* VALUES */
 
 SLV2_API
 bool
@@ -109,36 +127,5 @@ slv2_values_contains(SLV2Values list, SLV2Value value)
 			return true;
 
 	return false;
-}
-
-/* **** PLUGIN UIS **** */
-
-SLV2_API
-SLV2UI
-slv2_uis_get_by_uri(SLV2UIs list, SLV2Value uri)
-{
-	// good old fashioned binary search
-
-	int lower = 0;
-	int upper = ((GPtrArray*)list)->len - 1;
-	int i;
-
-	while (upper >= lower) {
-		i = lower + ((upper - lower) / 2);
-
-		SLV2UI ui = g_ptr_array_index((GPtrArray*)list, i);
-
-		const int cmp = strcmp(slv2_value_as_uri(slv2_ui_get_uri(ui)),
-		                       slv2_value_as_uri(uri));
-
-		if (cmp == 0)
-			return ui;
-		else if (cmp > 0)
-			upper = i - 1;
-		else
-			lower = i + 1;
-	}
-
-	return NULL;
 }
 

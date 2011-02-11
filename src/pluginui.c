@@ -49,7 +49,7 @@ slv2_ui_new(SLV2World world,
 	free(bundle);
 
 	ui->classes = slv2_values_new();
-	g_ptr_array_add(ui->classes, type_uri);
+	slv2_array_append(ui->classes, type_uri);
 
 	return ui;
 }

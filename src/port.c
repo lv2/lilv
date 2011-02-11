@@ -289,7 +289,7 @@ slv2_port_get_scale_points(SLV2Plugin p,
 			slv2_node_copy(p->world->rdfs_label_node));
 
 		if (value && label) {
-			g_ptr_array_add(ret, slv2_scale_point_new(value, label));
+			slv2_array_append(ret, slv2_scale_point_new(value, label));
 		}
 	}
 	slv2_match_end(points);

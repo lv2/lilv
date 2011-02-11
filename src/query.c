@@ -94,13 +94,13 @@ slv2_values_from_stream_objects_i18n(SLV2Plugin  p,
 			
 			if (lm == SLV2_LANG_MATCH_EXACT) {
 				// Exact language match, add to results
-				g_ptr_array_add(values, slv2_value_new_from_node(p->world, value));
+				slv2_array_append(values, slv2_value_new_from_node(p->world, value));
 			} else if (lm == SLV2_LANG_MATCH_PARTIAL) {
 				// Partial language match, save in case we find no exact
 				partial = value;
 			}
 		} else {
-			g_ptr_array_add(values, slv2_value_new_from_node(p->world, value));
+			slv2_array_append(values, slv2_value_new_from_node(p->world, value));
 		}
 	}
 	slv2_match_end(stream);
@@ -121,7 +121,7 @@ slv2_values_from_stream_objects_i18n(SLV2Plugin  p,
 	}
 
 	if (best) {
-		g_ptr_array_add(values, slv2_value_new_from_node(p->world, best));
+		slv2_array_append(values, slv2_value_new_from_node(p->world, best));
 	} else {
 		// No matches whatsoever
 		slv2_values_free(values);
@@ -143,7 +143,7 @@ slv2_values_from_stream_objects(SLV2Plugin  p,
 	} else {
 		SLV2Values values = slv2_values_new();
 		FOREACH_MATCH(stream) {
-			g_ptr_array_add(
+			slv2_array_append(
 				values,
 				slv2_value_new_from_node(
 					p->world,

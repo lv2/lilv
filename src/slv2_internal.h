@@ -91,6 +91,15 @@ void     slv2_port_free(SLV2Port port);
 
 /* ********* Plugin ********* */
 
+/** Header of an SLV2Plugin, SLV2PluginClass, or SLV2UI.
+ * Any of these structs may be safely casted to _SLV2Header, which is used to
+ * implement sequences without code duplication (see slv2_sequence_get_by_uri).
+ */
+struct _SLV2Header {
+	struct _SLV2World* world;
+	SLV2Value          uri;
+};
+	
 /** Record of an installed/available plugin.
  *
  * A simple reference to a plugin somewhere on the system. This just holds
@@ -103,7 +112,7 @@ struct _SLV2Plugin {
 	SLV2Value          binary_uri; ///< lv2:binary
 	SLV2Value          dynman_uri; ///< dynamic manifest binary
 	SLV2PluginClass    plugin_class;
-	GPtrArray*         data_uris; ///< rdfs::seeAlso
+	SLV2Values         data_uris; ///< rdfs::seeAlso
 	SLV2Port*          ports;
 	uint32_t           num_ports;
 	bool               loaded;
@@ -150,8 +159,8 @@ struct _SLV2UIInstanceImpl {
 
 struct _SLV2PluginClass {
 	struct _SLV2World* world;
-	SLV2Value          parent_uri;
 	SLV2Value          uri;
+	SLV2Value          parent_uri;
 	SLV2Value          label;
 };
 
@@ -260,6 +269,23 @@ SLV2Value slv2_value_new(SLV2World world, SLV2ValueType type, const char* val);
 SLV2Value slv2_value_new_from_node(SLV2World world, SLV2Node node);
 SLV2Node  slv2_value_as_node(SLV2Value value);
 
+int
+slv2_header_compare_by_uri(const void* a, const void* b, void* user_data);
+
+static inline void
+slv2_sequence_insert(GSequence* seq, void* value)
+{
+	g_sequence_insert_sorted(seq, value, slv2_header_compare_by_uri, NULL);
+}
+
+static inline void
+slv2_array_append(GPtrArray* array, void* value) {
+	g_ptr_array_add(array, value);
+}
+
+struct _SLV2Header*
+slv2_sequence_get_by_uri(GSequence* seq, SLV2Value uri);
+
 static inline SLV2Node slv2_node_copy(SLV2Node node) {
 	return node;
 }
@@ -279,7 +305,7 @@ SLV2ScalePoint slv2_scale_point_new(SLV2Value value, SLV2Value label);
 void           slv2_scale_point_free(SLV2ScalePoint point);
 
 
-/* ********* Query Results********* */
+/* ********* Query Results ********* */
 
 SLV2Matches slv2_plugin_find_statements(SLV2Plugin plugin,
                                         SLV2Node   subject,
