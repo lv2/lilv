@@ -16,13 +16,12 @@
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#define _XOPEN_SOURCE 500
+#include <glib.h>
 
-#include <string.h>
-#include <limits.h>
 #include "slv2/collections.h"
 #include "slv2/pluginclass.h"
 #include "slv2/pluginui.h"
+#include "slv2/value.h"
 #include "slv2_internal.h"
 
 /* ARRAYS */

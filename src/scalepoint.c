@@ -18,10 +18,12 @@
 
 #define _XOPEN_SOURCE 500
 
+#include <assert.h>
 #include <stdlib.h>
 #include <string.h>
-#include <assert.h>
+
 #include <glib.h>
+
 #include "slv2/scalepoint.h"
 #include "slv2/types.h"
 #include "slv2/value.h"

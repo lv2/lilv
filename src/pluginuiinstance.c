@@ -19,15 +19,17 @@
 
 #define _XOPEN_SOURCE 500
 
+#include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <assert.h>
+
 #include <dlfcn.h>
-#include "slv2/types.h"
+
 #include "slv2/plugin.h"
 #include "slv2/pluginui.h"
 #include "slv2/pluginuiinstance.h"
+#include "slv2/types.h"
 #include "slv2/util.h"
 #include "slv2_internal.h"
 
