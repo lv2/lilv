@@ -5,8 +5,10 @@ slv2 (UNRELEASED) unstable; urgency=low
   * Remove nonsensical slv2_plugin_get_properties and slv2_plugin_get_hints
   * Remove all use of SPARQL (including API that provided SPARQL support)
   * Remove use of redland (librdf) in favour of Serd and Sord
-  * *** API BREAK *** (remove slv2_world_new_using_rdf_world and
-    slv2_plugin_query_sparql)
+  * Remove slv2_world_new_using_rdf_world and slv2_plugin_query_sparql
+  * Remove separate i18n versions of functions and implement i18n everywhere
+  * Add slv2_world_filter_language (	to optionally disable i18n).
+  * *** API BREAK ***
 
  -- David Robillard <d@drobilla.net>  (UNRELEASED)
 

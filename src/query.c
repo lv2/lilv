@@ -38,41 +38,118 @@ slv2_plugin_find_statements(SLV2Plugin plugin,
 	return sord_find(plugin->world->model, pat);
 }
 
-SLV2Values
-slv2_values_from_stream_i18n(SLV2Plugin  p,
-                             SLV2Matches stream)
+typedef enum {
+	SLV2_LANG_MATCH_NONE,    ///< Language does not match at all
+	SLV2_LANG_MATCH_PARTIAL, ///< Partial (language, but not country) match
+	SLV2_LANG_MATCH_EXACT    ///< Exact (language and country) match
+} SLV2LangMatch;
+
+static SLV2LangMatch
+slv2_lang_matches(const char* a, const char* b)
 {
-	SLV2Values values = slv2_values_new();
-	SLV2Node   nolang = NULL;
+	if (!strcmp(a, b)) {
+		return SLV2_LANG_MATCH_EXACT;
+	}
+
+	const char*  a_dash     = strchr(a, '-');
+	const size_t a_lang_len = a_dash ? (a_dash - a) : 0;
+	const char*  b_dash     = strchr(b, '-');
+	const size_t b_lang_len = b_dash ? (b_dash - b) : 0;
+
+	if (a_lang_len && b_lang_len) {
+		if (a_lang_len == b_lang_len && !strncmp(a, b, a_lang_len)) {
+			return SLV2_LANG_MATCH_PARTIAL;  // e.g. a="en-gb", b="en-ca"
+		}
+	} else if (a_lang_len && !strncmp(a, b, a_lang_len)) {
+		return SLV2_LANG_MATCH_PARTIAL;  // e.g. a="en", b="en-ca"
+	} else if (b_lang_len && !strncmp(a, b, b_lang_len)) {
+		return SLV2_LANG_MATCH_PARTIAL;  // e.g. a="en-ca", b="en"
+	}
+	return SLV2_LANG_MATCH_NONE;
+}
+
+SLV2Values
+slv2_values_from_stream_objects_i18n(SLV2Plugin  p,
+                                     SLV2Matches stream)
+{
+	SLV2Values values  = slv2_values_new();
+	SLV2Node   nolang  = NULL;  // Untranslated value
+	SLV2Node   partial = NULL;  // Partial language match
+	char*      syslang = slv2_get_lang();
 	FOREACH_MATCH(stream) {
 		SLV2Node value = slv2_match_object(stream);
 		if (sord_node_get_type(value) == SORD_LITERAL) {
-			const char* lang = sord_literal_get_lang(value);
+			const char*   lang = sord_literal_get_lang(value);
+			SLV2LangMatch lm   = SLV2_LANG_MATCH_NONE;
 			if (lang) {
-				if (!strcmp(lang, slv2_get_lang())) {
-					g_ptr_array_add(
-						values, (uint8_t*)slv2_value_new_string(
-							p->world, (const char*)sord_node_get_string(value)));
-				}
+				lm = (syslang)
+					? slv2_lang_matches(lang, syslang)
+					: SLV2_LANG_MATCH_PARTIAL;
 			} else {
 				nolang = value;
+				if (!syslang) {
+					lm = SLV2_LANG_MATCH_EXACT;
+				}
 			}
+			
+			if (lm == SLV2_LANG_MATCH_EXACT) {
+				// Exact language match, add to results
+				g_ptr_array_add(values, slv2_value_new_from_node(p->world, value));
+			} else if (lm == SLV2_LANG_MATCH_PARTIAL) {
+				// Partial language match, save in case we find no exact
+				partial = value;
+			}
+		} else {
+			g_ptr_array_add(values, slv2_value_new_from_node(p->world, value));
 		}
-		break;
 	}
 	slv2_match_end(stream);
+	free(syslang);
 
-	if (slv2_values_size(values) == 0) {
-		// No value with a matching language, use untranslated default
-		if (nolang) {
-			g_ptr_array_add(
-				values, (uint8_t*)slv2_value_new_string(
-					p->world, (const char*)sord_node_get_string(nolang)));
-		} else {
-			slv2_values_free(values);
-			values = NULL;
-		}
+	if (slv2_values_size(values) > 0) {
+		return values;
+	}
+
+	SLV2Node best = nolang;
+	if (syslang && partial) {
+		// Partial language match for system language
+		best = partial;
+	} else if (!best) {
+		// No languages matches at all, and no untranslated value
+		// Use any value, if possible
+		best = partial;
+	}
+
+	if (best) {
+		g_ptr_array_add(values, slv2_value_new_from_node(p->world, best));
+	} else {
+		// No matches whatsoever
+		slv2_values_free(values);
+		values = NULL;
 	}
 
 	return values;
+}
+
+SLV2Values
+slv2_values_from_stream_objects(SLV2Plugin  p,
+                                SLV2Matches stream)
+{
+	if (slv2_matches_end(stream)) {
+		slv2_match_end(stream);
+		return NULL;
+	} else if (p->world->filter_language) {
+		return slv2_values_from_stream_objects_i18n(p, stream);
+	} else {
+		SLV2Values values = slv2_values_new();
+		FOREACH_MATCH(stream) {
+			g_ptr_array_add(
+				values,
+				slv2_value_new_from_node(
+					p->world,
+					slv2_match_object(stream)));
+		}
+		slv2_match_end(stream);
+		return values;
+	}
 }

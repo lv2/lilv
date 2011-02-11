@@ -130,26 +130,6 @@ slv2_port_supports_event(SLV2Plugin p,
 	return ret;
 }
 
-static SLV2Values
-slv2_values_from_stream_objects(SLV2Plugin p, SLV2Matches stream)
-{
-	if (slv2_matches_end(stream)) {
-		slv2_match_end(stream);
-		return NULL;
-	}
-
-	SLV2Values values = slv2_values_new();
-	FOREACH_MATCH(stream) {
-		g_ptr_array_add(
-			values,
-			slv2_value_new_from_node(
-				p->world,
-				slv2_match_object(stream)));
-	}
-	slv2_match_end(stream);
-	return values;
-}
-
 SLV2_API
 SLV2Values
 slv2_port_get_value_by_qname(SLV2Plugin  p,
@@ -207,29 +187,6 @@ slv2_port_get_value(SLV2Plugin p,
 }
 
 SLV2_API
-SLV2Values
-slv2_port_get_value_by_qname_i18n(SLV2Plugin  p,
-                                  SLV2Port    port,
-                                  const char* predicate)
-{
-	assert(predicate);
-	uint8_t* pred_uri = slv2_qname_expand(p, predicate);
-	if (!pred_uri) {
-		return NULL;
-	}
-
-	SLV2Node    port_node = slv2_port_get_node(p, port);
-	SLV2Matches results   = slv2_plugin_find_statements(
-		p,
-		port_node,
-		sord_get_uri(p->world->model, true, pred_uri),
-		NULL);
-
-	free(pred_uri);
-	return slv2_values_from_stream_i18n(p, results);
-}
-
-SLV2_API
 SLV2Value
 slv2_port_get_symbol(SLV2Plugin p,
                      SLV2Port   port)
@@ -243,7 +200,7 @@ slv2_port_get_name(SLV2Plugin p,
                    SLV2Port   port)
 {
 	SLV2Value  ret     = NULL;
-	SLV2Values results = slv2_port_get_value_by_qname_i18n(p, port, "lv2:name");
+	SLV2Values results = slv2_port_get_value_by_qname(p, port, "lv2:name");
 
 	if (results && slv2_values_size(results) > 0) {
 		ret = slv2_value_duplicate(slv2_values_get_at(results, 0));

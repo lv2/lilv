@@ -62,24 +62,37 @@ slv2_uri_to_path(const char* uri)
 		return NULL;
 }
 
-const char*
+/** Return the current LANG converted to Turtle (i.e. RFC3066) style.
+ * For example, if LANG is set to "en_CA.utf-8", this returns "en-ca".
+ */
+char*
 slv2_get_lang()
 {
-	static char lang[32];
-	lang[31] = '\0';
-	char* tmp = getenv("LANG");
-	if (!tmp) {
-		lang[0] = '\0';
-	} else {
-		strncpy(lang, tmp, 31);
-		for (int i = 0; i < 31 && lang[i]; ++i) {
-			if (lang[i] == '_') {
-				lang[i] = '-';
-			} else if (   !(lang[i] >= 'a' && lang[i] <= 'z')
-			           && !(lang[i] >= 'A' && lang[i] <= 'Z')) {
-				lang[i] = '\0';
-				break;
-			}
+	const char* const env_lang = getenv("LANG");
+	if (!env_lang || !strcmp(env_lang, "")
+	    || !strcmp(env_lang, "C") || !strcmp(env_lang, "POSIX")) {
+		return NULL;
+	}
+	
+	const size_t env_lang_len = strlen(env_lang);
+	char* const  lang         = malloc(env_lang_len + 1);
+	for (size_t i = 0; i < env_lang_len + 1; ++i) {
+		if (env_lang[i] == '_') {
+			lang[i] = '-';  // Convert _ to -
+		} else if (env_lang[i] >= 'A' && env_lang[i] <= 'Z') {
+			lang[i] = env_lang[i] + ('a' - 'A');  // Convert to lowercase
+		} else if (env_lang[i] >= 'a' && env_lang[i] <= 'z') {
+			lang[i] = env_lang[i];  // Lowercase letter, copy verbatim
+		} else if (env_lang[i] >= '0' && env_lang[i] <= '9') {
+			lang[i] = env_lang[i];  // Digit, copy verbatim
+		} else if (env_lang[i] == '\0' || env_lang[i] == '.') {
+			// End, or start of suffix (e.g. en_CA.utf-8), finished
+			lang[i] = '\0';
+			break;
+		} else {
+			SLV2_ERRORF("Illegal LANG `%s' ignored\n", env_lang);
+			free(lang);
+			return NULL;
 		}
 	}
 

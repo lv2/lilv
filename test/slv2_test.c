@@ -17,7 +17,7 @@
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#define _XOPEN_SOURCE 500
+#define _XOPEN_SOURCE 600
 
 #include <unistd.h>
 #include <string.h>
@@ -369,7 +369,7 @@ discovery_verify_plugin(SLV2Plugin plugin)
 int
 test_discovery()
 {
-	SLV2Plugins plugins;
+	SLV2Plugins plugins = NULL;
 
 	if (!start_bundle(MANIFEST_PREFIXES
 			":plug a lv2:Plugin ; lv2:binary <foo.so> ; rdfs:seeAlso <plugin.ttl> .\n",
@@ -720,7 +720,9 @@ test_port()
 			"lv2:port [ "
 			"  a lv2:ControlPort ; a lv2:InputPort ; "
 			"  lv2:index 0 ; lv2:symbol \"foo\" ; "
-			"  lv2:name \"bar\" ; lv2:name \"le bar\"@fr ; "
+			"  lv2:name \"store\" ; "
+			"  lv2:name \"dépanneur\"@fr-ca ; lv2:name \"épicerie\"@fr-fr ; "
+			"  lv2:name \"tienda\"@es ; "
      		"  lv2:portProperty lv2:integer ; "
 			"  lv2:minimum -1.0 ; lv2:maximum 1.0 ; lv2:default 0.5 ; "
 			"  lv2:scalePoint [ rdfs:label \"Sin\"; rdf:value 3 ] ; "
@@ -769,10 +771,38 @@ test_port()
 	TEST_ASSERT(slv2_values_size(port_properties) == 1);
 	slv2_values_free(port_properties);
 
+	// Untranslated name (current locale is set to "C" in main)
 	TEST_ASSERT(!strcmp(slv2_value_as_string(slv2_port_get_symbol(plug, p)), "foo"));
 	SLV2Value name = slv2_port_get_name(plug, p);
-	TEST_ASSERT(!strcmp(slv2_value_as_string(name), "bar"));
+	TEST_ASSERT(!strcmp(slv2_value_as_string(name), "store"));
 	slv2_value_free(name);
+
+	// Exact language match
+	setenv("LANG", "fr_FR", 1);
+	name = slv2_port_get_name(plug, p);
+	TEST_ASSERT(!strcmp(slv2_value_as_string(name), "épicerie"));
+	slv2_value_free(name);
+
+	// Exact language match (with charset suffix)
+	setenv("LANG", "fr_CA.utf8", 1);
+	name = slv2_port_get_name(plug, p);
+	TEST_ASSERT(!strcmp(slv2_value_as_string(name), "dépanneur"));
+	slv2_value_free(name);
+
+	// Partial language match (choose value translated for different country)
+	setenv("LANG", "fr_BE", 1);
+	name = slv2_port_get_name(plug, p);
+	TEST_ASSERT((!strcmp(slv2_value_as_string(name), "dépanneur"))
+	            ||(!strcmp(slv2_value_as_string(name), "épicerie")));
+	slv2_value_free(name);
+
+	// Partial language match (choose country-less language tagged value)
+	setenv("LANG", "es_MX", 1);
+	name = slv2_port_get_name(plug, p);
+	TEST_ASSERT(!strcmp(slv2_value_as_string(name), "tienda"));
+	slv2_value_free(name);
+
+	setenv("LANG", "C", 1);  // Reset locale
 
 	SLV2ScalePoints points = slv2_port_get_scale_points(plug, p);
 	TEST_ASSERT(slv2_scale_points_size(points) == 2);
@@ -819,10 +849,17 @@ test_port()
 
 	SLV2Value name_p = slv2_value_new_uri(world, "http://lv2plug.in/ns/lv2core#name");
 	SLV2Values names = slv2_port_get_value(plug, p, name_p);
-	TEST_ASSERT(slv2_values_size(names) == 2);
+	TEST_ASSERT(slv2_values_size(names) == 1);
 	TEST_ASSERT(!strcmp(slv2_value_as_string(slv2_values_get_at(names, 0)),
-	                    "bar"));
+	                    "store"));
 	slv2_values_free(names);
+
+	slv2_world_filter_language(world, false);
+	names = slv2_port_get_value(plug, p, name_p);
+	TEST_ASSERT(slv2_values_size(names) == 4);
+	slv2_values_free(names);
+	slv2_world_filter_language(world, true);
+
 	names = slv2_port_get_value(plug, ep, name_p);
 	TEST_ASSERT(slv2_values_size(names) == 1);
 	TEST_ASSERT(!strcmp(slv2_value_as_string(slv2_values_get_at(names, 0)),
@@ -998,10 +1035,10 @@ main(int argc, char *argv[])
 		printf("Syntax: %s\n", argv[0]);
 		return 0;
 	}
+	setenv("LANG", "C", 1);
 	init_tests();
 	run_tests();
 	cleanup();
 	printf("\n*** Test Results: %d tests, %d errors\n\n", test_count, error_count);
 	return error_count ? 1 : 0;
 }
-

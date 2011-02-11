@@ -52,16 +52,6 @@ slv2_port_get_value_by_qname(SLV2Plugin  plugin,
                              SLV2Port    port,
                              const char* property_uri);
 
-/** Port analog of slv2_plugin_get_value_by_qname_i18n.
- *
- * Time = Query
- */
-SLV2_API
-SLV2Values
-slv2_port_get_value_by_qname_i18n(SLV2Plugin  plugin,
-				  SLV2Port    port,
-				  const char* property_uri);
-
 /** Return the LV2 port properties of a port.
  *
  * Time = Query

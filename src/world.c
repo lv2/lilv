@@ -93,7 +93,8 @@ slv2_world_new()
 	slv2_world_set_prefix(world, "lv2",   "http://lv2plug.in/ns/lv2core#");
 	slv2_world_set_prefix(world, "lv2ev", "http://lv2plug.in/ns/ext/event#");
 
-	world->n_read_files = 0;
+	world->n_read_files    = 0;
+	world->filter_language = true;
 
 	return world;
 
@@ -147,6 +148,14 @@ slv2_world_free(SLV2World world)
 
 	free(world);
 }
+
+SLV2_API
+void
+slv2_world_filter_language(SLV2World world, bool filter)
+{
+	world->filter_language = filter;
+}
+
 
 static SLV2Matches
 slv2_world_find_statements(SLV2World world,

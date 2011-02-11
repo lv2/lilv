@@ -52,6 +52,15 @@ SLV2_API
 SLV2World
 slv2_world_new(void);
 
+/** Enable/disable language filtering for @a world.
+ * With filtering enabled, SLV2 will automatically return the best value(s)
+ * for the current LANG.  With filtering disabled, all matching values will
+ * be returned regardless of language tag.  Filtering is enabled by default.
+ */
+SLV2_API
+void
+slv2_world_filter_language(SLV2World world, bool filter);
+
 /** Destroy the world, mwahaha.
  *
  * NB: Destroying the world will leave dangling references in any plugin lists,

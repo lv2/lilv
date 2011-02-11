@@ -202,6 +202,7 @@ struct _SLV2World {
 	SLV2Node          slv2_dmanifest_node;
 	SLV2Node          xsd_integer_node;
 	SLV2Node          xsd_decimal_node;
+	bool              filter_language;
 };
 
 const uint8_t*
@@ -290,15 +291,15 @@ static inline bool slv2_matches_end(SLV2Matches matches) {
 	return sord_iter_end(matches);
 }
 
-SLV2Values slv2_values_from_stream_i18n(SLV2Plugin  p,
-                                        SLV2Matches stream);
+SLV2Values slv2_values_from_stream_objects(SLV2Plugin  p,
+                                           SLV2Matches stream);
 
 
 /* ********* Utilities ********* */
 
-char*       slv2_strjoin(const char* first, ...);
-const char* slv2_get_lang();
-uint8_t*    slv2_qname_expand(SLV2Plugin p, const char* qname);
+char*    slv2_strjoin(const char* first, ...);
+char*    slv2_get_lang();
+uint8_t* slv2_qname_expand(SLV2Plugin p, const char* qname);
 
 typedef void (*VoidFunc)();
 

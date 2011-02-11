@@ -406,7 +406,7 @@ SLV2_API
 SLV2Value
 slv2_plugin_get_name(SLV2Plugin plugin)
 {
-	SLV2Values results = slv2_plugin_get_value_by_qname_i18n(plugin, "doap:name");
+	SLV2Values results = slv2_plugin_get_value_by_qname(plugin, "doap:name");
 	SLV2Value  ret     = NULL;
 
 	if (results) {
@@ -452,30 +452,6 @@ slv2_plugin_get_value_by_qname(SLV2Plugin  p,
 	slv2_value_free(pred_value);
 	free(pred_uri);
 	return ret;
-}
-
-SLV2_API
-SLV2Values
-slv2_plugin_get_value_by_qname_i18n(SLV2Plugin  p,
-                                    const char* predicate)
-{
-	uint8_t* pred_uri = slv2_qname_expand(p, predicate);
-	if (!pred_uri) {
-		return NULL;
-	}
-
-	SLV2Node pred_node = sord_get_uri(
-		p->world->model, true, (const uint8_t*)pred_uri);
-
-	SLV2Matches results = slv2_plugin_find_statements(
-		p,
-		p->plugin_uri->val.uri_val,
-		pred_node,
-		NULL);
-
-	slv2_node_free(pred_node);
-	free(pred_uri);
-	return slv2_values_from_stream_i18n(p, results);
 }
 
 SLV2_API
