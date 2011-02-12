@@ -1,5 +1,5 @@
-/* lv2_list - List system installed LV2 plugins.
- * Copyright (C) 2007-2009 David Robillard <drobilla.net>
+/* lv2_list - List installed LV2 plugins.
+ * Copyright (C) 2007-2011 David Robillard <http://drobilla.net>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -16,12 +16,13 @@
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+#include <stdbool.h>
 #include <stdio.h>
 #include <string.h>
-#include <stdbool.h>
-#include "slv2-config.h"
+
 #include "slv2/slv2.h"
 
+#include "slv2-config.h"
 
 void
 list_plugins(SLV2Plugins list, bool show_names)
@@ -38,17 +39,15 @@ list_plugins(SLV2Plugins list, bool show_names)
 	}
 }
 
-
 void
 print_version()
 {
 	printf("lv2_list (slv2) " SLV2_VERSION "\n");
-	printf("Copyright (C) 2007-2009 David Robillard <http://drobilla.net>\n");
+	printf("Copyright (C) 2007-2011 David Robillard <http://drobilla.net>\n");
 	printf("License: GNU GPL version 2 or later <http://gnu.org/licenses/gpl.html>\n");
 	printf("This is free software: you are free to change and redistribute it.\n");
 	printf("There is NO WARRANTY, to the extent permitted by law.\n");
 }
-
 
 void
 print_usage()
@@ -63,7 +62,6 @@ print_usage()
 	printf("The environment variable LV2_PATH can be used to control where\n");
 	printf("this (and all other slv2 based LV2 hosts) will search for plugins.\n");
 }
-
 
 int
 main(int argc, char** argv)
@@ -96,4 +94,3 @@ main(int argc, char** argv)
 
 	return 0;
 }
-
