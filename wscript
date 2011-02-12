@@ -210,17 +210,15 @@ def build(bld):
 			obj.target       = i
 			obj.install_path = '${BINDIR}'
 
-	# JACK Hosts
-	hosts = 'hosts/lv2_jack_host'
+	# JACK Host
 	if bld.env['USE_JACK']:
-		for i in hosts.split():
-			obj = bld(features = 'c cprogram')
-			obj.source       = i + '.c'
-			obj.includes     = ['.', './src', './utils']
-			obj.uselib       = 'JACK'
-			obj.use          = 'libslv2'
-			obj.target       = i
-			obj.install_path = '${BINDIR}'
+		obj = bld(features = 'c cprogram')
+		obj.source       = 'utils/lv2_jack_host.c'
+		obj.includes     = ['.', './src', './utils']
+		obj.uselib       = 'JACK'
+		obj.use          = 'libslv2'
+		obj.target       = 'utils/lv2_jack_host'
+		obj.install_path = '${BINDIR}'
 
 	# Documentation
 	autowaf.build_dox(bld, 'SLV2', SLV2_VERSION, top, out)
