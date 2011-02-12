@@ -178,7 +178,7 @@ jack_process_cb(jack_nframes_t nframes, void* data)
 {
 	struct JackHost* const host = (struct JackHost*)data;
 
-	/* Connect inputs */
+	/* Prepare port buffers */
 	for (uint32_t p = 0; p < host->num_ports; ++p) {
 		if (!host->ports[p].jack_port)
 			continue;
@@ -196,16 +196,15 @@ jack_process_cb(jack_nframes_t nframes, void* data)
 			                       (uint8_t*)(host->ports[p].ev_buffer + 1));
 
 			if (host->ports[p].direction == INPUT) {
-				void* buffer = jack_port_get_buffer(host->ports[p].jack_port,
-				                                    nframes);
+				void* buf = jack_port_get_buffer(host->ports[p].jack_port,
+				                                 nframes);
 
 				LV2_Event_Iterator iter;
 				lv2_event_begin(&iter, host->ports[p].ev_buffer);
 
-				const jack_nframes_t n = jack_midi_get_event_count(buffer);
-				for (jack_nframes_t e = 0; e < n; ++e) {
+				for (uint32_t i = 0; i < jack_midi_get_event_count(buf); ++i) {
 					jack_midi_event_t ev;
-					jack_midi_event_get(&ev, buffer, e);
+					jack_midi_event_get(&ev, buf, i);
 					lv2_event_write(&iter,
 					                ev.time, 0,
 					                MIDI_EVENT_ID, ev.size, ev.buffer);
@@ -220,22 +219,21 @@ jack_process_cb(jack_nframes_t nframes, void* data)
 	/* Deliver MIDI output */
 	for (uint32_t p = 0; p < host->num_ports; ++p) {
 		if (host->ports[p].jack_port
-		    && host->ports[p].direction == INPUT
+		    && host->ports[p].direction == OUTPUT
 		    && host->ports[p].type == EVENT) {
 
-			void* buffer = jack_port_get_buffer(host->ports[p].jack_port,
-			                                    nframes);
+			void* buf = jack_port_get_buffer(host->ports[p].jack_port,
+			                                 nframes);
 
-			jack_midi_clear_buffer(buffer);
+			jack_midi_clear_buffer(buf);
 
 			LV2_Event_Iterator iter;
 			lv2_event_begin(&iter, host->ports[p].ev_buffer);
 
-			const uint32_t n = iter.buf->event_count;
-			for (uint32_t i = 0; i < n; ++i) {
+			for (uint32_t i = 0; i < iter.buf->event_count; ++i) {
 				uint8_t*   data;
 				LV2_Event* ev = lv2_event_get(&iter, &data);
-				jack_midi_event_write(buffer, ev->frames, data, ev->size);
+				jack_midi_event_write(buf, ev->frames, data, ev->size);
 				lv2_event_increment(&iter);
 			}
 		}
