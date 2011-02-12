@@ -36,9 +36,6 @@ if n_audio_out == 0:
     print "Plugin has no audio outputs\n"
     sys.exit(1)
 
-print "NUM IN:", n_audio_in
-print "NUM OUT:", n_audio_out
-
 # Open input file
 wav_in = wave.open(wav_in_path, 'r')
 if not wav_in:
