@@ -26,8 +26,8 @@ extern "C" {
 #include <stdint.h>
 #include <stdbool.h>
 
-#include "lv2.h"
-#include "lv2_ui.h"
+#include "lv2/lv2plug.in/ns/lv2core/lv2.h"
+#include "lv2/lv2plug.in/ns/extensions/ui/ui.h"
 
 #if defined _WIN32 || defined __CYGWIN__
 	#define SLV2_LIB_IMPORT __declspec(dllimport)

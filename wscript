@@ -68,6 +68,10 @@ def configure(conf):
 	                  atleast_version='0.1.0', mandatory=True)
 	autowaf.check_pkg(conf, 'jack', uselib_store='JACK',
 	                  atleast_version='0.107.0', mandatory=False)
+
+	autowaf.check_header(conf, 'lv2/lv2plug.in/ns/lv2core/lv2.h')
+	autowaf.check_header(conf, 'lv2/lv2plug.in/ns/extensions/ui/ui.h')
+
 	conf.env.append_value('CFLAGS', '-std=c99')
 	autowaf.define(conf, 'SLV2_VERSION', SLV2_VERSION)
 	if Options.options.dyn_manifest:

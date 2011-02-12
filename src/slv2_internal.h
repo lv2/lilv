@@ -42,7 +42,6 @@ extern "C" {
 #endif
 
 #include "slv2/slv2.h"
-#include "slv2/lv2_ui.h"
 
 #define SLV2_NS_DOAP (const uint8_t*)"http://usefulinc.com/ns/doap#"
 #define SLV2_NS_RDFS (const uint8_t*)"http://www.w3.org/2000/01/rdf-schema#"
