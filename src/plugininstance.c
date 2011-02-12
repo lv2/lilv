@@ -23,11 +23,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "slv2/plugin.h"
-#include "slv2/plugininstance.h"
-#include "slv2/types.h"
-#include "slv2/util.h"
-#include "slv2/value.h"
 #include "slv2_internal.h"
 
 SLV2_API
@@ -105,7 +100,7 @@ slv2_plugin_instantiate(SLV2Plugin               plugin,
 					result->lv2_descriptor = ld;
 					result->lv2_handle = ld->instantiate(ld, sample_rate, (char*)bundle_path,
 							(features) ? features : local_features);
-					struct _InstanceImpl* impl = malloc(sizeof(struct _InstanceImpl));
+					struct _SLV2InstanceImpl* impl = malloc(sizeof(struct _SLV2InstanceImpl));
 					impl->lib_handle = lib;
 					result->pimpl = impl;
 					serd_node_free(&abs_uri_node);

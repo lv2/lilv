@@ -26,11 +26,6 @@
 
 #include <dlfcn.h>
 
-#include "slv2/plugin.h"
-#include "slv2/pluginui.h"
-#include "slv2/pluginuiinstance.h"
-#include "slv2/types.h"
-#include "slv2/util.h"
 #include "slv2_internal.h"
 
 SLV2_API
@@ -87,31 +82,29 @@ slv2_ui_instantiate(SLV2Plugin                plugin,
 
 				// Create SLV2UIInstance to return
 				result = malloc(sizeof(struct _SLV2UIInstance));
-				struct _SLV2UIInstanceImpl* impl = malloc(sizeof(struct _SLV2UIInstanceImpl));
-				impl->lv2ui_descriptor = ld;
-				impl->lv2ui_handle = ld->instantiate(ld,
+				result->lv2ui_descriptor = ld;
+				result->lv2ui_handle = ld->instantiate(ld,
 						slv2_value_as_uri(slv2_plugin_get_uri(plugin)),
 						(char*)bundle_path,
 						write_function,
 						controller,
-						&impl->widget,
+						&result->widget,
 						features);
-				impl->lib_handle = lib;
-				result->pimpl = impl;
+				result->lib_handle = lib;
 				break;
 			}
 		}
 	}
 
 	// Failed to instantiate
-	if (result == NULL || result->pimpl->lv2ui_handle == NULL) {
+	if (result == NULL || result->lv2ui_handle == NULL) {
 		free(result);
 		return NULL;
 	}
 
 	// Failed to create a widget, but still got a handle - this means that
 	// the plugin is buggy
-	if (result->pimpl->widget == NULL) {
+	if (result->widget == NULL) {
 		slv2_ui_instance_free(result);
 		return NULL;
 	}
@@ -130,30 +123,30 @@ slv2_ui_instance_free(SLV2UIInstance instance)
 		return;
 
 	struct _SLV2UIInstance* i = (struct _SLV2UIInstance*)instance;
-	i->pimpl->lv2ui_descriptor->cleanup(i->pimpl->lv2ui_handle);
-	i->pimpl->lv2ui_descriptor = NULL;
-	dlclose(i->pimpl->lib_handle);
-	i->pimpl->lib_handle = NULL;
-	free(i->pimpl);
-	i->pimpl = NULL;
+	i->lv2ui_descriptor->cleanup(i->lv2ui_handle);
+	i->lv2ui_descriptor = NULL;
+	dlclose(i->lib_handle);
+	i->lib_handle = NULL;
+	free(i);
+	i = NULL;
 	free(i);
 }
 
 SLV2_API
 LV2UI_Widget
 slv2_ui_instance_get_widget(SLV2UIInstance instance) {
-	return instance->pimpl->widget;
+	return instance->widget;
 }
 
 SLV2_API
 const LV2UI_Descriptor*
 slv2_ui_instance_get_descriptor(SLV2UIInstance instance) {
-	return instance->pimpl->lv2ui_descriptor;
+	return instance->lv2ui_descriptor;
 }
 
 SLV2_API
 LV2UI_Handle
 slv2_ui_instance_get_handle(SLV2UIInstance instance) {
-	return instance->pimpl->lv2ui_handle;
+	return instance->lv2ui_handle;
 }
 

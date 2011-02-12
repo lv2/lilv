@@ -23,7 +23,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "slv2/util.h"
 #include "slv2_internal.h"
 
 char*

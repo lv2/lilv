@@ -24,10 +24,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "slv2/collections.h"
-#include "slv2/port.h"
-#include "slv2/types.h"
-#include "slv2/util.h"
 #include "slv2_internal.h"
 
 SLV2Port

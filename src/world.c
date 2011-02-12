@@ -18,6 +18,7 @@
 
 #define _XOPEN_SOURCE 500
 
+#include <assert.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -27,11 +28,6 @@
 #include <dlfcn.h>
 #endif
 
-#include "slv2-config.h"
-#include "slv2/slv2.h"
-#include "slv2/types.h"
-#include "slv2/util.h"
-#include "slv2/world.h"
 #include "slv2_internal.h"
 
 static void

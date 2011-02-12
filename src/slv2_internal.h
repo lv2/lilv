@@ -18,8 +18,8 @@
 
 #include "slv2-config.h"
 
-#ifndef __SLV2_INTERNAL_H__
-#define __SLV2_INTERNAL_H__
+#ifndef SLV2_INTERNAL_H__
+#define SLV2_INTERNAL_H__
 
 #ifdef __cplusplus
 extern "C" {
@@ -41,7 +41,7 @@ extern "C" {
 #include "lv2/lv2plug.in/ns/ext/dyn-manifest/dyn-manifest.h"
 #endif
 
-#include "slv2/types.h"
+#include "slv2/slv2.h"
 #include "slv2/lv2_ui.h"
 
 #define SLV2_NS_DOAP (const uint8_t*)"http://usefulinc.com/ns/doap#"
@@ -144,14 +144,14 @@ slv2_plugins_new();
 /* ********* Instance ********* */
 
 /** Pimpl portion of SLV2Instance */
-struct _InstanceImpl {
+struct _SLV2InstanceImpl {
 	void* lib_handle;
 };
 
 
 /* ********* UI Instance ********* */
 
-struct _SLV2UIInstanceImpl {
+struct _SLV2UIInstance {
 	void*                   lib_handle;
 	const LV2UI_Descriptor* lv2ui_descriptor;
 	LV2UI_Handle            lv2ui_handle;
@@ -363,5 +363,5 @@ static const LV2_Feature* const dman_features = { NULL };
 }
 #endif
 
-#endif /* __SLV2_INTERNAL_H__ */
+#endif /* SLV2_INTERNAL_H__ */
 

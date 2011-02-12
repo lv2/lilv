@@ -24,9 +24,6 @@
 
 #include <glib.h>
 
-#include "slv2/scalepoint.h"
-#include "slv2/types.h"
-#include "slv2/value.h"
 #include "slv2_internal.h"
 
 /** Ownership of value and label is taken */

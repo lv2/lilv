@@ -25,8 +25,6 @@
 
 #include <glib.h>
 
-#include "slv2/types.h"
-#include "slv2/value.h"
 #include "slv2_internal.h"
 
 static void
