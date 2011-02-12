@@ -22,7 +22,11 @@
 #include <string.h>
 #include <math.h>
 #include <locale.h>
+
 #include "slv2/slv2.h"
+#ifdef SLV2_WITH_UI
+#include "slv2/ui.h"
+#endif
 
 SLV2Value event_class   = NULL;
 SLV2Value control_class = NULL;
@@ -169,6 +173,7 @@ print_plugin(SLV2Plugin p)
 	printf("\tBundle:            %s\n", slv2_value_as_uri(slv2_plugin_get_bundle_uri(p)));
 	printf("\tBinary:            %s\n", slv2_value_as_uri(slv2_plugin_get_library_uri(p)));
 
+#ifdef SLV2_WITH_UI
 	SLV2UIs uis = slv2_plugin_get_uis(p);
 	if (slv2_values_size(uis) > 0) {
 		printf("\tGUI:               ");
@@ -192,6 +197,7 @@ print_plugin(SLV2Plugin p)
 		}
 	}
 	slv2_uis_free(uis);
+#endif
 
 	printf("\tData URIs:         ");
 	SLV2Values data_uris = slv2_plugin_get_data_uris(p);

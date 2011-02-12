@@ -106,9 +106,12 @@ prefix ## _get_by_uri(CollType coll, SLV2Value uri) \
 }
 
 SLV2_SEQUENCE_IMPL(SLV2PluginClasses, SLV2PluginClass,
-		slv2_plugin_classes, &slv2_plugin_class_free)
+                   slv2_plugin_classes, &slv2_plugin_class_free)
+
+#ifdef SLV2_WITH_UI
 SLV2_SEQUENCE_IMPL(SLV2UIs, SLV2UI,
-		slv2_uis, &slv2_ui_free)
+                   slv2_uis, &slv2_ui_free)
+#endif
 
 
 /* VALUES */

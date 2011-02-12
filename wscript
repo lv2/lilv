@@ -72,6 +72,9 @@ def configure(conf):
 	autowaf.check_header(conf, 'lv2/lv2plug.in/ns/lv2core/lv2.h')
 	autowaf.check_header(conf, 'lv2/lv2plug.in/ns/extensions/ui/ui.h')
 
+	if conf.env['HAVE_LV2_LV2PLUG_IN_NS_EXTENSIONS_UI_UI_H']:
+		autowaf.define(conf, 'SLV2_WITH_UI', 1)
+
 	conf.env.append_value('CFLAGS', '-std=c99')
 	autowaf.define(conf, 'SLV2_VERSION', SLV2_VERSION)
 	if Options.options.dyn_manifest:
@@ -124,6 +127,8 @@ def configure(conf):
 	autowaf.display_msg(conf, "Unit tests", str(conf.env['BUILD_TESTS']))
 	autowaf.display_msg(conf, "Dynamic Manifest Support", str(conf.env['SLV2_DYN_MANIFEST'] == 1))
 	autowaf.display_msg(conf, "Default LV2_PATH", str(conf.env['SLV2_DEFAULT_LV2_PATH']))
+	autowaf.display_msg(conf, "UI support", str(conf.env['SLV2_WITH_UI'] == 1))
+
 	print
 
 tests = '''
@@ -143,8 +148,6 @@ def build(bld):
 		src/pluginclass.c
 		src/plugininstance.c
 		src/plugins.c
-		src/pluginui.c
-		src/pluginuiinstance.c
 		src/port.c
 		src/query.c
 		src/scalepoint.c
@@ -152,6 +155,9 @@ def build(bld):
 		src/value.c
 		src/world.c
 	'''
+
+	if bld.env['SLV2_WITH_UI']:
+		lib_source += ' src/pluginui.c src/pluginuiinstance.c '
 
 	# Library
 	obj = bld(features = 'c cshlib')
