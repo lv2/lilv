@@ -1,8 +1,12 @@
 #!/usr/bin/env python
-import slv2;
 
-w = slv2.World()
-w.load_all()
+import slv2
 
-for p in w.get_all_plugins():
-	print p.uri(), "-", p.name()
+world = slv2.World()
+world.load_all()
+
+plugins = world.get_all_plugins()
+
+for i in plugins:
+	print(i.get_uri().as_uri())
+

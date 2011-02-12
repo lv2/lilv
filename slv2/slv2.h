@@ -842,7 +842,7 @@ SLV2_API
 void
 slv2_port_get_range(SLV2Plugin plugin,
                     SLV2Port   port,
-                    SLV2Value* def,
+                    SLV2Value* deflt,
                     SLV2Value* min,
                     SLV2Value* max);
 

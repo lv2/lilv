@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import autowaf
+import os
 import sys
 import Options
 
@@ -60,6 +61,14 @@ def configure(conf):
 	autowaf.configure(conf)
 	autowaf.display_header('SLV2 Configuration')
 	conf.check_tool('compiler_cc')
+
+	try:
+		conf.load('swig python')
+		conf.check_python_headers()
+		autowaf.define(conf, 'SLV2_SWIG', 1);
+	except:
+		pass
+
 	autowaf.check_pkg(conf, 'lv2core', uselib_store='LV2CORE', mandatory=True)
 	autowaf.check_pkg(conf, 'glib-2.0', uselib_store='GLIB',
 	                  atleast_version='2.0.0', mandatory=True)
@@ -126,9 +135,10 @@ def configure(conf):
 	autowaf.display_msg(conf, "Utilities", str(conf.env['BUILD_UTILS'] == 1))
 	autowaf.display_msg(conf, "Jack clients", str(conf.env['USE_JACK'] == 1))
 	autowaf.display_msg(conf, "Unit tests", str(conf.env['BUILD_TESTS']))
-	autowaf.display_msg(conf, "Dynamic Manifest Support", str(conf.env['SLV2_DYN_MANIFEST'] == 1))
+	autowaf.display_msg(conf, "Dynamic manifest support", str(conf.env['SLV2_DYN_MANIFEST'] == 1))
 	autowaf.display_msg(conf, "Default LV2_PATH", str(conf.env['SLV2_DEFAULT_LV2_PATH']))
 	autowaf.display_msg(conf, "UI support", str(conf.env['SLV2_WITH_UI'] == 1))
+	autowaf.display_msg(conf, "Python bindings", str(conf.env['SLV2_SWIG'] == 1))
 
 	print
 
@@ -229,9 +239,23 @@ def build(bld):
 		bld.install_as(
 			'/etc/bash_completion.d/slv2', 'utils/slv2.bash_completion')
 
+	if bld.env['SLV2_SWIG']:
+		# Python Wrapper
+		bld(
+			features   = 'cxx cxxshlib pyext',
+			source     = 'swig/slv2.i',
+			target     = 'swig/_slv2',
+			swig_flags = '-c++ -python -Wall -I.. -lslv2 -features autodoc=1',
+			vnum       = SLV2_LIB_VERSION,
+			use        = 'libslv2')
+
 	bld.add_post_fun(autowaf.run_ldconfig)
 
 def test(ctx):
 	autowaf.pre_test(ctx, APPNAME)
 	autowaf.run_tests(ctx, APPNAME, tests.split(), dirs=['./src','./test'])
 	autowaf.post_test(ctx, APPNAME)
+
+def wrap(ctx):
+	os.chdir(out)
+	os.system('swig -DPYTHON -Wall -python -I/usr/include -I/usr/local/include -I.. -o slv2_python.c -oh slv2_python.h ../swig/slv2.i')
