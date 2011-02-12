@@ -26,7 +26,7 @@ extern "C" {
 #include "slv2/types.h"
 #include "slv2/value.h"
 
-/** \defgroup slv2_collections Collections of values/objects
+/** @defgroup slv2_collections Collections of values/objects.
  *
  * Ordered collections of typed values which are fast for random
  * access by index (i.e. a fancy array).
@@ -39,8 +39,6 @@ extern "C" {
 #define SLV2_COLLECTION(CollType, ElemType, prefix) \
 \
 /** Free a collection.
- *
- * Time = O(1)
  */ \
 SLV2_API \
 void \
@@ -48,8 +46,6 @@ prefix ## _free(CollType collection); \
 \
 \
 /** Get the number of elements in the collection.
- *
- * Time = O(1)
  */ \
 SLV2_API \
 unsigned \
@@ -57,15 +53,11 @@ prefix ## _size(CollType collection); \
 \
 \
 /** Get an element from the collection by index.
- *
- * \a index has no significance other than as an index into this collection.
- * Any \a index not less than the size of the collection will return NULL,
+ * @a index has no significance other than as an index into this collection.
+ * Any @a index not less than the size of the collection will return NULL,
  * so all elements in a collection can be enumerated by repeated calls
- * to this function starting with \a index = 0.
- *
- * Time = O(1)
- *
- * \return NULL if \a index out of range.
+ * to this function starting with @a index = 0.
+ * @return NULL if @a index is out of range.
  */ \
 SLV2_API \
 ElemType \
@@ -80,10 +72,8 @@ SLV2_COLLECTION(SLV2UIs, SLV2UI, slv2_uis)
 /* **** PLUGINS **** */
 
 /** Free a plugin collection.
- *
  * Freeing a plugin collection does not destroy the plugins it contains
- * (plugins are owned by the world). \a plugins is invalid after this call.
- * Time = O(1)
+ * (plugins are owned by the world). @a plugins is invalid after this call.
  */
 SLV2_API
 void
@@ -91,36 +81,27 @@ slv2_plugins_free(SLV2World   world,
                   SLV2Plugins plugins);
 
 /** Get the number of plugins in the collection.
- * Time = O(1)
  */
 SLV2_API
 unsigned
 slv2_plugins_size(SLV2Plugins plugins);
 
-/** Get a plugin from the collection by URI.
- *
- * Return value is shared (stored in \a plugins) and must not be freed or
+/** Get a plugin from @a plugins by URI.
+ * Return value is shared (stored in @a plugins) and must not be freed or
  * modified by the caller in any way.
- *
- * Time = O(log2(n))
- *
- * \return NULL if plugin with \a url not found in \a plugins.
+ * @return NULL if no plugin with @a uri is found in @a plugins.
  */
 SLV2_API
 SLV2Plugin
 slv2_plugins_get_by_uri(SLV2Plugins plugins,
                         SLV2Value   uri);
 
-/** Get a plugin from the plugins by index.
- *
- * \a index has no significance other than as an index into this plugins.
- * Any \a index not less than slv2_plugins_get_length(plugins) will return NULL,
+/** Get a plugin from @a plugins by index.
+ * @a index has no significance other than as an index into this plugins.
+ * Any @a index not less than slv2_plugins_get_length(plugins) will return NULL,
  * so all plugins in a plugins can be enumerated by repeated calls
- * to this function starting with \a index = 0.
- *
- * Time = O(1)
- *
- * \return NULL if \a index out of range.
+ * to this function starting with @a index = 0.
+ * @return NULL if @a index out of range.
  */
 SLV2_API
 SLV2Plugin
@@ -129,14 +110,10 @@ slv2_plugins_get_at(SLV2Plugins plugins,
 
 /* **** PLUGIN CLASSES **** */
 
-/** Get a plugin class from the collection by URI.
- *
- * Return value is shared (stored in \a classes) and must not be freed or
+/** Get a plugin class from @a classes by URI.
+ * Return value is shared (stored in @a classes) and must not be freed or
  * modified by the caller in any way.
- *
- * Time = O(log2(n))
- *
- * \return NULL if plugin with \a url not found in \a classes.
+ * @return NULL if no plugin class with @a uri is found in @a classes.
  */
 SLV2_API
 SLV2PluginClass
@@ -145,7 +122,7 @@ slv2_plugin_classes_get_by_uri(SLV2PluginClasses classes,
 
 /* **** SCALE POINTS **** */
 
-/** Allocate a new, empty SLV2ScalePoints
+/** Allocate a new, empty SLV2ScalePoints.
  */
 SLV2_API
 SLV2ScalePoints
@@ -153,15 +130,13 @@ slv2_scale_points_new(void);
 
 /* **** VALUES **** */
 
-/** Allocate a new, empty SLV2Values
+/** Allocate a new, empty SLV2Values.
  */
 SLV2_API
 SLV2Values
 slv2_values_new(void);
 
-/** Return whether \a values contains \a value.
- *
- * Time = O(n)
+/** Return whether @a values contains @a value.
  */
 SLV2_API
 bool
@@ -169,18 +144,14 @@ slv2_values_contains(SLV2Values values, SLV2Value value);
 
 /* **** PLUGIN UIS **** */
 
-/** Get a plugin from the list by URI.
- *
- * Return value is shared (stored in \a list) and must not be freed or
+/** Get a UI from @a uis by URI.
+ * Return value is shared (stored in @a uis) and must not be freed or
  * modified by the caller in any way.
- *
- * Time = O(log2(n))
- *
- * \return NULL if plugin with \a url not found in \a list.
+ * @return NULL if no UI with @a uri is found in @a list.
  */
 SLV2_API
 SLV2UI
-slv2_uis_get_by_uri(SLV2UIs   list,
+slv2_uis_get_by_uri(SLV2UIs   uis,
                     SLV2Value uri);
 
 /** @} */

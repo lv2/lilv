@@ -71,26 +71,23 @@ typedef struct _SLV2PluginClass* SLV2PluginClass;
 /** A collection of plugin classes.  Opaque, but valid to compare to NULL. */
 typedef void* SLV2PluginClasses;
 
-/** A typed value */
+/** A typed value. */
 typedef struct _SLV2Value* SLV2Value;
 
 /** A collection of typed values. */
 typedef void* SLV2Values;
 
-/** A scale point */
+/** A scale point. */
 typedef struct _SLV2ScalePoint* SLV2ScalePoint;
 
 /** A collection of scale points. */
 typedef void* SLV2ScalePoints;
 
-/** A plugin UI */
+/** A plugin UI. */
 typedef struct _SLV2UI* SLV2UI;
 
 /** A collection of plugin UIs. */
 typedef void* SLV2UIs;
-
-/** A set of query results (conceptually a table) */
-typedef struct _SLV2Results* SLV2Results;
 
 #ifdef __cplusplus
 } /* extern "C" */

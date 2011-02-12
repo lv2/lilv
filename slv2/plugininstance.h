@@ -31,7 +31,7 @@ extern "C" {
 
 typedef struct _InstanceImpl* SLV2InstanceImpl;
 
-/** \cond IGNORE */
+/** @cond IGNORE */
 
 /* Instance of a plugin.
  *
@@ -47,9 +47,9 @@ typedef struct _Instance {
 	SLV2InstanceImpl      pimpl; ///< Private implementation
 }* SLV2Instance;
 
-/** \endcond */
+/** @endcond */
 
-/** \defgroup slv2_library Plugin library access
+/** @defgroup slv2_library Plugin library access
  *
  * An SLV2Instance is an instantiated SLV2Plugin (ie a loaded dynamic
  * library).  These functions interact with the binary library code only,
@@ -59,19 +59,18 @@ typedef struct _Instance {
  */
 
 /** Instantiate a plugin.
- *
  * The returned object represents shared library objects loaded into memory,
  * it must be cleaned up with slv2_instance_free when no longer
  * needed.
  *
- * \a plugin is not modified or directly referenced by the returned object
+ * @a plugin is not modified or directly referenced by the returned object
  * (instances store only a copy of the plugin's URI).
  *
- * \a host_features NULL-terminated array of features the host supports.
+ * @a host_features NULL-terminated array of features the host supports.
  * NULL may be passed if the host supports no additional features (unlike
  * the LV2 specification - SLV2 takes care of it).
  *
- * \return NULL if instantiation failed.
+ * @return NULL if instantiation failed.
  */
 SLV2_API
 SLV2Instance
@@ -80,8 +79,7 @@ slv2_plugin_instantiate(SLV2Plugin               plugin,
                         const LV2_Feature*const* features);
 
 /** Free a plugin instance.
- *
- * \a instance is invalid after this call.
+ * @a instance is invalid after this call.
  */
 SLV2_API
 void
@@ -89,8 +87,7 @@ slv2_instance_free(SLV2Instance instance);
 
 #ifndef SLV2_INTERNAL
 
-/** Get the URI of the plugin which \a instance is an instance of.
- *
+/** Get the URI of the plugin which @a instance is an instance of.
  * Returned string is shared and must not be modified or deleted.
  */
 static inline const char*
@@ -100,7 +97,6 @@ slv2_instance_get_uri(SLV2Instance instance)
 }
 
 /** Connect a port to a data location.
- *
  * This may be called regardless of whether the plugin is activated,
  * activation and deactivation does not destroy port connections.
  */
@@ -114,7 +110,6 @@ slv2_instance_connect_port(SLV2Instance instance,
 }
 
 /** Activate a plugin instance.
- *
  * This resets all state information in the plugin, except for port data
  * locations (as set by slv2_instance_connect_port).  This MUST be called
  * before calling slv2_instance_run.
@@ -126,8 +121,7 @@ slv2_instance_activate(SLV2Instance instance)
 		instance->lv2_descriptor->activate(instance->lv2_handle);
 }
 
-/** Run \a instance for \a sample_count frames.
- *
+/** Run @a instance for @a sample_count frames.
  * If the hint lv2:hardRTCapable is set for this plugin, this function is
  * guaranteed not to block.
  */
@@ -135,12 +129,10 @@ static inline void
 slv2_instance_run(SLV2Instance instance,
                   uint32_t     sample_count)
 {
-	/*if (instance->lv2_descriptor->run)*/
-		instance->lv2_descriptor->run(instance->lv2_handle, sample_count);
+	instance->lv2_descriptor->run(instance->lv2_handle, sample_count);
 }
 
 /** Deactivate a plugin instance.
- *
  * Note that to run the plugin after this you must activate it, which will
  * reset all state information (except port connections).
  */
@@ -152,7 +144,6 @@ slv2_instance_deactivate(SLV2Instance instance)
 }
 
 /** Get extension data from the plugin instance.
- *
  * The type and semantics of the data returned is specific to the particular
  * extension, though in all cases it is shared and must not be deleted.
  */
@@ -167,7 +158,6 @@ slv2_instance_get_extension_data(SLV2Instance instance,
 }
 
 /** Get the LV2_Descriptor of the plugin instance.
- *
  * Normally hosts should not need to access the LV2_Descriptor directly,
  * use the slv2_instance_* functions.
  *
@@ -180,7 +170,6 @@ slv2_instance_get_descriptor(SLV2Instance instance)
 }
 
 /** Get the LV2_Handle of the plugin instance.
- *
  * Normally hosts should not need to access the LV2_Handle directly,
  * use the slv2_instance_* functions.
  *

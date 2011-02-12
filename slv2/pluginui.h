@@ -23,60 +23,45 @@
 extern "C" {
 #endif
 
-/** \addtogroup slv2_data
+/** @addtogroup slv2_data
  * @{
  */
 
 /** Get the URI of a Plugin UI.
- *
- * \param ui The Plugin UI
- * \return a shared value which must not be modified or freed.
- *
- * Time = O(1)
+ * @param ui The Plugin UI
+ * @return a shared value which must not be modified or freed.
  */
 SLV2_API
 SLV2Value
 slv2_ui_get_uri(SLV2UI ui);
 
 /** Get the types (URIs of RDF classes) of a Plugin UI.
- *
- * \param ui The Plugin UI
- * \return a shared value which must not be modified or freed.
- *
- * Time = O(1)
+ * @param ui The Plugin UI
+ * @return a shared value which must not be modified or freed.
  */
 SLV2_API
 SLV2Values
 slv2_ui_get_classes(SLV2UI ui);
 
 /** Check whether a plugin UI is a given type.
- *
- * \param ui        The Plugin UI
- * \param class_uri The URI of the LV2 UI type to check this UI against
- *
- * Time = O(1)
+ * @param ui        The Plugin UI
+ * @param class_uri The URI of the LV2 UI type to check this UI against
  */
 SLV2_API
 bool
 slv2_ui_is_a(SLV2UI ui, SLV2Value class_uri);
 
 /** Get the URI for a Plugin UI's bundle.
- *
- * \param ui The Plugin UI
- * \return a shared value which must not be modified or freed.
- *
- * Time = O(1)
+ * @param ui The Plugin UI
+ * @return a shared value which must not be modified or freed.
  */
 SLV2_API
 SLV2Value
 slv2_ui_get_bundle_uri(SLV2UI ui);
 
 /** Get the URI for a Plugin UI's shared library.
- *
- * \param ui The Plugin UI
- * \return a shared value which must not be modified or freed.
- *
- * Time = O(1)
+ * @param ui The Plugin UI
+ * @return a shared value which must not be modified or freed.
  */
 SLV2_API
 SLV2Value

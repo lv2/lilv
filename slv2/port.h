@@ -28,13 +28,11 @@ extern "C" {
 #include "slv2/port.h"
 #include "slv2/collections.h"
 
-/** \addtogroup slv2_data
+/** @addtogroup slv2_data
  * @{
  */
 
 /** Port analog of slv2_plugin_get_value.
- *
- * Time = Query
  */
 SLV2_API
 SLV2Values
@@ -43,8 +41,6 @@ slv2_port_get_value(SLV2Plugin plugin,
                     SLV2Value  predicate);
 
 /** Port analog of slv2_plugin_get_value_by_qname.
- *
- * Time = Query
  */
 SLV2_API
 SLV2Values
@@ -53,8 +49,6 @@ slv2_port_get_value_by_qname(SLV2Plugin  plugin,
                              const char* property_uri);
 
 /** Return the LV2 port properties of a port.
- *
- * Time = Query
  */
 SLV2_API
 SLV2Values
@@ -62,8 +56,6 @@ slv2_port_get_properties(SLV2Plugin plugin,
                          SLV2Port   port);
 
 /** Return whether a port has a certain property.
- *
- * Time = Query
  */
 SLV2_API
 bool
@@ -72,8 +64,6 @@ slv2_port_has_property(SLV2Plugin p,
                        SLV2Value  property_uri);
 
 /** Return whether a port is an event port and supports a certain event type.
- *
- * Time = Query
  */
 SLV2_API
 bool
@@ -82,11 +72,8 @@ slv2_port_supports_event(SLV2Plugin p,
                          SLV2Value  event_uri);
 
 /** Get the symbol of a port.
- *
  * The 'symbol' is a short string, a valid C identifier.
- * Returned value is owned by \a port and must not be freed.
- *
- * Time = Query
+ * Returned value is owned by @a port and must not be freed.
  */
 SLV2_API
 SLV2Value
@@ -94,12 +81,9 @@ slv2_port_get_symbol(SLV2Plugin plugin,
                      SLV2Port   port);
 
 /** Get the name of a port.
- *
  * This is guaranteed to return the untranslated name (the doap:name in the
  * data file without a language tag).  Returned value must be freed by
  * the caller.
- *
- * Time = Query
  */
 SLV2_API
 SLV2Value
@@ -107,14 +91,10 @@ slv2_port_get_name(SLV2Plugin plugin,
                    SLV2Port   port);
 
 /** Get all the classes of a port.
- *
  * This can be used to determine if a port is an input, output, audio,
  * control, midi, etc, etc, though it's simpler to use slv2_port_is_a.
  * The returned list does not include lv2:Port, which is implied.
- *
  * Returned value is shared and must not be destroyed by caller.
- *
- * Time = O(1)
  */
 SLV2_API
 SLV2Values
@@ -122,15 +102,11 @@ slv2_port_get_classes(SLV2Plugin plugin,
                       SLV2Port   port);
 
 /** Determine if a port is of a given class (input, output, audio, etc).
- *
  * For convenience/performance/extensibility reasons, hosts are expected to
  * create an SLV2Value for each port class they "care about".  Well-known type
  * URI strings are defined (e.g. SLV2_PORT_CLASS_INPUT) for convenience, but
  * this function is designed so that SLV2 is usable with any port types
  * without requiring explicit support in SLV2.
- *
- * Time = O(n) (n pointer comparisons where n is the number of classes of
- * this port, so this method is suitable for realtime use on any sane port).
  */
 SLV2_API
 bool
@@ -139,13 +115,10 @@ slv2_port_is_a(SLV2Plugin plugin,
                SLV2Value  port_class);
 
 /** Get the default, minimum, and maximum values of a port.
- *
  * @a def, @a min, and @a max are outputs, pass pointers to uninitialized
  * (i.e. NOT created with slv2_value_new) SLV2Value variables.  These will
  * be set to point at new values (which must be freed by the caller using
  * slv2_value_free), or NULL if the value does not exist.
- *
- * Time = Query
  */
 SLV2_API
 void
@@ -156,10 +129,8 @@ slv2_port_get_range(SLV2Plugin plugin,
                     SLV2Value* max);
 
 /** Get the scale points (enumeration values) of a port.
- *
  * This returns a collection of 'interesting' named values of a port
  * (e.g. appropriate entries for a UI selector associated with this port).
- *
  * Returned value may be NULL if @a port has no scale points, otherwise it
  * must be freed by caller with slv2_scale_points_free.
  */
