@@ -88,27 +88,11 @@ def read_float(wf, nframes):
 
     return wavs
 
-#input_raw = wav_in.readframes(nframes)
-#input_frames = wave.struct.unpack('@h', input_raw)
-#print input_frames
+in_buf = read_float(wav_in, nframes)
 
-in_buf    = read_float(wav_in, nframes)
-out_l_buf = []
-out_r_buf = []
-for i in xrange(nframes):
-    # FIXME: slow
-    out_l_buf += [ 0.0 ] # FIXME: slow
-    out_r_buf += [ 0.0 ] # FIXME: slow
+# TODO: buffer marshaling
+#instance.connect_port(3, in_buf)
 
 print '%s => %s => %s @ %d Hz' % (wav_in_path, plugin.get_name(), wav_out_path, rate)
-
-print 'Instance:', instance
-
-#instance.connect_port(3, in_buf)
-#instance.connect_port(4, out_l_buf)
-#instance.connect_port(5, our_r_buf)
-
-#buf = numpy.array(in_buf)
-#print buf
 
 instance.connect_port(3, in_buf)
