@@ -689,3 +689,14 @@ slv2_world_get_plugins_by_filter(SLV2World world, bool (*include)(SLV2Plugin))
 
 	return result;
 }
+
+SLV2_API
+SLV2Plugin
+slv2_world_get_plugin_by_uri_string(SLV2World   world,
+                                    const char* uri)
+{
+	SLV2Value  uri_val = slv2_value_new_uri(world, uri);
+	SLV2Plugin plugin  = slv2_plugins_get_by_uri(world->plugins, uri_val);
+	slv2_value_free(uri_val);
+	return plugin;
+}

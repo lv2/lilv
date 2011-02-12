@@ -25,12 +25,29 @@ namespace SLV2 {
 
 const char* uri_to_path(const char* uri) { return slv2_uri_to_path(uri); }
 
-class Value {
-public:
+#define SLV2_WRAP0(RT, prefix, name) \
+	inline RT name () { return slv2_ ## prefix ## _ ## name (me); }
+
+#define SLV2_WRAP0_VOID(prefix, name) \
+	inline void name () { slv2_ ## prefix ## _ ## name (me); }
+
+#define SLV2_WRAP1(RT, prefix, name, T1, a1) \
+	inline RT name (T1 a1) { return slv2_ ## prefix ## _ ## name (me, a1); }
+
+#define SLV2_WRAP1_VOID(prefix, name, T1, a1) \
+	inline void name (T1 a1) { slv2_ ## prefix ## _ ## name (me, a1); }
+
+#define SLV2_WRAP2(RT, prefix, name, T1, a1, T2, a2) \
+	inline RT name (T1 a1, T2 a2) { return slv2_ ## prefix ## _ ## name (me, a1, a2); }
+
+#define SLV2_WRAP2_VOID(prefix, name, T1, a1, T2, a2) \
+	inline void name (T1 a1, T2 a2) { slv2_ ## prefix ## _ ## name (me, a1, a2); }
+
+struct Value {
 	inline Value(SLV2Value value)   : me(value) {}
 	inline Value(const Value& copy) : me(slv2_value_duplicate(copy.me)) {}
 
-	inline ~Value() { slv2_value_free(me); }
+	inline ~Value() { /*slv2_value_free(me);*/ }
 
 	inline bool equals(const Value& other) const {
 		return slv2_value_equals(me, other.me);
@@ -40,118 +57,200 @@ public:
 
 	inline operator SLV2Value() const { return me; }
 
-#define VAL_WRAP0(RetType, name) \
-	inline RetType name () { return slv2_value_ ## name (me); }
-
-	VAL_WRAP0(char*,       get_turtle_token);
-	VAL_WRAP0(bool,        is_uri);
-	VAL_WRAP0(const char*, as_uri);
-	VAL_WRAP0(bool,        is_blank);
-	VAL_WRAP0(const char*, as_blank);
-	VAL_WRAP0(bool,        is_literal);
-	VAL_WRAP0(bool,        is_string);
-	VAL_WRAP0(const char*, as_string);
-	VAL_WRAP0(bool,        is_float);
-	VAL_WRAP0(float,       as_float);
-	VAL_WRAP0(bool,        is_int);
-	VAL_WRAP0(int,         as_int);
-	VAL_WRAP0(bool,        is_bool);
-	VAL_WRAP0(bool,        as_bool);
+	SLV2_WRAP0(char*,       value, get_turtle_token);
+	SLV2_WRAP0(bool,        value, is_uri);
+	SLV2_WRAP0(const char*, value, as_uri);
+	SLV2_WRAP0(bool,        value, is_blank);
+	SLV2_WRAP0(const char*, value, as_blank);
+	SLV2_WRAP0(bool,        value, is_literal);
+	SLV2_WRAP0(bool,        value, is_string);
+	SLV2_WRAP0(const char*, value, as_string);
+	SLV2_WRAP0(bool,        value, is_float);
+	SLV2_WRAP0(float,       value, as_float);
+	SLV2_WRAP0(bool,        value, is_int);
+	SLV2_WRAP0(int,         value, as_int);
+	SLV2_WRAP0(bool,        value, is_bool);
+	SLV2_WRAP0(bool,        value, as_bool);
 
 	SLV2Value me;
 };
 
-class Plugins {
-public:
-	inline Plugins(SLV2Plugins c_obj) : me(c_obj) {}
+struct ScalePoint {
+	inline ScalePoint(SLV2ScalePoint c_obj) : me(c_obj) {}
+	inline operator SLV2ScalePoint() const { return me; }
 
+	SLV2_WRAP0(SLV2Value, scale_point, get_label);
+	SLV2_WRAP0(SLV2Value, scale_point, get_value);
+
+	SLV2ScalePoint me;
+};
+
+struct PluginClass {
+	inline PluginClass(SLV2PluginClass c_obj) : me(c_obj) {}
+	inline operator SLV2PluginClass() const { return me; }
+
+	SLV2_WRAP0(Value, plugin_class, get_parent_uri);
+	SLV2_WRAP0(Value, plugin_class, get_uri);
+	SLV2_WRAP0(Value, plugin_class, get_label);
+
+	inline SLV2PluginClasses get_children() {
+		return slv2_plugin_class_get_children(me);
+	}
+
+	SLV2PluginClass me;
+};
+
+#define SLV2_WRAP_COLL(CT, ET, prefix) \
+	struct CT { \
+		inline CT(SLV2 ## CT c_obj) : me(c_obj) {} \
+		inline operator SLV2 ## CT () const { return me; } \
+		SLV2_WRAP0(unsigned, prefix, size); \
+		SLV2_WRAP1(ET, prefix, get_at, unsigned, index); \
+		SLV2 ## CT me; \
+	}; \
+
+SLV2_WRAP_COLL(PluginClasses, PluginClass, plugin_classes);
+SLV2_WRAP_COLL(ScalePoints, ScalePoint, scale_points);
+SLV2_WRAP_COLL(Values, Value, values);
+
+struct Plugins {
+	inline Plugins(SLV2Plugins c_obj) : me(c_obj) {}
 	inline operator SLV2Plugins() const { return me; }
 
 	SLV2Plugins me;
 };
 
-class World {
-public:
+struct World {
 	inline World() : me(slv2_world_new()) {}
-
 	inline ~World() { /*slv2_world_free(me);*/ }
 
-#define WORLD_WRAP_VOID0(name) \
-	inline void name () { slv2_world_ ## name (me); }
+	inline SLV2Value new_uri(const char* uri) {
+		return slv2_value_new_uri(me, uri);
+	}
+	inline SLV2Value new_string(const char* str) {
+		return slv2_value_new_string(me, str);
+	}
+	inline SLV2Value new_int(int val) {
+		return slv2_value_new_int(me, val);
+	}
+	inline SLV2Value new_float(float val) {
+		return slv2_value_new_float(me, val);
+	}
+	inline SLV2Value new_bool(bool val) {
+		return slv2_value_new_bool(me, val);
+	}
 
-#define WORLD_WRAP0(RetType, name) \
-	inline RetType name () { return slv2_world_ ## name (me); }
-
-#define WORLD_WRAP1(RetType, name, T1, a1) \
-	inline RetType name (T1 a1) { return slv2_world_ ## name (me, a1); }
-
-#define WORLD_WRAP2(RetType, name, T1, a1, T2, a2) \
-	inline RetType name (T1 a1, T2 a2) { return slv2_world_ ## name (me, a1, a2); }
-	
-	WORLD_WRAP2(void, set_option, const char*, uri, SLV2Value, value);
-	WORLD_WRAP_VOID0(free);
-	WORLD_WRAP_VOID0(load_all);
-	WORLD_WRAP1(void, load_bundle, SLV2Value, bundle_uri);
-	WORLD_WRAP0(SLV2PluginClass, get_plugin_class);
-	WORLD_WRAP0(SLV2PluginClasses, get_plugin_classes);
-	WORLD_WRAP0(Plugins, get_all_plugins);
+	SLV2_WRAP2_VOID(world, set_option, const char*, uri, SLV2Value, value);
+	SLV2_WRAP0_VOID(world, free);
+	SLV2_WRAP0_VOID(world, load_all);
+	SLV2_WRAP1_VOID(world, load_bundle, SLV2Value, bundle_uri);
+	SLV2_WRAP0(SLV2PluginClass, world, get_plugin_class);
+	SLV2_WRAP0(SLV2PluginClasses, world, get_plugin_classes);
+	SLV2_WRAP0(Plugins, world, get_all_plugins);
+	//SLV2_WRAP1(Plugin, world, get_plugin_by_uri_string, const char*, uri);
 	// TODO: get_plugins_by_filter (takes a function parameter)
 
 	SLV2World me;
 };
 
-class Port {
-public:
-	inline Port(SLV2Port c_obj) : me(c_obj) {}
-
+struct Port {
+	inline Port(SLV2Plugin p, SLV2Port c_obj) : parent(p), me(c_obj) {}
 	inline operator SLV2Port() const { return me; }
 
-	SLV2Port me;
+#define SLV2_PORT_WRAP0(RT, name) \
+	inline RT name () { return slv2_port_ ## name (parent, me); }
+
+#define SLV2_PORT_WRAP1(RT, name, T1, a1) \
+	inline RT name (T1 a1) { return slv2_port_ ## name (parent, me, a1); }
+
+	SLV2_PORT_WRAP1(SLV2Values, get_value, SLV2Value, predicate);
+	SLV2_PORT_WRAP1(SLV2Values, get_value_by_qname, const char*, predicate);
+	SLV2_PORT_WRAP0(SLV2Values, get_properties)
+	SLV2_PORT_WRAP1(bool, has_property, SLV2Value, property_uri);
+	SLV2_PORT_WRAP1(bool, supports_event, SLV2Value, event_uri);
+	SLV2_PORT_WRAP0(SLV2Value,  get_symbol);
+	SLV2_PORT_WRAP0(SLV2Value,  get_name);
+	SLV2_PORT_WRAP0(SLV2Values, get_classes);
+	SLV2_PORT_WRAP1(bool, is_a, SLV2Value, port_class);
+	SLV2_PORT_WRAP0(SLV2ScalePoints, get_scale_points);
+
+	// TODO: get_range (output parameters)
+
+	SLV2Plugin parent;
+	SLV2Port   me;
 };
 
-class Plugin {
-public:
+struct Plugin {
 	inline Plugin(SLV2Plugin c_obj) : me(c_obj) {}
-
 	inline operator SLV2Plugin() const { return me; }
 
-#define PLUGIN_WRAP0(RetType, name) \
-	inline RetType name () { return slv2_plugin_ ## name (me); }
+	SLV2_WRAP0(bool,        plugin, verify);
+	SLV2_WRAP0(Value,       plugin, get_uri);
+	SLV2_WRAP0(Value,       plugin, get_bundle_uri);
+	SLV2_WRAP0(Values,      plugin, get_data_uris);
+	SLV2_WRAP0(Value,       plugin, get_library_uri);
+	SLV2_WRAP0(Value,       plugin, get_name);
+	SLV2_WRAP0(PluginClass, plugin, get_class);
+	SLV2_WRAP1(Values,      plugin, get_value, Value, pred);
+	SLV2_WRAP1(Values,      plugin, get_value_by_qname, const char*, predicate);
+	SLV2_WRAP2(Values,      plugin, get_value_for_subject, Value, subject,
+	                                                       Value, predicate);
+	SLV2_WRAP1(bool,        plugin, has_feature, Value, feature_uri);
+	SLV2_WRAP0(Values,      plugin, get_supported_features);
+	SLV2_WRAP0(Values,      plugin, get_required_features);
+	SLV2_WRAP0(Values,      plugin, get_optional_features);
+	SLV2_WRAP0(uint32_t,    plugin, get_num_ports);
+	SLV2_WRAP0(bool,        plugin, has_latency);
+	SLV2_WRAP0(uint32_t,    plugin, get_latency_port_index);
+	SLV2_WRAP0(Value,       plugin, get_author_name);
+	SLV2_WRAP0(Value,       plugin, get_author_email);
+	SLV2_WRAP0(Value,       plugin, get_author_homepage);
 
-#define PLUGIN_WRAP1(RetType, name, T1, a1)	  \
-	inline RetType name (T1 a1) { return slv2_plugin_ ## name (me, a1); }
+	inline Port get_port_by_index(uint32_t index) {
+		return Port(me, slv2_plugin_get_port_by_index(me, index));
+	}
 
-#define PLUGIN_WRAP2(RetType, name, T1, a1, T2, a2)	  \
-	inline RetType name (T1 a1, T2 a2) { return slv2_plugin_ ## name (me, a1, a2); }
+	inline Port get_port_by_symbol(SLV2Value symbol) {
+		return Port(me, slv2_plugin_get_port_by_symbol(me, symbol));
+	}
 
-	PLUGIN_WRAP0(bool,  verify);
-	PLUGIN_WRAP0(Value, get_uri);
-	PLUGIN_WRAP0(Value, get_bundle_uri);
-	//PLUGIN_WRAP0(Values, get_data_uris);
-	PLUGIN_WRAP0(Value, get_library_uri);
-	PLUGIN_WRAP0(Value, get_name);
-	//PLUGIN_WRAP0(PluginClass, get_class);
-	//PLUGIN_WRAP1(Values, get_value, Value, predicate);
-	//PLUGIN_WRAP1(Values, get_value_by_qname, const char*, predicate);
-	//PLUGIN_WRAP2(Values, get_value_for_subject, Value, subject, Value, predicate);
-	PLUGIN_WRAP1(bool, has_feature, Value, feature_uri);
-	//PLUGIN_WRAP0(Values, get_supported_features);
-	//PLUGIN_WRAP0(Values, get_required_features);
-	//PLUGIN_WRAP0(Values, get_optional_features);
-	PLUGIN_WRAP0(uint32_t, get_num_ports);
-	// slv2_plugin_get_port_ranges_float
-	// slv2_plugin_get_num_ports_of_class
-	PLUGIN_WRAP0(bool, has_latency);
-	PLUGIN_WRAP0(uint32_t, get_latency_port_index);
-	PLUGIN_WRAP1(Port, get_port_by_index, uint32_t, index);
-	PLUGIN_WRAP1(Port, get_port_by_symbol, SLV2Value, symbol);
-	PLUGIN_WRAP0(Value, get_author_name);
-	PLUGIN_WRAP0(Value, get_author_email);
-	PLUGIN_WRAP0(Value, get_author_homepage);
+	inline void get_port_ranges_float(float* min_values,
+	                                  float* max_values,
+	                                  float* def_values) {
+		return slv2_plugin_get_port_ranges_float(
+			me, min_values, max_values, def_values);
+	}
+
+	// TODO: slv2_plugin_get_num_ports_of_class (varargs)
 
 	SLV2Plugin me;
 };
-	
+
+struct Instance {
+	inline Instance(Plugin plugin, double sample_rate) {
+		// TODO: features
+		me = slv2_plugin_instantiate(plugin, sample_rate, NULL);
+	}
+
+	inline operator SLV2Instance() const { return me; }
+
+	SLV2_WRAP2_VOID(instance, connect_port,
+	                uint32_t, port_index,
+	                void*,    data_location);
+
+	SLV2_WRAP0_VOID(instance, activate);
+	SLV2_WRAP1_VOID(instance, run, uint32_t, sample_count);
+	SLV2_WRAP0_VOID(instance, deactivate);
+
+	// TODO: get_extension_data
+
+	inline const LV2_Descriptor* get_descriptor() {
+		return slv2_instance_get_descriptor(me);
+	}
+
+	SLV2Instance me;
+};
+
 } /* namespace SLV2 */
 
 #endif /* SLV2_SLV2MM_HPP__ */

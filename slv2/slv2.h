@@ -79,6 +79,14 @@ typedef void* SLV2Values;         /**< array<Value>. */
  * @{
  */
 
+/** Convert a file URI string to a local path string.
+ * For example, "file://foo/bar/baz.ttl" returns "/foo/bar/baz.ttl".
+ * Return value is shared and must not be deleted by caller.
+ * @return @a uri converted to a path, or NULL on failure (URI is not local).
+ */
+SLV2_API
+const char* slv2_uri_to_path(const char* uri);
+
 /** Create a new URI value.
  * Returned value must be freed by caller with slv2_value_free.
  */
@@ -234,14 +242,6 @@ slv2_value_is_bool(SLV2Value value);
 SLV2_API
 bool
 slv2_value_as_bool(SLV2Value value);
-
-/** Convert a file URI to a local path.
- * For example, "file://foo/bar/baz.ttl" returns "/foo/bar/baz.ttl".
- * Return value is shared and must not be deleted by caller.
- * @return @a uri converted to a path, or NULL on failure (URI is not local).
- */
-SLV2_API
-const char* slv2_uri_to_path(const char* uri);
 
 /** @} */
 /** @name Collections
@@ -470,6 +470,13 @@ SLV2_API
 SLV2Plugins
 slv2_world_get_plugins_by_filter(SLV2World world,
                                  bool (*include)(SLV2Plugin));
+
+/** Return the plugin with the given @a uri, or NULL if not found.
+ */
+SLV2_API
+SLV2Plugin
+slv2_world_get_plugin_by_uri_string(SLV2World   world,
+                                    const char* uri);
 
 /** @} */
 /** @name Plugin
@@ -764,7 +771,7 @@ SLV2_API
 SLV2Values
 slv2_port_get_value_by_qname(SLV2Plugin  plugin,
                              SLV2Port    port,
-                             const char* property_uri);
+                             const char* predicate);
 
 /** Return the LV2 port properties of a port.
  */

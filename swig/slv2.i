@@ -3,9 +3,12 @@
 #include "slv2/slv2.h"
 #include "slv2/slv2mm.hpp"
 %}
+
 %include "slv2/slv2.h"
 %include "slv2/slv2mm.hpp"
+
 namespace SLV2 {
+
 %extend Plugins {
 %pythoncode %{
 	def __iter__(self):
@@ -27,10 +30,19 @@ namespace SLV2 {
 		return Iterator(self)
 %}
 };
+
 %extend Value {
 %pythoncode %{
 	def __str__(self):
 		return slv2_value_get_turtle_token(self.me)
 %}
 };
-}
+
+%extend World {
+%pythoncode %{
+	def get_plugin(self, uri_str):
+		return Plugin(slv2_world_get_plugin_by_uri_string(self.me, uri_str))
+%}
+};
+
+} /* namespace SLV2 */
