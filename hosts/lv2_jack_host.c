@@ -343,7 +343,6 @@ main(int argc, char** argv)
 	/* Deactivate JACK */
 	jack_deactivate(host.jack_client);
 
-	printf("Shutting down JACK.\n");
 	for (unsigned long i = 0; i < host.num_ports; ++i) {
 		if (host.ports[i].jack_port != NULL) {
 			jack_port_unregister(host.jack_client, host.ports[i].jack_port);
