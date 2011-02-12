@@ -46,6 +46,8 @@ def options(opt):
 			help="Do not build command line utilities")
 	opt.add_option('--no-jack', action='store_true', default=False, dest='no_jack',
 			help="Do not build JACK clients")
+	opt.add_option('--no-swig', action='store_true', default=False, dest='no_swig',
+			help="Do not build python bindings")
 	opt.add_option('--dyn-manifest', action='store_true', default=False, dest='dyn_manifest',
 			help="Build support for dynamic manifest extension [false]")
 	opt.add_option('--test', action='store_true', default=False, dest='build_tests',
@@ -62,12 +64,13 @@ def configure(conf):
 	autowaf.display_header('SLV2 Configuration')
 	conf.check_tool('compiler_cc')
 
-	try:
-		conf.load('swig python')
-		conf.check_python_headers()
-		autowaf.define(conf, 'SLV2_SWIG', 1);
-	except:
-		pass
+	if not Options.options.no_swig:
+		try:
+			conf.load('swig python')
+			conf.check_python_headers()
+			autowaf.define(conf, 'SLV2_SWIG', 1);
+		except:
+			pass
 
 	autowaf.check_pkg(conf, 'lv2core', uselib_store='LV2CORE', mandatory=True)
 	autowaf.check_pkg(conf, 'glib-2.0', uselib_store='GLIB',
@@ -259,7 +262,3 @@ def test(ctx):
 	autowaf.pre_test(ctx, APPNAME)
 	autowaf.run_tests(ctx, APPNAME, tests.split(), dirs=['./src','./test'])
 	autowaf.post_test(ctx, APPNAME)
-
-def wrap(ctx):
-	os.chdir(out)
-	os.system('swig -DPYTHON -Wall -python -I/usr/include -I/usr/local/include -I.. -o slv2_python.c -oh slv2_python.h ../swig/slv2.i')
