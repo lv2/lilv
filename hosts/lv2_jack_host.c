@@ -29,7 +29,6 @@
 #include "lv2/lv2plug.in/ns/ext/event/event-helpers.h"
 #include "lv2/lv2plug.in/ns/ext/event/event.h"
 #include "lv2/lv2plug.in/ns/ext/uri-map/uri-map.h"
-#include "jack_compat.h"
 
 #define MIDI_BUFFER_SIZE 1024
 
