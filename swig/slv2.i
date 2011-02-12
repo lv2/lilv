@@ -27,4 +27,10 @@ namespace SLV2 {
 		return Iterator(self)
 %}
 };
+%extend Value {
+%pythoncode %{
+	def __str__(self):
+		return slv2_value_get_turtle_token(self.me)
+%}
+};
 }

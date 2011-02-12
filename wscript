@@ -241,13 +241,17 @@ def build(bld):
 
 	if bld.env['SLV2_SWIG']:
 		# Python Wrapper
-		bld(
+		obj = bld(
 			features   = 'cxx cxxshlib pyext',
 			source     = 'swig/slv2.i',
 			target     = 'swig/_slv2',
+			includes   = ['..'],
 			swig_flags = '-c++ -python -Wall -I.. -lslv2 -features autodoc=1',
 			vnum       = SLV2_LIB_VERSION,
 			use        = 'libslv2')
+		autowaf.use_lib(bld, obj, 'SLV2')
+
+		bld.install_files('${PYTHONDIR}', 'swig/slv2.py')
 
 	bld.add_post_fun(autowaf.run_ldconfig)
 
