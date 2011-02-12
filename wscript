@@ -77,27 +77,40 @@ def configure(conf):
 	if Options.options.dyn_manifest:
 		autowaf.define(conf, 'SLV2_DYN_MANIFEST', 1)
 
+	slv2_path_sep = ':'
+	slv2_dir_sep  = '/'
+	if sys.platform == 'win32':
+		slv2_path_sep = ';'
+		slv2_dir_sep = '\\'
+
+	autowaf.define(conf, 'SLV2_PATH_SEP', slv2_path_sep)
+	autowaf.define(conf, 'SLV2_DIR_SEP',  slv2_dir_sep)
+
 	if Options.options.default_lv2_path == '':
 		if Options.platform == 'darwin':
-			Options.options.default_lv2_path = "~/Library/Audio/Plug-Ins/LV2:/Library/Audio/Plug-Ins/LV2:~/.lv2:/usr/local/lib/lv2:/usr/lib/lv2"
+			Options.options.default_lv2_path = slv2_path_sep.join([
+					'~/Library/Audio/Plug-Ins/LV2',
+					'~/.lv2',
+					'/usr/local/lib/lv2',
+					'/usr/lib/lv2',
+					'/Library/Audio/Plug-Ins/LV2'])
 		elif Options.platform == 'haiku':
-			Options.options.default_lv2_path = "~/.lv2:/boot/common/add-ons/lv2"
+			Options.options.default_lv2_path = slv2_path_sep.join([
+				'~/.lv2',
+				'/boot/common/add-ons/lv2'])
+		elif Options.platform == 'win32':
+			Options.options.default_lv2_path = 'C:\\Program Files\\LV2'
 		else:
-			Options.options.default_lv2_path = "~/.lv2:/usr/%s/lv2:/usr/local/%s/lv2" % (
-				conf.env['LIBDIRNAME'], conf.env['LIBDIRNAME'])
+			Options.options.default_lv2_path = slv2_path_sep.join([
+					'~/.lv2',
+					'/usr/%s/lv2' % conf.env['LIBDIRNAME'],
+					'/usr/local/%s/lv2' % conf.env['LIBDIRNAME']])
 
 	conf.env['USE_JACK'] = conf.env['HAVE_JACK'] and not Options.options.no_jack
 	conf.env['BUILD_TESTS'] = Options.options.build_tests
 	conf.env['BUILD_UTILS'] = not Options.options.no_utils
 	conf.env['BASH_COMPLETION'] = Options.options.bash_completion
 	autowaf.define(conf, 'SLV2_DEFAULT_LV2_PATH', Options.options.default_lv2_path)
-
-	if sys.platform == 'win32':
-		autowaf.define(conf, 'SLV2_PATH_SEP', ';')
-		autowaf.define(conf, 'SLV2_DIR_SEP',  '\\')
-	else:
-		autowaf.define(conf, 'SLV2_PATH_SEP', ':')
-		autowaf.define(conf, 'SLV2_DIR_SEP',  '/')
 
 	if conf.env['USE_JACK']:
 		autowaf.check_header(conf, 'lv2/lv2plug.in/ns/ext/event/event.h', 'HAVE_LV2_EVENT')
