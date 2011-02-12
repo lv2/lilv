@@ -83,9 +83,10 @@ def configure(conf):
 	                  atleast_version='0.107.0', mandatory=False)
 
 	autowaf.check_header(conf, 'lv2/lv2plug.in/ns/lv2core/lv2.h')
-	autowaf.check_header(conf, 'lv2/lv2plug.in/ns/extensions/ui/ui.h')
+	autowaf.check_header(conf, 'lv2/lv2plug.in/ns/extensions/ui/ui.h',
+						 'HAVE_UI_H')
 
-	if conf.env['HAVE_LV2_LV2PLUG_IN_NS_EXTENSIONS_UI_UI_H']:
+	if conf.env['HAVE_UI_H']:
 		autowaf.define(conf, 'SLV2_WITH_UI', 1)
 
 	conf.env.append_value('CFLAGS', '-std=c99')
@@ -122,36 +123,43 @@ def configure(conf):
 					'/usr/%s/lv2' % conf.env['LIBDIRNAME'],
 					'/usr/local/%s/lv2' % conf.env['LIBDIRNAME']])
 
-	conf.env['USE_JACK'] = conf.env['HAVE_JACK'] and not Options.options.no_jack
-	conf.env['BUILD_TESTS'] = Options.options.build_tests
-	conf.env['BUILD_UTILS'] = not Options.options.no_utils
-	conf.env['BASH_COMPLETION'] = not Options.options.no_bash_completion
 	autowaf.define(conf, 'SLV2_DEFAULT_LV2_PATH', Options.options.default_lv2_path)
 
+	conf.env['BUILD_TESTS']     = Options.options.build_tests
+	conf.env['BUILD_UTILS']     = not Options.options.no_utils
+	conf.env['BASH_COMPLETION'] = not Options.options.no_bash_completion
+
+	conf.env['USE_JACK'] = conf.env['HAVE_JACK'] and not Options.options.no_jack
 	if conf.env['USE_JACK']:
-		autowaf.check_header(conf, 'lv2/lv2plug.in/ns/ext/event/event.h', 'HAVE_LV2_EVENT')
-		autowaf.check_header(conf, 'lv2/lv2plug.in/ns/ext/uri-map/uri-map.h', 'HAVE_LV2_URI_MAP')
-		conf.env['USE_JACK'] = conf.env['HAVE_LV2_EVENT'] and conf.env['HAVE_LV2_URI_MAP']
+		autowaf.check_header(conf, 'lv2/lv2plug.in/ns/ext/event/event.h',
+							 'HAVE_LV2_EVENT')
+		autowaf.check_header(conf, 'lv2/lv2plug.in/ns/ext/uri-map/uri-map.h',
+							 'HAVE_LV2_URI_MAP')
+		if not (conf.env['HAVE_LV2_EVENT'] and conf.env['HAVE_LV2_URI_MAP']):
+			conf.env['USE_JACK'] = False
 
 	conf.write_config_header('slv2-config.h', remove=False)
 
-	autowaf.display_msg(conf, "Utilities", str(conf.env['BUILD_UTILS'] == 1))
-	autowaf.display_msg(conf, "Jack clients", str(conf.env['USE_JACK'] == 1))
-	autowaf.display_msg(conf, "Unit tests", str(conf.env['BUILD_TESTS']))
-	autowaf.display_msg(conf, "Dynamic manifest support", str(conf.env['SLV2_DYN_MANIFEST'] == 1))
-	autowaf.display_msg(conf, "Default LV2_PATH", str(conf.env['SLV2_DEFAULT_LV2_PATH']))
-	autowaf.display_msg(conf, "UI support", str(conf.env['SLV2_WITH_UI'] == 1))
-	autowaf.display_msg(conf, "Python bindings", str(conf.env['SLV2_SWIG'] == 1))
-
+	autowaf.display_msg(conf, "Default LV2_PATH",
+	                    conf.env['SLV2_DEFAULT_LV2_PATH'])
+	autowaf.display_msg(conf, "Utilities",
+	                    bool(conf.env['BUILD_UTILS']))
+	autowaf.display_msg(conf, "Jack clients",
+	                    bool(conf.env['USE_JACK']))
+	autowaf.display_msg(conf, "Unit tests",
+	                    bool(conf.env['BUILD_TESTS']))
+	autowaf.display_msg(conf, "Dynamic manifest support",
+	                    bool(conf.env['SLV2_DYN_MANIFEST']))
+	autowaf.display_msg(conf, "UI support",
+	                    bool(conf.env['SLV2_WITH_UI']))
+	autowaf.display_msg(conf, "Python bindings",
+	                    bool(conf.env['SLV2_SWIG']))
 	print
 
-tests = '''
-	test/slv2_test
-'''
-
 def build(bld):
-	# C Headers
+	# C/C++ Headers
 	bld.install_files('${INCLUDEDIR}/slv2', bld.path.ant_glob('slv2/*.h'))
+	bld.install_files('${INCLUDEDIR}/slv2', bld.path.ant_glob('slv2/*.hpp'))
 
 	# Pkgconfig file
 	autowaf.build_pc(bld, 'SLV2', SLV2_VERSION, ['SORD','GLIB'])
@@ -198,17 +206,16 @@ def build(bld):
 		obj.linkflags    = [ '-ldl' ]
 		autowaf.use_lib(bld, obj, 'SORD SERD LV2CORE GLIB')
 
-		# Unit tests
-		for i in tests.split():
-			obj = bld(features = 'c cprogram')
-			obj.source       = i + '.c'
-			obj.includes     = ['.', './src']
-			obj.use          = 'libslv2_static'
-			obj.uselib       = 'SORD SERD LV2CORE'
-			obj.linkflags    = '-lgcov -ldl'
-			obj.target       = i
-			obj.install_path = ''
-			obj.cflags       = [ '-fprofile-arcs',  '-ftest-coverage' ]
+		# Unit test program
+		obj = bld(features = 'c cprogram')
+		obj.source       = 'test/slv2_test.c'
+		obj.includes     = ['.', './src']
+		obj.use          = 'libslv2_static'
+		obj.uselib       = 'SORD SERD LV2CORE'
+		obj.linkflags    = '-lgcov -ldl'
+		obj.target       = 'test/slv2_test'
+		obj.install_path = ''
+		obj.cflags       = [ '-fprofile-arcs',  '-ftest-coverage' ]
 
 	# Utilities
 	if bld.env['BUILD_UTILS']:
@@ -260,5 +267,5 @@ def build(bld):
 
 def test(ctx):
 	autowaf.pre_test(ctx, APPNAME)
-	autowaf.run_tests(ctx, APPNAME, tests.split(), dirs=['./src','./test'])
+	autowaf.run_tests(ctx, APPNAME, ['test/slv2_test'], dirs=['./src','./test'])
 	autowaf.post_test(ctx, APPNAME)
