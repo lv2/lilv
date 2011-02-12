@@ -49,7 +49,8 @@ def options(opt):
 			help="Build support for dynamic manifest extension [false]")
 	opt.add_option('--test', action='store_true', default=False, dest='build_tests',
 			help="Build unit tests")
-	opt.add_option('--bash-completion', action='store_true', default=False, dest='bash_completion',
+	opt.add_option('--no-bash-completion', action='store_true', default=False,
+			dest='no_bash_completion',
 			help="Install bash completion script in /etc/bash_completion.d")
 	opt.add_option('--default-lv2-path', type='string', default='', dest='default_lv2_path',
 			help="Default LV2 path to use if $LV2_PATH is unset (globs and ~ supported)")
@@ -112,7 +113,7 @@ def configure(conf):
 	conf.env['USE_JACK'] = conf.env['HAVE_JACK'] and not Options.options.no_jack
 	conf.env['BUILD_TESTS'] = Options.options.build_tests
 	conf.env['BUILD_UTILS'] = not Options.options.no_utils
-	conf.env['BASH_COMPLETION'] = Options.options.bash_completion
+	conf.env['BASH_COMPLETION'] = not Options.options.no_bash_completion
 	autowaf.define(conf, 'SLV2_DEFAULT_LV2_PATH', Options.options.default_lv2_path)
 
 	if conf.env['USE_JACK']:
