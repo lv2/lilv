@@ -19,6 +19,7 @@
 #define _XOPEN_SOURCE 500
 
 #include <math.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -36,11 +37,6 @@
 
 #define MIDI_BUFFER_SIZE 1024
 
-enum PortDirection {
-	INPUT,
-	OUTPUT
-};
-
 enum PortType {
 	CONTROL,
 	AUDIO,
@@ -49,11 +45,11 @@ enum PortType {
 
 struct Port {
 	SLV2Port           slv2_port;
-	enum PortDirection direction;
 	enum PortType      type;
 	jack_port_t*       jack_port; /**< For audio/MIDI ports, otherwise NULL */
 	float              control;   /**< For control ports, otherwise 0.0f */
 	LV2_Event_Buffer*  ev_buffer; /**< For MIDI ports, otherwise NULL */
+	bool               is_input;
 };
 
 /** This program's data */
@@ -128,11 +124,11 @@ create_port(struct JackHost* host,
 
 	enum JackPortFlags jack_flags = 0;
 	if (slv2_port_is_a(host->plugin, port->slv2_port, host->input_class)) {
-		jack_flags = JackPortIsInput;
-		port->direction = INPUT;
+		jack_flags     = JackPortIsInput;
+		port->is_input = true;
 	} else if (slv2_port_is_a(host->plugin, port->slv2_port, host->output_class)) {
-		jack_flags = JackPortIsOutput;
-		port->direction = OUTPUT;
+		jack_flags     = JackPortIsOutput;
+		port->is_input = false;
 	} else if (slv2_port_has_property(host->plugin, port->slv2_port, host->optional)) {
 		slv2_instance_connect_port(host->instance, port_index, NULL);
 	} else {
@@ -195,7 +191,7 @@ jack_process_cb(jack_nframes_t nframes, void* data)
 			                       LV2_EVENT_AUDIO_STAMP,
 			                       (uint8_t*)(host->ports[p].ev_buffer + 1));
 
-			if (host->ports[p].direction == INPUT) {
+			if (host->ports[p].is_input) {
 				void* buf = jack_port_get_buffer(host->ports[p].jack_port,
 				                                 nframes);
 
@@ -219,7 +215,7 @@ jack_process_cb(jack_nframes_t nframes, void* data)
 	/* Deliver MIDI output */
 	for (uint32_t p = 0; p < host->num_ports; ++p) {
 		if (host->ports[p].jack_port
-		    && host->ports[p].direction == OUTPUT
+		    && !host->ports[p].is_input
 		    && host->ports[p].type == EVENT) {
 
 			void* buf = jack_port_get_buffer(host->ports[p].jack_port,
