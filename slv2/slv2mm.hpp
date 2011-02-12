@@ -199,14 +199,14 @@ struct Plugin {
 	SLV2_WRAP0(Values,      plugin, get_supported_features);
 	SLV2_WRAP0(Values,      plugin, get_required_features);
 	SLV2_WRAP0(Values,      plugin, get_optional_features);
-	SLV2_WRAP0(uint32_t,    plugin, get_num_ports);
+	SLV2_WRAP0(unsigned,    plugin, get_num_ports);
 	SLV2_WRAP0(bool,        plugin, has_latency);
-	SLV2_WRAP0(uint32_t,    plugin, get_latency_port_index);
+	SLV2_WRAP0(unsigned,    plugin, get_latency_port_index);
 	SLV2_WRAP0(Value,       plugin, get_author_name);
 	SLV2_WRAP0(Value,       plugin, get_author_email);
 	SLV2_WRAP0(Value,       plugin, get_author_homepage);
 
-	inline Port get_port_by_index(uint32_t index) {
+	inline Port get_port_by_index(unsigned index) {
 		return Port(me, slv2_plugin_get_port_by_index(me, index));
 	}
 
@@ -221,7 +221,11 @@ struct Plugin {
 			me, min_values, max_values, def_values);
 	}
 
-	// TODO: slv2_plugin_get_num_ports_of_class (varargs)
+	inline unsigned get_num_ports_of_class(SLV2Value class_1,
+	                                       SLV2Value class_2) {
+		// TODO: varargs
+		return slv2_plugin_get_num_ports_of_class(me, class_1, class_2, NULL);
+	}
 
 	SLV2Plugin me;
 };
@@ -235,11 +239,11 @@ struct Instance {
 	inline operator SLV2Instance() const { return me; }
 
 	SLV2_WRAP2_VOID(instance, connect_port,
-	                uint32_t, port_index,
+	                unsigned, port_index,
 	                void*,    data_location);
 
 	SLV2_WRAP0_VOID(instance, activate);
-	SLV2_WRAP1_VOID(instance, run, uint32_t, sample_count);
+	SLV2_WRAP1_VOID(instance, run, unsigned, sample_count);
 	SLV2_WRAP0_VOID(instance, deactivate);
 
 	// TODO: get_extension_data
