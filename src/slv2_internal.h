@@ -190,6 +190,7 @@ void              slv2_plugin_classes_free();
 /** Model of LV2 (RDF) data loaded from bundles.
  */
 struct _SLV2World {
+	SordWorld         world;
 	Sord              model;
 	SerdReader        reader;
 	SerdEnv           namespaces;

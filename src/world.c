@@ -46,7 +46,11 @@ slv2_world_new()
 {
 	SLV2World world = (SLV2World)malloc(sizeof(struct _SLV2World));
 
-	world->model = sord_new(SORD_SPO|SORD_OPS, true);
+	world->world = sord_world_new();
+	if (!world->world)
+		goto fail;
+
+	world->model = sord_new(world->world, SORD_SPO|SORD_OPS, true);
 	if (!world->model)
 		goto fail;
 
@@ -55,9 +59,9 @@ slv2_world_new()
 
 #define NS_DYNMAN (const uint8_t*)"http://lv2plug.in/ns/ext/dynmanifest#"
 
-#define NEW_URI(uri)     sord_new_uri(world->model, uri)
+#define NEW_URI(uri)     sord_new_uri(world->world, uri)
 #define NEW_URI_VAL(uri) slv2_value_new_from_node( \
-		world, sord_new_uri(world->model, uri));
+		world, sord_new_uri(world->world, uri));
 
 	world->dyn_manifest_node       = NEW_URI(NS_DYNMAN    "DynManifest");
 	world->lv2_specification_node  = NEW_URI(SLV2_NS_LV2  "Specification");
@@ -159,6 +163,9 @@ slv2_world_free(SLV2World world)
 
 	sord_free(world->model);
 	world->model = NULL;
+
+	sord_world_free(world->world);
+	world->world = NULL;
 
 	serd_env_free(world->namespaces);
 
@@ -430,7 +437,7 @@ slv2_world_load_bundle(SLV2World world, SLV2Value bundle_uri)
 		SordQuad see_also_tup = {
 			slv2_node_copy(spec),
 			world->rdfs_seealso_node,
-			sord_new_uri(world->model, manifest_uri.buf),
+			sord_new_uri(world->world, manifest_uri.buf),
 			NULL
 		};
 		sord_add(world->model, see_also_tup);
