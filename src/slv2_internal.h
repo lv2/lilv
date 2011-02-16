@@ -191,7 +191,7 @@ void              slv2_plugin_classes_free();
  */
 struct _SLV2World {
 	SordWorld         world;
-	Sord              model;
+	SordModel         model;
 	SerdReader        reader;
 	SerdEnv           namespaces;
 	unsigned          n_read_files;
@@ -228,7 +228,6 @@ struct _SLV2World {
 
 const uint8_t*
 slv2_world_blank_node_prefix(SLV2World world);
-
 void
 slv2_world_load_file(SLV2World world, const char* file_uri);
 

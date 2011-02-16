@@ -190,7 +190,7 @@ slv2_world_set_option(SLV2World       world,
 
 static SLV2Matches
 slv2_world_find_statements(SLV2World world,
-                           Sord      model,
+                           SordModel model,
                            SLV2Node  subject,
                            SLV2Node  predicate,
                            SLV2Node  object,
