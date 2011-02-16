@@ -74,7 +74,7 @@ slv2_value_new(SLV2World world, SLV2ValueType type, const char* str)
 
 	switch (type) {
 	case SLV2_VALUE_URI:
-		val->val.uri_val = sord_get_uri(world->model, true, (const uint8_t*)str);
+		val->val.uri_val = sord_new_uri(world->model, (const uint8_t*)str);
 		assert(val->val.uri_val);
 		val->str_val = (char*)sord_node_get_string(val->val.uri_val);
 		break;
@@ -108,7 +108,7 @@ slv2_value_new_from_node(SLV2World world, SordNode node)
 		result->str_val     = (char*)sord_node_get_string(result->val.uri_val);
 		break;
 	case SORD_LITERAL:
-		datatype_uri = sord_literal_get_datatype(node);
+		datatype_uri = sord_node_get_datatype(node);
 		if (datatype_uri) {
 			if (sord_node_equals(datatype_uri, world->xsd_boolean_node))
 				type = SLV2_VALUE_BOOL;

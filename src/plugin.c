@@ -469,7 +469,7 @@ slv2_plugin_get_value_for_subject(SLV2Plugin p,
 
 	SLV2Node subject_node = (slv2_value_is_uri(subject))
 		? slv2_node_copy(subject->val.uri_val)
-		: sord_get_blank(p->world->model, false,
+		: sord_new_blank(p->world->model,
 		                 (const uint8_t*)slv2_value_as_blank(subject));
 
 	if (!subject_node) {
@@ -701,8 +701,8 @@ slv2_plugin_get_port_by_symbol(SLV2Plugin p,
 static SLV2Node
 slv2_plugin_get_author(SLV2Plugin p)
 {
-	SLV2Node doap_maintainer = sord_get_uri(
-		p->world->model, true, NS_DOAP "maintainer");
+	SLV2Node doap_maintainer = sord_new_uri(
+		p->world->model, NS_DOAP "maintainer");
 
 	SLV2Matches maintainers = slv2_plugin_find_statements(
 		p,
@@ -729,8 +729,8 @@ slv2_plugin_get_author_name(SLV2Plugin plugin)
 	SLV2Node author = slv2_plugin_get_author(plugin);
 	if (author) {
 		return slv2_plugin_get_one(
-			plugin, author, sord_get_uri(
-				plugin->world->model, true, NS_FOAF "name"));
+			plugin, author, sord_new_uri(
+				plugin->world->model, NS_FOAF "name"));
 	}
 	return NULL;
 }
@@ -742,8 +742,8 @@ slv2_plugin_get_author_email(SLV2Plugin plugin)
 	SLV2Node author = slv2_plugin_get_author(plugin);
 	if (author) {
 		return slv2_plugin_get_one(
-			plugin, author, sord_get_uri(
-				plugin->world->model, true, NS_FOAF "mbox"));
+			plugin, author, sord_new_uri(
+				plugin->world->model, NS_FOAF "mbox"));
 	}
 	return NULL;
 }
@@ -755,8 +755,8 @@ slv2_plugin_get_author_homepage(SLV2Plugin plugin)
 	SLV2Node author = slv2_plugin_get_author(plugin);
 	if (author) {
 		return slv2_plugin_get_one(
-			plugin, author, sord_get_uri(
-				plugin->world->model, true, NS_FOAF "homepage"));
+			plugin, author, sord_new_uri(
+				plugin->world->model, NS_FOAF "homepage"));
 	}
 	return NULL;
 }
@@ -768,11 +768,9 @@ slv2_plugin_get_uis(SLV2Plugin p)
 {
 #define NS_UI (const uint8_t*)"http://lv2plug.in/ns/extensions/ui#"
 
-	SLV2Node ui_ui = sord_get_uri(
-		p->world->model, true, NS_UI "ui");
+	SLV2Node ui_ui = sord_new_uri(p->world->model, NS_UI "ui");
 
-	SLV2Node ui_binary_node = sord_get_uri(
-		p->world->model, true, NS_UI "binary");
+	SLV2Node ui_binary_node = sord_new_uri(p->world->model, NS_UI "binary");
 
 	SLV2UIs     result = slv2_uis_new();
 	SLV2Matches uis    = slv2_plugin_find_statements(

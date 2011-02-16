@@ -77,7 +77,7 @@ slv2_values_from_stream_objects_i18n(SLV2Plugin  p,
 	FOREACH_MATCH(stream) {
 		SLV2Node value = slv2_match_object(stream);
 		if (sord_node_get_type(value) == SORD_LITERAL) {
-			const char*   lang = sord_literal_get_lang(value);
+			const char*   lang = sord_node_get_language(value);
 			SLV2LangMatch lm   = SLV2_LANG_MATCH_NONE;
 			if (lang) {
 				lm = (syslang)

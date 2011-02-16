@@ -120,7 +120,7 @@ slv2_port_supports_event(SLV2Plugin p,
 	SLV2Matches results   = slv2_plugin_find_statements(
 		p,
 		port_node,
-		sord_get_uri(p->world->model, true, NS_EV "supportsEvent"),
+		sord_new_uri(p->world->model, NS_EV "supportsEvent"),
 		slv2_value_as_node(event));
 
 	const bool ret = !slv2_matches_end(results);
@@ -144,7 +144,7 @@ slv2_port_get_value_by_qname(SLV2Plugin  p,
 	SLV2Matches results   = slv2_plugin_find_statements(
 		p,
 		port_node,
-		sord_get_uri(p->world->model, true, pred_uri),
+		sord_new_uri(p->world->model, pred_uri),
 		NULL);
 
 	free(pred_uri);
@@ -266,7 +266,7 @@ slv2_port_get_scale_points(SLV2Plugin p,
 	SLV2Matches points    = slv2_plugin_find_statements(
 		p,
 		port_node,
-		sord_get_uri(p->world->model, true, SLV2_NS_LV2 "scalePoint"),
+		sord_new_uri(p->world->model, SLV2_NS_LV2 "scalePoint"),
 		NULL);
 
 	SLV2ScalePoints ret = NULL;
