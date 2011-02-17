@@ -176,13 +176,13 @@ def build(bld):
 		src/util.c
 		src/value.c
 		src/world.c
-	'''
+	'''.split()
 
 	if bld.env['SLV2_WITH_UI']:
 		lib_source += '''
 			src/pluginui.c
 			src/pluginuiinstance.c
-		'''
+		'''.split()
 
 	# Library
 	obj = bld(features = 'c cshlib')
