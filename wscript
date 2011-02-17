@@ -51,9 +51,9 @@ def options(opt):
 			help="Do not build JACK session support")
 	opt.add_option('--no-swig', action='store_true', default=False, dest='no_swig',
 			help="Do not build python bindings")
-	opt.add_option('--dyn-manifest', action='store_true', default=False,
-			dest='dyn_manifest',
-			help="Build support for dynamic manifest extension [false]")
+	opt.add_option('--no-dyn-manifest', action='store_true', default=False,
+			dest='no_dyn_manifest',
+			help="Don't build support for dynamic manifests")
 	opt.add_option('--test', action='store_true', default=False, dest='build_tests',
 			help="Build unit tests")
 	opt.add_option('--no-bash-completion', action='store_true', default=False,
@@ -104,7 +104,7 @@ def configure(conf):
 			
 	conf.env.append_value('CFLAGS', '-std=c99')
 	autowaf.define(conf, 'SLV2_VERSION', SLV2_VERSION)
-	if Options.options.dyn_manifest:
+	if not Options.options.no_dyn_manifest:
 		autowaf.define(conf, 'SLV2_DYN_MANIFEST', 1)
 
 	slv2_path_sep = ':'
