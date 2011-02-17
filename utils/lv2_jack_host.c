@@ -19,6 +19,7 @@
 #define _XOPEN_SOURCE 500
 
 #include <math.h>
+#include <signal.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -34,6 +35,14 @@
 #include "slv2/slv2.h"
 
 #include "slv2-config.h"
+
+#ifdef SLV2_JACK_SESSION
+#include <jack/session.h>
+#include <glib.h>
+
+GMutex* exit_mutex;
+GCond*  exit_cond;
+#endif /* SLV2_JACK_SESSION */
 
 #define MIDI_BUFFER_SIZE 1024
 
@@ -162,7 +171,7 @@ create_port(struct JackHost* host,
 		slv2_instance_connect_port(host->instance, port_index, port->ev_buffer);
 		break;
 	default:
-		// FIXME: check if port connection is optional and die if not
+		/* FIXME: check if port connection is optional and die if not */
 		slv2_instance_connect_port(host->instance, port_index, NULL);
 		fprintf(stderr, "WARNING: Unknown port type, port not connected.\n");
 	}
@@ -238,6 +247,46 @@ jack_process_cb(jack_nframes_t nframes, void* data)
 	return 0;
 }
 
+#ifdef SLV2_JACK_SESSION
+void
+jack_session_cb(jack_session_event_t* event, void* arg)
+{
+	struct JackHost* host = (struct JackHost*)arg;
+
+	char cmd[256];
+	snprintf(cmd, sizeof(cmd), "lv2_jack_host %s %s",
+	         slv2_value_as_uri(slv2_plugin_get_uri(host->plugin)),
+	         event->client_uuid);
+
+	event->command_line = strdup(cmd);
+	jack_session_reply(host->jack_client, event);
+
+	switch (event->type) {
+	case JackSessionSave:
+		break;
+	case JackSessionSaveAndQuit:
+		g_mutex_lock(exit_mutex);
+		g_cond_signal(exit_cond);
+		g_mutex_unlock(exit_mutex);
+		break;
+	case JackSessionSaveTemplate:
+		break;
+	}
+
+	jack_session_event_free(event);
+}
+#endif /* SLV2_JACK_SESSION */
+
+static void
+signal_handler(int ignored)
+{
+#ifdef SLV2_JACK_SESSION
+	g_mutex_lock(exit_mutex);
+	g_cond_signal(exit_cond);
+	g_mutex_unlock(exit_mutex);
+#endif
+}
+
 int
 main(int argc, char** argv)
 {
@@ -245,6 +294,17 @@ main(int argc, char** argv)
 	host.jack_client = NULL;
 	host.num_ports   = 0;
 	host.ports       = NULL;
+
+#ifdef SLV2_JACK_SESSION
+	if (!g_thread_supported()) {
+		g_thread_init(NULL);
+	}
+	exit_mutex = g_mutex_new();
+	exit_cond  = g_cond_new();
+#endif
+
+	signal(SIGINT, signal_handler);
+	signal(SIGTERM, signal_handler);
 
 	/* Find all installed plugins */
 	SLV2World world = slv2_world_new();
@@ -261,14 +321,18 @@ main(int argc, char** argv)
 	host.optional      = slv2_value_new_uri(world, SLV2_NAMESPACE_LV2
 	                                        "connectionOptional");
 
-	/* Find the plugin to run */
-	const char* plugin_uri_str = (argc == 2) ? argv[1] : NULL;
-	if (!plugin_uri_str) {
-		fprintf(stderr, "\nYou must specify a plugin URI to load.\n");
-		fprintf(stderr, "\nUse lv2_list to list installed plugins.\n");
+#ifdef SLV2_JACK_SESSION
+	if (argc != 2 && argc != 3) {
+		fprintf(stderr, "Usage: %s PLUGIN_URI [JACK_UUID]\n", argv[0]);
+#else
+	if (argc != 2) {
+		fprintf(stderr, "Usage: %s PLUGIN_URI\n", argv[0]);
+#endif
 		slv2_world_free(world);
 		return EXIT_FAILURE;
 	}
+
+	const char* const plugin_uri_str = argv[1];
 
 	printf("Plugin:    %s\n", plugin_uri_str);
 
@@ -297,7 +361,17 @@ main(int argc, char** argv)
 
 	/* Connect to JACK */
 	printf("JACK Name: %s\n\n", jack_name);
-	host.jack_client = jack_client_open(jack_name, JackNullOption, NULL);
+#ifdef SLV2_JACK_SESSION
+	const char* const jack_uuid_str = (argc > 2) ? argv[2] : NULL;
+	if (jack_uuid_str) {
+		host.jack_client = jack_client_open(jack_name, JackSessionID, NULL,
+		                                    jack_uuid_str);
+	}
+#endif
+
+	if (!host.jack_client) {
+		host.jack_client = jack_client_open(jack_name, JackNullOption, NULL);
+	}
 
 	free(jack_name);
 	slv2_value_free(name);
@@ -312,6 +386,9 @@ main(int argc, char** argv)
 		die("Failed to instantiate plugin.\n");
 
 	jack_set_process_callback(host.jack_client, &jack_process_cb, (void*)(&host));
+#ifdef SLV2_JACK_SESSION
+	jack_set_session_callback(host.jack_client, &jack_session_cb, (void*)(&host));
+#endif
 
 	/* Create ports */
 	host.num_ports = slv2_plugin_get_num_ports(host.plugin);
@@ -330,14 +407,21 @@ main(int argc, char** argv)
 	jack_activate(host.jack_client);
 
 	/* Run */
+#ifdef SLV2_JACK_SESSION
+	printf("\nPress Ctrl-C to quit: ");
+	fflush(stdout);
+	g_cond_wait(exit_cond, exit_mutex);
+#else
 	printf("\nPress enter to quit: ");
+	fflush(stdout);
 	getc(stdin);
+#endif
 	printf("\n");
 
 	/* Deactivate JACK */
 	jack_deactivate(host.jack_client);
 
-	for (unsigned long i = 0; i < host.num_ports; ++i) {
+	for (uint32_t i = 0; i < host.num_ports; ++i) {
 		if (host.ports[i].jack_port != NULL) {
 			jack_port_unregister(host.jack_client, host.ports[i].jack_port);
 			host.ports[i].jack_port = NULL;
@@ -363,6 +447,11 @@ main(int argc, char** argv)
 	slv2_value_free(host.optional);
 	slv2_plugins_free(world, plugins);
 	slv2_world_free(world);
+
+#ifdef SLV2_JACK_SESSION
+	g_mutex_free(exit_mutex);
+	g_cond_free(exit_cond);
+#endif
 
 	return 0;
 }

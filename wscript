@@ -46,16 +46,21 @@ def options(opt):
 			help="Do not build command line utilities")
 	opt.add_option('--no-jack', action='store_true', default=False, dest='no_jack',
 			help="Do not build JACK clients")
+	opt.add_option('--no-jack-session', action='store_true', default=False,
+			dest='no_jack_session',
+			help="Do not build JACK session support")
 	opt.add_option('--no-swig', action='store_true', default=False, dest='no_swig',
 			help="Do not build python bindings")
-	opt.add_option('--dyn-manifest', action='store_true', default=False, dest='dyn_manifest',
+	opt.add_option('--dyn-manifest', action='store_true', default=False,
+			dest='dyn_manifest',
 			help="Build support for dynamic manifest extension [false]")
 	opt.add_option('--test', action='store_true', default=False, dest='build_tests',
 			help="Build unit tests")
 	opt.add_option('--no-bash-completion', action='store_true', default=False,
 			dest='no_bash_completion',
 			help="Install bash completion script in /etc/bash_completion.d")
-	opt.add_option('--default-lv2-path', type='string', default='', dest='default_lv2_path',
+	opt.add_option('--default-lv2-path', type='string', default='',
+			dest='default_lv2_path',
 			help="Default LV2 path to use if $LV2_PATH is unset (globs and ~ supported)")
 
 def configure(conf):
@@ -75,12 +80,16 @@ def configure(conf):
 	autowaf.check_pkg(conf, 'lv2core', uselib_store='LV2CORE', mandatory=True)
 	autowaf.check_pkg(conf, 'glib-2.0', uselib_store='GLIB',
 	                  atleast_version='2.0.0', mandatory=True)
+	autowaf.check_pkg(conf, 'gthread-2.0', uselib_store='GTHREAD',
+	                  atleast_version='2.0.0', mandatory=False)
 	autowaf.check_pkg(conf, 'serd', uselib_store='SERD',
 	                  atleast_version='0.1.0', mandatory=True)
 	autowaf.check_pkg(conf, 'sord', uselib_store='SORD',
 	                  atleast_version='0.1.0', mandatory=True)
 	autowaf.check_pkg(conf, 'jack', uselib_store='JACK',
 	                  atleast_version='0.107.0', mandatory=False)
+	autowaf.check_pkg(conf, 'jack', uselib_store='NEW_JACK',
+					  atleast_version='0.120.0', mandatory=False)
 
 	autowaf.check_header(conf, 'lv2/lv2plug.in/ns/lv2core/lv2.h')
 	autowaf.check_header(conf, 'lv2/lv2plug.in/ns/extensions/ui/ui.h',
@@ -89,6 +98,10 @@ def configure(conf):
 	if conf.env['HAVE_UI_H']:
 		autowaf.define(conf, 'SLV2_WITH_UI', 1)
 
+	if not Options.options.no_jack_session:
+		if conf.env['HAVE_NEW_JACK'] and conf.env['HAVE_GTHREAD']:
+			autowaf.define(conf, 'SLV2_JACK_SESSION', 1)
+			
 	conf.env.append_value('CFLAGS', '-std=c99')
 	autowaf.define(conf, 'SLV2_VERSION', SLV2_VERSION)
 	if Options.options.dyn_manifest:
@@ -146,6 +159,8 @@ def configure(conf):
 	                    bool(conf.env['BUILD_UTILS']))
 	autowaf.display_msg(conf, "Jack clients",
 	                    bool(conf.env['USE_JACK']))
+	autowaf.display_msg(conf, "Jack session support",
+	                    bool(conf.env['SLV2_JACK_SESSION']))
 	autowaf.display_msg(conf, "Unit tests",
 	                    bool(conf.env['BUILD_TESTS']))
 	autowaf.display_msg(conf, "Dynamic manifest support",
@@ -243,6 +258,8 @@ def build(bld):
 		obj.use          = 'libslv2'
 		obj.target       = 'utils/lv2_jack_host'
 		obj.install_path = '${BINDIR}'
+		if bld.env['SLV2_JACK_SESSION']:
+			autowaf.use_lib(bld, obj, 'GLIB GTHREAD')
 
 	# Documentation
 	autowaf.build_dox(bld, 'SLV2', SLV2_VERSION, top, out)
