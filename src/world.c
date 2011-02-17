@@ -373,13 +373,17 @@ slv2_world_load_bundle(SLV2World world, SLV2Value bundle_uri)
 		SLV2Node       binary   = slv2_node_copy(slv2_match_object(binaries));
 		const uint8_t* lib_uri  = sord_node_get_string(binary);
 		const char*    lib_path = slv2_uri_to_path((const char*)lib_uri);
-		if (!lib_path)
+		if (!lib_path) {
+			SLV2_ERROR("No dynamic manifest library path\n");
 			continue;
+		}
 
 		// Open library
 		void* lib = dlopen(lib_path, RTLD_LAZY);
-		if (!lib)
+		if (!lib) {
+			SLV2_ERRORF("Failed to open dynamic manifest library `%s'\n", lib_path);
 			continue;
+		}
 
 		// Open dynamic manifest
 		typedef int (*OpenFunc)(LV2_Dyn_Manifest_Handle*, const LV2_Feature *const *);
