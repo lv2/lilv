@@ -22,6 +22,10 @@
 #include "slv2/slv2.h"
 #include "lv2/lv2plug.in/ns/extensions/ui/ui.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /** @addtogroup slv2
  * @{
  */
@@ -163,5 +167,9 @@ slv2_ui_instance_get_handle(SLV2UIInstance instance);
 
 /** @} */
 /** @} */
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
 
 #endif /* SLV2_SLV2_UI_H__ */

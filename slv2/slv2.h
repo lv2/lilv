@@ -19,14 +19,14 @@
 #ifndef SLV2_SLV2_H__
 #define SLV2_SLV2_H__
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 #include <stdint.h>
 #include <stdbool.h>
 
 #include "lv2/lv2plug.in/ns/lv2core/lv2.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #if defined _WIN32 || defined __CYGWIN__
 	#define SLV2_LIB_IMPORT __declspec(dllimport)

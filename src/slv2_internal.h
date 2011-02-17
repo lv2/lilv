@@ -16,8 +16,6 @@
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "slv2-config.h"
-
 #ifndef SLV2_INTERNAL_H__
 #define SLV2_INTERNAL_H__
 
@@ -36,6 +34,8 @@ extern "C" {
 
 #include "serd/serd.h"
 #include "sord/sord.h"
+
+#include "slv2-config.h"
 
 #ifdef SLV2_DYN_MANIFEST
 #include "lv2/lv2plug.in/ns/ext/dyn-manifest/dyn-manifest.h"
