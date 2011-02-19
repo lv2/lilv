@@ -895,8 +895,6 @@ test_port()
 	slv2_values_free(names);
 	slv2_value_free(name_p);
 
-	TEST_ASSERT(slv2_port_get_value(plug, p, min) == NULL);
-
 	slv2_value_free(integer_prop);
 	slv2_value_free(toggled_prop);
 	slv2_value_free(event_type);
