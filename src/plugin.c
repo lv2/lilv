@@ -498,19 +498,18 @@ slv2_plugin_get_port_ranges_float(SLV2Plugin p,
                                   float*     def_values)
 {
 	slv2_plugin_load_ports_if_necessary(p);
-	for (unsigned i = 0; i < p->num_ports; ++i) {
-		SLV2Port port = p->ports[i];
+	for (uint32_t i = 0; i < p->num_ports; ++i) {
 		SLV2Value def, min, max;
-		slv2_port_get_range(p, port, &def, &min, &max);
-		
-		if (min && min_values)
-			min_values[i] = slv2_value_as_float(min);
+		slv2_port_get_range(p, p->ports[i], &def, &min, &max);
 
-		if (max && max_values)
-			max_values[i] = slv2_value_as_float(max);
+		if (min_values)
+			min_values[i] = min ? slv2_value_as_float(min) : NAN;
 
-		if (def && def_values)
-			def_values[i] = slv2_value_as_float(def);
+		if (max_values)
+			max_values[i] = max ? slv2_value_as_float(max) : NAN;
+
+		if (def_values)
+			def_values[i] = def ? slv2_value_as_float(def) : NAN;
 
 		slv2_value_free(def);
 		slv2_value_free(min);
