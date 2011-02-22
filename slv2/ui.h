@@ -115,7 +115,7 @@ typedef struct _SLV2UIInstance* SLV2UIInstance;
  * @a plugin is not modified or directly referenced by the returned object
  * (instances store only a copy of the plugin's URI).
  *
- * @a host_features NULL-terminated array of features the host supports.
+ * @a features NULL-terminated array of features the host supports.
  * NULL may be passed if the host supports no additional features (unlike
  * the LV2 specification - SLV2 takes care of it).
  *
