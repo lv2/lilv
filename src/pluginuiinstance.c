@@ -129,8 +129,6 @@ slv2_ui_instance_free(SLV2UIInstance instance)
 	dlclose(i->lib_handle);
 	i->lib_handle = NULL;
 	free(i);
-	i = NULL;
-	free(i);
 }
 
 SLV2_API
