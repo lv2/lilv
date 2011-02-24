@@ -24,6 +24,10 @@
 
 #include "slv2_internal.h"
 
+#ifdef HAVE_SUIL
+#include "suil/suil.h"
+#endif
+
 SLV2UI
 slv2_ui_new(SLV2World world,
             SLV2Value uri,
@@ -79,6 +83,20 @@ slv2_ui_get_uri(SLV2UI ui)
 }
 
 SLV2_API
+bool
+slv2_ui_supported(SLV2UI    ui,
+                  SLV2Value widget_type_uri)
+{
+#ifdef HAVE_SUIL
+	return suil_ui_type_supported(
+		slv2_value_as_uri(widget_type_uri),
+		slv2_value_as_uri(slv2_values_get_at(ui->classes, 0)));
+#else
+	return false;
+#endif
+}
+
+SLV2_API
 SLV2Values
 slv2_ui_get_classes(SLV2UI ui)
 {
@@ -109,4 +127,3 @@ slv2_ui_get_binary_uri(SLV2UI ui)
 	assert(ui->binary_uri);
 	return ui->binary_uri;
 }
-

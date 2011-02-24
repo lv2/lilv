@@ -1085,16 +1085,30 @@ SLV2UI
 slv2_uis_get_by_uri(SLV2UIs   uis,
                     SLV2Value uri);
 
-/** Get a list of all UIs available for this plugin.
- * Note this returns the URI of the UI, and not the path/URI to its shared
- * library, use slv2_ui_get_library_uri with the values returned
- * here for that.
- *
+/** Get all UIs for @a plugin.
  * Returned value must be freed by caller using slv2_uis_free.
  */
 SLV2_API
 SLV2UIs
 slv2_plugin_get_uis(SLV2Plugin plugin);
+
+/** Get the default UI for @a plugin.
+ * This function makes a best effort at choosing a default UI for the given
+ * widget type. A native UI for the given widget type will be returned if one
+ * exists, otherwise a UI which can be wrapped by SLV2 will be returned.
+ *
+ * This function makes the common case (a plugin with a single UI, or a single
+ * UI per toolkit) simple, but is not fully powerful since a plugin may have
+ * several usable UIs. To support multiple UIs per plugin, use
+ * @ref slv2_ui_supported to determine which UIs are usable and choose a UI
+ * to instantiate from among them.
+ * 
+ * @return NULL if there is no suitable UI.
+ */
+SLV2_API
+SLV2UI
+slv2_plugin_get_default_ui(SLV2Plugin plugin,
+                           SLV2Value  widget_type_uri);
 
 /** @name Plugin UI
  * @{
@@ -1107,6 +1121,13 @@ slv2_plugin_get_uis(SLV2Plugin plugin);
 SLV2_API
 SLV2Value
 slv2_ui_get_uri(SLV2UI ui);
+
+/** Return true iff @a ui can be instantiated to a widget of the given type.
+ */
+SLV2_API
+bool
+slv2_ui_supported(SLV2UI    ui,
+                  SLV2Value widget_type_uri);
 
 /** Get the types (URIs of RDF classes) of a Plugin UI.
  * @param ui The Plugin UI
@@ -1147,20 +1168,11 @@ slv2_ui_get_binary_uri(SLV2UI ui);
 
 typedef struct _SLV2UIInstance* SLV2UIInstance;
 
-/** Instantiate a plugin UI.
- * The returned object represents shared library objects loaded into memory,
- * it must be cleaned up with slv2_ui_instance_free when no longer
- * needed.
- *
- * @a plugin is not modified or directly referenced by the returned object
- * (instances store only a copy of the plugin's URI).
- *
- * @a features NULL-terminated array of features the host supports.
- * NULL may be passed if the host supports no additional features (unlike
- * the LV2 specification - SLV2 takes care of it).
- *
- * @return NULL if instantiation failed.
+/** DEPRECATED: Instantiate a plugin UI.
+ * This function is deprecated, it does not support widget wrapping.
+ * Use @ref slv2_ui_instantiate instead.
  */
+SLV2_DEPRECATED
 SLV2_API
 SLV2UIInstance
 slv2_ui_instantiate(SLV2Plugin                plugin,
@@ -1168,6 +1180,25 @@ slv2_ui_instantiate(SLV2Plugin                plugin,
                     LV2UI_Write_Function      write_function,
                     LV2UI_Controller          controller,
                     const LV2_Feature* const* features);
+
+/** Instantiate a plugin UI.
+ * The returned object represents shared library objects loaded into memory,
+ * it must be cleaned up with slv2_ui_instance_free when no longer
+ * needed.
+ *
+ * @param features NULL-terminated array of features the host supports.
+ *        NULL may be passed if the host supports no additional features.
+ *
+ * @return NULL if instantiation failed.
+ */
+SLV2_API
+SLV2UIInstance
+slv2_ui_instance_new(SLV2Plugin                plugin,
+                     SLV2UI                    ui,
+                     SLV2Value                 widget_type_uri,
+                     LV2UI_Write_Function      write_function,
+                     LV2UI_Controller          controller,
+                     const LV2_Feature* const* features);
 
 /** Free a plugin UI instance.
  * @a instance is invalid after this call.
@@ -1185,24 +1216,39 @@ SLV2_API
 LV2UI_Widget
 slv2_ui_instance_get_widget(SLV2UIInstance instance);
 
-/** DEPRECATED: Get the LV2UI_Descriptor of the plugin UI instance.
+/** Notify a UI about a change in a plugin port.
+ */
+SLV2_API
+void
+slv2_ui_instance_port_event(SLV2UIInstance instance,
+                            uint32_t       port_index,
+                            uint32_t       buffer_size,
+                            uint32_t       format,
+                            const void*    buffer);
+
+/** Return a data structure defined by some LV2 extension URI.
+ */
+SLV2_API
+const void*
+slv2_ui_instance_extension_data(SLV2UIInstance instance,
+                                const char*    uri);
+
+/** Get the LV2UI_Descriptor of the plugin UI instance.
  * Normally hosts should not need to access the LV2UI_Descriptor directly,
  * use the slv2_ui_instance_* functions.
  *
  * The returned descriptor is shared and must not be deleted.
  */
-SLV2_DEPRECATED
 SLV2_API
 const LV2UI_Descriptor*
 slv2_ui_instance_get_descriptor(SLV2UIInstance instance);
 
-/** DEPRECATED: Get the LV2UI_Handle of the plugin UI instance.
+/** Get the LV2UI_Handle of the plugin UI instance.
  * Normally hosts should not need to access the LV2UI_Handle directly,
  * use the slv2_ui_instance_* functions.
  *
  * The returned handle is shared and must not be deleted.
  */
-SLV2_DEPRECATED
 SLV2_API
 LV2UI_Handle
 slv2_ui_instance_get_handle(SLV2UIInstance instance);

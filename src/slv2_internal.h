@@ -41,6 +41,10 @@ extern "C" {
 #include "lv2/lv2plug.in/ns/ext/dyn-manifest/dyn-manifest.h"
 #endif
 
+#ifdef HAVE_SUIL
+#include "suil/suil.h"
+#endif
+
 #include "slv2/slv2.h"
 
 #define SLV2_NS_DOAP (const uint8_t*)"http://usefulinc.com/ns/doap#"
@@ -151,10 +155,7 @@ struct _SLV2InstanceImpl {
 /* ********* UI Instance ********* */
 
 struct _SLV2UIInstance {
-	void*                   lib_handle;
-	const LV2UI_Descriptor* lv2ui_descriptor;
-	LV2UI_Handle            lv2ui_handle;
-	LV2UI_Widget            widget;
+	SuilInstance instance;
 };
 
 /* ********* Plugin Class ********* */
@@ -238,6 +239,7 @@ struct _SLV2UI {
 };
 
 SLV2UIs slv2_uis_new();
+
 SLV2UI
 slv2_ui_new(SLV2World world,
             SLV2Value uri,

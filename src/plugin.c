@@ -27,7 +27,16 @@
 #include <dlfcn.h>
 #endif
 
+#include "slv2-config.h"
 #include "slv2_internal.h"
+
+#ifdef HAVE_SUIL
+#include "suil/suil.h"
+#endif
+
+#define NS_UI   (const uint8_t*)"http://lv2plug.in/ns/extensions/ui#"
+#define NS_DOAP (const uint8_t*)"http://usefulinc.com/ns/doap#"
+#define NS_FOAF (const uint8_t*)"http://xmlns.com/foaf/0.1/"
 
 /** Ownership of @a uri is taken */
 SLV2Plugin
@@ -694,9 +703,6 @@ slv2_plugin_get_port_by_symbol(SLV2Plugin p,
 	return NULL;
 }
 
-#define NS_DOAP (const uint8_t*)"http://usefulinc.com/ns/doap#"
-#define NS_FOAF (const uint8_t*)"http://xmlns.com/foaf/0.1/"
-
 static SLV2Node
 slv2_plugin_get_author(SLV2Plugin p)
 {
@@ -764,16 +770,14 @@ SLV2_API
 SLV2UIs
 slv2_plugin_get_uis(SLV2Plugin p)
 {
-#define NS_UI (const uint8_t*)"http://lv2plug.in/ns/extensions/ui#"
-
-	SLV2Node ui_ui          = sord_new_uri(p->world->world, NS_UI "ui");
+	SLV2Node ui_ui_node     = sord_new_uri(p->world->world, NS_UI "ui");
 	SLV2Node ui_binary_node = sord_new_uri(p->world->world, NS_UI "binary");
 
 	SLV2UIs     result = slv2_uis_new();
 	SLV2Matches uis    = slv2_plugin_find_statements(
 		p,
 		p->plugin_uri->val.uri_val,
-		ui_ui,
+		ui_ui_node,
 		NULL);
 
 	FOREACH_MATCH(uis) {
@@ -801,7 +805,7 @@ slv2_plugin_get_uis(SLV2Plugin p)
 	slv2_match_end(uis);
 
 	slv2_node_free(ui_binary_node);
-	slv2_node_free(ui_ui);
+	slv2_node_free(ui_ui_node);
 
 	if (slv2_uis_size(result) > 0) {
 		return result;
@@ -809,4 +813,66 @@ slv2_plugin_get_uis(SLV2Plugin p)
 		slv2_uis_free(result);
 		return NULL;
 	}
+}
+
+SLV2_API
+SLV2UI
+slv2_plugin_get_default_ui(SLV2Plugin p,
+                           SLV2Value  widget_type_uri)
+{
+#ifdef HAVE_SUIL
+	SLV2Node ui_ui_node     = sord_new_uri(p->world->world, NS_UI "ui");
+	SLV2Node ui_binary_node = sord_new_uri(p->world->world, NS_UI "binary");
+
+	SLV2Matches uis    = slv2_plugin_find_statements(
+		p,
+		p->plugin_uri->val.uri_val,
+		ui_ui_node,
+		NULL);
+
+	SLV2UI native  = NULL;
+	SLV2UI foreign = NULL;
+	FOREACH_MATCH(uis) {
+		SLV2Node  ui     = slv2_match_object(uis);
+		SLV2Value type   = slv2_plugin_get_unique(p, ui, p->world->rdf_a_node);
+		SLV2Value binary = slv2_plugin_get_unique(p, ui, ui_binary_node);
+
+		if (sord_node_get_type(ui) != SORD_URI
+		    || !slv2_value_is_uri(type)
+		    || !slv2_value_is_uri(binary)) {
+			slv2_value_free(binary);
+			slv2_value_free(type);
+			SLV2_ERROR("Corrupt UI\n");
+			continue;
+		}
+
+		if (!native && slv2_value_equals(type, widget_type_uri)) {
+			native = slv2_ui_new(
+				p->world,
+				slv2_value_new_from_node(p->world, ui),
+				type,
+				binary);
+			break;
+		} else if (!foreign && suil_ui_type_supported(
+			           slv2_value_as_uri(widget_type_uri),
+			           slv2_value_as_uri(type))) {
+			foreign = slv2_ui_new(
+				p->world,
+				slv2_value_new_from_node(p->world, ui),
+				type,
+				binary);
+		} else {
+			slv2_value_free(binary);
+			slv2_value_free(type);
+		}
+	}
+	slv2_match_end(uis);
+
+	slv2_node_free(ui_binary_node);
+	slv2_node_free(ui_ui_node);
+
+	return (native) ? native : foreign;
+#else
+	return NULL;
+#endif
 }

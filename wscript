@@ -89,7 +89,9 @@ def configure(conf):
 	autowaf.check_pkg(conf, 'jack', uselib_store='JACK',
 	                  atleast_version='0.107.0', mandatory=False)
 	autowaf.check_pkg(conf, 'jack', uselib_store='NEW_JACK',
-					  atleast_version='0.120.0', mandatory=False)
+	                  atleast_version='0.120.0', mandatory=False)
+	autowaf.check_pkg(conf, 'suil', uselib_store='SUIL',
+	                  atleast_version='0.0.0', mandatory=True)
 
 	autowaf.check_header(conf, 'lv2/lv2plug.in/ns/lv2core/lv2.h')
 	autowaf.check_header(conf, 'lv2/lv2plug.in/ns/extensions/ui/ui.h')
@@ -163,6 +165,9 @@ def configure(conf):
 	                    bool(conf.env['SLV2_DYN_MANIFEST']))
 	autowaf.display_msg(conf, "Python bindings",
 	                    bool(conf.env['SLV2_SWIG']))
+	autowaf.display_msg(conf, "UI wrapping support (via Suil)",
+	                    bool(conf.env['HAVE_SUIL']))
+
 	print
 
 def build(bld):
@@ -200,7 +205,7 @@ def build(bld):
 	obj.install_path    = '${LIBDIR}'
 	obj.cflags          = [ '-fvisibility=hidden', '-DSLV2_SHARED', '-DSLV2_INTERNAL' ]
 	obj.linkflags       = [ '-ldl' ]
-	autowaf.use_lib(bld, obj, 'SORD SERD LV2CORE GLIB')
+	autowaf.use_lib(bld, obj, 'SORD SERD LV2CORE GLIB SUIL')
 
 	if bld.env['BUILD_TESTS']:
 		# Static library (for unit test code coverage)
@@ -212,7 +217,7 @@ def build(bld):
 		obj.install_path = ''
 		obj.cflags       = [ '-fprofile-arcs',  '-ftest-coverage' ]
 		obj.linkflags    = [ '-ldl' ]
-		autowaf.use_lib(bld, obj, 'SORD SERD LV2CORE GLIB')
+		autowaf.use_lib(bld, obj, 'SORD SERD LV2CORE GLIB SUIL')
 
 		# Unit test program
 		obj = bld(features = 'c cprogram')
