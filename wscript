@@ -92,11 +92,7 @@ def configure(conf):
 					  atleast_version='0.120.0', mandatory=False)
 
 	autowaf.check_header(conf, 'lv2/lv2plug.in/ns/lv2core/lv2.h')
-	autowaf.check_header(conf, 'lv2/lv2plug.in/ns/extensions/ui/ui.h',
-						 'HAVE_UI_H')
-
-	if conf.env['HAVE_UI_H']:
-		autowaf.define(conf, 'SLV2_WITH_UI', 1)
+	autowaf.check_header(conf, 'lv2/lv2plug.in/ns/extensions/ui/ui.h')
 
 	if not Options.options.no_jack_session:
 		if conf.env['HAVE_NEW_JACK'] and conf.env['HAVE_GTHREAD']:
@@ -165,8 +161,6 @@ def configure(conf):
 	                    bool(conf.env['BUILD_TESTS']))
 	autowaf.display_msg(conf, "Dynamic manifest support",
 	                    bool(conf.env['SLV2_DYN_MANIFEST']))
-	autowaf.display_msg(conf, "UI support",
-	                    bool(conf.env['SLV2_WITH_UI']))
 	autowaf.display_msg(conf, "Python bindings",
 	                    bool(conf.env['SLV2_SWIG']))
 	print
@@ -185,6 +179,8 @@ def build(bld):
 		src/pluginclass.c
 		src/plugininstance.c
 		src/plugins.c
+		src/pluginui.c
+		src/pluginuiinstance.c
 		src/port.c
 		src/query.c
 		src/scalepoint.c
@@ -192,12 +188,6 @@ def build(bld):
 		src/value.c
 		src/world.c
 	'''.split()
-
-	if bld.env['SLV2_WITH_UI']:
-		lib_source += '''
-			src/pluginui.c
-			src/pluginuiinstance.c
-		'''.split()
 
 	# Library
 	obj = bld(features = 'c cshlib')

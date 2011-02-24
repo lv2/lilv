@@ -760,7 +760,6 @@ slv2_plugin_get_author_homepage(SLV2Plugin plugin)
 	return NULL;
 }
 
-#ifdef SLV2_WITH_UI
 SLV2_API
 SLV2UIs
 slv2_plugin_get_uis(SLV2Plugin p)
@@ -811,4 +810,3 @@ slv2_plugin_get_uis(SLV2Plugin p)
 		return NULL;
 	}
 }
-#endif /* SLV2_WITH_UI */

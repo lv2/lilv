@@ -42,9 +42,6 @@ extern "C" {
 #endif
 
 #include "slv2/slv2.h"
-#ifdef SLV2_WITH_UI
-#include "slv2/ui.h"
-#endif
 
 #define SLV2_NS_DOAP (const uint8_t*)"http://usefulinc.com/ns/doap#"
 #define SLV2_NS_RDFS (const uint8_t*)"http://www.w3.org/2000/01/rdf-schema#"
@@ -153,14 +150,12 @@ struct _SLV2InstanceImpl {
 
 /* ********* UI Instance ********* */
 
-#ifdef SLV2_WITH_UI
 struct _SLV2UIInstance {
 	void*                   lib_handle;
 	const LV2UI_Descriptor* lv2ui_descriptor;
 	LV2UI_Handle            lv2ui_handle;
 	LV2UI_Widget            widget;
 };
-#endif
 
 /* ********* Plugin Class ********* */
 
@@ -234,8 +229,6 @@ slv2_world_load_file(SLV2World world, const char* file_uri);
 
 /* ********* Plugin UI ********* */
 
-#ifdef SLV2_WITH_UI
-
 struct _SLV2UI {
 	struct _SLV2World* world;
 	SLV2Value          uri;
@@ -252,8 +245,6 @@ slv2_ui_new(SLV2World world,
             SLV2Value binary_uri);
 
 void slv2_ui_free(SLV2UI ui);
-
-#endif /* SLV2_WITH_UI */
 
 /* ********* Value ********* */
 

@@ -30,9 +30,6 @@
 #include <math.h>
 
 #include "slv2/slv2.h"
-#ifdef SLV2_WITH_UI
-#include "slv2/ui.h"
-#endif
 
 #define TEST_PATH_MAX 1024
 
@@ -710,11 +707,9 @@ test_plugin()
 	TEST_ASSERT(slv2_value_is_string(thing_name));
 	TEST_ASSERT(!strcmp(slv2_value_as_string(thing_name), "Something else"));
 
-	#ifdef SLV2_WITH_UI
 	SLV2UIs uis = slv2_plugin_get_uis(plug);
 	TEST_ASSERT(slv2_uis_size(uis) == 0);
 	slv2_uis_free(uis);
-	#endif
 
 	slv2_values_free(thing_names);
 	slv2_value_free(thing_uri);
@@ -918,7 +913,6 @@ test_port()
 
 /*****************************************************************************/
 
-#ifdef SLV2_WITH_UI
 int
 test_ui()
 {
@@ -1019,7 +1013,6 @@ test_ui()
 	cleanup_uris();
 	return 1;
 }
-#endif /* SLV2_WITH_UI */
 
 /*****************************************************************************/
 
@@ -1035,9 +1028,7 @@ static struct TestCase tests[] = {
 	TEST_CASE(plugin),
 	TEST_CASE(port),
 	TEST_CASE(plugin),
-#ifdef SLV2_WITH_UI
 	TEST_CASE(ui),
-#endif
 	{ NULL, NULL }
 };
 
