@@ -1170,7 +1170,7 @@ typedef struct _SLV2UIInstance* SLV2UIInstance;
 
 /** DEPRECATED: Instantiate a plugin UI.
  * This function is deprecated, it does not support widget wrapping.
- * Use @ref slv2_ui_instantiate instead.
+ * Use @ref slv2_ui_instance_new instead.
  */
 SLV2_DEPRECATED
 SLV2_API
