@@ -168,7 +168,7 @@ def configure(conf):
 	autowaf.display_msg(conf, "UI wrapping support (via Suil)",
 	                    bool(conf.env['HAVE_SUIL']))
 
-	print
+	print()
 
 def build(bld):
 	# C/C++ Headers
