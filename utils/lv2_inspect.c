@@ -168,8 +168,14 @@ print_plugin(SLV2Plugin p)
 		printf("\tHas latency:       no\n");
 	}
 
-	printf("\tBundle:            %s\n", slv2_value_as_uri(slv2_plugin_get_bundle_uri(p)));
-	printf("\tBinary:            %s\n", slv2_value_as_uri(slv2_plugin_get_library_uri(p)));
+	printf("\tBundle:            %s\n",
+	       slv2_value_as_uri(slv2_plugin_get_bundle_uri(p)));
+
+	SLV2Value binary_uri = slv2_plugin_get_library_uri(p);
+	if (binary_uri) {
+		printf("\tBinary:            %s\n",
+		       slv2_value_as_uri(slv2_plugin_get_library_uri(p)));
+	}
 
 	SLV2UIs uis = slv2_plugin_get_uis(p);
 	if (slv2_values_size(uis) > 0) {

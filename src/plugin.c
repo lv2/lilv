@@ -330,6 +330,10 @@ slv2_plugin_get_library_uri(SLV2Plugin p)
 		}
 		slv2_match_end(results);
 	}
+	if (!p->binary_uri) {
+		SLV2_WARNF("Plugin <%s> has no lv2:binary\n",
+		           slv2_value_as_uri(slv2_plugin_get_uri(p)));
+	}
 	return p->binary_uri;
 }
 
