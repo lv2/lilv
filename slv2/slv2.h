@@ -30,8 +30,8 @@
 #ifndef SLV2_SLV2_H
 #define SLV2_SLV2_H
 
-#include <stdint.h>
 #include <stdbool.h>
+#include <stdint.h>
 
 #include "lv2/lv2plug.in/ns/lv2core/lv2.h"
 #include "lv2/lv2plug.in/ns/extensions/ui/ui.h"
