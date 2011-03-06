@@ -1306,11 +1306,62 @@ slv2_ui_instantiate(SLV2Plugin                plugin,
                     const LV2_Feature* const* features);
 
 /**
+   A UI host descriptor.
+
+   A UI host descriptor contains the various functions that a plugin UI may
+   use to communicate with the plugin. It is passed to @ref
+   slv2_ui_instance_new to provide these functions to the UI.
+*/
+typedef struct _SLV2UIHost* SLV2UIHost;
+
+typedef uint32_t (*SLV2PortIndexFunction)(LV2UI_Controller controller,
+                                          const char*      port_symbol);
+
+typedef uint32_t (*SLV2PortSubscribeFunction)(LV2UI_Controller controller,
+                                              uint32_t         port_index,
+                                              uint32_t         protocol);
+
+typedef uint32_t (*SLV2PortUnsubscribeFunction)(LV2UI_Controller controller,
+                                                uint32_t         port_index,
+                                                uint32_t         protocol);
+
+/**
+   Create a new UI host descriptor.
+
+   @param controller Opaque host pointer passed to each function.
+   @param write_function Function to send a value to a plugin port.
+   @param port_index_function Function to get the index for a port by symbol.
+   @param port_subscribe_function Function to subscribe to port updates.
+   @param port_unsubscribe_function Function to unsubscribe from port updates.
+*/
+SLV2_API
+SLV2UIHost
+slv2_ui_host_new(LV2UI_Controller            controller,
+                 LV2UI_Write_Function        write_function,
+                 SLV2PortIndexFunction       port_index_function,
+                 SLV2PortSubscribeFunction   port_subscribe_function,
+                 SLV2PortUnsubscribeFunction port_unsubscribe_function);
+
+/**
+   Free @a ui_host.
+*/
+SLV2_API
+void
+slv2_ui_host_free(SLV2UIHost ui_host);
+
+/**
    Instantiate a plugin UI.
-   The returned object represents shared library objects loaded into memory,
-   it must be cleaned up with slv2_ui_instance_free when no longer
-   needed.
- 
+   
+   The returned object represents shared library objects loaded into memory, it
+   must be cleaned up with slv2_ui_instance_free when no longer needed. The
+   returned object does not refer to @a ui_host directly (though it of course
+   refers to the fields of @a ui_host themselves), so @a ui_host may safely be
+   freed any time after this call.
+
+   @param plugin The plugin this UI is for.
+   @param ui The plugin UI to instantiate.
+   @param widget_type_uri The type of the desired widget.
+   @param ui_host UI host descriptor (callbacks).
    @param features NULL-terminated array of features the host supports.
    NULL may be passed if the host supports no additional features.
  
@@ -1321,8 +1372,7 @@ SLV2UIInstance
 slv2_ui_instance_new(SLV2Plugin                plugin,
                      SLV2UI                    ui,
                      SLV2Value                 widget_type_uri,
-                     LV2UI_Write_Function      write_function,
-                     LV2UI_Controller          controller,
+                     SLV2UIHost                ui_host,
                      const LV2_Feature* const* features);
 
 /**

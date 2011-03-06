@@ -45,17 +45,46 @@ slv2_ui_instantiate(SLV2Plugin                plugin,
                     LV2UI_Controller          controller,
                     const LV2_Feature* const* features)
 {
-	return slv2_ui_instance_new(
-		plugin, ui, NULL, write_function, controller, features);
+	SLV2UIHost ui_host = slv2_ui_host_new(
+		controller, write_function, NULL, NULL, NULL);
+	
+	SLV2UIInstance ret = slv2_ui_instance_new(
+		plugin, ui, NULL, ui_host, features);
+
+	slv2_ui_host_free(ui_host);
+	return ret;
 }
 
+SLV2_API
+SLV2UIHost
+slv2_ui_host_new(LV2UI_Controller            controller,
+                 LV2UI_Write_Function        write_function,
+                 SLV2PortIndexFunction       port_index_function,
+                 SLV2PortSubscribeFunction   port_subscribe_function,
+                 SLV2PortUnsubscribeFunction port_unsubscribe_function)
+{
+	SLV2UIHost ret = malloc(sizeof(struct _SLV2UIHost));
+	ret->controller                = controller;
+	ret->write_function            = write_function;
+	ret->port_index_function       = port_index_function;
+	ret->port_subscribe_function   = port_subscribe_function;
+	ret->port_unsubscribe_function = port_unsubscribe_function;
+	return ret;
+}
+
+SLV2_API
+void
+slv2_ui_host_free(SLV2UIHost ui_host)
+{
+	free(ui_host);
+}
+	
 SLV2_API
 SLV2UIInstance
 slv2_ui_instance_new(SLV2Plugin                plugin,
                      SLV2UI                    ui,
                      SLV2Value                 widget_type_uri,
-                     LV2UI_Write_Function      write_function,
-                     LV2UI_Controller          controller,
+                     SLV2UIHost                ui_host,
                      const LV2_Feature* const* features)
 {
 #ifdef HAVE_SUIL
@@ -79,8 +108,8 @@ slv2_ui_instance_new(SLV2Plugin                plugin,
 		lib_path,
 		slv2_value_as_uri(ui_type),
 		slv2_value_as_uri(widget_type_uri),
-		write_function,
-		controller,
+		ui_host->write_function,
+		ui_host->controller,
 		features);
 
 	if (!suil_instance) {

@@ -158,6 +158,14 @@ struct _SLV2UIInstance {
 	SuilInstance instance;
 };
 
+struct _SLV2UIHost {
+	LV2UI_Controller            controller;
+	LV2UI_Write_Function        write_function;
+	SLV2PortIndexFunction       port_index_function;
+	SLV2PortSubscribeFunction   port_subscribe_function;
+	SLV2PortUnsubscribeFunction port_unsubscribe_function;
+};
+
 /* ********* Plugin Class ********* */
 
 struct _SLV2PluginClass {
