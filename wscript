@@ -167,8 +167,7 @@ def configure(conf):
 	                    bool(conf.env['SLV2_SWIG']))
 	autowaf.display_msg(conf, "UI wrapping support (via Suil)",
 	                    bool(conf.env['HAVE_SUIL']))
-
-	print()
+	print('')
 
 def build(bld):
 	# C/C++ Headers
