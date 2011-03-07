@@ -375,7 +375,7 @@ slv2_plugin_get_class(SLV2Plugin p)
 				SLV2PluginClass plugin_class = slv2_plugin_classes_get_by_uri(
 						p->world->plugin_classes, class);
 
-				slv2_node_free(class_node);
+				slv2_node_free(p->world, class_node);
 
 				if (plugin_class) {
 					p->plugin_class = plugin_class;
@@ -726,7 +726,7 @@ slv2_plugin_get_author(SLV2Plugin p)
 		doap_maintainer,
 		NULL);
 
-	slv2_node_free(doap_maintainer);
+	slv2_node_free(p->world, doap_maintainer);
 
 	if (slv2_matches_end(maintainers)) {
 		return NULL;
@@ -815,8 +815,8 @@ slv2_plugin_get_uis(SLV2Plugin p)
 	}
 	slv2_match_end(uis);
 
-	slv2_node_free(ui_binary_node);
-	slv2_node_free(ui_ui_node);
+	slv2_node_free(p->world, ui_binary_node);
+	slv2_node_free(p->world, ui_ui_node);
 
 	if (slv2_uis_size(result) > 0) {
 		return result;
@@ -879,8 +879,8 @@ slv2_plugin_get_default_ui(SLV2Plugin p,
 	}
 	slv2_match_end(uis);
 
-	slv2_node_free(ui_binary_node);
-	slv2_node_free(ui_ui_node);
+	slv2_node_free(p->world, ui_binary_node);
+	slv2_node_free(p->world, ui_ui_node);
 
 	return (native) ? native : foreign;
 #else

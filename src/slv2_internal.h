@@ -302,10 +302,11 @@ struct _SLV2Header*
 slv2_sequence_get_by_uri(GSequence* seq, SLV2Value uri);
 
 static inline SLV2Node slv2_node_copy(SLV2Node node) {
-	return node;
+	return sord_node_copy(node);
 }
 
-static inline void slv2_node_free(SLV2Node node) {
+static inline void slv2_node_free(SLV2World world, SLV2Node node) {
+	sord_node_free(world->world, node);
 }
 
 

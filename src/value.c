@@ -219,11 +219,9 @@ void
 slv2_value_free(SLV2Value val)
 {
 	if (val) {
-		if (val->type == SLV2_VALUE_URI)
-			slv2_node_free(val->val.uri_val);
-		else
+		if (val->type != SLV2_VALUE_URI) {
 			free(val->str_val);
-
+		}
 		free(val);
 	}
 }

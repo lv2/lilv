@@ -127,31 +127,30 @@ slv2_world_free(SLV2World world)
 	slv2_plugin_class_free(world->lv2_plugin_class);
 	world->lv2_plugin_class = NULL;
 
-	slv2_node_free(world->dyn_manifest_node);
-	slv2_node_free(world->lv2_specification_node);
-	slv2_node_free(world->lv2_plugin_node);
-	slv2_node_free(world->lv2_binary_node);
-	slv2_node_free(world->lv2_default_node);
-	slv2_node_free(world->lv2_minimum_node);
-	slv2_node_free(world->lv2_maximum_node);
-	slv2_node_free(world->lv2_port_node);
-	slv2_node_free(world->lv2_portproperty_node);
-	slv2_node_free(world->lv2_reportslatency_node);
-	slv2_node_free(world->lv2_index_node);
-	slv2_node_free(world->lv2_symbol_node);
-	slv2_node_free(world->rdf_a_node);
-	slv2_node_free(world->rdf_value_node);
-	slv2_node_free(world->rdfs_label_node);
-	slv2_node_free(world->rdfs_seealso_node);
-	slv2_node_free(world->rdfs_subclassof_node);
-	slv2_node_free(world->rdfs_class_node);
-	slv2_node_free(world->slv2_bundleuri_node);
-	slv2_node_free(world->slv2_dmanifest_node);
-	slv2_node_free(world->xsd_boolean_node);
-	slv2_node_free(world->xsd_decimal_node);
-	slv2_node_free(world->xsd_double_node);
-	slv2_node_free(world->xsd_integer_node);
-
+	slv2_node_free(world, world->dyn_manifest_node);
+	slv2_node_free(world, world->lv2_specification_node);
+	slv2_node_free(world, world->lv2_plugin_node);
+	slv2_node_free(world, world->lv2_binary_node);
+	slv2_node_free(world, world->lv2_default_node);
+	slv2_node_free(world, world->lv2_minimum_node);
+	slv2_node_free(world, world->lv2_maximum_node);
+	slv2_node_free(world, world->lv2_port_node);
+	slv2_node_free(world, world->lv2_portproperty_node);
+	slv2_node_free(world, world->lv2_reportslatency_node);
+	slv2_node_free(world, world->lv2_index_node);
+	slv2_node_free(world, world->lv2_symbol_node);
+	slv2_node_free(world, world->rdf_a_node);
+	slv2_node_free(world, world->rdf_value_node);
+	slv2_node_free(world, world->rdfs_label_node);
+	slv2_node_free(world, world->rdfs_seealso_node);
+	slv2_node_free(world, world->rdfs_subclassof_node);
+	slv2_node_free(world, world->rdfs_class_node);
+	slv2_node_free(world, world->slv2_bundleuri_node);
+	slv2_node_free(world, world->slv2_dmanifest_node);
+	slv2_node_free(world, world->xsd_boolean_node);
+	slv2_node_free(world, world->xsd_decimal_node);
+	slv2_node_free(world, world->xsd_double_node);
+	slv2_node_free(world, world->xsd_integer_node);
 	slv2_value_free(world->doap_name_val);
 	slv2_value_free(world->lv2_name_val);
 
@@ -450,7 +449,7 @@ slv2_world_load_bundle(SLV2World world, SLV2Value bundle_uri)
 		// Add ?specification rdfs:seeAlso <manifest.ttl>
 		SordQuad see_also_tup = {
 			slv2_node_copy(spec),
-			world->rdfs_seealso_node,
+			slv2_node_copy(world->rdfs_seealso_node),
 			sord_new_uri(world->world, manifest_uri.buf),
 			NULL
 		};
@@ -651,9 +650,6 @@ slv2_world_load_plugin_classes(SLV2World world)
 		if (pclass) {
 			slv2_sequence_insert(classes, pclass);
 		}
-
-		slv2_node_free(parent_node);
-		slv2_node_free(label_node);
 	}
 	slv2_match_end(classes);
 }
