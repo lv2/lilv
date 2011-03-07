@@ -313,6 +313,7 @@ slv2_world_add_plugin(SLV2World world,
 		slv2_array_append(plugin->data_uris,
 		                  slv2_value_new_from_node(world, file_node));
 	}
+	slv2_match_end(files);
 
 	// Add plugin to world plugin sequence
 	slv2_sequence_insert(world->plugins, plugin);
