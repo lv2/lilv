@@ -1027,7 +1027,6 @@ static struct TestCase tests[] = {
 	TEST_CASE(classes),
 	TEST_CASE(plugin),
 	TEST_CASE(port),
-	TEST_CASE(plugin),
 	TEST_CASE(ui),
 	{ NULL, NULL }
 };
