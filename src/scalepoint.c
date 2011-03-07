@@ -23,14 +23,6 @@
   THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#define _XOPEN_SOURCE 500
-
-#include <assert.h>
-#include <stdlib.h>
-#include <string.h>
-
-#include <glib.h>
-
 #include "slv2_internal.h"
 
 /** Ownership of value and label is taken */
@@ -39,7 +31,7 @@ slv2_scale_point_new(SLV2Value value, SLV2Value label)
 {
 	SLV2ScalePoint point = (SLV2ScalePoint)malloc(sizeof(struct _SLV2ScalePoint));
 	point->value = value;
-	point->label= label;
+	point->label = label;
 	return point;
 }
 
@@ -64,4 +56,3 @@ slv2_scale_point_get_label(SLV2ScalePoint p)
 {
 	return p->label;
 }
-
