@@ -119,7 +119,8 @@ slv2_value_new_from_node(SLV2World world, SordNode node)
 		if (datatype_uri) {
 			if (sord_node_equals(datatype_uri, world->xsd_boolean_node))
 				type = SLV2_VALUE_BOOL;
-			else if (sord_node_equals(datatype_uri, world->xsd_decimal_node))
+			else if (sord_node_equals(datatype_uri, world->xsd_decimal_node)
+			         || sord_node_equals(datatype_uri, world->xsd_double_node))
 				type = SLV2_VALUE_FLOAT;
 			else if (sord_node_equals(datatype_uri, world->xsd_integer_node))
 				type = SLV2_VALUE_INT;

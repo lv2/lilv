@@ -92,6 +92,7 @@ slv2_world_new()
 	world->slv2_dmanifest_node     = NEW_URI(SLV2_NS_SLV2 "dynamic-manifest");
 	world->xsd_boolean_node        = NEW_URI(SLV2_NS_XSD  "boolean");
 	world->xsd_decimal_node        = NEW_URI(SLV2_NS_XSD  "decimal");
+	world->xsd_double_node         = NEW_URI(SLV2_NS_XSD  "double");
 	world->xsd_integer_node        = NEW_URI(SLV2_NS_XSD  "integer");
 
 	world->doap_name_val = NEW_URI_VAL(SLV2_NS_DOAP "name");
@@ -148,6 +149,7 @@ slv2_world_free(SLV2World world)
 	slv2_node_free(world->slv2_dmanifest_node);
 	slv2_node_free(world->xsd_boolean_node);
 	slv2_node_free(world->xsd_decimal_node);
+	slv2_node_free(world->xsd_double_node);
 	slv2_node_free(world->xsd_integer_node);
 
 	slv2_value_free(world->doap_name_val);
