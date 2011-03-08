@@ -294,8 +294,8 @@ slv2_sequence_insert(GSequence* seq, void* value)
 }
 
 static inline void
-slv2_array_append(GPtrArray* array, void* value) {
-	g_ptr_array_add(array, value);
+slv2_array_append(GSequence* seq, void* value) {
+	g_sequence_append(seq, value);
 }
 
 struct _SLV2Header*

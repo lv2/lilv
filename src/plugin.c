@@ -659,16 +659,14 @@ slv2_plugin_get_supported_features(SLV2Plugin p)
 	unsigned   n_optional = slv2_values_size(optional);
 	unsigned   n_required = slv2_values_size(required);
 	for (unsigned i = 0 ; i < n_optional; ++i)
-		slv2_array_append(result, slv2_values_get_at(optional, i));
+		slv2_array_append(
+			result, slv2_value_duplicate(slv2_values_get_at(optional, i)));
 	for (unsigned i = 0 ; i < n_required; ++i)
-		slv2_array_append(result, slv2_values_get_at(required, i));
+		slv2_array_append(
+			result, slv2_value_duplicate(slv2_values_get_at(required, i)));
 
-	if (optional) {
-		free(((GPtrArray*)optional)->pdata);
-	}
-	if (required) {
-		free(((GPtrArray*)required)->pdata);
-	}
+	slv2_values_free(optional);
+	slv2_values_free(required);
 
 	return result;
 }

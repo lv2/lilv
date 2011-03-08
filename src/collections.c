@@ -27,47 +27,6 @@
 
 #include "slv2_internal.h"
 
-/* ARRAYS */
-
-#define SLV2_ARRAY_IMPL(CollType, ElemType, prefix, free_func) \
-\
-CollType \
-prefix ## _new() \
-{ \
-	return g_ptr_array_new_with_free_func((GDestroyNotify)free_func); \
-} \
-\
-SLV2_API \
-void \
-prefix ## _free(CollType coll) \
-{ \
-	if (coll) \
-		g_ptr_array_unref((GPtrArray*)coll); \
-} \
-\
-SLV2_API \
-unsigned \
-prefix ## _size(CollType coll) \
-{ \
-	return (coll ? ((GPtrArray*)coll)->len : 0); \
-} \
-\
-SLV2_API \
-ElemType \
-prefix ## _get_at(CollType coll, unsigned index) \
-{ \
-	if (!coll || index >= ((GPtrArray*)coll)->len) \
-		return NULL; \
-	else \
-		return (ElemType)g_ptr_array_index((GPtrArray*)coll, (int)index); \
-}
-
-SLV2_ARRAY_IMPL(SLV2ScalePoints, SLV2ScalePoint,
-		slv2_scale_points, &slv2_scale_point_free)
-SLV2_ARRAY_IMPL(SLV2Values, SLV2Value,
-		slv2_values, &slv2_value_free)
-
-
 /* SEQUENCE */
 
 #define SLV2_SEQUENCE_IMPL(CollType, ElemType, prefix, free_func) \
@@ -103,20 +62,33 @@ prefix ## _get_at(CollType coll, unsigned index) \
 		GSequenceIter* i = g_sequence_get_iter_at_pos((GSequence*)coll, (int)index); \
 		return (ElemType)g_sequence_get(i); \
 	} \
-} \
-\
-SLV2_API \
-ElemType \
-prefix ## _get_by_uri(CollType coll, SLV2Value uri) \
-{ \
-	return (ElemType)slv2_sequence_get_by_uri(coll, uri); \
 }
+
+SLV2_SEQUENCE_IMPL(SLV2ScalePoints, SLV2ScalePoint,
+                   slv2_scale_points, &slv2_scale_point_free)
+
+SLV2_SEQUENCE_IMPL(SLV2Values, SLV2Value,
+                   slv2_values, &slv2_value_free)
 
 SLV2_SEQUENCE_IMPL(SLV2PluginClasses, SLV2PluginClass,
                    slv2_plugin_classes, &slv2_plugin_class_free)
 
 SLV2_SEQUENCE_IMPL(SLV2UIs, SLV2UI,
                    slv2_uis, &slv2_ui_free)
+
+SLV2_API
+SLV2PluginClass
+slv2_plugin_classes_get_by_uri(SLV2PluginClasses coll, SLV2Value uri)
+{
+	return (SLV2PluginClass)slv2_sequence_get_by_uri(coll, uri);
+}
+
+SLV2_API
+SLV2UI
+slv2_uis_get_by_uri(SLV2UIs coll, SLV2Value uri)
+{
+	return (SLV2UIs)slv2_sequence_get_by_uri(coll, uri);
+}
 
 
 /* VALUES */
