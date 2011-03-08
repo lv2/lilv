@@ -177,6 +177,7 @@ slv2_value_equals(SLV2Value value, SLV2Value other);
 
 /**
    Return this value as a Turtle/SPARQL token.
+   Returned value must be freed by caller with slv2_value_free.
    <table>
    <caption>Example Turtle Tokens</caption>
    <tr><th>URI</th><td>&lt;http://example.org/foo &gt;</td></tr>
@@ -233,7 +234,7 @@ slv2_value_is_literal(SLV2Value value);
 
 /**
    Return whether this value is a string literal.
-   Returns true if @a value is a string (but not  numeric) value.
+   Returns true if @a value is a string value (and not numeric).
 */
 SLV2_API
 bool
@@ -367,17 +368,6 @@ unsigned
 slv2_plugins_size(SLV2Plugins plugins);
 
 /**
-   Get a plugin from @a plugins by URI.
-   Return value is shared (stored in @a plugins) and must not be freed or
-   modified by the caller in any way.
-   @return NULL if no plugin with @a uri is found in @a plugins.
-*/
-SLV2_API
-SLV2Plugin
-slv2_plugins_get_by_uri(SLV2Plugins plugins,
-                        SLV2Value   uri);
-
-/**
    Get a plugin from @a plugins by index.
    @a index has no significance other than as an index into this plugins.
    Any @a index not less than slv2_plugins_get_length(plugins) will return NULL,
@@ -389,6 +379,17 @@ SLV2_API
 SLV2Plugin
 slv2_plugins_get_at(SLV2Plugins plugins,
                     unsigned    index);
+
+/**
+   Get a plugin from @a plugins by URI.
+   Return value is shared (stored in @a plugins) and must not be freed or
+   modified by the caller in any way.
+   @return NULL if no plugin with @a uri is found in @a plugins.
+*/
+SLV2_API
+SLV2Plugin
+slv2_plugins_get_by_uri(SLV2Plugins plugins,
+                        SLV2Value   uri);
 
 /**
    Get a plugin class from @a classes by URI.
