@@ -1337,8 +1337,7 @@ typedef uint32_t (*SLV2PortUnsubscribeFunction)(LV2UI_Controller controller,
 */
 SLV2_API
 SLV2UIHost
-slv2_ui_host_new(LV2UI_Controller            controller,
-                 LV2UI_Write_Function        write_function,
+slv2_ui_host_new(LV2UI_Write_Function        write_function,
                  SLV2PortIndexFunction       port_index_function,
                  SLV2PortSubscribeFunction   port_subscribe_function,
                  SLV2PortUnsubscribeFunction port_unsubscribe_function);
@@ -1374,6 +1373,7 @@ slv2_ui_instance_new(SLV2Plugin                plugin,
                      SLV2UI                    ui,
                      SLV2Value                 widget_type_uri,
                      SLV2UIHost                ui_host,
+                     LV2UI_Controller          controller,
                      const LV2_Feature* const* features);
 
 /**

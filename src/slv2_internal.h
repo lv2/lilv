@@ -159,7 +159,6 @@ struct _SLV2UIInstance {
 };
 
 struct _SLV2UIHost {
-	LV2UI_Controller            controller;
 	LV2UI_Write_Function        write_function;
 	SLV2PortIndexFunction       port_index_function;
 	SLV2PortSubscribeFunction   port_subscribe_function;
