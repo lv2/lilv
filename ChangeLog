@@ -10,6 +10,8 @@ slv2 (UNRELEASED) unstable; urgency=low
   * Add slv2_world_set_option for runtime configuration of SLV2 features.
   * Add SLV2_OPTION_FILTER_LANG option (to optionally disable i18n).
   * Document entire API in single header file / page.
+  * Add new collections and iterator API (and deprecate index based API)
+  * Remove the questionable slv2_world_get_plugins_by_filter.
   * Switch to 2-clause BSD license.
   * *** API BREAK ***
 
