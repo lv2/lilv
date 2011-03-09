@@ -154,13 +154,8 @@ slv2_world_free(SLV2World world)
 	slv2_value_free(world->doap_name_val);
 	slv2_value_free(world->lv2_name_val);
 
-#define SLV2_FOREACH(iter, seq) \
-	for (GSequenceIter* (iter) = g_sequence_get_begin_iter(seq); \
-	     (iter) != g_sequence_get_end_iter(seq); \
-	     (iter) = g_sequence_iter_next(iter))
-
 	SLV2_FOREACH(i, world->plugins) {
-		SLV2Plugin p = g_sequence_get(i);
+		SLV2Plugin p = slv2_plugins_get(world->plugins, i);
 		slv2_plugin_free(p);
 	}
 	g_sequence_free(world->plugins);
@@ -689,22 +684,6 @@ SLV2Plugins
 slv2_world_get_all_plugins(SLV2World world)
 {
 	return world->plugins;
-}
-
-SLV2_API
-SLV2Plugins
-slv2_world_get_plugins_by_filter(SLV2World world, bool (*include)(SLV2Plugin))
-{
-	SLV2Plugins result = slv2_plugins_new();
-
-	const unsigned n = slv2_plugins_size(world->plugins);
-	for (unsigned i = 0; i < n; ++i) {
-		SLV2Plugin p = slv2_plugins_get_at(world->plugins, i);
-		if (include(p))
-			slv2_sequence_insert(result, p);
-	}
-
-	return result;
 }
 
 SLV2_API

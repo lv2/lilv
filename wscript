@@ -182,7 +182,6 @@ def build(bld):
 		src/plugin.c
 		src/pluginclass.c
 		src/plugininstance.c
-		src/plugins.c
 		src/pluginui.c
 		src/pluginuiinstance.c
 		src/port.c

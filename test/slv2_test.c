@@ -324,30 +324,6 @@ test_values()
 
 static int discovery_plugin_found = 0;
 
-static bool
-discovery_plugin_filter_all(SLV2Plugin plugin)
-{
-	return true;
-}
-
-static bool
-discovery_plugin_filter_none(SLV2Plugin plugin)
-{
-	return false;
-}
-
-static bool
-discovery_plugin_filter_ours(SLV2Plugin plugin)
-{
-	return slv2_value_equals(slv2_plugin_get_uri(plugin), plugin_uri_value);
-}
-
-static bool
-discovery_plugin_filter_fake(SLV2Plugin plugin)
-{
-	return slv2_value_equals(slv2_plugin_get_uri(plugin), plugin2_uri_value);
-}
-
 static void
 discovery_verify_plugin(SLV2Plugin plugin)
 {
@@ -370,8 +346,6 @@ discovery_verify_plugin(SLV2Plugin plugin)
 int
 test_discovery()
 {
-	SLV2Plugins plugins = NULL;
-
 	if (!start_bundle(MANIFEST_PREFIXES
 			":plug a lv2:Plugin ; lv2:binary <foo.so> ; rdfs:seeAlso <plugin.ttl> .\n",
 			BUNDLE_PREFIXES
@@ -384,64 +358,26 @@ test_discovery()
 
 	init_uris();
 
-	/* lookup 1: all plugins (get_all_plugins)
-	 * lookup 2: all plugins (get_plugins_by_filter, always true)
-	 * lookup 3: no plugins (get_plugins_by_filter, always false)
-	 * lookup 4: only example plugin (get_plugins_by_filter)
-	 * lookup 5: no plugins (get_plugins_by_filter, non-existing plugin)
-	 */
-	for (int lookup = 1; lookup <= 5; lookup++) {
-		//printf("Lookup variant %d\n", lookup);
-		int expect_found = 0;
-		switch (lookup) {
-		case 1:
-			plugins = slv2_world_get_all_plugins(world);
-			TEST_ASSERT(slv2_plugins_size(plugins) > 0);
-			expect_found = 1;
-			break;
-		case 2:
-			plugins = slv2_world_get_plugins_by_filter(world,
-					discovery_plugin_filter_all);
-			TEST_ASSERT(slv2_plugins_size(plugins) > 0);
-			expect_found = 1;
-			break;
-		case 3:
-			plugins = slv2_world_get_plugins_by_filter(world,
-					discovery_plugin_filter_none);
-			TEST_ASSERT(slv2_plugins_size(plugins) == 0);
-			break;
-		case 4:
-			plugins = slv2_world_get_plugins_by_filter(world,
-					discovery_plugin_filter_ours);
-			TEST_ASSERT(slv2_plugins_size(plugins) == 1);
-			expect_found = 1;
-			break;
-		case 5:
-			plugins = slv2_world_get_plugins_by_filter(world,
-					discovery_plugin_filter_fake);
-			TEST_ASSERT(slv2_plugins_size(plugins) == 0);
-			break;
-		}
+	SLV2Plugins plugins = slv2_world_get_all_plugins(world);
+	TEST_ASSERT(slv2_plugins_size(plugins) > 0);
 
-		SLV2Plugin explug = slv2_plugins_get_by_uri(plugins, plugin_uri_value);
-		TEST_ASSERT((explug != NULL) == expect_found);
-		SLV2Plugin explug2 = slv2_plugins_get_by_uri(plugins, plugin2_uri_value);
-		TEST_ASSERT(explug2 == NULL);
+	SLV2Plugin explug = slv2_plugins_get_by_uri(plugins, plugin_uri_value);
+	TEST_ASSERT(explug != NULL);
+	SLV2Plugin explug2 = slv2_plugins_get_by_uri(plugins, plugin2_uri_value);
+	TEST_ASSERT(explug2 == NULL);
 
-		if (explug && expect_found) {
-			SLV2Value name = slv2_plugin_get_name(explug);
-			TEST_ASSERT(!strcmp(slv2_value_as_string(name), "Test plugin"));
-			slv2_value_free(name);
-		}
-
-		discovery_plugin_found = 0;
-		for (size_t i = 0; i < slv2_plugins_size(plugins); i++)
-			discovery_verify_plugin(slv2_plugins_get_at(plugins, i));
-
-		TEST_ASSERT(discovery_plugin_found == expect_found);
-		slv2_plugins_free(world, plugins);
-		plugins = NULL;
+	if (explug) {
+		SLV2Value name = slv2_plugin_get_name(explug);
+		TEST_ASSERT(!strcmp(slv2_value_as_string(name), "Test plugin"));
+		slv2_value_free(name);
 	}
+
+	discovery_plugin_found = 0;
+	for (size_t i = 0; i < slv2_plugins_size(plugins); i++)
+		discovery_verify_plugin(slv2_plugins_get_at(plugins, i));
+
+	TEST_ASSERT(discovery_plugin_found);
+	plugins = NULL;
 
 	TEST_ASSERT(slv2_plugins_get_at(plugins, (unsigned)INT_MAX + 1) == NULL);
 
@@ -471,7 +407,6 @@ test_verify()
 	SLV2Plugin explug = slv2_plugins_get_by_uri(plugins, plugin_uri_value);
 	TEST_ASSERT(explug);
 	TEST_ASSERT(slv2_plugin_verify(explug));
-	slv2_plugins_free(world, plugins);
 	cleanup_uris();
 	return 1;
 }
@@ -492,7 +427,6 @@ test_no_verify()
 	SLV2Plugin explug = slv2_plugins_get_by_uri(plugins, plugin_uri_value);
 	TEST_ASSERT(explug);
 	TEST_ASSERT(!slv2_plugin_verify(explug));
-	slv2_plugins_free(world, plugins);
 	cleanup_uris();
 	return 1;
 }
@@ -906,7 +840,6 @@ test_port()
 	slv2_value_free(control_class);
 	slv2_value_free(audio_class);
 	slv2_value_free(in_class);
-	slv2_plugins_free(world, plugins);
 	cleanup_uris();
 	return 1;
 }

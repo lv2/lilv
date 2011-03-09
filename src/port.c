@@ -57,8 +57,8 @@ slv2_port_is_a(SLV2Plugin plugin,
                SLV2Port   port,
                SLV2Value  port_class)
 {
-	for (unsigned i = 0; i < slv2_values_size(port->classes); ++i)
-		if (slv2_value_equals(slv2_values_get_at(port->classes, i), port_class))
+	SLV2_FOREACH(i, port->classes)
+		if (slv2_value_equals(slv2_values_get(port->classes, i), port_class))
 			return true;
 
 	return false;
@@ -209,7 +209,7 @@ slv2_port_get_name(SLV2Plugin p,
  
 	SLV2Value ret = NULL;
 	if (results) {
-		SLV2Value val = slv2_values_get_at(results, 0);
+		SLV2Value val = slv2_values_get_first(results);
 		if (slv2_value_is_string(val))
 			ret = slv2_value_duplicate(val);
 		slv2_values_free(results);
@@ -242,7 +242,7 @@ slv2_port_get_range(SLV2Plugin p,
 		SLV2Values defaults = slv2_port_get_value_by_node(
 			p, port, p->world->lv2_default_node);
 		*def = defaults
-			? slv2_value_duplicate(slv2_values_get_at(defaults, 0))
+			? slv2_value_duplicate(slv2_values_get_first(defaults))
 			: NULL;
 		slv2_values_free(defaults);
 	}
@@ -250,7 +250,7 @@ slv2_port_get_range(SLV2Plugin p,
 		SLV2Values minimums = slv2_port_get_value_by_node(
 			p, port, p->world->lv2_minimum_node);
 		*min = minimums
-			? slv2_value_duplicate(slv2_values_get_at(minimums, 0))
+			? slv2_value_duplicate(slv2_values_get_first(minimums))
 			: NULL;
 		slv2_values_free(minimums);
 	}
@@ -258,7 +258,7 @@ slv2_port_get_range(SLV2Plugin p,
 		SLV2Values maximums = slv2_port_get_value_by_node(
 			p, port, p->world->lv2_maximum_node);
 		*max = maximums
-			? slv2_value_duplicate(slv2_values_get_at(maximums, 0))
+			? slv2_value_duplicate(slv2_values_get_first(maximums))
 			: NULL;
 		slv2_values_free(maximums);
 	}

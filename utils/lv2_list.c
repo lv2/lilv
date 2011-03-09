@@ -34,8 +34,10 @@
 void
 list_plugins(SLV2Plugins list, bool show_names)
 {
-	for (unsigned i=0; i < slv2_plugins_size(list); ++i) {
-		SLV2Plugin p = slv2_plugins_get_at(list, i);
+	for (SLV2Iter i = slv2_plugins_begin(list);
+	     !slv2_iter_end(i);
+	     i = slv2_iter_next(i)) {
+		SLV2Plugin p = slv2_plugins_get(list, i);
 		if (show_names) {
 			SLV2Value n = slv2_plugin_get_name(p);
 			printf("%s\n", slv2_value_as_string(n));
@@ -96,7 +98,6 @@ main(int argc, char** argv)
 
 	list_plugins(plugins, show_names);
 
-	slv2_plugins_free(world, plugins);
 	slv2_world_free(world);
 
 	return 0;

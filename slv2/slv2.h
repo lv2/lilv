@@ -54,11 +54,7 @@
 #endif
 
 #if (__GNUC__ > 3 || (__GNUC__ == 3 && __GNUC_MINOR__ >= 1))
-	#ifdef SLV2_INTERNAL
-		#define SLV2_DEPRECATED
-	#else
-		#define SLV2_DEPRECATED __attribute__((__deprecated__))
-	#endif
+	#define SLV2_DEPRECATED __attribute__((__deprecated__))
 #else
 	#define SLV2_DEPRECATED
 #endif
@@ -86,9 +82,9 @@ typedef struct _SLV2World*        SLV2World;        /**< SLV2 World. */
 
 typedef void* SLV2PluginClasses;  /**< set<PluginClass>. */
 typedef void* SLV2Plugins;        /**< set<Plugin>. */
-typedef void* SLV2ScalePoints;    /**< array<ScalePoint>. */
+typedef void* SLV2ScalePoints;    /**< set<ScalePoint>. */
 typedef void* SLV2UIs;            /**< set<UI>. */
-typedef void* SLV2Values;         /**< array<Value>. */
+typedef void* SLV2Values;         /**< set<Value>. */
 
 /**
    @defgroup slv2 SLV2
@@ -314,71 +310,211 @@ slv2_value_as_bool(SLV2Value value);
    @{
 */
 
-#define SLV2_COLLECTION(CollType, ElemType, prefix) \
-\
+/* Iter */
+
+typedef void* SLV2Iter;
+
+SLV2_API
+SLV2Iter
+slv2_iter_next(SLV2Iter i);
+
+SLV2_API
+bool
+slv2_iter_end(SLV2Iter i);
+
+/* Collection */
+
+typedef void* SLV2Collection;
+
 /**
    Free @a collection.
-*/ \
-SLV2_API \
-void \
-prefix ## _free(CollType collection); \
-\
-\
-/**
-   Get the number of elements in @a collection.
-*/ \
-SLV2_API \
-unsigned \
-prefix ## _size(CollType collection); \
-\
-\
-/**
-   Get an element from @a collection by index.
-   @a index has no significance other than as an index into this collection.
-   Any @a index not less than the size of the collection will return NULL,
-   so all elements in a collection can be enumerated by repeated calls
-   to this function starting with @a index = 0.
-   @return NULL if @a index is out of range.
-*/ \
-SLV2_API \
-ElemType \
-prefix ## _get_at(CollType collection, \
-                  unsigned index);
-
-SLV2_COLLECTION(SLV2PluginClasses, SLV2PluginClass, slv2_plugin_classes)
-SLV2_COLLECTION(SLV2ScalePoints, SLV2ScalePoint, slv2_scale_points)
-SLV2_COLLECTION(SLV2UIs, SLV2UI, slv2_uis)
-SLV2_COLLECTION(SLV2Values, SLV2Value, slv2_values)
-
-/**
-   Free a plugin collection.
-   Freeing a plugin collection does not destroy the plugins it contains
-   (plugins are owned by the world). @a plugins is invalid after this call.
 */
 SLV2_API
 void
-slv2_plugins_free(SLV2World   world,
-                  SLV2Plugins plugins);
+slv2_collection_free(SLV2Collection collection);
 
 /**
-   Get the number of plugins in the collection.
+   Get the number of elements in @a collection.
 */
 SLV2_API
 unsigned
-slv2_plugins_size(SLV2Plugins plugins);
+slv2_collection_size(SLV2Collection collection);
 
 /**
-   Get a plugin from @a plugins by index.
-   @a index has no significance other than as an index into this plugins.
-   Any @a index not less than slv2_plugins_get_length(plugins) will return NULL,
-   so all plugins in a plugins can be enumerated by repeated calls
+   Get an element from @a collection by index.
+   
+   @a index has no significance other than as an index into @a collection.
+
+   Any @a index not less than the size of the collection will return NULL,
+   so all elements in a collection can be enumerated by repeated calls
    to this function starting with @a index = 0.
-   @return NULL if @a index out of range.
+
+   Note this function is a search, and not constant time.
+   This function is deprecated, use iterators instead.
+   
+   @return NULL if @a index is out of range.
 */
 SLV2_API
-SLV2Plugin
-slv2_plugins_get_at(SLV2Plugins plugins,
-                    unsigned    index);
+void*
+slv2_collection_get_at(SLV2Collection collection,
+                       unsigned       index);
+
+SLV2_API
+SLV2Iter
+slv2_collection_begin(SLV2Plugins plugins);
+
+SLV2_API
+void*
+slv2_collection_get(SLV2Collection collection,
+                    SLV2Iter       i);
+
+#define SLV2_FOREACH(iter, collection)                                             \
+	for (SLV2Iter (iter) = slv2_collection_begin(collection); \
+	     !slv2_iter_end(i); \
+	     i = slv2_iter_next(i))
+
+/* SLV2PluginClasses */
+
+static inline void
+slv2_plugin_classes_free(SLV2PluginClasses collection) {
+	slv2_collection_free(collection);
+}
+
+static inline unsigned
+slv2_plugin_classes_size(SLV2PluginClasses collection) {
+	return slv2_collection_size(collection);
+}
+
+static inline SLV2PluginClass
+slv2_plugin_classes_get(SLV2PluginClasses collection, SLV2Iter i) {
+	return (SLV2PluginClass)slv2_collection_get(collection, i);
+}
+
+SLV2_DEPRECATED
+static inline SLV2PluginClass
+slv2_plugin_classes_get_at(SLV2PluginClasses collection, unsigned index) {
+	return (SLV2PluginClass)slv2_collection_get_at(collection, index);
+}
+
+/* SLV2ScalePoints */
+
+SLV2_API
+SLV2ScalePoints
+slv2_scale_points_new(void);
+
+static inline void
+slv2_scale_points_free(SLV2ScalePoints collection) {
+	slv2_collection_free(collection);
+}
+
+static inline unsigned
+slv2_scale_points_size(SLV2ScalePoints collection) {
+	return slv2_collection_size(collection);
+}
+
+static inline SLV2Iter
+slv2_scale_points_begin(SLV2ScalePoints collection) {
+	return slv2_collection_begin(collection);
+}
+
+static inline SLV2ScalePoint
+slv2_scale_points_get(SLV2ScalePoints collection, SLV2Iter i) {
+	return (SLV2ScalePoint)slv2_collection_get(collection, i);
+}
+
+SLV2_DEPRECATED
+static inline SLV2ScalePoint
+slv2_scale_points_get_at(SLV2ScalePoints collection, unsigned index) {
+	return (SLV2ScalePoint)slv2_collection_get_at(collection, index);
+}
+
+/* UIs */
+
+static inline void
+slv2_uis_free(SLV2UIs collection) {
+	slv2_collection_free(collection);
+}
+
+static inline unsigned
+slv2_uis_size(SLV2UIs collection) {
+	return slv2_collection_size(collection);
+}
+
+static inline SLV2Iter
+slv2_uis_begin(SLV2UIs collection) {
+	return slv2_collection_begin(collection);
+}
+
+static inline SLV2UI
+slv2_uis_get(SLV2UIs collection, SLV2Iter i) {
+	return (SLV2UI)slv2_collection_get(collection, i);
+}
+
+SLV2_DEPRECATED
+static inline SLV2UI
+slv2_uis_get_at(SLV2UIs collection, unsigned index) {
+	return (SLV2UI)slv2_collection_get_at(collection, index);
+}
+
+/* Values */
+
+SLV2_API
+SLV2ScalePoints
+slv2_values_new(void);
+
+static inline void
+slv2_values_free(SLV2Values collection) {
+	slv2_collection_free(collection);
+}
+
+static inline unsigned
+slv2_values_size(SLV2Values collection) {
+	return slv2_collection_size(collection);
+}
+
+static inline SLV2Iter
+slv2_values_begin(SLV2Values collection) {
+	return slv2_collection_begin(collection);
+}
+
+static inline SLV2Value
+slv2_values_get(SLV2Values collection, SLV2Iter i) {
+	return (SLV2Value)slv2_collection_get(collection, i);
+}
+
+static inline SLV2Value
+slv2_values_get_first(SLV2Values collection) {
+	return (SLV2Value)slv2_collection_get(collection, slv2_collection_begin(collection));
+}
+
+SLV2_DEPRECATED
+static inline SLV2Value
+slv2_values_get_at(SLV2Values collection, unsigned index) {
+	return (SLV2Value)slv2_collection_get_at(collection, index);
+}
+
+/* Plugins */
+
+static inline unsigned
+slv2_plugins_size(SLV2Plugins collection) {
+	return slv2_collection_size(collection);
+}
+
+static inline SLV2Iter
+slv2_plugins_begin(SLV2Plugins collection) {
+	return slv2_collection_begin(collection);
+}
+
+static inline SLV2Plugin
+slv2_plugins_get(SLV2Plugins collection, SLV2Iter i) {
+	return (SLV2Plugin)slv2_collection_get(collection, i);
+}
+
+SLV2_DEPRECATED
+static inline SLV2Plugin
+slv2_plugins_get_at(SLV2Plugins collection, unsigned index) {
+	return (SLV2Plugin)slv2_collection_get_at(collection, index);
+}
 
 /**
    Get a plugin from @a plugins by URI.
@@ -401,20 +537,6 @@ SLV2_API
 SLV2PluginClass
 slv2_plugin_classes_get_by_uri(SLV2PluginClasses classes,
                                SLV2Value         uri);
-
-/**
-   Allocate a new, empty SLV2ScalePoints.
-*/
-SLV2_API
-SLV2ScalePoints
-slv2_scale_points_new(void);
-
-/**
-   Allocate a new, empty SLV2Values.
-*/
-SLV2_API
-SLV2Values
-slv2_values_new(void);
 
 /**
    Return whether @a values contains @a value.
@@ -523,27 +645,13 @@ slv2_world_get_plugin_classes(SLV2World world);
    loaded into memory until a call to an slv2_plugin_* function results in
    a query (at which time the data is cached with the SLV2Plugin so future
    queries are very fast).
- 
-   Returned list must be freed by user with slv2_plugins_free.  The contained
-   plugins are owned by @a world and must not be freed by caller.
+
+   The returned list and the plugins it contains are owned by @a world
+   and must not be freed by caller.
 */
 SLV2_API
 SLV2Plugins
 slv2_world_get_all_plugins(SLV2World world);
-
-/**
-   Return a list of found plugins filtered by a user-defined filter function.
-   All plugins currently found in @a world that return true when passed to
-   @a include (a pointer to a function which takes an SLV2Plugin and returns
-   a bool) will be in the returned list.
- 
-   Returned list must be freed by user with slv2_plugins_free.  The contained
-   plugins are owned by @a world and must not be freed by caller.
-*/
-SLV2_API
-SLV2Plugins
-slv2_world_get_plugins_by_filter(SLV2World world,
-                                 bool (*include)(SLV2Plugin));
 
 /**
    Return the plugin with the given @a uri, or NULL if not found.
@@ -1329,7 +1437,6 @@ typedef uint32_t (*SLV2PortUnsubscribeFunction)(LV2UI_Controller controller,
 /**
    Create a new UI host descriptor.
 
-   @param controller Opaque host pointer passed to each function.
    @param write_function Function to send a value to a plugin port.
    @param port_index_function Function to get the index for a port by symbol.
    @param port_subscribe_function Function to subscribe to port updates.
@@ -1362,6 +1469,7 @@ slv2_ui_host_free(SLV2UIHost ui_host);
    @param ui The plugin UI to instantiate.
    @param widget_type_uri The type of the desired widget.
    @param ui_host UI host descriptor (callbacks).
+   @param controller Opaque host pointer passed to each function.
    @param features NULL-terminated array of features the host supports.
    NULL may be passed if the host supports no additional features.
  

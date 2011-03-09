@@ -131,7 +131,7 @@ slv2_plugin_get_unique(SLV2Plugin p, SLV2Node subject, SLV2Node predicate)
 		            sord_node_get_string(predicate));
 		return NULL;
 	}
-	SLV2Value ret = slv2_value_duplicate(slv2_values_get_at(values, 0));
+	SLV2Value ret = slv2_value_duplicate(slv2_values_get_first(values));
 	slv2_values_free(values);
 	return ret;
 }
@@ -143,7 +143,7 @@ slv2_plugin_get_one(SLV2Plugin p, SLV2Node subject, SLV2Node predicate)
 	if (!values) {
 		return NULL;
 	}
-	SLV2Value ret = slv2_value_duplicate(slv2_values_get_at(values, 0));
+	SLV2Value ret = slv2_value_duplicate(slv2_values_get_first(values));
 	slv2_values_free(values);
 	return ret;
 }
@@ -152,8 +152,8 @@ static void
 slv2_plugin_load(SLV2Plugin p)
 {
 	// Parse all the plugin's data files into RDF model
-	for (unsigned i = 0; i < slv2_values_size(p->data_uris); ++i) {
-		SLV2Value data_uri_val = slv2_values_get_at(p->data_uris, i);
+	SLV2_FOREACH(i, p->data_uris) {
+		SLV2Value data_uri_val = slv2_values_get(p->data_uris, i);
 		sord_read_file(p->world->model,
 		               sord_node_get_string(data_uri_val->val.uri_val),
 		               p->bundle_uri->val.uri_val,
@@ -434,7 +434,7 @@ slv2_plugin_get_name(SLV2Plugin plugin)
 
 	SLV2Value ret = NULL;
 	if (results) {
-		SLV2Value val = slv2_values_get_at(results, 0);
+		SLV2Value val = slv2_values_get_first(results);
 		if (slv2_value_is_string(val))
 			ret = slv2_value_duplicate(val);
 		slv2_values_free(results);
@@ -653,17 +653,16 @@ SLV2_API
 SLV2Values
 slv2_plugin_get_supported_features(SLV2Plugin p)
 {
-	SLV2Values optional   = slv2_plugin_get_optional_features(p);
-	SLV2Values required   = slv2_plugin_get_required_features(p);
-	SLV2Values result     = slv2_values_new();
-	unsigned   n_optional = slv2_values_size(optional);
-	unsigned   n_required = slv2_values_size(required);
-	for (unsigned i = 0 ; i < n_optional; ++i)
+	SLV2Values optional = slv2_plugin_get_optional_features(p);
+	SLV2Values required = slv2_plugin_get_required_features(p);
+	SLV2Values result   = slv2_values_new();
+
+	SLV2_FOREACH(i, optional)
 		slv2_array_append(
-			result, slv2_value_duplicate(slv2_values_get_at(optional, i)));
-	for (unsigned i = 0 ; i < n_required; ++i)
+			result, slv2_value_duplicate(slv2_values_get(optional, i)));
+	SLV2_FOREACH(i, required)
 		slv2_array_append(
-			result, slv2_value_duplicate(slv2_values_get_at(required, i)));
+			result, slv2_value_duplicate(slv2_values_get(required, i)));
 
 	slv2_values_free(optional);
 	slv2_values_free(required);

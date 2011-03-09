@@ -452,7 +452,6 @@ main(int argc, char** argv)
 	slv2_value_free(host.event_class);
 	slv2_value_free(host.midi_class);
 	slv2_value_free(host.optional);
-	slv2_plugins_free(world, plugins);
 	slv2_world_free(world);
 
 #ifdef SLV2_JACK_SESSION

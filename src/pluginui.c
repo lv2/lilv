@@ -97,7 +97,7 @@ slv2_ui_supported(SLV2UI    ui,
 #ifdef HAVE_SUIL
 	return suil_ui_type_supported(
 		slv2_value_as_uri(widget_type_uri),
-		slv2_value_as_uri(slv2_values_get_at(ui->classes, 0)));
+		slv2_value_as_uri(slv2_values_get_first(ui->classes)));
 #else
 	return false;
 #endif

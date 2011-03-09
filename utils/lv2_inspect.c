@@ -60,13 +60,17 @@ print_port(SLV2Plugin p, uint32_t index, float* mins, float* maxes, float* defau
 		return;
 	}
 
-	SLV2Values classes = slv2_port_get_classes(p, port);
+	bool first = true;
 
+	SLV2Values classes = slv2_port_get_classes(p, port);
 	printf("\t\tType:       ");
-	for (unsigned i = 0; i < slv2_values_size(classes); ++i) {
-		printf("%s", slv2_value_as_uri(slv2_values_get_at(classes, i)));
-		if (i != slv2_values_size(classes) - 1)
+	SLV2_FOREACH(i, classes) {
+		SLV2Value value = slv2_values_get(classes, i);
+		if (!first) {
 			printf("\n\t\t            ");
+		}
+		printf("%s", slv2_value_as_uri(value));
+		first = false;
 	}
 
 	if (slv2_port_is_a(p, port, event_class)) {
@@ -74,8 +78,9 @@ print_port(SLV2Plugin p, uint32_t index, float* mins, float* maxes, float* defau
 			"lv2ev:supportsEvent");
 		if (slv2_values_size(supported) > 0) {
 			printf("\n\t\tSupported events:\n");
-			for (unsigned i = 0; i < slv2_values_size(supported); ++i) {
-				printf("\t\t\t%s\n", slv2_value_as_uri(slv2_values_get_at(supported, i)));
+			SLV2_FOREACH(i, supported) {
+				SLV2Value value = slv2_values_get(supported, i);
+				printf("\t\t\t%s\n", slv2_value_as_uri(value));
 			}
 		}
 		slv2_values_free(supported);
@@ -84,8 +89,8 @@ print_port(SLV2Plugin p, uint32_t index, float* mins, float* maxes, float* defau
 	SLV2ScalePoints points = slv2_port_get_scale_points(p, port);
 	if (points)
 		printf("\n\t\tScale Points:\n");
-	for (unsigned i = 0; i < slv2_scale_points_size(points); ++i) {
-		SLV2ScalePoint p = slv2_scale_points_get_at(points, i);
+	SLV2_FOREACH(i, points) {
+		SLV2ScalePoint p = slv2_scale_points_get(points, i);
 		printf("\t\t\t%s = \"%s\"\n",
 				slv2_value_as_string(slv2_scale_point_get_value(p)),
 				slv2_value_as_string(slv2_scale_point_get_label(p)));
@@ -101,12 +106,16 @@ print_port(SLV2Plugin p, uint32_t index, float* mins, float* maxes, float* defau
 
 	SLV2Values groups = slv2_port_get_value(p, port, in_group_pred);
 	if (slv2_values_size(groups) > 0)
-		printf("\t\tGroup:      %s\n", slv2_value_as_string(slv2_values_get_at(groups, 0)));
+		printf("\t\tGroup:      %s\n",
+		       slv2_value_as_string(
+			       slv2_values_get(groups, slv2_values_begin(groups))));
 	slv2_values_free(groups);
 
 	SLV2Values roles = slv2_port_get_value(p, port, role_pred);
 	if (slv2_values_size(roles) > 0)
-		printf("\t\tRole:       %s\n", slv2_value_as_string(slv2_values_get_at(roles, 0)));
+		printf("\t\tRole:       %s\n",
+		       slv2_value_as_string(
+			       slv2_values_get(roles, slv2_values_begin(roles))));
 	slv2_values_free(roles);
 
 	if (slv2_port_is_a(p, port, control_class)) {
@@ -121,11 +130,13 @@ print_port(SLV2Plugin p, uint32_t index, float* mins, float* maxes, float* defau
 	SLV2Values properties = slv2_port_get_properties(p, port);
 	if (slv2_values_size(properties) > 0)
 		printf("\t\tProperties: ");
-	for (unsigned i = 0; i < slv2_values_size(properties); ++i) {
-		if (i > 0) {
+	first = true;
+	SLV2_FOREACH(i, properties) {
+		if (!first) {
 			printf("\t\t            ");
 		}
-		printf("%s\n", slv2_value_as_uri(slv2_values_get_at(properties, i)));
+		printf("%s\n", slv2_value_as_uri(slv2_values_get(properties, i)));
+		first = false;
 	}
 	if (slv2_values_size(properties) > 0)
 		printf("\n");
@@ -187,34 +198,36 @@ print_plugin(SLV2Plugin p)
 	SLV2UIs uis = slv2_plugin_get_uis(p);
 	if (slv2_values_size(uis) > 0) {
 		printf("\tUI:                ");
-		for (unsigned i = 0; i < slv2_uis_size(uis); ++i) {
-			SLV2UI ui = slv2_uis_get_at(uis, i);
+		SLV2_FOREACH(i, uis) {
+			SLV2UI ui = slv2_uis_get(uis, i);
 			printf("%s\n", slv2_value_as_uri(slv2_ui_get_uri(ui)));
 
 			const char* binary = slv2_value_as_uri(slv2_ui_get_binary_uri(ui));
 
 			SLV2Values types = slv2_ui_get_classes(ui);
-			for (unsigned i = 0; i < slv2_values_size(types); ++i) {
+			SLV2_FOREACH(i, types) {
 				printf("\t                       Class:  %s\n",
-						slv2_value_as_uri(slv2_values_get_at(types, i)));
+				       slv2_value_as_uri(slv2_values_get(types, i)));
 			}
 
 			if (binary)
 				printf("\t                       Binary: %s\n", binary);
 
 			printf("\t                       Bundle: %s\n",
-					slv2_value_as_uri(slv2_ui_get_bundle_uri(ui)));
+			       slv2_value_as_uri(slv2_ui_get_bundle_uri(ui)));
 		}
 	}
 	slv2_uis_free(uis);
 
 	printf("\tData URIs:         ");
 	SLV2Values data_uris = slv2_plugin_get_data_uris(p);
-	for (unsigned i = 0; i < slv2_values_size(data_uris); ++i) {
-		if (i > 0) {
+	bool first = true;
+	SLV2_FOREACH(i, data_uris) {
+		if (!first) {
 			printf("\n\t                   ");
 		}
-		printf("%s", slv2_value_as_uri(slv2_values_get_at(data_uris, i)));
+		printf("%s", slv2_value_as_uri(slv2_values_get(data_uris, i)));
+		first = false;
 	}
 	printf("\n");
 
@@ -223,11 +236,13 @@ print_plugin(SLV2Plugin p)
 	SLV2Values features = slv2_plugin_get_required_features(p);
 	if (features)
 		printf("\tRequired Features: ");
-	for (unsigned i = 0; i < slv2_values_size(features); ++i) {
-		if (i > 0) {
+	first = true;
+	SLV2_FOREACH(i, data_uris) {
+		if (!first) {
 			printf("\n\t                   ");
 		}
-		printf("%s", slv2_value_as_uri(slv2_values_get_at(features, i)));
+		printf("%s", slv2_value_as_uri(slv2_values_get(features, i)));
+		first = false;
 	}
 	if (features)
 		printf("\n");
@@ -238,11 +253,13 @@ print_plugin(SLV2Plugin p)
 	features = slv2_plugin_get_optional_features(p);
 	if (features)
 		printf("\tOptional Features: ");
-	for (unsigned i = 0; i < slv2_values_size(features); ++i) {
-		if (i > 0) {
+	first = true;
+	SLV2_FOREACH(i, features) {
+		if (!first) {
 			printf("\n\t                   ");
 		}
-		printf("%s", slv2_value_as_uri(slv2_values_get_at(features, i)));
+		printf("%s", slv2_value_as_uri(slv2_values_get(features, i)));
+		first = false;
 	}
 	if (features)
 		printf("\n");
@@ -253,11 +270,11 @@ print_plugin(SLV2Plugin p)
 	SLV2Values presets = slv2_plugin_get_value(p, preset_pred);
 	if (presets)
 		printf("\tPresets: \n");
-	for (unsigned i = 0; i < slv2_values_size(presets); ++i) {
+	SLV2_FOREACH(i, presets) {
 		SLV2Values titles = slv2_plugin_get_value_for_subject(
-			p, slv2_values_get_at(presets, i), title_pred);
+			p, slv2_values_get(presets, i), title_pred);
 		if (titles) {
-			SLV2Value title = slv2_values_get_at(titles, 0);
+			SLV2Value title = slv2_values_get(titles, slv2_values_begin(titles));
 			printf("\t         %s\n", slv2_value_as_string(title));
 		}
 	}
@@ -349,7 +366,6 @@ main(int argc, char** argv)
 	ret = (p != NULL ? 0 : -1);
 
 	slv2_value_free(uri);
-	slv2_plugins_free(world, plugins);
 
 done:
 	slv2_value_free(title_pred);

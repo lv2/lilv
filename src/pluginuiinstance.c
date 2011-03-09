@@ -94,7 +94,7 @@ slv2_ui_instance_new(SLV2Plugin                plugin,
 		return NULL;
 	}
 
-	SLV2Value ui_type = slv2_values_get_at(ui->classes, 0);
+	SLV2Value ui_type = slv2_values_get_first(ui->classes);
 	if (!widget_type_uri) {
 		widget_type_uri = ui_type;
 	}

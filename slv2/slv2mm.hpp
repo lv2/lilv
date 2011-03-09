@@ -155,7 +155,6 @@ struct World {
 	SLV2_WRAP0(SLV2PluginClasses, world, get_plugin_classes);
 	SLV2_WRAP0(Plugins, world, get_all_plugins);
 	//SLV2_WRAP1(Plugin, world, get_plugin_by_uri_string, const char*, uri);
-	// TODO: get_plugins_by_filter (takes a function parameter)
 
 	SLV2World me;
 };

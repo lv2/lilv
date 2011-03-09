@@ -27,54 +27,85 @@
 
 #include "slv2_internal.h"
 
-/* SEQUENCE */
+/* Generic collection functions */
 
-#define SLV2_SEQUENCE_IMPL(CollType, ElemType, prefix, free_func) \
-\
-CollType \
-prefix ## _new() \
-{ \
-	return g_sequence_new((GDestroyNotify)free_func); \
-} \
-\
-SLV2_API \
-void \
-prefix ## _free(CollType coll) \
-{ \
-	if (coll) \
-		g_sequence_free((GSequence*)coll); \
-} \
-\
-SLV2_API \
-unsigned \
-prefix ## _size(CollType coll) \
-{ \
-	return (coll ? g_sequence_get_length((GSequence*)coll) : 0); \
-} \
-\
-SLV2_API \
-ElemType \
-prefix ## _get_at(CollType coll, unsigned index) \
-{ \
-	if (!coll || index >= prefix ## _size(coll)) { \
-		return NULL; \
-	} else { \
-		GSequenceIter* i = g_sequence_get_iter_at_pos((GSequence*)coll, (int)index); \
-		return (ElemType)g_sequence_get(i); \
-	} \
+static inline SLV2Collection
+slv2_collection_new(GDestroyNotify destructor)
+{
+	return g_sequence_new(destructor);
 }
 
-SLV2_SEQUENCE_IMPL(SLV2ScalePoints, SLV2ScalePoint,
-                   slv2_scale_points, &slv2_scale_point_free)
+SLV2_API
+void
+slv2_collection_free(SLV2Collection coll)
+{
+	if (coll)
+		g_sequence_free((GSequence*)coll);
+}
 
-SLV2_SEQUENCE_IMPL(SLV2Values, SLV2Value,
-                   slv2_values, &slv2_value_free)
+SLV2_API
+unsigned
+slv2_collection_size(SLV2Collection coll)
+{
+	return (coll ? g_sequence_get_length((GSequence*)coll) : 0);
+}
 
-SLV2_SEQUENCE_IMPL(SLV2PluginClasses, SLV2PluginClass,
-                   slv2_plugin_classes, &slv2_plugin_class_free)
+SLV2_API
+void*
+slv2_collection_get_at(SLV2Collection coll, unsigned index)
+{
+	if (!coll || index >= slv2_collection_size(coll)) {
+		return NULL;
+	} else {
+		GSequenceIter* i = g_sequence_get_iter_at_pos((GSequence*)coll, (int)index);
+		return g_sequence_get(i);
+	}
+}
 
-SLV2_SEQUENCE_IMPL(SLV2UIs, SLV2UI,
-                   slv2_uis, &slv2_ui_free)
+SLV2_API
+SLV2Iter
+slv2_collection_begin(SLV2Collection collection)
+{
+	return collection ? g_sequence_get_begin_iter(collection) : NULL;
+}
+
+SLV2_API
+void*
+slv2_collection_get(SLV2Collection collection,
+                    SLV2Iter       i)
+{
+	return g_sequence_get((GSequenceIter*)i);
+}
+
+/* Constructors */
+
+SLV2_API
+SLV2ScalePoints
+slv2_scale_points_new(void)
+{
+	return slv2_collection_new((GDestroyNotify)slv2_scale_point_free);
+}
+
+SLV2_API
+SLV2Values
+slv2_values_new(void)
+{
+	return slv2_collection_new((GDestroyNotify)slv2_value_free);
+}
+
+SLV2UIs
+slv2_uis_new(void)
+{
+	return slv2_collection_new((GDestroyNotify)slv2_ui_free);
+}
+
+SLV2PluginClasses
+slv2_plugin_classes_new(void)
+{
+	return slv2_collection_new((GDestroyNotify)slv2_plugin_class_free);
+}
+
+/* URI based accessors (for collections of things with URIs) */
 
 SLV2_API
 SLV2PluginClass
@@ -90,17 +121,54 @@ slv2_uis_get_by_uri(SLV2UIs coll, SLV2Value uri)
 	return (SLV2UIs)slv2_sequence_get_by_uri(coll, uri);
 }
 
+/* Plugins */
 
-/* VALUES */
+SLV2Plugins
+slv2_plugins_new()
+{
+	return g_sequence_new(NULL);
+}
+
+void
+slv2_plugins_free(SLV2World world, SLV2Plugins list)
+{
+	if (list && list != world->plugins)
+		g_sequence_free(list);
+}
+
+SLV2_API
+SLV2Plugin
+slv2_plugins_get_by_uri(SLV2Plugins list, SLV2Value uri)
+{
+	return (SLV2Plugin)slv2_sequence_get_by_uri(list, uri);
+}
+
+
+/* Values */
 
 SLV2_API
 bool
 slv2_values_contains(SLV2Values list, SLV2Value value)
 {
-	for (unsigned i = 0; i < slv2_values_size(list); ++i)
-		if (slv2_value_equals(slv2_values_get_at(list, i), value))
+	SLV2_FOREACH(i, list)
+		if (slv2_value_equals(slv2_values_get(list, i), value))
 			return true;
 
 	return false;
 }
 
+/* Iterator */
+
+SLV2_API
+SLV2Iter
+slv2_iter_next(SLV2Iter i)
+{
+	return g_sequence_iter_next((GSequenceIter*)i);
+}
+
+SLV2_API
+bool
+slv2_iter_end(SLV2Iter i)
+{
+	return !i || g_sequence_iter_is_end((GSequenceIter*)i);
+}
