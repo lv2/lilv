@@ -129,13 +129,6 @@ slv2_plugins_new()
 	return g_sequence_new(NULL);
 }
 
-void
-slv2_plugins_free(SLV2World world, SLV2Plugins list)
-{
-	if (list && list != world->plugins)
-		g_sequence_free(list);
-}
-
 SLV2_API
 SLV2Plugin
 slv2_plugins_get_by_uri(SLV2Plugins list, SLV2Value uri)

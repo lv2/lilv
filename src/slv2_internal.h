@@ -136,21 +136,9 @@ slv2_plugin_get_unique(SLV2Plugin p,
 
 /* ********* Plugins ********* */
 
-/** Create a new, empty plugin list.
- *
- * Returned object must be freed with slv2_plugins_free.
- */
+
 SLV2Plugins
 slv2_plugins_new();
-
-/**
-   Free a plugin collection.
-   Freeing a plugin collection does not destroy the plugins it contains
-   (plugins are owned by the world). @a plugins is invalid after this call.
-*/
-void
-slv2_plugins_free(SLV2World   world,
-                  SLV2Plugins plugins);
 
 
 /* ********* Instance ********* */

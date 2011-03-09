@@ -517,6 +517,14 @@ slv2_plugins_get_at(SLV2Plugins collection, unsigned index) {
 }
 
 /**
+   This function is deprecated, it does nothing.
+*/
+SLV2_DEPRECATED
+static inline void
+slv2_plugins_free(SLV2World world, SLV2Plugins plugins) {
+}
+
+/**
    Get a plugin from @a plugins by URI.
    Return value is shared (stored in @a plugins) and must not be freed or
    modified by the caller in any way.
