@@ -213,7 +213,7 @@ def build(bld):
 		obj.name         = 'libslv2_static'
 		obj.target       = 'slv2_static'
 		obj.install_path = ''
-		obj.cflags       = [ '-fprofile-arcs',  '-ftest-coverage' ]
+		obj.cflags       = [ '-fprofile-arcs',  '-ftest-coverage', '-DSLV2_INTERNAL' ]
 		obj.linkflags    = [ '-ldl' ]
 		autowaf.use_lib(bld, obj, 'SORD SERD LV2CORE GLIB SUIL')
 

@@ -140,6 +140,39 @@ slv2_plugin_get_unique(SLV2Plugin p,
 SLV2Plugins
 slv2_plugins_new();
 
+/**
+   Free @a collection.
+*/
+SLV2_API
+void
+slv2_collection_free(SLV2Collection collection);
+
+/**
+   Get the number of elements in @a collection.
+*/
+SLV2_API
+unsigned
+slv2_collection_size(SLV2Collection collection);
+
+/**
+   Get an element from @a collection by index.
+   
+   @a index has no significance other than as an index into @a collection.
+
+   Any @a index not less than the size of the collection will return NULL,
+   so all elements in a collection can be enumerated by repeated calls
+   to this function starting with @a index = 0.
+
+   Note this function is a search, and not constant time.
+   This function is deprecated, use iterators instead.
+   
+   @return NULL if @a index is out of range.
+*/
+SLV2_DEPRECATED
+SLV2_API
+void*
+slv2_collection_get_at(SLV2Collection collection,
+                       unsigned       index);
 
 /* ********* Instance ********* */
 

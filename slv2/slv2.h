@@ -54,7 +54,11 @@
 #endif
 
 #if (__GNUC__ > 3 || (__GNUC__ == 3 && __GNUC_MINOR__ >= 1))
-	#define SLV2_DEPRECATED __attribute__((__deprecated__))
+	#ifdef SLV2_INTERNAL
+		#define SLV2_DEPRECATED
+	#else
+		#define SLV2_DEPRECATED __attribute__((__deprecated__))
+	#endif
 #else
 	#define SLV2_DEPRECATED
 #endif
@@ -326,42 +330,9 @@ slv2_iter_end(SLV2Iter i);
 
 typedef void* SLV2Collection;
 
-/**
-   Free @a collection.
-*/
-SLV2_API
-void
-slv2_collection_free(SLV2Collection collection);
-
-/**
-   Get the number of elements in @a collection.
-*/
-SLV2_API
-unsigned
-slv2_collection_size(SLV2Collection collection);
-
-/**
-   Get an element from @a collection by index.
-   
-   @a index has no significance other than as an index into @a collection.
-
-   Any @a index not less than the size of the collection will return NULL,
-   so all elements in a collection can be enumerated by repeated calls
-   to this function starting with @a index = 0.
-
-   Note this function is a search, and not constant time.
-   This function is deprecated, use iterators instead.
-   
-   @return NULL if @a index is out of range.
-*/
-SLV2_API
-void*
-slv2_collection_get_at(SLV2Collection collection,
-                       unsigned       index);
-
 SLV2_API
 SLV2Iter
-slv2_collection_begin(SLV2Plugins plugins);
+slv2_collection_begin(SLV2Collection collection);
 
 SLV2_API
 void*
@@ -375,26 +346,26 @@ slv2_collection_get(SLV2Collection collection,
 
 /* SLV2PluginClasses */
 
-static inline void
-slv2_plugin_classes_free(SLV2PluginClasses collection) {
-	slv2_collection_free(collection);
-}
+SLV2_API
+void
+slv2_plugin_classes_free(SLV2PluginClasses collection);
 
-static inline unsigned
-slv2_plugin_classes_size(SLV2PluginClasses collection) {
-	return slv2_collection_size(collection);
-}
+SLV2_API
+unsigned
+slv2_plugin_classes_size(SLV2PluginClasses collection);
 
-static inline SLV2PluginClass
-slv2_plugin_classes_get(SLV2PluginClasses collection, SLV2Iter i) {
-	return (SLV2PluginClass)slv2_collection_get(collection, i);
-}
+SLV2_API
+SLV2Iter
+slv2_plugin_classes_begin(SLV2PluginClasses collection);
+
+SLV2_API
+SLV2PluginClass
+slv2_plugin_classes_get(SLV2PluginClasses collection, SLV2Iter i);
 
 SLV2_DEPRECATED
-static inline SLV2PluginClass
-slv2_plugin_classes_get_at(SLV2PluginClasses collection, unsigned index) {
-	return (SLV2PluginClass)slv2_collection_get_at(collection, index);
-}
+SLV2_API
+SLV2PluginClass
+slv2_plugin_classes_get_at(SLV2PluginClasses collection, unsigned index);
 
 /* SLV2ScalePoints */
 
@@ -402,59 +373,49 @@ SLV2_API
 SLV2ScalePoints
 slv2_scale_points_new(void);
 
-static inline void
-slv2_scale_points_free(SLV2ScalePoints collection) {
-	slv2_collection_free(collection);
-}
+SLV2_API
+void
+slv2_scale_points_free(SLV2ScalePoints collection);
 
-static inline unsigned
-slv2_scale_points_size(SLV2ScalePoints collection) {
-	return slv2_collection_size(collection);
-}
+SLV2_API
+unsigned
+slv2_scale_points_size(SLV2ScalePoints collection);
 
-static inline SLV2Iter
-slv2_scale_points_begin(SLV2ScalePoints collection) {
-	return slv2_collection_begin(collection);
-}
+SLV2_API
+SLV2Iter
+slv2_scale_points_begin(SLV2ScalePoints collection);
 
-static inline SLV2ScalePoint
-slv2_scale_points_get(SLV2ScalePoints collection, SLV2Iter i) {
-	return (SLV2ScalePoint)slv2_collection_get(collection, i);
-}
+SLV2_API
+SLV2ScalePoint
+slv2_scale_points_get(SLV2ScalePoints collection, SLV2Iter i);
 
 SLV2_DEPRECATED
-static inline SLV2ScalePoint
-slv2_scale_points_get_at(SLV2ScalePoints collection, unsigned index) {
-	return (SLV2ScalePoint)slv2_collection_get_at(collection, index);
-}
+SLV2_API
+SLV2ScalePoint
+slv2_scale_points_get_at(SLV2ScalePoints collection, unsigned index);
 
 /* UIs */
 
-static inline void
-slv2_uis_free(SLV2UIs collection) {
-	slv2_collection_free(collection);
-}
+SLV2_API
+void
+slv2_uis_free(SLV2UIs collection);
 
-static inline unsigned
-slv2_uis_size(SLV2UIs collection) {
-	return slv2_collection_size(collection);
-}
+SLV2_API
+unsigned
+slv2_uis_size(SLV2UIs collection);
 
-static inline SLV2Iter
-slv2_uis_begin(SLV2UIs collection) {
-	return slv2_collection_begin(collection);
-}
+SLV2_API
+SLV2Iter
+slv2_uis_begin(SLV2UIs collection);
 
-static inline SLV2UI
-slv2_uis_get(SLV2UIs collection, SLV2Iter i) {
-	return (SLV2UI)slv2_collection_get(collection, i);
-}
+SLV2_API
+SLV2UI
+slv2_uis_get(SLV2UIs collection, SLV2Iter i);
 
 SLV2_DEPRECATED
-static inline SLV2UI
-slv2_uis_get_at(SLV2UIs collection, unsigned index) {
-	return (SLV2UI)slv2_collection_get_at(collection, index);
-}
+SLV2_API
+SLV2UI
+slv2_uis_get_at(SLV2UIs collection, unsigned index);
 
 /* Values */
 
@@ -462,67 +423,57 @@ SLV2_API
 SLV2ScalePoints
 slv2_values_new(void);
 
-static inline void
-slv2_values_free(SLV2Values collection) {
-	slv2_collection_free(collection);
-}
+SLV2_API
+void
+slv2_values_free(SLV2Values collection);
 
-static inline unsigned
-slv2_values_size(SLV2Values collection) {
-	return slv2_collection_size(collection);
-}
+SLV2_API
+unsigned
+slv2_values_size(SLV2Values collection);
 
-static inline SLV2Iter
-slv2_values_begin(SLV2Values collection) {
-	return slv2_collection_begin(collection);
-}
+SLV2_API
+SLV2Iter
+slv2_values_begin(SLV2Values collection);
 
-static inline SLV2Value
-slv2_values_get(SLV2Values collection, SLV2Iter i) {
-	return (SLV2Value)slv2_collection_get(collection, i);
-}
+SLV2_API
+SLV2Value
+slv2_values_get(SLV2Values collection, SLV2Iter i);
 
-static inline SLV2Value
-slv2_values_get_first(SLV2Values collection) {
-	return (SLV2Value)slv2_collection_get(collection, slv2_collection_begin(collection));
-}
+SLV2_API
+SLV2Value
+slv2_values_get_first(SLV2Values collection);
 
 SLV2_DEPRECATED
-static inline SLV2Value
-slv2_values_get_at(SLV2Values collection, unsigned index) {
-	return (SLV2Value)slv2_collection_get_at(collection, index);
-}
+SLV2_API
+SLV2Value
+slv2_values_get_at(SLV2Values collection, unsigned index);
 
 /* Plugins */
 
-static inline unsigned
-slv2_plugins_size(SLV2Plugins collection) {
-	return slv2_collection_size(collection);
-}
+SLV2_API
+unsigned
+slv2_plugins_size(SLV2Plugins collection);
 
-static inline SLV2Iter
-slv2_plugins_begin(SLV2Plugins collection) {
-	return slv2_collection_begin(collection);
-}
+SLV2_API
+SLV2Iter
+slv2_plugins_begin(SLV2Plugins collection);
 
-static inline SLV2Plugin
-slv2_plugins_get(SLV2Plugins collection, SLV2Iter i) {
-	return (SLV2Plugin)slv2_collection_get(collection, i);
-}
+SLV2_API
+SLV2Plugin
+slv2_plugins_get(SLV2Plugins collection, SLV2Iter i);
 
 SLV2_DEPRECATED
-static inline SLV2Plugin
-slv2_plugins_get_at(SLV2Plugins collection, unsigned index) {
-	return (SLV2Plugin)slv2_collection_get_at(collection, index);
-}
+SLV2_API
+SLV2Plugin
+slv2_plugins_get_at(SLV2Plugins collection, unsigned index);
 
 /**
    This function is deprecated, it does nothing.
 */
 SLV2_DEPRECATED
-static inline void
-slv2_plugins_free(SLV2World world, SLV2Plugins plugins) {
-}
+SLV2_API
+void
+slv2_plugins_free(SLV2World world, SLV2Plugins plugins);
 
 /**
    Get a plugin from @a plugins by URI.

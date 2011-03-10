@@ -165,3 +165,71 @@ slv2_iter_end(SLV2Iter i)
 {
 	return !i || g_sequence_iter_is_end((GSequenceIter*)i);
 }
+
+#define SLV2_COLLECTION_IMPL(prefix, CT, ET) \
+SLV2_API \
+unsigned \
+prefix##_size(CT collection) { \
+	return slv2_collection_size(collection); \
+} \
+\
+SLV2_API \
+SLV2Iter \
+prefix##_begin(CT collection) { \
+	return slv2_collection_begin(collection); \
+} \
+\
+SLV2_API \
+ET \
+prefix##_get(CT collection, SLV2Iter i) { \
+	return (ET)slv2_collection_get(collection, i); \
+} \
+\
+SLV2_DEPRECATED \
+SLV2_API \
+ET \
+prefix##_get_at(CT collection, unsigned index) { \
+	return (ET)slv2_collection_get_at(collection, index); \
+}
+
+SLV2_COLLECTION_IMPL(slv2_plugin_classes, SLV2PluginClasses, SLV2PluginClass)
+SLV2_COLLECTION_IMPL(slv2_scale_points, SLV2ScalePoints, SLV2ScalePoint)
+SLV2_COLLECTION_IMPL(slv2_uis, SLV2UIs, SLV2UI)
+SLV2_COLLECTION_IMPL(slv2_values, SLV2Values, SLV2Value)
+SLV2_COLLECTION_IMPL(slv2_plugins, SLV2Plugins, SLV2Plugin)
+
+SLV2_API
+void
+slv2_plugin_classes_free(SLV2PluginClasses collection) {
+	slv2_collection_free(collection);
+}
+
+SLV2_API
+void
+slv2_scale_points_free(SLV2ScalePoints collection) {
+	slv2_collection_free(collection);
+}
+
+SLV2_API
+void
+slv2_uis_free(SLV2UIs collection) {
+	slv2_collection_free(collection);
+}
+
+SLV2_API
+void
+slv2_values_free(SLV2Values collection) {
+	slv2_collection_free(collection);
+}
+
+SLV2_API
+void
+slv2_plugins_free(SLV2World world, SLV2Plugins plugins){
+}
+
+SLV2_API
+SLV2Value
+slv2_values_get_first(SLV2Values collection) {
+	return (SLV2Value)slv2_collection_get(collection,
+	                                      slv2_collection_begin(collection));
+}
