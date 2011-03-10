@@ -341,8 +341,8 @@ slv2_collection_get(SLV2Collection collection,
 
 #define SLV2_FOREACH(iter, collection)                                             \
 	for (SLV2Iter (iter) = slv2_collection_begin(collection); \
-	     !slv2_iter_end(i); \
-	     i = slv2_iter_next(i))
+	     !slv2_iter_end(iter); \
+	     (iter) = slv2_iter_next(iter))
 
 /* SLV2PluginClasses */
 
@@ -533,6 +533,8 @@ slv2_world_new(void);
 
 /**
    Set an SLV2 option for @a world.
+
+   Currently recognized options: SLV2_OPTION_FILTER_LANG.
 */
 SLV2_API
 void
