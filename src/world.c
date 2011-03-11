@@ -668,30 +668,19 @@ slv2_world_load_all(SLV2World world)
 		SLV2Value  plugin_uri = slv2_plugin_get_uri(plugin);
 
 		// ?new dc:replaces plugin
-		SLV2Matches replacements = slv2_world_find_statements(
+		SLV2Matches replacement = slv2_world_find_statements(
 			world, world->model,
 			NULL,
 			world->dc_replaces_node,
 			slv2_value_as_node(plugin_uri),
 			NULL);
-		FOREACH_MATCH(replacements) {
-			SLV2Node subject = slv2_match_subject(replacements);
-			SLV2Node object  = slv2_match_object(replacements);
-			if (sord_node_get_type(subject) != SORD_URI
-			  || sord_node_get_type(object) != SORD_URI) {
-			  continue;
-			}
-
-			SLV2Value subject_val = slv2_value_new_from_node(world, subject);
-			SLV2Value object_val  = slv2_value_new_from_node(world, object);
-
-			fprintf(stderr, "%s REPLACES %s\n",
-			       slv2_value_as_uri(subject_val),
-			       slv2_value_as_uri(object_val));
-
+		if (!sord_iter_end(replacement)) {
+			/* TODO: Check if replacement is actually a known plugin,
+			   though this is expensive...
+			*/
 			plugin->replaced = true;
 		}
-		slv2_match_end(replacements);
+		slv2_match_end(replacement);
 	}
 
 	// Query out things to cache
