@@ -922,6 +922,16 @@ SLV2Value
 slv2_plugin_get_author_homepage(SLV2Plugin plugin);
 
 /**
+   Return true iff @a plugin has been replaced by another plugin.
+
+   The plugin will still be usable, but hosts should hide them from their
+   user interfaces to prevent users from using deprecated plugins.
+*/
+SLV2_API
+bool
+slv2_plugin_is_replaced(SLV2Plugin plugin);
+
+/**
    @}
    @name Port
    @{

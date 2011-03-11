@@ -12,6 +12,7 @@ slv2 (UNRELEASED) unstable; urgency=low
   * Document entire API in single header file / page.
   * Add new collections and iterator API (and deprecate index based API)
   * Remove the questionable slv2_world_get_plugins_by_filter.
+  * Add slv2_plugin_is_replaced to allow hosts to hide old plugins.
   * Switch to 2-clause BSD license.
   * *** API BREAK ***
 

@@ -123,6 +123,7 @@ struct _SLV2Plugin {
 	SLV2Port*          ports;
 	uint32_t           num_ports;
 	bool               loaded;
+	bool               replaced;
 };
 
 SLV2Plugin slv2_plugin_new(SLV2World world, SLV2Value uri, SLV2Value bundle_uri);
@@ -231,6 +232,7 @@ struct _SLV2World {
 	SLV2PluginClass   lv2_plugin_class;
 	SLV2PluginClasses plugin_classes;
 	SLV2Plugins       plugins;
+	SLV2Node          dc_replaces_node;
 	SLV2Node          dyn_manifest_node;
 	SLV2Node          lv2_specification_node;
 	SLV2Node          lv2_plugin_node;

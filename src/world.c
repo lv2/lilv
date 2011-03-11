@@ -65,11 +65,13 @@ slv2_world_new()
 	world->plugins        = slv2_plugins_new();
 
 #define NS_DYNMAN (const uint8_t*)"http://lv2plug.in/ns/ext/dynmanifest#"
+#define NS_DC     (const uint8_t*)"http://dublincore.org/documents/dcmi-namespace/"
 
 #define NEW_URI(uri)     sord_new_uri(world->world, uri)
 #define NEW_URI_VAL(uri) slv2_value_new_from_node( \
 		world, sord_new_uri(world->world, uri));
 
+	world->dc_replaces_node        = NEW_URI(NS_DC        "replaces");
 	world->dyn_manifest_node       = NEW_URI(NS_DYNMAN    "DynManifest");
 	world->lv2_specification_node  = NEW_URI(SLV2_NS_LV2  "Specification");
 	world->lv2_plugin_node         = NEW_URI(SLV2_NS_LV2  "Plugin");
@@ -127,6 +129,7 @@ slv2_world_free(SLV2World world)
 	slv2_plugin_class_free(world->lv2_plugin_class);
 	world->lv2_plugin_class = NULL;
 
+	slv2_node_free(world, world->dc_replaces_node);
 	slv2_node_free(world, world->dyn_manifest_node);
 	slv2_node_free(world, world->lv2_specification_node);
 	slv2_node_free(world, world->lv2_plugin_node);
@@ -430,7 +433,7 @@ slv2_world_load_bundle(SLV2World world, SLV2Value bundle_uri)
 	}
 	slv2_match_end(dmanifests);
 #endif // SLV2_DYN_MANIFEST
-	
+
 	// ?specification a lv2:Specification
 	SLV2Matches spec_results = slv2_world_find_statements(
 		world, world->model,
@@ -659,6 +662,37 @@ slv2_world_load_all(SLV2World world)
 
 	// Discover bundles and read all manifest files into model
 	slv2_world_load_path(world, lv2_path);
+
+	SLV2_FOREACH(p, world->plugins) {
+		SLV2Plugin plugin     = slv2_collection_get(world->plugins, p);
+		SLV2Value  plugin_uri = slv2_plugin_get_uri(plugin);
+
+		// ?new dc:replaces plugin
+		SLV2Matches replacements = slv2_world_find_statements(
+			world, world->model,
+			NULL,
+			world->dc_replaces_node,
+			slv2_value_as_node(plugin_uri),
+			NULL);
+		FOREACH_MATCH(replacements) {
+			SLV2Node subject = slv2_match_subject(replacements);
+			SLV2Node object  = slv2_match_object(replacements);
+			if (sord_node_get_type(subject) != SORD_URI
+			  || sord_node_get_type(object) != SORD_URI) {
+			  continue;
+			}
+
+			SLV2Value subject_val = slv2_value_new_from_node(world, subject);
+			SLV2Value object_val  = slv2_value_new_from_node(world, object);
+
+			fprintf(stderr, "%s REPLACES %s\n",
+			       slv2_value_as_uri(subject_val),
+			       slv2_value_as_uri(object_val));
+
+			plugin->replaced = true;
+		}
+		slv2_match_end(replacements);
+	}
 
 	// Query out things to cache
 	slv2_world_load_specifications(world);

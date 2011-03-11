@@ -63,6 +63,7 @@ slv2_plugin_new(SLV2World world, SLV2Value uri, SLV2Value bundle_uri)
 	plugin->ports        = NULL;
 	plugin->num_ports    = 0;
 	plugin->loaded       = false;
+	plugin->replaced     = false;
 
 	return plugin;
 }
@@ -772,6 +773,13 @@ slv2_plugin_get_author_homepage(SLV2Plugin plugin)
 				plugin->world->world, NS_FOAF "homepage"));
 	}
 	return NULL;
+}
+
+SLV2_API
+bool
+slv2_plugin_is_replaced(SLV2Plugin plugin)
+{
+	return plugin->replaced;
 }
 
 SLV2_API
