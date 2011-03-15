@@ -1,8 +1,8 @@
 #!/usr/bin/env python
-import autowaf
-import os
 import sys
-import Options
+
+import waflib.Options as Options
+from waflib.extras import autowaf as autowaf
 
 # Version of this package (even if built as a child)
 SLV2_VERSION = '0.7.0alpha'
@@ -67,7 +67,7 @@ def configure(conf):
 	conf.line_just = max(conf.line_just, 59)
 	autowaf.configure(conf)
 	autowaf.display_header('SLV2 Configuration')
-	conf.check_tool('compiler_cc')
+	conf.load('compiler_cc')
 
 	if not Options.options.no_swig:
 		try:
@@ -97,7 +97,7 @@ def configure(conf):
 	autowaf.check_header(conf, 'lv2/lv2plug.in/ns/extensions/ui/ui.h')
 
 	if not Options.options.no_jack_session:
-		if conf.env['HAVE_NEW_JACK'] and conf.env['HAVE_GTHREAD']:
+		if conf.is_defined('HAVE_NEW_JACK') and conf.is_defined('HAVE_GTHREAD'):
 			autowaf.define(conf, 'SLV2_JACK_SESSION', 1)
 			
 	conf.env.append_value('CFLAGS', '-std=c99')
@@ -140,14 +140,13 @@ def configure(conf):
 	conf.env['BUILD_UTILS']     = not Options.options.no_utils
 	conf.env['BASH_COMPLETION'] = not Options.options.no_bash_completion
 
-	conf.env['USE_JACK'] = conf.env['HAVE_JACK'] and not Options.options.no_jack
-	if conf.env['USE_JACK']:
+	if conf.is_defined('HAVE_JACK') and not Options.options.no_jack:
 		autowaf.check_header(conf, 'lv2/lv2plug.in/ns/ext/event/event.h',
 							 'HAVE_LV2_EVENT')
 		autowaf.check_header(conf, 'lv2/lv2plug.in/ns/ext/uri-map/uri-map.h',
 							 'HAVE_LV2_URI_MAP')
-		if not (conf.env['HAVE_LV2_EVENT'] and conf.env['HAVE_LV2_URI_MAP']):
-			conf.env['USE_JACK'] = False
+		if conf.is_defined('HAVE_LV2_EVENT') and conf.is_defined('HAVE_LV2_URI_MAP'):
+			autowaf.define(conf, 'SLV2_USE_JACK', 1)
 
 	conf.write_config_header('slv2-config.h', remove=False)
 
@@ -156,7 +155,7 @@ def configure(conf):
 	autowaf.display_msg(conf, "Utilities",
 	                    bool(conf.env['BUILD_UTILS']))
 	autowaf.display_msg(conf, "Jack clients",
-	                    bool(conf.env['USE_JACK']))
+	                    bool(conf.is_defined('SLV2_USE_JACK')))
 	autowaf.display_msg(conf, "Jack session support",
 	                    bool(conf.env['SLV2_JACK_SESSION']))
 	autowaf.display_msg(conf, "Unit tests",
@@ -164,9 +163,9 @@ def configure(conf):
 	autowaf.display_msg(conf, "Dynamic manifest support",
 	                    bool(conf.env['SLV2_DYN_MANIFEST']))
 	autowaf.display_msg(conf, "Python bindings",
-	                    bool(conf.env['SLV2_SWIG']))
+	                    conf.is_defined('SLV2_SWIG'))
 	autowaf.display_msg(conf, "UI wrapping support (via Suil)",
-	                    bool(conf.env['HAVE_SUIL']))
+	                    bool(conf.is_defined('HAVE_SUIL')))
 	print('')
 
 def build(bld):
@@ -243,7 +242,7 @@ def build(bld):
 			obj.install_path = '${BINDIR}'
 
 	# JACK Host
-	if bld.env['USE_JACK']:
+	if bld.is_defined('SLV2_USE_JACK'):
 		obj = bld(features = 'c cprogram')
 		obj.source       = 'utils/lv2_jack_host.c'
 		obj.includes     = ['.', './src', './utils']
@@ -251,7 +250,7 @@ def build(bld):
 		obj.use          = 'libslv2'
 		obj.target       = 'utils/lv2_jack_host'
 		obj.install_path = '${BINDIR}'
-		if bld.env['SLV2_JACK_SESSION']:
+		if bld.is_defined('SLV2_JACK_SESSION'):
 			autowaf.use_lib(bld, obj, 'GLIB GTHREAD')
 
 	# Documentation
@@ -262,7 +261,7 @@ def build(bld):
 		bld.install_as(
 			'/etc/bash_completion.d/slv2', 'utils/slv2.bash_completion')
 
-	if bld.env['SLV2_SWIG']:
+	if bld.is_defined('SLV2_SWIG'):
 		# Python Wrapper
 		obj = bld(
 			features   = 'cxx cxxshlib pyext',
