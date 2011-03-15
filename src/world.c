@@ -395,15 +395,21 @@ slv2_world_load_bundle(SLV2World world, SLV2Value bundle_uri)
 		// Open dynamic manifest
 		typedef int (*OpenFunc)(LV2_Dyn_Manifest_Handle*, const LV2_Feature *const *);
 		OpenFunc open_func = (OpenFunc)slv2_dlfunc(lib, "lv2_dyn_manifest_open");
-		if (open_func)
-			open_func(&handle, &dman_features);
+		if (!open_func || open_func(&handle, &dman_features)) {
+			SLV2_ERRORF("Missing lv2_dyn_manifest_open in `%s'\n", lib_path);
+			dlclose(lib);
+			continue;
+		}
 
 		// Get subjects (the data that would be in manifest.ttl)
 		typedef int (*GetSubjectsFunc)(LV2_Dyn_Manifest_Handle, FILE*);
-		GetSubjectsFunc get_subjects_func = (GetSubjectsFunc)slv2_dlfunc(lib,
-				"lv2_dyn_manifest_get_subjects");
-		if (!get_subjects_func)
+		GetSubjectsFunc get_subjects_func = (GetSubjectsFunc)slv2_dlfunc(
+			lib, "lv2_dyn_manifest_get_subjects");
+		if (!get_subjects_func) {
+			SLV2_ERRORF("Missing lv2_dyn_manifest_get_subjects in `%s'\n", lib_path);
+			dlclose(lib);
 			continue;
+		}
 
 		// Generate data file
 		FILE* fd = tmpfile();
@@ -430,6 +436,8 @@ slv2_world_load_bundle(SLV2World world, SLV2Value bundle_uri)
 			                      &manifest_uri, binary, bundle_node);
 		}
 		slv2_match_end(plug_results);
+
+		dlclose(lib);
 	}
 	slv2_match_end(dmanifests);
 #endif // SLV2_DYN_MANIFEST
