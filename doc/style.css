@@ -3,7 +3,7 @@ body {
 	font-family: sans-serif;
 }
 
-.navigation {
+#top {
 	display: none;
 }
 
@@ -433,7 +433,7 @@ table.memberdecls {
 }
 
 .directory div {
-	/*display: none;*/
+	display: none;
 	margin: 0;
 }
 
@@ -463,7 +463,7 @@ table.memberdecls {
 }
 
 .directory-alt div {
-	/*display: none;*/
+	display: none;
 	margin: 0;
 }
 
