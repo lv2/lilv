@@ -2,8 +2,8 @@
 import os
 import sys
 
-import waflib.Options as Options
 from waflib.extras import autowaf as autowaf
+import waflib.Options as Options
 
 # Version of this package (even if built as a child)
 SLV2_VERSION = '0.7.0alpha'
@@ -278,7 +278,7 @@ def build(bld):
 
 	bld.add_post_fun(autowaf.run_ldconfig)
 
-def fixdocs(ctx):
+def fix_docs(ctx):
     try:
         os.chdir('build/doc/html')
         os.system("sed -i 's/SLV2_API //' group__slv2.html")
@@ -287,7 +287,10 @@ def fixdocs(ctx):
         os.symlink('group__slv2.html',
                    'index.html')
     except Exception as e:
-        Logs.error("Failed to fix up Doxygen documentation\n")
+        Logs.error("Failed to fix up Doxygen documentation (%s)\n" % e)
+
+def upload_docs(ctx):
+    os.system("rsync -avz --delete -e ssh build/doc/html/* drobilla@drobilla.net:~/drobilla.net/docs/slv2")
 
 def test(ctx):
 	autowaf.pre_test(ctx, APPNAME)
