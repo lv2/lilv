@@ -280,12 +280,13 @@ def build(bld):
 
 def fixdocs(ctx):
     try:
-        os.system("sed -i 's/SLV2_API //' build/doc/html/group__slv2.html")
-        os.system("sed -i 's/SLV2_DEPRECATED //' build/doc/html/group__slv2.html")
-        os.remove('build/doc/html/index.html')
-        os.symlink('build/doc/html/group__slv2.html',
-                   'build/doc/html/index.html')
-    except:
+        os.chdir('build/doc/html')
+        os.system("sed -i 's/SLV2_API //' group__slv2.html")
+        os.system("sed -i 's/SLV2_DEPRECATED //' group__slv2.html")
+        os.remove('index.html')
+        os.symlink('group__slv2.html',
+                   'index.html')
+    except Exception as e:
         Logs.error("Failed to fix up Doxygen documentation\n")
 
 def test(ctx):
