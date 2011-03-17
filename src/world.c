@@ -112,8 +112,9 @@ slv2_world_new()
 	slv2_world_set_prefix(world, "lv2",   "http://lv2plug.in/ns/lv2core#");
 	slv2_world_set_prefix(world, "lv2ev", "http://lv2plug.in/ns/ext/event#");
 
-	world->n_read_files    = 0;
-	world->filter_language = true;
+	world->n_read_files        = 0;
+	world->opt.filter_language = true;
+	world->opt.dyn_manifest    = true;
 
 	return world;
 
@@ -184,14 +185,18 @@ slv2_world_set_option(SLV2World       world,
                       const char*     option,
                       const SLV2Value value)
 {
-	if (!strcmp(option, SLV2_OPTION_FILTER_LANG)) {
+	if (!strcmp(option, SLV2_OPTION_DYN_MANIFEST)) {
 		if (slv2_value_is_bool(value)) {
-			world->filter_language = slv2_value_as_bool(value);
+			world->opt.dyn_manifest = slv2_value_as_bool(value);
 			return;
 		}
-	} else {
-		SLV2_WARNF("Unrecognized or invalid option `%s'\n", option);
+	} else if (!strcmp(option, SLV2_OPTION_FILTER_LANG)) {
+		if (slv2_value_is_bool(value)) {
+			world->opt.filter_language = slv2_value_as_bool(value);
+			return;
+		}
 	}
+	SLV2_WARNF("Unrecognized or invalid option `%s'\n", option);
 }
 
 static SLV2Matches
@@ -316,39 +321,16 @@ slv2_world_add_plugin(SLV2World world,
 	slv2_sequence_insert(world->plugins, plugin);
 }
 
-SLV2_API
-void
-slv2_world_load_bundle(SLV2World world, SLV2Value bundle_uri)
+static void
+slv2_world_load_dyn_manifest(SLV2World      world,
+                             const SordNode bundle_node,
+                             SerdNode       manifest_uri)
 {
-	if (!slv2_value_is_uri(bundle_uri)) {
-		SLV2_ERROR("Bundle 'URI' is not a URI\n");
+#ifdef SLV2_DYN_MANIFEST
+	if (!world->opt.dyn_manifest) {
 		return;
 	}
 
-	const SordNode bundle_node = bundle_uri->val.uri_val;
-
-	SerdNode manifest_uri = slv2_new_uri_relative_to_base(
-		(const uint8_t*)"manifest.ttl",
-		(const uint8_t*)sord_node_get_string(bundle_node));
-
-	sord_read_file(world->model, manifest_uri.buf, bundle_node,
-	               slv2_world_blank_node_prefix(world));
-
-	// ?plugin a lv2:Plugin
-	SLV2Matches plug_results = slv2_world_find_statements(
-		world, world->model,
-		NULL,
-		world->rdf_a_node,
-		world->lv2_plugin_node,
-		bundle_node);
-	FOREACH_MATCH(plug_results) {
-		SLV2Node plugin_node = slv2_match_subject(plug_results);
-		slv2_world_add_plugin(world, plugin_node,
-		                      &manifest_uri, NULL, bundle_node);
-	}
-	slv2_match_end(plug_results);
-
-#ifdef SLV2_DYN_MANIFEST
 	typedef void* LV2_Dyn_Manifest_Handle;
 	LV2_Dyn_Manifest_Handle handle = NULL;
 
@@ -372,7 +354,7 @@ slv2_world_load_bundle(SLV2World world, SLV2Value bundle_uri)
 		if (slv2_matches_end(binaries)) {
 			slv2_match_end(binaries);
 			SLV2_ERRORF("Dynamic manifest in <%s> has no binaries, ignored\n",
-			            slv2_value_as_uri(bundle_uri));
+			            sord_node_get_string(bundle_node));
 			continue;
 		}
 
@@ -441,6 +423,41 @@ slv2_world_load_bundle(SLV2World world, SLV2Value bundle_uri)
 	}
 	slv2_match_end(dmanifests);
 #endif // SLV2_DYN_MANIFEST
+}
+
+SLV2_API
+void
+slv2_world_load_bundle(SLV2World world, SLV2Value bundle_uri)
+{
+	if (!slv2_value_is_uri(bundle_uri)) {
+		SLV2_ERROR("Bundle 'URI' is not a URI\n");
+		return;
+	}
+
+	const SordNode bundle_node = bundle_uri->val.uri_val;
+
+	SerdNode manifest_uri = slv2_new_uri_relative_to_base(
+		(const uint8_t*)"manifest.ttl",
+		(const uint8_t*)sord_node_get_string(bundle_node));
+
+	sord_read_file(world->model, manifest_uri.buf, bundle_node,
+	               slv2_world_blank_node_prefix(world));
+
+	// ?plugin a lv2:Plugin
+	SLV2Matches plug_results = slv2_world_find_statements(
+		world, world->model,
+		NULL,
+		world->rdf_a_node,
+		world->lv2_plugin_node,
+		bundle_node);
+	FOREACH_MATCH(plug_results) {
+		SLV2Node plugin_node = slv2_match_subject(plug_results);
+		slv2_world_add_plugin(world, plugin_node,
+		                      &manifest_uri, NULL, bundle_node);
+	}
+	slv2_match_end(plug_results);
+
+	slv2_world_load_dyn_manifest(world, bundle_node, manifest_uri);
 
 	// ?specification a lv2:Specification
 	SLV2Matches spec_results = slv2_world_find_statements(

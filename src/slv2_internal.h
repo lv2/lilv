@@ -221,6 +221,11 @@ void              slv2_plugin_classes_free();
 
 /* ********* World ********* */
 
+typedef struct {
+	bool dyn_manifest;
+	bool filter_language;
+} SLV2Options;
+
 /** Model of LV2 (RDF) data loaded from bundles.
  */
 struct _SLV2World {
@@ -259,7 +264,7 @@ struct _SLV2World {
 	SLV2Node          xsd_integer_node;
 	SLV2Value         doap_name_val;
 	SLV2Value         lv2_name_val;
-	bool              filter_language;
+	SLV2Options       opt;
 };
 
 const uint8_t*

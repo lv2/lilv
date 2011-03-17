@@ -532,9 +532,17 @@ slv2_world_new(void);
 #define SLV2_OPTION_FILTER_LANG "http://drobilla.net/ns/slv2#filter-lang"
 
 /**
+   Enable/disable dynamic manifest support.
+   Dynamic manifest data will only be loaded if this option is true.
+*/
+#define SLV2_OPTION_DYN_MANIFEST "http://drobilla.net/ns/slv2#dyn-manifest"
+
+/**
    Set an SLV2 option for @a world.
 
-   Currently recognized options: SLV2_OPTION_FILTER_LANG.
+   Currently recognized options:
+   @ref SLV2_OPTION_FILTER_LANG
+   @ref SLV2_OPTION_DYN_MANIFEST
 */
 SLV2_API
 void

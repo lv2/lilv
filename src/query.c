@@ -143,7 +143,7 @@ slv2_values_from_stream_objects(SLV2Plugin  p,
 	if (slv2_matches_end(stream)) {
 		slv2_match_end(stream);
 		return NULL;
-	} else if (p->world->filter_language) {
+	} else if (p->world->opt.filter_language) {
 		return slv2_values_from_stream_objects_i18n(p, stream);
 	} else {
 		SLV2Values values = slv2_values_new();
