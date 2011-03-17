@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+import os
 import sys
 
 import waflib.Options as Options
@@ -276,6 +277,16 @@ def build(bld):
 		bld.install_files('${PYTHONDIR}', 'swig/slv2.py')
 
 	bld.add_post_fun(autowaf.run_ldconfig)
+
+def fixdocs(ctx):
+    try:
+        os.system("sed -i 's/SLV2_API //' build/doc/html/group__slv2.html")
+        os.system("sed -i 's/SLV2_DEPRECATED //' build/doc/html/group__slv2.html")
+        os.remove('build/doc/html/index.html')
+        os.symlink('build/doc/html/group__slv2.html',
+                   'build/doc/html/index.html')
+    except:
+        Logs.error("Failed to fix up Doxygen documentation\n")
 
 def test(ctx):
 	autowaf.pre_test(ctx, APPNAME)

@@ -83,6 +83,16 @@ typedef struct _SLV2ScalePoint*   SLV2ScalePoint;   /**< Scale Point (Notch). */
 typedef struct _SLV2UI*           SLV2UI;           /**< Plugin UI. */
 typedef struct _SLV2Value*        SLV2Value;        /**< Typed Value. */
 typedef struct _SLV2World*        SLV2World;        /**< SLV2 World. */
+typedef struct _SLV2UIInstance*   SLV2UIInstance;   /**< Plugin UI Instance. */
+
+/**
+   A UI host descriptor.
+
+   A UI host descriptor contains the various functions that a plugin UI may use
+   to communicate with the plugin. It is passed to @ref slv2_ui_instance_new to
+   provide these functions to the UI.
+*/
+typedef struct _SLV2UIHost* SLV2UIHost;
 
 typedef void* SLV2PluginClasses;  /**< set<PluginClass>. */
 typedef void* SLV2Plugins;        /**< set<Plugin>. */
@@ -305,11 +315,12 @@ slv2_value_as_bool(SLV2Value value);
    <li>SLV2UIs (function prefix "slv2_uis_")</li>
    </ul>
 
-   Each collection type supports the following functions:
+   Each collection type supports a similar basic API:
    <ul>
-   <li>PREFIX_free (coll)</li>
-   <li>PREFIX_size (coll)</li>
-   <li>PREFIX_get_at (coll, index)</li>
+   <li>void PREFIX_free (coll)</li>
+   <li>unsigned PREFIX_size (coll)</li>
+   <li>SLV2Iter PREFIX_begin (coll)</li>
+   <li>ELEM PREFIX_get_at (coll, index)  (DEPRECATED)</li>
    </ul>
    @{
 */
@@ -318,10 +329,12 @@ slv2_value_as_bool(SLV2Value value);
 
 typedef void* SLV2Iter;
 
+/** Increment @a i to point at the next element in the collection. */
 SLV2_API
 SLV2Iter
 slv2_iter_next(SLV2Iter i);
 
+/** Return true iff @a i is at the end of the collection. */
 SLV2_API
 bool
 slv2_iter_end(SLV2Iter i);
@@ -1132,6 +1145,10 @@ slv2_plugin_class_get_children(SLV2PluginClass plugin_class);
 
 typedef struct _SLV2InstanceImpl* SLV2InstanceImpl;
 
+/**
+   @cond 0
+*/
+
 /* Instance of a plugin.
    This is exposed in the ABI to allow inlining of performance critical
    functions like slv2_instance_run (simple wrappers of functions in lv2.h).
@@ -1144,6 +1161,10 @@ typedef struct _Instance {
 	LV2_Handle            lv2_handle;
 	SLV2InstanceImpl      pimpl; ///< Private implementation
 }* SLV2Instance;
+
+/**
+   @endcond
+*/
 
 /**
    Instantiate a plugin.
@@ -1377,8 +1398,6 @@ slv2_ui_get_binary_uri(SLV2UI ui);
    @{
 */
 
-typedef struct _SLV2UIInstance* SLV2UIInstance;
-
 /**
    DEPRECATED: Instantiate a plugin UI.
    This function is deprecated, it does not support widget wrapping.
@@ -1392,15 +1411,6 @@ slv2_ui_instantiate(SLV2Plugin                plugin,
                     LV2UI_Write_Function      write_function,
                     LV2UI_Controller          controller,
                     const LV2_Feature* const* features);
-
-/**
-   A UI host descriptor.
-
-   A UI host descriptor contains the various functions that a plugin UI may
-   use to communicate with the plugin. It is passed to @ref
-   slv2_ui_instance_new to provide these functions to the UI.
-*/
-typedef struct _SLV2UIHost* SLV2UIHost;
 
 typedef uint32_t (*SLV2PortIndexFunction)(LV2UI_Controller controller,
                                           const char*      port_symbol);
