@@ -226,10 +226,9 @@ print_plugin(SLV2Plugin p)
 		if (!first) {
 			printf("\n\t                   ");
 		}
-		printf("%s", slv2_value_as_uri(slv2_values_get(data_uris, i)));
+		printf("%s\n", slv2_value_as_uri(slv2_values_get(data_uris, i)));
 		first = false;
 	}
-	printf("\n");
 
 	/* Required Features */
 
@@ -237,7 +236,7 @@ print_plugin(SLV2Plugin p)
 	if (features)
 		printf("\tRequired Features: ");
 	first = true;
-	SLV2_FOREACH(i, data_uris) {
+	SLV2_FOREACH(i, features) {
 		if (!first) {
 			printf("\n\t                   ");
 		}
