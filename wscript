@@ -130,10 +130,11 @@ def configure(conf):
         elif Options.platform == 'win32':
             Options.options.default_lv2_path = 'C:\\Program Files\\LV2'
         else:
+            libdirname = os.path.basename(conf.env['LIBDIR'])
             Options.options.default_lv2_path = slv2_path_sep.join([
                     '~/.lv2',
-                    '/usr/%s/lv2' % conf.env['LIBDIRNAME'],
-                    '/usr/local/%s/lv2' % conf.env['LIBDIRNAME']])
+                    '/usr/%s/lv2' % libdirname,
+                    '/usr/local/%s/lv2' % libdirname])
 
     autowaf.define(conf, 'SLV2_DEFAULT_LV2_PATH', Options.options.default_lv2_path)
 
