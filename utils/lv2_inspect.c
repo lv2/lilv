@@ -226,9 +226,10 @@ print_plugin(SLV2Plugin p)
 		if (!first) {
 			printf("\n\t                   ");
 		}
-		printf("%s\n", slv2_value_as_uri(slv2_values_get(data_uris, i)));
+		printf("%s", slv2_value_as_uri(slv2_values_get(data_uris, i)));
 		first = false;
 	}
+	printf("\n");
 
 	/* Required Features */
 
