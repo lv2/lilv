@@ -514,6 +514,10 @@ expand(const char* path)
 	}
 
 	wordfree(&p);
+#elif defined(__WIN32__)
+	static const size_t len = 32767;
+	char*               ret = malloc(len);
+	ExpandEnvironmentStrings(path, ret, len);
 #else
 	char* ret = slv2_strdup(path);
 #endif
