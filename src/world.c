@@ -26,6 +26,7 @@
 #define _XOPEN_SOURCE 500
 
 #include <assert.h>
+#include <errno.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -577,17 +578,15 @@ is_path_sep(char c)
 	return c == SLV2_PATH_SEP[0];
 }
 
-const char*
-last_path_sep(const char* path)
+static const char*
+first_path_sep(const char* path)
 {
-	const size_t len      = strlen(path);
-	const char*  last_sep = path + len;
-	for (; last_sep > path; --last_sep) {
-		if (is_path_sep(*last_sep)) {
-			break;
+	for (const char* p = path; *p != '\0'; ++p) {
+		if (is_path_sep(*p)) {
+			return p;
 		}
 	}
-	return is_path_sep(*last_sep) ? last_sep : NULL;
+	return NULL;
 }
 
 /** Load all bundles found in @a lv2_path.
@@ -600,7 +599,7 @@ slv2_world_load_path(SLV2World   world,
                      const char* lv2_path)
 {
 	while (lv2_path[0] != '\0') {
-		const char* const sep = last_path_sep(lv2_path);
+		const char* const sep = first_path_sep(lv2_path);
 		if (sep) {
 			const size_t dir_len = sep - lv2_path;
 			char* const  dir     = malloc(dir_len + 1);
