@@ -30,9 +30,8 @@
 #include <string.h>
 
 #include <dirent.h>
+#ifdef HAVE_WORDEXP
 #include <wordexp.h>
-#ifdef SLV2_DYN_MANIFEST
-#include <dlfcn.h>
 #endif
 
 #include "slv2_internal.h"
@@ -212,7 +211,8 @@ slv2_world_find_statements(SLV2World world,
 }
 
 static SerdNode
-slv2_new_uri_relative_to_base(const uint8_t* uri_str, const uint8_t* base_uri_str)
+slv2_new_uri_relative_to_base(const uint8_t* uri_str,
+                              const uint8_t* base_uri_str)
 {
 	SerdURI base_uri;
 	if (!serd_uri_parse(base_uri_str, &base_uri)) {
@@ -496,22 +496,26 @@ slv2_world_load_bundle(SLV2World world, SLV2Value bundle_uri)
 static char*
 expand(const char* path)
 {
+#ifdef HAVE_WORDEXP
 	char*     ret = NULL;
 	wordexp_t p;
 
 	wordexp(path, &p, 0);
 	if (p.we_wordc == 0) {
-		// Literal directory path (e.g. no variables or ~)
-		ret = strdup(path);
+		/* Literal directory path (e.g. no variables or ~) */
+		ret = slv2_strdup(path);
 	} else if (p.we_wordc == 1) {
-		// Directory path expands (e.g. contains ~ or $FOO)
-		ret = strdup(p.we_wordv[0]);
+		/* Directory path expands (e.g. contains ~ or $FOO) */
+		ret = slv2_strdup(p.we_wordv[0]);
 	} else {
-		// Multiple expansions in a single directory path?
-		fprintf(stderr, "lv2config: malformed path `%s' ignored\n", path);
+		/* Multiple expansions in a single directory path? */
+		SLV2_ERRORF("malformed path `%s' ignored\n", path);
 	}
 
 	wordfree(&p);
+#else
+	char* ret = slv2_strdup(path);
+#endif
 	return ret;
 }
 
@@ -521,31 +525,43 @@ slv2_world_load_directory(SLV2World world, const char* dir_path)
 {
 	char* path = expand(dir_path);
 	if (!path) {
+		SLV2_WARNF("empty path `%s'\n", path);
 		return;
 	}
 
 	DIR* pdir = opendir(path);
 	if (!pdir) {
+		SLV2_WARNF("failed to open directory `%s' (%s)\n",
+		           path, strerror(errno));
 		free(path);
 		return;
 	}
+
+#ifdef __WIN32__
+	static const char* const file_scheme = "file:///";
+#else
+	static const char* const file_scheme = "file://";
+#endif
+	const size_t file_scheme_len = strlen(file_scheme);
 
 	struct dirent* pfile;
 	while ((pfile = readdir(pdir))) {
 		if (!strcmp(pfile->d_name, ".") || !strcmp(pfile->d_name, ".."))
 			continue;
 
-		char* uri = slv2_strjoin("file://",
-		                         path, SLV2_DIR_SEP,
-		                         pfile->d_name, SLV2_DIR_SEP,
+		char* uri = slv2_strjoin(file_scheme,
+		                         path, "/",
+		                         pfile->d_name, "/",
 		                         NULL);
 
-		DIR* const bundle_dir = opendir(uri + 7);
+		DIR* const bundle_dir = opendir(uri + file_scheme_len);
 		if (bundle_dir) {
 			closedir(bundle_dir);
 			SLV2Value uri_val = slv2_value_new_uri(world, uri);
 			slv2_world_load_bundle(world, uri_val);
 			slv2_value_free(uri_val);
+		} else {
+			SLV2_WARNF("failed to open bundle `%s'\n", uri);
 		}
 
 		free(uri);
@@ -553,6 +569,25 @@ slv2_world_load_directory(SLV2World world, const char* dir_path)
 
 	free(path);
 	closedir(pdir);
+}
+
+static bool
+is_path_sep(char c)
+{
+	return c == SLV2_PATH_SEP[0];
+}
+
+const char*
+last_path_sep(const char* path)
+{
+	const size_t len      = strlen(path);
+	const char*  last_sep = path + len;
+	for (; last_sep > path; --last_sep) {
+		if (is_path_sep(*last_sep)) {
+			break;
+		}
+	}
+	return is_path_sep(*last_sep) ? last_sep : NULL;
 }
 
 /** Load all bundles found in @a lv2_path.
@@ -565,7 +600,7 @@ slv2_world_load_path(SLV2World   world,
                      const char* lv2_path)
 {
 	while (lv2_path[0] != '\0') {
-		const char* const sep = strchr(lv2_path, SLV2_PATH_SEP[0]);
+		const char* const sep = last_path_sep(lv2_path);
 		if (sep) {
 			const size_t dir_len = sep - lv2_path;
 			char* const  dir     = malloc(dir_len + 1);

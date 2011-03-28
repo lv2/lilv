@@ -30,10 +30,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#ifdef SLV2_DYN_MANIFEST
-#include <dlfcn.h>
-#endif
-
 #include "slv2-config.h"
 #include "slv2_internal.h"
 

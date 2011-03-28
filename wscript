@@ -94,6 +94,11 @@ def configure(conf):
     autowaf.check_pkg(conf, 'suil', uselib_store='SUIL',
                       atleast_version='0.0.0', mandatory=True)
 
+    conf.check(function_name='wordexp',
+               header_name='wordexp.h',
+               define_name='HAVE_WORDEXP',
+               mandatory=False)
+
     autowaf.check_header(conf, 'lv2/lv2plug.in/ns/lv2core/lv2.h')
     autowaf.check_header(conf, 'lv2/lv2plug.in/ns/extensions/ui/ui.h')
 
@@ -110,7 +115,7 @@ def configure(conf):
     slv2_dir_sep  = '/'
     if sys.platform == 'win32':
         slv2_path_sep = ';'
-        slv2_dir_sep = '\\'
+        slv2_dir_sep = '\\\\'
 
     autowaf.define(conf, 'SLV2_PATH_SEP', slv2_path_sep)
     autowaf.define(conf, 'SLV2_DIR_SEP',  slv2_dir_sep)
@@ -128,7 +133,7 @@ def configure(conf):
                     '~/.lv2',
                     '/boot/common/add-ons/lv2'])
         elif Options.platform == 'win32':
-            Options.options.default_lv2_path = 'C:\\Program Files\\LV2'
+            Options.options.default_lv2_path = 'C:\\\\Program Files\\\\LV2'
         else:
             libdirname = os.path.basename(conf.env['LIBDIR'])
             Options.options.default_lv2_path = slv2_path_sep.join([
@@ -193,6 +198,12 @@ def build(bld):
         src/world.c
     '''.split()
 
+    linkflags = [ '-ldl' ]
+    libflags  = [ '-fvisibility=hidden' ]  
+    if sys.platform == 'win32':
+        linkflags = []
+        libflags  = []
+
     # Library
     obj = bld(features        = 'c cshlib',
               export_includes = ['.'],
@@ -202,10 +213,10 @@ def build(bld):
               target          = 'slv2',
               vnum            = SLV2_LIB_VERSION,
               install_path    = '${LIBDIR}',
-              cflags          = [ '-fvisibility=hidden',
+              cflags          = libflags + [
                                   '-DSLV2_SHARED',
                                   '-DSLV2_INTERNAL' ],
-              linkflags       = [ '-ldl' ])
+              linkflags       = linkflags)
     autowaf.use_lib(bld, obj, 'SORD SERD LV2CORE GLIB SUIL')
 
     if bld.env['BUILD_TESTS']:
@@ -217,7 +228,7 @@ def build(bld):
                   target       = 'slv2_static',
                   install_path = '',
                   cflags       = [ '-fprofile-arcs',  '-ftest-coverage', '-DSLV2_INTERNAL' ],
-                  linkflags    = [ '-ldl' ])
+                  linkflags    = linkflags)
         autowaf.use_lib(bld, obj, 'SORD SERD LV2CORE GLIB SUIL')
 
         # Unit test program
@@ -226,7 +237,7 @@ def build(bld):
                   includes     = ['.', './src'],
                   use          = 'libslv2_static',
                   uselib       = 'SORD SERD LV2CORE',
-                  linkflags    = '-lgcov -ldl',
+                  linkflags    = linkflags + ['-lgcov'],
                   target       = 'test/slv2_test',
                   install_path = '',
                   cflags       = [ '-fprofile-arcs',  '-ftest-coverage' ])

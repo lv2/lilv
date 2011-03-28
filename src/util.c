@@ -59,13 +59,28 @@ slv2_strjoin(const char* first, ...)
 	return result;
 }
 
+char*
+slv2_strdup(const char* str)
+{
+	const size_t len = strlen(str);
+	char*        dup = malloc(len + 1);
+	memcpy(dup, str, len + 1);
+	return dup;
+}
+
 const char*
 slv2_uri_to_path(const char* uri)
 {
-	if (!strncmp(uri, "file://", (size_t)7))
+#ifdef __WIN32__
+	if (!strncmp(uri, "file:///", (size_t)8)) {
+		return (char*)(uri + 8);
+#else
+	if (!strncmp(uri, "file://", (size_t)7)) {
 		return (char*)(uri + 7);
-	else
+#endif
+	} else {
 		return NULL;
+	}
 }
 
 /** Return the current LANG converted to Turtle (i.e. RFC3066) style.

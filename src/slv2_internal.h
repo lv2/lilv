@@ -28,7 +28,15 @@ extern "C" {
 #include <stdint.h>
 #include <stdlib.h>
 
+#ifdef __WIN32__
+#include <windows.h>
+#define dlopen(path, flags) LoadLibrary(path)
+#define dlclose(lib) FreeLibrary(lib)
+#define dlsym GetProcAddress
+static inline char* dlerror(void) { return "Unknown error"; }
+#else
 #include <dlfcn.h>
+#endif
 
 #include <glib.h>
 
@@ -379,6 +387,7 @@ SLV2Values slv2_values_from_stream_objects(SLV2Plugin  p,
 /* ********* Utilities ********* */
 
 char*    slv2_strjoin(const char* first, ...);
+char*    slv2_strdup(const char* str);
 char*    slv2_get_lang();
 uint8_t* slv2_qname_expand(SLV2Plugin p, const char* qname);
 

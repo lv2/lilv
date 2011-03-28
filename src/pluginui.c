@@ -51,7 +51,7 @@ slv2_ui_new(SLV2World world,
 	ui->binary_uri = binary_uri;
 
 	// FIXME: kludge
-	char* bundle     = strdup(slv2_value_as_string(ui->binary_uri));
+	char* bundle     = slv2_strdup(slv2_value_as_string(ui->binary_uri));
 	char* last_slash = strrchr(bundle, '/') + 1;
 	*last_slash = '\0';
 	ui->bundle_uri = slv2_value_new_uri(world, bundle);

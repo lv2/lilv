@@ -48,7 +48,7 @@ slv2_value_set_numerics_from_string(SLV2Value val)
 		break;
 	case SLV2_VALUE_INT:
 		// FIXME: locale kludge, need a locale independent strtol
-		locale = strdup(setlocale(LC_NUMERIC, NULL));
+		locale = slv2_strdup(setlocale(LC_NUMERIC, NULL));
 		setlocale(LC_NUMERIC, "POSIX");
 		val->val.int_val = strtol(val->str_val, &endptr, 10);
 		setlocale(LC_NUMERIC, locale);
@@ -56,7 +56,7 @@ slv2_value_set_numerics_from_string(SLV2Value val)
 		break;
 	case SLV2_VALUE_FLOAT:
 		// FIXME: locale kludge, need a locale independent strtod
-		locale = strdup(setlocale(LC_NUMERIC, NULL));
+		locale = slv2_strdup(setlocale(LC_NUMERIC, NULL));
 		setlocale(LC_NUMERIC, "POSIX");
 		val->val.float_val = strtod(val->str_val, &endptr);
 		setlocale(LC_NUMERIC, locale);
@@ -91,7 +91,7 @@ slv2_value_new(SLV2World world, SLV2ValueType type, const char* str)
 	case SLV2_VALUE_INT:
 	case SLV2_VALUE_FLOAT:
 	case SLV2_VALUE_BOOL:
-		val->str_val = strdup(str);
+		val->str_val = slv2_strdup(str);
 		break;
 	}
 
@@ -207,7 +207,7 @@ slv2_value_duplicate(SLV2Value val)
 		result->val.uri_val = slv2_node_copy(val->val.uri_val);
 		result->str_val = (char*)sord_node_get_string(result->val.uri_val);
 	} else {
-		result->str_val = strdup(val->str_val);
+		result->str_val = slv2_strdup(val->str_val);
 		result->val = val->val;
 	}
 
@@ -277,12 +277,12 @@ slv2_value_get_turtle_token(SLV2Value value)
 	case SLV2_VALUE_STRING:
 	case SLV2_VALUE_QNAME_UNUSED:
 	case SLV2_VALUE_BOOL:
-		result = strdup(value->str_val);
+		result = slv2_strdup(value->str_val);
 		break;
 	case SLV2_VALUE_INT:
 		// INT64_MAX is 9223372036854775807 (19 digits) + 1 for sign
 		// FIXME: locale kludge, need a locale independent snprintf
-		locale = strdup(setlocale(LC_NUMERIC, NULL));
+		locale = slv2_strdup(setlocale(LC_NUMERIC, NULL));
 		len = 20;
 		result = calloc(len, 1);
 		setlocale(LC_NUMERIC, "POSIX");
@@ -291,7 +291,7 @@ slv2_value_get_turtle_token(SLV2Value value)
 		break;
 	case SLV2_VALUE_FLOAT:
 		// FIXME: locale kludge, need a locale independent snprintf
-		locale = strdup(setlocale(LC_NUMERIC, NULL));
+		locale = slv2_strdup(setlocale(LC_NUMERIC, NULL));
 		len = 20; // FIXME: proper maximum value?
 		result = calloc(len, 1);
 		setlocale(LC_NUMERIC, "POSIX");
