@@ -493,14 +493,13 @@ slv2_world_load_bundle(SLV2World world, SLV2Value bundle_uri)
 	serd_node_free(&manifest_uri);
 }
 
-// Expand POSIX things in path (particularly ~)
+/** Expand variables (e.g. POSIX ~ or $FOO, Windows %FOO%) in @a path. */
 static char*
 expand(const char* path)
 {
 #ifdef HAVE_WORDEXP
 	char*     ret = NULL;
 	wordexp_t p;
-
 	wordexp(path, &p, 0);
 	if (p.we_wordc == 0) {
 		/* Literal directory path (e.g. no variables or ~) */
@@ -512,7 +511,6 @@ expand(const char* path)
 		/* Multiple expansions in a single directory path? */
 		SLV2_ERRORF("malformed path `%s' ignored\n", path);
 	}
-
 	wordfree(&p);
 #elif defined(__WIN32__)
 	static const size_t len = 32767;
