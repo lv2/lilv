@@ -38,30 +38,30 @@
 #include "lv2/lv2plug.in/ns/extensions/ui/ui.h"
 
 #ifdef SLV2_SHARED
-	#if defined _WIN32 || defined __CYGWIN__
-		#define SLV2_LIB_IMPORT __declspec(dllimport)
-		#define SLV2_LIB_EXPORT __declspec(dllexport)
-	#else
-		#define SLV2_LIB_IMPORT __attribute__ ((visibility("default")))
-		#define SLV2_LIB_EXPORT __attribute__ ((visibility("default")))
-	#endif
-	#ifdef SLV2_INTERNAL
-		#define SLV2_API SLV2_LIB_EXPORT
-	#else
-		#define SLV2_API SLV2_LIB_IMPORT
-	#endif
+#    ifdef __WIN32__
+#        define SLV2_LIB_IMPORT __declspec(dllimport)
+#        define SLV2_LIB_EXPORT __declspec(dllexport)
+#    else
+#        define SLV2_LIB_IMPORT __attribute__((visibility("default")))
+#        define SLV2_LIB_EXPORT __attribute__((visibility("default")))
+#    endif
+#    ifdef SLV2_INTERNAL
+#        define SLV2_API SLV2_LIB_EXPORT
+#    else
+#        define SLV2_API SLV2_LIB_IMPORT
+#    endif
 #else
-	#define SLV2_API
+#    define SLV2_API
 #endif
 
-#if (__GNUC__ > 3 || (__GNUC__ == 3 && __GNUC_MINOR__ >= 1))
-	#ifdef SLV2_INTERNAL
-		#define SLV2_DEPRECATED
-	#else
-		#define SLV2_DEPRECATED __attribute__((__deprecated__))
-	#endif
+#ifdef __GNUC__
+#    ifdef SLV2_INTERNAL
+#        define SLV2_DEPRECATED
+#    else
+#        define SLV2_DEPRECATED __attribute__((__deprecated__))
+#    endif
 #else
-	#define SLV2_DEPRECATED
+#    define SLV2_DEPRECATED
 #endif
 
 #ifdef __cplusplus
