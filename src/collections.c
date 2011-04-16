@@ -136,7 +136,6 @@ slv2_plugins_get_by_uri(SLV2Plugins list, SLV2Value uri)
 	return (SLV2Plugin)slv2_sequence_get_by_uri(list, uri);
 }
 
-
 /* Values */
 
 SLV2_API

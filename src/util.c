@@ -94,7 +94,7 @@ slv2_get_lang()
 	    || !strcmp(env_lang, "C") || !strcmp(env_lang, "POSIX")) {
 		return NULL;
 	}
-	
+
 	const size_t env_lang_len = strlen(env_lang);
 	char* const  lang         = malloc(env_lang_len + 1);
 	for (size_t i = 0; i < env_lang_len + 1; ++i) {

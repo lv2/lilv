@@ -46,7 +46,7 @@ slv2_ui_instantiate(SLV2Plugin                plugin,
                     const LV2_Feature* const* features)
 {
 	SLV2UIHost ui_host = slv2_ui_host_new(write_function, NULL, NULL, NULL);
-	
+
 	SLV2UIInstance ret = slv2_ui_instance_new(
 		plugin, ui, NULL, ui_host, controller, features);
 
@@ -75,7 +75,7 @@ slv2_ui_host_free(SLV2UIHost ui_host)
 {
 	free(ui_host);
 }
-	
+
 SLV2_API
 SLV2UIInstance
 slv2_ui_instance_new(SLV2Plugin                plugin,

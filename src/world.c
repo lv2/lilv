@@ -247,7 +247,7 @@ struct _SLV2Header*
 slv2_sequence_get_by_uri(GSequence* seq,
                          SLV2Value  uri)
 {
-	struct _SLV2Header key = { NULL, uri }; 
+	struct _SLV2Header key = { NULL, uri };
 	GSequenceIter*     i   = g_sequence_search(
 		seq, &key, slv2_header_compare_by_uri, NULL);
 
@@ -303,7 +303,7 @@ slv2_world_add_plugin(SLV2World world,
 	if (dyn_manifest_lib) {
 		plugin->dynman_uri = slv2_value_new_from_node(world, dyn_manifest_lib);
 	}
-		
+
 	// Add all plugin data files (rdfs:seeAlso)
 	SLV2Matches files = slv2_world_find_statements(
 		world, world->model,

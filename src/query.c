@@ -96,7 +96,7 @@ slv2_values_from_stream_objects_i18n(SLV2Plugin  p,
 					lm = SLV2_LANG_MATCH_EXACT;
 				}
 			}
-			
+
 			if (lm == SLV2_LANG_MATCH_EXACT) {
 				// Exact language match, add to results
 				slv2_array_append(values, slv2_value_new_from_node(p->world, value));

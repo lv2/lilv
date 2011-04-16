@@ -187,7 +187,7 @@ slv2_port_get_value(SLV2Plugin p,
 	}
 
 	return slv2_port_get_value_by_node(
-		p, port, 
+		p, port,
 		slv2_value_as_node(predicate));
 }
 
@@ -206,7 +206,7 @@ slv2_port_get_name(SLV2Plugin p,
 {
 	SLV2Values results = slv2_port_get_value(p, port,
 	                                         p->world->lv2_name_val);
- 
+
 	SLV2Value ret = NULL;
 	if (results) {
 		SLV2Value val = slv2_values_get_first(results);
@@ -218,7 +218,7 @@ slv2_port_get_name(SLV2Plugin p,
 	if (!ret)
 		SLV2_WARNF("<%s> has no (mandatory) doap:name\n",
 		           slv2_value_as_string(slv2_plugin_get_uri(p)));
-	
+
 	return ret;
 }
 

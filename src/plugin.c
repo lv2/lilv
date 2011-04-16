@@ -805,7 +805,7 @@ slv2_plugin_get_uis(SLV2Plugin p)
 			SLV2_ERROR("Corrupt UI\n");
 			continue;
 		}
-		
+
 		SLV2UI slv2_ui = slv2_ui_new(
 			p->world,
 			slv2_value_new_from_node(p->world, ui),

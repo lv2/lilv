@@ -104,7 +104,7 @@ typedef void* SLV2Values;         /**< set<Value>. */
 /**
    @defgroup slv2 SLV2
    SLV2 is a simple yet powerful C API for using LV2 plugins.
- 
+
    For more information about LV2, see <http://lv2plug.in>.
    For more information about SLV2, see <http://drobilla.net/software/slv2>.
    @{
@@ -580,7 +580,7 @@ slv2_world_free(SLV2World world);
    established/standard best practice for discovering all LV2 data on the
    system.  The environment variable LV2_PATH may be used to control where
    this function will look for bundles.
- 
+
    Hosts should use this function rather than explicitly load bundles, except
    in special circumstances (e.g. development utilities, or hosts that ship
    with special plugin bundles which are installed to a known location).
@@ -593,9 +593,9 @@ slv2_world_load_all(SLV2World world);
    Load a specific bundle.
    @a bundle_uri must be a fully qualified URI to the bundle directory,
    with the trailing slash, eg. file:///usr/lib/lv2/foo.lv2/
- 
+
    Normal hosts should not need this function (use slv2_world_load_all).
- 
+
    Hosts MUST NOT attach any long-term significance to bundle paths
    (e.g. in save files), since there are no guarantees they will remain
    unchanged between (or even during) program invocations. Plugins (among
@@ -654,7 +654,7 @@ slv2_world_get_plugin_by_uri_string(SLV2World   world,
    Check if @a plugin is valid.
    This is not a rigorous validator, but can be used to reject some malformed
    plugins that could cause bugs (e.g. plugins with missing required fields).
- 
+
    Note that normal hosts do NOT need to use this - slv2 does not
    load invalid plugins into plugin lists.  This is included for plugin
    testing utilities, etc.
@@ -669,13 +669,13 @@ slv2_plugin_verify(SLV2Plugin plugin);
    Any serialization that refers to plugins should refer to them by this.
    Hosts SHOULD NOT save any filesystem paths, plugin indexes, etc. in saved
    files; save only the URI.
- 
+
    The URI is a globally unique identifier for one specific plugin.  Two
    plugins with the same URI are compatible in port signature, and should
    be guaranteed to work in a compatible and consistent way.  If a plugin
    is upgraded in an incompatible way (eg if it has different ports), it
    MUST have a different URI than it's predecessor.
- 
+
    @return A shared URI value which must not be modified or freed.
 */
 SLV2_API
@@ -687,7 +687,7 @@ slv2_plugin_get_uri(SLV2Plugin plugin);
    This returns the URI of the bundle where the plugin itself was found.
    Note that the data for a plugin may be spread over many bundles, that is,
    slv2_plugin_get_data_uris may return URIs which are not within this bundle.
- 
+
    Typical hosts should not need to use this function.
    Note this always returns a fully qualified URI.  If you want a local
    filesystem path, use slv2_uri_to_path.
@@ -740,11 +740,11 @@ slv2_plugin_get_class(SLV2Plugin plugin);
 /**
    Get a value associated with the plugin in a plugin's data files.
    @a predicate must be either a URI or a QName.
- 
+
    Returns the ?object of all triples found of the form:
- 
+
    <code>&lt;plugin-uri&gt; predicate ?object</code>
- 
+
    May return NULL if the property was not found, or if object(s) is not
    sensibly represented as an SLV2Values (e.g. blank nodes).
    Return value must be freed by caller with slv2_values_free.
@@ -768,14 +768,14 @@ slv2_plugin_get_value_by_qname(SLV2Plugin  p,
 /**
    Get a value associated with some subject in a plugin's data files.
    @a predicate must be either a URI or a QName.
- 
+
    Returns the ?object of all triples found of the form:
- 
+
    <code>subject predicate ?object</code>
- 
+
    This can be used to investigate URIs returned by slv2_plugin_get_value
    (if information about it is contained in the plugin's data files).
- 
+
    May return NULL if the property was not found, or if object is not
    sensibly represented as an SLV2Values (e.g. blank nodes).
    Return value must be freed by caller with slv2_values_free.
@@ -814,11 +814,11 @@ slv2_plugin_get_supported_features(SLV2Plugin p);
    Get the LV2 Features required by a plugin.
    If a feature is required by a plugin, hosts MUST NOT use the plugin if they do not
    understand (or are unable to support) that feature.
- 
+
    All values returned here MUST be passed to the plugin's instantiate method
    (along with data, if necessary, as defined by the feature specification)
    or plugin instantiation will fail.
- 
+
    Return value must be freed by caller with slv2_values_free.
 */
 SLV2_API
@@ -830,7 +830,7 @@ slv2_plugin_get_required_features(SLV2Plugin p);
    Hosts MAY ignore optional plugin features for whatever reasons.  Plugins
    MUST operate (at least somewhat) if they are instantiated without being
    passed optional features.
- 
+
    Return value must be freed by caller with slv2_values_free.
 */
 SLV2_API
@@ -853,7 +853,7 @@ slv2_plugin_get_num_ports(SLV2Plugin p);
    with array index corresponding to port index.  If a port doesn't have a
    minimum, maximum or default value, or the port's type is not float, the
    corresponding array element will be set to NAN.
- 
+
    This is a convenience method for the common case of getting the range of
    all float ports on a plugin, and may be significantly faster than
    repeated calls to slv2_port_get_range.
@@ -889,7 +889,7 @@ slv2_plugin_has_latency(SLV2Plugin p);
    Return the index of the plugin's latency port.
    It is a fatal error to call this on a plugin without checking if the port
    exists by first calling slv2_plugin_has_latency.
- 
+
    Any plugin that introduces unwanted latency that should be compensated for
    (by hosts with the ability/need) MUST provide this port, which is a control
    rate output port that reports the latency for each cycle in frames.
@@ -1076,7 +1076,6 @@ SLV2_API
 SLV2ScalePoints
 slv2_port_get_scale_points(SLV2Plugin plugin,
                            SLV2Port   port);
-
 
 /**
    @}
@@ -1272,7 +1271,7 @@ slv2_instance_get_extension_data(SLV2Instance instance,
    Get the LV2_Descriptor of the plugin instance.
    Normally hosts should not need to access the LV2_Descriptor directly,
    use the slv2_instance_* functions.
- 
+
    The returned descriptor is shared and must not be deleted.
 */
 static inline const LV2_Descriptor*
@@ -1285,7 +1284,7 @@ slv2_instance_get_descriptor(SLV2Instance instance)
    Get the LV2_Handle of the plugin instance.
    Normally hosts should not need to access the LV2_Handle directly,
    use the slv2_instance_* functions.
- 
+
    The returned handle is shared and must not be deleted.
 */
 static inline LV2_Handle
@@ -1326,13 +1325,13 @@ slv2_plugin_get_uis(SLV2Plugin plugin);
    This function makes a best effort at choosing a default UI for the given
    widget type. A native UI for the given widget type will be returned if one
    exists, otherwise a UI which can be wrapped by SLV2 will be returned.
- 
+
    This function makes the common case (a plugin with a single UI, or a single
    UI per toolkit) simple, but is not fully powerful since a plugin may have
    several usable UIs. To support multiple UIs per plugin, use
    @ref slv2_ui_supported to determine which UIs are usable and choose a UI
    to instantiate from among them.
-   
+
    @return NULL if there is no suitable UI.
 */
 SLV2_API
@@ -1448,7 +1447,7 @@ slv2_ui_host_free(SLV2UIHost ui_host);
 
 /**
    Instantiate a plugin UI.
-   
+
    The returned object represents shared library objects loaded into memory, it
    must be cleaned up with slv2_ui_instance_free when no longer needed. The
    returned object does not refer to @a ui_host directly (though it of course
@@ -1462,7 +1461,7 @@ slv2_ui_host_free(SLV2UIHost ui_host);
    @param controller Opaque host pointer passed to each function.
    @param features NULL-terminated array of features the host supports.
    NULL may be passed if the host supports no additional features.
- 
+
    @return NULL if instantiation failed.
 */
 SLV2_API
@@ -1515,7 +1514,7 @@ slv2_ui_instance_extension_data(SLV2UIInstance instance,
    Get the LV2UI_Descriptor of the plugin UI instance.
    Normally hosts should not need to access the LV2UI_Descriptor directly,
    use the slv2_ui_instance_* functions.
- 
+
    The returned descriptor is shared and must not be deleted.
 */
 SLV2_API
@@ -1526,7 +1525,7 @@ slv2_ui_instance_get_descriptor(SLV2UIInstance instance);
    Get the LV2UI_Handle of the plugin UI instance.
    Normally hosts should not need to access the LV2UI_Handle directly,
    use the slv2_ui_instance_* functions.
- 
+
    The returned handle is shared and must not be deleted.
 */
 SLV2_API

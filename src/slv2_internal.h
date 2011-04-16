@@ -88,8 +88,6 @@ slv2_match_end(SLV2Matches iter)
 	sord_iter_free(iter);
 }
 
-
-
 /* ********* PORT ********* */
 
 /** Reference to a port on some plugin. */
@@ -99,10 +97,8 @@ struct _SLV2Port {
 	SLV2Values classes; ///< rdf:type
 };
 
-
 SLV2Port slv2_port_new(SLV2World world, uint32_t index, const char* symbol);
 void     slv2_port_free(SLV2Port port);
-
 
 /* ********* Plugin ********* */
 
@@ -114,7 +110,7 @@ struct _SLV2Header {
 	struct _SLV2World* world;
 	SLV2Value          uri;
 };
-	
+
 /** Record of an installed/available plugin.
  *
  * A simple reference to a plugin somewhere on the system. This just holds
@@ -145,7 +141,6 @@ slv2_plugin_get_unique(SLV2Plugin p,
 
 /* ********* Plugins ********* */
 
-
 SLV2Plugins
 slv2_plugins_new();
 
@@ -165,7 +160,7 @@ slv2_collection_size(SLV2Collection collection);
 
 /**
    Get an element from @a collection by index.
-   
+
    @a index has no significance other than as an index into @a collection.
 
    Any @a index not less than the size of the collection will return NULL,
@@ -174,7 +169,7 @@ slv2_collection_size(SLV2Collection collection);
 
    Note this function is a search, and not constant time.
    This function is deprecated, use iterators instead.
-   
+
    @return NULL if @a index is out of range.
 */
 SLV2_DEPRECATED
@@ -189,7 +184,6 @@ slv2_collection_get_at(SLV2Collection collection,
 struct _SLV2InstanceImpl {
 	void* lib_handle;
 };
-
 
 /* ********* UI Instance ********* */
 
@@ -220,12 +214,10 @@ SLV2PluginClass slv2_plugin_class_new(SLV2World   world,
 
 void slv2_plugin_class_free(SLV2PluginClass plugin_class);
 
-
 /* ********* Plugin Classes ********* */
 
 SLV2PluginClasses slv2_plugin_classes_new();
 void              slv2_plugin_classes_free();
-
 
 /* ********* World ********* */
 
@@ -279,7 +271,6 @@ const uint8_t*
 slv2_world_blank_node_prefix(SLV2World world);
 void
 slv2_world_load_file(SLV2World world, const char* file_uri);
-
 
 /* ********* Plugin UI ********* */
 
@@ -353,7 +344,6 @@ static inline void slv2_node_free(SLV2World world, SLV2Node node) {
 	sord_node_free(world->world, node);
 }
 
-
 /* ********* Scale Points ********* */
 
 struct _SLV2ScalePoint {
@@ -363,7 +353,6 @@ struct _SLV2ScalePoint {
 
 SLV2ScalePoint slv2_scale_point_new(SLV2Value value, SLV2Value label);
 void           slv2_scale_point_free(SLV2ScalePoint point);
-
 
 /* ********* Query Results ********* */
 
@@ -382,7 +371,6 @@ static inline bool slv2_matches_end(SLV2Matches matches) {
 
 SLV2Values slv2_values_from_stream_objects(SLV2Plugin  p,
                                            SLV2Matches stream);
-
 
 /* ********* Utilities ********* */
 
