@@ -52,7 +52,7 @@ void
 print_version()
 {
 	printf("lv2_list (slv2) " SLV2_VERSION "\n");
-	printf("Copyright (C) 2007-2011 David Robillard <http://drobilla.net>\n");
+	printf("Copyright 2007-2011 David Robillard <http://drobilla.net>\n");
 	printf("License: GNU GPL version 2 or later <http://gnu.org/licenses/gpl.html>\n");
 	printf("This is free software: you are free to change and redistribute it.\n");
 	printf("There is NO WARRANTY, to the extent permitted by law.\n");

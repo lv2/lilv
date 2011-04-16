@@ -33,7 +33,7 @@ void
 print_version()
 {
 	printf("slv2_bench (slv2) " SLV2_VERSION "\n");
-	printf("Copyright (C) 2011 David Robillard <http://drobilla.net>\n");
+	printf("Copyright 2011-2011 David Robillard <http://drobilla.net>\n");
 	printf("License: Simplified BSD License.\n");
 	printf("This is free software: you are free to change and redistribute it.\n");
 	printf("There is NO WARRANTY, to the extent permitted by law.\n");
