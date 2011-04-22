@@ -43,6 +43,7 @@ out = 'build'
 
 def options(opt):
     autowaf.set_options(opt)
+    opt.load('python')
     opt.add_option('--no-utils', action='store_true', default=False, dest='no_utils',
                    help="Do not build command line utilities")
     opt.add_option('--no-jack', action='store_true', default=False, dest='no_jack',
@@ -69,6 +70,7 @@ def configure(conf):
     autowaf.configure(conf)
     autowaf.display_header('SLV2 Configuration')
     conf.load('compiler_cc')
+    conf.load('python')
 
     if not Options.options.no_swig:
         try:
