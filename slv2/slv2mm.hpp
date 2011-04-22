@@ -41,6 +41,13 @@ const char* uri_to_path(const char* uri) { return slv2_uri_to_path(uri); }
 #define SLV2_WRAP2_VOID(prefix, name, T1, a1, T2, a2) \
 	inline void name (T1 a1, T2 a2) { slv2_ ## prefix ## _ ## name (me, a1, a2); }
 
+#ifndef SWIG
+#define SLV2_WRAP_CONVERSION(CT) \
+	inline operator CT() const { return me; }
+#else
+#define SLV2_WRAP_CONVERSION(CT)
+#endif
+
 struct Value {
 	inline Value(SLV2Value value)   : me(value) {}
 	inline Value(const Value& copy) : me(slv2_value_duplicate(copy.me)) {}
@@ -53,7 +60,7 @@ struct Value {
 
 	inline bool operator==(const Value& other) const { return equals(other); }
 
-	inline operator SLV2Value() const { return me; }
+	SLV2_WRAP_CONVERSION(SLV2Value);
 
 	SLV2_WRAP0(char*,       value, get_turtle_token);
 	SLV2_WRAP0(bool,        value, is_uri);
@@ -75,7 +82,7 @@ struct Value {
 
 struct ScalePoint {
 	inline ScalePoint(SLV2ScalePoint c_obj) : me(c_obj) {}
-	inline operator SLV2ScalePoint() const { return me; }
+	SLV2_WRAP_CONVERSION(SLV2ScalePoint);
 
 	SLV2_WRAP0(SLV2Value, scale_point, get_label);
 	SLV2_WRAP0(SLV2Value, scale_point, get_value);
@@ -85,7 +92,7 @@ struct ScalePoint {
 
 struct PluginClass {
 	inline PluginClass(SLV2PluginClass c_obj) : me(c_obj) {}
-	inline operator SLV2PluginClass() const { return me; }
+	SLV2_WRAP_CONVERSION(SLV2PluginClass);
 
 	SLV2_WRAP0(Value, plugin_class, get_parent_uri);
 	SLV2_WRAP0(Value, plugin_class, get_uri);
@@ -101,9 +108,9 @@ struct PluginClass {
 #define SLV2_WRAP_COLL(CT, ET, prefix) \
 	struct CT { \
 		inline CT(SLV2 ## CT c_obj) : me(c_obj) {} \
-		inline operator SLV2 ## CT () const { return me; } \
+		SLV2_WRAP_CONVERSION(SLV2 ## CT); \
 		SLV2_WRAP0(unsigned, prefix, size); \
-		SLV2_WRAP1(ET, prefix, get_at, unsigned, index); \
+		SLV2_WRAP1(ET, prefix, get, SLV2Iter, i); \
 		SLV2 ## CT me; \
 	}; \
 
@@ -113,7 +120,7 @@ SLV2_WRAP_COLL(Values, Value, values);
 
 struct Plugins {
 	inline Plugins(SLV2Plugins c_obj) : me(c_obj) {}
-	inline operator SLV2Plugins() const { return me; }
+	SLV2_WRAP_CONVERSION(SLV2Plugins);
 
 	SLV2Plugins me;
 };
@@ -152,7 +159,7 @@ struct World {
 
 struct Port {
 	inline Port(SLV2Plugin p, SLV2Port c_obj) : parent(p), me(c_obj) {}
-	inline operator SLV2Port() const { return me; }
+	SLV2_WRAP_CONVERSION(SLV2Port);
 
 #define SLV2_PORT_WRAP0(RT, name) \
 	inline RT name () { return slv2_port_ ## name (parent, me); }
@@ -179,7 +186,7 @@ struct Port {
 
 struct Plugin {
 	inline Plugin(SLV2Plugin c_obj) : me(c_obj) {}
-	inline operator SLV2Plugin() const { return me; }
+	SLV2_WRAP_CONVERSION(SLV2Plugin);
 
 	SLV2_WRAP0(bool,        plugin, verify);
 	SLV2_WRAP0(Value,       plugin, get_uri);
@@ -233,7 +240,7 @@ struct Instance {
 		me = slv2_plugin_instantiate(plugin, sample_rate, NULL);
 	}
 
-	inline operator SLV2Instance() const { return me; }
+	SLV2_WRAP_CONVERSION(SLV2Instance);
 
 	SLV2_WRAP2_VOID(instance, connect_port,
 	                unsigned, port_index,
