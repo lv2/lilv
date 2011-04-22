@@ -46,17 +46,17 @@ if wav_in.getnchannels() != n_audio_in:
         wav_in.getnchannels(), n_audio_in)
     sys.exit(1)
 
-# Open output file    
+# Open output file
 wav_out = wave.open(wav_out_path, 'w')
 if not wav_out:
     print "Failed to open output `%s'\n" % wav_out_path
     sys.exit(1)
 
-# Set output file to same format as input (except possibly nchannels)    
+# Set output file to same format as input (except possibly nchannels)
 wav_out.setparams(wav_in.getparams())
 wav_out.setnchannels(n_audio_out)
 
-rate    = wav_in.getframerate()    
+rate    = wav_in.getframerate()
 nframes = wav_in.getnframes()
 
 # Instantiate plugin
@@ -74,7 +74,7 @@ def read_float(wf, nframes):
         wav = wave.struct.unpack("%uB"  % (len(wav)),     wav)
         wav = [ s - 128 for s in wav ]
         wav = [ i / float(math.pow(2, 8)) for i in wav ]
-        
+
     n_channels = wf.getnchannels()
     wavs       = []
     if n_channels > 1:

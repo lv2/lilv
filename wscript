@@ -203,7 +203,7 @@ def build(bld):
     '''.split()
 
     linkflags = [ '-ldl' ]
-    libflags  = [ '-fvisibility=hidden' ]  
+    libflags  = [ '-fvisibility=hidden' ]
     if sys.platform == 'win32':
         linkflags = []
         libflags  = []
