@@ -534,8 +534,6 @@ slv2_world_load_directory(SLV2World world, const char* dir_path)
 
 	DIR* pdir = opendir(path);
 	if (!pdir) {
-		SLV2_WARNF("failed to open directory `%s' (%s)\n",
-		           path, strerror(errno));
 		free(path);
 		return;
 	}
