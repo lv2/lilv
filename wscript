@@ -6,7 +6,7 @@ from waflib.extras import autowaf as autowaf
 import waflib.Options as Options
 
 # Version of this package (even if built as a child)
-SLV2_VERSION = '0.7.0alpha'
+SLV2_VERSION = '0.7.1'
 
 # Library version (UNIX style major, minor, micro)
 # major increment <=> incompatible changes
@@ -100,7 +100,6 @@ def configure(conf):
                mandatory=False)
 
     autowaf.check_header(conf, 'lv2/lv2plug.in/ns/lv2core/lv2.h')
-    autowaf.check_header(conf, 'lv2/lv2plug.in/ns/extensions/ui/ui.h')
 
     if not Options.options.no_jack_session:
         if conf.is_defined('HAVE_NEW_JACK') and conf.is_defined('HAVE_GTHREAD'):
@@ -150,9 +149,13 @@ def configure(conf):
     if conf.is_defined('HAVE_JACK') and not Options.options.no_jack:
         autowaf.check_header(conf, 'lv2/lv2plug.in/ns/ext/event/event.h',
                              'HAVE_LV2_EVENT')
+        autowaf.check_header(conf, 'lv2/lv2plug.in/ns/ext/event/event-helpers.h',
+                             'HAVE_LV2_EVENT_HELPERS')
         autowaf.check_header(conf, 'lv2/lv2plug.in/ns/ext/uri-map/uri-map.h',
                              'HAVE_LV2_URI_MAP')
-        if conf.is_defined('HAVE_LV2_EVENT') and conf.is_defined('HAVE_LV2_URI_MAP'):
+        if (conf.is_defined('HAVE_LV2_EVENT')
+            and conf.is_defined('HAVE_LV2_EVENT_HELPERS')
+            and conf.is_defined('HAVE_LV2_URI_MAP')):
             autowaf.define(conf, 'SLV2_USE_JACK', 1)
 
     conf.write_config_header('slv2-config.h', remove=False)
@@ -189,7 +192,6 @@ def build(bld):
         src/pluginclass.c
         src/plugininstance.c
         src/pluginui.c
-        src/pluginuiinstance.c
         src/port.c
         src/query.c
         src/scalepoint.c

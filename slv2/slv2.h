@@ -35,7 +35,6 @@
 #include <stdint.h>
 
 #include "lv2/lv2plug.in/ns/lv2core/lv2.h"
-#include "lv2/lv2plug.in/ns/extensions/ui/ui.h"
 
 #ifdef SLV2_SHARED
 #    ifdef __WIN32__
@@ -353,7 +352,7 @@ void*
 slv2_collection_get(SLV2Collection collection,
                     SLV2Iter       i);
 
-#define SLV2_FOREACH(iter, collection)                                             \
+#define SLV2_FOREACH(iter, collection) \
 	for (SLV2Iter (iter) = slv2_collection_begin(collection); \
 	     !slv2_iter_end(iter); \
 	     (iter) = slv2_iter_next(iter))
@@ -1302,6 +1301,14 @@ slv2_instance_get_handle(SLV2Instance instance)
 */
 
 /**
+   Get all UIs for @a plugin.
+   Returned value must be freed by caller using slv2_uis_free.
+*/
+SLV2_API
+SLV2UIs
+slv2_plugin_get_uis(SLV2Plugin plugin);
+
+/**
    Get a UI from @a uis by URI.
    Return value is shared (stored in @a uis) and must not be freed or
    modified by the caller in any way.
@@ -1313,33 +1320,6 @@ slv2_uis_get_by_uri(SLV2UIs   uis,
                     SLV2Value uri);
 
 /**
-   Get all UIs for @a plugin.
-   Returned value must be freed by caller using slv2_uis_free.
-*/
-SLV2_API
-SLV2UIs
-slv2_plugin_get_uis(SLV2Plugin plugin);
-
-/**
-   Get the default UI for @a plugin.
-   This function makes a best effort at choosing a default UI for the given
-   widget type. A native UI for the given widget type will be returned if one
-   exists, otherwise a UI which can be wrapped by SLV2 will be returned.
-
-   This function makes the common case (a plugin with a single UI, or a single
-   UI per toolkit) simple, but is not fully powerful since a plugin may have
-   several usable UIs. To support multiple UIs per plugin, use
-   @ref slv2_ui_supported to determine which UIs are usable and choose a UI
-   to instantiate from among them.
-
-   @return NULL if there is no suitable UI.
-*/
-SLV2_API
-SLV2UI
-slv2_plugin_get_default_ui(SLV2Plugin plugin,
-                           SLV2Value  widget_type_uri);
-
-/**
    Get the URI of a Plugin UI.
    @param ui The Plugin UI
    @return a shared value which must not be modified or freed.
@@ -1349,30 +1329,50 @@ SLV2Value
 slv2_ui_get_uri(SLV2UI ui);
 
 /**
-   Return true iff @a ui can be instantiated to a widget of the given type.
-*/
-SLV2_API
-bool
-slv2_ui_supported(SLV2UI    ui,
-                  SLV2Value widget_type_uri);
-
-/**
    Get the types (URIs of RDF classes) of a Plugin UI.
    @param ui The Plugin UI
    @return a shared value which must not be modified or freed.
+
+   Note that in most cases slv2_ui_is_supported should be used which finds the
+   UI type, avoding the need to use this function (and type specific logic).
 */
 SLV2_API
 SLV2Values
 slv2_ui_get_classes(SLV2UI ui);
 
 /**
-   Check whether a plugin UI is a given type.
+   Check whether a plugin UI has a given type.
    @param ui        The Plugin UI
    @param class_uri The URI of the LV2 UI type to check this UI against
 */
 SLV2_API
 bool
 slv2_ui_is_a(SLV2UI ui, SLV2Value class_uri);
+
+/**
+   Function to determine whether a UI type is supported.
+
+   This is provided by the user and must return non-zero iff using a UI of type
+   @c ui_type_uri in a container of type @c container_type_uri is supported.
+*/
+typedef unsigned (SLV2UISupportedFunc)(const char* container_type_uri,
+                                       const char* ui_type_uri);
+
+/**
+   Return true iff a Plugin UI is supported as a given widget type.
+   @param ui The Plugin UI
+   @param supported_func User provided supported predicate.
+   @param container_type The widget type to host the UI within.
+   @param ui_type (Output) If non-NULL, set to the native type of the UI
+   which the caller must free with slv2_value_free.
+   @return The embedding quality level returned by @c supported_func.
+*/
+SLV2_API
+unsigned
+slv2_ui_is_supported(SLV2UI              ui,
+                     SLV2UISupportedFunc supported_func,
+                     SLV2Value           container_type,
+                     SLV2Value*          ui_type);
 
 /**
    Get the URI for a Plugin UI's bundle.
@@ -1391,146 +1391,6 @@ slv2_ui_get_bundle_uri(SLV2UI ui);
 SLV2_API
 SLV2Value
 slv2_ui_get_binary_uri(SLV2UI ui);
-
-/**
-   @}
-   @name Plugin UI Instance
-   @{
-*/
-
-/**
-   DEPRECATED: Instantiate a plugin UI.
-   This function is deprecated, it does not support widget wrapping.
-   Use @ref slv2_ui_instance_new instead.
-*/
-SLV2_DEPRECATED
-SLV2_API
-SLV2UIInstance
-slv2_ui_instantiate(SLV2Plugin                plugin,
-                    SLV2UI                    ui,
-                    LV2UI_Write_Function      write_function,
-                    LV2UI_Controller          controller,
-                    const LV2_Feature* const* features);
-
-typedef uint32_t (*SLV2PortIndexFunction)(LV2UI_Controller controller,
-                                          const char*      port_symbol);
-
-typedef uint32_t (*SLV2PortSubscribeFunction)(LV2UI_Controller controller,
-                                              uint32_t         port_index,
-                                              uint32_t         protocol);
-
-typedef uint32_t (*SLV2PortUnsubscribeFunction)(LV2UI_Controller controller,
-                                                uint32_t         port_index,
-                                                uint32_t         protocol);
-
-/**
-   Create a new UI host descriptor.
-
-   @param write_function Function to send a value to a plugin port.
-   @param port_index_function Function to get the index for a port by symbol.
-   @param port_subscribe_function Function to subscribe to port updates.
-   @param port_unsubscribe_function Function to unsubscribe from port updates.
-*/
-SLV2_API
-SLV2UIHost
-slv2_ui_host_new(LV2UI_Write_Function        write_function,
-                 SLV2PortIndexFunction       port_index_function,
-                 SLV2PortSubscribeFunction   port_subscribe_function,
-                 SLV2PortUnsubscribeFunction port_unsubscribe_function);
-
-/**
-   Free @a ui_host.
-*/
-SLV2_API
-void
-slv2_ui_host_free(SLV2UIHost ui_host);
-
-/**
-   Instantiate a plugin UI.
-
-   The returned object represents shared library objects loaded into memory, it
-   must be cleaned up with slv2_ui_instance_free when no longer needed. The
-   returned object does not refer to @a ui_host directly (though it of course
-   refers to the fields of @a ui_host themselves), so @a ui_host may safely be
-   freed any time after this call.
-
-   @param plugin The plugin this UI is for.
-   @param ui The plugin UI to instantiate.
-   @param widget_type_uri The type of the desired widget.
-   @param ui_host UI host descriptor (callbacks).
-   @param controller Opaque host pointer passed to each function.
-   @param features NULL-terminated array of features the host supports.
-   NULL may be passed if the host supports no additional features.
-
-   @return NULL if instantiation failed.
-*/
-SLV2_API
-SLV2UIInstance
-slv2_ui_instance_new(SLV2Plugin                plugin,
-                     SLV2UI                    ui,
-                     SLV2Value                 widget_type_uri,
-                     SLV2UIHost                ui_host,
-                     LV2UI_Controller          controller,
-                     const LV2_Feature* const* features);
-
-/**
-   Free a plugin UI instance.
-   @a instance is invalid after this call.
-   It is the caller's responsibility to ensure all references to the UI
-   instance (including any returned widgets) are cut before calling
-   this function.
-*/
-SLV2_API
-void
-slv2_ui_instance_free(SLV2UIInstance instance);
-
-/**
-   Get the widget for the UI instance.
-*/
-SLV2_API
-LV2UI_Widget
-slv2_ui_instance_get_widget(SLV2UIInstance instance);
-
-/**
-   Notify a UI about a change in a plugin port.
-*/
-SLV2_API
-void
-slv2_ui_instance_port_event(SLV2UIInstance instance,
-                            uint32_t       port_index,
-                            uint32_t       buffer_size,
-                            uint32_t       format,
-                            const void*    buffer);
-
-/**
-   Return a data structure defined by some LV2 extension URI.
-*/
-SLV2_API
-const void*
-slv2_ui_instance_extension_data(SLV2UIInstance instance,
-                                const char*    uri);
-
-/**
-   Get the LV2UI_Descriptor of the plugin UI instance.
-   Normally hosts should not need to access the LV2UI_Descriptor directly,
-   use the slv2_ui_instance_* functions.
-
-   The returned descriptor is shared and must not be deleted.
-*/
-SLV2_API
-const LV2UI_Descriptor*
-slv2_ui_instance_get_descriptor(SLV2UIInstance instance);
-
-/**
-   Get the LV2UI_Handle of the plugin UI instance.
-   Normally hosts should not need to access the LV2UI_Handle directly,
-   use the slv2_ui_instance_* functions.
-
-   The returned handle is shared and must not be deleted.
-*/
-SLV2_API
-LV2UI_Handle
-slv2_ui_instance_get_handle(SLV2UIInstance instance);
 
 /**
    @}

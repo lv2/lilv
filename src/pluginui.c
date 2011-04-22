@@ -90,17 +90,27 @@ slv2_ui_get_uri(SLV2UI ui)
 }
 
 SLV2_API
-bool
-slv2_ui_supported(SLV2UI    ui,
-                  SLV2Value widget_type_uri)
+unsigned
+slv2_ui_is_supported(SLV2UI              ui,
+                     SLV2UISupportedFunc supported_func,
+                     SLV2Value           container_type,
+                     SLV2Value*          ui_type)
 {
 #ifdef HAVE_SUIL
-	return suil_ui_type_supported(
-		slv2_value_as_uri(widget_type_uri),
-		slv2_value_as_uri(slv2_values_get_first(ui->classes)));
-#else
-	return false;
+	SLV2Values classes = slv2_ui_get_classes(ui);
+	SLV2_FOREACH(c, classes) {
+		SLV2Value type = slv2_values_get(classes, c);
+		const unsigned q = supported_func(slv2_value_as_uri(container_type),
+		                                  slv2_value_as_uri(type));
+		if (q) {
+			if (ui_type) {
+				*ui_type = slv2_value_duplicate(type);
+			}
+			return q;
+		}
+	}
 #endif
+	return 0;
 }
 
 SLV2_API
