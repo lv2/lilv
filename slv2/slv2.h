@@ -1346,8 +1346,8 @@ slv2_ui_is_a(SLV2UI ui, SLV2Value class_uri);
    This is provided by the user and must return non-zero iff using a UI of type
    @c ui_type_uri in a container of type @c container_type_uri is supported.
 */
-typedef unsigned (SLV2UISupportedFunc)(const char* container_type_uri,
-                                       const char* ui_type_uri);
+typedef unsigned (*SLV2UISupportedFunc)(const char* container_type_uri,
+                                        const char* ui_type_uri);
 
 /**
    Return true iff a Plugin UI is supported as a given widget type.
