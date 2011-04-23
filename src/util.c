@@ -115,8 +115,9 @@ uint8_t*
 slv2_qname_expand(SLV2Plugin p, const char* qname)
 {
 	const size_t qname_len  = strlen(qname);
-	SerdNode     qname_node = { SERD_CURIE, qname_len + 1, qname_len,
-	                            (const uint8_t*)qname };
+	SerdNode     qname_node = { (const uint8_t*)qname,
+	                            qname_len + 1, qname_len,
+	                            SERD_CURIE };
 
 	SerdChunk uri_prefix;
 	SerdChunk uri_suffix;
