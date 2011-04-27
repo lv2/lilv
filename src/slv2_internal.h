@@ -216,8 +216,8 @@ typedef struct {
 struct _SLV2World {
 	SordWorld         world;
 	SordModel         model;
-	SerdReader        reader;
-	SerdEnv           namespaces;
+	SerdReader*       reader;
+	SerdEnv*          namespaces;
 	unsigned          n_read_files;
 	SLV2PluginClass   lv2_plugin_class;
 	SLV2PluginClasses plugin_classes;
