@@ -52,6 +52,7 @@ slv2_world_new()
 	if (!world->model)
 		goto fail;
 
+	world->specs          = NULL;
 	world->plugin_classes = slv2_plugin_classes_new();
 	world->plugins        = slv2_plugins_new();
 
@@ -59,8 +60,7 @@ slv2_world_new()
 #define NS_DC     (const uint8_t*)"http://dublincore.org/documents/dcmi-namespace/"
 
 #define NEW_URI(uri)     sord_new_uri(world->world, uri)
-#define NEW_URI_VAL(uri) slv2_value_new_from_node( \
-		world, sord_new_uri(world->world, uri));
+#define NEW_URI_VAL(uri) slv2_value_new_uri(world, (const char*)(uri));
 
 	world->dc_replaces_node        = NEW_URI(NS_DC        "replaces");
 	world->dyn_manifest_node       = NEW_URI(NS_DYNMAN    "DynManifest");
@@ -81,7 +81,6 @@ slv2_world_new()
 	world->rdfs_label_node         = NEW_URI(SLV2_NS_RDFS "label");
 	world->rdfs_seealso_node       = NEW_URI(SLV2_NS_RDFS "seeAlso");
 	world->rdfs_subclassof_node    = NEW_URI(SLV2_NS_RDFS "subClassOf");
-	world->slv2_bundleuri_node     = NEW_URI(SLV2_NS_SLV2 "bundleURI");
 	world->slv2_dmanifest_node     = NEW_URI(SLV2_NS_SLV2 "dynamic-manifest");
 	world->xsd_boolean_node        = NEW_URI(SLV2_NS_XSD  "boolean");
 	world->xsd_decimal_node        = NEW_URI(SLV2_NS_XSD  "decimal");
@@ -140,7 +139,6 @@ slv2_world_free(SLV2World world)
 	slv2_node_free(world, world->rdfs_seealso_node);
 	slv2_node_free(world, world->rdfs_subclassof_node);
 	slv2_node_free(world, world->rdfs_class_node);
-	slv2_node_free(world, world->slv2_bundleuri_node);
 	slv2_node_free(world, world->slv2_dmanifest_node);
 	slv2_node_free(world, world->xsd_boolean_node);
 	slv2_node_free(world, world->xsd_decimal_node);
@@ -148,6 +146,16 @@ slv2_world_free(SLV2World world)
 	slv2_node_free(world, world->xsd_integer_node);
 	slv2_value_free(world->doap_name_val);
 	slv2_value_free(world->lv2_name_val);
+
+	for (GSList* l = world->specs; l; l = l->next) {
+		SLV2Spec spec = (SLV2Spec)l->data;
+		slv2_node_free(world, spec->spec);
+		slv2_node_free(world, spec->bundle);
+		slv2_values_free(spec->data_uris);
+		//free(spec);
+	}
+	g_slist_free_full(world->specs, free);
+	world->specs = NULL;
 
 	SLV2_FOREACH(i, world->plugins) {
 		SLV2Plugin p = slv2_plugins_get(world->plugins, i);
@@ -264,6 +272,34 @@ slv2_sequence_get_by_uri(GSequence* seq,
 }
 
 static void
+slv2_world_add_spec(SLV2World world,
+                    SLV2Node  specification_node,
+                    SLV2Node  bundle_node)
+{
+	SLV2Spec spec = malloc(sizeof(struct _SLV2Spec));
+	spec->spec      = slv2_node_copy(specification_node);
+	spec->bundle    = slv2_node_copy(bundle_node);
+	spec->data_uris = slv2_values_new();
+
+	// Add all plugin data files (rdfs:seeAlso)
+	SLV2Matches files = slv2_world_find_statements(
+		world, world->model,
+		specification_node,
+		world->rdfs_seealso_node,
+		NULL,
+		NULL);
+	FOREACH_MATCH(files) {
+		SLV2Node file_node = slv2_match_object(files);
+		slv2_array_append(spec->data_uris,
+		                  slv2_value_new_from_node(world, file_node));
+	}
+	slv2_match_end(files);
+
+	// Add specification to world specification sequence
+	world->specs = g_slist_prepend(world->specs, spec);
+}
+
+static void
 slv2_world_add_plugin(SLV2World world,
                       SLV2Node  plugin_node,
                       SerdNode* manifest_uri,
@@ -351,7 +387,7 @@ slv2_world_load_dyn_manifest(SLV2World      world,
 		}
 
 		// Get binary path
-		SLV2Node       binary   = slv2_node_copy(slv2_match_object(binaries));
+		SLV2Node       binary   = slv2_match_object(binaries);
 		const uint8_t* lib_uri  = sord_node_get_string(binary);
 		const char*    lib_path = slv2_uri_to_path((const char*)lib_uri);
 		if (!lib_path) {
@@ -460,24 +496,7 @@ slv2_world_load_bundle(SLV2World world, SLV2Value bundle_uri)
 		bundle_node);
 	FOREACH_MATCH(spec_results) {
 		SLV2Node spec = slv2_match_subject(spec_results);
-
-		// Add ?specification rdfs:seeAlso <manifest.ttl>
-		SordQuad see_also_tup = {
-			slv2_node_copy(spec),
-			slv2_node_copy(world->rdfs_seealso_node),
-			sord_new_uri(world->world, manifest_uri.buf),
-			NULL
-		};
-		sord_add(world->model, see_also_tup);
-
-		// Add ?specification slv2:bundleURI <file://some/path>
-		SordQuad bundle_uri_tup = {
-			slv2_node_copy(spec),
-			slv2_node_copy(world->slv2_bundleuri_node),
-			slv2_node_copy(bundle_uri->val.uri_val),
-			NULL
-		};
-		sord_add(world->model, bundle_uri_tup);
+		slv2_world_add_spec(world, spec, bundle_node);
 	}
 	slv2_match_end(spec_results);
 
@@ -609,30 +628,16 @@ slv2_world_load_path(SLV2World   world,
 static void
 slv2_world_load_specifications(SLV2World world)
 {
-	SLV2Matches specs = slv2_world_find_statements(
-		world, world->model,
-		NULL,
-		world->rdf_a_node,
-		world->lv2_specification_node,
-		NULL);
-	FOREACH_MATCH(specs) {
-		SLV2Node    spec_node = slv2_match_subject(specs);
-		SLV2Matches files     = slv2_world_find_statements(
-			world, world->model,
-			spec_node,
-			world->rdfs_seealso_node,
-			NULL,
-			NULL);
-		FOREACH_MATCH(files) {
-			SLV2Node file_node = slv2_match_object(files);
+	for (GSList* l = world->specs; l; l = l->next) {
+		SLV2Spec spec = (SLV2Spec)l->data;
+		SLV2_FOREACH(f, spec->data_uris) {
+			SLV2Value file = slv2_collection_get(spec->data_uris, f);
 			sord_read_file(world->model,
-			               (const uint8_t*)sord_node_get_string(file_node),
+			               (const uint8_t*)slv2_value_as_uri(file),
 			               NULL,
 			               slv2_world_blank_node_prefix(world));
 		}
-		slv2_match_end(files);
 	}
-	slv2_match_end(specs);
 }
 
 static void
@@ -666,7 +671,7 @@ slv2_world_load_plugin_classes(SLV2World world)
 			continue;
 		}
 
-		SLV2Node parent_node = slv2_node_copy(slv2_match_object(parents));
+		SLV2Node parent_node = slv2_match_object(parents);
 		slv2_match_end(parents);
 
 		if (!sord_node_get_type(parent_node) == SORD_URI) {
@@ -687,7 +692,7 @@ slv2_world_load_plugin_classes(SLV2World world)
 			continue;
 		}
 
-		SLV2Node       label_node = slv2_node_copy(slv2_match_object(labels));
+		SLV2Node       label_node = slv2_match_object(labels);
 		const uint8_t* label      = (const uint8_t*)sord_node_get_string(label_node);
 		slv2_match_end(labels);
 

@@ -352,7 +352,7 @@ slv2_plugin_get_class(SLV2Plugin p)
 			p->world->rdf_a_node,
 			NULL);
 		FOREACH_MATCH(results) {
-			SLV2Node class_node = slv2_node_copy(slv2_match_object(results));
+			SLV2Node class_node = slv2_match_object(results);
 			if (sord_node_get_type(class_node) != SORD_URI) {
 				continue;
 			}
@@ -362,8 +362,6 @@ slv2_plugin_get_class(SLV2Plugin p)
 
 				SLV2PluginClass plugin_class = slv2_plugin_classes_get_by_uri(
 						p->world->plugin_classes, class);
-
-				slv2_node_free(p->world, class_node);
 
 				if (plugin_class) {
 					p->plugin_class = plugin_class;
@@ -480,14 +478,12 @@ slv2_plugin_get_value_for_subject(SLV2Plugin p,
 		: sord_new_blank(p->world->world,
 		                 (const uint8_t*)slv2_value_as_blank(subject));
 
-	if (!subject_node) {
-		fprintf(stderr, "No such subject\n");
-		return NULL;
-	}
+	SLV2Values ret = slv2_plugin_query_node(p,
+	                                        subject_node,
+	                                        predicate->val.uri_val);
 
-	return slv2_plugin_query_node(p,
-	                              subject_node,
-	                              predicate->val.uri_val);
+	slv2_node_free(p->world, subject_node);
+	return ret;
 }
 
 SLV2_API
@@ -717,7 +713,7 @@ slv2_plugin_get_author(SLV2Plugin p)
 		return NULL;
 	}
 
-	SLV2Node author = slv2_node_copy(slv2_match_object(maintainers));
+	SLV2Node author = slv2_match_object(maintainers);
 
 	slv2_match_end(maintainers);
 	return author;

@@ -98,6 +98,16 @@ struct _SLV2Port {
 SLV2Port slv2_port_new(SLV2World world, uint32_t index, const char* symbol);
 void     slv2_port_free(SLV2Port port);
 
+/* ********* Spec ********* */
+
+struct _SLV2Spec {
+	SLV2Node   spec;
+	SLV2Node   bundle;
+	SLV2Values data_uris;
+};
+
+typedef struct _SLV2Spec* SLV2Spec;
+
 /* ********* Plugin ********* */
 
 /** Header of an SLV2Plugin, SLV2PluginClass, or SLV2UI.
@@ -221,6 +231,7 @@ struct _SLV2World {
 	unsigned          n_read_files;
 	SLV2PluginClass   lv2_plugin_class;
 	SLV2PluginClasses plugin_classes;
+	GSList*           specs;
 	SLV2Plugins       plugins;
 	SLV2Node          dc_replaces_node;
 	SLV2Node          dyn_manifest_node;
@@ -241,7 +252,6 @@ struct _SLV2World {
 	SLV2Node          rdfs_label_node;
 	SLV2Node          rdfs_seealso_node;
 	SLV2Node          rdfs_subclassof_node;
-	SLV2Node          slv2_bundleuri_node;
 	SLV2Node          slv2_dmanifest_node;
 	SLV2Node          xsd_boolean_node;
 	SLV2Node          xsd_decimal_node;
@@ -290,7 +300,7 @@ typedef enum _SLV2ValueType {
 } SLV2ValueType;
 
 struct _SLV2Value {
-	SLV2ValueType type;
+	SLV2World     world;
 	char*         str_val; ///< always present
 	union {
 		int       int_val;
@@ -298,6 +308,7 @@ struct _SLV2Value {
 		bool      bool_val;
 		SLV2Node  uri_val;
 	} val;
+	SLV2ValueType type;
 };
 
 SLV2Value slv2_value_new(SLV2World world, SLV2ValueType type, const char* val);

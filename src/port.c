@@ -61,23 +61,23 @@ slv2_port_get_node(SLV2Plugin p,
 {
 	SLV2Matches ports = slv2_plugin_find_statements(
 		p,
-		slv2_node_copy(p->plugin_uri->val.uri_val),
-		slv2_node_copy(p->world->lv2_port_node),
+		p->plugin_uri->val.uri_val,
+		p->world->lv2_port_node,
 		NULL);
 	SLV2Node ret = NULL;
 	FOREACH_MATCH(ports) {
 		SLV2Node  node   = slv2_match_object(ports);
 		SLV2Value symbol = slv2_plugin_get_unique(
 			p,
-			slv2_node_copy(node),
-			slv2_node_copy(p->world->lv2_symbol_node));
+			node,
+			p->world->lv2_symbol_node);
 
 		const bool matches = slv2_value_equals(symbol,
 		                                       slv2_port_get_symbol(p, port));
 
 		slv2_value_free(symbol);
 		if (matches) {
-			ret = slv2_node_copy(node);
+			ret = node;
 			break;
 		}
 	}
@@ -276,13 +276,13 @@ slv2_port_get_scale_points(SLV2Plugin p,
 
 		SLV2Value value = slv2_plugin_get_unique(
 			p,
-			slv2_node_copy(point),
-			slv2_node_copy(p->world->rdf_value_node));
+			point,
+			p->world->rdf_value_node);
 
 		SLV2Value label = slv2_plugin_get_unique(
 			p,
-			slv2_node_copy(point),
-			slv2_node_copy(p->world->rdfs_label_node));
+			point,
+			p->world->rdfs_label_node);
 
 		if (value && label) {
 			slv2_array_append(ret, slv2_scale_point_new(value, label));

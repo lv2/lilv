@@ -68,7 +68,8 @@ SLV2Value
 slv2_value_new(SLV2World world, SLV2ValueType type, const char* str)
 {
 	SLV2Value val = (SLV2Value)malloc(sizeof(struct _SLV2Value));
-	val->type = type;
+	val->world = world;
+	val->type  = type;
 
 	switch (type) {
 	case SLV2_VALUE_URI:
@@ -101,6 +102,7 @@ slv2_value_new_from_node(SLV2World world, SordNode node)
 	case SORD_URI:
 		type                = SLV2_VALUE_URI;
 		result              = (SLV2Value)malloc(sizeof(struct _SLV2Value));
+		result->world       = world;
 		result->type        = SLV2_VALUE_URI;
 		result->val.uri_val = slv2_node_copy(node);
 		result->str_val     = (char*)sord_node_get_string(result->val.uri_val);
@@ -192,6 +194,7 @@ slv2_value_duplicate(SLV2Value val)
 		return val;
 
 	SLV2Value result = (SLV2Value)malloc(sizeof(struct _SLV2Value));
+	result->world = val->world;
 	result->type = val->type;
 
 	if (val->type == SLV2_VALUE_URI) {
@@ -210,7 +213,9 @@ void
 slv2_value_free(SLV2Value val)
 {
 	if (val) {
-		if (val->type != SLV2_VALUE_URI) {
+		if (val->type == SLV2_VALUE_URI) {
+			slv2_node_free(val->world, val->val.uri_val);
+		} else {
 			free(val->str_val);
 		}
 		free(val);
