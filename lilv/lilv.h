@@ -64,7 +64,6 @@ typedef struct _LilvScalePoint*   LilvScalePoint;   /**< Scale Point (Notch). */
 typedef struct _LilvUI*           LilvUI;           /**< Plugin UI. */
 typedef struct _LilvValue*        LilvValue;        /**< Typed Value. */
 typedef struct _LilvWorld*        LilvWorld;        /**< Lilv World. */
-typedef struct _LilvUIInstance*   LilvUIInstance;   /**< Plugin UI Instance. */
 
 typedef void* LilvPluginClasses;  /**< set<PluginClass>. */
 typedef void* LilvPlugins;        /**< set<Plugin>. */
