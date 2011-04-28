@@ -152,9 +152,9 @@ slv2_world_free(SLV2World world)
 		slv2_node_free(world, spec->spec);
 		slv2_node_free(world, spec->bundle);
 		slv2_values_free(spec->data_uris);
-		//free(spec);
+		free(spec);
 	}
-	g_slist_free_full(world->specs, free);
+	g_slist_free(world->specs);
 	world->specs = NULL;
 
 	SLV2_FOREACH(i, world->plugins) {
