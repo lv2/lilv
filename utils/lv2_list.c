@@ -18,21 +18,21 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "slv2/slv2.h"
+#include "lilv/lilv.h"
 
-#include "slv2-config.h"
+#include "lilv-config.h"
 
 void
-list_plugins(SLV2Plugins list, bool show_names)
+list_plugins(LilvPlugins list, bool show_names)
 {
-	SLV2_FOREACH(plugins, i, list) {
-		SLV2Plugin p = slv2_plugins_get(list, i);
+	LILV_FOREACH(plugins, i, list) {
+		LilvPlugin p = lilv_plugins_get(list, i);
 		if (show_names) {
-			SLV2Value n = slv2_plugin_get_name(p);
-			printf("%s\n", slv2_value_as_string(n));
-			slv2_value_free(n);
+			LilvValue n = lilv_plugin_get_name(p);
+			printf("%s\n", lilv_value_as_string(n));
+			lilv_value_free(n);
 		} else {
-			printf("%s\n", slv2_value_as_uri(slv2_plugin_get_uri(p)));
+			printf("%s\n", lilv_value_as_uri(lilv_plugin_get_uri(p)));
 		}
 	}
 }
@@ -41,7 +41,7 @@ void
 print_version()
 {
 	printf(
-		"lv2_list (slv2) " SLV2_VERSION "\n"
+		"lv2_list (lilv) " LILV_VERSION "\n"
 		"Copyright 2007-2011 David Robillard <http://drobilla.net>\n"
 		"License: <http://www.opensource.org/licenses/isc-license>\n"
 		"This is free software: you are free to change and redistribute it.\n"
@@ -81,14 +81,14 @@ main(int argc, char** argv)
 		}
 	}
 
-	SLV2World world = slv2_world_new();
-	slv2_world_load_all(world);
+	LilvWorld world = lilv_world_new();
+	lilv_world_load_all(world);
 
-	SLV2Plugins plugins = slv2_world_get_all_plugins(world);
+	LilvPlugins plugins = lilv_world_get_all_plugins(world);
 
 	list_plugins(plugins, show_names);
 
-	slv2_world_free(world);
+	lilv_world_free(world);
 
 	return 0;
 }

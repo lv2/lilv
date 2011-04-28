@@ -16,14 +16,14 @@
 
 #include <stdio.h>
 
-#include "slv2/slv2.h"
+#include "lilv/lilv.h"
 
-#include "slv2-config.h"
+#include "lilv-config.h"
 
 void
 print_version()
 {
-	printf("slv2_bench (slv2) " SLV2_VERSION "\n");
+	printf("lilv_bench (lilv) " LILV_VERSION "\n");
 	printf("Copyright 2011-2011 David Robillard <http://drobilla.net>\n");
 	printf("License: <http://www.opensource.org/licenses/isc-license>\n");
 	printf("This is free software: you are free to change and redistribute it.\n");
@@ -33,23 +33,23 @@ print_version()
 void
 print_usage()
 {
-	printf("Usage: slv2_bench\n");
+	printf("Usage: lilv_bench\n");
 	printf("Load all discovered LV2 plugins.\n");
 }
 
 int
 main(int argc, char** argv)
 {
-	SLV2World world = slv2_world_new();
-	slv2_world_load_all(world);
+	LilvWorld world = lilv_world_new();
+	lilv_world_load_all(world);
 
-	SLV2Plugins plugins = slv2_world_get_all_plugins(world);
-	SLV2_FOREACH(plugins, p, plugins) {
-		SLV2Plugin plugin = slv2_plugins_get(plugins, p);
-		slv2_plugin_get_class(plugin);
+	LilvPlugins plugins = lilv_world_get_all_plugins(world);
+	LILV_FOREACH(plugins, p, plugins) {
+		LilvPlugin plugin = lilv_plugins_get(plugins, p);
+		lilv_plugin_get_class(plugin);
 	}
 
-	slv2_world_free(world);
+	lilv_world_free(world);
 
 	return 0;
 }

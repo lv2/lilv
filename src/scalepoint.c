@@ -14,36 +14,36 @@
   OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 */
 
-#include "slv2_internal.h"
+#include "lilv_internal.h"
 
 /** Ownership of value and label is taken */
-SLV2ScalePoint
-slv2_scale_point_new(SLV2Value value, SLV2Value label)
+LilvScalePoint
+lilv_scale_point_new(LilvValue value, LilvValue label)
 {
-	SLV2ScalePoint point = (SLV2ScalePoint)malloc(sizeof(struct _SLV2ScalePoint));
+	LilvScalePoint point = (LilvScalePoint)malloc(sizeof(struct _LilvScalePoint));
 	point->value = value;
 	point->label = label;
 	return point;
 }
 
 void
-slv2_scale_point_free(SLV2ScalePoint point)
+lilv_scale_point_free(LilvScalePoint point)
 {
-	slv2_value_free(point->value);
-	slv2_value_free(point->label);
+	lilv_value_free(point->value);
+	lilv_value_free(point->label);
 	free(point);
 }
 
-SLV2_API
-SLV2Value
-slv2_scale_point_get_value(SLV2ScalePoint p)
+LILV_API
+LilvValue
+lilv_scale_point_get_value(LilvScalePoint p)
 {
 	return p->value;
 }
 
-SLV2_API
-SLV2Value
-slv2_scale_point_get_label(SLV2ScalePoint p)
+LILV_API
+LilvValue
+lilv_scale_point_get_label(LilvScalePoint p)
 {
 	return p->label;
 }

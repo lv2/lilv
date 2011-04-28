@@ -16,118 +16,107 @@
 
 #include <glib.h>
 
-#include "slv2_internal.h"
+#include "lilv_internal.h"
 
 /* Generic collection functions */
 
-static inline SLV2Collection
-slv2_collection_new(GDestroyNotify destructor)
+static inline LilvCollection
+lilv_collection_new(GDestroyNotify destructor)
 {
 	return g_sequence_new(destructor);
 }
 
 void
-slv2_collection_free(SLV2Collection coll)
+lilv_collection_free(LilvCollection coll)
 {
 	if (coll)
 		g_sequence_free((GSequence*)coll);
 }
 
 unsigned
-slv2_collection_size(SLV2Collection coll)
+lilv_collection_size(LilvCollection coll)
 {
 	return (coll ? g_sequence_get_length((GSequence*)coll) : 0);
 }
 
-void*
-slv2_collection_get_at(SLV2Collection coll, unsigned index)
-{
-	if (!coll || index >= slv2_collection_size(coll)) {
-		return NULL;
-	} else {
-		GSequenceIter* i = g_sequence_get_iter_at_pos((GSequence*)coll, (int)index);
-		return g_sequence_get(i);
-	}
-}
-
-SLV2Iter
-slv2_collection_begin(SLV2Collection collection)
+LilvIter
+lilv_collection_begin(LilvCollection collection)
 {
 	return collection ? g_sequence_get_begin_iter(collection) : NULL;
 }
 
 void*
-slv2_collection_get(SLV2Collection collection,
-                    SLV2Iter       i)
+lilv_collection_get(LilvCollection collection,
+                    LilvIter       i)
 {
 	return g_sequence_get((GSequenceIter*)i);
 }
 
 /* Constructors */
 
-SLV2ScalePoints
-slv2_scale_points_new(void)
+LilvScalePoints
+lilv_scale_points_new(void)
 {
-	return slv2_collection_new((GDestroyNotify)slv2_scale_point_free);
+	return lilv_collection_new((GDestroyNotify)lilv_scale_point_free);
 }
 
-SLV2Values
-slv2_values_new(void)
+LilvValues
+lilv_values_new(void)
 {
-	return slv2_collection_new((GDestroyNotify)slv2_value_free);
+	return lilv_collection_new((GDestroyNotify)lilv_value_free);
 }
 
-SLV2UIs
-slv2_uis_new(void)
+LilvUIs
+lilv_uis_new(void)
 {
-	return slv2_collection_new((GDestroyNotify)slv2_ui_free);
+	return lilv_collection_new((GDestroyNotify)lilv_ui_free);
 }
 
-SLV2PluginClasses
-slv2_plugin_classes_new(void)
+LilvPluginClasses
+lilv_plugin_classes_new(void)
 {
-	return slv2_collection_new((GDestroyNotify)slv2_plugin_class_free);
+	return lilv_collection_new((GDestroyNotify)lilv_plugin_class_free);
 }
 
 /* URI based accessors (for collections of things with URIs) */
 
-SLV2_API
-SLV2PluginClass
-slv2_plugin_classes_get_by_uri(SLV2PluginClasses coll, SLV2Value uri)
+LILV_API
+LilvPluginClass
+lilv_plugin_classes_get_by_uri(LilvPluginClasses coll, LilvValue uri)
 {
-	return (SLV2PluginClass)slv2_sequence_get_by_uri(coll, uri);
+	return (LilvPluginClass)lilv_sequence_get_by_uri(coll, uri);
 }
 
-SLV2_API
-SLV2UI
-slv2_uis_get_by_uri(SLV2UIs coll, SLV2Value uri)
+LILV_API
+LilvUI
+lilv_uis_get_by_uri(LilvUIs coll, LilvValue uri)
 {
-	return (SLV2UIs)slv2_sequence_get_by_uri(coll, uri);
+	return (LilvUIs)lilv_sequence_get_by_uri(coll, uri);
 }
 
 /* Plugins */
 
-SLV2Plugins
-slv2_plugins_new()
+LilvPlugins
+lilv_plugins_new()
 {
 	return g_sequence_new(NULL);
 }
 
-SLV2_API
-SLV2Plugin
-slv2_plugins_get_by_uri(SLV2Plugins list, SLV2Value uri)
+LILV_API
+LilvPlugin
+lilv_plugins_get_by_uri(LilvPlugins list, LilvValue uri)
 {
-	return (SLV2Plugin)slv2_sequence_get_by_uri(list, uri);
+	return (LilvPlugin)lilv_sequence_get_by_uri(list, uri);
 }
 
 /* Values */
 
-SLV2_API
+LILV_API
 bool
-slv2_values_contains(SLV2Values list, SLV2Value value)
+lilv_values_contains(LilvValues list, LilvValue value)
 {
-	SLV2_FOREACH(values, i, list)
-		if (slv2_value_equals(slv2_values_get(list, i), value))
+	LILV_FOREACH(values, i, list)
+		if (lilv_value_equals(lilv_values_get(list, i), value))
 			return true;
 
 	return false;
@@ -135,94 +124,87 @@ slv2_values_contains(SLV2Values list, SLV2Value value)
 
 /* Iterator */
 
-SLV2Iter
-slv2_iter_next(SLV2Iter i)
+LilvIter
+lilv_iter_next(LilvIter i)
 {
 	return g_sequence_iter_next((GSequenceIter*)i);
 }
 
 bool
-slv2_iter_end(SLV2Iter i)
+lilv_iter_end(LilvIter i)
 {
 	return !i || g_sequence_iter_is_end((GSequenceIter*)i);
 }
 
-#define SLV2_COLLECTION_IMPL(prefix, CT, ET) \
-SLV2_API \
+#define LILV_COLLECTION_IMPL(prefix, CT, ET) \
+LILV_API \
 unsigned \
 prefix##_size(CT collection) { \
-	return slv2_collection_size(collection); \
+	return lilv_collection_size(collection); \
 } \
 \
-SLV2_API \
-SLV2Iter \
+LILV_API \
+LilvIter \
 prefix##_begin(CT collection) { \
-	return slv2_collection_begin(collection); \
+	return lilv_collection_begin(collection); \
 } \
 \
-SLV2_API \
+LILV_API \
 ET \
-prefix##_get(CT collection, SLV2Iter i) { \
-	return (ET)slv2_collection_get(collection, i); \
+prefix##_get(CT collection, LilvIter i) { \
+	return (ET)lilv_collection_get(collection, i); \
 } \
 \
-SLV2_API \
-SLV2Iter \
-prefix##_next(CT collection, SLV2Iter i) { \
-	return slv2_iter_next(i); \
+LILV_API \
+LilvIter \
+prefix##_next(CT collection, LilvIter i) { \
+	return lilv_iter_next(i); \
 } \
 \
-SLV2_API \
+LILV_API \
 bool \
-prefix##_is_end(CT collection, SLV2Iter i) { \
-	return slv2_iter_end(i); \
-} \
-\
-SLV2_DEPRECATED \
-SLV2_API \
-ET \
-prefix##_get_at(CT collection, unsigned index) { \
-	return (ET)slv2_collection_get_at(collection, index); \
+prefix##_is_end(CT collection, LilvIter i) { \
+	return lilv_iter_end(i); \
 }
 
-SLV2_COLLECTION_IMPL(slv2_plugin_classes, SLV2PluginClasses, SLV2PluginClass)
-SLV2_COLLECTION_IMPL(slv2_scale_points, SLV2ScalePoints, SLV2ScalePoint)
-SLV2_COLLECTION_IMPL(slv2_uis, SLV2UIs, SLV2UI)
-SLV2_COLLECTION_IMPL(slv2_values, SLV2Values, SLV2Value)
-SLV2_COLLECTION_IMPL(slv2_plugins, SLV2Plugins, SLV2Plugin)
+LILV_COLLECTION_IMPL(lilv_plugin_classes, LilvPluginClasses, LilvPluginClass)
+LILV_COLLECTION_IMPL(lilv_scale_points, LilvScalePoints, LilvScalePoint)
+LILV_COLLECTION_IMPL(lilv_uis, LilvUIs, LilvUI)
+LILV_COLLECTION_IMPL(lilv_values, LilvValues, LilvValue)
+LILV_COLLECTION_IMPL(lilv_plugins, LilvPlugins, LilvPlugin)
 
-SLV2_API
+LILV_API
 void
-slv2_plugin_classes_free(SLV2PluginClasses collection) {
-	slv2_collection_free(collection);
+lilv_plugin_classes_free(LilvPluginClasses collection) {
+	lilv_collection_free(collection);
 }
 
-SLV2_API
+LILV_API
 void
-slv2_scale_points_free(SLV2ScalePoints collection) {
-	slv2_collection_free(collection);
+lilv_scale_points_free(LilvScalePoints collection) {
+	lilv_collection_free(collection);
 }
 
-SLV2_API
+LILV_API
 void
-slv2_uis_free(SLV2UIs collection) {
-	slv2_collection_free(collection);
+lilv_uis_free(LilvUIs collection) {
+	lilv_collection_free(collection);
 }
 
-SLV2_API
+LILV_API
 void
-slv2_values_free(SLV2Values collection) {
-	slv2_collection_free(collection);
+lilv_values_free(LilvValues collection) {
+	lilv_collection_free(collection);
 }
 
-SLV2_API
+LILV_API
 void
-slv2_plugins_free(SLV2World world, SLV2Plugins plugins){
+lilv_plugins_free(LilvWorld world, LilvPlugins plugins){
 }
 
-SLV2_API
-SLV2Value
-slv2_values_get_first(SLV2Values collection) {
-	return (SLV2Value)slv2_collection_get(collection,
-	                                      slv2_collection_begin(collection));
+LILV_API
+LilvValue
+lilv_values_get_first(LilvValues collection) {
+	return (LilvValue)lilv_collection_get(collection,
+	                                      lilv_collection_begin(collection));
 }

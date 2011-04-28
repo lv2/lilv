@@ -3,9 +3,9 @@
 @prefix : <http://usefulinc.com/ns/doap#> .
 @prefix foaf: <http://xmlns.com/foaf/0.1/> .
 
-<http://drobilla.net/software/slv2>
+<http://drobilla.net/software/lilv>
     a :Project ;
-    :bug-database <http://dev.drobilla.net/query?status=new&status=assigned&status=reopened&component=SLV2&order=priority> ;
+    :bug-database <http://dev.drobilla.net/query?status=new&status=assigned&status=reopened&component=LILV&order=priority> ;
     :developer [
         a foaf:Person ;
         rdfs:seeAlso <http://drobilla.net/drobilla.rdf> ;
@@ -14,16 +14,16 @@
         foaf:name "David Robillard"
     ] ;
     :download-page <http://download.drobilla.net> ;
-    :homepage <http://drobilla.net/software/slv2> ;
+    :homepage <http://drobilla.net/software/lilv> ;
     :license <http://usefulinc.com/doap/licenses/gpl> ;
-    :name "SLV2" ;
+    :name "LILV" ;
     :programming-language "C", "Turtle" ;
     :repository [
-        :browse <http://dev.drobilla.net/browser/trunk/slv2> ;
-        :location <http://svn.drobilla.net/lad/trunk/slv2> ;
+        :browse <http://dev.drobilla.net/browser/trunk/lilv> ;
+        :location <http://svn.drobilla.net/lad/trunk/lilv> ;
         a :SVNRepository
     ] ;
     :shortdesc "Library for simple use of LV2 plugins" ;
-    :shortname "SLV2" .
+    :shortname "LILV" .
 
 

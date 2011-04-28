@@ -30,17 +30,17 @@
 #include "lv2/lv2plug.in/ns/ext/event/event.h"
 #include "lv2/lv2plug.in/ns/ext/uri-map/uri-map.h"
 
-#include "slv2/slv2.h"
+#include "lilv/lilv.h"
 
-#include "slv2-config.h"
+#include "lilv-config.h"
 
-#ifdef SLV2_JACK_SESSION
+#ifdef LILV_JACK_SESSION
 #include <jack/session.h>
 #include <glib.h>
 
 GMutex* exit_mutex;
 GCond*  exit_cond;
-#endif /* SLV2_JACK_SESSION */
+#endif /* LILV_JACK_SESSION */
 
 #define MIDI_BUFFER_SIZE 1024
 
@@ -51,7 +51,7 @@ enum PortType {
 };
 
 struct Port {
-	SLV2Port           slv2_port;
+	LilvPort           lilv_port;
 	enum PortType      type;
 	jack_port_t*       jack_port; /**< For audio/MIDI ports, otherwise NULL */
 	float              control;   /**< For control ports, otherwise 0.0f */
@@ -62,17 +62,17 @@ struct Port {
 /** This program's data */
 struct JackHost {
 	jack_client_t* jack_client;   /**< Jack client */
-	SLV2Plugin     plugin;        /**< Plugin "class" (actually just a few strings) */
-	SLV2Instance   instance;      /**< Plugin "instance" (loaded shared lib) */
+	LilvPlugin     plugin;        /**< Plugin "class" (actually just a few strings) */
+	LilvInstance   instance;      /**< Plugin "instance" (loaded shared lib) */
 	uint32_t       num_ports;     /**< Size of the two following arrays: */
 	struct Port*   ports;         /**< Port array of size num_ports */
-	SLV2Value      input_class;   /**< Input port class (URI) */
-	SLV2Value      output_class;  /**< Output port class (URI) */
-	SLV2Value      control_class; /**< Control port class (URI) */
-	SLV2Value      audio_class;   /**< Audio port class (URI) */
-	SLV2Value      event_class;   /**< Event port class (URI) */
-	SLV2Value      midi_class;    /**< MIDI event class (URI) */
-	SLV2Value      optional;      /**< lv2:connectionOptional port property */
+	LilvValue      input_class;   /**< Input port class (URI) */
+	LilvValue      output_class;  /**< Output port class (URI) */
+	LilvValue      control_class; /**< Control port class (URI) */
+	LilvValue      audio_class;   /**< Audio port class (URI) */
+	LilvValue      event_class;   /**< Event port class (URI) */
+	LilvValue      midi_class;    /**< MIDI event class (URI) */
+	LilvValue      optional;      /**< lv2:connectionOptional port property */
 };
 
 /** URI map feature, for event types (we use only MIDI) */
@@ -83,7 +83,7 @@ uri_to_id(LV2_URI_Map_Callback_Data callback_data,
           const char*               uri)
 {
 	/* Note a non-trivial host needs to use an actual dictionary here */
-	if (!strcmp(map, LV2_EVENT_URI) && !strcmp(uri, SLV2_EVENT_CLASS_MIDI))
+	if (!strcmp(map, LV2_EVENT_URI) && !strcmp(uri, LILV_EVENT_CLASS_MIDI))
 		return MIDI_EVENT_ID;
 	else
 		return 0;  /* Refuse to map ID */
@@ -118,45 +118,45 @@ create_port(struct JackHost* host,
 {
 	struct Port* const port = &host->ports[port_index];
 
-	port->slv2_port = slv2_plugin_get_port_by_index(host->plugin, port_index);
+	port->lilv_port = lilv_plugin_get_port_by_index(host->plugin, port_index);
 	port->jack_port = NULL;
 	port->control   = 0.0f;
 	port->ev_buffer = NULL;
 
-	slv2_instance_connect_port(host->instance, port_index, NULL);
+	lilv_instance_connect_port(host->instance, port_index, NULL);
 
 	/* Get the port symbol for console printing */
-	SLV2Value symbol       = slv2_port_get_symbol(host->plugin, port->slv2_port);
-	const char* symbol_str = slv2_value_as_string(symbol);
+	LilvValue symbol       = lilv_port_get_symbol(host->plugin, port->lilv_port);
+	const char* symbol_str = lilv_value_as_string(symbol);
 
 	enum JackPortFlags jack_flags = 0;
-	if (slv2_port_is_a(host->plugin, port->slv2_port, host->input_class)) {
+	if (lilv_port_is_a(host->plugin, port->lilv_port, host->input_class)) {
 		jack_flags     = JackPortIsInput;
 		port->is_input = true;
-	} else if (slv2_port_is_a(host->plugin, port->slv2_port, host->output_class)) {
+	} else if (lilv_port_is_a(host->plugin, port->lilv_port, host->output_class)) {
 		jack_flags     = JackPortIsOutput;
 		port->is_input = false;
-	} else if (slv2_port_has_property(host->plugin, port->slv2_port, host->optional)) {
-		slv2_instance_connect_port(host->instance, port_index, NULL);
+	} else if (lilv_port_has_property(host->plugin, port->lilv_port, host->optional)) {
+		lilv_instance_connect_port(host->instance, port_index, NULL);
 	} else {
 		die("Mandatory port has unknown type (neither input or output)");
 	}
 
 	/* Set control values */
-	if (slv2_port_is_a(host->plugin, port->slv2_port, host->control_class)) {
+	if (lilv_port_is_a(host->plugin, port->lilv_port, host->control_class)) {
 		port->type    = CONTROL;
 		port->control = isnan(default_value) ? 0.0 : default_value;
 		printf("%s = %f\n", symbol_str, host->ports[port_index].control);
-	} else if (slv2_port_is_a(host->plugin, port->slv2_port, host->audio_class)) {
+	} else if (lilv_port_is_a(host->plugin, port->lilv_port, host->audio_class)) {
 		port->type = AUDIO;
-	} else if (slv2_port_is_a(host->plugin, port->slv2_port, host->event_class)) {
+	} else if (lilv_port_is_a(host->plugin, port->lilv_port, host->event_class)) {
 		port->type = EVENT;
 	}
 
 	/* Connect the port based on its type */
 	switch (port->type) {
 	case CONTROL:
-		slv2_instance_connect_port(host->instance, port_index, &port->control);
+		lilv_instance_connect_port(host->instance, port_index, &port->control);
 		break;
 	case AUDIO:
 		port->jack_port = jack_port_register(
@@ -166,11 +166,11 @@ create_port(struct JackHost* host,
 		port->jack_port = jack_port_register(
 			host->jack_client, symbol_str, JACK_DEFAULT_MIDI_TYPE, jack_flags, 0);
 		port->ev_buffer = lv2_event_buffer_new(MIDI_BUFFER_SIZE, LV2_EVENT_AUDIO_STAMP);
-		slv2_instance_connect_port(host->instance, port_index, port->ev_buffer);
+		lilv_instance_connect_port(host->instance, port_index, port->ev_buffer);
 		break;
 	default:
 		/* FIXME: check if port connection is optional and die if not */
-		slv2_instance_connect_port(host->instance, port_index, NULL);
+		lilv_instance_connect_port(host->instance, port_index, NULL);
 		fprintf(stderr, "WARNING: Unknown port type, port not connected.\n");
 	}
 }
@@ -188,7 +188,7 @@ jack_process_cb(jack_nframes_t nframes, void* data)
 
 		if (host->ports[p].type == AUDIO) {
 			/* Connect plugin port directly to Jack port buffer. */
-			slv2_instance_connect_port(
+			lilv_instance_connect_port(
 				host->instance, p,
 				jack_port_get_buffer(host->ports[p].jack_port, nframes));
 
@@ -217,7 +217,7 @@ jack_process_cb(jack_nframes_t nframes, void* data)
 	}
 
 	/* Run plugin for this cycle */
-	slv2_instance_run(host->instance, nframes);
+	lilv_instance_run(host->instance, nframes);
 
 	/* Deliver MIDI output */
 	for (uint32_t p = 0; p < host->num_ports; ++p) {
@@ -245,7 +245,7 @@ jack_process_cb(jack_nframes_t nframes, void* data)
 	return 0;
 }
 
-#ifdef SLV2_JACK_SESSION
+#ifdef LILV_JACK_SESSION
 void
 jack_session_cb(jack_session_event_t* event, void* arg)
 {
@@ -253,7 +253,7 @@ jack_session_cb(jack_session_event_t* event, void* arg)
 
 	char cmd[256];
 	snprintf(cmd, sizeof(cmd), "lv2_jack_host %s %s",
-	         slv2_value_as_uri(slv2_plugin_get_uri(host->plugin)),
+	         lilv_value_as_uri(lilv_plugin_get_uri(host->plugin)),
 	         event->client_uuid);
 
 	event->command_line = strdup(cmd);
@@ -273,12 +273,12 @@ jack_session_cb(jack_session_event_t* event, void* arg)
 
 	jack_session_event_free(event);
 }
-#endif /* SLV2_JACK_SESSION */
+#endif /* LILV_JACK_SESSION */
 
 static void
 signal_handler(int ignored)
 {
-#ifdef SLV2_JACK_SESSION
+#ifdef LILV_JACK_SESSION
 	g_mutex_lock(exit_mutex);
 	g_cond_signal(exit_cond);
 	g_mutex_unlock(exit_mutex);
@@ -293,7 +293,7 @@ main(int argc, char** argv)
 	host.num_ports   = 0;
 	host.ports       = NULL;
 
-#ifdef SLV2_JACK_SESSION
+#ifdef LILV_JACK_SESSION
 	if (!g_thread_supported()) {
 		g_thread_init(NULL);
 	}
@@ -305,28 +305,28 @@ main(int argc, char** argv)
 	signal(SIGTERM, signal_handler);
 
 	/* Find all installed plugins */
-	SLV2World world = slv2_world_new();
-	slv2_world_load_all(world);
-	SLV2Plugins plugins = slv2_world_get_all_plugins(world);
+	LilvWorld world = lilv_world_new();
+	lilv_world_load_all(world);
+	LilvPlugins plugins = lilv_world_get_all_plugins(world);
 
 	/* Set up the port classes this app supports */
-	host.input_class   = slv2_value_new_uri(world, SLV2_PORT_CLASS_INPUT);
-	host.output_class  = slv2_value_new_uri(world, SLV2_PORT_CLASS_OUTPUT);
-	host.control_class = slv2_value_new_uri(world, SLV2_PORT_CLASS_CONTROL);
-	host.audio_class   = slv2_value_new_uri(world, SLV2_PORT_CLASS_AUDIO);
-	host.event_class   = slv2_value_new_uri(world, SLV2_PORT_CLASS_EVENT);
-	host.midi_class    = slv2_value_new_uri(world, SLV2_EVENT_CLASS_MIDI);
-	host.optional      = slv2_value_new_uri(world, SLV2_NAMESPACE_LV2
+	host.input_class   = lilv_value_new_uri(world, LILV_PORT_CLASS_INPUT);
+	host.output_class  = lilv_value_new_uri(world, LILV_PORT_CLASS_OUTPUT);
+	host.control_class = lilv_value_new_uri(world, LILV_PORT_CLASS_CONTROL);
+	host.audio_class   = lilv_value_new_uri(world, LILV_PORT_CLASS_AUDIO);
+	host.event_class   = lilv_value_new_uri(world, LILV_PORT_CLASS_EVENT);
+	host.midi_class    = lilv_value_new_uri(world, LILV_EVENT_CLASS_MIDI);
+	host.optional      = lilv_value_new_uri(world, LILV_NAMESPACE_LV2
 	                                        "connectionOptional");
 
-#ifdef SLV2_JACK_SESSION
+#ifdef LILV_JACK_SESSION
 	if (argc != 2 && argc != 3) {
 		fprintf(stderr, "Usage: %s PLUGIN_URI [JACK_UUID]\n", argv[0]);
 #else
 	if (argc != 2) {
 		fprintf(stderr, "Usage: %s PLUGIN_URI\n", argv[0]);
 #endif
-		slv2_world_free(world);
+		lilv_world_free(world);
 		return EXIT_FAILURE;
 	}
 
@@ -334,19 +334,19 @@ main(int argc, char** argv)
 
 	printf("Plugin:    %s\n", plugin_uri_str);
 
-	SLV2Value plugin_uri = slv2_value_new_uri(world, plugin_uri_str);
-	host.plugin = slv2_plugins_get_by_uri(plugins, plugin_uri);
-	slv2_value_free(plugin_uri);
+	LilvValue plugin_uri = lilv_value_new_uri(world, plugin_uri_str);
+	host.plugin = lilv_plugins_get_by_uri(plugins, plugin_uri);
+	lilv_value_free(plugin_uri);
 
 	if (!host.plugin) {
 		fprintf(stderr, "Failed to find plugin %s.\n", plugin_uri_str);
-		slv2_world_free(world);
+		lilv_world_free(world);
 		return EXIT_FAILURE;
 	}
 
 	/* Get the plugin's name */
-	SLV2Value   name     = slv2_plugin_get_name(host.plugin);
-	const char* name_str = slv2_value_as_string(name);
+	LilvValue   name     = lilv_plugin_get_name(host.plugin);
+	const char* name_str = lilv_value_as_string(name);
 
 	/* Truncate plugin name to suit JACK (if necessary) */
 	char* jack_name = NULL;
@@ -359,7 +359,7 @@ main(int argc, char** argv)
 
 	/* Connect to JACK */
 	printf("JACK Name: %s\n\n", jack_name);
-#ifdef SLV2_JACK_SESSION
+#ifdef LILV_JACK_SESSION
 	const char* const jack_uuid_str = (argc > 2) ? argv[2] : NULL;
 	if (jack_uuid_str) {
 		host.jack_client = jack_client_open(jack_name, JackSessionID, NULL,
@@ -372,28 +372,28 @@ main(int argc, char** argv)
 	}
 
 	free(jack_name);
-	slv2_value_free(name);
+	lilv_value_free(name);
 
 	if (!host.jack_client)
 		die("Failed to connect to JACK.\n");
 
 	/* Instantiate the plugin */
-	host.instance = slv2_plugin_instantiate(
+	host.instance = lilv_plugin_instantiate(
 		host.plugin, jack_get_sample_rate(host.jack_client), features);
 	if (!host.instance)
 		die("Failed to instantiate plugin.\n");
 
 	jack_set_process_callback(host.jack_client, &jack_process_cb, (void*)(&host));
-#ifdef SLV2_JACK_SESSION
+#ifdef LILV_JACK_SESSION
 	jack_set_session_callback(host.jack_client, &jack_session_cb, (void*)(&host));
 #endif
 
 	/* Create ports */
-	host.num_ports = slv2_plugin_get_num_ports(host.plugin);
+	host.num_ports = lilv_plugin_get_num_ports(host.plugin);
 	host.ports     = calloc((size_t)host.num_ports, sizeof(struct Port));
-	float* default_values = calloc(slv2_plugin_get_num_ports(host.plugin),
+	float* default_values = calloc(lilv_plugin_get_num_ports(host.plugin),
 	                               sizeof(float));
-	slv2_plugin_get_port_ranges_float(host.plugin, NULL, NULL, default_values);
+	lilv_plugin_get_port_ranges_float(host.plugin, NULL, NULL, default_values);
 
 	for (uint32_t i = 0; i < host.num_ports; ++i)
 		create_port(&host, i, default_values[i]);
@@ -401,11 +401,11 @@ main(int argc, char** argv)
 	free(default_values);
 
 	/* Activate plugin and JACK */
-	slv2_instance_activate(host.instance);
+	lilv_instance_activate(host.instance);
 	jack_activate(host.jack_client);
 
 	/* Run */
-#ifdef SLV2_JACK_SESSION
+#ifdef LILV_JACK_SESSION
 	printf("\nPress Ctrl-C to quit: ");
 	fflush(stdout);
 	g_cond_wait(exit_cond, exit_mutex);
@@ -431,21 +431,21 @@ main(int argc, char** argv)
 	jack_client_close(host.jack_client);
 
 	/* Deactivate plugin */
-	slv2_instance_deactivate(host.instance);
-	slv2_instance_free(host.instance);
+	lilv_instance_deactivate(host.instance);
+	lilv_instance_free(host.instance);
 
 	/* Clean up */
 	free(host.ports);
-	slv2_value_free(host.input_class);
-	slv2_value_free(host.output_class);
-	slv2_value_free(host.control_class);
-	slv2_value_free(host.audio_class);
-	slv2_value_free(host.event_class);
-	slv2_value_free(host.midi_class);
-	slv2_value_free(host.optional);
-	slv2_world_free(world);
+	lilv_value_free(host.input_class);
+	lilv_value_free(host.output_class);
+	lilv_value_free(host.control_class);
+	lilv_value_free(host.audio_class);
+	lilv_value_free(host.event_class);
+	lilv_value_free(host.midi_class);
+	lilv_value_free(host.optional);
+	lilv_world_free(world);
 
-#ifdef SLV2_JACK_SESSION
+#ifdef LILV_JACK_SESSION
 	g_mutex_free(exit_mutex);
 	g_cond_free(exit_cond);
 #endif

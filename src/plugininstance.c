@@ -21,11 +21,11 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "slv2_internal.h"
+#include "lilv_internal.h"
 
-SLV2_API
-SLV2Instance
-slv2_plugin_instantiate(SLV2Plugin               plugin,
+LILV_API
+LilvInstance
+lilv_plugin_instantiate(LilvPlugin               plugin,
                         double                   sample_rate,
                         const LV2_Feature*const* features)
 {
@@ -37,8 +37,8 @@ slv2_plugin_instantiate(SLV2Plugin               plugin,
 		local_features[0] = NULL;
 	}
 
-	const char* const lib_uri  = slv2_value_as_uri(slv2_plugin_get_library_uri(plugin));
-	const char* const lib_path = slv2_uri_to_path(lib_uri);
+	const char* const lib_uri  = lilv_value_as_uri(lilv_plugin_get_library_uri(plugin));
+	const char* const lib_path = lilv_uri_to_path(lib_uri);
 
 	if (!lib_path)
 		return NULL;
@@ -46,35 +46,35 @@ slv2_plugin_instantiate(SLV2Plugin               plugin,
 	dlerror();
 	void* lib = dlopen(lib_path, RTLD_NOW);
 	if (!lib) {
-		SLV2_ERRORF("Unable to open library %s (%s)\n", lib_path, dlerror());
+		LILV_ERRORF("Unable to open library %s (%s)\n", lib_path, dlerror());
 		return NULL;
 	}
 
 	LV2_Descriptor_Function df = (LV2_Descriptor_Function)
-		slv2_dlfunc(lib, "lv2_descriptor");
+		lilv_dlfunc(lib, "lv2_descriptor");
 
 	if (!df) {
-		SLV2_ERRORF("Could not find symbol 'lv2_descriptor', "
+		LILV_ERRORF("Could not find symbol 'lv2_descriptor', "
 		            "%s is not a LV2 plugin.\n", lib_path);
 		dlclose(lib);
 		return NULL;
 	} else {
 		// Search for plugin by URI
 
-		const char* bundle_path = slv2_uri_to_path(slv2_value_as_uri(
-					slv2_plugin_get_bundle_uri(plugin)));
+		const char* bundle_path = lilv_uri_to_path(lilv_value_as_uri(
+					lilv_plugin_get_bundle_uri(plugin)));
 
 		for (uint32_t i = 0; true; ++i) {
 			const LV2_Descriptor* ld = df(i);
 			if (!ld) {
-				SLV2_ERRORF("Did not find plugin %s in %s\n",
-						slv2_value_as_uri(slv2_plugin_get_uri(plugin)), lib_path);
+				LILV_ERRORF("Did not find plugin %s in %s\n",
+						lilv_value_as_uri(lilv_plugin_get_uri(plugin)), lib_path);
 				dlclose(lib);
 				break; // return NULL
 			} else {
 				// Parse bundle URI to use as base URI
-				const SLV2Value bundle_uri     = slv2_plugin_get_bundle_uri(plugin);
-				const char*     bundle_uri_str = slv2_value_as_uri(bundle_uri);
+				const LilvValue bundle_uri     = lilv_plugin_get_bundle_uri(plugin);
+				const char*     bundle_uri_str = lilv_value_as_uri(bundle_uri);
 				SerdURI         base_uri;
 				if (!serd_uri_parse((const uint8_t*)bundle_uri_str, &base_uri)) {
 					dlclose(lib);
@@ -86,19 +86,19 @@ slv2_plugin_instantiate(SLV2Plugin               plugin,
 				SerdNode abs_uri_node = serd_node_new_uri_from_string(
 					(const uint8_t*)ld->URI, &base_uri, &abs_uri);
 				if (!abs_uri_node.buf) {
-					SLV2_ERRORF("Failed to parse library plugin URI `%s'\n", ld->URI);
+					LILV_ERRORF("Failed to parse library plugin URI `%s'\n", ld->URI);
 					dlclose(lib);
 					break;
 				}
 
 				if (!strcmp((const char*)abs_uri_node.buf,
-				            slv2_value_as_uri(slv2_plugin_get_uri(plugin)))) {
-					// Create SLV2Instance to return
+				            lilv_value_as_uri(lilv_plugin_get_uri(plugin)))) {
+					// Create LilvInstance to return
 					result = malloc(sizeof(struct _Instance));
 					result->lv2_descriptor = ld;
 					result->lv2_handle = ld->instantiate(ld, sample_rate, (char*)bundle_path,
 							(features) ? features : local_features);
-					struct _SLV2InstanceImpl* impl = malloc(sizeof(struct _SLV2InstanceImpl));
+					struct _LilvInstanceImpl* impl = malloc(sizeof(struct _LilvInstanceImpl));
 					impl->lib_handle = lib;
 					result->pimpl = impl;
 					serd_node_free(&abs_uri_node);
@@ -111,7 +111,7 @@ slv2_plugin_instantiate(SLV2Plugin               plugin,
 	}
 
 	if (result) {
-		assert(slv2_plugin_get_num_ports(plugin) > 0);
+		assert(lilv_plugin_get_num_ports(plugin) > 0);
 
 		// Failed to instantiate
 		if (result->lv2_handle == NULL) {
@@ -120,7 +120,7 @@ slv2_plugin_instantiate(SLV2Plugin               plugin,
 		}
 
 		// "Connect" all ports to NULL (catches bugs)
-		for (uint32_t i = 0; i < slv2_plugin_get_num_ports(plugin); ++i)
+		for (uint32_t i = 0; i < lilv_plugin_get_num_ports(plugin); ++i)
 			result->lv2_descriptor->connect_port(result->lv2_handle, i, NULL);
 	}
 
@@ -129,9 +129,9 @@ slv2_plugin_instantiate(SLV2Plugin               plugin,
 	return result;
 }
 
-SLV2_API
+LILV_API
 void
-slv2_instance_free(SLV2Instance instance)
+lilv_instance_free(LilvInstance instance)
 {
 	if (!instance)
 		return;

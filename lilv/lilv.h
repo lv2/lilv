@@ -15,11 +15,11 @@
 */
 
 /**
-   @file slv2.h API for SLV2, a lightweight LV2 host library.
+   @file lilv.h API for Lilv, a lightweight LV2 host library.
 */
 
-#ifndef SLV2_SLV2_H
-#define SLV2_SLV2_H
+#ifndef LILV_LILV_H
+#define LILV_LILV_H
 
 #include <stdbool.h>
 #include <stddef.h>
@@ -27,67 +27,57 @@
 
 #include "lv2/lv2plug.in/ns/lv2core/lv2.h"
 
-#ifdef SLV2_SHARED
+#ifdef LILV_SHARED
 #    ifdef __WIN32__
-#        define SLV2_LIB_IMPORT __declspec(dllimport)
-#        define SLV2_LIB_EXPORT __declspec(dllexport)
+#        define LILV_LIB_IMPORT __declspec(dllimport)
+#        define LILV_LIB_EXPORT __declspec(dllexport)
 #    else
-#        define SLV2_LIB_IMPORT __attribute__((visibility("default")))
-#        define SLV2_LIB_EXPORT __attribute__((visibility("default")))
+#        define LILV_LIB_IMPORT __attribute__((visibility("default")))
+#        define LILV_LIB_EXPORT __attribute__((visibility("default")))
 #    endif
-#    ifdef SLV2_INTERNAL
-#        define SLV2_API SLV2_LIB_EXPORT
+#    ifdef LILV_INTERNAL
+#        define LILV_API LILV_LIB_EXPORT
 #    else
-#        define SLV2_API SLV2_LIB_IMPORT
-#    endif
-#else
-#    define SLV2_API
-#endif
-
-#ifdef __GNUC__
-#    ifdef SLV2_INTERNAL
-#        define SLV2_DEPRECATED
-#    else
-#        define SLV2_DEPRECATED __attribute__((__deprecated__))
+#        define LILV_API LILV_LIB_IMPORT
 #    endif
 #else
-#    define SLV2_DEPRECATED
+#    define LILV_API
 #endif
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#define SLV2_NAMESPACE_LV2      "http://lv2plug.in/ns/lv2core#"
-#define SLV2_PORT_CLASS_PORT    "http://lv2plug.in/ns/lv2core#Port"
-#define SLV2_PORT_CLASS_INPUT   "http://lv2plug.in/ns/lv2core#InputPort"
-#define SLV2_PORT_CLASS_OUTPUT  "http://lv2plug.in/ns/lv2core#OutputPort"
-#define SLV2_PORT_CLASS_CONTROL "http://lv2plug.in/ns/lv2core#ControlPort"
-#define SLV2_PORT_CLASS_AUDIO   "http://lv2plug.in/ns/lv2core#AudioPort"
-#define SLV2_PORT_CLASS_EVENT   "http://lv2plug.in/ns/ext/event#EventPort"
-#define SLV2_EVENT_CLASS_MIDI   "http://lv2plug.in/ns/ext/midi#MidiEvent"
+#define LILV_NAMESPACE_LV2      "http://lv2plug.in/ns/lv2core#"
+#define LILV_PORT_CLASS_PORT    "http://lv2plug.in/ns/lv2core#Port"
+#define LILV_PORT_CLASS_INPUT   "http://lv2plug.in/ns/lv2core#InputPort"
+#define LILV_PORT_CLASS_OUTPUT  "http://lv2plug.in/ns/lv2core#OutputPort"
+#define LILV_PORT_CLASS_CONTROL "http://lv2plug.in/ns/lv2core#ControlPort"
+#define LILV_PORT_CLASS_AUDIO   "http://lv2plug.in/ns/lv2core#AudioPort"
+#define LILV_PORT_CLASS_EVENT   "http://lv2plug.in/ns/ext/event#EventPort"
+#define LILV_EVENT_CLASS_MIDI   "http://lv2plug.in/ns/ext/midi#MidiEvent"
 
-typedef struct _SLV2Plugin*       SLV2Plugin;       /**< LV2 Plugin. */
-typedef struct _SLV2PluginClass*  SLV2PluginClass;  /**< Plugin Class. */
-typedef struct _SLV2Port*         SLV2Port;         /**< Port. */
-typedef struct _SLV2ScalePoint*   SLV2ScalePoint;   /**< Scale Point (Notch). */
-typedef struct _SLV2UI*           SLV2UI;           /**< Plugin UI. */
-typedef struct _SLV2Value*        SLV2Value;        /**< Typed Value. */
-typedef struct _SLV2World*        SLV2World;        /**< SLV2 World. */
-typedef struct _SLV2UIInstance*   SLV2UIInstance;   /**< Plugin UI Instance. */
+typedef struct _LilvPlugin*       LilvPlugin;       /**< LV2 Plugin. */
+typedef struct _LilvPluginClass*  LilvPluginClass;  /**< Plugin Class. */
+typedef struct _LilvPort*         LilvPort;         /**< Port. */
+typedef struct _LilvScalePoint*   LilvScalePoint;   /**< Scale Point (Notch). */
+typedef struct _LilvUI*           LilvUI;           /**< Plugin UI. */
+typedef struct _LilvValue*        LilvValue;        /**< Typed Value. */
+typedef struct _LilvWorld*        LilvWorld;        /**< Lilv World. */
+typedef struct _LilvUIInstance*   LilvUIInstance;   /**< Plugin UI Instance. */
 
-typedef void* SLV2PluginClasses;  /**< set<PluginClass>. */
-typedef void* SLV2Plugins;        /**< set<Plugin>. */
-typedef void* SLV2ScalePoints;    /**< set<ScalePoint>. */
-typedef void* SLV2UIs;            /**< set<UI>. */
-typedef void* SLV2Values;         /**< set<Value>. */
+typedef void* LilvPluginClasses;  /**< set<PluginClass>. */
+typedef void* LilvPlugins;        /**< set<Plugin>. */
+typedef void* LilvScalePoints;    /**< set<ScalePoint>. */
+typedef void* LilvUIs;            /**< set<UI>. */
+typedef void* LilvValues;         /**< set<Value>. */
 
 /**
-   @defgroup slv2 SLV2
-   SLV2 is a simple yet powerful C API for using LV2 plugins.
+   @defgroup lilv Lilv
+   Lilv is a simple yet powerful C API for using LV2 plugins.
 
    For more information about LV2, see <http://lv2plug.in>.
-   For more information about SLV2, see <http://drobilla.net/software/slv2>.
+   For more information about Lilv, see <http://drobilla.net/software/lilv>.
    @{
 */
 
@@ -102,74 +92,74 @@ typedef void* SLV2Values;         /**< set<Value>. */
    Return value is shared and must not be deleted by caller.
    @return @a uri converted to a path, or NULL on failure (URI is not local).
 */
-SLV2_API
+LILV_API
 const char*
-slv2_uri_to_path(const char* uri);
+lilv_uri_to_path(const char* uri);
 
 /**
    Create a new URI value.
-   Returned value must be freed by caller with slv2_value_free.
+   Returned value must be freed by caller with lilv_value_free.
 */
-SLV2_API
-SLV2Value
-slv2_value_new_uri(SLV2World world, const char* uri);
+LILV_API
+LilvValue
+lilv_value_new_uri(LilvWorld world, const char* uri);
 
 /**
    Create a new string value (with no language).
-   Returned value must be freed by caller with slv2_value_free.
+   Returned value must be freed by caller with lilv_value_free.
 */
-SLV2_API
-SLV2Value
-slv2_value_new_string(SLV2World world, const char* str);
+LILV_API
+LilvValue
+lilv_value_new_string(LilvWorld world, const char* str);
 
 /**
    Create a new integer value.
-   Returned value must be freed by caller with slv2_value_free.
+   Returned value must be freed by caller with lilv_value_free.
 */
-SLV2_API
-SLV2Value
-slv2_value_new_int(SLV2World world, int val);
+LILV_API
+LilvValue
+lilv_value_new_int(LilvWorld world, int val);
 
 /**
    Create a new floating point value.
-   Returned value must be freed by caller with slv2_value_free.
+   Returned value must be freed by caller with lilv_value_free.
 */
-SLV2_API
-SLV2Value
-slv2_value_new_float(SLV2World world, float val);
+LILV_API
+LilvValue
+lilv_value_new_float(LilvWorld world, float val);
 
 /**
    Create a new boolean value.
-   Returned value must be freed by caller with slv2_value_free.
+   Returned value must be freed by caller with lilv_value_free.
 */
-SLV2_API
-SLV2Value
-slv2_value_new_bool(SLV2World world, bool val);
+LILV_API
+LilvValue
+lilv_value_new_bool(LilvWorld world, bool val);
 
 /**
-   Free an SLV2Value.
+   Free an LilvValue.
 */
-SLV2_API
+LILV_API
 void
-slv2_value_free(SLV2Value val);
+lilv_value_free(LilvValue val);
 
 /**
-   Duplicate an SLV2Value.
+   Duplicate an LilvValue.
 */
-SLV2_API
-SLV2Value
-slv2_value_duplicate(SLV2Value val);
+LILV_API
+LilvValue
+lilv_value_duplicate(LilvValue val);
 
 /**
    Return whether two values are equivalent.
 */
-SLV2_API
+LILV_API
 bool
-slv2_value_equals(SLV2Value value, SLV2Value other);
+lilv_value_equals(LilvValue value, LilvValue other);
 
 /**
    Return this value as a Turtle/SPARQL token.
-   Returned value must be freed by caller with slv2_value_free.
+   Returned value must be freed by caller with lilv_value_free.
    <table>
    <caption>Example Turtle Tokens</caption>
    <tr><th>URI</th><td>&lt;http://example.org/foo &gt;</td></tr>
@@ -180,182 +170,175 @@ slv2_value_equals(SLV2Value value, SLV2Value other);
    <tr><th>Boolean</td><td>true</td></tr>
    </table>
 */
-SLV2_API
+LILV_API
 char*
-slv2_value_get_turtle_token(SLV2Value value);
+lilv_value_get_turtle_token(LilvValue value);
 
 /**
    Return whether the value is a URI (resource).
 */
-SLV2_API
+LILV_API
 bool
-slv2_value_is_uri(SLV2Value value);
+lilv_value_is_uri(LilvValue value);
 
 /**
    Return this value as a URI string, e.g. "http://example.org/foo".
-   Valid to call only if slv2_value_is_uri(@a value) returns true.
+   Valid to call only if lilv_value_is_uri(@a value) returns true.
    Returned value is owned by @a value and must not be freed by caller.
 */
-SLV2_API
+LILV_API
 const char*
-slv2_value_as_uri(SLV2Value value);
+lilv_value_as_uri(LilvValue value);
 
 /**
    Return whether the value is a blank node (resource with no URI).
 */
-SLV2_API
+LILV_API
 bool
-slv2_value_is_blank(SLV2Value value);
+lilv_value_is_blank(LilvValue value);
 
 /**
    Return this value as a blank node identifier, e.g. "genid03".
-   Valid to call only if slv2_value_is_blank(@a value) returns true.
+   Valid to call only if lilv_value_is_blank(@a value) returns true.
    Returned value is owned by @a value and must not be freed by caller.
 */
-SLV2_API
+LILV_API
 const char*
-slv2_value_as_blank(SLV2Value value);
+lilv_value_as_blank(LilvValue value);
 
 /**
    Return whether this value is a literal (i.e. not a URI).
    Returns true if @a value is a string or numeric value.
 */
-SLV2_API
+LILV_API
 bool
-slv2_value_is_literal(SLV2Value value);
+lilv_value_is_literal(LilvValue value);
 
 /**
    Return whether this value is a string literal.
    Returns true if @a value is a string value (and not numeric).
 */
-SLV2_API
+LILV_API
 bool
-slv2_value_is_string(SLV2Value value);
+lilv_value_is_string(LilvValue value);
 
 /**
    Return @a value as a string.
 */
-SLV2_API
+LILV_API
 const char*
-slv2_value_as_string(SLV2Value value);
+lilv_value_as_string(LilvValue value);
 
 /**
    Return whether this value is a decimal literal.
 */
-SLV2_API
+LILV_API
 bool
-slv2_value_is_float(SLV2Value value);
+lilv_value_is_float(LilvValue value);
 
 /**
    Return @a value as a float.
-   Valid to call only if slv2_value_is_float(@a value) or
-   slv2_value_is_int(@a value) returns true.
+   Valid to call only if lilv_value_is_float(@a value) or
+   lilv_value_is_int(@a value) returns true.
 */
-SLV2_API
+LILV_API
 float
-slv2_value_as_float(SLV2Value value);
+lilv_value_as_float(LilvValue value);
 
 /**
    Return whether this value is an integer literal.
 */
-SLV2_API
+LILV_API
 bool
-slv2_value_is_int(SLV2Value value);
+lilv_value_is_int(LilvValue value);
 
 /**
    Return @a value as an integer.
-   Valid to call only if slv2_value_is_int(@a value) returns true.
+   Valid to call only if lilv_value_is_int(@a value) returns true.
 */
-SLV2_API
+LILV_API
 int
-slv2_value_as_int(SLV2Value value);
+lilv_value_as_int(LilvValue value);
 
 /**
    Return whether this value is a boolean.
 */
-SLV2_API
+LILV_API
 bool
-slv2_value_is_bool(SLV2Value value);
+lilv_value_is_bool(LilvValue value);
 
 /**
    Return @a value as a bool.
-   Valid to call only if slv2_value_is_bool(@a value) returns true.
+   Valid to call only if lilv_value_is_bool(@a value) returns true.
 */
-SLV2_API
+LILV_API
 bool
-slv2_value_as_bool(SLV2Value value);
+lilv_value_as_bool(LilvValue value);
 
 /**
    @}
    @name Collections
-   SLV2 has several collection types for holding various types of value:
+   Lilv has several collection types for holding various types of value:
    <ul>
-   <li>SLV2Plugins (function prefix "slv2_plugins_")</li>
-   <li>SLV2PluginClasses (function prefix "slv2_plugin_classes_")</li>
-   <li>SLV2ScalePoints (function prefix "slv2_scale_points_")</li>
-   <li>SLV2Values (function prefix "slv2_values_")</li>
-   <li>SLV2UIs (function prefix "slv2_uis_")</li>
+   <li>LilvPlugins (function prefix "lilv_plugins_")</li>
+   <li>LilvPluginClasses (function prefix "lilv_plugin_classes_")</li>
+   <li>LilvScalePoints (function prefix "lilv_scale_points_")</li>
+   <li>LilvValues (function prefix "lilv_values_")</li>
+   <li>LilvUIs (function prefix "lilv_uis_")</li>
    </ul>
 
    Each collection type supports a similar basic API:
    <ul>
    <li>void PREFIX_free (coll)</li>
    <li>unsigned PREFIX_size (coll)</li>
-   <li>SLV2Iter PREFIX_begin (coll)</li>
-   <li>ELEM PREFIX_get_at (coll, index)  (DEPRECATED)</li>
+   <li>LilvIter PREFIX_begin (coll)</li>
    </ul>
    @{
 */
 
 /* Collections */
 
-typedef void* SLV2Iter;
-typedef void* SLV2Collection;
+typedef void* LilvIter;
 
 /**
    Iterate over each element of a collection.
    @code
-   SLV2_FOREACH(plugin_classes, i, classes) {
-      SLV2PluginClass c = slv2_plugin_classes_get(classes, i);
+   LILV_FOREACH(plugin_classes, i, classes) {
+      LilvPluginClass c = lilv_plugin_classes_get(classes, i);
       // ...
    }
    @endcode
 */
-#define SLV2_FOREACH(colltype, iter, collection) \
-	for (SLV2Iter (iter) = slv2_ ## colltype ## _begin(collection); \
-	     !slv2_ ## colltype ## _is_end(collection, iter); \
-	     (iter) = slv2_ ## colltype ## _next(collection, iter))
+#define LILV_FOREACH(colltype, iter, collection) \
+	for (LilvIter (iter) = lilv_ ## colltype ## _begin(collection); \
+	     !lilv_ ## colltype ## _is_end(collection, iter); \
+	     (iter) = lilv_ ## colltype ## _next(collection, iter))
 
-/* SLV2PluginClasses */
+/* LilvPluginClasses */
 
-SLV2_API
+LILV_API
 void
-slv2_plugin_classes_free(SLV2PluginClasses collection);
+lilv_plugin_classes_free(LilvPluginClasses collection);
 
-SLV2_API
+LILV_API
 unsigned
-slv2_plugin_classes_size(SLV2PluginClasses collection);
+lilv_plugin_classes_size(LilvPluginClasses collection);
 
-SLV2_API
-SLV2Iter
-slv2_plugin_classes_begin(SLV2PluginClasses collection);
+LILV_API
+LilvIter
+lilv_plugin_classes_begin(LilvPluginClasses collection);
 
-SLV2_API
-SLV2PluginClass
-slv2_plugin_classes_get(SLV2PluginClasses collection, SLV2Iter i);
+LILV_API
+LilvPluginClass
+lilv_plugin_classes_get(LilvPluginClasses collection, LilvIter i);
 
-SLV2_API
-SLV2Iter
-slv2_plugin_classes_next(SLV2PluginClasses collection, SLV2Iter i);
+LILV_API
+LilvIter
+lilv_plugin_classes_next(LilvPluginClasses collection, LilvIter i);
 
-SLV2_API
+LILV_API
 bool
-slv2_plugin_classes_is_end(SLV2PluginClasses collection, SLV2Iter i);
-
-SLV2_DEPRECATED
-SLV2_API
-SLV2PluginClass
-slv2_plugin_classes_get_at(SLV2PluginClasses collection, unsigned index);
+lilv_plugin_classes_is_end(LilvPluginClasses collection, LilvIter i);
 
 /**
    Get a plugin class from @a classes by URI.
@@ -363,72 +346,62 @@ slv2_plugin_classes_get_at(SLV2PluginClasses collection, unsigned index);
    modified by the caller in any way.
    @return NULL if no plugin class with @a uri is found in @a classes.
 */
-SLV2_API
-SLV2PluginClass
-slv2_plugin_classes_get_by_uri(SLV2PluginClasses classes,
-                               SLV2Value         uri);
+LILV_API
+LilvPluginClass
+lilv_plugin_classes_get_by_uri(LilvPluginClasses classes,
+                               LilvValue         uri);
 
 /* ScalePoints */
 
-SLV2_API
+LILV_API
 void
-slv2_scale_points_free(SLV2ScalePoints collection);
+lilv_scale_points_free(LilvScalePoints collection);
 
-SLV2_API
+LILV_API
 unsigned
-slv2_scale_points_size(SLV2ScalePoints collection);
+lilv_scale_points_size(LilvScalePoints collection);
 
-SLV2_API
-SLV2Iter
-slv2_scale_points_begin(SLV2ScalePoints collection);
+LILV_API
+LilvIter
+lilv_scale_points_begin(LilvScalePoints collection);
 
-SLV2_API
-SLV2ScalePoint
-slv2_scale_points_get(SLV2ScalePoints collection, SLV2Iter i);
+LILV_API
+LilvScalePoint
+lilv_scale_points_get(LilvScalePoints collection, LilvIter i);
 
-SLV2_API
-SLV2Iter
-slv2_scale_points_next(SLV2ScalePoints collection, SLV2Iter i);
+LILV_API
+LilvIter
+lilv_scale_points_next(LilvScalePoints collection, LilvIter i);
 
-SLV2_API
+LILV_API
 bool
-slv2_scale_points_is_end(SLV2ScalePoints collection, SLV2Iter i);
-
-SLV2_DEPRECATED
-SLV2_API
-SLV2ScalePoint
-slv2_scale_points_get_at(SLV2ScalePoints collection, unsigned index);
+lilv_scale_points_is_end(LilvScalePoints collection, LilvIter i);
 
 /* UIs */
 
-SLV2_API
+LILV_API
 void
-slv2_uis_free(SLV2UIs collection);
+lilv_uis_free(LilvUIs collection);
 
-SLV2_API
+LILV_API
 unsigned
-slv2_uis_size(SLV2UIs collection);
+lilv_uis_size(LilvUIs collection);
 
-SLV2_API
-SLV2Iter
-slv2_uis_begin(SLV2UIs collection);
+LILV_API
+LilvIter
+lilv_uis_begin(LilvUIs collection);
 
-SLV2_API
-SLV2UI
-slv2_uis_get(SLV2UIs collection, SLV2Iter i);
+LILV_API
+LilvUI
+lilv_uis_get(LilvUIs collection, LilvIter i);
 
-SLV2_API
-SLV2Iter
-slv2_uis_next(SLV2UIs collection, SLV2Iter i);
+LILV_API
+LilvIter
+lilv_uis_next(LilvUIs collection, LilvIter i);
 
-SLV2_API
+LILV_API
 bool
-slv2_uis_is_end(SLV2UIs collection, SLV2Iter i);
-
-SLV2_DEPRECATED
-SLV2_API
-SLV2UI
-slv2_uis_get_at(SLV2UIs collection, unsigned index);
+lilv_uis_is_end(LilvUIs collection, LilvIter i);
 
 /**
    Get a UI from @a uis by URI.
@@ -436,83 +409,73 @@ slv2_uis_get_at(SLV2UIs collection, unsigned index);
    modified by the caller in any way.
    @return NULL if no UI with @a uri is found in @a list.
 */
-SLV2_API
-SLV2UI
-slv2_uis_get_by_uri(SLV2UIs   uis,
-                    SLV2Value uri);
+LILV_API
+LilvUI
+lilv_uis_get_by_uri(LilvUIs   uis,
+                    LilvValue uri);
 
 /* Values */
 
-SLV2_API
+LILV_API
 void
-slv2_values_free(SLV2Values collection);
+lilv_values_free(LilvValues collection);
 
-SLV2_API
+LILV_API
 unsigned
-slv2_values_size(SLV2Values collection);
+lilv_values_size(LilvValues collection);
 
-SLV2_API
-SLV2Iter
-slv2_values_begin(SLV2Values collection);
+LILV_API
+LilvIter
+lilv_values_begin(LilvValues collection);
 
-SLV2_API
-SLV2Value
-slv2_values_get(SLV2Values collection, SLV2Iter i);
+LILV_API
+LilvValue
+lilv_values_get(LilvValues collection, LilvIter i);
 
-SLV2_API
-SLV2Iter
-slv2_values_next(SLV2Values collection, SLV2Iter i);
+LILV_API
+LilvIter
+lilv_values_next(LilvValues collection, LilvIter i);
 
-SLV2_API
+LILV_API
 bool
-slv2_values_is_end(SLV2Values collection, SLV2Iter i);
+lilv_values_is_end(LilvValues collection, LilvIter i);
 
-SLV2_API
-SLV2Value
-slv2_values_get_first(SLV2Values collection);
-
-SLV2_DEPRECATED
-SLV2_API
-SLV2Value
-slv2_values_get_at(SLV2Values collection, unsigned index);
+LILV_API
+LilvValue
+lilv_values_get_first(LilvValues collection);
 
 /**
    Return whether @a values contains @a value.
 */
-SLV2_API
+LILV_API
 bool
-slv2_values_contains(SLV2Values values, SLV2Value value);
+lilv_values_contains(LilvValues values, LilvValue value);
 
 /* Plugins */
 
-SLV2_API
+LILV_API
 unsigned
-slv2_plugins_size(SLV2Plugins collection);
+lilv_plugins_size(LilvPlugins collection);
 
-SLV2_API
-SLV2Iter
-slv2_plugins_begin(SLV2Plugins collection);
+LILV_API
+LilvIter
+lilv_plugins_begin(LilvPlugins collection);
 
-SLV2_API
-SLV2Plugin
-slv2_plugins_get(SLV2Plugins collection, SLV2Iter i);
+LILV_API
+LilvPlugin
+lilv_plugins_get(LilvPlugins collection, LilvIter i);
 
-SLV2_API
-SLV2Iter
-slv2_plugins_next(SLV2Plugins collection, SLV2Iter i);
+LILV_API
+LilvIter
+lilv_plugins_next(LilvPlugins collection, LilvIter i);
 
-SLV2_API
+LILV_API
 bool
-slv2_plugins_is_end(SLV2Plugins collection, SLV2Iter i);
+lilv_plugins_is_end(LilvPlugins collection, LilvIter i);
 
-SLV2_DEPRECATED
-SLV2_API
-SLV2Plugin
-slv2_plugins_get_at(SLV2Plugins collection, unsigned index);
-
-SLV2_API
+LILV_API
 void
-slv2_plugins_free(SLV2World world, SLV2Plugins plugins);
+lilv_plugins_free(LilvWorld world, LilvPlugins plugins);
 
 /**
    Get a plugin from @a plugins by URI.
@@ -520,18 +483,18 @@ slv2_plugins_free(SLV2World world, SLV2Plugins plugins);
    modified by the caller in any way.
    @return NULL if no plugin with @a uri is found in @a plugins.
 */
-SLV2_API
-SLV2Plugin
-slv2_plugins_get_by_uri(SLV2Plugins plugins,
-                        SLV2Value   uri);
+LILV_API
+LilvPlugin
+lilv_plugins_get_by_uri(LilvPlugins plugins,
+                        LilvValue   uri);
 
 /**
    @}
    @name World
-   The "world" represents all SLV2 state, and is used to discover/load/cache
+   The "world" represents all Lilv state, and is used to discover/load/cache
    LV2 data (plugins, UIs, and extensions).
    Normal hosts which just need to load plugins by URI should simply use
-   @ref slv2_world_load_all to discover/load the system's LV2 resources.
+   @ref lilv_world_load_all to discover/load the system's LV2 resources.
    @{
 */
 
@@ -539,47 +502,47 @@ slv2_plugins_get_by_uri(SLV2Plugins plugins,
    Initialize a new, empty world.
    If initialization fails, NULL is returned.
 */
-SLV2_API
-SLV2World
-slv2_world_new(void);
+LILV_API
+LilvWorld
+lilv_world_new(void);
 
 /**
    Enable/disable language filtering.
    Language filtering applies to any functions that return (a) value(s).
-   With filtering enabled, SLV2 will automatically return the best value(s)
+   With filtering enabled, Lilv will automatically return the best value(s)
    for the current LANG.  With filtering disabled, all matching values will
    be returned regardless of language tag.  Filtering is enabled by default.
 */
-#define SLV2_OPTION_FILTER_LANG "http://drobilla.net/ns/slv2#filter-lang"
+#define LILV_OPTION_FILTER_LANG "http://drobilla.net/ns/lilv#filter-lang"
 
 /**
    Enable/disable dynamic manifest support.
    Dynamic manifest data will only be loaded if this option is true.
 */
-#define SLV2_OPTION_DYN_MANIFEST "http://drobilla.net/ns/slv2#dyn-manifest"
+#define LILV_OPTION_DYN_MANIFEST "http://drobilla.net/ns/lilv#dyn-manifest"
 
 /**
-   Set an SLV2 option for @a world.
+   Set an option option for @a world.
 
    Currently recognized options:
-   @ref SLV2_OPTION_FILTER_LANG
-   @ref SLV2_OPTION_DYN_MANIFEST
+   @ref LILV_OPTION_FILTER_LANG
+   @ref LILV_OPTION_DYN_MANIFEST
 */
-SLV2_API
+LILV_API
 void
-slv2_world_set_option(SLV2World       world,
+lilv_world_set_option(LilvWorld       world,
                       const char*     uri,
-                      const SLV2Value value);
+                      const LilvValue value);
 
 /**
    Destroy the world, mwahaha.
    Note that destroying @a world will destroy all the objects it contains
-   (e.g. instances of SLV2Plugin).  Do not destroy the world until you are
+   (e.g. instances of LilvPlugin).  Do not destroy the world until you are
    finished with all objects that came from it.
 */
-SLV2_API
+LILV_API
 void
-slv2_world_free(SLV2World world);
+lilv_world_free(LilvWorld world);
 
 /**
    Load all installed LV2 bundles on the system.
@@ -592,63 +555,63 @@ slv2_world_free(SLV2World world);
    in special circumstances (e.g. development utilities, or hosts that ship
    with special plugin bundles which are installed to a known location).
 */
-SLV2_API
+LILV_API
 void
-slv2_world_load_all(SLV2World world);
+lilv_world_load_all(LilvWorld world);
 
 /**
    Load a specific bundle.
    @a bundle_uri must be a fully qualified URI to the bundle directory,
    with the trailing slash, eg. file:///usr/lib/lv2/foo.lv2/
 
-   Normal hosts should not need this function (use slv2_world_load_all).
+   Normal hosts should not need this function (use lilv_world_load_all).
 
    Hosts MUST NOT attach any long-term significance to bundle paths
    (e.g. in save files), since there are no guarantees they will remain
    unchanged between (or even during) program invocations. Plugins (among
    other things) MUST be identified by URIs (not paths) in save files.
 */
-SLV2_API
+LILV_API
 void
-slv2_world_load_bundle(SLV2World world,
-                       SLV2Value bundle_uri);
+lilv_world_load_bundle(LilvWorld world,
+                       LilvValue bundle_uri);
 
 /**
    Get the parent of all other plugin classes, lv2:Plugin.
 */
-SLV2_API
-SLV2PluginClass
-slv2_world_get_plugin_class(SLV2World world);
+LILV_API
+LilvPluginClass
+lilv_world_get_plugin_class(LilvWorld world);
 
 /**
    Return a list of all found plugin classes.
    Returned list is owned by world and must not be freed by the caller.
 */
-SLV2_API
-SLV2PluginClasses
-slv2_world_get_plugin_classes(SLV2World world);
+LILV_API
+LilvPluginClasses
+lilv_world_get_plugin_classes(LilvWorld world);
 
 /**
    Return a list of all found plugins.
    The returned list contains just enough references to query
    or instantiate plugins.  The data for a particular plugin will not be
-   loaded into memory until a call to an slv2_plugin_* function results in
-   a query (at which time the data is cached with the SLV2Plugin so future
+   loaded into memory until a call to an lilv_plugin_* function results in
+   a query (at which time the data is cached with the LilvPlugin so future
    queries are very fast).
 
    The returned list and the plugins it contains are owned by @a world
    and must not be freed by caller.
 */
-SLV2_API
-SLV2Plugins
-slv2_world_get_all_plugins(SLV2World world);
+LILV_API
+LilvPlugins
+lilv_world_get_all_plugins(LilvWorld world);
 
 /**
    Return the plugin with the given @a uri, or NULL if not found.
 */
-SLV2_API
-SLV2Plugin
-slv2_world_get_plugin_by_uri_string(SLV2World   world,
+LILV_API
+LilvPlugin
+lilv_world_get_plugin_by_uri_string(LilvWorld   world,
                                     const char* uri);
 
 /**
@@ -662,14 +625,14 @@ slv2_world_get_plugin_by_uri_string(SLV2World   world,
    This is not a rigorous validator, but can be used to reject some malformed
    plugins that could cause bugs (e.g. plugins with missing required fields).
 
-   Note that normal hosts do NOT need to use this - slv2 does not
+   Note that normal hosts do NOT need to use this - lilv does not
    load invalid plugins into plugin lists.  This is included for plugin
    testing utilities, etc.
    @return true iff @a plugin is valid.
 */
-SLV2_API
+LILV_API
 bool
-slv2_plugin_verify(SLV2Plugin plugin);
+lilv_plugin_verify(LilvPlugin plugin);
 
 /**
    Get the URI of @a plugin.
@@ -685,46 +648,46 @@ slv2_plugin_verify(SLV2Plugin plugin);
 
    @return A shared URI value which must not be modified or freed.
 */
-SLV2_API
-SLV2Value
-slv2_plugin_get_uri(SLV2Plugin plugin);
+LILV_API
+LilvValue
+lilv_plugin_get_uri(LilvPlugin plugin);
 
 /**
    Get the (resolvable) URI of the plugin's "main" bundle.
    This returns the URI of the bundle where the plugin itself was found.
    Note that the data for a plugin may be spread over many bundles, that is,
-   slv2_plugin_get_data_uris may return URIs which are not within this bundle.
+   lilv_plugin_get_data_uris may return URIs which are not within this bundle.
 
    Typical hosts should not need to use this function.
    Note this always returns a fully qualified URI.  If you want a local
-   filesystem path, use slv2_uri_to_path.
+   filesystem path, use lilv_uri_to_path.
    @return a shared string which must not be modified or freed.
 */
-SLV2_API
-SLV2Value
-slv2_plugin_get_bundle_uri(SLV2Plugin plugin);
+LILV_API
+LilvValue
+lilv_plugin_get_bundle_uri(LilvPlugin plugin);
 
 /**
    Get the (resolvable) URIs of the RDF data files that define a plugin.
    Typical hosts should not need to use this function.
    Note this always returns fully qualified URIs.  If you want local
-   filesystem paths, use slv2_uri_to_path.
+   filesystem paths, use lilv_uri_to_path.
    @return a list of complete URLs eg. "file:///foo/ABundle.lv2/aplug.ttl",
    which is shared and must not be modified or freed.
 */
-SLV2_API
-SLV2Values
-slv2_plugin_get_data_uris(SLV2Plugin plugin);
+LILV_API
+LilvValues
+lilv_plugin_get_data_uris(LilvPlugin plugin);
 
 /**
    Get the (resolvable) URI of the shared library for @a plugin.
    Note this always returns a fully qualified URI.  If you want a local
-   filesystem path, use slv2_uri_to_path.
+   filesystem path, use lilv_uri_to_path.
    @return a shared string which must not be modified or freed.
 */
-SLV2_API
-SLV2Value
-slv2_plugin_get_library_uri(SLV2Plugin plugin);
+LILV_API
+LilvValue
+lilv_plugin_get_library_uri(LilvPlugin plugin);
 
 /**
    Get the name of @a plugin.
@@ -733,16 +696,16 @@ slv2_plugin_get_library_uri(SLV2Plugin plugin);
    as a plugin identifier (use the URI for that).
    Returned value must be freed by the caller.
 */
-SLV2_API
-SLV2Value
-slv2_plugin_get_name(SLV2Plugin plugin);
+LILV_API
+LilvValue
+lilv_plugin_get_name(LilvPlugin plugin);
 
 /**
    Get the class this plugin belongs to (ie Filters).
 */
-SLV2_API
-SLV2PluginClass
-slv2_plugin_get_class(SLV2Plugin plugin);
+LILV_API
+LilvPluginClass
+lilv_plugin_get_class(LilvPlugin plugin);
 
 /**
    Get a value associated with the plugin in a plugin's data files.
@@ -753,23 +716,23 @@ slv2_plugin_get_class(SLV2Plugin plugin);
    <code>&lt;plugin-uri&gt; predicate ?object</code>
 
    May return NULL if the property was not found, or if object(s) is not
-   sensibly represented as an SLV2Values (e.g. blank nodes).
-   Return value must be freed by caller with slv2_values_free.
+   sensibly represented as an LilvValues (e.g. blank nodes).
+   Return value must be freed by caller with lilv_values_free.
 */
-SLV2_API
-SLV2Values
-slv2_plugin_get_value(SLV2Plugin p,
-                      SLV2Value  predicate);
+LILV_API
+LilvValues
+lilv_plugin_get_value(LilvPlugin p,
+                      LilvValue  predicate);
 
 /**
    Get a value associated with the plugin in a plugin's data files.
-   This function is identical to slv2_plugin_get_value, but takes a QName
-   string parameter for a predicate instead of an SLV2Value, which may be
+   This function is identical to lilv_plugin_get_value, but takes a QName
+   string parameter for a predicate instead of an LilvValue, which may be
    more convenient.
 */
-SLV2_API
-SLV2Values
-slv2_plugin_get_value_by_qname(SLV2Plugin  p,
+LILV_API
+LilvValues
+lilv_plugin_get_value_by_qname(LilvPlugin  p,
                                const char* predicate);
 
 /**
@@ -780,42 +743,42 @@ slv2_plugin_get_value_by_qname(SLV2Plugin  p,
 
    <code>subject predicate ?object</code>
 
-   This can be used to investigate URIs returned by slv2_plugin_get_value
+   This can be used to investigate URIs returned by lilv_plugin_get_value
    (if information about it is contained in the plugin's data files).
 
    May return NULL if the property was not found, or if object is not
-   sensibly represented as an SLV2Values (e.g. blank nodes).
-   Return value must be freed by caller with slv2_values_free.
+   sensibly represented as an LilvValues (e.g. blank nodes).
+   Return value must be freed by caller with lilv_values_free.
 */
-SLV2_API
-SLV2Values
-slv2_plugin_get_value_for_subject(SLV2Plugin p,
-                                  SLV2Value  subject_uri,
-                                  SLV2Value  predicate_uri);
+LILV_API
+LilvValues
+lilv_plugin_get_value_for_subject(LilvPlugin p,
+                                  LilvValue  subject_uri,
+                                  LilvValue  predicate_uri);
 
 /**
    Return whether a feature is supported by a plugin.
    This will return true if the feature is an optional or required feature
    of the plugin.
 */
-SLV2_API
+LILV_API
 bool
-slv2_plugin_has_feature(SLV2Plugin p,
-                        SLV2Value  feature_uri);
+lilv_plugin_has_feature(LilvPlugin p,
+                        LilvValue  feature_uri);
 
 /**
    Get the LV2 Features supported (required or optionally) by a plugin.
    A feature is "supported" by a plugin if it is required OR optional.
 
    Since required features have special rules the host must obey, this function
-   probably shouldn't be used by normal hosts.  Using slv2_plugin_get_optional_features
-   and slv2_plugin_get_required_features separately is best in most cases.
+   probably shouldn't be used by normal hosts.  Using lilv_plugin_get_optional_features
+   and lilv_plugin_get_required_features separately is best in most cases.
 
-   Returned value must be freed by caller with slv2_values_free.
+   Returned value must be freed by caller with lilv_values_free.
 */
-SLV2_API
-SLV2Values
-slv2_plugin_get_supported_features(SLV2Plugin p);
+LILV_API
+LilvValues
+lilv_plugin_get_supported_features(LilvPlugin p);
 
 /**
    Get the LV2 Features required by a plugin.
@@ -826,11 +789,11 @@ slv2_plugin_get_supported_features(SLV2Plugin p);
    (along with data, if necessary, as defined by the feature specification)
    or plugin instantiation will fail.
 
-   Return value must be freed by caller with slv2_values_free.
+   Return value must be freed by caller with lilv_values_free.
 */
-SLV2_API
-SLV2Values
-slv2_plugin_get_required_features(SLV2Plugin p);
+LILV_API
+LilvValues
+lilv_plugin_get_required_features(LilvPlugin p);
 
 /**
    Get the LV2 Features optionally supported by a plugin.
@@ -838,23 +801,23 @@ slv2_plugin_get_required_features(SLV2Plugin p);
    MUST operate (at least somewhat) if they are instantiated without being
    passed optional features.
 
-   Return value must be freed by caller with slv2_values_free.
+   Return value must be freed by caller with lilv_values_free.
 */
-SLV2_API
-SLV2Values
-slv2_plugin_get_optional_features(SLV2Plugin p);
+LILV_API
+LilvValues
+lilv_plugin_get_optional_features(LilvPlugin p);
 
 /**
    Get the number of ports on this plugin.
 */
-SLV2_API
+LILV_API
 uint32_t
-slv2_plugin_get_num_ports(SLV2Plugin p);
+lilv_plugin_get_num_ports(LilvPlugin p);
 
 /**
    Get the port ranges (minimum, maximum and default values) for all ports.
    @a min_values, @a max_values and @a def_values must either point to an array
-   of N floats, where N is the value returned by slv2_plugin_get_num_ports()
+   of N floats, where N is the value returned by lilv_plugin_get_num_ports()
    for this plugin, or NULL.  The elements of the array will be set to the
    the minimum, maximum and default values of the ports on this plugin,
    with array index corresponding to port index.  If a port doesn't have a
@@ -863,11 +826,11 @@ slv2_plugin_get_num_ports(SLV2Plugin p);
 
    This is a convenience method for the common case of getting the range of
    all float ports on a plugin, and may be significantly faster than
-   repeated calls to slv2_port_get_range.
+   repeated calls to lilv_port_get_range.
 */
-SLV2_API
+LILV_API
 void
-slv2_plugin_get_port_ranges_float(SLV2Plugin p,
+lilv_plugin_get_port_ranges_float(LilvPlugin p,
                                   float*     min_values,
                                   float*     max_values,
                                   float*     def_values);
@@ -878,77 +841,77 @@ slv2_plugin_get_port_ranges_float(SLV2Plugin p,
    desired can be found quickly.  REMEMBER TO TERMINATE THE PARAMETER LIST
    OF THIS FUNCTION WITH NULL OR VERY NASTY THINGS WILL HAPPEN.
 */
-SLV2_API
+LILV_API
 uint32_t
-slv2_plugin_get_num_ports_of_class(SLV2Plugin p,
-                                   SLV2Value  class_1, ...);
+lilv_plugin_get_num_ports_of_class(LilvPlugin p,
+                                   LilvValue  class_1, ...);
 
 /**
    Return whether or not the plugin introduces (and reports) latency.
-   The index of the latency port can be found with slv2_plugin_get_latency_port
+   The index of the latency port can be found with lilv_plugin_get_latency_port
    ONLY if this function returns true.
 */
-SLV2_API
+LILV_API
 bool
-slv2_plugin_has_latency(SLV2Plugin p);
+lilv_plugin_has_latency(LilvPlugin p);
 
 /**
    Return the index of the plugin's latency port.
    It is a fatal error to call this on a plugin without checking if the port
-   exists by first calling slv2_plugin_has_latency.
+   exists by first calling lilv_plugin_has_latency.
 
    Any plugin that introduces unwanted latency that should be compensated for
    (by hosts with the ability/need) MUST provide this port, which is a control
    rate output port that reports the latency for each cycle in frames.
 */
-SLV2_API
+LILV_API
 uint32_t
-slv2_plugin_get_latency_port_index(SLV2Plugin p);
+lilv_plugin_get_latency_port_index(LilvPlugin p);
 
 /**
    Get a port on @a plugin by @a index.
 */
-SLV2_API
-SLV2Port
-slv2_plugin_get_port_by_index(SLV2Plugin plugin,
+LILV_API
+LilvPort
+lilv_plugin_get_port_by_index(LilvPlugin plugin,
                               uint32_t   index);
 
 /**
    Get a port on @a plugin by @a symbol.
-   Note this function is slower than slv2_plugin_get_port_by_index,
+   Note this function is slower than lilv_plugin_get_port_by_index,
    especially on plugins with a very large number of ports.
 */
-SLV2_API
-SLV2Port
-slv2_plugin_get_port_by_symbol(SLV2Plugin plugin,
-                               SLV2Value  symbol);
+LILV_API
+LilvPort
+lilv_plugin_get_port_by_symbol(LilvPlugin plugin,
+                               LilvValue  symbol);
 
 /**
    Get the full name of the plugin's author.
    Returns NULL if author name is not present.
    Returned value must be freed by caller.
 */
-SLV2_API
-SLV2Value
-slv2_plugin_get_author_name(SLV2Plugin plugin);
+LILV_API
+LilvValue
+lilv_plugin_get_author_name(LilvPlugin plugin);
 
 /**
    Get the email address of the plugin's author.
    Returns NULL if author email address is not present.
    Returned value must be freed by caller.
 */
-SLV2_API
-SLV2Value
-slv2_plugin_get_author_email(SLV2Plugin plugin);
+LILV_API
+LilvValue
+lilv_plugin_get_author_email(LilvPlugin plugin);
 
 /**
    Get the email address of the plugin's author.
    Returns NULL if author homepage is not present.
    Returned value must be freed by caller.
 */
-SLV2_API
-SLV2Value
-slv2_plugin_get_author_homepage(SLV2Plugin plugin);
+LILV_API
+LilvValue
+lilv_plugin_get_author_homepage(LilvPlugin plugin);
 
 /**
    Return true iff @a plugin has been replaced by another plugin.
@@ -956,9 +919,9 @@ slv2_plugin_get_author_homepage(SLV2Plugin plugin);
    The plugin will still be usable, but hosts should hide them from their
    user interfaces to prevent users from using deprecated plugins.
 */
-SLV2_API
+LILV_API
 bool
-slv2_plugin_is_replaced(SLV2Plugin plugin);
+lilv_plugin_is_replaced(LilvPlugin plugin);
 
 /**
    @}
@@ -967,58 +930,58 @@ slv2_plugin_is_replaced(SLV2Plugin plugin);
 */
 
 /**
-   Port analog of slv2_plugin_get_value.
+   Port analog of lilv_plugin_get_value.
 */
-SLV2_API
-SLV2Values
-slv2_port_get_value(SLV2Plugin plugin,
-                    SLV2Port   port,
-                    SLV2Value  predicate);
+LILV_API
+LilvValues
+lilv_port_get_value(LilvPlugin plugin,
+                    LilvPort   port,
+                    LilvValue  predicate);
 
 /**
-   Port analog of slv2_plugin_get_value_by_qname.
+   Port analog of lilv_plugin_get_value_by_qname.
 */
-SLV2_API
-SLV2Values
-slv2_port_get_value_by_qname(SLV2Plugin  plugin,
-                             SLV2Port    port,
+LILV_API
+LilvValues
+lilv_port_get_value_by_qname(LilvPlugin  plugin,
+                             LilvPort    port,
                              const char* predicate);
 
 /**
    Return the LV2 port properties of a port.
 */
-SLV2_API
-SLV2Values
-slv2_port_get_properties(SLV2Plugin plugin,
-                         SLV2Port   port);
+LILV_API
+LilvValues
+lilv_port_get_properties(LilvPlugin plugin,
+                         LilvPort   port);
 
 /**
    Return whether a port has a certain property.
 */
-SLV2_API
+LILV_API
 bool
-slv2_port_has_property(SLV2Plugin p,
-                       SLV2Port   port,
-                       SLV2Value  property_uri);
+lilv_port_has_property(LilvPlugin p,
+                       LilvPort   port,
+                       LilvValue  property_uri);
 
 /**
    Return whether a port is an event port and supports a certain event type.
 */
-SLV2_API
+LILV_API
 bool
-slv2_port_supports_event(SLV2Plugin p,
-                         SLV2Port   port,
-                         SLV2Value  event_uri);
+lilv_port_supports_event(LilvPlugin p,
+                         LilvPort   port,
+                         LilvValue  event_uri);
 
 /**
    Get the symbol of a port.
    The 'symbol' is a short string, a valid C identifier.
    Returned value is owned by @a port and must not be freed.
 */
-SLV2_API
-SLV2Value
-slv2_port_get_symbol(SLV2Plugin plugin,
-                     SLV2Port   port);
+LILV_API
+LilvValue
+lilv_port_get_symbol(LilvPlugin plugin,
+                     LilvPort   port);
 
 /**
    Get the name of a port.
@@ -1026,63 +989,63 @@ slv2_port_get_symbol(SLV2Plugin plugin,
    data file without a language tag).  Returned value must be freed by
    the caller.
 */
-SLV2_API
-SLV2Value
-slv2_port_get_name(SLV2Plugin plugin,
-                   SLV2Port   port);
+LILV_API
+LilvValue
+lilv_port_get_name(LilvPlugin plugin,
+                   LilvPort   port);
 
 /**
    Get all the classes of a port.
    This can be used to determine if a port is an input, output, audio,
-   control, midi, etc, etc, though it's simpler to use slv2_port_is_a.
+   control, midi, etc, etc, though it's simpler to use lilv_port_is_a.
    The returned list does not include lv2:Port, which is implied.
    Returned value is shared and must not be destroyed by caller.
 */
-SLV2_API
-SLV2Values
-slv2_port_get_classes(SLV2Plugin plugin,
-                      SLV2Port   port);
+LILV_API
+LilvValues
+lilv_port_get_classes(LilvPlugin plugin,
+                      LilvPort   port);
 
 /**
    Determine if a port is of a given class (input, output, audio, etc).
    For convenience/performance/extensibility reasons, hosts are expected to
-   create an SLV2Value for each port class they "care about".  Well-known type
-   URI strings are defined (e.g. SLV2_PORT_CLASS_INPUT) for convenience, but
-   this function is designed so that SLV2 is usable with any port types
-   without requiring explicit support in SLV2.
+   create an LilvValue for each port class they "care about".  Well-known type
+   URI strings are defined (e.g. LILV_PORT_CLASS_INPUT) for convenience, but
+   this function is designed so that Lilv is usable with any port types
+   without requiring explicit support in Lilv.
 */
-SLV2_API
+LILV_API
 bool
-slv2_port_is_a(SLV2Plugin plugin,
-               SLV2Port   port,
-               SLV2Value  port_class);
+lilv_port_is_a(LilvPlugin plugin,
+               LilvPort   port,
+               LilvValue  port_class);
 
 /**
    Get the default, minimum, and maximum values of a port.
    @a def, @a min, and @a max are outputs, pass pointers to uninitialized
-   (i.e. NOT created with slv2_value_new) SLV2Value variables.  These will
+   (i.e. NOT created with lilv_value_new) LilvValue variables.  These will
    be set to point at new values (which must be freed by the caller using
-   slv2_value_free), or NULL if the value does not exist.
+   lilv_value_free), or NULL if the value does not exist.
 */
-SLV2_API
+LILV_API
 void
-slv2_port_get_range(SLV2Plugin plugin,
-                    SLV2Port   port,
-                    SLV2Value* deflt,
-                    SLV2Value* min,
-                    SLV2Value* max);
+lilv_port_get_range(LilvPlugin plugin,
+                    LilvPort   port,
+                    LilvValue* deflt,
+                    LilvValue* min,
+                    LilvValue* max);
 
 /**
    Get the scale points (enumeration values) of a port.
    This returns a collection of 'interesting' named values of a port
    (e.g. appropriate entries for a UI selector associated with this port).
    Returned value may be NULL if @a port has no scale points, otherwise it
-   must be freed by caller with slv2_scale_points_free.
+   must be freed by caller with lilv_scale_points_free.
 */
-SLV2_API
-SLV2ScalePoints
-slv2_port_get_scale_points(SLV2Plugin plugin,
-                           SLV2Port   port);
+LILV_API
+LilvScalePoints
+lilv_port_get_scale_points(LilvPlugin plugin,
+                           LilvPort   port);
 
 /**
    @}
@@ -1094,17 +1057,17 @@ slv2_port_get_scale_points(SLV2Plugin plugin,
    Get the label of this scale point (enumeration value)
    Returned value is owned by @a point and must not be freed.
 */
-SLV2_API
-SLV2Value
-slv2_scale_point_get_label(SLV2ScalePoint point);
+LILV_API
+LilvValue
+lilv_scale_point_get_label(LilvScalePoint point);
 
 /**
    Get the value of this scale point (enumeration value)
    Returned value is owned by @a point and must not be freed.
 */
-SLV2_API
-SLV2Value
-slv2_scale_point_get_value(SLV2ScalePoint point);
+LILV_API
+LilvValue
+lilv_scale_point_get_value(LilvScalePoint point);
 
 /**
    @}
@@ -1117,32 +1080,32 @@ slv2_scale_point_get_value(SLV2ScalePoint point);
    Returned value is owned by @a plugin_class and must not be freed by caller.
    Returned value may be NULL, if class has no parent.
 */
-SLV2_API
-SLV2Value
-slv2_plugin_class_get_parent_uri(SLV2PluginClass plugin_class);
+LILV_API
+LilvValue
+lilv_plugin_class_get_parent_uri(LilvPluginClass plugin_class);
 
 /**
    Get the URI of this plugin class.
    Returned value is owned by @a plugin_class and must not be freed by caller.
 */
-SLV2_API
-SLV2Value
-slv2_plugin_class_get_uri(SLV2PluginClass plugin_class);
+LILV_API
+LilvValue
+lilv_plugin_class_get_uri(LilvPluginClass plugin_class);
 
 /**
    Get the label of this plugin class, ie "Oscillators".
    Returned value is owned by @a plugin_class and must not be freed by caller.
 */
-SLV2_API
-SLV2Value slv2_plugin_class_get_label(SLV2PluginClass plugin_class);
+LILV_API
+LilvValue lilv_plugin_class_get_label(LilvPluginClass plugin_class);
 
 /**
    Get the subclasses of this plugin class.
-   Returned value must be freed by caller with slv2_plugin_classes_free.
+   Returned value must be freed by caller with lilv_plugin_classes_free.
 */
-SLV2_API
-SLV2PluginClasses
-slv2_plugin_class_get_children(SLV2PluginClass plugin_class);
+LILV_API
+LilvPluginClasses
+lilv_plugin_class_get_children(LilvPluginClass plugin_class);
 
 /**
    @}
@@ -1150,7 +1113,7 @@ slv2_plugin_class_get_children(SLV2PluginClass plugin_class);
    @{
 */
 
-typedef struct _SLV2InstanceImpl* SLV2InstanceImpl;
+typedef struct _LilvInstanceImpl* LilvInstanceImpl;
 
 /**
    @cond 0
@@ -1158,7 +1121,7 @@ typedef struct _SLV2InstanceImpl* SLV2InstanceImpl;
 
 /* Instance of a plugin.
    This is exposed in the ABI to allow inlining of performance critical
-   functions like slv2_instance_run (simple wrappers of functions in lv2.h).
+   functions like lilv_instance_run (simple wrappers of functions in lv2.h).
    This is for performance reasons, user code should not use this definition
    in any way (which is why it is not machine documented).
    Truly private implementation details are hidden via @a ref pimpl.
@@ -1166,8 +1129,8 @@ typedef struct _SLV2InstanceImpl* SLV2InstanceImpl;
 typedef struct _Instance {
 	const LV2_Descriptor* lv2_descriptor;
 	LV2_Handle            lv2_handle;
-	SLV2InstanceImpl      pimpl;
-}* SLV2Instance;
+	LilvInstanceImpl      pimpl;
+}* LilvInstance;
 
 /**
    @endcond
@@ -1176,15 +1139,15 @@ typedef struct _Instance {
 /**
    Instantiate a plugin.
    The returned value is a lightweight handle for an LV2 plugin instance,
-   it does not refer to @a plugin, or any other SLV2 state.  The caller must
-   eventually free it with slv2_instance_free.
+   it does not refer to @a plugin, or any other Lilv state.  The caller must
+   eventually free it with lilv_instance_free.
    @a features is a NULL-terminated array of features the host supports.
    NULL may be passed if the host supports no additional features.
    @return NULL if instantiation failed.
 */
-SLV2_API
-SLV2Instance
-slv2_plugin_instantiate(SLV2Plugin               plugin,
+LILV_API
+LilvInstance
+lilv_plugin_instantiate(LilvPlugin               plugin,
                         double                   sample_rate,
                         const LV2_Feature*const* features);
 
@@ -1192,18 +1155,18 @@ slv2_plugin_instantiate(SLV2Plugin               plugin,
    Free a plugin instance.
    @a instance is invalid after this call.
 */
-SLV2_API
+LILV_API
 void
-slv2_instance_free(SLV2Instance instance);
+lilv_instance_free(LilvInstance instance);
 
-#ifndef SLV2_INTERNAL
+#ifndef LILV_INTERNAL
 
 /**
    Get the URI of the plugin which @a instance is an instance of.
    Returned string is shared and must not be modified or deleted.
 */
 static inline const char*
-slv2_instance_get_uri(SLV2Instance instance)
+lilv_instance_get_uri(LilvInstance instance)
 {
 	return instance->lv2_descriptor->URI;
 }
@@ -1214,7 +1177,7 @@ slv2_instance_get_uri(SLV2Instance instance)
    activation and deactivation does not destroy port connections.
 */
 static inline void
-slv2_instance_connect_port(SLV2Instance instance,
+lilv_instance_connect_port(LilvInstance instance,
                            uint32_t     port_index,
                            void*        data_location)
 {
@@ -1225,11 +1188,11 @@ slv2_instance_connect_port(SLV2Instance instance,
 /**
    Activate a plugin instance.
    This resets all state information in the plugin, except for port data
-   locations (as set by slv2_instance_connect_port).  This MUST be called
-   before calling slv2_instance_run.
+   locations (as set by lilv_instance_connect_port).  This MUST be called
+   before calling lilv_instance_run.
 */
 static inline void
-slv2_instance_activate(SLV2Instance instance)
+lilv_instance_activate(LilvInstance instance)
 {
 	if (instance->lv2_descriptor->activate)
 		instance->lv2_descriptor->activate(instance->lv2_handle);
@@ -1241,7 +1204,7 @@ slv2_instance_activate(SLV2Instance instance)
    guaranteed not to block.
 */
 static inline void
-slv2_instance_run(SLV2Instance instance,
+lilv_instance_run(LilvInstance instance,
                   uint32_t     sample_count)
 {
 	instance->lv2_descriptor->run(instance->lv2_handle, sample_count);
@@ -1253,7 +1216,7 @@ slv2_instance_run(SLV2Instance instance,
    reset all state information (except port connections).
 */
 static inline void
-slv2_instance_deactivate(SLV2Instance instance)
+lilv_instance_deactivate(LilvInstance instance)
 {
 	if (instance->lv2_descriptor->deactivate)
 		instance->lv2_descriptor->deactivate(instance->lv2_handle);
@@ -1265,7 +1228,7 @@ slv2_instance_deactivate(SLV2Instance instance)
    extension, though in all cases it is shared and must not be deleted.
 */
 static inline const void*
-slv2_instance_get_extension_data(SLV2Instance instance,
+lilv_instance_get_extension_data(LilvInstance instance,
                                  const char*  uri)
 {
 	if (instance->lv2_descriptor->extension_data)
@@ -1277,12 +1240,12 @@ slv2_instance_get_extension_data(SLV2Instance instance,
 /**
    Get the LV2_Descriptor of the plugin instance.
    Normally hosts should not need to access the LV2_Descriptor directly,
-   use the slv2_instance_* functions.
+   use the lilv_instance_* functions.
 
    The returned descriptor is shared and must not be deleted.
 */
 static inline const LV2_Descriptor*
-slv2_instance_get_descriptor(SLV2Instance instance)
+lilv_instance_get_descriptor(LilvInstance instance)
 {
 	return instance->lv2_descriptor;
 }
@@ -1290,17 +1253,17 @@ slv2_instance_get_descriptor(SLV2Instance instance)
 /**
    Get the LV2_Handle of the plugin instance.
    Normally hosts should not need to access the LV2_Handle directly,
-   use the slv2_instance_* functions.
+   use the lilv_instance_* functions.
 
    The returned handle is shared and must not be deleted.
 */
 static inline LV2_Handle
-slv2_instance_get_handle(SLV2Instance instance)
+lilv_instance_get_handle(LilvInstance instance)
 {
 	return instance->lv2_handle;
 }
 
-#endif /* SLV2_INTERNAL */
+#endif /* LILV_INTERNAL */
 
 /**
    @}
@@ -1310,41 +1273,41 @@ slv2_instance_get_handle(SLV2Instance instance)
 
 /**
    Get all UIs for @a plugin.
-   Returned value must be freed by caller using slv2_uis_free.
+   Returned value must be freed by caller using lilv_uis_free.
 */
-SLV2_API
-SLV2UIs
-slv2_plugin_get_uis(SLV2Plugin plugin);
+LILV_API
+LilvUIs
+lilv_plugin_get_uis(LilvPlugin plugin);
 
 /**
    Get the URI of a Plugin UI.
    @param ui The Plugin UI
    @return a shared value which must not be modified or freed.
 */
-SLV2_API
-SLV2Value
-slv2_ui_get_uri(SLV2UI ui);
+LILV_API
+LilvValue
+lilv_ui_get_uri(LilvUI ui);
 
 /**
    Get the types (URIs of RDF classes) of a Plugin UI.
    @param ui The Plugin UI
    @return a shared value which must not be modified or freed.
 
-   Note that in most cases slv2_ui_is_supported should be used which finds the
+   Note that in most cases lilv_ui_is_supported should be used which finds the
    UI type, avoding the need to use this function (and type specific logic).
 */
-SLV2_API
-SLV2Values
-slv2_ui_get_classes(SLV2UI ui);
+LILV_API
+LilvValues
+lilv_ui_get_classes(LilvUI ui);
 
 /**
    Check whether a plugin UI has a given type.
    @param ui        The Plugin UI
    @param class_uri The URI of the LV2 UI type to check this UI against
 */
-SLV2_API
+LILV_API
 bool
-slv2_ui_is_a(SLV2UI ui, SLV2Value class_uri);
+lilv_ui_is_a(LilvUI ui, LilvValue class_uri);
 
 /**
    Function to determine whether a UI type is supported.
@@ -1352,7 +1315,7 @@ slv2_ui_is_a(SLV2UI ui, SLV2Value class_uri);
    This is provided by the user and must return non-zero iff using a UI of type
    @c ui_type_uri in a container of type @c container_type_uri is supported.
 */
-typedef unsigned (*SLV2UISupportedFunc)(const char* container_type_uri,
+typedef unsigned (*LilvUISupportedFunc)(const char* container_type_uri,
                                         const char* ui_type_uri);
 
 /**
@@ -1361,33 +1324,33 @@ typedef unsigned (*SLV2UISupportedFunc)(const char* container_type_uri,
    @param supported_func User provided supported predicate.
    @param container_type The widget type to host the UI within.
    @param ui_type (Output) If non-NULL, set to the native type of the UI
-   which the caller must free with slv2_value_free.
+   which the caller must free with lilv_value_free.
    @return The embedding quality level returned by @c supported_func.
 */
-SLV2_API
+LILV_API
 unsigned
-slv2_ui_is_supported(SLV2UI              ui,
-                     SLV2UISupportedFunc supported_func,
-                     SLV2Value           container_type,
-                     SLV2Value*          ui_type);
+lilv_ui_is_supported(LilvUI              ui,
+                     LilvUISupportedFunc supported_func,
+                     LilvValue           container_type,
+                     LilvValue*          ui_type);
 
 /**
    Get the URI for a Plugin UI's bundle.
    @param ui The Plugin UI
    @return a shared value which must not be modified or freed.
 */
-SLV2_API
-SLV2Value
-slv2_ui_get_bundle_uri(SLV2UI ui);
+LILV_API
+LilvValue
+lilv_ui_get_bundle_uri(LilvUI ui);
 
 /**
    Get the URI for a Plugin UI's shared library.
    @param ui The Plugin UI
    @return a shared value which must not be modified or freed.
 */
-SLV2_API
-SLV2Value
-slv2_ui_get_binary_uri(SLV2UI ui);
+LILV_API
+LilvValue
+lilv_ui_get_binary_uri(LilvUI ui);
 
 /**
    @}
@@ -1398,4 +1361,4 @@ slv2_ui_get_binary_uri(SLV2UI ui);
 } /* extern "C" */
 #endif
 
-#endif /* SLV2_SLV2_H */
+#endif /* LILV_LILV_H */

@@ -20,82 +20,78 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "slv2_internal.h"
+#include "lilv_internal.h"
 
-#ifdef HAVE_SUIL
-#include "suil/suil.h"
-#endif
-
-SLV2UI
-slv2_ui_new(SLV2World world,
-            SLV2Value uri,
-            SLV2Value type_uri,
-            SLV2Value binary_uri)
+LilvUI
+lilv_ui_new(LilvWorld world,
+            LilvValue uri,
+            LilvValue type_uri,
+            LilvValue binary_uri)
 {
 	assert(uri);
 	assert(type_uri);
 	assert(binary_uri);
 
-	struct _SLV2UI* ui = malloc(sizeof(struct _SLV2UI));
+	struct _LilvUI* ui = malloc(sizeof(struct _LilvUI));
 	ui->world      = world;
 	ui->uri        = uri;
 	ui->binary_uri = binary_uri;
 
 	// FIXME: kludge
-	char* bundle     = slv2_strdup(slv2_value_as_string(ui->binary_uri));
+	char* bundle     = lilv_strdup(lilv_value_as_string(ui->binary_uri));
 	char* last_slash = strrchr(bundle, '/') + 1;
 	*last_slash = '\0';
-	ui->bundle_uri = slv2_value_new_uri(world, bundle);
+	ui->bundle_uri = lilv_value_new_uri(world, bundle);
 	free(bundle);
 
-	ui->classes = slv2_values_new();
-	slv2_array_append(ui->classes, type_uri);
+	ui->classes = lilv_values_new();
+	lilv_array_append(ui->classes, type_uri);
 
 	return ui;
 }
 
 void
-slv2_ui_free(SLV2UI ui)
+lilv_ui_free(LilvUI ui)
 {
-	slv2_value_free(ui->uri);
+	lilv_value_free(ui->uri);
 	ui->uri = NULL;
 
-	slv2_value_free(ui->bundle_uri);
+	lilv_value_free(ui->bundle_uri);
 	ui->bundle_uri = NULL;
 
-	slv2_value_free(ui->binary_uri);
+	lilv_value_free(ui->binary_uri);
 	ui->binary_uri = NULL;
 
-	slv2_values_free(ui->classes);
+	lilv_values_free(ui->classes);
 
 	free(ui);
 }
 
-SLV2_API
-SLV2Value
-slv2_ui_get_uri(SLV2UI ui)
+LILV_API
+LilvValue
+lilv_ui_get_uri(LilvUI ui)
 {
 	assert(ui);
 	assert(ui->uri);
 	return ui->uri;
 }
 
-SLV2_API
+LILV_API
 unsigned
-slv2_ui_is_supported(SLV2UI              ui,
-                     SLV2UISupportedFunc supported_func,
-                     SLV2Value           container_type,
-                     SLV2Value*          ui_type)
+lilv_ui_is_supported(LilvUI              ui,
+                     LilvUISupportedFunc supported_func,
+                     LilvValue           container_type,
+                     LilvValue*          ui_type)
 {
 #ifdef HAVE_SUIL
-	SLV2Values classes = slv2_ui_get_classes(ui);
-	SLV2_FOREACH(values, c, classes) {
-		SLV2Value type = slv2_values_get(classes, c);
-		const unsigned q = supported_func(slv2_value_as_uri(container_type),
-		                                  slv2_value_as_uri(type));
+	LilvValues classes = lilv_ui_get_classes(ui);
+	LILV_FOREACH(values, c, classes) {
+		LilvValue type = lilv_values_get(classes, c);
+		const unsigned q = supported_func(lilv_value_as_uri(container_type),
+		                                  lilv_value_as_uri(type));
 		if (q) {
 			if (ui_type) {
-				*ui_type = slv2_value_duplicate(type);
+				*ui_type = lilv_value_duplicate(type);
 			}
 			return q;
 		}
@@ -104,32 +100,32 @@ slv2_ui_is_supported(SLV2UI              ui,
 	return 0;
 }
 
-SLV2_API
-SLV2Values
-slv2_ui_get_classes(SLV2UI ui)
+LILV_API
+LilvValues
+lilv_ui_get_classes(LilvUI ui)
 {
 	return ui->classes;
 }
 
-SLV2_API
+LILV_API
 bool
-slv2_ui_is_a(SLV2UI ui, SLV2Value ui_class_uri)
+lilv_ui_is_a(LilvUI ui, LilvValue ui_class_uri)
 {
-	return slv2_values_contains(ui->classes, ui_class_uri);
+	return lilv_values_contains(ui->classes, ui_class_uri);
 }
 
-SLV2_API
-SLV2Value
-slv2_ui_get_bundle_uri(SLV2UI ui)
+LILV_API
+LilvValue
+lilv_ui_get_bundle_uri(LilvUI ui)
 {
 	assert(ui);
 	assert(ui->bundle_uri);
 	return ui->bundle_uri;
 }
 
-SLV2_API
-SLV2Value
-slv2_ui_get_binary_uri(SLV2UI ui)
+LILV_API
+LilvValue
+lilv_ui_get_binary_uri(LilvUI ui)
 {
 	assert(ui);
 	assert(ui->binary_uri);

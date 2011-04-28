@@ -21,10 +21,10 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "slv2_internal.h"
+#include "lilv_internal.h"
 
 char*
-slv2_strjoin(const char* first, ...)
+lilv_strjoin(const char* first, ...)
 {
 	size_t  len    = strlen(first);
 	char*   result = malloc(len + 1);
@@ -51,7 +51,7 @@ slv2_strjoin(const char* first, ...)
 }
 
 char*
-slv2_strdup(const char* str)
+lilv_strdup(const char* str)
 {
 	const size_t len = strlen(str);
 	char*        dup = malloc(len + 1);
@@ -60,7 +60,7 @@ slv2_strdup(const char* str)
 }
 
 const char*
-slv2_uri_to_path(const char* uri)
+lilv_uri_to_path(const char* uri)
 {
 #ifdef __WIN32__
 	if (!strncmp(uri, "file:///", (size_t)8)) {
@@ -78,7 +78,7 @@ slv2_uri_to_path(const char* uri)
  * For example, if LANG is set to "en_CA.utf-8", this returns "en-ca".
  */
 char*
-slv2_get_lang()
+lilv_get_lang()
 {
 	const char* const env_lang = getenv("LANG");
 	if (!env_lang || !strcmp(env_lang, "")
@@ -102,7 +102,7 @@ slv2_get_lang()
 			lang[i] = '\0';
 			break;
 		} else {
-			SLV2_ERRORF("Illegal LANG `%s' ignored\n", env_lang);
+			LILV_ERRORF("Illegal LANG `%s' ignored\n", env_lang);
 			free(lang);
 			return NULL;
 		}
@@ -112,7 +112,7 @@ slv2_get_lang()
 }
 
 uint8_t*
-slv2_qname_expand(SLV2Plugin p, const char* qname)
+lilv_qname_expand(LilvPlugin p, const char* qname)
 {
 	const size_t qname_len  = strlen(qname);
 	SerdNode     qname_node = { (const uint8_t*)qname,
@@ -129,7 +129,7 @@ slv2_qname_expand(SLV2Plugin p, const char* qname)
 		uri[uri_len] = '\0';
 		return (uint8_t*)uri;
 	} else {
-		SLV2_ERRORF("Failed to expand QName `%s'\n", qname);
+		LILV_ERRORF("Failed to expand QName `%s'\n", qname);
 		return NULL;
 	}
 }

@@ -21,30 +21,30 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "slv2_internal.h"
+#include "lilv_internal.h"
 
-SLV2Matches
-slv2_plugin_find_statements(SLV2Plugin plugin,
-                            SLV2Node   subject,
-                            SLV2Node   predicate,
-                            SLV2Node   object)
+LilvMatches
+lilv_plugin_find_statements(LilvPlugin plugin,
+                            LilvNode   subject,
+                            LilvNode   predicate,
+                            LilvNode   object)
 {
-	slv2_plugin_load_if_necessary(plugin);
+	lilv_plugin_load_if_necessary(plugin);
 	SordQuad pat = { subject, predicate, object, NULL };
 	return sord_find(plugin->world->model, pat);
 }
 
 typedef enum {
-	SLV2_LANG_MATCH_NONE,    ///< Language does not match at all
-	SLV2_LANG_MATCH_PARTIAL, ///< Partial (language, but not country) match
-	SLV2_LANG_MATCH_EXACT    ///< Exact (language and country) match
-} SLV2LangMatch;
+	LILV_LANG_MATCH_NONE,    ///< Language does not match at all
+	LILV_LANG_MATCH_PARTIAL, ///< Partial (language, but not country) match
+	LILV_LANG_MATCH_EXACT    ///< Exact (language and country) match
+} LilvLangMatch;
 
-static SLV2LangMatch
-slv2_lang_matches(const char* a, const char* b)
+static LilvLangMatch
+lilv_lang_matches(const char* a, const char* b)
 {
 	if (!strcmp(a, b)) {
-		return SLV2_LANG_MATCH_EXACT;
+		return LILV_LANG_MATCH_EXACT;
 	}
 
 	const char*  a_dash     = strchr(a, '-');
@@ -54,59 +54,59 @@ slv2_lang_matches(const char* a, const char* b)
 
 	if (a_lang_len && b_lang_len) {
 		if (a_lang_len == b_lang_len && !strncmp(a, b, a_lang_len)) {
-			return SLV2_LANG_MATCH_PARTIAL;  // e.g. a="en-gb", b="en-ca"
+			return LILV_LANG_MATCH_PARTIAL;  // e.g. a="en-gb", b="en-ca"
 		}
 	} else if (a_lang_len && !strncmp(a, b, a_lang_len)) {
-		return SLV2_LANG_MATCH_PARTIAL;  // e.g. a="en", b="en-ca"
+		return LILV_LANG_MATCH_PARTIAL;  // e.g. a="en", b="en-ca"
 	} else if (b_lang_len && !strncmp(a, b, b_lang_len)) {
-		return SLV2_LANG_MATCH_PARTIAL;  // e.g. a="en-ca", b="en"
+		return LILV_LANG_MATCH_PARTIAL;  // e.g. a="en-ca", b="en"
 	}
-	return SLV2_LANG_MATCH_NONE;
+	return LILV_LANG_MATCH_NONE;
 }
 
-SLV2Values
-slv2_values_from_stream_objects_i18n(SLV2Plugin  p,
-                                     SLV2Matches stream)
+LilvValues
+lilv_values_from_stream_objects_i18n(LilvPlugin  p,
+                                     LilvMatches stream)
 {
-	SLV2Values values  = slv2_values_new();
-	SLV2Node   nolang  = NULL;  // Untranslated value
-	SLV2Node   partial = NULL;  // Partial language match
-	char*      syslang = slv2_get_lang();
+	LilvValues values  = lilv_values_new();
+	LilvNode   nolang  = NULL;  // Untranslated value
+	LilvNode   partial = NULL;  // Partial language match
+	char*      syslang = lilv_get_lang();
 	FOREACH_MATCH(stream) {
-		SLV2Node value = slv2_match_object(stream);
+		LilvNode value = lilv_match_object(stream);
 		if (sord_node_get_type(value) == SORD_LITERAL) {
 			const char*   lang = sord_node_get_language(value);
-			SLV2LangMatch lm   = SLV2_LANG_MATCH_NONE;
+			LilvLangMatch lm   = LILV_LANG_MATCH_NONE;
 			if (lang) {
 				lm = (syslang)
-					? slv2_lang_matches(lang, syslang)
-					: SLV2_LANG_MATCH_PARTIAL;
+					? lilv_lang_matches(lang, syslang)
+					: LILV_LANG_MATCH_PARTIAL;
 			} else {
 				nolang = value;
 				if (!syslang) {
-					lm = SLV2_LANG_MATCH_EXACT;
+					lm = LILV_LANG_MATCH_EXACT;
 				}
 			}
 
-			if (lm == SLV2_LANG_MATCH_EXACT) {
+			if (lm == LILV_LANG_MATCH_EXACT) {
 				// Exact language match, add to results
-				slv2_array_append(values, slv2_value_new_from_node(p->world, value));
-			} else if (lm == SLV2_LANG_MATCH_PARTIAL) {
+				lilv_array_append(values, lilv_value_new_from_node(p->world, value));
+			} else if (lm == LILV_LANG_MATCH_PARTIAL) {
 				// Partial language match, save in case we find no exact
 				partial = value;
 			}
 		} else {
-			slv2_array_append(values, slv2_value_new_from_node(p->world, value));
+			lilv_array_append(values, lilv_value_new_from_node(p->world, value));
 		}
 	}
-	slv2_match_end(stream);
+	lilv_match_end(stream);
 	free(syslang);
 
-	if (slv2_values_size(values) > 0) {
+	if (lilv_values_size(values) > 0) {
 		return values;
 	}
 
-	SLV2Node best = nolang;
+	LilvNode best = nolang;
 	if (syslang && partial) {
 		// Partial language match for system language
 		best = partial;
@@ -117,35 +117,35 @@ slv2_values_from_stream_objects_i18n(SLV2Plugin  p,
 	}
 
 	if (best) {
-		slv2_array_append(values, slv2_value_new_from_node(p->world, best));
+		lilv_array_append(values, lilv_value_new_from_node(p->world, best));
 	} else {
 		// No matches whatsoever
-		slv2_values_free(values);
+		lilv_values_free(values);
 		values = NULL;
 	}
 
 	return values;
 }
 
-SLV2Values
-slv2_values_from_stream_objects(SLV2Plugin  p,
-                                SLV2Matches stream)
+LilvValues
+lilv_values_from_stream_objects(LilvPlugin  p,
+                                LilvMatches stream)
 {
-	if (slv2_matches_end(stream)) {
-		slv2_match_end(stream);
+	if (lilv_matches_end(stream)) {
+		lilv_match_end(stream);
 		return NULL;
 	} else if (p->world->opt.filter_language) {
-		return slv2_values_from_stream_objects_i18n(p, stream);
+		return lilv_values_from_stream_objects_i18n(p, stream);
 	} else {
-		SLV2Values values = slv2_values_new();
+		LilvValues values = lilv_values_new();
 		FOREACH_MATCH(stream) {
-			slv2_array_append(
+			lilv_array_append(
 				values,
-				slv2_value_new_from_node(
+				lilv_value_new_from_node(
 					p->world,
-					slv2_match_object(stream)));
+					lilv_match_object(stream)));
 		}
-		slv2_match_end(stream);
+		lilv_match_end(stream);
 		return values;
 	}
 }

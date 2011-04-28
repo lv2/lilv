@@ -20,40 +20,40 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "slv2_internal.h"
+#include "lilv_internal.h"
 
-SLV2PluginClass
-slv2_plugin_class_new(SLV2World   world,
-                      SLV2Node    parent_node,
-                      SLV2Node    uri,
+LilvPluginClass
+lilv_plugin_class_new(LilvWorld   world,
+                      LilvNode    parent_node,
+                      LilvNode    uri,
                       const char* label)
 {
 	if (parent_node && sord_node_get_type(parent_node) != SORD_URI) {
 		return NULL;  // Not an LV2 plugin superclass (FIXME: discover properly)
 	}
-	SLV2PluginClass pc = (SLV2PluginClass)malloc(sizeof(struct _SLV2PluginClass));
+	LilvPluginClass pc = (LilvPluginClass)malloc(sizeof(struct _LilvPluginClass));
 	pc->world      = world;
-	pc->uri        = slv2_value_new_from_node(world, uri);
-	pc->label      = slv2_value_new(world, SLV2_VALUE_STRING, label);
+	pc->uri        = lilv_value_new_from_node(world, uri);
+	pc->label      = lilv_value_new(world, LILV_VALUE_STRING, label);
 	pc->parent_uri = (parent_node)
-		? slv2_value_new_from_node(world, parent_node)
+		? lilv_value_new_from_node(world, parent_node)
 		: NULL;
 	return pc;
 }
 
 void
-slv2_plugin_class_free(SLV2PluginClass plugin_class)
+lilv_plugin_class_free(LilvPluginClass plugin_class)
 {
 	assert(plugin_class->uri);
-	slv2_value_free(plugin_class->uri);
-	slv2_value_free(plugin_class->parent_uri);
-	slv2_value_free(plugin_class->label);
+	lilv_value_free(plugin_class->uri);
+	lilv_value_free(plugin_class->parent_uri);
+	lilv_value_free(plugin_class->label);
 	free(plugin_class);
 }
 
-SLV2_API
-SLV2Value
-slv2_plugin_class_get_parent_uri(SLV2PluginClass plugin_class)
+LILV_API
+LilvValue
+lilv_plugin_class_get_parent_uri(LilvPluginClass plugin_class)
 {
 	if (plugin_class->parent_uri)
 		return plugin_class->parent_uri;
@@ -61,36 +61,36 @@ slv2_plugin_class_get_parent_uri(SLV2PluginClass plugin_class)
 		return NULL;
 }
 
-SLV2_API
-SLV2Value
-slv2_plugin_class_get_uri(SLV2PluginClass plugin_class)
+LILV_API
+LilvValue
+lilv_plugin_class_get_uri(LilvPluginClass plugin_class)
 {
 	assert(plugin_class->uri);
 	return plugin_class->uri;
 }
 
-SLV2_API
-SLV2Value
-slv2_plugin_class_get_label(SLV2PluginClass plugin_class)
+LILV_API
+LilvValue
+lilv_plugin_class_get_label(LilvPluginClass plugin_class)
 {
 	return plugin_class->label;
 }
 
-SLV2_API
-SLV2PluginClasses
-slv2_plugin_class_get_children(SLV2PluginClass plugin_class)
+LILV_API
+LilvPluginClasses
+lilv_plugin_class_get_children(LilvPluginClass plugin_class)
 {
 	// Returned list doesn't own categories
-	SLV2PluginClasses all    = plugin_class->world->plugin_classes;
-	SLV2PluginClasses result = g_sequence_new(NULL);
+	LilvPluginClasses all    = plugin_class->world->plugin_classes;
+	LilvPluginClasses result = g_sequence_new(NULL);
 
 	for (GSequenceIter* i = g_sequence_get_begin_iter(all);
 	     i != g_sequence_get_end_iter(all);
 	     i = g_sequence_iter_next(i)) {
-		SLV2PluginClass c      = g_sequence_get(i);
-		SLV2Value       parent = slv2_plugin_class_get_parent_uri(c);
-		if (parent && slv2_value_equals(slv2_plugin_class_get_uri(plugin_class), parent))
-			slv2_sequence_insert(result, c);
+		LilvPluginClass c      = g_sequence_get(i);
+		LilvValue       parent = lilv_plugin_class_get_parent_uri(c);
+		if (parent && lilv_value_equals(lilv_plugin_class_get_uri(plugin_class), parent))
+			lilv_sequence_insert(result, c);
 	}
 
 	return result;

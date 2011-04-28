@@ -20,29 +20,29 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "slv2/slv2.h"
+#include "lilv/lilv.h"
 
-#include "slv2-config.h"
+#include "lilv-config.h"
 
-SLV2Value event_class   = NULL;
-SLV2Value control_class = NULL;
-SLV2Value in_group_pred = NULL;
-SLV2Value role_pred     = NULL;
-SLV2Value preset_pred   = NULL;
-SLV2Value title_pred    = NULL;
+LilvValue event_class   = NULL;
+LilvValue control_class = NULL;
+LilvValue in_group_pred = NULL;
+LilvValue role_pred     = NULL;
+LilvValue preset_pred   = NULL;
+LilvValue title_pred    = NULL;
 
 void
-print_group(SLV2Plugin p, SLV2Value group, SLV2Value type, SLV2Value symbol)
+print_group(LilvPlugin p, LilvValue group, LilvValue type, LilvValue symbol)
 {
-	printf("\n\tGroup %s:\n", slv2_value_as_string(group));
-	printf("\t\tType: %s\n", slv2_value_as_string(type));
-	printf("\t\tSymbol: %s\n", slv2_value_as_string(symbol));
+	printf("\n\tGroup %s:\n", lilv_value_as_string(group));
+	printf("\t\tType: %s\n", lilv_value_as_string(type));
+	printf("\t\tSymbol: %s\n", lilv_value_as_string(symbol));
 }
 
 void
-print_port(SLV2Plugin p, uint32_t index, float* mins, float* maxes, float* defaults)
+print_port(LilvPlugin p, uint32_t index, float* mins, float* maxes, float* defaults)
 {
-	SLV2Port port = slv2_plugin_get_port_by_index(p, index);
+	LilvPort port = lilv_plugin_get_port_by_index(p, index);
 
 	printf("\n\tPort %d:\n", index);
 
@@ -53,63 +53,63 @@ print_port(SLV2Plugin p, uint32_t index, float* mins, float* maxes, float* defau
 
 	bool first = true;
 
-	SLV2Values classes = slv2_port_get_classes(p, port);
+	LilvValues classes = lilv_port_get_classes(p, port);
 	printf("\t\tType:       ");
-	SLV2_FOREACH(values, i, classes) {
-		SLV2Value value = slv2_values_get(classes, i);
+	LILV_FOREACH(values, i, classes) {
+		LilvValue value = lilv_values_get(classes, i);
 		if (!first) {
 			printf("\n\t\t            ");
 		}
-		printf("%s", slv2_value_as_uri(value));
+		printf("%s", lilv_value_as_uri(value));
 		first = false;
 	}
 
-	if (slv2_port_is_a(p, port, event_class)) {
-		SLV2Values supported = slv2_port_get_value_by_qname(p, port,
+	if (lilv_port_is_a(p, port, event_class)) {
+		LilvValues supported = lilv_port_get_value_by_qname(p, port,
 			"lv2ev:supportsEvent");
-		if (slv2_values_size(supported) > 0) {
+		if (lilv_values_size(supported) > 0) {
 			printf("\n\t\tSupported events:\n");
-			SLV2_FOREACH(values, i, supported) {
-				SLV2Value value = slv2_values_get(supported, i);
-				printf("\t\t\t%s\n", slv2_value_as_uri(value));
+			LILV_FOREACH(values, i, supported) {
+				LilvValue value = lilv_values_get(supported, i);
+				printf("\t\t\t%s\n", lilv_value_as_uri(value));
 			}
 		}
-		slv2_values_free(supported);
+		lilv_values_free(supported);
 	}
 
-	SLV2ScalePoints points = slv2_port_get_scale_points(p, port);
+	LilvScalePoints points = lilv_port_get_scale_points(p, port);
 	if (points)
 		printf("\n\t\tScale Points:\n");
-	SLV2_FOREACH(scale_points, i, points) {
-		SLV2ScalePoint p = slv2_scale_points_get(points, i);
+	LILV_FOREACH(scale_points, i, points) {
+		LilvScalePoint p = lilv_scale_points_get(points, i);
 		printf("\t\t\t%s = \"%s\"\n",
-				slv2_value_as_string(slv2_scale_point_get_value(p)),
-				slv2_value_as_string(slv2_scale_point_get_label(p)));
+				lilv_value_as_string(lilv_scale_point_get_value(p)),
+				lilv_value_as_string(lilv_scale_point_get_label(p)));
 	}
-	slv2_scale_points_free(points);
+	lilv_scale_points_free(points);
 
-	SLV2Value val = slv2_port_get_symbol(p, port);
-	printf("\n\t\tSymbol:     %s\n", slv2_value_as_string(val));
+	LilvValue val = lilv_port_get_symbol(p, port);
+	printf("\n\t\tSymbol:     %s\n", lilv_value_as_string(val));
 
-	val = slv2_port_get_name(p, port);
-	printf("\t\tName:       %s\n", slv2_value_as_string(val));
-	slv2_value_free(val);
+	val = lilv_port_get_name(p, port);
+	printf("\t\tName:       %s\n", lilv_value_as_string(val));
+	lilv_value_free(val);
 
-	SLV2Values groups = slv2_port_get_value(p, port, in_group_pred);
-	if (slv2_values_size(groups) > 0)
+	LilvValues groups = lilv_port_get_value(p, port, in_group_pred);
+	if (lilv_values_size(groups) > 0)
 		printf("\t\tGroup:      %s\n",
-		       slv2_value_as_string(
-			       slv2_values_get(groups, slv2_values_begin(groups))));
-	slv2_values_free(groups);
+		       lilv_value_as_string(
+			       lilv_values_get(groups, lilv_values_begin(groups))));
+	lilv_values_free(groups);
 
-	SLV2Values roles = slv2_port_get_value(p, port, role_pred);
-	if (slv2_values_size(roles) > 0)
+	LilvValues roles = lilv_port_get_value(p, port, role_pred);
+	if (lilv_values_size(roles) > 0)
 		printf("\t\tRole:       %s\n",
-		       slv2_value_as_string(
-			       slv2_values_get(roles, slv2_values_begin(roles))));
-	slv2_values_free(roles);
+		       lilv_value_as_string(
+			       lilv_values_get(roles, lilv_values_begin(roles))));
+	lilv_values_free(roles);
 
-	if (slv2_port_is_a(p, port, control_class)) {
+	if (lilv_port_is_a(p, port, control_class)) {
 		if (!isnan(mins[index]))
 			printf("\t\tMinimum:    %f\n", mins[index]);
 		if (!isnan(mins[index]))
@@ -118,165 +118,165 @@ print_port(SLV2Plugin p, uint32_t index, float* mins, float* maxes, float* defau
 			printf("\t\tDefault:    %f\n", defaults[index]);
 	}
 
-	SLV2Values properties = slv2_port_get_properties(p, port);
-	if (slv2_values_size(properties) > 0)
+	LilvValues properties = lilv_port_get_properties(p, port);
+	if (lilv_values_size(properties) > 0)
 		printf("\t\tProperties: ");
 	first = true;
-	SLV2_FOREACH(values, i, properties) {
+	LILV_FOREACH(values, i, properties) {
 		if (!first) {
 			printf("\t\t            ");
 		}
-		printf("%s\n", slv2_value_as_uri(slv2_values_get(properties, i)));
+		printf("%s\n", lilv_value_as_uri(lilv_values_get(properties, i)));
 		first = false;
 	}
-	if (slv2_values_size(properties) > 0)
+	if (lilv_values_size(properties) > 0)
 		printf("\n");
-	slv2_values_free(properties);
+	lilv_values_free(properties);
 }
 
 void
-print_plugin(SLV2Plugin p)
+print_plugin(LilvPlugin p)
 {
-	SLV2Value val = NULL;
+	LilvValue val = NULL;
 
-	printf("%s\n\n", slv2_value_as_uri(slv2_plugin_get_uri(p)));
+	printf("%s\n\n", lilv_value_as_uri(lilv_plugin_get_uri(p)));
 
-	val = slv2_plugin_get_name(p);
+	val = lilv_plugin_get_name(p);
 	if (val) {
-		printf("\tName:              %s\n", slv2_value_as_string(val));
-		slv2_value_free(val);
+		printf("\tName:              %s\n", lilv_value_as_string(val));
+		lilv_value_free(val);
 	}
 
-	SLV2Value class_label = slv2_plugin_class_get_label(slv2_plugin_get_class(p));
+	LilvValue class_label = lilv_plugin_class_get_label(lilv_plugin_get_class(p));
 	if (class_label) {
-		printf("\tClass:             %s\n", slv2_value_as_string(class_label));
+		printf("\tClass:             %s\n", lilv_value_as_string(class_label));
 	}
 
-	val = slv2_plugin_get_author_name(p);
+	val = lilv_plugin_get_author_name(p);
 	if (val) {
-		printf("\tAuthor:            %s\n", slv2_value_as_string(val));
-		slv2_value_free(val);
+		printf("\tAuthor:            %s\n", lilv_value_as_string(val));
+		lilv_value_free(val);
 	}
 
-	val = slv2_plugin_get_author_email(p);
+	val = lilv_plugin_get_author_email(p);
 	if (val) {
-		printf("\tAuthor Email:      %s\n", slv2_value_as_uri(val));
-		slv2_value_free(val);
+		printf("\tAuthor Email:      %s\n", lilv_value_as_uri(val));
+		lilv_value_free(val);
 	}
 
-	val = slv2_plugin_get_author_homepage(p);
+	val = lilv_plugin_get_author_homepage(p);
 	if (val) {
-		printf("\tAuthor Homepage:   %s\n", slv2_value_as_uri(val));
-		slv2_value_free(val);
+		printf("\tAuthor Homepage:   %s\n", lilv_value_as_uri(val));
+		lilv_value_free(val);
 	}
 
-	if (slv2_plugin_has_latency(p)) {
-		uint32_t latency_port = slv2_plugin_get_latency_port_index(p);
+	if (lilv_plugin_has_latency(p)) {
+		uint32_t latency_port = lilv_plugin_get_latency_port_index(p);
 		printf("\tHas latency:       yes, reported by port %d\n", latency_port);
 	} else {
 		printf("\tHas latency:       no\n");
 	}
 
 	printf("\tBundle:            %s\n",
-	       slv2_value_as_uri(slv2_plugin_get_bundle_uri(p)));
+	       lilv_value_as_uri(lilv_plugin_get_bundle_uri(p)));
 
-	SLV2Value binary_uri = slv2_plugin_get_library_uri(p);
+	LilvValue binary_uri = lilv_plugin_get_library_uri(p);
 	if (binary_uri) {
 		printf("\tBinary:            %s\n",
-		       slv2_value_as_uri(slv2_plugin_get_library_uri(p)));
+		       lilv_value_as_uri(lilv_plugin_get_library_uri(p)));
 	}
 
-	SLV2UIs uis = slv2_plugin_get_uis(p);
-	if (slv2_values_size(uis) > 0) {
+	LilvUIs uis = lilv_plugin_get_uis(p);
+	if (lilv_values_size(uis) > 0) {
 		printf("\tUI:                ");
-		SLV2_FOREACH(uis, i, uis) {
-			SLV2UI ui = slv2_uis_get(uis, i);
-			printf("%s\n", slv2_value_as_uri(slv2_ui_get_uri(ui)));
+		LILV_FOREACH(uis, i, uis) {
+			LilvUI ui = lilv_uis_get(uis, i);
+			printf("%s\n", lilv_value_as_uri(lilv_ui_get_uri(ui)));
 
-			const char* binary = slv2_value_as_uri(slv2_ui_get_binary_uri(ui));
+			const char* binary = lilv_value_as_uri(lilv_ui_get_binary_uri(ui));
 
-			SLV2Values types = slv2_ui_get_classes(ui);
-			SLV2_FOREACH(values, i, types) {
+			LilvValues types = lilv_ui_get_classes(ui);
+			LILV_FOREACH(values, i, types) {
 				printf("\t                       Class:  %s\n",
-				       slv2_value_as_uri(slv2_values_get(types, i)));
+				       lilv_value_as_uri(lilv_values_get(types, i)));
 			}
 
 			if (binary)
 				printf("\t                       Binary: %s\n", binary);
 
 			printf("\t                       Bundle: %s\n",
-			       slv2_value_as_uri(slv2_ui_get_bundle_uri(ui)));
+			       lilv_value_as_uri(lilv_ui_get_bundle_uri(ui)));
 		}
 	}
-	slv2_uis_free(uis);
+	lilv_uis_free(uis);
 
 	printf("\tData URIs:         ");
-	SLV2Values data_uris = slv2_plugin_get_data_uris(p);
+	LilvValues data_uris = lilv_plugin_get_data_uris(p);
 	bool first = true;
-	SLV2_FOREACH(values, i, data_uris) {
+	LILV_FOREACH(values, i, data_uris) {
 		if (!first) {
 			printf("\n\t                   ");
 		}
-		printf("%s", slv2_value_as_uri(slv2_values_get(data_uris, i)));
+		printf("%s", lilv_value_as_uri(lilv_values_get(data_uris, i)));
 		first = false;
 	}
 	printf("\n");
 
 	/* Required Features */
 
-	SLV2Values features = slv2_plugin_get_required_features(p);
+	LilvValues features = lilv_plugin_get_required_features(p);
 	if (features)
 		printf("\tRequired Features: ");
 	first = true;
-	SLV2_FOREACH(values, i, features) {
+	LILV_FOREACH(values, i, features) {
 		if (!first) {
 			printf("\n\t                   ");
 		}
-		printf("%s", slv2_value_as_uri(slv2_values_get(features, i)));
+		printf("%s", lilv_value_as_uri(lilv_values_get(features, i)));
 		first = false;
 	}
 	if (features)
 		printf("\n");
-	slv2_values_free(features);
+	lilv_values_free(features);
 
 	/* Optional Features */
 
-	features = slv2_plugin_get_optional_features(p);
+	features = lilv_plugin_get_optional_features(p);
 	if (features)
 		printf("\tOptional Features: ");
 	first = true;
-	SLV2_FOREACH(values, i, features) {
+	LILV_FOREACH(values, i, features) {
 		if (!first) {
 			printf("\n\t                   ");
 		}
-		printf("%s", slv2_value_as_uri(slv2_values_get(features, i)));
+		printf("%s", lilv_value_as_uri(lilv_values_get(features, i)));
 		first = false;
 	}
 	if (features)
 		printf("\n");
-	slv2_values_free(features);
+	lilv_values_free(features);
 
 	/* Presets */
 
-	SLV2Values presets = slv2_plugin_get_value(p, preset_pred);
+	LilvValues presets = lilv_plugin_get_value(p, preset_pred);
 	if (presets)
 		printf("\tPresets: \n");
-	SLV2_FOREACH(values, i, presets) {
-		SLV2Values titles = slv2_plugin_get_value_for_subject(
-			p, slv2_values_get(presets, i), title_pred);
+	LILV_FOREACH(values, i, presets) {
+		LilvValues titles = lilv_plugin_get_value_for_subject(
+			p, lilv_values_get(presets, i), title_pred);
 		if (titles) {
-			SLV2Value title = slv2_values_get(titles, slv2_values_begin(titles));
-			printf("\t         %s\n", slv2_value_as_string(title));
+			LilvValue title = lilv_values_get(titles, lilv_values_begin(titles));
+			printf("\t         %s\n", lilv_value_as_string(title));
 		}
 	}
 
 	/* Ports */
 
-	const uint32_t num_ports = slv2_plugin_get_num_ports(p);
+	const uint32_t num_ports = lilv_plugin_get_num_ports(p);
 	float* mins     = calloc(num_ports, sizeof(float));
 	float* maxes    = calloc(num_ports, sizeof(float));
 	float* defaults = calloc(num_ports, sizeof(float));
-	slv2_plugin_get_port_ranges_float(p, mins, maxes, defaults);
+	lilv_plugin_get_port_ranges_float(p, mins, maxes, defaults);
 
 	for (uint32_t i = 0; i < num_ports; ++i)
 		print_port(p, i, mins, maxes, defaults);
@@ -290,7 +290,7 @@ void
 print_version()
 {
 	printf(
-		"lv2_inspect (slv2) " SLV2_VERSION "\n"
+		"lv2_inspect (slv2) " LILV_VERSION "\n"
 		"Copyright 2007-2011 David Robillard <http://drobilla.net>\n"
 		"License: <http://www.opensource.org/licenses/isc-license>\n"
 		"This is free software: you are free to change and redistribute it.\n"
@@ -310,19 +310,19 @@ main(int argc, char** argv)
 	int ret = 0;
 	setlocale (LC_ALL, "");
 
-	SLV2World world = slv2_world_new();
-	slv2_world_load_all(world);
+	LilvWorld world = lilv_world_new();
+	lilv_world_load_all(world);
 
 #define NS_DC   "http://dublincore.org/documents/dcmi-namespace/"
 #define NS_PG   "http://lv2plug.in/ns/ext/port-groups#"
 #define NS_PSET "http://lv2plug.in/ns/ext/presets#"
 
-	control_class = slv2_value_new_uri(world, SLV2_PORT_CLASS_CONTROL);
-	event_class   = slv2_value_new_uri(world, SLV2_PORT_CLASS_EVENT);
-	in_group_pred = slv2_value_new_uri(world, NS_PG "inGroup");
-	preset_pred   = slv2_value_new_uri(world, NS_PSET "hasPreset");
-	role_pred     = slv2_value_new_uri(world, NS_PG "role");
-	title_pred    = slv2_value_new_uri(world, NS_DC "title");
+	control_class = lilv_value_new_uri(world, LILV_PORT_CLASS_CONTROL);
+	event_class   = lilv_value_new_uri(world, LILV_PORT_CLASS_EVENT);
+	in_group_pred = lilv_value_new_uri(world, NS_PG "inGroup");
+	preset_pred   = lilv_value_new_uri(world, NS_PSET "hasPreset");
+	role_pred     = lilv_value_new_uri(world, NS_PG "role");
+	title_pred    = lilv_value_new_uri(world, NS_DC "title");
 
 	if (argc != 2) {
 		print_usage();
@@ -344,10 +344,10 @@ main(int argc, char** argv)
 		goto done;
 	}
 
-	SLV2Plugins plugins = slv2_world_get_all_plugins(world);
-	SLV2Value   uri     = slv2_value_new_uri(world, argv[1]);
+	LilvPlugins plugins = lilv_world_get_all_plugins(world);
+	LilvValue   uri     = lilv_value_new_uri(world, argv[1]);
 
-	SLV2Plugin p = slv2_plugins_get_by_uri(plugins, uri);
+	LilvPlugin p = lilv_plugins_get_by_uri(plugins, uri);
 
 	if (p) {
 		print_plugin(p);
@@ -357,16 +357,16 @@ main(int argc, char** argv)
 
 	ret = (p != NULL ? 0 : -1);
 
-	slv2_value_free(uri);
+	lilv_value_free(uri);
 
 done:
-	slv2_value_free(title_pred);
-	slv2_value_free(role_pred);
-	slv2_value_free(preset_pred);
-	slv2_value_free(in_group_pred);
-	slv2_value_free(event_class);
-	slv2_value_free(control_class);
-	slv2_world_free(world);
+	lilv_value_free(title_pred);
+	lilv_value_free(role_pred);
+	lilv_value_free(preset_pred);
+	lilv_value_free(in_group_pred);
+	lilv_value_free(event_class);
+	lilv_value_free(control_class);
+	lilv_world_free(world);
 	return ret;
 }
 

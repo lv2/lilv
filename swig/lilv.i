@@ -1,13 +1,13 @@
-%module slv2
+%module lilv
 %{
-#include "slv2/slv2.h"
-#include "slv2/slv2mm.hpp"
+#include "lilv/lilv.h"
+#include "lilv/lilvmm.hpp"
 %}
 
-%include "slv2/slv2.h"
-%include "slv2/slv2mm.hpp"
+%include "lilv/lilv.h"
+%include "lilv/lilvmm.hpp"
 
-namespace SLV2 {
+namespace Lilv {
 
 %extend Plugins {
 %pythoncode %{
@@ -22,8 +22,8 @@ namespace SLV2 {
 		
 			def next(self):
 				self.index += 1
-				if self.index < slv2_plugins_size(self.plugins.me):
-					return Plugin(slv2_plugins_get_at(self.plugins.me, self.index))
+				if self.index < lilv_plugins_size(self.plugins.me):
+					return Plugin(lilv_plugins_get_at(self.plugins.me, self.index))
 				else:
 					raise StopIteration
 
@@ -34,15 +34,15 @@ namespace SLV2 {
 %extend Value {
 %pythoncode %{
 	def __str__(self):
-		return slv2_value_get_turtle_token(self.me)
+		return lilv_value_get_turtle_token(self.me)
 %}
 };
 
 %extend World {
 %pythoncode %{
 	def get_plugin(self, uri_str):
-		return Plugin(slv2_world_get_plugin_by_uri_string(self.me, uri_str))
+		return Plugin(lilv_world_get_plugin_by_uri_string(self.me, uri_str))
 %}
 };
 
-} /* namespace SLV2 */
+} /* namespace Lilv */
