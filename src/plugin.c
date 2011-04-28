@@ -473,7 +473,7 @@ slv2_plugin_get_value_for_subject(SLV2Plugin p,
 		return NULL;
 	}
 
-	SLV2Node subject_node = (slv2_value_is_uri(subject))
+	SordNode* subject_node = (slv2_value_is_uri(subject))
 		? slv2_node_copy(subject->val.uri_val)
 		: sord_new_blank(p->world->world,
 		                 (const uint8_t*)slv2_value_as_blank(subject));
@@ -698,7 +698,7 @@ slv2_plugin_get_port_by_symbol(SLV2Plugin p,
 static SLV2Node
 slv2_plugin_get_author(SLV2Plugin p)
 {
-	SLV2Node doap_maintainer = sord_new_uri(
+	SordNode* doap_maintainer = sord_new_uri(
 		p->world->world, NS_DOAP "maintainer");
 
 	SLV2Matches maintainers = slv2_plugin_find_statements(
@@ -769,8 +769,8 @@ SLV2_API
 SLV2UIs
 slv2_plugin_get_uis(SLV2Plugin p)
 {
-	SLV2Node ui_ui_node     = sord_new_uri(p->world->world, NS_UI "ui");
-	SLV2Node ui_binary_node = sord_new_uri(p->world->world, NS_UI "binary");
+	SordNode* ui_ui_node     = sord_new_uri(p->world->world, NS_UI "ui");
+	SordNode* ui_binary_node = sord_new_uri(p->world->world, NS_UI "binary");
 
 	SLV2UIs     result = slv2_uis_new();
 	SLV2Matches uis    = slv2_plugin_find_statements(

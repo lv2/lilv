@@ -60,20 +60,20 @@ static inline char* dlerror(void) { return "Unknown error"; }
 #define SLV2_NS_XSD  (const uint8_t*)"http://www.w3.org/2001/XMLSchema#"
 #define SLV2_NS_RDF  (const uint8_t*)"http://www.w3.org/1999/02/22-rdf-syntax-ns#"
 
-typedef SordIter* SLV2Matches;
-typedef SordNode* SLV2Node;
+typedef SordIter*       SLV2Matches;
+typedef const SordNode* SLV2Node;
 
 #define FOREACH_MATCH(iter) \
 	for (; !sord_iter_end(iter); sord_iter_next(iter))
 
-static inline SLV2Node
+static inline const SordNode*
 slv2_match_subject(SLV2Matches iter) {
 	SordQuad tup;
 	sord_iter_get(iter, tup);
 	return tup[SORD_SUBJECT];
 }
 
-static inline SLV2Node
+static inline const SordNode*
 slv2_match_object(SLV2Matches iter) {
 	SordQuad tup;
 	sord_iter_get(iter, tup);
@@ -101,8 +101,8 @@ void     slv2_port_free(SLV2Port port);
 /* ********* Spec ********* */
 
 struct _SLV2Spec {
-	SLV2Node   spec;
-	SLV2Node   bundle;
+	SordNode*  spec;
+	SordNode*  bundle;
 	SLV2Values data_uris;
 };
 
@@ -233,30 +233,30 @@ struct _SLV2World {
 	SLV2PluginClasses plugin_classes;
 	GSList*           specs;
 	SLV2Plugins       plugins;
-	SLV2Node          dc_replaces_node;
-	SLV2Node          dyn_manifest_node;
-	SLV2Node          lv2_specification_node;
-	SLV2Node          lv2_plugin_node;
-	SLV2Node          lv2_binary_node;
-	SLV2Node          lv2_default_node;
-	SLV2Node          lv2_minimum_node;
-	SLV2Node          lv2_maximum_node;
-	SLV2Node          lv2_port_node;
-	SLV2Node          lv2_portproperty_node;
-	SLV2Node          lv2_reportslatency_node;
-	SLV2Node          lv2_index_node;
-	SLV2Node          lv2_symbol_node;
-	SLV2Node          rdf_a_node;
-	SLV2Node          rdf_value_node;
-	SLV2Node          rdfs_class_node;
-	SLV2Node          rdfs_label_node;
-	SLV2Node          rdfs_seealso_node;
-	SLV2Node          rdfs_subclassof_node;
-	SLV2Node          slv2_dmanifest_node;
-	SLV2Node          xsd_boolean_node;
-	SLV2Node          xsd_decimal_node;
-	SLV2Node          xsd_double_node;
-	SLV2Node          xsd_integer_node;
+	SordNode*         dc_replaces_node;
+	SordNode*         dyn_manifest_node;
+	SordNode*         lv2_specification_node;
+	SordNode*         lv2_plugin_node;
+	SordNode*         lv2_binary_node;
+	SordNode*         lv2_default_node;
+	SordNode*         lv2_minimum_node;
+	SordNode*         lv2_maximum_node;
+	SordNode*         lv2_port_node;
+	SordNode*         lv2_portproperty_node;
+	SordNode*         lv2_reportslatency_node;
+	SordNode*         lv2_index_node;
+	SordNode*         lv2_symbol_node;
+	SordNode*         rdf_a_node;
+	SordNode*         rdf_value_node;
+	SordNode*         rdfs_class_node;
+	SordNode*         rdfs_label_node;
+	SordNode*         rdfs_seealso_node;
+	SordNode*         rdfs_subclassof_node;
+	SordNode*         slv2_dmanifest_node;
+	SordNode*         xsd_boolean_node;
+	SordNode*         xsd_decimal_node;
+	SordNode*         xsd_double_node;
+	SordNode*         xsd_integer_node;
 	SLV2Value         doap_name_val;
 	SLV2Value         lv2_name_val;
 	SLV2Options       opt;
@@ -306,7 +306,7 @@ struct _SLV2Value {
 		int       int_val;
 		float     float_val;
 		bool      bool_val;
-		SLV2Node  uri_val;
+		SordNode* uri_val;
 	} val;
 	SLV2ValueType type;
 };
@@ -332,11 +332,11 @@ slv2_array_append(GSequence* seq, void* value) {
 struct _SLV2Header*
 slv2_sequence_get_by_uri(GSequence* seq, SLV2Value uri);
 
-static inline SLV2Node slv2_node_copy(SLV2Node node) {
+static inline SordNode* slv2_node_copy(SLV2Node node) {
 	return sord_node_copy(node);
 }
 
-static inline void slv2_node_free(SLV2World world, SLV2Node node) {
+static inline void slv2_node_free(SLV2World world, SordNode* node) {
 	sord_node_free(world->world, node);
 }
 
