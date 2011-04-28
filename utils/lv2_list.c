@@ -59,7 +59,7 @@ print_usage()
 	printf("  --version      Output version information and exit\n");
 	printf("\n");
 	printf("The environment variable LV2_PATH can be used to control where\n");
-	printf("this (and all other slv2 based LV2 hosts) will search for plugins.\n");
+	printf("this (and all other lilv based LV2 hosts) will search for plugins.\n");
 }
 
 int

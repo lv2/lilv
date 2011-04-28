@@ -1,4 +1,4 @@
-EXTRA_DIST = slv2.i
+EXTRA_DIST = lilv.i
 
 if WITH_SWIG
 

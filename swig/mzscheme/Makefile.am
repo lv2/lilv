@@ -1,8 +1,8 @@
 if WITH_MZSCHEME
 all:
-	swig -DMZSCHEME -Wall -mzscheme -I../.. -o slv2_mzscheme.c -oh slv2_mzscheme.h ../slv2.i
+	swig -DMZSCHEME -Wall -mzscheme -I../.. -o lilv_mzscheme.c -oh lilv_mzscheme.h ../lilv.i
 	gcc -fPIC -shared -Iplt -I../.. \
-		-I/usr/include/plt slv2_mzscheme.c -o libslv2_mzscheme.so
+		-I/usr/include/plt lilv_mzscheme.c -o liblilv_mzscheme.so
 
 clean-local:
 	rm -f *.[ch] *.so *.o

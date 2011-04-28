@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 
-import slv2
+import lilv
 
-world = slv2.World()
+world = lilv.World()
 world.load_all()
 
 for i in world.get_all_plugins():

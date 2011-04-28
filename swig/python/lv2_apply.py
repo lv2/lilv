@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import math
-import slv2
+import lilv
 import sys
 import wave
 import numpy
@@ -16,8 +16,8 @@ plugin_uri   = sys.argv[1]
 wav_in_path  = sys.argv[2]
 wav_out_path = sys.argv[3]
 
-# Initialise SLV2
-world = slv2.World()
+# Initialise LILV
+world = lilv.World()
 world.load_all()
 
 # Find plugin
@@ -26,9 +26,9 @@ if not plugin:
     print "Unknown plugin `%s'\n" % plugin_uri
     sys.exit(1)
 
-lv2_InputPort  = world.new_uri(slv2.SLV2_PORT_CLASS_INPUT)
-lv2_OutputPort = world.new_uri(slv2.SLV2_PORT_CLASS_OUTPUT)
-lv2_AudioPort  = world.new_uri(slv2.SLV2_PORT_CLASS_AUDIO)
+lv2_InputPort  = world.new_uri(lilv.LILV_PORT_CLASS_INPUT)
+lv2_OutputPort = world.new_uri(lilv.LILV_PORT_CLASS_OUTPUT)
+lv2_AudioPort  = world.new_uri(lilv.LILV_PORT_CLASS_AUDIO)
 
 n_audio_in  = plugin.get_num_ports_of_class(lv2_InputPort,  lv2_AudioPort)
 n_audio_out = plugin.get_num_ports_of_class(lv2_OutputPort, lv2_AudioPort)
@@ -60,7 +60,7 @@ rate    = wav_in.getframerate()
 nframes = wav_in.getnframes()
 
 # Instantiate plugin
-instance = slv2.Instance(plugin, rate)
+instance = lilv.Instance(plugin, rate)
 
 def read_float(wf, nframes):
     wav        = wf.readframes(nframes)

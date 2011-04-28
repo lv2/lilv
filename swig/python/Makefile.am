@@ -2,11 +2,11 @@ EXTRA_DIST = lv2_list.py
 
 if WITH_PYTHON
 all:
-	swig -DPYTHON -Wall -python -I../.. -o slv2_python.c -oh slv2_python.h ../slv2.i
+	swig -DPYTHON -Wall -python -I../.. -o lilv_python.c -oh lilv_python.h ../lilv.i
 	gcc -fPIC -shared -I../.. $(PYTHON_CPPFLAGS) $(PYTHON_EXTRA_LDFLAGS) \
 		$(PYTHON_EXTRA_LIBS) $(PYTHON_EXTRA_LDFLAGS) \
-		slv2_python.c ../../src/.libs/libslv2.so -o _slv2.so
+		lilv_python.c ../../src/.libs/liblilv.so -o _lilv.so
 
 clean-local:
-	rm -f *.[ch] *.so *.o slv2.py
+	rm -f *.[ch] *.so *.o lilv.py
 endif

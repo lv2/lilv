@@ -290,7 +290,7 @@ void
 print_version()
 {
 	printf(
-		"lv2_inspect (slv2) " LILV_VERSION "\n"
+		"lv2_inspect (lilv) " LILV_VERSION "\n"
 		"Copyright 2007-2011 David Robillard <http://drobilla.net>\n"
 		"License: <http://www.opensource.org/licenses/isc-license>\n"
 		"This is free software: you are free to change and redistribute it.\n"
