@@ -357,7 +357,18 @@ SLV2_API
 SLV2PluginClass
 slv2_plugin_classes_get_at(SLV2PluginClasses collection, unsigned index);
 
-/* SLV2ScalePoints */
+/**
+   Get a plugin class from @a classes by URI.
+   Return value is shared (stored in @a classes) and must not be freed or
+   modified by the caller in any way.
+   @return NULL if no plugin class with @a uri is found in @a classes.
+*/
+SLV2_API
+SLV2PluginClass
+slv2_plugin_classes_get_by_uri(SLV2PluginClasses classes,
+                               SLV2Value         uri);
+
+/* ScalePoints */
 
 SLV2_API
 void
@@ -419,6 +430,17 @@ SLV2_API
 SLV2UI
 slv2_uis_get_at(SLV2UIs collection, unsigned index);
 
+/**
+   Get a UI from @a uis by URI.
+   Return value is shared (stored in @a uis) and must not be freed or
+   modified by the caller in any way.
+   @return NULL if no UI with @a uri is found in @a list.
+*/
+SLV2_API
+SLV2UI
+slv2_uis_get_by_uri(SLV2UIs   uis,
+                    SLV2Value uri);
+
 /* Values */
 
 SLV2_API
@@ -454,6 +476,13 @@ SLV2_API
 SLV2Value
 slv2_values_get_at(SLV2Values collection, unsigned index);
 
+/**
+   Return whether @a values contains @a value.
+*/
+SLV2_API
+bool
+slv2_values_contains(SLV2Values values, SLV2Value value);
+
 /* Plugins */
 
 SLV2_API
@@ -481,9 +510,6 @@ SLV2_API
 SLV2Plugin
 slv2_plugins_get_at(SLV2Plugins collection, unsigned index);
 
-/**
-   This function is deprecated, it does nothing.
-*/
 SLV2_API
 void
 slv2_plugins_free(SLV2World world, SLV2Plugins plugins);
@@ -498,24 +524,6 @@ SLV2_API
 SLV2Plugin
 slv2_plugins_get_by_uri(SLV2Plugins plugins,
                         SLV2Value   uri);
-
-/**
-   Get a plugin class from @a classes by URI.
-   Return value is shared (stored in @a classes) and must not be freed or
-   modified by the caller in any way.
-   @return NULL if no plugin class with @a uri is found in @a classes.
-*/
-SLV2_API
-SLV2PluginClass
-slv2_plugin_classes_get_by_uri(SLV2PluginClasses classes,
-                               SLV2Value         uri);
-
-/**
-   Return whether @a values contains @a value.
-*/
-SLV2_API
-bool
-slv2_values_contains(SLV2Values values, SLV2Value value);
 
 /**
    @}
@@ -798,11 +806,11 @@ slv2_plugin_has_feature(SLV2Plugin p,
 /**
    Get the LV2 Features supported (required or optionally) by a plugin.
    A feature is "supported" by a plugin if it is required OR optional.
-   *
+
    Since required features have special rules the host must obey, this function
    probably shouldn't be used by normal hosts.  Using slv2_plugin_get_optional_features
    and slv2_plugin_get_required_features separately is best in most cases.
-   *
+
    Returned value must be freed by caller with slv2_values_free.
 */
 SLV2_API
@@ -1307,17 +1315,6 @@ slv2_instance_get_handle(SLV2Instance instance)
 SLV2_API
 SLV2UIs
 slv2_plugin_get_uis(SLV2Plugin plugin);
-
-/**
-   Get a UI from @a uis by URI.
-   Return value is shared (stored in @a uis) and must not be freed or
-   modified by the caller in any way.
-   @return NULL if no UI with @a uri is found in @a list.
-*/
-SLV2_API
-SLV2UI
-slv2_uis_get_by_uri(SLV2UIs   uis,
-                    SLV2Value uri);
 
 /**
    Get the URI of a Plugin UI.

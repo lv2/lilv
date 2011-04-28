@@ -305,4 +305,3 @@ slv2_port_get_properties(SLV2Plugin p,
 	slv2_value_free(pred);
 	return ret;
 }
-
