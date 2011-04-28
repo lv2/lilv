@@ -199,12 +199,12 @@ slv2_world_set_option(SLV2World       world,
 }
 
 static SLV2Matches
-slv2_world_find_statements(SLV2World world,
-                           SordModel model,
-                           SLV2Node  subject,
-                           SLV2Node  predicate,
-                           SLV2Node  object,
-                           SLV2Node  graph)
+slv2_world_find_statements(SLV2World  world,
+                           SordModel* model,
+                           SLV2Node   subject,
+                           SLV2Node   predicate,
+                           SLV2Node   object,
+                           SLV2Node   graph)
 {
 	SordQuad pat = { subject, predicate, object, graph };
 	return sord_find(model, pat);
@@ -350,9 +350,9 @@ slv2_world_add_plugin(SLV2World world,
 }
 
 static void
-slv2_world_load_dyn_manifest(SLV2World      world,
-                             const SordNode bundle_node,
-                             SerdNode       manifest_uri)
+slv2_world_load_dyn_manifest(SLV2World world,
+                             SordNode* bundle_node,
+                             SerdNode  manifest_uri)
 {
 #ifdef SLV2_DYN_MANIFEST
 	if (!world->opt.dyn_manifest) {
@@ -462,7 +462,7 @@ slv2_world_load_bundle(SLV2World world, SLV2Value bundle_uri)
 		return;
 	}
 
-	const SordNode bundle_node = bundle_uri->val.uri_val;
+	SordNode* bundle_node = bundle_uri->val.uri_val;
 
 	SerdNode manifest_uri = slv2_new_uri_relative_to_base(
 		(const uint8_t*)"manifest.ttl",

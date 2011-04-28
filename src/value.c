@@ -92,10 +92,10 @@ slv2_value_new(SLV2World world, SLV2ValueType type, const char* str)
 
 /** Create a new SLV2Value from @a node, or return NULL if impossible */
 SLV2Value
-slv2_value_new_from_node(SLV2World world, SordNode node)
+slv2_value_new_from_node(SLV2World world, SordNode* node)
 {
 	SLV2Value     result       = NULL;
-	SordNode      datatype_uri = NULL;
+	SordNode*     datatype_uri = NULL;
 	SLV2ValueType type         = SLV2_VALUE_STRING;
 
 	switch (sord_node_get_type(node)) {

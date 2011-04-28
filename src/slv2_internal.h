@@ -60,8 +60,8 @@ static inline char* dlerror(void) { return "Unknown error"; }
 #define SLV2_NS_XSD  (const uint8_t*)"http://www.w3.org/2001/XMLSchema#"
 #define SLV2_NS_RDF  (const uint8_t*)"http://www.w3.org/1999/02/22-rdf-syntax-ns#"
 
-typedef SordIter SLV2Matches;
-typedef SordNode SLV2Node;
+typedef SordIter* SLV2Matches;
+typedef SordNode* SLV2Node;
 
 #define FOREACH_MATCH(iter) \
 	for (; !sord_iter_end(iter); sord_iter_next(iter))
@@ -224,8 +224,8 @@ typedef struct {
 /** Model of LV2 (RDF) data loaded from bundles.
  */
 struct _SLV2World {
-	SordWorld         world;
-	SordModel         model;
+	SordWorld*        world;
+	SordModel*        model;
 	SerdReader*       reader;
 	SerdEnv*          namespaces;
 	unsigned          n_read_files;
