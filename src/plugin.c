@@ -140,7 +140,7 @@ static void
 slv2_plugin_load(SLV2Plugin p)
 {
 	// Parse all the plugin's data files into RDF model
-	SLV2_FOREACH(i, p->data_uris) {
+	SLV2_FOREACH(values, i, p->data_uris) {
 		SLV2Value data_uri_val = slv2_values_get(p->data_uris, i);
 		sord_read_file(p->world->model,
 		               sord_node_get_string(data_uri_val->val.uri_val),
@@ -641,10 +641,10 @@ slv2_plugin_get_supported_features(SLV2Plugin p)
 	SLV2Values required = slv2_plugin_get_required_features(p);
 	SLV2Values result   = slv2_values_new();
 
-	SLV2_FOREACH(i, optional)
+	SLV2_FOREACH(values, i, optional)
 		slv2_array_append(
 			result, slv2_value_duplicate(slv2_values_get(optional, i)));
-	SLV2_FOREACH(i, required)
+	SLV2_FOREACH(values, i, required)
 		slv2_array_append(
 			result, slv2_value_duplicate(slv2_values_get(required, i)));
 

@@ -44,8 +44,8 @@ main(int argc, char** argv)
 	slv2_world_load_all(world);
 
 	SLV2Plugins plugins = slv2_world_get_all_plugins(world);
-	SLV2_FOREACH(p, plugins) {
-		SLV2Plugin plugin = slv2_collection_get(plugins, p);
+	SLV2_FOREACH(plugins, p, plugins) {
+		SLV2Plugin plugin = slv2_plugins_get(plugins, p);
 		slv2_plugin_get_class(plugin);
 	}
 

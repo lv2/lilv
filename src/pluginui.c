@@ -89,7 +89,7 @@ slv2_ui_is_supported(SLV2UI              ui,
 {
 #ifdef HAVE_SUIL
 	SLV2Values classes = slv2_ui_get_classes(ui);
-	SLV2_FOREACH(c, classes) {
+	SLV2_FOREACH(values, c, classes) {
 		SLV2Value type = slv2_values_get(classes, c);
 		const unsigned q = supported_func(slv2_value_as_uri(container_type),
 		                                  slv2_value_as_uri(type));

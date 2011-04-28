@@ -157,7 +157,7 @@ slv2_world_free(SLV2World world)
 	g_slist_free(world->specs);
 	world->specs = NULL;
 
-	SLV2_FOREACH(i, world->plugins) {
+	SLV2_FOREACH(plugins, i, world->plugins) {
 		SLV2Plugin p = slv2_plugins_get(world->plugins, i);
 		slv2_plugin_free(p);
 	}
@@ -630,7 +630,7 @@ slv2_world_load_specifications(SLV2World world)
 {
 	for (GSList* l = world->specs; l; l = l->next) {
 		SLV2Spec spec = (SLV2Spec)l->data;
-		SLV2_FOREACH(f, spec->data_uris) {
+		SLV2_FOREACH(values, f, spec->data_uris) {
 			SLV2Value file = slv2_collection_get(spec->data_uris, f);
 			sord_read_file(world->model,
 			               (const uint8_t*)slv2_value_as_uri(file),
@@ -718,7 +718,7 @@ slv2_world_load_all(SLV2World world)
 	// Discover bundles and read all manifest files into model
 	slv2_world_load_path(world, lv2_path);
 
-	SLV2_FOREACH(p, world->plugins) {
+	SLV2_FOREACH(plugins, p, world->plugins) {
 		SLV2Plugin plugin     = slv2_collection_get(world->plugins, p);
 		SLV2Value  plugin_uri = slv2_plugin_get_uri(plugin);
 

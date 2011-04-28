@@ -26,7 +26,6 @@ slv2_collection_new(GDestroyNotify destructor)
 	return g_sequence_new(destructor);
 }
 
-SLV2_API
 void
 slv2_collection_free(SLV2Collection coll)
 {
@@ -34,14 +33,12 @@ slv2_collection_free(SLV2Collection coll)
 		g_sequence_free((GSequence*)coll);
 }
 
-SLV2_API
 unsigned
 slv2_collection_size(SLV2Collection coll)
 {
 	return (coll ? g_sequence_get_length((GSequence*)coll) : 0);
 }
 
-SLV2_API
 void*
 slv2_collection_get_at(SLV2Collection coll, unsigned index)
 {
@@ -53,14 +50,12 @@ slv2_collection_get_at(SLV2Collection coll, unsigned index)
 	}
 }
 
-SLV2_API
 SLV2Iter
 slv2_collection_begin(SLV2Collection collection)
 {
 	return collection ? g_sequence_get_begin_iter(collection) : NULL;
 }
 
-SLV2_API
 void*
 slv2_collection_get(SLV2Collection collection,
                     SLV2Iter       i)
@@ -70,14 +65,12 @@ slv2_collection_get(SLV2Collection collection,
 
 /* Constructors */
 
-SLV2_API
 SLV2ScalePoints
 slv2_scale_points_new(void)
 {
 	return slv2_collection_new((GDestroyNotify)slv2_scale_point_free);
 }
 
-SLV2_API
 SLV2Values
 slv2_values_new(void)
 {
@@ -133,7 +126,7 @@ SLV2_API
 bool
 slv2_values_contains(SLV2Values list, SLV2Value value)
 {
-	SLV2_FOREACH(i, list)
+	SLV2_FOREACH(values, i, list)
 		if (slv2_value_equals(slv2_values_get(list, i), value))
 			return true;
 
@@ -142,14 +135,12 @@ slv2_values_contains(SLV2Values list, SLV2Value value)
 
 /* Iterator */
 
-SLV2_API
 SLV2Iter
 slv2_iter_next(SLV2Iter i)
 {
 	return g_sequence_iter_next((GSequenceIter*)i);
 }
 
-SLV2_API
 bool
 slv2_iter_end(SLV2Iter i)
 {
@@ -173,6 +164,18 @@ SLV2_API \
 ET \
 prefix##_get(CT collection, SLV2Iter i) { \
 	return (ET)slv2_collection_get(collection, i); \
+} \
+\
+SLV2_API \
+SLV2Iter \
+prefix##_next(CT collection, SLV2Iter i) { \
+	return slv2_iter_next(i); \
+} \
+\
+SLV2_API \
+bool \
+prefix##_is_end(CT collection, SLV2Iter i) { \
+	return slv2_iter_end(i); \
 } \
 \
 SLV2_DEPRECATED \

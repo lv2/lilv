@@ -152,17 +152,35 @@ slv2_plugin_get_unique(SLV2Plugin p,
 SLV2Plugins
 slv2_plugins_new();
 
+
+/**
+   Increment @a i to point at the next element in the collection.
+*/
+SLV2Iter
+slv2_iter_next(SLV2Iter i);
+
+/**
+   Return true iff @a i is at the end of the collection.
+*/
+bool
+slv2_iter_end(SLV2Iter i);
+
+SLV2Iter
+slv2_collection_begin(SLV2Collection collection);
+
+void*
+slv2_collection_get(SLV2Collection collection,
+                    SLV2Iter       i);
+
 /**
    Free @a collection.
 */
-SLV2_API
 void
 slv2_collection_free(SLV2Collection collection);
 
 /**
    Get the number of elements in @a collection.
 */
-SLV2_API
 unsigned
 slv2_collection_size(SLV2Collection collection);
 
@@ -181,10 +199,16 @@ slv2_collection_size(SLV2Collection collection);
    @return NULL if @a index is out of range.
 */
 SLV2_DEPRECATED
-SLV2_API
 void*
 slv2_collection_get_at(SLV2Collection collection,
                        unsigned       index);
+
+SLV2Values
+slv2_values_new(void);
+
+SLV2ScalePoints
+slv2_scale_points_new(void);
+
 
 /* ********* Instance ********* */
 

@@ -55,7 +55,7 @@ print_port(SLV2Plugin p, uint32_t index, float* mins, float* maxes, float* defau
 
 	SLV2Values classes = slv2_port_get_classes(p, port);
 	printf("\t\tType:       ");
-	SLV2_FOREACH(i, classes) {
+	SLV2_FOREACH(values, i, classes) {
 		SLV2Value value = slv2_values_get(classes, i);
 		if (!first) {
 			printf("\n\t\t            ");
@@ -69,7 +69,7 @@ print_port(SLV2Plugin p, uint32_t index, float* mins, float* maxes, float* defau
 			"lv2ev:supportsEvent");
 		if (slv2_values_size(supported) > 0) {
 			printf("\n\t\tSupported events:\n");
-			SLV2_FOREACH(i, supported) {
+			SLV2_FOREACH(values, i, supported) {
 				SLV2Value value = slv2_values_get(supported, i);
 				printf("\t\t\t%s\n", slv2_value_as_uri(value));
 			}
@@ -80,7 +80,7 @@ print_port(SLV2Plugin p, uint32_t index, float* mins, float* maxes, float* defau
 	SLV2ScalePoints points = slv2_port_get_scale_points(p, port);
 	if (points)
 		printf("\n\t\tScale Points:\n");
-	SLV2_FOREACH(i, points) {
+	SLV2_FOREACH(scale_points, i, points) {
 		SLV2ScalePoint p = slv2_scale_points_get(points, i);
 		printf("\t\t\t%s = \"%s\"\n",
 				slv2_value_as_string(slv2_scale_point_get_value(p)),
@@ -122,7 +122,7 @@ print_port(SLV2Plugin p, uint32_t index, float* mins, float* maxes, float* defau
 	if (slv2_values_size(properties) > 0)
 		printf("\t\tProperties: ");
 	first = true;
-	SLV2_FOREACH(i, properties) {
+	SLV2_FOREACH(values, i, properties) {
 		if (!first) {
 			printf("\t\t            ");
 		}
@@ -189,14 +189,14 @@ print_plugin(SLV2Plugin p)
 	SLV2UIs uis = slv2_plugin_get_uis(p);
 	if (slv2_values_size(uis) > 0) {
 		printf("\tUI:                ");
-		SLV2_FOREACH(i, uis) {
+		SLV2_FOREACH(uis, i, uis) {
 			SLV2UI ui = slv2_uis_get(uis, i);
 			printf("%s\n", slv2_value_as_uri(slv2_ui_get_uri(ui)));
 
 			const char* binary = slv2_value_as_uri(slv2_ui_get_binary_uri(ui));
 
 			SLV2Values types = slv2_ui_get_classes(ui);
-			SLV2_FOREACH(i, types) {
+			SLV2_FOREACH(values, i, types) {
 				printf("\t                       Class:  %s\n",
 				       slv2_value_as_uri(slv2_values_get(types, i)));
 			}
@@ -213,7 +213,7 @@ print_plugin(SLV2Plugin p)
 	printf("\tData URIs:         ");
 	SLV2Values data_uris = slv2_plugin_get_data_uris(p);
 	bool first = true;
-	SLV2_FOREACH(i, data_uris) {
+	SLV2_FOREACH(values, i, data_uris) {
 		if (!first) {
 			printf("\n\t                   ");
 		}
@@ -228,7 +228,7 @@ print_plugin(SLV2Plugin p)
 	if (features)
 		printf("\tRequired Features: ");
 	first = true;
-	SLV2_FOREACH(i, features) {
+	SLV2_FOREACH(values, i, features) {
 		if (!first) {
 			printf("\n\t                   ");
 		}
@@ -245,7 +245,7 @@ print_plugin(SLV2Plugin p)
 	if (features)
 		printf("\tOptional Features: ");
 	first = true;
-	SLV2_FOREACH(i, features) {
+	SLV2_FOREACH(values, i, features) {
 		if (!first) {
 			printf("\n\t                   ");
 		}
@@ -261,7 +261,7 @@ print_plugin(SLV2Plugin p)
 	SLV2Values presets = slv2_plugin_get_value(p, preset_pred);
 	if (presets)
 		printf("\tPresets: \n");
-	SLV2_FOREACH(i, presets) {
+	SLV2_FOREACH(values, i, presets) {
 		SLV2Values titles = slv2_plugin_get_value_for_subject(
 			p, slv2_values_get(presets, i), title_pred);
 		if (titles) {

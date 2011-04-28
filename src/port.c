@@ -48,7 +48,7 @@ slv2_port_is_a(SLV2Plugin plugin,
                SLV2Port   port,
                SLV2Value  port_class)
 {
-	SLV2_FOREACH(i, port->classes)
+	SLV2_FOREACH(values, i, port->classes)
 		if (slv2_value_equals(slv2_values_get(port->classes, i), port_class))
 			return true;
 

@@ -25,9 +25,7 @@
 void
 list_plugins(SLV2Plugins list, bool show_names)
 {
-	for (SLV2Iter i = slv2_plugins_begin(list);
-	     !slv2_iter_end(i);
-	     i = slv2_iter_next(i)) {
+	SLV2_FOREACH(plugins, i, list) {
 		SLV2Plugin p = slv2_plugins_get(list, i);
 		if (show_names) {
 			SLV2Value n = slv2_plugin_get_name(p);

@@ -306,22 +306,6 @@ test_value()
 
 /*****************************************************************************/
 
-int
-test_values()
-{
-	init_world();
-	SLV2Value v0 = slv2_value_new_uri(world, "http://example.org/");
-	SLV2Values vs1 = slv2_values_new();
-	TEST_ASSERT(vs1);
-	TEST_ASSERT(!slv2_values_size(vs1));
-	TEST_ASSERT(!slv2_values_contains(vs1, v0));
-	slv2_values_free(vs1);
-	slv2_value_free(v0);
-	return 1;
-}
-
-/*****************************************************************************/
-
 static int discovery_plugin_found = 0;
 
 static void
@@ -337,8 +321,6 @@ discovery_verify_plugin(SLV2Plugin plugin)
 		TEST_ASSERT(slv2_value_is_uri(lib_uri));
 		TEST_ASSERT(slv2_value_as_uri(lib_uri));
 		TEST_ASSERT(strstr(slv2_value_as_uri(lib_uri), "foo.so"));
-		/* this is already being tested as ticket291, but the discovery and ticket291
-		 * may diverge at some point, so I'm duplicating it here */
 		TEST_ASSERT(slv2_plugin_verify(plugin));
 	}
 }
@@ -951,7 +933,6 @@ test_ui()
 static struct TestCase tests[] = {
 	TEST_CASE(utils),
 	TEST_CASE(value),
-	TEST_CASE(values),
 	TEST_CASE(verify),
 	TEST_CASE(no_verify),
 	TEST_CASE(discovery),

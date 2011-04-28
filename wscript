@@ -6,7 +6,7 @@ from waflib.extras import autowaf as autowaf
 import waflib.Options as Options
 
 # Version of this package (even if built as a child)
-SLV2_VERSION = '0.7.2'
+SLV2_VERSION = '0.7.3'
 
 # Library version (UNIX style major, minor, micro)
 # major increment <=> incompatible changes

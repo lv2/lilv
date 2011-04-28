@@ -307,37 +307,24 @@ slv2_value_as_bool(SLV2Value value);
    @{
 */
 
-/* Iter */
+/* Collections */
 
 typedef void* SLV2Iter;
-
-/** Increment @a i to point at the next element in the collection. */
-SLV2_API
-SLV2Iter
-slv2_iter_next(SLV2Iter i);
-
-/** Return true iff @a i is at the end of the collection. */
-SLV2_API
-bool
-slv2_iter_end(SLV2Iter i);
-
-/* Collection */
-
 typedef void* SLV2Collection;
 
-SLV2_API
-SLV2Iter
-slv2_collection_begin(SLV2Collection collection);
-
-SLV2_API
-void*
-slv2_collection_get(SLV2Collection collection,
-                    SLV2Iter       i);
-
-#define SLV2_FOREACH(iter, collection) \
-	for (SLV2Iter (iter) = slv2_collection_begin(collection); \
-	     !slv2_iter_end(iter); \
-	     (iter) = slv2_iter_next(iter))
+/**
+   Iterate over each element of a collection.
+   @code
+   SLV2_FOREACH(plugin_classes, i, classes) {
+      SLV2PluginClass c = slv2_plugin_classes_get(classes, i);
+      // ...
+   }
+   @endcode
+*/
+#define SLV2_FOREACH(colltype, iter, collection) \
+	for (SLV2Iter (iter) = slv2_ ## colltype ## _begin(collection); \
+	     !slv2_ ## colltype ## _is_end(collection, iter); \
+	     (iter) = slv2_ ## colltype ## _next(collection, iter))
 
 /* SLV2PluginClasses */
 
@@ -357,16 +344,20 @@ SLV2_API
 SLV2PluginClass
 slv2_plugin_classes_get(SLV2PluginClasses collection, SLV2Iter i);
 
+SLV2_API
+SLV2Iter
+slv2_plugin_classes_next(SLV2PluginClasses collection, SLV2Iter i);
+
+SLV2_API
+bool
+slv2_plugin_classes_is_end(SLV2PluginClasses collection, SLV2Iter i);
+
 SLV2_DEPRECATED
 SLV2_API
 SLV2PluginClass
 slv2_plugin_classes_get_at(SLV2PluginClasses collection, unsigned index);
 
 /* SLV2ScalePoints */
-
-SLV2_API
-SLV2ScalePoints
-slv2_scale_points_new(void);
 
 SLV2_API
 void
@@ -383,6 +374,14 @@ slv2_scale_points_begin(SLV2ScalePoints collection);
 SLV2_API
 SLV2ScalePoint
 slv2_scale_points_get(SLV2ScalePoints collection, SLV2Iter i);
+
+SLV2_API
+SLV2Iter
+slv2_scale_points_next(SLV2ScalePoints collection, SLV2Iter i);
+
+SLV2_API
+bool
+slv2_scale_points_is_end(SLV2ScalePoints collection, SLV2Iter i);
 
 SLV2_DEPRECATED
 SLV2_API
@@ -407,16 +406,20 @@ SLV2_API
 SLV2UI
 slv2_uis_get(SLV2UIs collection, SLV2Iter i);
 
+SLV2_API
+SLV2Iter
+slv2_uis_next(SLV2UIs collection, SLV2Iter i);
+
+SLV2_API
+bool
+slv2_uis_is_end(SLV2UIs collection, SLV2Iter i);
+
 SLV2_DEPRECATED
 SLV2_API
 SLV2UI
 slv2_uis_get_at(SLV2UIs collection, unsigned index);
 
 /* Values */
-
-SLV2_API
-SLV2ScalePoints
-slv2_values_new(void);
 
 SLV2_API
 void
@@ -433,6 +436,14 @@ slv2_values_begin(SLV2Values collection);
 SLV2_API
 SLV2Value
 slv2_values_get(SLV2Values collection, SLV2Iter i);
+
+SLV2_API
+SLV2Iter
+slv2_values_next(SLV2Values collection, SLV2Iter i);
+
+SLV2_API
+bool
+slv2_values_is_end(SLV2Values collection, SLV2Iter i);
 
 SLV2_API
 SLV2Value
@@ -456,6 +467,14 @@ slv2_plugins_begin(SLV2Plugins collection);
 SLV2_API
 SLV2Plugin
 slv2_plugins_get(SLV2Plugins collection, SLV2Iter i);
+
+SLV2_API
+SLV2Iter
+slv2_plugins_next(SLV2Plugins collection, SLV2Iter i);
+
+SLV2_API
+bool
+slv2_plugins_is_end(SLV2Plugins collection, SLV2Iter i);
 
 SLV2_DEPRECATED
 SLV2_API
