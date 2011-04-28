@@ -465,7 +465,6 @@ slv2_plugins_get_at(SLV2Plugins collection, unsigned index);
 /**
    This function is deprecated, it does nothing.
 */
-SLV2_DEPRECATED
 SLV2_API
 void
 slv2_plugins_free(SLV2World world, SLV2Plugins plugins);
