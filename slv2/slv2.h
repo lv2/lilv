@@ -76,15 +76,6 @@ typedef struct _SLV2Value*        SLV2Value;        /**< Typed Value. */
 typedef struct _SLV2World*        SLV2World;        /**< SLV2 World. */
 typedef struct _SLV2UIInstance*   SLV2UIInstance;   /**< Plugin UI Instance. */
 
-/**
-   A UI host descriptor.
-
-   A UI host descriptor contains the various functions that a plugin UI may use
-   to communicate with the plugin. It is passed to @ref slv2_ui_instance_new to
-   provide these functions to the UI.
-*/
-typedef struct _SLV2UIHost* SLV2UIHost;
-
 typedef void* SLV2PluginClasses;  /**< set<PluginClass>. */
 typedef void* SLV2Plugins;        /**< set<Plugin>. */
 typedef void* SLV2ScalePoints;    /**< set<ScalePoint>. */
