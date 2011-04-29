@@ -46,7 +46,7 @@ LILV_API
 bool
 lilv_port_is_a(const LilvPlugin* plugin,
                const LilvPort*   port,
-               const LilvNode*  port_class)
+               const LilvNode*   port_class)
 {
 	LILV_FOREACH(nodes, i, port->classes)
 		if (lilv_node_equals(lilv_nodes_get(port->classes, i), port_class))
@@ -90,7 +90,7 @@ LILV_API
 bool
 lilv_port_has_property(const LilvPlugin* p,
                        const LilvPort*   port,
-                       const LilvNode*  property)
+                       const LilvNode*   property)
 {
 	assert(property);
 	const SordNode* port_node = lilv_port_get_node(p, port);
@@ -109,7 +109,7 @@ LILV_API
 bool
 lilv_port_supports_event(const LilvPlugin* p,
                          const LilvPort*   port,
-                         const LilvNode*  event)
+                         const LilvNode*   event)
 {
 #define NS_EV (const uint8_t*)"http://lv2plug.in/ns/ext/event#"
 
@@ -147,7 +147,7 @@ LILV_API
 LilvNodes*
 lilv_port_get_value(const LilvPlugin* p,
                     const LilvPort*   port,
-                    const LilvNode*  predicate)
+                    const LilvNode*   predicate)
 {
 	if ( ! lilv_node_is_uri(predicate)) {
 		LILV_ERROR("Predicate is not a URI\n");
@@ -202,9 +202,9 @@ LILV_API
 void
 lilv_port_get_range(const LilvPlugin* p,
                     const LilvPort*   port,
-                    LilvNode**       def,
-                    LilvNode**       min,
-                    LilvNode**       max)
+                    LilvNode**        def,
+                    LilvNode**        min,
+                    LilvNode**        max)
 {
 	if (def) {
 		LilvNodes* defaults = lilv_port_get_value_by_node(

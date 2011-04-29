@@ -82,7 +82,9 @@ lilv_plugin_free(LilvPlugin* p)
 }
 
 LilvNode*
-lilv_plugin_get_unique(const LilvPlugin* p, const SordNode* subject, const SordNode* predicate)
+lilv_plugin_get_unique(const LilvPlugin* p,
+                       const SordNode*   subject,
+                       const SordNode*   predicate)
 {
 	LilvNodes* values = lilv_world_query_values(p->world,
 	                                            subject, predicate, NULL);
@@ -97,7 +99,9 @@ lilv_plugin_get_unique(const LilvPlugin* p, const SordNode* subject, const SordN
 }
 
 static LilvNode*
-lilv_plugin_get_one(const LilvPlugin* p, const SordNode* subject, const SordNode* predicate)
+lilv_plugin_get_one(const LilvPlugin* p,
+                    const SordNode*   subject,
+                    const SordNode*   predicate)
 {
 	LilvNodes* values = lilv_world_query_values(p->world,
 	                                            subject, predicate, NULL);
@@ -410,7 +414,7 @@ lilv_plugin_get_name(const LilvPlugin* plugin)
 LILV_API
 LilvNodes*
 lilv_plugin_get_value(const LilvPlugin* p,
-                      const LilvNode*  predicate)
+                      const LilvNode*   predicate)
 {
 	return lilv_plugin_get_value_for_subject(p, p->plugin_uri, predicate);
 }
@@ -483,7 +487,7 @@ lilv_plugin_get_port_ranges_float(const LilvPlugin* p,
 LILV_API
 uint32_t
 lilv_plugin_get_num_ports_of_class(const LilvPlugin* p,
-                                   const LilvNode*  class_1, ...)
+                                   const LilvNode*   class_1, ...)
 {
 	lilv_plugin_load_ports_if_necessary(p);
 
@@ -584,7 +588,7 @@ lilv_plugin_get_latency_port_index(const LilvPlugin* p)
 LILV_API
 bool
 lilv_plugin_has_feature(const LilvPlugin* p,
-                        const LilvNode*  feature)
+                        const LilvNode*   feature)
 {
 	LilvNodes* features = lilv_plugin_get_supported_features(p);
 
@@ -644,7 +648,7 @@ lilv_plugin_get_port_by_index(const LilvPlugin* p,
 LILV_API
 const LilvPort*
 lilv_plugin_get_port_by_symbol(const LilvPlugin* p,
-                               const LilvNode*  symbol)
+                               const LilvNode*   symbol)
 {
 	lilv_plugin_load_ports_if_necessary(p);
 	for (uint32_t i = 0; i < p->num_ports; ++i) {
