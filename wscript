@@ -171,13 +171,13 @@ def build(bld):
 
     lib_source = '''
         src/collections.c
+        src/instance.c
         src/plugin.c
         src/pluginclass.c
-        src/plugininstance.c
-        src/pluginui.c
         src/port.c
         src/query.c
         src/scalepoint.c
+        src/ui.c
         src/util.c
         src/value.c
         src/world.c
