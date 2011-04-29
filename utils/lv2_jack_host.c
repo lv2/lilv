@@ -310,14 +310,14 @@ main(int argc, char** argv)
 	const LilvPlugins* plugins = lilv_world_get_all_plugins(world);
 
 	/* Set up the port classes this app supports */
-	host.input_class   = lilv_value_new_uri(world, LILV_PORT_CLASS_INPUT);
-	host.output_class  = lilv_value_new_uri(world, LILV_PORT_CLASS_OUTPUT);
-	host.control_class = lilv_value_new_uri(world, LILV_PORT_CLASS_CONTROL);
-	host.audio_class   = lilv_value_new_uri(world, LILV_PORT_CLASS_AUDIO);
-	host.event_class   = lilv_value_new_uri(world, LILV_PORT_CLASS_EVENT);
-	host.midi_class    = lilv_value_new_uri(world, LILV_EVENT_CLASS_MIDI);
-	host.optional      = lilv_value_new_uri(world, LILV_NAMESPACE_LV2
-	                                        "connectionOptional");
+	host.input_class   = lilv_new_uri(world, LILV_PORT_CLASS_INPUT);
+	host.output_class  = lilv_new_uri(world, LILV_PORT_CLASS_OUTPUT);
+	host.control_class = lilv_new_uri(world, LILV_PORT_CLASS_CONTROL);
+	host.audio_class   = lilv_new_uri(world, LILV_PORT_CLASS_AUDIO);
+	host.event_class   = lilv_new_uri(world, LILV_PORT_CLASS_EVENT);
+	host.midi_class    = lilv_new_uri(world, LILV_EVENT_CLASS_MIDI);
+	host.optional      = lilv_new_uri(world, LILV_NAMESPACE_LV2
+	                                  "connectionOptional");
 
 #ifdef LILV_JACK_SESSION
 	if (argc != 2 && argc != 3) {
@@ -334,7 +334,7 @@ main(int argc, char** argv)
 
 	printf("Plugin:    %s\n", plugin_uri_str);
 
-	LilvValue* plugin_uri = lilv_value_new_uri(world, plugin_uri_str);
+	LilvValue* plugin_uri = lilv_new_uri(world, plugin_uri_str);
 	host.plugin = lilv_plugins_get_by_uri(plugins, plugin_uri);
 	lilv_value_free(plugin_uri);
 

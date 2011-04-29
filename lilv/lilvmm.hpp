@@ -130,19 +130,19 @@ struct World {
 	inline ~World() { /*lilv_world_free(me);*/ }
 
 	inline LilvValue* new_uri(const char* uri) {
-		return lilv_value_new_uri(me, uri);
+		return lilv_new_uri(me, uri);
 	}
 	inline LilvValue* new_string(const char* str) {
-		return lilv_value_new_string(me, str);
+		return lilv_new_string(me, str);
 	}
 	inline LilvValue* new_int(int val) {
-		return lilv_value_new_int(me, val);
+		return lilv_new_int(me, val);
 	}
 	inline LilvValue* new_float(float val) {
-		return lilv_value_new_float(me, val);
+		return lilv_new_float(me, val);
 	}
 	inline LilvValue* new_bool(bool val) {
-		return lilv_value_new_bool(me, val);
+		return lilv_new_bool(me, val);
 	}
 
 	LILV_WRAP2_VOID(world, set_option, const char*, uri, LilvValue*, value);

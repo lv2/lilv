@@ -103,7 +103,7 @@ lilv_uri_to_path(const char* uri);
 */
 LILV_API
 LilvValue*
-lilv_value_new_uri(LilvWorld* world, const char* uri);
+lilv_new_uri(LilvWorld* world, const char* uri);
 
 /**
    Create a new string value (with no language).
@@ -111,7 +111,7 @@ lilv_value_new_uri(LilvWorld* world, const char* uri);
 */
 LILV_API
 LilvValue*
-lilv_value_new_string(LilvWorld* world, const char* str);
+lilv_new_string(LilvWorld* world, const char* str);
 
 /**
    Create a new integer value.
@@ -119,7 +119,7 @@ lilv_value_new_string(LilvWorld* world, const char* str);
 */
 LILV_API
 LilvValue*
-lilv_value_new_int(LilvWorld* world, int val);
+lilv_new_int(LilvWorld* world, int val);
 
 /**
    Create a new floating point value.
@@ -127,7 +127,7 @@ lilv_value_new_int(LilvWorld* world, int val);
 */
 LILV_API
 LilvValue*
-lilv_value_new_float(LilvWorld* world, float val);
+lilv_new_float(LilvWorld* world, float val);
 
 /**
    Create a new boolean value.
@@ -135,7 +135,7 @@ lilv_value_new_float(LilvWorld* world, float val);
 */
 LILV_API
 LilvValue*
-lilv_value_new_bool(LilvWorld* world, bool val);
+lilv_new_bool(LilvWorld* world, bool val);
 
 /**
    Free an LilvValue.
@@ -1009,10 +1009,11 @@ lilv_port_is_a(const LilvPlugin* plugin,
 
 /**
    Get the default, minimum, and maximum values of a port.
+   
    @a def, @a min, and @a max are outputs, pass pointers to uninitialized
-   (i.e. NOT created with lilv_value_new) LilvValue variables.  These will
-   be set to point at new values (which must be freed by the caller using
-   lilv_value_free), or NULL if the value does not exist.
+   LilvValue* variables.  These will be set to point at new values (which must
+   be freed by the caller using lilv_value_free), or NULL if the value does not
+   exist.
 */
 LILV_API
 void

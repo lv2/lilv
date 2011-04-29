@@ -41,7 +41,7 @@ lilv_ui_new(LilvWorld* world,
 	char* bundle     = lilv_strdup(lilv_value_as_string(ui->binary_uri));
 	char* last_slash = strrchr(bundle, '/') + 1;
 	*last_slash = '\0';
-	ui->bundle_uri = lilv_value_new_uri(world, bundle);
+	ui->bundle_uri = lilv_new_uri(world, bundle);
 	free(bundle);
 
 	ui->classes = lilv_values_new();

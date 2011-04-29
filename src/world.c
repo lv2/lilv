@@ -60,7 +60,7 @@ lilv_world_new()
 #define NS_DC     (const uint8_t*)"http://dublincore.org/documents/dcmi-namespace/"
 
 #define NEW_URI(uri)     sord_new_uri(world->world, uri)
-#define NEW_URI_VAL(uri) lilv_value_new_uri(world, (const char*)(uri));
+#define NEW_URI_VAL(uri) lilv_new_uri(world, (const char*)(uri));
 
 	world->dc_replaces_node        = NEW_URI(NS_DC        "replaces");
 	world->dyn_manifest_node       = NEW_URI(NS_DYNMAN    "DynManifest");
@@ -325,7 +325,7 @@ lilv_world_add_plugin(LilvWorld* world,
 
 	// Add manifest as plugin data file (as if it were rdfs:seeAlso)
 	lilv_array_append(plugin->data_uris,
-	                  lilv_value_new_uri(world, (const char*)manifest_uri->buf));
+	                  lilv_new_uri(world, (const char*)manifest_uri->buf));
 
 	// Set dynamic manifest library URI, if applicable
 	if (dyn_manifest_lib) {
@@ -569,7 +569,7 @@ lilv_world_load_directory(LilvWorld* world, const char* dir_path)
 		DIR* const bundle_dir = opendir(uri + file_scheme_len);
 		if (bundle_dir) {
 			closedir(bundle_dir);
-			LilvValue* uri_val = lilv_value_new_uri(world, uri);
+			LilvValue* uri_val = lilv_new_uri(world, uri);
 			lilv_world_load_bundle(world, uri_val);
 			lilv_value_free(uri_val);
 		} else {

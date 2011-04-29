@@ -325,12 +325,12 @@ main(int argc, char** argv)
 #define NS_PG   "http://lv2plug.in/ns/ext/port-groups#"
 #define NS_PSET "http://lv2plug.in/ns/ext/presets#"
 
-	control_class = lilv_value_new_uri(world, LILV_PORT_CLASS_CONTROL);
-	event_class   = lilv_value_new_uri(world, LILV_PORT_CLASS_EVENT);
-	in_group_pred = lilv_value_new_uri(world, NS_PG "inGroup");
-	preset_pred   = lilv_value_new_uri(world, NS_PSET "hasPreset");
-	role_pred     = lilv_value_new_uri(world, NS_PG "role");
-	title_pred    = lilv_value_new_uri(world, NS_DC "title");
+	control_class = lilv_new_uri(world, LILV_PORT_CLASS_CONTROL);
+	event_class   = lilv_new_uri(world, LILV_PORT_CLASS_EVENT);
+	in_group_pred = lilv_new_uri(world, NS_PG "inGroup");
+	preset_pred   = lilv_new_uri(world, NS_PSET "hasPreset");
+	role_pred     = lilv_new_uri(world, NS_PG "role");
+	title_pred    = lilv_new_uri(world, NS_DC "title");
 
 	if (argc != 2) {
 		print_usage();
@@ -353,7 +353,7 @@ main(int argc, char** argv)
 	}
 
 	const LilvPlugins* plugins = lilv_world_get_all_plugins(world);
-	LilvValue*         uri     = lilv_value_new_uri(world, argv[1]);
+	LilvValue*         uri     = lilv_new_uri(world, argv[1]);
 
 	const LilvPlugin* p = lilv_plugins_get_by_uri(plugins, uri);
 

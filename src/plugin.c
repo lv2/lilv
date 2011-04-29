@@ -449,7 +449,7 @@ lilv_plugin_get_value_by_qname(const LilvPlugin*  p,
 	if (!pred_uri) {
 		return NULL;
 	}
-	LilvValue*  pred_value = lilv_value_new_uri(p->world, pred_uri);
+	LilvValue*  pred_value = lilv_new_uri(p->world, pred_uri);
 	LilvValues* ret        = lilv_plugin_get_value(p, pred_value);
 
 	lilv_value_free(pred_value);
