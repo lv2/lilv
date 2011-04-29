@@ -27,13 +27,13 @@ extern "C" {
 #include <stdlib.h>
 
 #ifdef __WIN32__
-#include <windows.h>
-#define dlopen(path, flags) LoadLibrary(path)
-#define dlclose(lib) FreeLibrary(lib)
-#define dlsym GetProcAddress
+#    include <windows.h>
+#    define dlopen(path, flags) LoadLibrary(path)
+#    define dlclose(lib) FreeLibrary(lib)
+#    define dlsym GetProcAddress
 static inline char* dlerror(void) { return "Unknown error"; }
 #else
-#include <dlfcn.h>
+#    include <dlfcn.h>
 #endif
 
 #include <glib.h>
@@ -42,12 +42,11 @@ static inline char* dlerror(void) { return "Unknown error"; }
 #include "sord/sord.h"
 
 #include "lilv-config.h"
+#include "lilv/lilv.h"
 
 #ifdef LILV_DYN_MANIFEST
-#include "lv2/lv2plug.in/ns/ext/dyn-manifest/dyn-manifest.h"
+#    include "lv2/lv2plug.in/ns/ext/dyn-manifest/dyn-manifest.h"
 #endif
-
-#include "lilv/lilv.h"
 
 #define LILV_NS_DOAP "http://usefulinc.com/ns/doap#"
 #define LILV_NS_RDFS "http://www.w3.org/2000/01/rdf-schema#"
