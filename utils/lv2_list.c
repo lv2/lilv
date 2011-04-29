@@ -23,12 +23,12 @@
 #include "lilv-config.h"
 
 void
-list_plugins(LilvPlugins list, bool show_names)
+list_plugins(const LilvPlugins* list, bool show_names)
 {
 	LILV_FOREACH(plugins, i, list) {
-		LilvPlugin p = lilv_plugins_get(list, i);
+		const LilvPlugin* p = lilv_plugins_get(list, i);
 		if (show_names) {
-			LilvValue n = lilv_plugin_get_name(p);
+			LilvValue* n = lilv_plugin_get_name(p);
 			printf("%s\n", lilv_value_as_string(n));
 			lilv_value_free(n);
 		} else {
@@ -81,10 +81,10 @@ main(int argc, char** argv)
 		}
 	}
 
-	LilvWorld world = lilv_world_new();
+	LilvWorld* world = lilv_world_new();
 	lilv_world_load_all(world);
 
-	LilvPlugins plugins = lilv_world_get_all_plugins(world);
+	const LilvPlugins* plugins = lilv_world_get_all_plugins(world);
 
 	list_plugins(plugins, show_names);
 

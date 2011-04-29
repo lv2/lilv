@@ -112,7 +112,7 @@ lilv_get_lang()
 }
 
 uint8_t*
-lilv_qname_expand(LilvPlugin p, const char* qname)
+lilv_qname_expand(const LilvPlugin* p, const char* qname)
 {
 	const size_t qname_len  = strlen(qname);
 	SerdNode     qname_node = { (const uint8_t*)qname,

@@ -51,28 +51,28 @@ enum PortType {
 };
 
 struct Port {
-	LilvPort           lilv_port;
-	enum PortType      type;
-	jack_port_t*       jack_port; /**< For audio/MIDI ports, otherwise NULL */
-	float              control;   /**< For control ports, otherwise 0.0f */
-	LV2_Event_Buffer*  ev_buffer; /**< For MIDI ports, otherwise NULL */
-	bool               is_input;
+	const LilvPort*   lilv_port;
+	enum PortType     type;
+	jack_port_t*      jack_port; /**< For audio/MIDI ports, otherwise NULL */
+	float             control;  /**< For control ports, otherwise 0.0f */
+	LV2_Event_Buffer* ev_buffer; /**< For MIDI ports, otherwise NULL */
+	bool              is_input;
 };
 
 /** This program's data */
 struct JackHost {
-	jack_client_t* jack_client;   /**< Jack client */
-	LilvPlugin     plugin;        /**< Plugin "class" (actually just a few strings) */
-	LilvInstance   instance;      /**< Plugin "instance" (loaded shared lib) */
-	uint32_t       num_ports;     /**< Size of the two following arrays: */
-	struct Port*   ports;         /**< Port array of size num_ports */
-	LilvValue      input_class;   /**< Input port class (URI) */
-	LilvValue      output_class;  /**< Output port class (URI) */
-	LilvValue      control_class; /**< Control port class (URI) */
-	LilvValue      audio_class;   /**< Audio port class (URI) */
-	LilvValue      event_class;   /**< Event port class (URI) */
-	LilvValue      midi_class;    /**< MIDI event class (URI) */
-	LilvValue      optional;      /**< lv2:connectionOptional port property */
+	jack_client_t*    jack_client;   /**< Jack client */
+	const LilvPlugin* plugin;        /**< Plugin "class" (actually just a few strings) */
+	LilvInstance*     instance;      /**< Plugin "instance" (loaded shared lib) */
+	uint32_t          num_ports;     /**< Size of the two following arrays: */
+	struct Port*      ports;         /**< Port array of size num_ports */
+	LilvValue*        input_class;   /**< Input port class (URI) */
+	LilvValue*        output_class;  /**< Output port class (URI) */
+	LilvValue*        control_class; /**< Control port class (URI) */
+	LilvValue*        audio_class;   /**< Audio port class (URI) */
+	LilvValue*        event_class;   /**< Event port class (URI) */
+	LilvValue*        midi_class;    /**< MIDI event class (URI) */
+	LilvValue*        optional;      /**< lv2:connectionOptional port property */
 };
 
 /** URI map feature, for event types (we use only MIDI) */
@@ -126,8 +126,8 @@ create_port(struct JackHost* host,
 	lilv_instance_connect_port(host->instance, port_index, NULL);
 
 	/* Get the port symbol for console printing */
-	LilvValue symbol       = lilv_port_get_symbol(host->plugin, port->lilv_port);
-	const char* symbol_str = lilv_value_as_string(symbol);
+	const LilvValue* symbol     = lilv_port_get_symbol(host->plugin, port->lilv_port);
+	const char*      symbol_str = lilv_value_as_string(symbol);
 
 	enum JackPortFlags jack_flags = 0;
 	if (lilv_port_is_a(host->plugin, port->lilv_port, host->input_class)) {
@@ -305,9 +305,9 @@ main(int argc, char** argv)
 	signal(SIGTERM, signal_handler);
 
 	/* Find all installed plugins */
-	LilvWorld world = lilv_world_new();
+	LilvWorld* world = lilv_world_new();
 	lilv_world_load_all(world);
-	LilvPlugins plugins = lilv_world_get_all_plugins(world);
+	const LilvPlugins* plugins = lilv_world_get_all_plugins(world);
 
 	/* Set up the port classes this app supports */
 	host.input_class   = lilv_value_new_uri(world, LILV_PORT_CLASS_INPUT);
@@ -334,7 +334,7 @@ main(int argc, char** argv)
 
 	printf("Plugin:    %s\n", plugin_uri_str);
 
-	LilvValue plugin_uri = lilv_value_new_uri(world, plugin_uri_str);
+	LilvValue* plugin_uri = lilv_value_new_uri(world, plugin_uri_str);
 	host.plugin = lilv_plugins_get_by_uri(plugins, plugin_uri);
 	lilv_value_free(plugin_uri);
 
@@ -345,7 +345,7 @@ main(int argc, char** argv)
 	}
 
 	/* Get the plugin's name */
-	LilvValue   name     = lilv_plugin_get_name(host.plugin);
+	LilvValue*  name     = lilv_plugin_get_name(host.plugin);
 	const char* name_str = lilv_value_as_string(name);
 
 	/* Truncate plugin name to suit JACK (if necessary) */

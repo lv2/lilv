@@ -20,59 +20,59 @@
 
 /* Generic collection functions */
 
-static inline LilvCollection
+static inline LilvCollection*
 lilv_collection_new(GDestroyNotify destructor)
 {
 	return g_sequence_new(destructor);
 }
 
 void
-lilv_collection_free(LilvCollection coll)
+lilv_collection_free(LilvCollection* coll)
 {
 	if (coll)
 		g_sequence_free((GSequence*)coll);
 }
 
 unsigned
-lilv_collection_size(LilvCollection coll)
+lilv_collection_size(const LilvCollection* coll)
 {
 	return (coll ? g_sequence_get_length((GSequence*)coll) : 0);
 }
 
-LilvIter
-lilv_collection_begin(LilvCollection collection)
+LilvIter*
+lilv_collection_begin(const LilvCollection* collection)
 {
-	return collection ? g_sequence_get_begin_iter(collection) : NULL;
+	return collection ? g_sequence_get_begin_iter((LilvCollection*)collection) : NULL;
 }
 
 void*
-lilv_collection_get(LilvCollection collection,
-                    LilvIter       i)
+lilv_collection_get(const LilvCollection* collection,
+                    const LilvIter*       i)
 {
 	return g_sequence_get((GSequenceIter*)i);
 }
 
 /* Constructors */
 
-LilvScalePoints
+LilvScalePoints*
 lilv_scale_points_new(void)
 {
 	return lilv_collection_new((GDestroyNotify)lilv_scale_point_free);
 }
 
-LilvValues
+LilvValues*
 lilv_values_new(void)
 {
 	return lilv_collection_new((GDestroyNotify)lilv_value_free);
 }
 
-LilvUIs
+LilvUIs*
 lilv_uis_new(void)
 {
 	return lilv_collection_new((GDestroyNotify)lilv_ui_free);
 }
 
-LilvPluginClasses
+LilvPluginClasses*
 lilv_plugin_classes_new(void)
 {
 	return lilv_collection_new((GDestroyNotify)lilv_plugin_class_free);
@@ -81,39 +81,39 @@ lilv_plugin_classes_new(void)
 /* URI based accessors (for collections of things with URIs) */
 
 LILV_API
-LilvPluginClass
-lilv_plugin_classes_get_by_uri(LilvPluginClasses coll, LilvValue uri)
+const LilvPluginClass*
+lilv_plugin_classes_get_by_uri(const LilvPluginClasses* coll, const LilvValue* uri)
 {
-	return (LilvPluginClass)lilv_sequence_get_by_uri(coll, uri);
+	return (LilvPluginClass*)lilv_sequence_get_by_uri(coll, uri);
 }
 
 LILV_API
-LilvUI
-lilv_uis_get_by_uri(LilvUIs coll, LilvValue uri)
+const LilvUI*
+lilv_uis_get_by_uri(const LilvUIs* coll, const LilvValue* uri)
 {
-	return (LilvUIs)lilv_sequence_get_by_uri(coll, uri);
+	return (LilvUI*)lilv_sequence_get_by_uri((LilvUIs*)coll, uri);
 }
 
 /* Plugins */
 
-LilvPlugins
+LilvPlugins*
 lilv_plugins_new()
 {
 	return g_sequence_new(NULL);
 }
 
 LILV_API
-LilvPlugin
-lilv_plugins_get_by_uri(LilvPlugins list, LilvValue uri)
+const LilvPlugin*
+lilv_plugins_get_by_uri(const LilvPlugins* list, const LilvValue* uri)
 {
-	return (LilvPlugin)lilv_sequence_get_by_uri(list, uri);
+	return (LilvPlugin*)lilv_sequence_get_by_uri((LilvPlugins*)list, uri);
 }
 
 /* Values */
 
 LILV_API
 bool
-lilv_values_contains(LilvValues list, LilvValue value)
+lilv_values_contains(const LilvValues* list, const LilvValue* value)
 {
 	LILV_FOREACH(values, i, list)
 		if (lilv_value_equals(lilv_values_get(list, i), value))
@@ -124,14 +124,14 @@ lilv_values_contains(LilvValues list, LilvValue value)
 
 /* Iterator */
 
-LilvIter
-lilv_iter_next(LilvIter i)
+LilvIter*
+lilv_iter_next(LilvIter* i)
 {
 	return g_sequence_iter_next((GSequenceIter*)i);
 }
 
 bool
-lilv_iter_end(LilvIter i)
+lilv_iter_end(LilvIter* i)
 {
 	return !i || g_sequence_iter_is_end((GSequenceIter*)i);
 }
@@ -139,31 +139,31 @@ lilv_iter_end(LilvIter i)
 #define LILV_COLLECTION_IMPL(prefix, CT, ET) \
 LILV_API \
 unsigned \
-prefix##_size(CT collection) { \
+prefix##_size(const CT* collection) { \
 	return lilv_collection_size(collection); \
 } \
 \
 LILV_API \
-LilvIter \
-prefix##_begin(CT collection) { \
+LilvIter* \
+prefix##_begin(const CT* collection) { \
 	return lilv_collection_begin(collection); \
 } \
 \
 LILV_API \
-ET \
-prefix##_get(CT collection, LilvIter i) { \
-	return (ET)lilv_collection_get(collection, i); \
+const ET* \
+prefix##_get(const CT* collection, LilvIter* i) { \
+	return (ET*)lilv_collection_get(collection, i); \
 } \
 \
 LILV_API \
-LilvIter \
-prefix##_next(CT collection, LilvIter i) { \
+LilvIter* \
+prefix##_next(const CT* collection, LilvIter* i) { \
 	return lilv_iter_next(i); \
 } \
 \
 LILV_API \
 bool \
-prefix##_is_end(CT collection, LilvIter i) { \
+prefix##_is_end(const CT* collection, LilvIter* i) { \
 	return lilv_iter_end(i); \
 }
 
@@ -175,36 +175,31 @@ LILV_COLLECTION_IMPL(lilv_plugins, LilvPlugins, LilvPlugin)
 
 LILV_API
 void
-lilv_plugin_classes_free(LilvPluginClasses collection) {
+lilv_plugin_classes_free(LilvPluginClasses* collection) {
 	lilv_collection_free(collection);
 }
 
 LILV_API
 void
-lilv_scale_points_free(LilvScalePoints collection) {
+lilv_scale_points_free(LilvScalePoints* collection) {
 	lilv_collection_free(collection);
 }
 
 LILV_API
 void
-lilv_uis_free(LilvUIs collection) {
+lilv_uis_free(LilvUIs* collection) {
 	lilv_collection_free(collection);
 }
 
 LILV_API
 void
-lilv_values_free(LilvValues collection) {
+lilv_values_free(LilvValues* collection) {
 	lilv_collection_free(collection);
 }
 
 LILV_API
-void
-lilv_plugins_free(LilvWorld world, LilvPlugins plugins){
-}
-
-LILV_API
-LilvValue
-lilv_values_get_first(LilvValues collection) {
-	return (LilvValue)lilv_collection_get(collection,
-	                                      lilv_collection_begin(collection));
+LilvValue*
+lilv_values_get_first(const LilvValues* collection) {
+	return (LilvValue*)lilv_collection_get(collection,
+	                                       lilv_collection_begin(collection));
 }

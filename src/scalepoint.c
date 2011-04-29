@@ -17,17 +17,18 @@
 #include "lilv_internal.h"
 
 /** Ownership of value and label is taken */
-LilvScalePoint
-lilv_scale_point_new(LilvValue value, LilvValue label)
+LilvScalePoint*
+lilv_scale_point_new(LilvValue* value, LilvValue* label)
 {
-	LilvScalePoint point = (LilvScalePoint)malloc(sizeof(struct _LilvScalePoint));
+	LilvScalePoint* point = (LilvScalePoint*)malloc(
+		sizeof(struct LilvScalePointImpl));
 	point->value = value;
 	point->label = label;
 	return point;
 }
 
 void
-lilv_scale_point_free(LilvScalePoint point)
+lilv_scale_point_free(LilvScalePoint* point)
 {
 	lilv_value_free(point->value);
 	lilv_value_free(point->label);
@@ -35,15 +36,15 @@ lilv_scale_point_free(LilvScalePoint point)
 }
 
 LILV_API
-LilvValue
-lilv_scale_point_get_value(LilvScalePoint p)
+const LilvValue*
+lilv_scale_point_get_value(const LilvScalePoint* p)
 {
 	return p->value;
 }
 
 LILV_API
-LilvValue
-lilv_scale_point_get_label(LilvScalePoint p)
+const LilvValue*
+lilv_scale_point_get_label(const LilvScalePoint* p)
 {
 	return p->label;
 }

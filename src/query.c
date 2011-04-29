@@ -24,10 +24,10 @@
 #include "lilv_internal.h"
 
 LilvMatches
-lilv_plugin_find_statements(LilvPlugin plugin,
-                            LilvNode   subject,
-                            LilvNode   predicate,
-                            LilvNode   object)
+lilv_plugin_find_statements(const LilvPlugin* plugin,
+                            LilvNode          subject,
+                            LilvNode          predicate,
+                            LilvNode          object)
 {
 	lilv_plugin_load_if_necessary(plugin);
 	SordQuad pat = { subject, predicate, object, NULL };
@@ -64,14 +64,14 @@ lilv_lang_matches(const char* a, const char* b)
 	return LILV_LANG_MATCH_NONE;
 }
 
-LilvValues
-lilv_values_from_stream_objects_i18n(LilvPlugin  p,
-                                     LilvMatches stream)
+LilvValues*
+lilv_values_from_stream_objects_i18n(const LilvPlugin* p,
+                                     LilvMatches       stream)
 {
-	LilvValues values  = lilv_values_new();
-	LilvNode   nolang  = NULL;  // Untranslated value
-	LilvNode   partial = NULL;  // Partial language match
-	char*      syslang = lilv_get_lang();
+	LilvValues* values  = lilv_values_new();
+	LilvNode    nolang  = NULL;  // Untranslated value
+	LilvNode    partial = NULL;  // Partial language match
+	char*       syslang = lilv_get_lang();
 	FOREACH_MATCH(stream) {
 		LilvNode value = lilv_match_object(stream);
 		if (sord_node_get_type(value) == SORD_LITERAL) {
@@ -127,9 +127,9 @@ lilv_values_from_stream_objects_i18n(LilvPlugin  p,
 	return values;
 }
 
-LilvValues
-lilv_values_from_stream_objects(LilvPlugin  p,
-                                LilvMatches stream)
+LilvValues*
+lilv_values_from_stream_objects(const LilvPlugin* p,
+                                LilvMatches       stream)
 {
 	if (lilv_matches_end(stream)) {
 		lilv_match_end(stream);
@@ -137,7 +137,7 @@ lilv_values_from_stream_objects(LilvPlugin  p,
 	} else if (p->world->opt.filter_language) {
 		return lilv_values_from_stream_objects_i18n(p, stream);
 	} else {
-		LilvValues values = lilv_values_new();
+		LilvValues* values = lilv_values_new();
 		FOREACH_MATCH(stream) {
 			lilv_array_append(
 				values,

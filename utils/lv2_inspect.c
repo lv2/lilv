@@ -24,15 +24,18 @@
 
 #include "lilv-config.h"
 
-LilvValue event_class   = NULL;
-LilvValue control_class = NULL;
-LilvValue in_group_pred = NULL;
-LilvValue role_pred     = NULL;
-LilvValue preset_pred   = NULL;
-LilvValue title_pred    = NULL;
+LilvValue* event_class   = NULL;
+LilvValue* control_class = NULL;
+LilvValue* in_group_pred = NULL;
+LilvValue* role_pred     = NULL;
+LilvValue* preset_pred   = NULL;
+LilvValue* title_pred    = NULL;
 
 void
-print_group(LilvPlugin p, LilvValue group, LilvValue type, LilvValue symbol)
+print_group(const LilvPlugin* p,
+            const LilvValue*  group,
+            LilvValue*        type,
+            LilvValue*        symbol)
 {
 	printf("\n\tGroup %s:\n", lilv_value_as_string(group));
 	printf("\t\tType: %s\n", lilv_value_as_string(type));
@@ -40,9 +43,13 @@ print_group(LilvPlugin p, LilvValue group, LilvValue type, LilvValue symbol)
 }
 
 void
-print_port(LilvPlugin p, uint32_t index, float* mins, float* maxes, float* defaults)
+print_port(const LilvPlugin* p,
+           uint32_t          index,
+           float*            mins,
+           float*            maxes,
+           float*            defaults)
 {
-	LilvPort port = lilv_plugin_get_port_by_index(p, index);
+	const LilvPort* port = lilv_plugin_get_port_by_index(p, index);
 
 	printf("\n\tPort %d:\n", index);
 
@@ -53,10 +60,10 @@ print_port(LilvPlugin p, uint32_t index, float* mins, float* maxes, float* defau
 
 	bool first = true;
 
-	LilvValues classes = lilv_port_get_classes(p, port);
+	const LilvValues* classes = lilv_port_get_classes(p, port);
 	printf("\t\tType:       ");
 	LILV_FOREACH(values, i, classes) {
-		LilvValue value = lilv_values_get(classes, i);
+		const LilvValue* value = lilv_values_get(classes, i);
 		if (!first) {
 			printf("\n\t\t            ");
 		}
@@ -65,44 +72,44 @@ print_port(LilvPlugin p, uint32_t index, float* mins, float* maxes, float* defau
 	}
 
 	if (lilv_port_is_a(p, port, event_class)) {
-		LilvValues supported = lilv_port_get_value_by_qname(p, port,
+		LilvValues* supported = lilv_port_get_value_by_qname(p, port,
 			"lv2ev:supportsEvent");
 		if (lilv_values_size(supported) > 0) {
 			printf("\n\t\tSupported events:\n");
 			LILV_FOREACH(values, i, supported) {
-				LilvValue value = lilv_values_get(supported, i);
+				const LilvValue* value = lilv_values_get(supported, i);
 				printf("\t\t\t%s\n", lilv_value_as_uri(value));
 			}
 		}
 		lilv_values_free(supported);
 	}
 
-	LilvScalePoints points = lilv_port_get_scale_points(p, port);
+	LilvScalePoints* points = lilv_port_get_scale_points(p, port);
 	if (points)
 		printf("\n\t\tScale Points:\n");
 	LILV_FOREACH(scale_points, i, points) {
-		LilvScalePoint p = lilv_scale_points_get(points, i);
+		const LilvScalePoint* p = lilv_scale_points_get(points, i);
 		printf("\t\t\t%s = \"%s\"\n",
 				lilv_value_as_string(lilv_scale_point_get_value(p)),
 				lilv_value_as_string(lilv_scale_point_get_label(p)));
 	}
 	lilv_scale_points_free(points);
 
-	LilvValue val = lilv_port_get_symbol(p, port);
-	printf("\n\t\tSymbol:     %s\n", lilv_value_as_string(val));
+	const LilvValue* sym = lilv_port_get_symbol(p, port);
+	printf("\n\t\tSymbol:     %s\n", lilv_value_as_string(sym));
 
-	val = lilv_port_get_name(p, port);
-	printf("\t\tName:       %s\n", lilv_value_as_string(val));
-	lilv_value_free(val);
+	LilvValue* name = lilv_port_get_name(p, port);
+	printf("\t\tName:       %s\n", lilv_value_as_string(name));
+	lilv_value_free(name);
 
-	LilvValues groups = lilv_port_get_value(p, port, in_group_pred);
+	LilvValues* groups = lilv_port_get_value(p, port, in_group_pred);
 	if (lilv_values_size(groups) > 0)
 		printf("\t\tGroup:      %s\n",
 		       lilv_value_as_string(
 			       lilv_values_get(groups, lilv_values_begin(groups))));
 	lilv_values_free(groups);
 
-	LilvValues roles = lilv_port_get_value(p, port, role_pred);
+	LilvValues* roles = lilv_port_get_value(p, port, role_pred);
 	if (lilv_values_size(roles) > 0)
 		printf("\t\tRole:       %s\n",
 		       lilv_value_as_string(
@@ -118,7 +125,7 @@ print_port(LilvPlugin p, uint32_t index, float* mins, float* maxes, float* defau
 			printf("\t\tDefault:    %f\n", defaults[index]);
 	}
 
-	LilvValues properties = lilv_port_get_properties(p, port);
+	LilvValues* properties = lilv_port_get_properties(p, port);
 	if (lilv_values_size(properties) > 0)
 		printf("\t\tProperties: ");
 	first = true;
@@ -135,9 +142,9 @@ print_port(LilvPlugin p, uint32_t index, float* mins, float* maxes, float* defau
 }
 
 void
-print_plugin(LilvPlugin p)
+print_plugin(const LilvPlugin* p)
 {
-	LilvValue val = NULL;
+	LilvValue* val = NULL;
 
 	printf("%s\n\n", lilv_value_as_uri(lilv_plugin_get_uri(p)));
 
@@ -147,7 +154,8 @@ print_plugin(LilvPlugin p)
 		lilv_value_free(val);
 	}
 
-	LilvValue class_label = lilv_plugin_class_get_label(lilv_plugin_get_class(p));
+	const LilvPluginClass* pclass      = lilv_plugin_get_class(p);
+	const LilvValue*       class_label = lilv_plugin_class_get_label(pclass);
 	if (class_label) {
 		printf("\tClass:             %s\n", lilv_value_as_string(class_label));
 	}
@@ -180,22 +188,22 @@ print_plugin(LilvPlugin p)
 	printf("\tBundle:            %s\n",
 	       lilv_value_as_uri(lilv_plugin_get_bundle_uri(p)));
 
-	LilvValue binary_uri = lilv_plugin_get_library_uri(p);
+	const LilvValue* binary_uri = lilv_plugin_get_library_uri(p);
 	if (binary_uri) {
 		printf("\tBinary:            %s\n",
 		       lilv_value_as_uri(lilv_plugin_get_library_uri(p)));
 	}
 
-	LilvUIs uis = lilv_plugin_get_uis(p);
+	LilvUIs* uis = lilv_plugin_get_uis(p);
 	if (lilv_values_size(uis) > 0) {
 		printf("\tUI:                ");
 		LILV_FOREACH(uis, i, uis) {
-			LilvUI ui = lilv_uis_get(uis, i);
+			const LilvUI* ui = lilv_uis_get(uis, i);
 			printf("%s\n", lilv_value_as_uri(lilv_ui_get_uri(ui)));
 
 			const char* binary = lilv_value_as_uri(lilv_ui_get_binary_uri(ui));
 
-			LilvValues types = lilv_ui_get_classes(ui);
+			const LilvValues* types = lilv_ui_get_classes(ui);
 			LILV_FOREACH(values, i, types) {
 				printf("\t                       Class:  %s\n",
 				       lilv_value_as_uri(lilv_values_get(types, i)));
@@ -211,7 +219,7 @@ print_plugin(LilvPlugin p)
 	lilv_uis_free(uis);
 
 	printf("\tData URIs:         ");
-	LilvValues data_uris = lilv_plugin_get_data_uris(p);
+	const LilvValues* data_uris = lilv_plugin_get_data_uris(p);
 	bool first = true;
 	LILV_FOREACH(values, i, data_uris) {
 		if (!first) {
@@ -224,7 +232,7 @@ print_plugin(LilvPlugin p)
 
 	/* Required Features */
 
-	LilvValues features = lilv_plugin_get_required_features(p);
+	LilvValues* features = lilv_plugin_get_required_features(p);
 	if (features)
 		printf("\tRequired Features: ");
 	first = true;
@@ -258,14 +266,14 @@ print_plugin(LilvPlugin p)
 
 	/* Presets */
 
-	LilvValues presets = lilv_plugin_get_value(p, preset_pred);
+	LilvValues* presets = lilv_plugin_get_value(p, preset_pred);
 	if (presets)
 		printf("\tPresets: \n");
 	LILV_FOREACH(values, i, presets) {
-		LilvValues titles = lilv_plugin_get_value_for_subject(
+		LilvValues* titles = lilv_plugin_get_value_for_subject(
 			p, lilv_values_get(presets, i), title_pred);
 		if (titles) {
-			LilvValue title = lilv_values_get(titles, lilv_values_begin(titles));
+			const LilvValue* title = lilv_values_get(titles, lilv_values_begin(titles));
 			printf("\t         %s\n", lilv_value_as_string(title));
 		}
 	}
@@ -310,7 +318,7 @@ main(int argc, char** argv)
 	int ret = 0;
 	setlocale (LC_ALL, "");
 
-	LilvWorld world = lilv_world_new();
+	LilvWorld* world = lilv_world_new();
 	lilv_world_load_all(world);
 
 #define NS_DC   "http://dublincore.org/documents/dcmi-namespace/"
@@ -344,10 +352,10 @@ main(int argc, char** argv)
 		goto done;
 	}
 
-	LilvPlugins plugins = lilv_world_get_all_plugins(world);
-	LilvValue   uri     = lilv_value_new_uri(world, argv[1]);
+	const LilvPlugins* plugins = lilv_world_get_all_plugins(world);
+	LilvValue*         uri     = lilv_value_new_uri(world, argv[1]);
 
-	LilvPlugin p = lilv_plugins_get_by_uri(plugins, uri);
+	const LilvPlugin* p = lilv_plugins_get_by_uri(plugins, uri);
 
 	if (p) {
 		print_plugin(p);

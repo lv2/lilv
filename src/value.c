@@ -26,7 +26,7 @@
 #include "lilv_internal.h"
 
 static void
-lilv_value_set_numerics_from_string(LilvValue val)
+lilv_value_set_numerics_from_string(LilvValue* val)
 {
 	char* locale;
 	char* endptr;
@@ -64,10 +64,10 @@ lilv_value_set_numerics_from_string(LilvValue val)
  * automatically called from here to avoid overhead and imprecision when the
  * exact string value is known.
  */
-LilvValue
-lilv_value_new(LilvWorld world, LilvValueType type, const char* str)
+LilvValue*
+lilv_value_new(LilvWorld* world, LilvValueType type, const char* str)
 {
-	LilvValue val = (LilvValue)malloc(sizeof(struct _LilvValue));
+	LilvValue* val = malloc(sizeof(struct LilvValueImpl));
 	val->world = world;
 	val->type  = type;
 
@@ -91,17 +91,17 @@ lilv_value_new(LilvWorld world, LilvValueType type, const char* str)
 }
 
 /** Create a new LilvValue from @a node, or return NULL if impossible */
-LilvValue
-lilv_value_new_from_node(LilvWorld world, const SordNode* node)
+LilvValue*
+lilv_value_new_from_node(LilvWorld* world, const SordNode* node)
 {
-	LilvValue     result       = NULL;
+	LilvValue*    result       = NULL;
 	SordNode*     datatype_uri = NULL;
 	LilvValueType type         = LILV_VALUE_STRING;
 
 	switch (sord_node_get_type(node)) {
 	case SORD_URI:
 		type                = LILV_VALUE_URI;
-		result              = (LilvValue)malloc(sizeof(struct _LilvValue));
+		result              = malloc(sizeof(struct LilvValueImpl));
 		result->world       = world;
 		result->type        = LILV_VALUE_URI;
 		result->val.uri_val = lilv_node_copy(node);
@@ -142,58 +142,58 @@ lilv_value_new_from_node(LilvWorld world, const SordNode* node)
 }
 
 LILV_API
-LilvValue
-lilv_value_new_uri(LilvWorld world, const char* uri)
+LilvValue*
+lilv_value_new_uri(LilvWorld* world, const char* uri)
 {
 	return lilv_value_new(world, LILV_VALUE_URI, uri);
 }
 
 LILV_API
-LilvValue
-lilv_value_new_string(LilvWorld world, const char* str)
+LilvValue*
+lilv_value_new_string(LilvWorld* world, const char* str)
 {
 	return lilv_value_new(world, LILV_VALUE_STRING, str);
 }
 
 LILV_API
-LilvValue
-lilv_value_new_int(LilvWorld world, int val)
+LilvValue*
+lilv_value_new_int(LilvWorld* world, int val)
 {
 	char str[32];
 	snprintf(str, sizeof(str), "%d", val);
-	LilvValue ret = lilv_value_new(world, LILV_VALUE_INT, str);
+	LilvValue* ret = lilv_value_new(world, LILV_VALUE_INT, str);
 	ret->val.int_val = val;
 	return ret;
 }
 
 LILV_API
-LilvValue
-lilv_value_new_float(LilvWorld world, float val)
+LilvValue*
+lilv_value_new_float(LilvWorld* world, float val)
 {
 	char str[32];
 	snprintf(str, sizeof(str), "%f", val);
-	LilvValue ret = lilv_value_new(world, LILV_VALUE_FLOAT, str);
+	LilvValue* ret = lilv_value_new(world, LILV_VALUE_FLOAT, str);
 	ret->val.float_val = val;
 	return ret;
 }
 
 LILV_API
-LilvValue
-lilv_value_new_bool(LilvWorld world, bool val)
+LilvValue*
+lilv_value_new_bool(LilvWorld* world, bool val)
 {
-	LilvValue ret = lilv_value_new(world, LILV_VALUE_BOOL, val ? "true" : "false");
+	LilvValue* ret = lilv_value_new(world, LILV_VALUE_BOOL, val ? "true" : "false");
 	ret->val.bool_val = val;
 	return ret;
 }
 
 LILV_API
-LilvValue
-lilv_value_duplicate(LilvValue val)
+LilvValue*
+lilv_value_duplicate(const LilvValue* val)
 {
 	if (val == NULL)
-		return val;
+		return NULL;
 
-	LilvValue result = (LilvValue)malloc(sizeof(struct _LilvValue));
+	LilvValue* result = malloc(sizeof(struct LilvValueImpl));
 	result->world = val->world;
 	result->type = val->type;
 
@@ -210,7 +210,7 @@ lilv_value_duplicate(LilvValue val)
 
 LILV_API
 void
-lilv_value_free(LilvValue val)
+lilv_value_free(LilvValue* val)
 {
 	if (val) {
 		if (val->type == LILV_VALUE_URI) {
@@ -224,7 +224,7 @@ lilv_value_free(LilvValue val)
 
 LILV_API
 bool
-lilv_value_equals(LilvValue value, LilvValue other)
+lilv_value_equals(const LilvValue* value, const LilvValue* other)
 {
 	if (value == NULL && other == NULL)
 		return true;
@@ -253,7 +253,7 @@ lilv_value_equals(LilvValue value, LilvValue other)
 
 LILV_API
 char*
-lilv_value_get_turtle_token(LilvValue value)
+lilv_value_get_turtle_token(const LilvValue* value)
 {
 	size_t len    = 0;
 	char*  result = NULL;
@@ -303,21 +303,21 @@ lilv_value_get_turtle_token(LilvValue value)
 
 LILV_API
 bool
-lilv_value_is_uri(LilvValue value)
+lilv_value_is_uri(const LilvValue* value)
 {
 	return (value && value->type == LILV_VALUE_URI);
 }
 
 LILV_API
 const char*
-lilv_value_as_uri(LilvValue value)
+lilv_value_as_uri(const LilvValue* value)
 {
 	assert(lilv_value_is_uri(value));
 	return value->str_val;
 }
 
 LilvNode
-lilv_value_as_node(LilvValue value)
+lilv_value_as_node(const LilvValue* value)
 {
 	assert(lilv_value_is_uri(value));
 	return value->val.uri_val;
@@ -325,14 +325,14 @@ lilv_value_as_node(LilvValue value)
 
 LILV_API
 bool
-lilv_value_is_blank(LilvValue value)
+lilv_value_is_blank(const LilvValue* value)
 {
 	return (value && value->type == LILV_VALUE_BLANK);
 }
 
 LILV_API
 const char*
-lilv_value_as_blank(LilvValue value)
+lilv_value_as_blank(const LilvValue* value)
 {
 	assert(lilv_value_is_blank(value));
 	return value->str_val;
@@ -340,7 +340,7 @@ lilv_value_as_blank(LilvValue value)
 
 LILV_API
 bool
-lilv_value_is_literal(LilvValue value)
+lilv_value_is_literal(const LilvValue* value)
 {
 	if (!value)
 		return false;
@@ -357,28 +357,28 @@ lilv_value_is_literal(LilvValue value)
 
 LILV_API
 bool
-lilv_value_is_string(LilvValue value)
+lilv_value_is_string(const LilvValue* value)
 {
 	return (value && value->type == LILV_VALUE_STRING);
 }
 
 LILV_API
 const char*
-lilv_value_as_string(LilvValue value)
+lilv_value_as_string(const LilvValue* value)
 {
 	return value->str_val;
 }
 
 LILV_API
 bool
-lilv_value_is_int(LilvValue value)
+lilv_value_is_int(const LilvValue* value)
 {
 	return (value && value->type == LILV_VALUE_INT);
 }
 
 LILV_API
 int
-lilv_value_as_int(LilvValue value)
+lilv_value_as_int(const LilvValue* value)
 {
 	assert(value);
 	assert(lilv_value_is_int(value));
@@ -387,14 +387,14 @@ lilv_value_as_int(LilvValue value)
 
 LILV_API
 bool
-lilv_value_is_float(LilvValue value)
+lilv_value_is_float(const LilvValue* value)
 {
 	return (value && value->type == LILV_VALUE_FLOAT);
 }
 
 LILV_API
 float
-lilv_value_as_float(LilvValue value)
+lilv_value_as_float(const LilvValue* value)
 {
 	assert(lilv_value_is_float(value) || lilv_value_is_int(value));
 	if (lilv_value_is_float(value))
@@ -405,14 +405,14 @@ lilv_value_as_float(LilvValue value)
 
 LILV_API
 bool
-lilv_value_is_bool(LilvValue value)
+lilv_value_is_bool(const LilvValue* value)
 {
 	return (value && value->type == LILV_VALUE_BOOL);
 }
 
 LILV_API
 bool
-lilv_value_as_bool(LilvValue value)
+lilv_value_as_bool(const LilvValue* value)
 {
 	assert(value);
 	assert(lilv_value_is_bool(value));

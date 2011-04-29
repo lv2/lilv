@@ -40,12 +40,12 @@ print_usage()
 int
 main(int argc, char** argv)
 {
-	LilvWorld world = lilv_world_new();
+	LilvWorld* world = lilv_world_new();
 	lilv_world_load_all(world);
 
-	LilvPlugins plugins = lilv_world_get_all_plugins(world);
+	const LilvPlugins* plugins = lilv_world_get_all_plugins(world);
 	LILV_FOREACH(plugins, p, plugins) {
-		LilvPlugin plugin = lilv_plugins_get(plugins, p);
+		const LilvPlugin* plugin = lilv_plugins_get(plugins, p);
 		lilv_plugin_get_class(plugin);
 	}
 

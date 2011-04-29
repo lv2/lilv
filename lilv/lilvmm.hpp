@@ -43,16 +43,16 @@ const char* uri_to_path(const char* uri) { return lilv_uri_to_path(uri); }
 
 #ifndef SWIG
 #define LILV_WRAP_CONVERSION(CT) \
-	inline operator CT() const { return me; }
+	inline operator CT*() const { return me; }
 #else
 #define LILV_WRAP_CONVERSION(CT)
 #endif
 
 struct Value {
-	inline Value(LilvValue value)   : me(value) {}
-	inline Value(const Value& copy) : me(lilv_value_duplicate(copy.me)) {}
+	inline Value(const LilvValue* value) : me(lilv_value_duplicate(value)) {}
+	inline Value(const Value& copy)      : me(lilv_value_duplicate(copy.me)) {}
 
-	inline ~Value() { /*lilv_value_free(me);*/ }
+	inline ~Value() { lilv_value_free(me); }
 
 	inline bool equals(const Value& other) const {
 		return lilv_value_equals(me, other.me);
@@ -77,41 +77,41 @@ struct Value {
 	LILV_WRAP0(bool,        value, is_bool);
 	LILV_WRAP0(bool,        value, as_bool);
 
-	LilvValue me;
+	LilvValue* me;
 };
 
 struct ScalePoint {
-	inline ScalePoint(LilvScalePoint c_obj) : me(c_obj) {}
-	LILV_WRAP_CONVERSION(LilvScalePoint);
+	inline ScalePoint(const LilvScalePoint* c_obj) : me(c_obj) {}
+	LILV_WRAP_CONVERSION(const LilvScalePoint);
 
-	LILV_WRAP0(LilvValue, scale_point, get_label);
-	LILV_WRAP0(LilvValue, scale_point, get_value);
+	LILV_WRAP0(const LilvValue*, scale_point, get_label);
+	LILV_WRAP0(const LilvValue*, scale_point, get_value);
 
-	LilvScalePoint me;
+	const LilvScalePoint* me;
 };
 
 struct PluginClass {
-	inline PluginClass(LilvPluginClass c_obj) : me(c_obj) {}
-	LILV_WRAP_CONVERSION(LilvPluginClass);
+	inline PluginClass(const LilvPluginClass* c_obj) : me(c_obj) {}
+	LILV_WRAP_CONVERSION(const LilvPluginClass);
 
 	LILV_WRAP0(Value, plugin_class, get_parent_uri);
 	LILV_WRAP0(Value, plugin_class, get_uri);
 	LILV_WRAP0(Value, plugin_class, get_label);
 
-	inline LilvPluginClasses get_children() {
+	inline LilvPluginClasses* get_children() {
 		return lilv_plugin_class_get_children(me);
 	}
 
-	LilvPluginClass me;
+	const LilvPluginClass* me;
 };
 
 #define LILV_WRAP_COLL(CT, ET, prefix) \
 	struct CT { \
-		inline CT(Lilv ## CT c_obj) : me(c_obj) {} \
-		LILV_WRAP_CONVERSION(Lilv ## CT); \
+		inline CT(const Lilv ## CT* c_obj) : me(c_obj) {} \
+		LILV_WRAP_CONVERSION(const Lilv ## CT); \
 		LILV_WRAP0(unsigned, prefix, size); \
-		LILV_WRAP1(ET, prefix, get, LilvIter, i); \
-		Lilv ## CT me; \
+		LILV_WRAP1(const ET, prefix, get, LilvIter*, i); \
+		const Lilv ## CT* me; \
 	}; \
 
 LILV_WRAP_COLL(PluginClasses, PluginClass, plugin_classes);
@@ -119,47 +119,47 @@ LILV_WRAP_COLL(ScalePoints, ScalePoint, scale_points);
 LILV_WRAP_COLL(Values, Value, values);
 
 struct Plugins {
-	inline Plugins(LilvPlugins c_obj) : me(c_obj) {}
-	LILV_WRAP_CONVERSION(LilvPlugins);
+	inline Plugins(const LilvPlugins* c_obj) : me(c_obj) {}
+	LILV_WRAP_CONVERSION(const LilvPlugins);
 
-	LilvPlugins me;
+	const LilvPlugins* me;
 };
 
 struct World {
 	inline World() : me(lilv_world_new()) {}
 	inline ~World() { /*lilv_world_free(me);*/ }
 
-	inline LilvValue new_uri(const char* uri) {
+	inline LilvValue* new_uri(const char* uri) {
 		return lilv_value_new_uri(me, uri);
 	}
-	inline LilvValue new_string(const char* str) {
+	inline LilvValue* new_string(const char* str) {
 		return lilv_value_new_string(me, str);
 	}
-	inline LilvValue new_int(int val) {
+	inline LilvValue* new_int(int val) {
 		return lilv_value_new_int(me, val);
 	}
-	inline LilvValue new_float(float val) {
+	inline LilvValue* new_float(float val) {
 		return lilv_value_new_float(me, val);
 	}
-	inline LilvValue new_bool(bool val) {
+	inline LilvValue* new_bool(bool val) {
 		return lilv_value_new_bool(me, val);
 	}
 
-	LILV_WRAP2_VOID(world, set_option, const char*, uri, LilvValue, value);
+	LILV_WRAP2_VOID(world, set_option, const char*, uri, LilvValue*, value);
 	LILV_WRAP0_VOID(world, free);
 	LILV_WRAP0_VOID(world, load_all);
-	LILV_WRAP1_VOID(world, load_bundle, LilvValue, bundle_uri);
-	LILV_WRAP0(LilvPluginClass, world, get_plugin_class);
-	LILV_WRAP0(LilvPluginClasses, world, get_plugin_classes);
+	LILV_WRAP1_VOID(world, load_bundle, LilvValue*, bundle_uri);
+	LILV_WRAP0(const LilvPluginClass*, world, get_plugin_class);
+	LILV_WRAP0(const LilvPluginClasses*, world, get_plugin_classes);
 	LILV_WRAP0(Plugins, world, get_all_plugins);
 	//LILV_WRAP1(Plugin, world, get_plugin_by_uri_string, const char*, uri);
 
-	LilvWorld me;
+	LilvWorld* me;
 };
 
 struct Port {
-	inline Port(LilvPlugin p, LilvPort c_obj) : parent(p), me(c_obj) {}
-	LILV_WRAP_CONVERSION(LilvPort);
+	inline Port(const LilvPlugin* p, const LilvPort* c_obj) : parent(p), me(c_obj) {}
+	LILV_WRAP_CONVERSION(const LilvPort);
 
 #define LILV_PORT_WRAP0(RT, name) \
 	inline RT name () { return lilv_port_ ## name (parent, me); }
@@ -167,26 +167,26 @@ struct Port {
 #define LILV_PORT_WRAP1(RT, name, T1, a1) \
 	inline RT name (T1 a1) { return lilv_port_ ## name (parent, me, a1); }
 
-	LILV_PORT_WRAP1(LilvValues, get_value, LilvValue, predicate);
-	LILV_PORT_WRAP1(LilvValues, get_value_by_qname, const char*, predicate);
-	LILV_PORT_WRAP0(LilvValues, get_properties)
-	LILV_PORT_WRAP1(bool, has_property, LilvValue, property_uri);
-	LILV_PORT_WRAP1(bool, supports_event, LilvValue, event_uri);
-	LILV_PORT_WRAP0(LilvValue,  get_symbol);
-	LILV_PORT_WRAP0(LilvValue,  get_name);
-	LILV_PORT_WRAP0(LilvValues, get_classes);
-	LILV_PORT_WRAP1(bool, is_a, LilvValue, port_class);
-	LILV_PORT_WRAP0(LilvScalePoints, get_scale_points);
+	LILV_PORT_WRAP1(LilvValues*, get_value, LilvValue*, predicate);
+	LILV_PORT_WRAP1(LilvValues*, get_value_by_qname, const char*, predicate);
+	LILV_PORT_WRAP0(LilvValues*, get_properties)
+	LILV_PORT_WRAP1(bool, has_property, LilvValue*, property_uri);
+	LILV_PORT_WRAP1(bool, supports_event, LilvValue*, event_uri);
+	LILV_PORT_WRAP0(const LilvValue*,  get_symbol);
+	LILV_PORT_WRAP0(LilvValue*,  get_name);
+	LILV_PORT_WRAP0(const LilvValues*, get_classes);
+	LILV_PORT_WRAP1(bool, is_a, LilvValue*, port_class);
+	LILV_PORT_WRAP0(LilvScalePoints*, get_scale_points);
 
 	// TODO: get_range (output parameters)
 
-	LilvPlugin parent;
-	LilvPort   me;
+	const LilvPlugin* parent;
+	const LilvPort*   me;
 };
 
 struct Plugin {
-	inline Plugin(LilvPlugin c_obj) : me(c_obj) {}
-	LILV_WRAP_CONVERSION(LilvPlugin);
+	inline Plugin(const LilvPlugin* c_obj) : me(c_obj) {}
+	LILV_WRAP_CONVERSION(const LilvPlugin);
 
 	LILV_WRAP0(bool,        plugin, verify);
 	LILV_WRAP0(Value,       plugin, get_uri);
@@ -214,7 +214,7 @@ struct Plugin {
 		return Port(me, lilv_plugin_get_port_by_index(me, index));
 	}
 
-	inline Port get_port_by_symbol(LilvValue symbol) {
+	inline Port get_port_by_symbol(LilvValue* symbol) {
 		return Port(me, lilv_plugin_get_port_by_symbol(me, symbol));
 	}
 
@@ -225,13 +225,13 @@ struct Plugin {
 			me, min_values, max_values, def_values);
 	}
 
-	inline unsigned get_num_ports_of_class(LilvValue class_1,
-	                                       LilvValue class_2) {
+	inline unsigned get_num_ports_of_class(LilvValue* class_1,
+	                                       LilvValue* class_2) {
 		// TODO: varargs
 		return lilv_plugin_get_num_ports_of_class(me, class_1, class_2, NULL);
 	}
 
-	LilvPlugin me;
+	const LilvPlugin* me;
 };
 
 struct Instance {
@@ -256,7 +256,7 @@ struct Instance {
 		return lilv_instance_get_descriptor(me);
 	}
 
-	LilvInstance me;
+	LilvInstance* me;
 };
 
 } /* namespace Lilv */

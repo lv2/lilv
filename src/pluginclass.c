@@ -22,8 +22,8 @@
 
 #include "lilv_internal.h"
 
-LilvPluginClass
-lilv_plugin_class_new(LilvWorld   world,
+LilvPluginClass*
+lilv_plugin_class_new(LilvWorld*  world,
                       LilvNode    parent_node,
                       LilvNode    uri,
                       const char* label)
@@ -31,7 +31,7 @@ lilv_plugin_class_new(LilvWorld   world,
 	if (parent_node && sord_node_get_type(parent_node) != SORD_URI) {
 		return NULL;  // Not an LV2 plugin superclass (FIXME: discover properly)
 	}
-	LilvPluginClass pc = (LilvPluginClass)malloc(sizeof(struct _LilvPluginClass));
+	LilvPluginClass* pc = malloc(sizeof(struct LilvPluginClassImpl));
 	pc->world      = world;
 	pc->uri        = lilv_value_new_from_node(world, uri);
 	pc->label      = lilv_value_new(world, LILV_VALUE_STRING, label);
@@ -42,7 +42,7 @@ lilv_plugin_class_new(LilvWorld   world,
 }
 
 void
-lilv_plugin_class_free(LilvPluginClass plugin_class)
+lilv_plugin_class_free(LilvPluginClass* plugin_class)
 {
 	assert(plugin_class->uri);
 	lilv_value_free(plugin_class->uri);
@@ -52,8 +52,8 @@ lilv_plugin_class_free(LilvPluginClass plugin_class)
 }
 
 LILV_API
-LilvValue
-lilv_plugin_class_get_parent_uri(LilvPluginClass plugin_class)
+const LilvValue*
+lilv_plugin_class_get_parent_uri(const LilvPluginClass* plugin_class)
 {
 	if (plugin_class->parent_uri)
 		return plugin_class->parent_uri;
@@ -62,35 +62,36 @@ lilv_plugin_class_get_parent_uri(LilvPluginClass plugin_class)
 }
 
 LILV_API
-LilvValue
-lilv_plugin_class_get_uri(LilvPluginClass plugin_class)
+const LilvValue*
+lilv_plugin_class_get_uri(const LilvPluginClass* plugin_class)
 {
 	assert(plugin_class->uri);
 	return plugin_class->uri;
 }
 
 LILV_API
-LilvValue
-lilv_plugin_class_get_label(LilvPluginClass plugin_class)
+const LilvValue*
+lilv_plugin_class_get_label(const LilvPluginClass* plugin_class)
 {
 	return plugin_class->label;
 }
 
 LILV_API
-LilvPluginClasses
-lilv_plugin_class_get_children(LilvPluginClass plugin_class)
+LilvPluginClasses*
+lilv_plugin_class_get_children(const LilvPluginClass* plugin_class)
 {
 	// Returned list doesn't own categories
-	LilvPluginClasses all    = plugin_class->world->plugin_classes;
-	LilvPluginClasses result = g_sequence_new(NULL);
+	LilvPluginClasses* all    = plugin_class->world->plugin_classes;
+	LilvPluginClasses* result = g_sequence_new(NULL);
 
 	for (GSequenceIter* i = g_sequence_get_begin_iter(all);
 	     i != g_sequence_get_end_iter(all);
 	     i = g_sequence_iter_next(i)) {
-		LilvPluginClass c      = g_sequence_get(i);
-		LilvValue       parent = lilv_plugin_class_get_parent_uri(c);
-		if (parent && lilv_value_equals(lilv_plugin_class_get_uri(plugin_class), parent))
-			lilv_sequence_insert(result, c);
+		const LilvPluginClass* c      = g_sequence_get(i);
+		const LilvValue*       parent = lilv_plugin_class_get_parent_uri(c);
+		if (parent && lilv_value_equals(lilv_plugin_class_get_uri(plugin_class),
+		                                parent))
+			lilv_sequence_insert(result, (LilvPluginClass*)c);
 	}
 
 	return result;

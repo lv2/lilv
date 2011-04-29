@@ -38,7 +38,7 @@ static char bundle_dir_uri[TEST_PATH_MAX];
 static char manifest_name[TEST_PATH_MAX];
 static char content_name[TEST_PATH_MAX];
 
-static LilvWorld world;
+static LilvWorld* world;
 
 int test_count  = 0;
 int error_count = 0;
@@ -162,7 +162,8 @@ struct TestCase {
 #define LICENSE_GPL "doap:license <http://usefulinc.com/doap/licenses/gpl>"
 
 static char *uris_plugin = "http://example.org/plug";
-static LilvValue plugin_uri_value, plugin2_uri_value;
+static LilvValue* plugin_uri_value;
+static LilvValue* plugin2_uri_value;
 
 /*****************************************************************************/
 
@@ -214,10 +215,10 @@ test_value()
 
 	init_uris();
 
-	LilvValue uval = lilv_value_new_uri(world, "http://example.org");
-	LilvValue sval = lilv_value_new_string(world, "Foo");
-	LilvValue ival = lilv_value_new_int(world, 42);
-	LilvValue fval = lilv_value_new_float(world, 1.6180);
+	LilvValue* uval = lilv_value_new_uri(world, "http://example.org");
+	LilvValue* sval = lilv_value_new_string(world, "Foo");
+	LilvValue* ival = lilv_value_new_int(world, 42);
+	LilvValue* fval = lilv_value_new_float(world, 1.6180);
 
 	TEST_ASSERT(lilv_value_is_uri(uval));
 	TEST_ASSERT(lilv_value_is_string(sval));
@@ -247,14 +248,14 @@ test_value()
 	TEST_ASSERT(!strncmp(tok, "1.6180", 6));
 	free(tok);
 
-	LilvValue uval_e = lilv_value_new_uri(world, "http://example.org");
-	LilvValue sval_e = lilv_value_new_string(world, "Foo");
-	LilvValue ival_e = lilv_value_new_int(world, 42);
-	LilvValue fval_e = lilv_value_new_float(world, 1.6180);
-	LilvValue uval_ne = lilv_value_new_uri(world, "http://no-example.org");
-	LilvValue sval_ne = lilv_value_new_string(world, "Bar");
-	LilvValue ival_ne = lilv_value_new_int(world, 24);
-	LilvValue fval_ne = lilv_value_new_float(world, 3.14159);
+	LilvValue* uval_e = lilv_value_new_uri(world, "http://example.org");
+	LilvValue* sval_e = lilv_value_new_string(world, "Foo");
+	LilvValue* ival_e = lilv_value_new_int(world, 42);
+	LilvValue* fval_e = lilv_value_new_float(world, 1.6180);
+	LilvValue* uval_ne = lilv_value_new_uri(world, "http://no-example.org");
+	LilvValue* sval_ne = lilv_value_new_string(world, "Bar");
+	LilvValue* ival_ne = lilv_value_new_int(world, 24);
+	LilvValue* fval_ne = lilv_value_new_float(world, 3.14159);
 
 	TEST_ASSERT(lilv_value_equals(uval, uval_e));
 	TEST_ASSERT(lilv_value_equals(sval, sval_e));
@@ -270,19 +271,19 @@ test_value()
 	TEST_ASSERT(!lilv_value_equals(sval, ival));
 	TEST_ASSERT(!lilv_value_equals(ival, fval));
 
-	LilvValue uval_dup = lilv_value_duplicate(uval);
+	LilvValue* uval_dup = lilv_value_duplicate(uval);
 	TEST_ASSERT(lilv_value_equals(uval, uval_dup));
 
-	LilvValue ifval = lilv_value_new_float(world, 42.0);
+	LilvValue* ifval = lilv_value_new_float(world, 42.0);
 	TEST_ASSERT(!lilv_value_equals(ival, ifval));
 	lilv_value_free(ifval);
 
-	LilvValue nil = NULL;
+	LilvValue* nil = NULL;
 	TEST_ASSERT(!lilv_value_equals(uval, nil));
 	TEST_ASSERT(!lilv_value_equals(nil, uval));
 	TEST_ASSERT(lilv_value_equals(nil, nil));
 
-	LilvValue nil2 = lilv_value_duplicate(nil);
+	LilvValue* nil2 = lilv_value_duplicate(nil);
 	TEST_ASSERT(lilv_value_equals(nil, nil2));
 
 	lilv_value_free(uval);
@@ -309,11 +310,11 @@ test_value()
 static int discovery_plugin_found = 0;
 
 static void
-discovery_verify_plugin(LilvPlugin plugin)
+discovery_verify_plugin(const LilvPlugin* plugin)
 {
-	LilvValue value = lilv_plugin_get_uri(plugin);
+	const LilvValue* value = lilv_plugin_get_uri(plugin);
 	if (lilv_value_equals(value, plugin_uri_value)) {
-		LilvValue lib_uri = NULL;
+		const LilvValue* lib_uri = NULL;
 		TEST_ASSERT(!lilv_value_equals(value, plugin2_uri_value));
 		discovery_plugin_found = 1;
 		lib_uri = lilv_plugin_get_library_uri(plugin);
@@ -340,16 +341,16 @@ test_discovery()
 
 	init_uris();
 
-	LilvPlugins plugins = lilv_world_get_all_plugins(world);
+	const LilvPlugins* plugins = lilv_world_get_all_plugins(world);
 	TEST_ASSERT(lilv_plugins_size(plugins) > 0);
 
-	LilvPlugin explug = lilv_plugins_get_by_uri(plugins, plugin_uri_value);
+	const const LilvPlugin* explug = lilv_plugins_get_by_uri(plugins, plugin_uri_value);
 	TEST_ASSERT(explug != NULL);
-	LilvPlugin explug2 = lilv_plugins_get_by_uri(plugins, plugin2_uri_value);
+	const const LilvPlugin* explug2 = lilv_plugins_get_by_uri(plugins, plugin2_uri_value);
 	TEST_ASSERT(explug2 == NULL);
 
 	if (explug) {
-		LilvValue name = lilv_plugin_get_name(explug);
+		LilvValue* name = lilv_plugin_get_name(explug);
 		TEST_ASSERT(!strcmp(lilv_value_as_string(name), "Test plugin"));
 		lilv_value_free(name);
 	}
@@ -382,8 +383,8 @@ test_verify()
 		return 0;
 
 	init_uris();
-	LilvPlugins plugins = lilv_world_get_all_plugins(world);
-	LilvPlugin explug = lilv_plugins_get_by_uri(plugins, plugin_uri_value);
+	const LilvPlugins* plugins = lilv_world_get_all_plugins(world);
+	const const LilvPlugin* explug = lilv_plugins_get_by_uri(plugins, plugin_uri_value);
 	TEST_ASSERT(explug);
 	TEST_ASSERT(lilv_plugin_verify(explug));
 	cleanup_uris();
@@ -402,8 +403,8 @@ test_no_verify()
 		return 0;
 
 	init_uris();
-	LilvPlugins plugins = lilv_world_get_all_plugins(world);
-	LilvPlugin explug = lilv_plugins_get_by_uri(plugins, plugin_uri_value);
+	const LilvPlugins* plugins = lilv_world_get_all_plugins(world);
+	const LilvPlugin* explug = lilv_plugins_get_by_uri(plugins, plugin_uri_value);
 	TEST_ASSERT(explug);
 	TEST_ASSERT(!lilv_plugin_verify(explug));
 	cleanup_uris();
@@ -428,9 +429,9 @@ test_classes()
 		return 0;
 
 	init_uris();
-	LilvPluginClass plugin = lilv_world_get_plugin_class(world);
-	LilvPluginClasses classes = lilv_world_get_plugin_classes(world);
-	LilvPluginClasses children = lilv_plugin_class_get_children(plugin);
+	const LilvPluginClass*   plugin   = lilv_world_get_plugin_class(world);
+	const LilvPluginClasses* classes  = lilv_world_get_plugin_classes(world);
+	LilvPluginClasses*       children = lilv_plugin_class_get_children(plugin);
 
 	TEST_ASSERT(lilv_plugin_class_get_parent_uri(plugin) == NULL);
 	TEST_ASSERT(lilv_plugin_classes_size(classes) > lilv_plugin_classes_size(children));
@@ -444,7 +445,7 @@ test_classes()
 				lilv_plugin_class_get_uri(plugin)));
 	}
 
-	LilvValue some_uri = lilv_value_new_uri(world, "http://example.org/whatever");
+	LilvValue* some_uri = lilv_value_new_uri(world, "http://example.org/whatever");
 	TEST_ASSERT(lilv_plugin_classes_get_by_uri(classes, some_uri) == NULL);
 	lilv_value_free(some_uri);
 
@@ -489,19 +490,19 @@ test_plugin()
 		return 0;
 
 	init_uris();
-	LilvPlugins plugins = lilv_world_get_all_plugins(world);
-	LilvPlugin plug = lilv_plugins_get_by_uri(plugins, plugin_uri_value);
+	const LilvPlugins* plugins = lilv_world_get_all_plugins(world);
+	const LilvPlugin* plug = lilv_plugins_get_by_uri(plugins, plugin_uri_value);
 	TEST_ASSERT(plug);
 
-	LilvPluginClass class = lilv_plugin_get_class(plug);
-	LilvValue class_uri = lilv_plugin_class_get_uri(class);
+	const LilvPluginClass* class = lilv_plugin_get_class(plug);
+	const LilvValue* class_uri = lilv_plugin_class_get_uri(class);
 	TEST_ASSERT(!strcmp(lilv_value_as_string(class_uri),
 			"http://lv2plug.in/ns/lv2core#CompressorPlugin"));
 
-	LilvValue plug_bundle_uri = lilv_plugin_get_bundle_uri(plug);
+	const LilvValue* plug_bundle_uri = lilv_plugin_get_bundle_uri(plug);
 	TEST_ASSERT(!strcmp(lilv_value_as_string(plug_bundle_uri), bundle_dir_uri));
 
-	LilvValues data_uris = lilv_plugin_get_data_uris(plug);
+	const LilvValues* data_uris = lilv_plugin_get_data_uris(plug);
 	TEST_ASSERT(lilv_values_size(data_uris) == 2);
 
 	char* manifest_uri = (char*)malloc(TEST_PATH_MAX);
@@ -511,11 +512,11 @@ test_plugin()
 	snprintf(data_uri, TEST_PATH_MAX, "%s%s",
 			lilv_value_as_string(plug_bundle_uri), "plugin.ttl");
 
-	LilvValue manifest_uri_val = lilv_value_new_uri(world, manifest_uri);
+	LilvValue* manifest_uri_val = lilv_value_new_uri(world, manifest_uri);
 	TEST_ASSERT(lilv_values_contains(data_uris, manifest_uri_val));
 	lilv_value_free(manifest_uri_val);
 
-	LilvValue data_uri_val = lilv_value_new_uri(world, data_uri);
+	LilvValue* data_uri_val = lilv_value_new_uri(world, data_uri);
 	TEST_ASSERT(lilv_values_contains(data_uris, data_uri_val));
 	lilv_value_free(data_uri_val);
 
@@ -530,13 +531,13 @@ test_plugin()
 	TEST_ASSERT(maxs[0] == 1.0f);
 	TEST_ASSERT(defs[0] == 0.5f);
 
-	LilvValue audio_class = lilv_value_new_uri(world,
+	LilvValue* audio_class = lilv_value_new_uri(world,
 			"http://lv2plug.in/ns/lv2core#AudioPort");
-	LilvValue control_class = lilv_value_new_uri(world,
+	LilvValue* control_class = lilv_value_new_uri(world,
 			"http://lv2plug.in/ns/lv2core#ControlPort");
-	LilvValue in_class = lilv_value_new_uri(world,
+	LilvValue* in_class = lilv_value_new_uri(world,
 			"http://lv2plug.in/ns/lv2core#InputPort");
-	LilvValue out_class = lilv_value_new_uri(world,
+	LilvValue* out_class = lilv_value_new_uri(world,
 			"http://lv2plug.in/ns/lv2core#OutputPort");
 
 	TEST_ASSERT(lilv_plugin_get_num_ports_of_class(plug, control_class, NULL) == 3);
@@ -551,11 +552,11 @@ test_plugin()
 	TEST_ASSERT(lilv_plugin_has_latency(plug));
 	TEST_ASSERT(lilv_plugin_get_latency_port_index(plug) == 2);
 
-	LilvValue rt_feature = lilv_value_new_uri(world,
+	LilvValue* rt_feature = lilv_value_new_uri(world,
 			"http://lv2plug.in/ns/lv2core#hardRTCapable");
-	LilvValue event_feature = lilv_value_new_uri(world,
+	LilvValue* event_feature = lilv_value_new_uri(world,
 			"http://lv2plug.in/ns/ext/event");
-	LilvValue pretend_feature = lilv_value_new_uri(world,
+	LilvValue* pretend_feature = lilv_value_new_uri(world,
 			"http://example.org/solvesWorldHunger");
 
 	TEST_ASSERT(lilv_plugin_has_feature(plug, rt_feature));
@@ -566,9 +567,9 @@ test_plugin()
 	lilv_value_free(event_feature);
 	lilv_value_free(pretend_feature);
 
-	LilvValues supported = lilv_plugin_get_supported_features(plug);
-	LilvValues required = lilv_plugin_get_required_features(plug);
-	LilvValues optional = lilv_plugin_get_optional_features(plug);
+	LilvValues* supported = lilv_plugin_get_supported_features(plug);
+	LilvValues* required = lilv_plugin_get_required_features(plug);
+	LilvValues* optional = lilv_plugin_get_optional_features(plug);
 	TEST_ASSERT(lilv_values_size(supported) == 2);
 	TEST_ASSERT(lilv_values_size(required) == 1);
 	TEST_ASSERT(lilv_values_size(optional) == 1);
@@ -576,49 +577,49 @@ test_plugin()
 	lilv_values_free(required);
 	lilv_values_free(optional);
 
-	LilvValue  foo_p = lilv_value_new_uri(world, "http://example.org/foo");
-	LilvValues foos  = lilv_plugin_get_value(plug, foo_p);
+	LilvValue*  foo_p = lilv_value_new_uri(world, "http://example.org/foo");
+	LilvValues* foos  = lilv_plugin_get_value(plug, foo_p);
 	TEST_ASSERT(lilv_values_size(foos) == 1);
 	TEST_ASSERT(fabs(lilv_value_as_float(lilv_values_get_first(foos)) - 1.6180) < FLT_EPSILON);
 	lilv_value_free(foo_p);
 	lilv_values_free(foos);
 
-	LilvValue  bar_p = lilv_value_new_uri(world, "http://example.org/bar");
-	LilvValues bars  = lilv_plugin_get_value(plug, bar_p);
+	LilvValue*  bar_p = lilv_value_new_uri(world, "http://example.org/bar");
+	LilvValues* bars  = lilv_plugin_get_value(plug, bar_p);
 	TEST_ASSERT(lilv_values_size(bars) == 1);
 	TEST_ASSERT(lilv_value_as_bool(lilv_values_get_first(bars)) == true);
 	lilv_value_free(bar_p);
 	lilv_values_free(bars);
 
-	LilvValue  baz_p = lilv_value_new_uri(world, "http://example.org/baz");
-	LilvValues bazs  = lilv_plugin_get_value(plug, baz_p);
+	LilvValue*  baz_p = lilv_value_new_uri(world, "http://example.org/baz");
+	LilvValues* bazs  = lilv_plugin_get_value(plug, baz_p);
 	TEST_ASSERT(lilv_values_size(bazs) == 1);
 	TEST_ASSERT(lilv_value_as_bool(lilv_values_get_first(bazs)) == false);
 	lilv_value_free(baz_p);
 	lilv_values_free(bazs);
 
-	LilvValue author_name = lilv_plugin_get_author_name(plug);
+	LilvValue* author_name = lilv_plugin_get_author_name(plug);
 	TEST_ASSERT(!strcmp(lilv_value_as_string(author_name), "David Robillard"));
 	lilv_value_free(author_name);
 
-	LilvValue author_email = lilv_plugin_get_author_email(plug);
+	LilvValue* author_email = lilv_plugin_get_author_email(plug);
 	TEST_ASSERT(!strcmp(lilv_value_as_string(author_email), "mailto:d@drobilla.net"));
 	lilv_value_free(author_email);
 
-	LilvValue author_homepage = lilv_plugin_get_author_homepage(plug);
+	LilvValue* author_homepage = lilv_plugin_get_author_homepage(plug);
 	TEST_ASSERT(!strcmp(lilv_value_as_string(author_homepage), "http://drobilla.net"));
 	lilv_value_free(author_homepage);
 
-	LilvValue thing_uri = lilv_value_new_uri(world, "http://example.org/thing");
-	LilvValue name_p = lilv_value_new_uri(world, "http://usefulinc.com/ns/doap#name");
-	LilvValues thing_names = lilv_plugin_get_value_for_subject(plug, thing_uri, name_p);
+	LilvValue* thing_uri = lilv_value_new_uri(world, "http://example.org/thing");
+	LilvValue* name_p = lilv_value_new_uri(world, "http://usefulinc.com/ns/doap#name");
+	LilvValues* thing_names = lilv_plugin_get_value_for_subject(plug, thing_uri, name_p);
 	TEST_ASSERT(lilv_values_size(thing_names) == 1);
-	LilvValue thing_name = lilv_values_get_first(thing_names);
+	LilvValue* thing_name = lilv_values_get_first(thing_names);
 	TEST_ASSERT(thing_name);
 	TEST_ASSERT(lilv_value_is_string(thing_name));
 	TEST_ASSERT(!strcmp(lilv_value_as_string(thing_name), "Something else"));
 
-	LilvUIs uis = lilv_plugin_get_uis(plug);
+	LilvUIs* uis = lilv_plugin_get_uis(plug);
 	TEST_ASSERT(lilv_uis_size(uis) == 0);
 	lilv_uis_free(uis);
 
@@ -664,28 +665,28 @@ test_port()
 		return 0;
 
 	init_uris();
-	LilvPlugins plugins = lilv_world_get_all_plugins(world);
-	LilvPlugin plug = lilv_plugins_get_by_uri(plugins, plugin_uri_value);
+	const LilvPlugins* plugins = lilv_world_get_all_plugins(world);
+	const LilvPlugin* plug = lilv_plugins_get_by_uri(plugins, plugin_uri_value);
 	TEST_ASSERT(plug);
 
-	LilvValue psym = lilv_value_new_string(world, "foo");
-	LilvPort p = lilv_plugin_get_port_by_index(plug, 0);
-	LilvPort p2 = lilv_plugin_get_port_by_symbol(plug, psym);
+	LilvValue* psym = lilv_value_new_string(world, "foo");
+	const LilvPort*  p    = lilv_plugin_get_port_by_index(plug, 0);
+	const LilvPort*  p2   = lilv_plugin_get_port_by_symbol(plug, psym);
 	lilv_value_free(psym);
 	TEST_ASSERT(p != NULL);
 	TEST_ASSERT(p2 != NULL);
 	TEST_ASSERT(p == p2);
 
-	LilvValue nopsym = lilv_value_new_string(world, "thisaintnoportfoo");
-	LilvPort p3 = lilv_plugin_get_port_by_symbol(plug, nopsym);
+	LilvValue*      nopsym = lilv_value_new_string(world, "thisaintnoportfoo");
+	const LilvPort* p3     = lilv_plugin_get_port_by_symbol(plug, nopsym);
 	TEST_ASSERT(p3 == NULL);
 	lilv_value_free(nopsym);
 
-	LilvValue audio_class = lilv_value_new_uri(world,
+	LilvValue* audio_class = lilv_value_new_uri(world,
 			"http://lv2plug.in/ns/lv2core#AudioPort");
-	LilvValue control_class = lilv_value_new_uri(world,
+	LilvValue* control_class = lilv_value_new_uri(world,
 			"http://lv2plug.in/ns/lv2core#ControlPort");
-	LilvValue in_class = lilv_value_new_uri(world,
+	LilvValue* in_class = lilv_value_new_uri(world,
 			"http://lv2plug.in/ns/lv2core#InputPort");
 
 	TEST_ASSERT(lilv_values_size(lilv_port_get_classes(plug, p)) == 2);
@@ -694,13 +695,13 @@ test_port()
 	TEST_ASSERT(lilv_port_is_a(plug, p, in_class));
 	TEST_ASSERT(!lilv_port_is_a(plug, p, audio_class));
 
-	LilvValues port_properties = lilv_port_get_properties(plug, p);
+	LilvValues* port_properties = lilv_port_get_properties(plug, p);
 	TEST_ASSERT(lilv_values_size(port_properties) == 1);
 	lilv_values_free(port_properties);
 
 	// Untranslated name (current locale is set to "C" in main)
 	TEST_ASSERT(!strcmp(lilv_value_as_string(lilv_port_get_symbol(plug, p)), "foo"));
-	LilvValue name = lilv_port_get_name(plug, p);
+	LilvValue* name = lilv_port_get_name(plug, p);
 	TEST_ASSERT(!strcmp(lilv_value_as_string(name), "store"));
 	lilv_value_free(name);
 
@@ -731,14 +732,14 @@ test_port()
 
 	setenv("LANG", "C", 1);  // Reset locale
 
-	LilvScalePoints points = lilv_port_get_scale_points(plug, p);
+	LilvScalePoints* points = lilv_port_get_scale_points(plug, p);
 	TEST_ASSERT(lilv_scale_points_size(points) == 2);
 
-	LilvIter sp_iter = lilv_scale_points_begin(points);
-	LilvScalePoint sp0 = lilv_scale_points_get(points, sp_iter);
+	LilvIter* sp_iter = lilv_scale_points_begin(points);
+	const LilvScalePoint* sp0 = lilv_scale_points_get(points, sp_iter);
 	TEST_ASSERT(sp0);
 	lilv_scale_points_next(points, sp_iter);
-	LilvScalePoint sp1 = lilv_scale_points_get(points, sp_iter);
+	const LilvScalePoint* sp1 = lilv_scale_points_get(points, sp_iter);
 	TEST_ASSERT(sp1);
 
 	TEST_ASSERT(!strcmp(lilv_value_as_string(lilv_scale_point_get_label(sp0)), "Sin"));
@@ -746,13 +747,13 @@ test_port()
 	TEST_ASSERT(!strcmp(lilv_value_as_string(lilv_scale_point_get_label(sp1)), "Cos"));
 	TEST_ASSERT(lilv_value_as_float(lilv_scale_point_get_value(sp1)) == 4);
 
-	LilvValue homepage_p = lilv_value_new_uri(world, "http://usefulinc.com/ns/doap#homepage");
-	LilvValues homepages = lilv_plugin_get_value(plug, homepage_p);
+	LilvValue* homepage_p = lilv_value_new_uri(world, "http://usefulinc.com/ns/doap#homepage");
+	LilvValues* homepages = lilv_plugin_get_value(plug, homepage_p);
 	TEST_ASSERT(lilv_values_size(homepages) == 1);
 	TEST_ASSERT(!strcmp(lilv_value_as_string(lilv_values_get_first(homepages)),
 			"http://example.org/someplug"));
 
-	LilvValue min, max, def;
+	LilvValue *min, *max, *def;
 	lilv_port_get_range(plug, p, &def, &min, &max);
 	TEST_ASSERT(def);
 	TEST_ASSERT(min);
@@ -761,28 +762,28 @@ test_port()
 	TEST_ASSERT(lilv_value_as_float(min) == -1.0);
 	TEST_ASSERT(lilv_value_as_float(max) == 1.0);
 
-	LilvValue integer_prop = lilv_value_new_uri(world, "http://lv2plug.in/ns/lv2core#integer");
-	LilvValue toggled_prop = lilv_value_new_uri(world, "http://lv2plug.in/ns/lv2core#toggled");
+	LilvValue* integer_prop = lilv_value_new_uri(world, "http://lv2plug.in/ns/lv2core#integer");
+	LilvValue* toggled_prop = lilv_value_new_uri(world, "http://lv2plug.in/ns/lv2core#toggled");
 
 	TEST_ASSERT(lilv_port_has_property(plug, p, integer_prop));
 	TEST_ASSERT(!lilv_port_has_property(plug, p, toggled_prop));
 
-	LilvPort ep = lilv_plugin_get_port_by_index(plug, 1);
+	const LilvPort* ep = lilv_plugin_get_port_by_index(plug, 1);
 
-	LilvValue event_type = lilv_value_new_uri(world, "http://example.org/event");
-	LilvValue event_type_2 = lilv_value_new_uri(world, "http://example.org/otherEvent");
+	LilvValue* event_type = lilv_value_new_uri(world, "http://example.org/event");
+	LilvValue* event_type_2 = lilv_value_new_uri(world, "http://example.org/otherEvent");
 	TEST_ASSERT(lilv_port_supports_event(plug, ep, event_type));
 	TEST_ASSERT(!lilv_port_supports_event(plug, ep, event_type_2));
 
-	LilvValue name_p = lilv_value_new_uri(world, "http://lv2plug.in/ns/lv2core#name");
-	LilvValues names = lilv_port_get_value(plug, p, name_p);
+	LilvValue* name_p = lilv_value_new_uri(world, "http://lv2plug.in/ns/lv2core#name");
+	LilvValues* names = lilv_port_get_value(plug, p, name_p);
 	TEST_ASSERT(lilv_values_size(names) == 1);
 	TEST_ASSERT(!strcmp(lilv_value_as_string(lilv_values_get_first(names)),
 	                    "store"));
 	lilv_values_free(names);
 
-	LilvValue true_val  = lilv_value_new_bool(world, true);
-	LilvValue false_val = lilv_value_new_bool(world, false);
+	LilvValue* true_val  = lilv_value_new_bool(world, true);
+	LilvValue* false_val = lilv_value_new_bool(world, false);
 
 	lilv_world_set_option(world, LILV_OPTION_FILTER_LANG, false_val);
 	names = lilv_port_get_value(plug, p, name_p);
@@ -859,53 +860,53 @@ test_ui()
 		return 0;
 
 	init_uris();
-	LilvPlugins plugins = lilv_world_get_all_plugins(world);
-	LilvPlugin plug = lilv_plugins_get_by_uri(plugins, plugin_uri_value);
+	const LilvPlugins* plugins = lilv_world_get_all_plugins(world);
+	const LilvPlugin* plug = lilv_plugins_get_by_uri(plugins, plugin_uri_value);
 	TEST_ASSERT(plug);
 
-	LilvUIs uis = lilv_plugin_get_uis(plug);
+	LilvUIs* uis = lilv_plugin_get_uis(plug);
 	TEST_ASSERT(lilv_uis_size(uis) == 4);
 
-	LilvUI ui0 = lilv_uis_get(uis, lilv_uis_begin(uis));
+	const LilvUI* ui0 = lilv_uis_get(uis, lilv_uis_begin(uis));
 	TEST_ASSERT(ui0);
 
-	LilvValue ui_uri = lilv_value_new_uri(world, "http://example.org/ui");
-	LilvValue ui2_uri = lilv_value_new_uri(world, "http://example.org/ui3");
-	LilvValue ui3_uri = lilv_value_new_uri(world, "http://example.org/ui4");
-	LilvValue noui_uri = lilv_value_new_uri(world, "http://example.org/notaui");
+	LilvValue* ui_uri = lilv_value_new_uri(world, "http://example.org/ui");
+	LilvValue* ui2_uri = lilv_value_new_uri(world, "http://example.org/ui3");
+	LilvValue* ui3_uri = lilv_value_new_uri(world, "http://example.org/ui4");
+	LilvValue* noui_uri = lilv_value_new_uri(world, "http://example.org/notaui");
 
-	LilvUI ui0_2 = lilv_uis_get_by_uri(uis, ui_uri);
+	const LilvUI* ui0_2 = lilv_uis_get_by_uri(uis, ui_uri);
 	TEST_ASSERT(ui0 == ui0_2);
 
-	LilvUI ui2 = lilv_uis_get_by_uri(uis, ui2_uri);
+	const LilvUI* ui2 = lilv_uis_get_by_uri(uis, ui2_uri);
 	TEST_ASSERT(ui2 != ui0);
 
-	LilvUI ui3 = lilv_uis_get_by_uri(uis, ui3_uri);
+	const LilvUI* ui3 = lilv_uis_get_by_uri(uis, ui3_uri);
 	TEST_ASSERT(ui3 != ui0);
 
-	LilvUI noui = lilv_uis_get_by_uri(uis, noui_uri);
+	const LilvUI* noui = lilv_uis_get_by_uri(uis, noui_uri);
 	TEST_ASSERT(noui == NULL);
 
-	LilvValues classes = lilv_ui_get_classes(ui0);
+	const LilvValues* classes = lilv_ui_get_classes(ui0);
 	TEST_ASSERT(lilv_values_size(classes) == 1);
 
-	LilvValue ui_class_uri = lilv_value_new_uri(world,
+	LilvValue* ui_class_uri = lilv_value_new_uri(world,
 			"http://lv2plug.in/ns/extensions/ui#GtkUI");
 
 	TEST_ASSERT(lilv_value_equals(lilv_values_get_first(classes), ui_class_uri));
 	TEST_ASSERT(lilv_ui_is_a(ui0, ui_class_uri));
 
-	LilvValue plug_bundle_uri = lilv_plugin_get_bundle_uri(plug);
-	LilvValue ui_bundle_uri = lilv_ui_get_bundle_uri(ui0);
+	const LilvValue* plug_bundle_uri = lilv_plugin_get_bundle_uri(plug);
+	const LilvValue* ui_bundle_uri   = lilv_ui_get_bundle_uri(ui0);
 	TEST_ASSERT(lilv_value_equals(plug_bundle_uri, ui_bundle_uri));
 
 	char* ui_binary_uri_str = (char*)malloc(TEST_PATH_MAX);
 	snprintf(ui_binary_uri_str, TEST_PATH_MAX, "%s%s",
 			lilv_value_as_string(plug_bundle_uri), "ui.so");
 
-	LilvValue ui_binary_uri = lilv_ui_get_binary_uri(ui0);
+	const LilvValue* ui_binary_uri = lilv_ui_get_binary_uri(ui0);
 
-	LilvValue expected_uri = lilv_value_new_uri(world, ui_binary_uri_str);
+	LilvValue* expected_uri = lilv_value_new_uri(world, ui_binary_uri_str);
 	TEST_ASSERT(lilv_value_equals(expected_uri, ui_binary_uri));
 
 	free(ui_binary_uri_str);

@@ -24,12 +24,12 @@
 #include "lilv_internal.h"
 
 LILV_API
-LilvInstance
-lilv_plugin_instantiate(LilvPlugin               plugin,
+LilvInstance*
+lilv_plugin_instantiate(const LilvPlugin*        plugin,
                         double                   sample_rate,
                         const LV2_Feature*const* features)
 {
-	struct _Instance* result = NULL;
+	LilvInstance* result = NULL;
 
 	const LV2_Feature** local_features = NULL;
 	if (features == NULL) {
@@ -73,9 +73,9 @@ lilv_plugin_instantiate(LilvPlugin               plugin,
 				break; // return NULL
 			} else {
 				// Parse bundle URI to use as base URI
-				const LilvValue bundle_uri     = lilv_plugin_get_bundle_uri(plugin);
-				const char*     bundle_uri_str = lilv_value_as_uri(bundle_uri);
-				SerdURI         base_uri;
+				const LilvValue* bundle_uri     = lilv_plugin_get_bundle_uri(plugin);
+				const char*      bundle_uri_str = lilv_value_as_uri(bundle_uri);
+				SerdURI          base_uri;
 				if (!serd_uri_parse((const uint8_t*)bundle_uri_str, &base_uri)) {
 					dlclose(lib);
 					break;
@@ -94,13 +94,11 @@ lilv_plugin_instantiate(LilvPlugin               plugin,
 				if (!strcmp((const char*)abs_uri_node.buf,
 				            lilv_value_as_uri(lilv_plugin_get_uri(plugin)))) {
 					// Create LilvInstance to return
-					result = malloc(sizeof(struct _Instance));
+					result = malloc(sizeof(struct LilvInstanceImpl));
 					result->lv2_descriptor = ld;
 					result->lv2_handle = ld->instantiate(ld, sample_rate, (char*)bundle_path,
 							(features) ? features : local_features);
-					struct _LilvInstanceImpl* impl = malloc(sizeof(struct _LilvInstanceImpl));
-					impl->lib_handle = lib;
-					result->pimpl = impl;
+					result->pimpl = lib;
 					serd_node_free(&abs_uri_node);
 					break;
 				} else {
@@ -131,18 +129,15 @@ lilv_plugin_instantiate(LilvPlugin               plugin,
 
 LILV_API
 void
-lilv_instance_free(LilvInstance instance)
+lilv_instance_free(LilvInstance* instance)
 {
 	if (!instance)
 		return;
 
-	struct _Instance* i = (struct _Instance*)instance;
-	i->lv2_descriptor->cleanup(i->lv2_handle);
-	i->lv2_descriptor = NULL;
-	dlclose(i->pimpl->lib_handle);
-	i->pimpl->lib_handle = NULL;
-	free(i->pimpl);
-	i->pimpl = NULL;
-	free(i);
+	instance->lv2_descriptor->cleanup(instance->lv2_handle);
+	instance->lv2_descriptor = NULL;
+	dlclose(instance->pimpl);
+	instance->pimpl = NULL;
+	free(instance);
 }
 

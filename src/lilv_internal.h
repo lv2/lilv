@@ -85,34 +85,34 @@ lilv_match_end(LilvMatches iter)
 /* ********* PORT ********* */
 
 /** Reference to a port on some plugin. */
-struct _LilvPort {
-	uint32_t   index;   ///< lv2:index
-	LilvValue  symbol;  ///< lv2:symbol
-	LilvValues classes; ///< rdf:type
+struct LilvPortImpl {
+	uint32_t    index;   ///< lv2:index
+	LilvValue*  symbol;  ///< lv2:symbol
+	LilvValues* classes; ///< rdf:type
 };
 
-LilvPort lilv_port_new(LilvWorld world, uint32_t index, const char* symbol);
-void     lilv_port_free(LilvPort port);
+LilvPort* lilv_port_new(LilvWorld* world, uint32_t index, const char* symbol);
+void      lilv_port_free(LilvPort* port);
 
 /* ********* Spec ********* */
 
-struct _LilvSpec {
-	SordNode*  spec;
-	SordNode*  bundle;
-	LilvValues data_uris;
+struct LilvSpecImpl {
+	SordNode*   spec;
+	SordNode*   bundle;
+	LilvValues* data_uris;
 };
 
-typedef struct _LilvSpec* LilvSpec;
+typedef struct LilvSpecImpl LilvSpec;
 
 /* ********* Plugin ********* */
 
 /** Header of an LilvPlugin, LilvPluginClass, or LilvUI.
- * Any of these structs may be safely casted to _LilvHeader, which is used to
+ * Any of these structs may be safely casted to LilvHeader, which is used to
  * implement sequences without code duplication (see lilv_sequence_get_by_uri).
  */
-struct _LilvHeader {
-	struct _LilvWorld* world;
-	LilvValue          uri;
+struct LilvHeader {
+	LilvWorld* world;
+	LilvValue* uri;
 };
 
 /** Record of an installed/available plugin.
@@ -120,102 +120,92 @@ struct _LilvHeader {
  * A simple reference to a plugin somewhere on the system. This just holds
  * paths of relevant files, the actual data therein isn't loaded into memory.
  */
-struct _LilvPlugin {
-	struct _LilvWorld* world;
-	LilvValue          plugin_uri;
-	LilvValue          bundle_uri; ///< Bundle directory plugin was loaded from
-	LilvValue          binary_uri; ///< lv2:binary
-	LilvValue          dynman_uri; ///< dynamic manifest binary
-	LilvPluginClass    plugin_class;
-	LilvValues         data_uris; ///< rdfs::seeAlso
-	LilvPort*          ports;
-	uint32_t           num_ports;
-	bool               loaded;
-	bool               replaced;
+struct LilvPluginImpl {
+	LilvWorld*             world;
+	LilvValue*             plugin_uri;
+	LilvValue*             bundle_uri; ///< Bundle directory plugin was loaded from
+	LilvValue*             binary_uri; ///< lv2:binary
+	LilvValue*             dynman_uri; ///< dynamic manifest binary
+	const LilvPluginClass* plugin_class;
+	LilvValues*            data_uris; ///< rdfs::seeAlso
+	LilvPort**             ports;
+	uint32_t               num_ports;
+	bool                   loaded;
+	bool                   replaced;
 };
 
-LilvPlugin lilv_plugin_new(LilvWorld world, LilvValue uri, LilvValue bundle_uri);
-void       lilv_plugin_load_if_necessary(LilvPlugin p);
-void       lilv_plugin_free(LilvPlugin plugin);
+LilvPlugin* lilv_plugin_new(LilvWorld* world, LilvValue* uri, LilvValue* bundle_uri);
+void        lilv_plugin_load_if_necessary(const LilvPlugin* p);
+void        lilv_plugin_free(LilvPlugin* plugin);
 
-LilvValue
-lilv_plugin_get_unique(LilvPlugin p,
-                       LilvNode   subject,
-                       LilvNode   predicate);
+LilvValue*
+lilv_plugin_get_unique(const LilvPlugin* p,
+                       LilvNode          subject,
+                       LilvNode          predicate);
 
 /* ********* Plugins ********* */
 
-typedef void* LilvCollection;
+typedef void LilvCollection;
 
-LilvPlugins
+LilvPlugins*
 lilv_plugins_new();
 
 
 /**
    Increment @a i to point at the next element in the collection.
 */
-LilvIter
-lilv_iter_next(LilvIter i);
+LilvIter*
+lilv_iter_next(LilvIter* i);
 
 /**
    Return true iff @a i is at the end of the collection.
 */
 bool
-lilv_iter_end(LilvIter i);
+lilv_iter_end(LilvIter* i);
 
-LilvIter
-lilv_collection_begin(LilvCollection collection);
+LilvIter*
+lilv_collection_begin(const LilvCollection* collection);
 
 void*
-lilv_collection_get(LilvCollection collection,
-                    LilvIter       i);
+lilv_collection_get(const LilvCollection* collection,
+                    const LilvIter*       i);
 
 /**
    Free @a collection.
 */
 void
-lilv_collection_free(LilvCollection collection);
+lilv_collection_free(LilvCollection* collection);
 
 /**
    Get the number of elements in @a collection.
 */
 unsigned
-lilv_collection_size(LilvCollection collection);
+lilv_collection_size(const LilvCollection* collection);
 
-LilvValues
+LilvValues*
 lilv_values_new(void);
 
-LilvScalePoints
+LilvScalePoints*
 lilv_scale_points_new(void);
 
-
-/* ********* Instance ********* */
-
-/** Pimpl portion of LilvInstance */
-struct _LilvInstanceImpl {
-	void* lib_handle;
+struct LilvPluginClassImpl {
+	LilvWorld* world;
+	LilvValue* uri;
+	LilvValue* parent_uri;
+	LilvValue* label;
 };
 
-/* ********* Plugin Class ********* */
+LilvPluginClass* lilv_plugin_class_new(LilvWorld*  world,
+                                       LilvNode    parent_uri,
+                                       LilvNode    uri,
+                                       const char* label);
 
-struct _LilvPluginClass {
-	struct _LilvWorld* world;
-	LilvValue          uri;
-	LilvValue          parent_uri;
-	LilvValue          label;
-};
-
-LilvPluginClass lilv_plugin_class_new(LilvWorld   world,
-                                      LilvNode    parent_uri,
-                                      LilvNode    uri,
-                                      const char* label);
-
-void lilv_plugin_class_free(LilvPluginClass plugin_class);
+void lilv_plugin_class_free(LilvPluginClass* plugin_class);
 
 /* ********* Plugin Classes ********* */
 
-LilvPluginClasses lilv_plugin_classes_new();
-void              lilv_plugin_classes_free();
+LilvPluginClasses* lilv_plugin_classes_new();
+void               lilv_plugin_classes_free();
 
 /* ********* World ********* */
 
@@ -226,69 +216,69 @@ typedef struct {
 
 /** Model of LV2 (RDF) data loaded from bundles.
  */
-struct _LilvWorld {
-	SordWorld*        world;
-	SordModel*        model;
-	SerdReader*       reader;
-	SerdEnv*          namespaces;
-	unsigned          n_read_files;
-	LilvPluginClass   lv2_plugin_class;
-	LilvPluginClasses plugin_classes;
-	GSList*           specs;
-	LilvPlugins       plugins;
-	SordNode*         dc_replaces_node;
-	SordNode*         dyn_manifest_node;
-	SordNode*         lv2_specification_node;
-	SordNode*         lv2_plugin_node;
-	SordNode*         lv2_binary_node;
-	SordNode*         lv2_default_node;
-	SordNode*         lv2_minimum_node;
-	SordNode*         lv2_maximum_node;
-	SordNode*         lv2_port_node;
-	SordNode*         lv2_portproperty_node;
-	SordNode*         lv2_reportslatency_node;
-	SordNode*         lv2_index_node;
-	SordNode*         lv2_symbol_node;
-	SordNode*         rdf_a_node;
-	SordNode*         rdf_value_node;
-	SordNode*         rdfs_class_node;
-	SordNode*         rdfs_label_node;
-	SordNode*         rdfs_seealso_node;
-	SordNode*         rdfs_subclassof_node;
-	SordNode*         lilv_dmanifest_node;
-	SordNode*         xsd_boolean_node;
-	SordNode*         xsd_decimal_node;
-	SordNode*         xsd_double_node;
-	SordNode*         xsd_integer_node;
-	LilvValue         doap_name_val;
-	LilvValue         lv2_name_val;
-	LilvOptions       opt;
+struct LilvWorldImpl {
+	SordWorld*         world;
+	SordModel*         model;
+	SerdReader*        reader;
+	SerdEnv*           namespaces;
+	unsigned           n_read_files;
+	LilvPluginClass*   lv2_plugin_class;
+	LilvPluginClasses* plugin_classes;
+	GSList*            specs;
+	LilvPlugins*       plugins;
+	SordNode*          dc_replaces_node;
+	SordNode*          dyn_manifest_node;
+	SordNode*          lv2_specification_node;
+	SordNode*          lv2_plugin_node;
+	SordNode*          lv2_binary_node;
+	SordNode*          lv2_default_node;
+	SordNode*          lv2_minimum_node;
+	SordNode*          lv2_maximum_node;
+	SordNode*          lv2_port_node;
+	SordNode*          lv2_portproperty_node;
+	SordNode*          lv2_reportslatency_node;
+	SordNode*          lv2_index_node;
+	SordNode*          lv2_symbol_node;
+	SordNode*          rdf_a_node;
+	SordNode*          rdf_value_node;
+	SordNode*          rdfs_class_node;
+	SordNode*          rdfs_label_node;
+	SordNode*          rdfs_seealso_node;
+	SordNode*          rdfs_subclassof_node;
+	SordNode*          lilv_dmanifest_node;
+	SordNode*          xsd_boolean_node;
+	SordNode*          xsd_decimal_node;
+	SordNode*          xsd_double_node;
+	SordNode*          xsd_integer_node;
+	LilvValue*         doap_name_val;
+	LilvValue*         lv2_name_val;
+	LilvOptions        opt;
 };
 
 const uint8_t*
-lilv_world_blank_node_prefix(LilvWorld world);
+lilv_world_blank_node_prefix(LilvWorld* world);
 void
-lilv_world_load_file(LilvWorld world, const char* file_uri);
+lilv_world_load_file(LilvWorld* world, const char* file_uri);
 
 /* ********* Plugin UI ********* */
 
-struct _LilvUI {
-	struct _LilvWorld* world;
-	LilvValue          uri;
-	LilvValue          bundle_uri;
-	LilvValue          binary_uri;
-	LilvValues         classes;
+struct LilvUIImpl {
+	LilvWorld*  world;
+	LilvValue*  uri;
+	LilvValue*  bundle_uri;
+	LilvValue*  binary_uri;
+	LilvValues* classes;
 };
 
-LilvUIs lilv_uis_new();
+LilvUIs* lilv_uis_new();
 
-LilvUI
-lilv_ui_new(LilvWorld world,
-            LilvValue uri,
-            LilvValue type_uri,
-            LilvValue binary_uri);
+LilvUI*
+lilv_ui_new(LilvWorld* world,
+            LilvValue* uri,
+            LilvValue* type_uri,
+            LilvValue* binary_uri);
 
-void lilv_ui_free(LilvUI ui);
+void lilv_ui_free(LilvUI* ui);
 
 /* ********* Value ********* */
 
@@ -302,8 +292,8 @@ typedef enum _LilvValueType {
 	LILV_VALUE_BLANK
 } LilvValueType;
 
-struct _LilvValue {
-	LilvWorld     world;
+struct LilvValueImpl {
+	LilvWorld*    world;
 	char*         str_val; ///< always present
 	union {
 		int       int_val;
@@ -314,9 +304,9 @@ struct _LilvValue {
 	LilvValueType type;
 };
 
-LilvValue lilv_value_new(LilvWorld world, LilvValueType type, const char* val);
-LilvValue lilv_value_new_from_node(LilvWorld world, LilvNode node);
-LilvNode  lilv_value_as_node(LilvValue value);
+LilvValue* lilv_value_new(LilvWorld* world, LilvValueType type, const char* val);
+LilvValue* lilv_value_new_from_node(LilvWorld* world, LilvNode node);
+LilvNode  lilv_value_as_node(const LilvValue* value);
 
 int
 lilv_header_compare_by_uri(const void* a, const void* b, void* user_data);
@@ -332,33 +322,33 @@ lilv_array_append(GSequence* seq, void* value) {
 	g_sequence_append(seq, value);
 }
 
-struct _LilvHeader*
-lilv_sequence_get_by_uri(GSequence* seq, LilvValue uri);
+struct LilvHeader*
+lilv_sequence_get_by_uri(const GSequence* seq, const LilvValue* uri);
 
 static inline SordNode* lilv_node_copy(LilvNode node) {
 	return sord_node_copy(node);
 }
 
-static inline void lilv_node_free(LilvWorld world, SordNode* node) {
+static inline void lilv_node_free(LilvWorld* world, SordNode* node) {
 	sord_node_free(world->world, node);
 }
 
 /* ********* Scale Points ********* */
 
-struct _LilvScalePoint {
-	LilvValue value;
-	LilvValue label;
+struct LilvScalePointImpl {
+	LilvValue* value;
+	LilvValue* label;
 };
 
-LilvScalePoint lilv_scale_point_new(LilvValue value, LilvValue label);
-void           lilv_scale_point_free(LilvScalePoint point);
+LilvScalePoint* lilv_scale_point_new(LilvValue* value, LilvValue* label);
+void            lilv_scale_point_free(LilvScalePoint* point);
 
 /* ********* Query Results ********* */
 
-LilvMatches lilv_plugin_find_statements(LilvPlugin plugin,
-                                        LilvNode   subject,
-                                        LilvNode   predicate,
-                                        LilvNode   object);
+LilvMatches lilv_plugin_find_statements(const LilvPlugin* plugin,
+                                        LilvNode          subject,
+                                        LilvNode          predicate,
+                                        LilvNode          object);
 
 static inline bool lilv_matches_next(LilvMatches matches) {
 	return sord_iter_next(matches);
@@ -368,15 +358,15 @@ static inline bool lilv_matches_end(LilvMatches matches) {
 	return sord_iter_end(matches);
 }
 
-LilvValues lilv_values_from_stream_objects(LilvPlugin  p,
-                                           LilvMatches stream);
+LilvValues* lilv_values_from_stream_objects(const LilvPlugin* p,
+                                            LilvMatches       stream);
 
 /* ********* Utilities ********* */
 
 char*    lilv_strjoin(const char* first, ...);
 char*    lilv_strdup(const char* str);
 char*    lilv_get_lang();
-uint8_t* lilv_qname_expand(LilvPlugin p, const char* qname);
+uint8_t* lilv_qname_expand(const LilvPlugin* p, const char* qname);
 
 typedef void (*VoidFunc)();
 

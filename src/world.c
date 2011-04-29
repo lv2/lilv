@@ -29,7 +29,7 @@
 #include "lilv_internal.h"
 
 static void
-lilv_world_set_prefix(LilvWorld world, const char* name, const char* uri)
+lilv_world_set_prefix(LilvWorld* world, const char* name, const char* uri)
 {
 	const SerdNode name_node = serd_node_from_string(SERD_LITERAL,
 	                                                 (const uint8_t*)name);
@@ -39,10 +39,10 @@ lilv_world_set_prefix(LilvWorld world, const char* name, const char* uri)
 }
 
 LILV_API
-LilvWorld
+LilvWorld*
 lilv_world_new()
 {
-	LilvWorld world = (LilvWorld)malloc(sizeof(struct _LilvWorld));
+	LilvWorld* world = malloc(sizeof(struct LilvWorldImpl));
 
 	world->world = sord_world_new();
 	if (!world->world)
@@ -115,7 +115,7 @@ fail:
 
 LILV_API
 void
-lilv_world_free(LilvWorld world)
+lilv_world_free(LilvWorld* world)
 {
 	lilv_plugin_class_free(world->lv2_plugin_class);
 	world->lv2_plugin_class = NULL;
@@ -148,7 +148,7 @@ lilv_world_free(LilvWorld world)
 	lilv_value_free(world->lv2_name_val);
 
 	for (GSList* l = world->specs; l; l = l->next) {
-		LilvSpec spec = (LilvSpec)l->data;
+		LilvSpec* spec = (LilvSpec*)l->data;
 		lilv_node_free(world, spec->spec);
 		lilv_node_free(world, spec->bundle);
 		lilv_values_free(spec->data_uris);
@@ -158,8 +158,8 @@ lilv_world_free(LilvWorld world)
 	world->specs = NULL;
 
 	LILV_FOREACH(plugins, i, world->plugins) {
-		LilvPlugin p = lilv_plugins_get(world->plugins, i);
-		lilv_plugin_free(p);
+		const LilvPlugin* p = lilv_plugins_get(world->plugins, i);
+		lilv_plugin_free((LilvPlugin*)p);
 	}
 	g_sequence_free(world->plugins);
 	world->plugins = NULL;
@@ -180,9 +180,9 @@ lilv_world_free(LilvWorld world)
 
 LILV_API
 void
-lilv_world_set_option(LilvWorld       world,
-                      const char*     option,
-                      const LilvValue value)
+lilv_world_set_option(LilvWorld*       world,
+                      const char*      option,
+                      const LilvValue* value)
 {
 	if (!strcmp(option, LILV_OPTION_DYN_MANIFEST)) {
 		if (lilv_value_is_bool(value)) {
@@ -199,7 +199,7 @@ lilv_world_set_option(LilvWorld       world,
 }
 
 static LilvMatches
-lilv_world_find_statements(LilvWorld  world,
+lilv_world_find_statements(LilvWorld* world,
                            SordModel* model,
                            LilvNode   subject,
                            LilvNode   predicate,
@@ -224,7 +224,7 @@ lilv_new_uri_relative_to_base(const uint8_t* uri_str,
 }
 
 const uint8_t*
-lilv_world_blank_node_prefix(LilvWorld world)
+lilv_world_blank_node_prefix(LilvWorld* world)
 {
 	static char str[32];
 	snprintf(str, sizeof(str), "%d", world->n_read_files++);
@@ -235,36 +235,37 @@ lilv_world_blank_node_prefix(LilvWorld world)
 int
 lilv_header_compare_by_uri(const void* a, const void* b, void* user_data)
 {
-	const struct _LilvHeader* const header_a = (const struct _LilvHeader*)a;
-	const struct _LilvHeader* const header_b = (const struct _LilvHeader*)b;
+	const struct LilvHeader* const header_a = (const struct LilvHeader*)a;
+	const struct LilvHeader* const header_b = (const struct LilvHeader*)b;
 	return strcmp(lilv_value_as_uri(header_a->uri),
 	              lilv_value_as_uri(header_b->uri));
 }
 
 /** Get an element of a sequence of any object with an LilvHeader by URI. */
-struct _LilvHeader*
-lilv_sequence_get_by_uri(GSequence* seq,
-                         LilvValue  uri)
+struct LilvHeader*
+lilv_sequence_get_by_uri(const GSequence* const_seq,
+                         const LilvValue* uri)
 {
-	struct _LilvHeader key = { NULL, uri };
-	GSequenceIter*     i   = g_sequence_search(
+	GSequence*        seq = (GSequence*)const_seq;
+	struct LilvHeader key = { NULL, (LilvValue*)uri };
+	GSequenceIter*    i   = g_sequence_search(
 		seq, &key, lilv_header_compare_by_uri, NULL);
 
 	// i points to where plugin would be inserted (not necessarily a match)
 
 	if (!g_sequence_iter_is_end(i)) {
-		LilvPlugin p = g_sequence_get(i);
+		LilvPlugin* p = g_sequence_get(i);
 		if (lilv_value_equals(lilv_plugin_get_uri(p), uri)) {
-			return (struct _LilvHeader*)p;
+			return (struct LilvHeader*)p;
 		}
 	}
 
 	if (!g_sequence_iter_is_begin(i)) {
 		// Check if i is just past a match
 		i = g_sequence_iter_prev(i);
-		LilvPlugin p = g_sequence_get(i);
+		LilvPlugin* p = g_sequence_get(i);
 		if (lilv_value_equals(lilv_plugin_get_uri(p), uri)) {
-			return (struct _LilvHeader*)p;
+			return (struct LilvHeader*)p;
 		}
 	}
 
@@ -272,11 +273,11 @@ lilv_sequence_get_by_uri(GSequence* seq,
 }
 
 static void
-lilv_world_add_spec(LilvWorld world,
+lilv_world_add_spec(LilvWorld* world,
                     LilvNode  specification_node,
                     LilvNode  bundle_node)
 {
-	LilvSpec spec = malloc(sizeof(struct _LilvSpec));
+	LilvSpec* spec = malloc(sizeof(struct LilvSpecImpl));
 	spec->spec      = lilv_node_copy(specification_node);
 	spec->bundle    = lilv_node_copy(bundle_node);
 	spec->data_uris = lilv_values_new();
@@ -300,15 +301,15 @@ lilv_world_add_spec(LilvWorld world,
 }
 
 static void
-lilv_world_add_plugin(LilvWorld world,
-                      LilvNode  plugin_node,
-                      SerdNode* manifest_uri,
-                      LilvNode  dyn_manifest_lib,
-                      LilvNode  bundle_node)
+lilv_world_add_plugin(LilvWorld* world,
+                      LilvNode   plugin_node,
+                      SerdNode*  manifest_uri,
+                      LilvNode   dyn_manifest_lib,
+                      LilvNode   bundle_node)
 {
-	LilvValue plugin_uri  = lilv_value_new_from_node(world, plugin_node);
+	LilvValue* plugin_uri  = lilv_value_new_from_node(world, plugin_node);
 
-	LilvPlugin last = lilv_plugins_get_by_uri(world->plugins, plugin_uri);
+	const LilvPlugin* last = lilv_plugins_get_by_uri(world->plugins, plugin_uri);
 	if (last) {
 		LILV_ERRORF("Duplicate plugin <%s>\n", lilv_value_as_uri(plugin_uri));
 		LILV_ERRORF("... found in %s\n", lilv_value_as_string(
@@ -319,8 +320,8 @@ lilv_world_add_plugin(LilvWorld world,
 	}
 
 	// Create LilvPlugin
-	LilvValue  bundle_uri = lilv_value_new_from_node(world, bundle_node);
-	LilvPlugin plugin     = lilv_plugin_new(world, plugin_uri, bundle_uri);
+	LilvValue*  bundle_uri = lilv_value_new_from_node(world, bundle_node);
+	LilvPlugin* plugin     = lilv_plugin_new(world, plugin_uri, bundle_uri);
 
 	// Add manifest as plugin data file (as if it were rdfs:seeAlso)
 	lilv_array_append(plugin->data_uris,
@@ -350,7 +351,7 @@ lilv_world_add_plugin(LilvWorld world,
 }
 
 static void
-lilv_world_load_dyn_manifest(LilvWorld world,
+lilv_world_load_dyn_manifest(LilvWorld* world,
                              SordNode* bundle_node,
                              SerdNode  manifest_uri)
 {
@@ -455,7 +456,7 @@ lilv_world_load_dyn_manifest(LilvWorld world,
 
 LILV_API
 void
-lilv_world_load_bundle(LilvWorld world, LilvValue bundle_uri)
+lilv_world_load_bundle(LilvWorld* world, LilvValue* bundle_uri)
 {
 	if (!lilv_value_is_uri(bundle_uri)) {
 		LILV_ERROR("Bundle 'URI' is not a URI\n");
@@ -534,7 +535,7 @@ expand(const char* path)
 
 /** Load all bundles in the directory at @a dir_path. */
 static void
-lilv_world_load_directory(LilvWorld world, const char* dir_path)
+lilv_world_load_directory(LilvWorld* world, const char* dir_path)
 {
 	char* path = expand(dir_path);
 	if (!path) {
@@ -568,7 +569,7 @@ lilv_world_load_directory(LilvWorld world, const char* dir_path)
 		DIR* const bundle_dir = opendir(uri + file_scheme_len);
 		if (bundle_dir) {
 			closedir(bundle_dir);
-			LilvValue uri_val = lilv_value_new_uri(world, uri);
+			LilvValue* uri_val = lilv_value_new_uri(world, uri);
 			lilv_world_load_bundle(world, uri_val);
 			lilv_value_free(uri_val);
 		} else {
@@ -605,7 +606,7 @@ first_path_sep(const char* path)
  * parent directories of bundles, not a list of bundle directories).
  */
 static void
-lilv_world_load_path(LilvWorld   world,
+lilv_world_load_path(LilvWorld*  world,
                      const char* lv2_path)
 {
 	while (lv2_path[0] != '\0') {
@@ -626,12 +627,12 @@ lilv_world_load_path(LilvWorld   world,
 }
 
 static void
-lilv_world_load_specifications(LilvWorld world)
+lilv_world_load_specifications(LilvWorld* world)
 {
 	for (GSList* l = world->specs; l; l = l->next) {
-		LilvSpec spec = (LilvSpec)l->data;
+		LilvSpec* spec = (LilvSpec*)l->data;
 		LILV_FOREACH(values, f, spec->data_uris) {
-			LilvValue file = lilv_collection_get(spec->data_uris, f);
+			LilvValue* file = lilv_collection_get(spec->data_uris, f);
 			sord_read_file(world->model,
 			               (const uint8_t*)lilv_value_as_uri(file),
 			               NULL,
@@ -641,7 +642,7 @@ lilv_world_load_specifications(LilvWorld world)
 }
 
 static void
-lilv_world_load_plugin_classes(LilvWorld world)
+lilv_world_load_plugin_classes(LilvWorld* world)
 {
 	/* FIXME: This loads all classes, not just lv2:Plugin subclasses.
 	   However, if the host gets all the classes via lilv_plugin_class_get_children
@@ -696,8 +697,8 @@ lilv_world_load_plugin_classes(LilvWorld world)
 		const uint8_t* label      = (const uint8_t*)sord_node_get_string(label_node);
 		lilv_match_end(labels);
 
-		LilvPluginClasses classes = world->plugin_classes;
-		LilvPluginClass   pclass  = lilv_plugin_class_new(
+		LilvPluginClasses* classes = world->plugin_classes;
+		LilvPluginClass*   pclass  = lilv_plugin_class_new(
 			world, parent_node, class_node, (const char*)label);
 
 		if (pclass) {
@@ -709,7 +710,7 @@ lilv_world_load_plugin_classes(LilvWorld world)
 
 LILV_API
 void
-lilv_world_load_all(LilvWorld world)
+lilv_world_load_all(LilvWorld* world)
 {
 	const char* lv2_path = getenv("LV2_PATH");
 	if (!lv2_path)
@@ -719,8 +720,8 @@ lilv_world_load_all(LilvWorld world)
 	lilv_world_load_path(world, lv2_path);
 
 	LILV_FOREACH(plugins, p, world->plugins) {
-		LilvPlugin plugin     = lilv_collection_get(world->plugins, p);
-		LilvValue  plugin_uri = lilv_plugin_get_uri(plugin);
+		const LilvPlugin* plugin     = lilv_collection_get(world->plugins, p);
+		const LilvValue*  plugin_uri = lilv_plugin_get_uri(plugin);
 
 		// ?new dc:replaces plugin
 		LilvMatches replacement = lilv_world_find_statements(
@@ -733,7 +734,7 @@ lilv_world_load_all(LilvWorld world)
 			/* TODO: Check if replacement is actually a known plugin,
 			   though this is expensive...
 			*/
-			plugin->replaced = true;
+			((LilvPlugin*)plugin)->replaced = true;
 		}
 		lilv_match_end(replacement);
 	}
@@ -744,33 +745,22 @@ lilv_world_load_all(LilvWorld world)
 }
 
 LILV_API
-LilvPluginClass
-lilv_world_get_plugin_class(LilvWorld world)
+const LilvPluginClass*
+lilv_world_get_plugin_class(const LilvWorld* world)
 {
 	return world->lv2_plugin_class;
 }
 
 LILV_API
-LilvPluginClasses
-lilv_world_get_plugin_classes(LilvWorld world)
+const LilvPluginClasses*
+lilv_world_get_plugin_classes(const LilvWorld* world)
 {
 	return world->plugin_classes;
 }
 
 LILV_API
-LilvPlugins
-lilv_world_get_all_plugins(LilvWorld world)
+const LilvPlugins*
+lilv_world_get_all_plugins(const LilvWorld* world)
 {
 	return world->plugins;
-}
-
-LILV_API
-LilvPlugin
-lilv_world_get_plugin_by_uri_string(LilvWorld   world,
-                                    const char* uri)
-{
-	LilvValue  uri_val = lilv_value_new_uri(world, uri);
-	LilvPlugin plugin  = lilv_plugins_get_by_uri(world->plugins, uri_val);
-	lilv_value_free(uri_val);
-	return plugin;
 }

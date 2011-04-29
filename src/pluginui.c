@@ -22,17 +22,17 @@
 
 #include "lilv_internal.h"
 
-LilvUI
-lilv_ui_new(LilvWorld world,
-            LilvValue uri,
-            LilvValue type_uri,
-            LilvValue binary_uri)
+LilvUI*
+lilv_ui_new(LilvWorld* world,
+            LilvValue* uri,
+            LilvValue* type_uri,
+            LilvValue* binary_uri)
 {
 	assert(uri);
 	assert(type_uri);
 	assert(binary_uri);
 
-	struct _LilvUI* ui = malloc(sizeof(struct _LilvUI));
+	LilvUI* ui = malloc(sizeof(struct LilvUIImpl));
 	ui->world      = world;
 	ui->uri        = uri;
 	ui->binary_uri = binary_uri;
@@ -51,7 +51,7 @@ lilv_ui_new(LilvWorld world,
 }
 
 void
-lilv_ui_free(LilvUI ui)
+lilv_ui_free(LilvUI* ui)
 {
 	lilv_value_free(ui->uri);
 	ui->uri = NULL;
@@ -68,8 +68,8 @@ lilv_ui_free(LilvUI ui)
 }
 
 LILV_API
-LilvValue
-lilv_ui_get_uri(LilvUI ui)
+const LilvValue*
+lilv_ui_get_uri(const LilvUI* ui)
 {
 	assert(ui);
 	assert(ui->uri);
@@ -78,17 +78,17 @@ lilv_ui_get_uri(LilvUI ui)
 
 LILV_API
 unsigned
-lilv_ui_is_supported(LilvUI              ui,
+lilv_ui_is_supported(const LilvUI*       ui,
                      LilvUISupportedFunc supported_func,
-                     LilvValue           container_type,
-                     LilvValue*          ui_type)
+                     const LilvValue*    container_type,
+                     const LilvValue**   ui_type)
 {
 #ifdef HAVE_SUIL
-	LilvValues classes = lilv_ui_get_classes(ui);
+	const LilvValues* classes = lilv_ui_get_classes(ui);
 	LILV_FOREACH(values, c, classes) {
-		LilvValue type = lilv_values_get(classes, c);
-		const unsigned q = supported_func(lilv_value_as_uri(container_type),
-		                                  lilv_value_as_uri(type));
+		const LilvValue* type = lilv_values_get(classes, c);
+		const unsigned   q    = supported_func(lilv_value_as_uri(container_type),
+		                                       lilv_value_as_uri(type));
 		if (q) {
 			if (ui_type) {
 				*ui_type = lilv_value_duplicate(type);
@@ -101,22 +101,22 @@ lilv_ui_is_supported(LilvUI              ui,
 }
 
 LILV_API
-LilvValues
-lilv_ui_get_classes(LilvUI ui)
+const LilvValues*
+lilv_ui_get_classes(const LilvUI* ui)
 {
 	return ui->classes;
 }
 
 LILV_API
 bool
-lilv_ui_is_a(LilvUI ui, LilvValue ui_class_uri)
+lilv_ui_is_a(const LilvUI* ui, const LilvValue* ui_class_uri)
 {
 	return lilv_values_contains(ui->classes, ui_class_uri);
 }
 
 LILV_API
-LilvValue
-lilv_ui_get_bundle_uri(LilvUI ui)
+const LilvValue*
+lilv_ui_get_bundle_uri(const LilvUI* ui)
 {
 	assert(ui);
 	assert(ui->bundle_uri);
@@ -124,8 +124,8 @@ lilv_ui_get_bundle_uri(LilvUI ui)
 }
 
 LILV_API
-LilvValue
-lilv_ui_get_binary_uri(LilvUI ui)
+const LilvValue*
+lilv_ui_get_binary_uri(const LilvUI* ui)
 {
 	assert(ui);
 	assert(ui->binary_uri);
