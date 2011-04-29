@@ -200,33 +200,33 @@ lilv_world_set_option(LilvWorld*       world,
 	LILV_WARNF("Unrecognized or invalid option `%s'\n", option);
 }
 
-static LilvMatches
-lilv_world_find_statements(LilvWorld* world,
-                           SordModel* model,
-                           LilvNode   subject,
-                           LilvNode   predicate,
-                           LilvNode   object,
-                           LilvNode   graph)
+static SordIter*
+lilv_world_find_statements(LilvWorld*      world,
+                           SordModel*      model,
+                           const SordNode* subject,
+                           const SordNode* predicate,
+                           const SordNode* object,
+                           const SordNode* graph)
 {
 	SordQuad pat = { subject, predicate, object, graph };
 	return sord_find(model, pat);
 }
 
-LilvMatches
-lilv_world_query(LilvWorld* world,
-                 LilvNode   subject,
-                 LilvNode   predicate,
-                 LilvNode   object)
+SordIter*
+lilv_world_query(LilvWorld*      world,
+                 const SordNode* subject,
+                 const SordNode* predicate,
+                 const SordNode* object)
 {
 	return lilv_world_find_statements(world, world->model,
 	                                  subject, predicate, object, NULL);
 }
 
 LilvValues*
-lilv_world_query_values(LilvWorld* world,
-                        LilvNode   subject,
-                        LilvNode   predicate,
-                        LilvNode   object)
+lilv_world_query_values(LilvWorld*      world,
+                        const SordNode* subject,
+                        const SordNode* predicate,
+                        const SordNode* object)
 {
 	return lilv_values_from_stream_objects(world,
 		lilv_world_query(world, subject, predicate, object));
@@ -295,9 +295,9 @@ lilv_sequence_get_by_uri(const GSequence* const_seq,
 }
 
 static void
-lilv_world_add_spec(LilvWorld* world,
-                    LilvNode  specification_node,
-                    LilvNode  bundle_node)
+lilv_world_add_spec(LilvWorld*      world,
+                    const SordNode* specification_node,
+                    const SordNode* bundle_node)
 {
 	LilvSpec* spec = malloc(sizeof(struct LilvSpecImpl));
 	spec->spec      = lilv_node_copy(specification_node);
@@ -305,14 +305,14 @@ lilv_world_add_spec(LilvWorld* world,
 	spec->data_uris = lilv_values_new();
 
 	// Add all plugin data files (rdfs:seeAlso)
-	LilvMatches files = lilv_world_find_statements(
+	SordIter* files = lilv_world_find_statements(
 		world, world->model,
 		specification_node,
 		world->rdfs_seealso_node,
 		NULL,
 		NULL);
 	FOREACH_MATCH(files) {
-		LilvNode file_node = lilv_match_object(files);
+		const SordNode* file_node = lilv_match_object(files);
 		lilv_array_append(spec->data_uris,
 		                  lilv_value_new_from_node(world, file_node));
 	}
@@ -323,11 +323,11 @@ lilv_world_add_spec(LilvWorld* world,
 }
 
 static void
-lilv_world_add_plugin(LilvWorld* world,
-                      LilvNode   plugin_node,
-                      SerdNode*  manifest_uri,
-                      LilvNode   dyn_manifest_lib,
-                      LilvNode   bundle_node)
+lilv_world_add_plugin(LilvWorld*      world,
+                      const SordNode* plugin_node,
+                      SerdNode*       manifest_uri,
+                      const SordNode* dyn_manifest_lib,
+                      const SordNode* bundle_node)
 {
 	LilvValue* plugin_uri  = lilv_value_new_from_node(world, plugin_node);
 
@@ -355,14 +355,14 @@ lilv_world_add_plugin(LilvWorld* world,
 	}
 
 	// Add all plugin data files (rdfs:seeAlso)
-	LilvMatches files = lilv_world_find_statements(
+	SordIter* files = lilv_world_find_statements(
 		world, world->model,
 		plugin_node,
 		world->rdfs_seealso_node,
 		NULL,
 		NULL);
 	FOREACH_MATCH(files) {
-		LilvNode file_node = lilv_match_object(files);
+		const SordNode* file_node = lilv_match_object(files);
 		lilv_array_append(plugin->data_uris,
 		                  lilv_value_new_from_node(world, file_node));
 	}
@@ -386,17 +386,17 @@ lilv_world_load_dyn_manifest(LilvWorld* world,
 	LV2_Dyn_Manifest_Handle handle = NULL;
 
 	// ?dman a dynman:DynManifest
-	LilvMatches dmanifests = lilv_world_find_statements(
+	SordIter* dmanifests = lilv_world_find_statements(
 		world, world->model,
 		NULL,
 		world->rdf_a_node,
 		world->dyn_manifest_node,
 		bundle_node);
 	FOREACH_MATCH(dmanifests) {
-		LilvNode dmanifest = lilv_match_subject(dmanifests);
+		const SordNode* dmanifest = lilv_match_subject(dmanifests);
 
 		// ?dman lv2:binary ?binary
-		LilvMatches binaries  = lilv_world_find_statements(
+		SordIter* binaries  = lilv_world_find_statements(
 			world, world->model,
 			dmanifest,
 			world->lv2_binary_node,
@@ -410,9 +410,9 @@ lilv_world_load_dyn_manifest(LilvWorld* world,
 		}
 
 		// Get binary path
-		LilvNode       binary   = lilv_match_object(binaries);
-		const uint8_t* lib_uri  = sord_node_get_string(binary);
-		const char*    lib_path = lilv_uri_to_path((const char*)lib_uri);
+		const SordNode* binary   = lilv_match_object(binaries);
+		const uint8_t*  lib_uri  = sord_node_get_string(binary);
+		const char*     lib_path = lilv_uri_to_path((const char*)lib_uri);
 		if (!lib_path) {
 			LILV_ERROR("No dynamic manifest library path\n");
 			continue;
@@ -457,14 +457,14 @@ lilv_world_load_dyn_manifest(LilvWorld* world,
 		fclose(fd);
 
 		// ?plugin a lv2:Plugin
-		LilvMatches plug_results = lilv_world_find_statements(
+		SordIter* plug_results = lilv_world_find_statements(
 			world, world->model,
 			NULL,
 			world->rdf_a_node,
 			world->lv2_plugin_node,
 			bundle_node);
 		FOREACH_MATCH(plug_results) {
-			LilvNode plugin_node = lilv_match_subject(plug_results);
+			const SordNode* plugin_node = lilv_match_subject(plug_results);
 			lilv_world_add_plugin(world, plugin_node,
 			                      &manifest_uri, binary, bundle_node);
 		}
@@ -495,14 +495,14 @@ lilv_world_load_bundle(LilvWorld* world, LilvValue* bundle_uri)
 	               lilv_world_blank_node_prefix(world));
 
 	// ?plugin a lv2:Plugin
-	LilvMatches plug_results = lilv_world_find_statements(
+	SordIter* plug_results = lilv_world_find_statements(
 		world, world->model,
 		NULL,
 		world->rdf_a_node,
 		world->lv2_plugin_node,
 		bundle_node);
 	FOREACH_MATCH(plug_results) {
-		LilvNode plugin_node = lilv_match_subject(plug_results);
+		const SordNode* plugin_node = lilv_match_subject(plug_results);
 		lilv_world_add_plugin(world, plugin_node,
 		                      &manifest_uri, NULL, bundle_node);
 	}
@@ -511,14 +511,14 @@ lilv_world_load_bundle(LilvWorld* world, LilvValue* bundle_uri)
 	lilv_world_load_dyn_manifest(world, bundle_node, manifest_uri);
 
 	// ?specification a lv2:Specification
-	LilvMatches spec_results = lilv_world_find_statements(
+	SordIter* spec_results = lilv_world_find_statements(
 		world, world->model,
 		NULL,
 		world->rdf_a_node,
 		world->lv2_specification_node,
 		bundle_node);
 	FOREACH_MATCH(spec_results) {
-		LilvNode spec = lilv_match_subject(spec_results);
+		const SordNode* spec = lilv_match_subject(spec_results);
 		lilv_world_add_spec(world, spec, bundle_node);
 	}
 	lilv_match_end(spec_results);
@@ -672,17 +672,17 @@ lilv_world_load_plugin_classes(LilvWorld* world)
 	   a menu), they won't be seen anyway...
 	*/
 
-	LilvMatches classes = lilv_world_find_statements(
+	SordIter* classes = lilv_world_find_statements(
 		world, world->model,
 		NULL,
 		world->rdf_a_node,
 		world->rdfs_class_node,
 		NULL);
 	FOREACH_MATCH(classes) {
-		LilvNode class_node = lilv_match_subject(classes);
+		const SordNode* class_node = lilv_match_subject(classes);
 
 		// Get parents (superclasses)
-		LilvMatches parents = lilv_world_find_statements(
+		SordIter* parents = lilv_world_find_statements(
 			world, world->model,
 			class_node,
 			world->rdfs_subclassof_node,
@@ -694,7 +694,7 @@ lilv_world_load_plugin_classes(LilvWorld* world)
 			continue;
 		}
 
-		LilvNode parent_node = lilv_match_object(parents);
+		const SordNode* parent_node = lilv_match_object(parents);
 		lilv_match_end(parents);
 
 		if (!sord_node_get_type(parent_node) == SORD_URI) {
@@ -703,7 +703,7 @@ lilv_world_load_plugin_classes(LilvWorld* world)
 		}
 
 		// Get labels
-		LilvMatches labels = lilv_world_find_statements(
+		SordIter* labels = lilv_world_find_statements(
 			world, world->model,
 			class_node,
 			world->rdfs_label_node,
@@ -715,7 +715,7 @@ lilv_world_load_plugin_classes(LilvWorld* world)
 			continue;
 		}
 
-		LilvNode       label_node = lilv_match_object(labels);
+		const SordNode*       label_node = lilv_match_object(labels);
 		const uint8_t* label      = (const uint8_t*)sord_node_get_string(label_node);
 		lilv_match_end(labels);
 
@@ -746,7 +746,7 @@ lilv_world_load_all(LilvWorld* world)
 		const LilvValue*  plugin_uri = lilv_plugin_get_uri(plugin);
 
 		// ?new dc:replaces plugin
-		LilvMatches replacement = lilv_world_find_statements(
+		SordIter* replacement = lilv_world_find_statements(
 			world, world->model,
 			NULL,
 			world->dc_replaces_node,

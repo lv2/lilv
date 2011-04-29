@@ -312,7 +312,7 @@ lilv_value_as_uri(const LilvValue* value)
 	return value->str_val;
 }
 
-LilvNode
+const SordNode*
 lilv_value_as_node(const LilvValue* value)
 {
 	assert(lilv_value_is_uri(value));

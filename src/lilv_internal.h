@@ -55,28 +55,25 @@ static inline char* dlerror(void) { return "Unknown error"; }
 #define LILV_NS_XSD  "http://www.w3.org/2001/XMLSchema#"
 #define LILV_NS_RDF  "http://www.w3.org/1999/02/22-rdf-syntax-ns#"
 
-typedef SordIter*       LilvMatches;
-typedef const SordNode* LilvNode;
-
 #define FOREACH_MATCH(iter) \
 	for (; !sord_iter_end(iter); sord_iter_next(iter))
 
 static inline const SordNode*
-lilv_match_subject(LilvMatches iter) {
+lilv_match_subject(SordIter* iter) {
 	SordQuad tup;
 	sord_iter_get(iter, tup);
 	return tup[SORD_SUBJECT];
 }
 
 static inline const SordNode*
-lilv_match_object(LilvMatches iter) {
+lilv_match_object(SordIter* iter) {
 	SordQuad tup;
 	sord_iter_get(iter, tup);
 	return tup[SORD_OBJECT];
 }
 
 static inline void
-lilv_match_end(LilvMatches iter)
+lilv_match_end(SordIter* iter)
 {
 	sord_iter_free(iter);
 }
@@ -139,8 +136,8 @@ void        lilv_plugin_free(LilvPlugin* plugin);
 
 LilvValue*
 lilv_plugin_get_unique(const LilvPlugin* p,
-                       LilvNode          subject,
-                       LilvNode          predicate);
+                       const SordNode*   subject,
+                       const SordNode*   predicate);
 
 /* ********* Plugins ********* */
 
@@ -194,10 +191,10 @@ struct LilvPluginClassImpl {
 	LilvValue* label;
 };
 
-LilvPluginClass* lilv_plugin_class_new(LilvWorld*  world,
-                                       LilvNode    parent_uri,
-                                       LilvNode    uri,
-                                       const char* label);
+LilvPluginClass* lilv_plugin_class_new(LilvWorld*      world,
+                                       const SordNode* parent_uri,
+                                       const SordNode* uri,
+                                       const char*     label);
 
 void lilv_plugin_class_free(LilvPluginClass* plugin_class);
 
@@ -304,8 +301,8 @@ struct LilvValueImpl {
 };
 
 LilvValue* lilv_value_new(LilvWorld* world, LilvValueType type, const char* val);
-LilvValue* lilv_value_new_from_node(LilvWorld* world, LilvNode node);
-LilvNode  lilv_value_as_node(const LilvValue* value);
+LilvValue* lilv_value_new_from_node(LilvWorld* world, const SordNode* node);
+const SordNode*  lilv_value_as_node(const LilvValue* value);
 
 int
 lilv_header_compare_by_uri(const void* a, const void* b, void* user_data);
@@ -324,7 +321,7 @@ lilv_array_append(GSequence* seq, void* value) {
 struct LilvHeader*
 lilv_sequence_get_by_uri(const GSequence* seq, const LilvValue* uri);
 
-static inline SordNode* lilv_node_copy(LilvNode node) {
+static inline SordNode* lilv_node_copy(const SordNode* node) {
 	return sord_node_copy(node);
 }
 
@@ -344,28 +341,28 @@ void            lilv_scale_point_free(LilvScalePoint* point);
 
 /* ********* Query Results ********* */
 
-LilvMatches
-lilv_world_query(LilvWorld* world,
-                 LilvNode   subject,
-                 LilvNode   predicate,
-                 LilvNode   object);
+SordIter*
+lilv_world_query(LilvWorld*      world,
+                 const SordNode* subject,
+                 const SordNode* predicate,
+                 const SordNode* object);
 
 LilvValues*
-lilv_world_query_values(LilvWorld* world,
-                        LilvNode   subject,
-                        LilvNode   predicate,
-                        LilvNode   object);
+lilv_world_query_values(LilvWorld*      world,
+                        const SordNode* subject,
+                        const SordNode* predicate,
+                        const SordNode* object);
 
-static inline bool lilv_matches_next(LilvMatches matches) {
+static inline bool lilv_matches_next(SordIter* matches) {
 	return sord_iter_next(matches);
 }
 
-static inline bool lilv_matches_end(LilvMatches matches) {
+static inline bool lilv_matches_end(SordIter* matches) {
 	return sord_iter_end(matches);
 }
 
-LilvValues* lilv_values_from_stream_objects(LilvWorld*  w,
-                                            LilvMatches stream);
+LilvValues* lilv_values_from_stream_objects(LilvWorld* w,
+                                            SordIter*  stream);
 
 /* ********* Utilities ********* */
 

@@ -54,15 +54,15 @@ lilv_lang_matches(const char* a, const char* b)
 }
 
 LilvValues*
-lilv_values_from_stream_objects_i18n(LilvWorld*  world,
-                                     LilvMatches stream)
+lilv_values_from_stream_objects_i18n(LilvWorld* world,
+                                     SordIter*  stream)
 {
-	LilvValues* values  = lilv_values_new();
-	LilvNode    nolang  = NULL;  // Untranslated value
-	LilvNode    partial = NULL;  // Partial language match
-	char*       syslang = lilv_get_lang();
+	LilvValues*     values  = lilv_values_new();
+	const SordNode* nolang  = NULL; // Untranslated value
+	const SordNode* partial = NULL; // Partial language match
+	char*           syslang = lilv_get_lang();
 	FOREACH_MATCH(stream) {
-		LilvNode value = lilv_match_object(stream);
+		const SordNode* value = lilv_match_object(stream);
 		if (sord_node_get_type(value) == SORD_LITERAL) {
 			const char*   lang = sord_node_get_language(value);
 			LilvLangMatch lm   = LILV_LANG_MATCH_NONE;
@@ -95,7 +95,7 @@ lilv_values_from_stream_objects_i18n(LilvWorld*  world,
 		return values;
 	}
 
-	LilvNode best = nolang;
+	const SordNode* best = nolang;
 	if (syslang && partial) {
 		// Partial language match for system language
 		best = partial;
@@ -117,8 +117,8 @@ lilv_values_from_stream_objects_i18n(LilvWorld*  world,
 }
 
 LilvValues*
-lilv_values_from_stream_objects(LilvWorld*  world,
-                                LilvMatches stream)
+lilv_values_from_stream_objects(LilvWorld* world,
+                                SordIter*  stream)
 {
 	if (lilv_matches_end(stream)) {
 		lilv_match_end(stream);

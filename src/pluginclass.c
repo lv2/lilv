@@ -23,10 +23,10 @@
 #include "lilv_internal.h"
 
 LilvPluginClass*
-lilv_plugin_class_new(LilvWorld*  world,
-                      LilvNode    parent_node,
-                      LilvNode    uri,
-                      const char* label)
+lilv_plugin_class_new(LilvWorld*      world,
+                      const SordNode* parent_node,
+                      const SordNode* uri,
+                      const char*     label)
 {
 	if (parent_node && sord_node_get_type(parent_node) != SORD_URI) {
 		return NULL;  // Not an LV2 plugin superclass (FIXME: discover properly)
