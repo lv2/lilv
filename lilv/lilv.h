@@ -160,7 +160,7 @@ lilv_value_equals(const LilvValue* value, const LilvValue* other);
 
 /**
    Return this value as a Turtle/SPARQL token.
-   Returned value must be freed by caller with lilv_value_free.
+   Returned value must be freed by caller with free().
    <table>
    <caption>Example Turtle Tokens</caption>
    <tr><th>URI</th><td>&lt;http://example.org/foo &gt;</td></tr>
