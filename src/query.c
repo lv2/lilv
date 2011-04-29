@@ -55,7 +55,7 @@ lilv_lang_matches(const char* a, const char* b)
 
 LilvNodes*
 lilv_nodes_from_stream_objects_i18n(LilvWorld* world,
-                                     SordIter*  stream)
+                                    SordIter*  stream)
 {
 	LilvNodes*     values  = lilv_nodes_new();
 	const SordNode* nolang  = NULL; // Untranslated value
@@ -118,7 +118,7 @@ lilv_nodes_from_stream_objects_i18n(LilvWorld* world,
 
 LilvNodes*
 lilv_nodes_from_stream_objects(LilvWorld* world,
-                                SordIter*  stream)
+                               SordIter*  stream)
 {
 	if (lilv_matches_end(stream)) {
 		lilv_match_end(stream);

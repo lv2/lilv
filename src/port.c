@@ -73,7 +73,7 @@ lilv_port_get_node(const LilvPlugin* p,
 			p->world->lv2_symbol_node);
 
 		const bool matches = lilv_node_equals(symbol,
-		                                       lilv_port_get_symbol(p, port));
+		                                      lilv_port_get_symbol(p, port));
 
 		lilv_node_free(symbol);
 		if (matches) {
@@ -173,7 +173,7 @@ lilv_port_get_name(const LilvPlugin* p,
                    const LilvPort*   port)
 {
 	LilvNodes* results = lilv_port_get_value(p, port,
-	                                          p->world->lv2_name_val);
+	                                         p->world->lv2_name_val);
 
 	LilvNode* ret = NULL;
 	if (results) {

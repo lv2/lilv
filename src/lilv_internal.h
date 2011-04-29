@@ -354,7 +354,7 @@ static inline bool lilv_matches_end(SordIter* matches) {
 }
 
 LilvNodes* lilv_nodes_from_stream_objects(LilvWorld* w,
-                                            SordIter*  stream);
+                                          SordIter*  stream);
 
 /* ********* Utilities ********* */
 

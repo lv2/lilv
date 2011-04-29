@@ -62,7 +62,7 @@ typedef struct LilvPluginClassImpl LilvPluginClass;  /**< Plugin Class. */
 typedef struct LilvPortImpl        LilvPort;         /**< Port. */
 typedef struct LilvScalePointImpl  LilvScalePoint;   /**< Scale Point (Notch). */
 typedef struct LilvUIImpl          LilvUI;           /**< Plugin UI. */
-typedef struct LilvNodeImpl       LilvNode;        /**< Typed Value. */
+typedef struct LilvNodeImpl       LilvNode;          /**< Typed Value. */
 typedef struct LilvWorldImpl       LilvWorld;        /**< Lilv World. */
 typedef struct LilvInstanceImpl    LilvInstance;     /**< Plugin instance. */
 
@@ -71,7 +71,7 @@ typedef void LilvPluginClasses;  /**< set<PluginClass>. */
 typedef void LilvPlugins;        /**< set<Plugin>. */
 typedef void LilvScalePoints;    /**< set<ScalePoint>. */
 typedef void LilvUIs;            /**< set<UI>. */
-typedef void LilvNodes;         /**< set<Value>. */
+typedef void LilvNodes;          /**< set<Value>. */
 
 /**
    @defgroup lilv Lilv
@@ -481,7 +481,7 @@ lilv_plugins_is_end(const LilvPlugins* collection, LilvIter* i);
 LILV_API
 const LilvPlugin*
 lilv_plugins_get_by_uri(const LilvPlugins* plugins,
-                        const LilvNode*   uri);
+                        const LilvNode*    uri);
 
 /**
    @}
@@ -525,8 +525,8 @@ lilv_world_new(void);
 */
 LILV_API
 void
-lilv_world_set_option(LilvWorld*       world,
-                      const char*      uri,
+lilv_world_set_option(LilvWorld*      world,
+                      const char*     uri,
                       const LilvNode* value);
 
 /**
@@ -569,7 +569,7 @@ lilv_world_load_all(LilvWorld* world);
 LILV_API
 void
 lilv_world_load_bundle(LilvWorld* world,
-                       LilvNode* bundle_uri);
+                       LilvNode*  bundle_uri);
 
 /**
    Get the parent of all other plugin classes, lv2:Plugin.
@@ -709,7 +709,7 @@ lilv_plugin_get_class(const LilvPlugin* plugin);
 LILV_API
 LilvNodes*
 lilv_plugin_get_value(const LilvPlugin* p,
-                      const LilvNode*  predicate);
+                      const LilvNode*   predicate);
 
 /**
    Get a value associated with some subject in a plugin's data files.
@@ -729,8 +729,8 @@ lilv_plugin_get_value(const LilvPlugin* p,
 LILV_API
 LilvNodes*
 lilv_plugin_get_value_for_subject(const LilvPlugin* p,
-                                  const LilvNode*  subject_uri,
-                                  const LilvNode*  predicate_uri);
+                                  const LilvNode*   subject_uri,
+                                  const LilvNode*   predicate_uri);
 
 /**
    Return whether a feature is supported by a plugin.
@@ -740,7 +740,7 @@ lilv_plugin_get_value_for_subject(const LilvPlugin* p,
 LILV_API
 bool
 lilv_plugin_has_feature(const LilvPlugin* p,
-                        const LilvNode*  feature_uri);
+                        const LilvNode*   feature_uri);
 
 /**
    Get the LV2 Features supported (required or optionally) by a plugin.
@@ -820,7 +820,7 @@ lilv_plugin_get_port_ranges_float(const LilvPlugin* p,
 LILV_API
 uint32_t
 lilv_plugin_get_num_ports_of_class(const LilvPlugin* p,
-                                   const LilvNode*  class_1, ...);
+                                   const LilvNode*   class_1, ...);
 
 /**
    Return whether or not the plugin introduces (and reports) latency.
@@ -860,7 +860,7 @@ lilv_plugin_get_port_by_index(const LilvPlugin* plugin,
 LILV_API
 const LilvPort*
 lilv_plugin_get_port_by_symbol(const LilvPlugin* plugin,
-                               const LilvNode*  symbol);
+                               const LilvNode*   symbol);
 
 /**
    Get the full name of the plugin's author.
@@ -912,7 +912,7 @@ LILV_API
 LilvNodes*
 lilv_port_get_value(const LilvPlugin* plugin,
                     const LilvPort*   port,
-                    const LilvNode*  predicate);
+                    const LilvNode*   predicate);
 
 /**
    Return the LV2 port properties of a port.
@@ -929,7 +929,7 @@ LILV_API
 bool
 lilv_port_has_property(const LilvPlugin* p,
                        const LilvPort*   port,
-                       const LilvNode*  property_uri);
+                       const LilvNode*   property_uri);
 
 /**
    Return whether a port is an event port and supports a certain event type.
@@ -938,7 +938,7 @@ LILV_API
 bool
 lilv_port_supports_event(const LilvPlugin* p,
                          const LilvPort*   port,
-                         const LilvNode*  event_uri);
+                         const LilvNode*   event_uri);
 
 /**
    Get the symbol of a port.
@@ -985,7 +985,7 @@ LILV_API
 bool
 lilv_port_is_a(const LilvPlugin* plugin,
                const LilvPort*   port,
-               const LilvNode*  port_class);
+               const LilvNode*   port_class);
 
 /**
    Get the default, minimum, and maximum values of a port.
@@ -999,9 +999,9 @@ LILV_API
 void
 lilv_port_get_range(const LilvPlugin* plugin,
                     const LilvPort*   port,
-                    LilvNode**       deflt,
-                    LilvNode**       min,
-                    LilvNode**       max);
+                    LilvNode**        deflt,
+                    LilvNode**        min,
+                    LilvNode**        max);
 
 /**
    Get the scale points (enumeration values) of a port.
@@ -1172,7 +1172,7 @@ lilv_instance_activate(LilvInstance* instance)
 */
 static inline void
 lilv_instance_run(LilvInstance* instance,
-                  uint32_t     sample_count)
+                  uint32_t      sample_count)
 {
 	instance->lv2_descriptor->run(instance->lv2_handle, sample_count);
 }
@@ -1298,8 +1298,8 @@ LILV_API
 unsigned
 lilv_ui_is_supported(const LilvUI*       ui,
                      LilvUISupportedFunc supported_func,
-                     const LilvNode*    container_type,
-                     const LilvNode**   ui_type);
+                     const LilvNode*     container_type,
+                     const LilvNode**    ui_type);
 
 /**
    Get the URI for a Plugin UI's bundle.

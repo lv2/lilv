@@ -228,7 +228,8 @@ lilv_world_query_values(LilvWorld*      world,
                         const SordNode* predicate,
                         const SordNode* object)
 {
-	return lilv_nodes_from_stream_objects(world,
+	return lilv_nodes_from_stream_objects(
+		world,
 		lilv_world_query(world, subject, predicate, object));
 }
 

@@ -61,14 +61,14 @@ lilv_plugin_instantiate(const LilvPlugin*        plugin,
 	} else {
 		// Search for plugin by URI
 
-		const char* bundle_path = lilv_uri_to_path(lilv_node_as_uri(
-					lilv_plugin_get_bundle_uri(plugin)));
+		const char* bundle_path = lilv_uri_to_path(
+			lilv_node_as_uri(lilv_plugin_get_bundle_uri(plugin)));
 
 		for (uint32_t i = 0; true; ++i) {
 			const LV2_Descriptor* ld = df(i);
 			if (!ld) {
 				LILV_ERRORF("Did not find plugin %s in %s\n",
-						lilv_node_as_uri(lilv_plugin_get_uri(plugin)), lib_path);
+				            lilv_node_as_uri(lilv_plugin_get_uri(plugin)), lib_path);
 				dlclose(lib);
 				break; // return NULL
 			} else {
@@ -96,8 +96,9 @@ lilv_plugin_instantiate(const LilvPlugin*        plugin,
 					// Create LilvInstance to return
 					result = malloc(sizeof(struct LilvInstanceImpl));
 					result->lv2_descriptor = ld;
-					result->lv2_handle = ld->instantiate(ld, sample_rate, (char*)bundle_path,
-							(features) ? features : local_features);
+					result->lv2_handle = ld->instantiate(
+						ld, sample_rate, (char*)bundle_path,
+						(features) ? features : local_features);
 					result->pimpl = lib;
 					serd_node_free(&abs_uri_node);
 					break;

@@ -337,7 +337,7 @@ lilv_plugin_get_class(const LilvPlugin* const_p)
 			if ( ! lilv_node_equals(class, p->world->lv2_plugin_class->uri)) {
 
 				const LilvPluginClass* plugin_class = lilv_plugin_classes_get_by_uri(
-						p->world->plugin_classes, class);
+					p->world->plugin_classes, class);
 
 				if (plugin_class) {
 					((LilvPlugin*)p)->plugin_class = plugin_class;
@@ -390,7 +390,7 @@ LilvNode*
 lilv_plugin_get_name(const LilvPlugin* plugin)
 {
 	LilvNodes* results = lilv_plugin_get_value(plugin,
-	                                            plugin->world->doap_name_val);
+	                                           plugin->world->doap_name_val);
 
 	LilvNode* ret = NULL;
 	if (results) {
@@ -437,9 +437,9 @@ lilv_plugin_get_value_for_subject(const LilvPlugin* p,
 		                 (const uint8_t*)lilv_node_as_blank(subject));
 
 	LilvNodes* ret = lilv_world_query_values(p->world,
-	                                          subject_node,
-	                                          predicate->val.uri_val,
-	                                          NULL);
+	                                         subject_node,
+	                                         predicate->val.uri_val,
+	                                         NULL);
 
 	sord_node_free(p->world->world, subject_node);
 	return ret;

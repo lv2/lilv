@@ -90,7 +90,7 @@ lilv_plugin_class_get_children(const LilvPluginClass* plugin_class)
 		const LilvPluginClass* c      = g_sequence_get(i);
 		const LilvNode*       parent = lilv_plugin_class_get_parent_uri(c);
 		if (parent && lilv_node_equals(lilv_plugin_class_get_uri(plugin_class),
-		                                parent))
+		                               parent))
 			lilv_sequence_insert(result, (LilvPluginClass*)c);
 	}
 

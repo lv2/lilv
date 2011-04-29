@@ -230,9 +230,9 @@ def build(bld):
     # Utilities
     if bld.env['BUILD_UTILS']:
         utils = '''
-            utils/lv2_inspect
-            utils/lv2_list
-            utils/lilv_bench
+            utils/lv2info
+            utils/lv2ls
+            utils/lilv-bench
         '''
         for i in utils.split():
             obj = bld(features     = 'c cprogram',
@@ -245,11 +245,11 @@ def build(bld):
     # JACK Host
     if bld.is_defined('LILV_USE_JACK'):
         obj = bld(features     = 'c cprogram',
-                  source       = 'utils/lv2_jack_host.c',
+                  source       = 'utils/lv2jack.c',
                   includes     = ['.', './src', './utils'],
                   uselib       = 'JACK',
                   use          = 'liblilv',
-                  target       = 'utils/lv2_jack_host',
+                  target       = 'utils/lv2jack',
                   install_path = '${BINDIR}')
         if bld.is_defined('LILV_JACK_SESSION'):
             autowaf.use_lib(bld, obj, 'GLIB GTHREAD')

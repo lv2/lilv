@@ -201,5 +201,5 @@ LILV_API
 LilvNode*
 lilv_nodes_get_first(const LilvNodes* collection) {
 	return (LilvNode*)lilv_collection_get(collection,
-	                                       lilv_collection_begin(collection));
+	                                      lilv_collection_begin(collection));
 }

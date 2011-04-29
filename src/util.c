@@ -65,13 +65,13 @@ lilv_uri_to_path(const char* uri)
 #ifdef __WIN32__
 	if (!strncmp(uri, "file:///", (size_t)8)) {
 		return (char*)(uri + 8);
+	}
 #else
 	if (!strncmp(uri, "file://", (size_t)7)) {
 		return (char*)(uri + 7);
-#endif
-	} else {
-		return NULL;
 	}
+#endif
+	return NULL;
 }
 
 /** Return the current LANG converted to Turtle (i.e. RFC3066) style.
