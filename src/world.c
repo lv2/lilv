@@ -744,7 +744,7 @@ lilv_world_load_all(LilvWorld* world)
 
 	LILV_FOREACH(plugins, p, world->plugins) {
 		const LilvPlugin* plugin     = lilv_collection_get(world->plugins, p);
-		const LilvNode*  plugin_uri = lilv_plugin_get_uri(plugin);
+		const LilvNode*   plugin_uri = lilv_plugin_get_uri(plugin);
 
 		// ?new dc:replaces plugin
 		SordIter* replacement = lilv_world_find_statements(

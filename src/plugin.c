@@ -81,35 +81,31 @@ lilv_plugin_free(LilvPlugin* p)
 	free(p);
 }
 
-LilvNode*
-lilv_plugin_get_unique(const LilvPlugin* p,
-                       const SordNode*   subject,
-                       const SordNode*   predicate)
-{
-	LilvNodes* values = lilv_world_query_values(p->world,
-	                                            subject, predicate, NULL);
-	if (!values || lilv_nodes_size(values) != 1) {
-		LILV_ERRORF("Port does not have exactly one `%s' property\n",
-		            sord_node_get_string(predicate));
-		return NULL;
-	}
-	LilvNode* ret = lilv_node_duplicate(lilv_nodes_get_first(values));
-	lilv_nodes_free(values);
-	return ret;
-}
-
 static LilvNode*
 lilv_plugin_get_one(const LilvPlugin* p,
                     const SordNode*   subject,
                     const SordNode*   predicate)
 {
-	LilvNodes* values = lilv_world_query_values(p->world,
-	                                            subject, predicate, NULL);
-	if (!values) {
-		return NULL;
+	LilvNode* ret    = NULL;
+	SordIter* stream = lilv_world_query(p->world, subject, predicate, NULL);
+	if (!lilv_matches_end(stream)) {
+		ret = lilv_node_new_from_node(p->world, lilv_match_object(stream));
 	}
-	LilvNode* ret = lilv_node_duplicate(lilv_nodes_get_first(values));
-	lilv_nodes_free(values);
+	lilv_match_end(stream);
+	return ret;
+}
+
+LilvNode*
+lilv_plugin_get_unique(const LilvPlugin* p,
+                       const SordNode*   subject,
+                       const SordNode*   predicate)
+{
+	LilvNode* ret = lilv_plugin_get_one(p, subject, predicate);
+	if (!ret) {
+		LILV_ERRORF("Multiple values found for (%s %s ...) property\n",
+		            sord_node_get_string(subject),
+		            sord_node_get_string(predicate));
+	}
 	return ret;
 }
 
