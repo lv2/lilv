@@ -18,7 +18,7 @@
 
 /** Ownership of value and label is taken */
 LilvScalePoint*
-lilv_scale_point_new(LilvValue* value, LilvValue* label)
+lilv_scale_point_new(LilvNode* value, LilvNode* label)
 {
 	LilvScalePoint* point = (LilvScalePoint*)malloc(
 		sizeof(struct LilvScalePointImpl));
@@ -30,20 +30,20 @@ lilv_scale_point_new(LilvValue* value, LilvValue* label)
 void
 lilv_scale_point_free(LilvScalePoint* point)
 {
-	lilv_value_free(point->value);
-	lilv_value_free(point->label);
+	lilv_node_free(point->value);
+	lilv_node_free(point->label);
 	free(point);
 }
 
 LILV_API
-const LilvValue*
+const LilvNode*
 lilv_scale_point_get_value(const LilvScalePoint* p)
 {
 	return p->value;
 }
 
 LILV_API
-const LilvValue*
+const LilvNode*
 lilv_scale_point_get_label(const LilvScalePoint* p)
 {
 	return p->label;

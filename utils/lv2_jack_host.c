@@ -66,13 +66,13 @@ struct JackHost {
 	LilvInstance*     instance;      /**< Plugin "instance" (loaded shared lib) */
 	uint32_t          num_ports;     /**< Size of the two following arrays: */
 	struct Port*      ports;         /**< Port array of size num_ports */
-	LilvValue*        input_class;   /**< Input port class (URI) */
-	LilvValue*        output_class;  /**< Output port class (URI) */
-	LilvValue*        control_class; /**< Control port class (URI) */
-	LilvValue*        audio_class;   /**< Audio port class (URI) */
-	LilvValue*        event_class;   /**< Event port class (URI) */
-	LilvValue*        midi_class;    /**< MIDI event class (URI) */
-	LilvValue*        optional;      /**< lv2:connectionOptional port property */
+	LilvNode*         input_class;   /**< Input port class (URI) */
+	LilvNode*         output_class;  /**< Output port class (URI) */
+	LilvNode*         control_class; /**< Control port class (URI) */
+	LilvNode*         audio_class;   /**< Audio port class (URI) */
+	LilvNode*         event_class;   /**< Event port class (URI) */
+	LilvNode*         midi_class;    /**< MIDI event class (URI) */
+	LilvNode*         optional;      /**< lv2:connectionOptional port property */
 };
 
 /** URI map feature, for event types (we use only MIDI) */
@@ -126,8 +126,8 @@ create_port(struct JackHost* host,
 	lilv_instance_connect_port(host->instance, port_index, NULL);
 
 	/* Get the port symbol for console printing */
-	const LilvValue* symbol     = lilv_port_get_symbol(host->plugin, port->lilv_port);
-	const char*      symbol_str = lilv_value_as_string(symbol);
+	const LilvNode* symbol     = lilv_port_get_symbol(host->plugin, port->lilv_port);
+	const char*     symbol_str = lilv_node_as_string(symbol);
 
 	enum JackPortFlags jack_flags = 0;
 	if (lilv_port_is_a(host->plugin, port->lilv_port, host->input_class)) {
@@ -253,7 +253,7 @@ jack_session_cb(jack_session_event_t* event, void* arg)
 
 	char cmd[256];
 	snprintf(cmd, sizeof(cmd), "lv2_jack_host %s %s",
-	         lilv_value_as_uri(lilv_plugin_get_uri(host->plugin)),
+	         lilv_node_as_uri(lilv_plugin_get_uri(host->plugin)),
 	         event->client_uuid);
 
 	event->command_line = strdup(cmd);
@@ -334,9 +334,9 @@ main(int argc, char** argv)
 
 	printf("Plugin:    %s\n", plugin_uri_str);
 
-	LilvValue* plugin_uri = lilv_new_uri(world, plugin_uri_str);
+	LilvNode* plugin_uri = lilv_new_uri(world, plugin_uri_str);
 	host.plugin = lilv_plugins_get_by_uri(plugins, plugin_uri);
-	lilv_value_free(plugin_uri);
+	lilv_node_free(plugin_uri);
 
 	if (!host.plugin) {
 		fprintf(stderr, "Failed to find plugin %s.\n", plugin_uri_str);
@@ -345,8 +345,8 @@ main(int argc, char** argv)
 	}
 
 	/* Get the plugin's name */
-	LilvValue*  name     = lilv_plugin_get_name(host.plugin);
-	const char* name_str = lilv_value_as_string(name);
+	LilvNode*   name     = lilv_plugin_get_name(host.plugin);
+	const char* name_str = lilv_node_as_string(name);
 
 	/* Truncate plugin name to suit JACK (if necessary) */
 	char* jack_name = NULL;
@@ -372,7 +372,7 @@ main(int argc, char** argv)
 	}
 
 	free(jack_name);
-	lilv_value_free(name);
+	lilv_node_free(name);
 
 	if (!host.jack_client)
 		die("Failed to connect to JACK.\n");
@@ -436,13 +436,13 @@ main(int argc, char** argv)
 
 	/* Clean up */
 	free(host.ports);
-	lilv_value_free(host.input_class);
-	lilv_value_free(host.output_class);
-	lilv_value_free(host.control_class);
-	lilv_value_free(host.audio_class);
-	lilv_value_free(host.event_class);
-	lilv_value_free(host.midi_class);
-	lilv_value_free(host.optional);
+	lilv_node_free(host.input_class);
+	lilv_node_free(host.output_class);
+	lilv_node_free(host.control_class);
+	lilv_node_free(host.audio_class);
+	lilv_node_free(host.event_class);
+	lilv_node_free(host.midi_class);
+	lilv_node_free(host.optional);
 	lilv_world_free(world);
 
 #ifdef LILV_JACK_SESSION

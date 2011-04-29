@@ -31,7 +31,7 @@ namespace Lilv {
 %}
 };
 
-%extend Value {
+%extend Node {
 %pythoncode %{
 	def __str__(self):
 		return lilv_value_get_turtle_token(self.me)

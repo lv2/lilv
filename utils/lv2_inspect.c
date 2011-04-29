@@ -24,23 +24,23 @@
 
 #include "lilv-config.h"
 
-LilvValue* event_class         = NULL;
-LilvValue* control_class       = NULL;
-LilvValue* in_group_pred       = NULL;
-LilvValue* role_pred           = NULL;
-LilvValue* preset_pred         = NULL;
-LilvValue* title_pred          = NULL;
-LilvValue* supports_event_pred = NULL;
+LilvNode* event_class         = NULL;
+LilvNode* control_class       = NULL;
+LilvNode* in_group_pred       = NULL;
+LilvNode* role_pred           = NULL;
+LilvNode* preset_pred         = NULL;
+LilvNode* title_pred          = NULL;
+LilvNode* supports_event_pred = NULL;
 
 void
 print_group(const LilvPlugin* p,
-            const LilvValue*  group,
-            LilvValue*        type,
-            LilvValue*        symbol)
+            const LilvNode*  group,
+            LilvNode*        type,
+            LilvNode*        symbol)
 {
-	printf("\n\tGroup %s:\n", lilv_value_as_string(group));
-	printf("\t\tType: %s\n", lilv_value_as_string(type));
-	printf("\t\tSymbol: %s\n", lilv_value_as_string(symbol));
+	printf("\n\tGroup %s:\n", lilv_node_as_string(group));
+	printf("\t\tType: %s\n", lilv_node_as_string(type));
+	printf("\t\tSymbol: %s\n", lilv_node_as_string(symbol));
 }
 
 void
@@ -61,28 +61,28 @@ print_port(const LilvPlugin* p,
 
 	bool first = true;
 
-	const LilvValues* classes = lilv_port_get_classes(p, port);
+	const LilvNodes* classes = lilv_port_get_classes(p, port);
 	printf("\t\tType:       ");
-	LILV_FOREACH(values, i, classes) {
-		const LilvValue* value = lilv_values_get(classes, i);
+	LILV_FOREACH(nodes, i, classes) {
+		const LilvNode* value = lilv_nodes_get(classes, i);
 		if (!first) {
 			printf("\n\t\t            ");
 		}
-		printf("%s", lilv_value_as_uri(value));
+		printf("%s", lilv_node_as_uri(value));
 		first = false;
 	}
 
 	if (lilv_port_is_a(p, port, event_class)) {
-		LilvValues* supported = lilv_port_get_value(
+		LilvNodes* supported = lilv_port_get_value(
 			p, port, supports_event_pred);
-		if (lilv_values_size(supported) > 0) {
+		if (lilv_nodes_size(supported) > 0) {
 			printf("\n\t\tSupported events:\n");
-			LILV_FOREACH(values, i, supported) {
-				const LilvValue* value = lilv_values_get(supported, i);
-				printf("\t\t\t%s\n", lilv_value_as_uri(value));
+			LILV_FOREACH(nodes, i, supported) {
+				const LilvNode* value = lilv_nodes_get(supported, i);
+				printf("\t\t\t%s\n", lilv_node_as_uri(value));
 			}
 		}
-		lilv_values_free(supported);
+		lilv_nodes_free(supported);
 	}
 
 	LilvScalePoints* points = lilv_port_get_scale_points(p, port);
@@ -91,31 +91,31 @@ print_port(const LilvPlugin* p,
 	LILV_FOREACH(scale_points, i, points) {
 		const LilvScalePoint* p = lilv_scale_points_get(points, i);
 		printf("\t\t\t%s = \"%s\"\n",
-				lilv_value_as_string(lilv_scale_point_get_value(p)),
-				lilv_value_as_string(lilv_scale_point_get_label(p)));
+				lilv_node_as_string(lilv_scale_point_get_value(p)),
+				lilv_node_as_string(lilv_scale_point_get_label(p)));
 	}
 	lilv_scale_points_free(points);
 
-	const LilvValue* sym = lilv_port_get_symbol(p, port);
-	printf("\n\t\tSymbol:     %s\n", lilv_value_as_string(sym));
+	const LilvNode* sym = lilv_port_get_symbol(p, port);
+	printf("\n\t\tSymbol:     %s\n", lilv_node_as_string(sym));
 
-	LilvValue* name = lilv_port_get_name(p, port);
-	printf("\t\tName:       %s\n", lilv_value_as_string(name));
-	lilv_value_free(name);
+	LilvNode* name = lilv_port_get_name(p, port);
+	printf("\t\tName:       %s\n", lilv_node_as_string(name));
+	lilv_node_free(name);
 
-	LilvValues* groups = lilv_port_get_value(p, port, in_group_pred);
-	if (lilv_values_size(groups) > 0)
+	LilvNodes* groups = lilv_port_get_value(p, port, in_group_pred);
+	if (lilv_nodes_size(groups) > 0)
 		printf("\t\tGroup:      %s\n",
-		       lilv_value_as_string(
-			       lilv_values_get(groups, lilv_values_begin(groups))));
-	lilv_values_free(groups);
+		       lilv_node_as_string(
+			       lilv_nodes_get(groups, lilv_nodes_begin(groups))));
+	lilv_nodes_free(groups);
 
-	LilvValues* roles = lilv_port_get_value(p, port, role_pred);
-	if (lilv_values_size(roles) > 0)
+	LilvNodes* roles = lilv_port_get_value(p, port, role_pred);
+	if (lilv_nodes_size(roles) > 0)
 		printf("\t\tRole:       %s\n",
-		       lilv_value_as_string(
-			       lilv_values_get(roles, lilv_values_begin(roles))));
-	lilv_values_free(roles);
+		       lilv_node_as_string(
+			       lilv_nodes_get(roles, lilv_nodes_begin(roles))));
+	lilv_nodes_free(roles);
 
 	if (lilv_port_is_a(p, port, control_class)) {
 		if (!isnan(mins[index]))
@@ -126,57 +126,57 @@ print_port(const LilvPlugin* p,
 			printf("\t\tDefault:    %f\n", defaults[index]);
 	}
 
-	LilvValues* properties = lilv_port_get_properties(p, port);
-	if (lilv_values_size(properties) > 0)
+	LilvNodes* properties = lilv_port_get_properties(p, port);
+	if (lilv_nodes_size(properties) > 0)
 		printf("\t\tProperties: ");
 	first = true;
-	LILV_FOREACH(values, i, properties) {
+	LILV_FOREACH(nodes, i, properties) {
 		if (!first) {
 			printf("\t\t            ");
 		}
-		printf("%s\n", lilv_value_as_uri(lilv_values_get(properties, i)));
+		printf("%s\n", lilv_node_as_uri(lilv_nodes_get(properties, i)));
 		first = false;
 	}
-	if (lilv_values_size(properties) > 0)
+	if (lilv_nodes_size(properties) > 0)
 		printf("\n");
-	lilv_values_free(properties);
+	lilv_nodes_free(properties);
 }
 
 void
 print_plugin(const LilvPlugin* p)
 {
-	LilvValue* val = NULL;
+	LilvNode* val = NULL;
 
-	printf("%s\n\n", lilv_value_as_uri(lilv_plugin_get_uri(p)));
+	printf("%s\n\n", lilv_node_as_uri(lilv_plugin_get_uri(p)));
 
 	val = lilv_plugin_get_name(p);
 	if (val) {
-		printf("\tName:              %s\n", lilv_value_as_string(val));
-		lilv_value_free(val);
+		printf("\tName:              %s\n", lilv_node_as_string(val));
+		lilv_node_free(val);
 	}
 
 	const LilvPluginClass* pclass      = lilv_plugin_get_class(p);
-	const LilvValue*       class_label = lilv_plugin_class_get_label(pclass);
+	const LilvNode*       class_label = lilv_plugin_class_get_label(pclass);
 	if (class_label) {
-		printf("\tClass:             %s\n", lilv_value_as_string(class_label));
+		printf("\tClass:             %s\n", lilv_node_as_string(class_label));
 	}
 
 	val = lilv_plugin_get_author_name(p);
 	if (val) {
-		printf("\tAuthor:            %s\n", lilv_value_as_string(val));
-		lilv_value_free(val);
+		printf("\tAuthor:            %s\n", lilv_node_as_string(val));
+		lilv_node_free(val);
 	}
 
 	val = lilv_plugin_get_author_email(p);
 	if (val) {
-		printf("\tAuthor Email:      %s\n", lilv_value_as_uri(val));
-		lilv_value_free(val);
+		printf("\tAuthor Email:      %s\n", lilv_node_as_uri(val));
+		lilv_node_free(val);
 	}
 
 	val = lilv_plugin_get_author_homepage(p);
 	if (val) {
-		printf("\tAuthor Homepage:   %s\n", lilv_value_as_uri(val));
-		lilv_value_free(val);
+		printf("\tAuthor Homepage:   %s\n", lilv_node_as_uri(val));
+		lilv_node_free(val);
 	}
 
 	if (lilv_plugin_has_latency(p)) {
@@ -187,66 +187,66 @@ print_plugin(const LilvPlugin* p)
 	}
 
 	printf("\tBundle:            %s\n",
-	       lilv_value_as_uri(lilv_plugin_get_bundle_uri(p)));
+	       lilv_node_as_uri(lilv_plugin_get_bundle_uri(p)));
 
-	const LilvValue* binary_uri = lilv_plugin_get_library_uri(p);
+	const LilvNode* binary_uri = lilv_plugin_get_library_uri(p);
 	if (binary_uri) {
 		printf("\tBinary:            %s\n",
-		       lilv_value_as_uri(lilv_plugin_get_library_uri(p)));
+		       lilv_node_as_uri(lilv_plugin_get_library_uri(p)));
 	}
 
 	LilvUIs* uis = lilv_plugin_get_uis(p);
-	if (lilv_values_size(uis) > 0) {
+	if (lilv_nodes_size(uis) > 0) {
 		printf("\tUI:                ");
 		LILV_FOREACH(uis, i, uis) {
 			const LilvUI* ui = lilv_uis_get(uis, i);
-			printf("%s\n", lilv_value_as_uri(lilv_ui_get_uri(ui)));
+			printf("%s\n", lilv_node_as_uri(lilv_ui_get_uri(ui)));
 
-			const char* binary = lilv_value_as_uri(lilv_ui_get_binary_uri(ui));
+			const char* binary = lilv_node_as_uri(lilv_ui_get_binary_uri(ui));
 
-			const LilvValues* types = lilv_ui_get_classes(ui);
-			LILV_FOREACH(values, i, types) {
+			const LilvNodes* types = lilv_ui_get_classes(ui);
+			LILV_FOREACH(nodes, i, types) {
 				printf("\t                       Class:  %s\n",
-				       lilv_value_as_uri(lilv_values_get(types, i)));
+				       lilv_node_as_uri(lilv_nodes_get(types, i)));
 			}
 
 			if (binary)
 				printf("\t                       Binary: %s\n", binary);
 
 			printf("\t                       Bundle: %s\n",
-			       lilv_value_as_uri(lilv_ui_get_bundle_uri(ui)));
+			       lilv_node_as_uri(lilv_ui_get_bundle_uri(ui)));
 		}
 	}
 	lilv_uis_free(uis);
 
 	printf("\tData URIs:         ");
-	const LilvValues* data_uris = lilv_plugin_get_data_uris(p);
+	const LilvNodes* data_uris = lilv_plugin_get_data_uris(p);
 	bool first = true;
-	LILV_FOREACH(values, i, data_uris) {
+	LILV_FOREACH(nodes, i, data_uris) {
 		if (!first) {
 			printf("\n\t                   ");
 		}
-		printf("%s", lilv_value_as_uri(lilv_values_get(data_uris, i)));
+		printf("%s", lilv_node_as_uri(lilv_nodes_get(data_uris, i)));
 		first = false;
 	}
 	printf("\n");
 
 	/* Required Features */
 
-	LilvValues* features = lilv_plugin_get_required_features(p);
+	LilvNodes* features = lilv_plugin_get_required_features(p);
 	if (features)
 		printf("\tRequired Features: ");
 	first = true;
-	LILV_FOREACH(values, i, features) {
+	LILV_FOREACH(nodes, i, features) {
 		if (!first) {
 			printf("\n\t                   ");
 		}
-		printf("%s", lilv_value_as_uri(lilv_values_get(features, i)));
+		printf("%s", lilv_node_as_uri(lilv_nodes_get(features, i)));
 		first = false;
 	}
 	if (features)
 		printf("\n");
-	lilv_values_free(features);
+	lilv_nodes_free(features);
 
 	/* Optional Features */
 
@@ -254,28 +254,28 @@ print_plugin(const LilvPlugin* p)
 	if (features)
 		printf("\tOptional Features: ");
 	first = true;
-	LILV_FOREACH(values, i, features) {
+	LILV_FOREACH(nodes, i, features) {
 		if (!first) {
 			printf("\n\t                   ");
 		}
-		printf("%s", lilv_value_as_uri(lilv_values_get(features, i)));
+		printf("%s", lilv_node_as_uri(lilv_nodes_get(features, i)));
 		first = false;
 	}
 	if (features)
 		printf("\n");
-	lilv_values_free(features);
+	lilv_nodes_free(features);
 
 	/* Presets */
 
-	LilvValues* presets = lilv_plugin_get_value(p, preset_pred);
+	LilvNodes* presets = lilv_plugin_get_value(p, preset_pred);
 	if (presets)
 		printf("\tPresets: \n");
-	LILV_FOREACH(values, i, presets) {
-		LilvValues* titles = lilv_plugin_get_value_for_subject(
-			p, lilv_values_get(presets, i), title_pred);
+	LILV_FOREACH(nodes, i, presets) {
+		LilvNodes* titles = lilv_plugin_get_value_for_subject(
+			p, lilv_nodes_get(presets, i), title_pred);
 		if (titles) {
-			const LilvValue* title = lilv_values_get(titles, lilv_values_begin(titles));
-			printf("\t         %s\n", lilv_value_as_string(title));
+			const LilvNode* title = lilv_nodes_get(titles, lilv_nodes_begin(titles));
+			printf("\t         %s\n", lilv_node_as_string(title));
 		}
 	}
 
@@ -356,7 +356,7 @@ main(int argc, char** argv)
 	}
 
 	const LilvPlugins* plugins = lilv_world_get_all_plugins(world);
-	LilvValue*         uri     = lilv_new_uri(world, argv[1]);
+	LilvNode*          uri     = lilv_new_uri(world, argv[1]);
 
 	const LilvPlugin* p = lilv_plugins_get_by_uri(plugins, uri);
 
@@ -368,15 +368,15 @@ main(int argc, char** argv)
 
 	ret = (p != NULL ? 0 : -1);
 
-	lilv_value_free(uri);
+	lilv_node_free(uri);
 
 done:
-	lilv_value_free(title_pred);
-	lilv_value_free(role_pred);
-	lilv_value_free(preset_pred);
-	lilv_value_free(in_group_pred);
-	lilv_value_free(event_class);
-	lilv_value_free(control_class);
+	lilv_node_free(title_pred);
+	lilv_node_free(role_pred);
+	lilv_node_free(preset_pred);
+	lilv_node_free(in_group_pred);
+	lilv_node_free(event_class);
+	lilv_node_free(control_class);
 	lilv_world_free(world);
 	return ret;
 }

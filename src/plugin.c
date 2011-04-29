@@ -30,7 +30,7 @@
 
 /** Ownership of @a uri is taken */
 LilvPlugin*
-lilv_plugin_new(LilvWorld* world, LilvValue* uri, LilvValue* bundle_uri)
+lilv_plugin_new(LilvWorld* world, LilvNode* uri, LilvNode* bundle_uri)
 {
 	assert(bundle_uri);
 	LilvPlugin* plugin = malloc(sizeof(struct LilvPluginImpl));
@@ -42,7 +42,7 @@ lilv_plugin_new(LilvWorld* world, LilvValue* uri, LilvValue* bundle_uri)
 	plugin->dynman_uri   = NULL;
 #endif
 	plugin->plugin_class = NULL;
-	plugin->data_uris    = lilv_values_new();
+	plugin->data_uris    = lilv_nodes_new();
 	plugin->ports        = NULL;
 	plugin->num_ports    = 0;
 	plugin->loaded       = false;
@@ -54,17 +54,17 @@ lilv_plugin_new(LilvWorld* world, LilvValue* uri, LilvValue* bundle_uri)
 void
 lilv_plugin_free(LilvPlugin* p)
 {
-	lilv_value_free(p->plugin_uri);
+	lilv_node_free(p->plugin_uri);
 	p->plugin_uri = NULL;
 
-	lilv_value_free(p->bundle_uri);
+	lilv_node_free(p->bundle_uri);
 	p->bundle_uri = NULL;
 
-	lilv_value_free(p->binary_uri);
+	lilv_node_free(p->binary_uri);
 	p->binary_uri = NULL;
 
 #ifdef LILV_DYN_MANIFEST
-	lilv_value_free(p->dynman_uri);
+	lilv_node_free(p->dynman_uri);
 	p->dynman_uri = NULL;
 #endif
 
@@ -75,37 +75,37 @@ lilv_plugin_free(LilvPlugin* p)
 		p->ports = NULL;
 	}
 
-	lilv_values_free(p->data_uris);
+	lilv_nodes_free(p->data_uris);
 	p->data_uris = NULL;
 
 	free(p);
 }
 
-LilvValue*
+LilvNode*
 lilv_plugin_get_unique(const LilvPlugin* p, const SordNode* subject, const SordNode* predicate)
 {
-	LilvValues* values = lilv_world_query_values(p->world,
-	                                             subject, predicate, NULL);
-	if (!values || lilv_values_size(values) != 1) {
+	LilvNodes* values = lilv_world_query_values(p->world,
+	                                            subject, predicate, NULL);
+	if (!values || lilv_nodes_size(values) != 1) {
 		LILV_ERRORF("Port does not have exactly one `%s' property\n",
 		            sord_node_get_string(predicate));
 		return NULL;
 	}
-	LilvValue* ret = lilv_value_duplicate(lilv_values_get_first(values));
-	lilv_values_free(values);
+	LilvNode* ret = lilv_node_duplicate(lilv_nodes_get_first(values));
+	lilv_nodes_free(values);
 	return ret;
 }
 
-static LilvValue*
+static LilvNode*
 lilv_plugin_get_one(const LilvPlugin* p, const SordNode* subject, const SordNode* predicate)
 {
-	LilvValues* values = lilv_world_query_values(p->world,
-	                                             subject, predicate, NULL);
+	LilvNodes* values = lilv_world_query_values(p->world,
+	                                            subject, predicate, NULL);
 	if (!values) {
 		return NULL;
 	}
-	LilvValue* ret = lilv_value_duplicate(lilv_values_get_first(values));
-	lilv_values_free(values);
+	LilvNode* ret = lilv_node_duplicate(lilv_nodes_get_first(values));
+	lilv_nodes_free(values);
 	return ret;
 }
 
@@ -113,8 +113,8 @@ static void
 lilv_plugin_load(LilvPlugin* p)
 {
 	// Parse all the plugin's data files into RDF model
-	LILV_FOREACH(values, i, p->data_uris) {
-		const LilvValue* data_uri_val = lilv_values_get(p->data_uris, i);
+	LILV_FOREACH(nodes, i, p->data_uris) {
+		const LilvNode* data_uri_val = lilv_nodes_get(p->data_uris, i);
 		sord_read_file(p->world->model,
 		               sord_node_get_string(data_uri_val->val.uri_val),
 		               p->bundle_uri->val.uri_val,
@@ -125,11 +125,11 @@ lilv_plugin_load(LilvPlugin* p)
 	typedef void* LV2_Dyn_Manifest_Handle;
 	// Load and parse dynamic manifest data, if this is a library
 	if (p->dynman_uri) {
-		const char* lib_path = lilv_uri_to_path(lilv_value_as_string(p->dynman_uri));
+		const char* lib_path = lilv_uri_to_path(lilv_node_as_string(p->dynman_uri));
 		void* lib = dlopen(lib_path, RTLD_LAZY);
 		if (!lib) {
 			LILV_WARNF("Unable to open dynamic manifest %s\n",
-			           lilv_value_as_string(p->dynman_uri));
+			           lilv_node_as_string(p->dynman_uri));
 			return;
 		}
 
@@ -146,11 +146,11 @@ lilv_plugin_load(LilvPlugin* p)
 			lib, "lv2_dyn_manifest_get_data");
 		if (get_data_func) {
 			FILE* fd = tmpfile();
-			get_data_func(handle, fd, lilv_value_as_string(p->plugin_uri));
+			get_data_func(handle, fd, lilv_node_as_string(p->plugin_uri));
 			rewind(fd);
 			sord_read_file_handle(p->world->model,
 			                      fd,
-			                      (const uint8_t*)lilv_value_as_uri(p->dynman_uri),
+			                      (const uint8_t*)lilv_node_as_uri(p->dynman_uri),
 			                      p->bundle_uri->val.uri_val,
 			                      lilv_world_blank_node_prefix(p->world));
 			fclose(fd);
@@ -184,12 +184,12 @@ lilv_plugin_load_ports_if_necessary(const LilvPlugin* const_p)
 			NULL);
 
 		FOREACH_MATCH(ports) {
-			LilvValue* index  = NULL;
+			LilvNode* index  = NULL;
 			const SordNode*   port   = lilv_match_object(ports);
-			LilvValue* symbol = lilv_plugin_get_unique(
+			LilvNode* symbol = lilv_plugin_get_unique(
 				p, port, p->world->lv2_symbol_node);
 
-			if (!lilv_value_is_string(symbol)) {
+			if (!lilv_node_is_string(symbol)) {
 				LILV_ERROR("port has a non-string symbol\n");
 				p->num_ports = 0;
 				goto error;
@@ -197,13 +197,13 @@ lilv_plugin_load_ports_if_necessary(const LilvPlugin* const_p)
 
 			index = lilv_plugin_get_unique(p, port, p->world->lv2_index_node);
 
-			if (!lilv_value_is_int(index)) {
+			if (!lilv_node_is_int(index)) {
 				LILV_ERROR("port has a non-integer index\n");
 				p->num_ports = 0;
 				goto error;
 			}
 
-			uint32_t  this_index = lilv_value_as_int(index);
+			uint32_t  this_index = lilv_node_as_int(index);
 			LilvPort* this_port  = NULL;
 			if (p->num_ports > this_index) {
 				this_port = p->ports[this_index];
@@ -218,7 +218,7 @@ lilv_plugin_load_ports_if_necessary(const LilvPlugin* const_p)
 			if (!this_port) {
 				this_port = lilv_port_new(p->world,
 				                          this_index,
-				                          lilv_value_as_string(symbol));
+				                          lilv_node_as_string(symbol));
 				p->ports[this_index] = this_port;
 			}
 
@@ -229,7 +229,7 @@ lilv_plugin_load_ports_if_necessary(const LilvPlugin* const_p)
 				if (sord_node_get_type(type) == SORD_URI) {
 					lilv_array_append(
 						this_port->classes,
-						lilv_value_new_from_node(p->world, type));
+						lilv_node_new_from_node(p->world, type));
 				} else {
 					LILV_WARN("port has non-URI rdf:type\n");
 				}
@@ -237,8 +237,8 @@ lilv_plugin_load_ports_if_necessary(const LilvPlugin* const_p)
 			lilv_match_end(types);
 
 		error:
-			lilv_value_free(symbol);
-			lilv_value_free(index);
+			lilv_node_free(symbol);
+			lilv_node_free(index);
 			if (p->num_ports == 0) {
 				if (p->ports) {
 					for (uint32_t i = 0; i < p->num_ports; ++i)
@@ -261,7 +261,7 @@ lilv_plugin_load_if_necessary(const LilvPlugin* p)
 }
 
 LILV_API
-const LilvValue*
+const LilvNode*
 lilv_plugin_get_uri(const LilvPlugin* p)
 {
 	assert(p);
@@ -270,7 +270,7 @@ lilv_plugin_get_uri(const LilvPlugin* p)
 }
 
 LILV_API
-const LilvValue*
+const LilvNode*
 lilv_plugin_get_bundle_uri(const LilvPlugin* p)
 {
 	assert(p);
@@ -279,7 +279,7 @@ lilv_plugin_get_bundle_uri(const LilvPlugin* p)
 }
 
 LILV_API
-const LilvValue*
+const LilvNode*
 lilv_plugin_get_library_uri(const LilvPlugin* const_p)
 {
 	LilvPlugin* p = (LilvPlugin*)const_p;
@@ -294,7 +294,7 @@ lilv_plugin_get_library_uri(const LilvPlugin* const_p)
 		FOREACH_MATCH(results) {
 			const SordNode* binary_node = lilv_match_object(results);
 			if (sord_node_get_type(binary_node) == SORD_URI) {
-				p->binary_uri = lilv_value_new_from_node(p->world, binary_node);
+				p->binary_uri = lilv_node_new_from_node(p->world, binary_node);
 				break;
 			}
 		}
@@ -302,13 +302,13 @@ lilv_plugin_get_library_uri(const LilvPlugin* const_p)
 	}
 	if (!p->binary_uri) {
 		LILV_WARNF("Plugin <%s> has no lv2:binary\n",
-		           lilv_value_as_uri(lilv_plugin_get_uri(p)));
+		           lilv_node_as_uri(lilv_plugin_get_uri(p)));
 	}
 	return p->binary_uri;
 }
 
 LILV_API
-const LilvValues*
+const LilvNodes*
 lilv_plugin_get_data_uris(const LilvPlugin* p)
 {
 	return p->data_uris;
@@ -333,20 +333,20 @@ lilv_plugin_get_class(const LilvPlugin* const_p)
 				continue;
 			}
 
-			LilvValue* class = lilv_value_new_from_node(p->world, class_node);
-			if ( ! lilv_value_equals(class, p->world->lv2_plugin_class->uri)) {
+			LilvNode* class = lilv_node_new_from_node(p->world, class_node);
+			if ( ! lilv_node_equals(class, p->world->lv2_plugin_class->uri)) {
 
 				const LilvPluginClass* plugin_class = lilv_plugin_classes_get_by_uri(
 						p->world->plugin_classes, class);
 
 				if (plugin_class) {
 					((LilvPlugin*)p)->plugin_class = plugin_class;
-					lilv_value_free(class);
+					lilv_node_free(class);
 					break;
 				}
 			}
 
-			lilv_value_free(class);
+			lilv_node_free(class);
 		}
 		lilv_match_end(results);
 
@@ -360,88 +360,88 @@ LILV_API
 bool
 lilv_plugin_verify(const LilvPlugin* plugin)
 {
-	LilvValue*  rdf_type = lilv_new_uri(plugin->world, LILV_NS_RDF "type");
-	LilvValues* results  = lilv_plugin_get_value(plugin, rdf_type);
-	lilv_value_free(rdf_type);
+	LilvNode*  rdf_type = lilv_new_uri(plugin->world, LILV_NS_RDF "type");
+	LilvNodes* results  = lilv_plugin_get_value(plugin, rdf_type);
+	lilv_node_free(rdf_type);
 	if (!results) {
 		return false;
 	}
 
-	lilv_values_free(results);
+	lilv_nodes_free(results);
 	results = lilv_plugin_get_value(plugin, plugin->world->doap_name_val);
 	if (!results) {
 		return false;
 	}
 
-	lilv_values_free(results);
-	LilvValue*  lv2_port = lilv_new_uri(plugin->world, LILV_NS_LV2 "port");
+	lilv_nodes_free(results);
+	LilvNode*  lv2_port = lilv_new_uri(plugin->world, LILV_NS_LV2 "port");
 	results = lilv_plugin_get_value(plugin, lv2_port);
-	lilv_value_free(lv2_port);
+	lilv_node_free(lv2_port);
 	if (!results) {
 		return false;
 	}
 
-	lilv_values_free(results);
+	lilv_nodes_free(results);
 	return true;
 }
 
 LILV_API
-LilvValue*
+LilvNode*
 lilv_plugin_get_name(const LilvPlugin* plugin)
 {
-	LilvValues* results = lilv_plugin_get_value(plugin,
+	LilvNodes* results = lilv_plugin_get_value(plugin,
 	                                            plugin->world->doap_name_val);
 
-	LilvValue* ret = NULL;
+	LilvNode* ret = NULL;
 	if (results) {
-		LilvValue* val = lilv_values_get_first(results);
-		if (lilv_value_is_string(val))
-			ret = lilv_value_duplicate(val);
-		lilv_values_free(results);
+		LilvNode* val = lilv_nodes_get_first(results);
+		if (lilv_node_is_string(val))
+			ret = lilv_node_duplicate(val);
+		lilv_nodes_free(results);
 	}
 
 	if (!ret)
 		LILV_WARNF("<%s> has no (mandatory) doap:name\n",
-		           lilv_value_as_string(lilv_plugin_get_uri(plugin)));
+		           lilv_node_as_string(lilv_plugin_get_uri(plugin)));
 
 	return ret;
 }
 
 LILV_API
-LilvValues*
+LilvNodes*
 lilv_plugin_get_value(const LilvPlugin* p,
-                      const LilvValue*  predicate)
+                      const LilvNode*  predicate)
 {
 	return lilv_plugin_get_value_for_subject(p, p->plugin_uri, predicate);
 }
 
 LILV_API
-LilvValues*
+LilvNodes*
 lilv_plugin_get_value_for_subject(const LilvPlugin* p,
-                                  const LilvValue*  subject,
-                                  const LilvValue*  predicate)
+                                  const LilvNode*   subject,
+                                  const LilvNode*   predicate)
 {
 	lilv_plugin_load_ports_if_necessary(p);
-	if ( ! lilv_value_is_uri(subject) && ! lilv_value_is_blank(subject)) {
+	if ( ! lilv_node_is_uri(subject) && ! lilv_node_is_blank(subject)) {
 		LILV_ERROR("Subject is not a resource\n");
 		return NULL;
 	}
-	if ( ! lilv_value_is_uri(predicate)) {
+	if ( ! lilv_node_is_uri(predicate)) {
 		LILV_ERROR("Predicate is not a URI\n");
 		return NULL;
 	}
 
-	SordNode* subject_node = (lilv_value_is_uri(subject))
-		? lilv_node_copy(subject->val.uri_val)
+	SordNode* subject_node = (lilv_node_is_uri(subject))
+		? sord_node_copy(subject->val.uri_val)
 		: sord_new_blank(p->world->world,
-		                 (const uint8_t*)lilv_value_as_blank(subject));
+		                 (const uint8_t*)lilv_node_as_blank(subject));
 
-	LilvValues* ret = lilv_world_query_values(p->world,
+	LilvNodes* ret = lilv_world_query_values(p->world,
 	                                          subject_node,
 	                                          predicate->val.uri_val,
 	                                          NULL);
 
-	lilv_node_free(p->world, subject_node);
+	sord_node_free(p->world->world, subject_node);
 	return ret;
 }
 
@@ -456,34 +456,34 @@ lilv_plugin_get_num_ports(const LilvPlugin* p)
 LILV_API
 void
 lilv_plugin_get_port_ranges_float(const LilvPlugin* p,
-                                  float*      min_values,
-                                  float*      max_values,
-                                  float*      def_values)
+                                  float*            min_values,
+                                  float*            max_values,
+                                  float*            def_values)
 {
 	lilv_plugin_load_ports_if_necessary(p);
 	for (uint32_t i = 0; i < p->num_ports; ++i) {
-		LilvValue *def, *min, *max;
+		LilvNode *def, *min, *max;
 		lilv_port_get_range(p, p->ports[i], &def, &min, &max);
 
 		if (min_values)
-			min_values[i] = min ? lilv_value_as_float(min) : NAN;
+			min_values[i] = min ? lilv_node_as_float(min) : NAN;
 
 		if (max_values)
-			max_values[i] = max ? lilv_value_as_float(max) : NAN;
+			max_values[i] = max ? lilv_node_as_float(max) : NAN;
 
 		if (def_values)
-			def_values[i] = def ? lilv_value_as_float(def) : NAN;
+			def_values[i] = def ? lilv_node_as_float(def) : NAN;
 
-		lilv_value_free(def);
-		lilv_value_free(min);
-		lilv_value_free(max);
+		lilv_node_free(def);
+		lilv_node_free(min);
+		lilv_node_free(max);
 	}
 }
 
 LILV_API
 uint32_t
 lilv_plugin_get_num_ports_of_class(const LilvPlugin* p,
-                                   const LilvValue*  class_1, ...)
+                                   const LilvNode*  class_1, ...)
 {
 	lilv_plugin_load_ports_if_necessary(p);
 
@@ -498,7 +498,7 @@ lilv_plugin_get_num_ports_of_class(const LilvPlugin* p,
 		va_start(args, class_1);
 
 		bool matches = true;
-		for (LilvValue* class_i = NULL; (class_i = va_arg(args, LilvValue*)) != NULL ; ) {
+		for (LilvNode* class_i = NULL; (class_i = va_arg(args, LilvNode*)) != NULL ; ) {
 			if (!lilv_port_is_a(p, port, class_i)) {
 				va_end(args);
 				matches = false;
@@ -566,11 +566,11 @@ lilv_plugin_get_latency_port_index(const LilvPlugin* p)
 			p->world->lv2_portproperty_node,
 			p->world->lv2_reportslatency_node);
 		if (!lilv_matches_end(reports_latency)) {
-			LilvValue* index = lilv_plugin_get_unique(
+			LilvNode* index = lilv_plugin_get_unique(
 				p, port, p->world->lv2_index_node);
 
-			ret = lilv_value_as_int(index);
-			lilv_value_free(index);
+			ret = lilv_node_as_int(index);
+			lilv_node_free(index);
 			lilv_match_end(reports_latency);
 			break;
 		}
@@ -584,46 +584,46 @@ lilv_plugin_get_latency_port_index(const LilvPlugin* p)
 LILV_API
 bool
 lilv_plugin_has_feature(const LilvPlugin* p,
-                        const LilvValue*  feature)
+                        const LilvNode*  feature)
 {
-	LilvValues* features = lilv_plugin_get_supported_features(p);
+	LilvNodes* features = lilv_plugin_get_supported_features(p);
 
-	const bool ret = features && feature && lilv_values_contains(features, feature);
+	const bool ret = features && feature && lilv_nodes_contains(features, feature);
 
-	lilv_values_free(features);
+	lilv_nodes_free(features);
 	return ret;
 }
 
 LILV_API
-LilvValues*
+LilvNodes*
 lilv_plugin_get_supported_features(const LilvPlugin* p)
 {
-	LilvValues* optional = lilv_plugin_get_optional_features(p);
-	LilvValues* required = lilv_plugin_get_required_features(p);
-	LilvValues* result   = lilv_values_new();
+	LilvNodes* optional = lilv_plugin_get_optional_features(p);
+	LilvNodes* required = lilv_plugin_get_required_features(p);
+	LilvNodes* result   = lilv_nodes_new();
 
-	LILV_FOREACH(values, i, optional)
+	LILV_FOREACH(nodes, i, optional)
 		lilv_array_append(
-			result, lilv_value_duplicate(lilv_values_get(optional, i)));
-	LILV_FOREACH(values, i, required)
+			result, lilv_node_duplicate(lilv_nodes_get(optional, i)));
+	LILV_FOREACH(nodes, i, required)
 		lilv_array_append(
-			result, lilv_value_duplicate(lilv_values_get(required, i)));
+			result, lilv_node_duplicate(lilv_nodes_get(required, i)));
 
-	lilv_values_free(optional);
-	lilv_values_free(required);
+	lilv_nodes_free(optional);
+	lilv_nodes_free(required);
 
 	return result;
 }
 
 LILV_API
-LilvValues*
+LilvNodes*
 lilv_plugin_get_optional_features(const LilvPlugin* p)
 {
 	return lilv_plugin_get_value(p, p->world->lv2_optionalFeature_val);
 }
 
 LILV_API
-LilvValues*
+LilvNodes*
 lilv_plugin_get_required_features(const LilvPlugin* p)
 {
 	return lilv_plugin_get_value(p, p->world->lv2_requiredFeature_val);
@@ -644,12 +644,12 @@ lilv_plugin_get_port_by_index(const LilvPlugin* p,
 LILV_API
 const LilvPort*
 lilv_plugin_get_port_by_symbol(const LilvPlugin* p,
-                               const LilvValue*  symbol)
+                               const LilvNode*  symbol)
 {
 	lilv_plugin_load_ports_if_necessary(p);
 	for (uint32_t i = 0; i < p->num_ports; ++i) {
 		LilvPort* port = p->ports[i];
-		if (lilv_value_equals(port->symbol, symbol))
+		if (lilv_node_equals(port->symbol, symbol))
 			return port;
 	}
 
@@ -670,7 +670,7 @@ lilv_plugin_get_author(const LilvPlugin* p)
 		doap_maintainer,
 		NULL);
 
-	lilv_node_free(p->world, doap_maintainer);
+	sord_node_free(p->world->world, doap_maintainer);
 
 	if (lilv_matches_end(maintainers)) {
 		return NULL;
@@ -683,7 +683,7 @@ lilv_plugin_get_author(const LilvPlugin* p)
 }
 
 LILV_API
-LilvValue*
+LilvNode*
 lilv_plugin_get_author_name(const LilvPlugin* plugin)
 {
 	const SordNode* author = lilv_plugin_get_author(plugin);
@@ -696,7 +696,7 @@ lilv_plugin_get_author_name(const LilvPlugin* plugin)
 }
 
 LILV_API
-LilvValue*
+LilvNode*
 lilv_plugin_get_author_email(const LilvPlugin* plugin)
 {
 	const SordNode* author = lilv_plugin_get_author(plugin);
@@ -709,7 +709,7 @@ lilv_plugin_get_author_email(const LilvPlugin* plugin)
 }
 
 LILV_API
-LilvValue*
+LilvNode*
 lilv_plugin_get_author_homepage(const LilvPlugin* plugin)
 {
 	const SordNode* author = lilv_plugin_get_author(plugin);
@@ -746,21 +746,21 @@ lilv_plugin_get_uis(const LilvPlugin* p)
 
 	FOREACH_MATCH(uis) {
 		const SordNode* ui     = lilv_match_object(uis);
-		LilvValue*      type   = lilv_plugin_get_unique(p, ui, p->world->rdf_a_node);
-		LilvValue*      binary = lilv_plugin_get_unique(p, ui, ui_binary_node);
+		LilvNode*       type   = lilv_plugin_get_unique(p, ui, p->world->rdf_a_node);
+		LilvNode*       binary = lilv_plugin_get_unique(p, ui, ui_binary_node);
 
 		if (sord_node_get_type(ui) != SORD_URI
-		    || !lilv_value_is_uri(type)
-		    || !lilv_value_is_uri(binary)) {
-			lilv_value_free(binary);
-			lilv_value_free(type);
+		    || !lilv_node_is_uri(type)
+		    || !lilv_node_is_uri(binary)) {
+			lilv_node_free(binary);
+			lilv_node_free(type);
 			LILV_ERROR("Corrupt UI\n");
 			continue;
 		}
 
 		LilvUI* lilv_ui = lilv_ui_new(
 			p->world,
-			lilv_value_new_from_node(p->world, ui),
+			lilv_node_new_from_node(p->world, ui),
 			type,
 			binary);
 
@@ -768,8 +768,8 @@ lilv_plugin_get_uis(const LilvPlugin* p)
 	}
 	lilv_match_end(uis);
 
-	lilv_node_free(p->world, ui_binary_node);
-	lilv_node_free(p->world, ui_ui_node);
+	sord_node_free(p->world->world, ui_binary_node);
+	sord_node_free(p->world->world, ui_ui_node);
 
 	if (lilv_uis_size(result) > 0) {
 		return result;

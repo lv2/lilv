@@ -33,10 +33,10 @@ lilv_plugin_class_new(LilvWorld*      world,
 	}
 	LilvPluginClass* pc = malloc(sizeof(struct LilvPluginClassImpl));
 	pc->world      = world;
-	pc->uri        = lilv_value_new_from_node(world, uri);
-	pc->label      = lilv_value_new(world, LILV_VALUE_STRING, label);
+	pc->uri        = lilv_node_new_from_node(world, uri);
+	pc->label      = lilv_node_new(world, LILV_VALUE_STRING, label);
 	pc->parent_uri = (parent_node)
-		? lilv_value_new_from_node(world, parent_node)
+		? lilv_node_new_from_node(world, parent_node)
 		: NULL;
 	return pc;
 }
@@ -45,14 +45,14 @@ void
 lilv_plugin_class_free(LilvPluginClass* plugin_class)
 {
 	assert(plugin_class->uri);
-	lilv_value_free(plugin_class->uri);
-	lilv_value_free(plugin_class->parent_uri);
-	lilv_value_free(plugin_class->label);
+	lilv_node_free(plugin_class->uri);
+	lilv_node_free(plugin_class->parent_uri);
+	lilv_node_free(plugin_class->label);
 	free(plugin_class);
 }
 
 LILV_API
-const LilvValue*
+const LilvNode*
 lilv_plugin_class_get_parent_uri(const LilvPluginClass* plugin_class)
 {
 	if (plugin_class->parent_uri)
@@ -62,7 +62,7 @@ lilv_plugin_class_get_parent_uri(const LilvPluginClass* plugin_class)
 }
 
 LILV_API
-const LilvValue*
+const LilvNode*
 lilv_plugin_class_get_uri(const LilvPluginClass* plugin_class)
 {
 	assert(plugin_class->uri);
@@ -70,7 +70,7 @@ lilv_plugin_class_get_uri(const LilvPluginClass* plugin_class)
 }
 
 LILV_API
-const LilvValue*
+const LilvNode*
 lilv_plugin_class_get_label(const LilvPluginClass* plugin_class)
 {
 	return plugin_class->label;
@@ -88,8 +88,8 @@ lilv_plugin_class_get_children(const LilvPluginClass* plugin_class)
 	     i != g_sequence_get_end_iter(all);
 	     i = g_sequence_iter_next(i)) {
 		const LilvPluginClass* c      = g_sequence_get(i);
-		const LilvValue*       parent = lilv_plugin_class_get_parent_uri(c);
-		if (parent && lilv_value_equals(lilv_plugin_class_get_uri(plugin_class),
+		const LilvNode*       parent = lilv_plugin_class_get_parent_uri(c);
+		if (parent && lilv_node_equals(lilv_plugin_class_get_uri(plugin_class),
 		                                parent))
 			lilv_sequence_insert(result, (LilvPluginClass*)c);
 	}

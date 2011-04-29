@@ -83,8 +83,8 @@ lilv_match_end(SordIter* iter)
 /** Reference to a port on some plugin. */
 struct LilvPortImpl {
 	uint32_t    index;   ///< lv2:index
-	LilvValue*  symbol;  ///< lv2:symbol
-	LilvValues* classes; ///< rdf:type
+	LilvNode*  symbol;  ///< lv2:symbol
+	LilvNodes* classes; ///< rdf:type
 };
 
 LilvPort* lilv_port_new(LilvWorld* world, uint32_t index, const char* symbol);
@@ -95,7 +95,7 @@ void      lilv_port_free(LilvPort* port);
 struct LilvSpecImpl {
 	SordNode*   spec;
 	SordNode*   bundle;
-	LilvValues* data_uris;
+	LilvNodes* data_uris;
 };
 
 typedef struct LilvSpecImpl LilvSpec;
@@ -108,7 +108,7 @@ typedef struct LilvSpecImpl LilvSpec;
  */
 struct LilvHeader {
 	LilvWorld* world;
-	LilvValue* uri;
+	LilvNode* uri;
 };
 
 /** Record of an installed/available plugin.
@@ -118,23 +118,23 @@ struct LilvHeader {
  */
 struct LilvPluginImpl {
 	LilvWorld*             world;
-	LilvValue*             plugin_uri;
-	LilvValue*             bundle_uri; ///< Bundle directory plugin was loaded from
-	LilvValue*             binary_uri; ///< lv2:binary
-	LilvValue*             dynman_uri; ///< dynamic manifest binary
+	LilvNode*             plugin_uri;
+	LilvNode*             bundle_uri; ///< Bundle directory plugin was loaded from
+	LilvNode*             binary_uri; ///< lv2:binary
+	LilvNode*             dynman_uri; ///< dynamic manifest binary
 	const LilvPluginClass* plugin_class;
-	LilvValues*            data_uris; ///< rdfs::seeAlso
+	LilvNodes*            data_uris; ///< rdfs::seeAlso
 	LilvPort**             ports;
 	uint32_t               num_ports;
 	bool                   loaded;
 	bool                   replaced;
 };
 
-LilvPlugin* lilv_plugin_new(LilvWorld* world, LilvValue* uri, LilvValue* bundle_uri);
+LilvPlugin* lilv_plugin_new(LilvWorld* world, LilvNode* uri, LilvNode* bundle_uri);
 void        lilv_plugin_load_if_necessary(const LilvPlugin* p);
 void        lilv_plugin_free(LilvPlugin* plugin);
 
-LilvValue*
+LilvNode*
 lilv_plugin_get_unique(const LilvPlugin* p,
                        const SordNode*   subject,
                        const SordNode*   predicate);
@@ -178,17 +178,17 @@ lilv_collection_free(LilvCollection* collection);
 unsigned
 lilv_collection_size(const LilvCollection* collection);
 
-LilvValues*
-lilv_values_new(void);
+LilvNodes*
+lilv_nodes_new(void);
 
 LilvScalePoints*
 lilv_scale_points_new(void);
 
 struct LilvPluginClassImpl {
 	LilvWorld* world;
-	LilvValue* uri;
-	LilvValue* parent_uri;
-	LilvValue* label;
+	LilvNode* uri;
+	LilvNode* parent_uri;
+	LilvNode* label;
 };
 
 LilvPluginClass* lilv_plugin_class_new(LilvWorld*      world,
@@ -245,10 +245,10 @@ struct LilvWorldImpl {
 	SordNode*          xsd_decimal_node;
 	SordNode*          xsd_double_node;
 	SordNode*          xsd_integer_node;
-	LilvValue*         doap_name_val;
-	LilvValue*         lv2_name_val;
-	LilvValue*         lv2_optionalFeature_val;
-	LilvValue*         lv2_requiredFeature_val;
+	LilvNode*         doap_name_val;
+	LilvNode*         lv2_name_val;
+	LilvNode*         lv2_optionalFeature_val;
+	LilvNode*         lv2_requiredFeature_val;
 	LilvOptions        opt;
 };
 
@@ -261,34 +261,34 @@ lilv_world_load_file(LilvWorld* world, const char* file_uri);
 
 struct LilvUIImpl {
 	LilvWorld*  world;
-	LilvValue*  uri;
-	LilvValue*  bundle_uri;
-	LilvValue*  binary_uri;
-	LilvValues* classes;
+	LilvNode*  uri;
+	LilvNode*  bundle_uri;
+	LilvNode*  binary_uri;
+	LilvNodes* classes;
 };
 
 LilvUIs* lilv_uis_new();
 
 LilvUI*
 lilv_ui_new(LilvWorld* world,
-            LilvValue* uri,
-            LilvValue* type_uri,
-            LilvValue* binary_uri);
+            LilvNode* uri,
+            LilvNode* type_uri,
+            LilvNode* binary_uri);
 
 void lilv_ui_free(LilvUI* ui);
 
 /* ********* Value ********* */
 
-typedef enum _LilvValueType {
+typedef enum _LilvNodeType {
 	LILV_VALUE_URI,
 	LILV_VALUE_STRING,
 	LILV_VALUE_INT,
 	LILV_VALUE_FLOAT,
 	LILV_VALUE_BOOL,
 	LILV_VALUE_BLANK
-} LilvValueType;
+} LilvNodeType;
 
-struct LilvValueImpl {
+struct LilvNodeImpl {
 	LilvWorld*    world;
 	char*         str_val; ///< always present
 	union {
@@ -297,12 +297,12 @@ struct LilvValueImpl {
 		bool      bool_val;
 		SordNode* uri_val;
 	} val;
-	LilvValueType type;
+	LilvNodeType type;
 };
 
-LilvValue* lilv_value_new(LilvWorld* world, LilvValueType type, const char* val);
-LilvValue* lilv_value_new_from_node(LilvWorld* world, const SordNode* node);
-const SordNode*  lilv_value_as_node(const LilvValue* value);
+LilvNode* lilv_node_new(LilvWorld* world, LilvNodeType type, const char* val);
+LilvNode* lilv_node_new_from_node(LilvWorld* world, const SordNode* node);
+const SordNode*  lilv_node_as_node(const LilvNode* value);
 
 int
 lilv_header_compare_by_uri(const void* a, const void* b, void* user_data);
@@ -319,24 +319,16 @@ lilv_array_append(GSequence* seq, void* value) {
 }
 
 struct LilvHeader*
-lilv_sequence_get_by_uri(const GSequence* seq, const LilvValue* uri);
-
-static inline SordNode* lilv_node_copy(const SordNode* node) {
-	return sord_node_copy(node);
-}
-
-static inline void lilv_node_free(LilvWorld* world, SordNode* node) {
-	sord_node_free(world->world, node);
-}
+lilv_sequence_get_by_uri(const GSequence* seq, const LilvNode* uri);
 
 /* ********* Scale Points ********* */
 
 struct LilvScalePointImpl {
-	LilvValue* value;
-	LilvValue* label;
+	LilvNode* value;
+	LilvNode* label;
 };
 
-LilvScalePoint* lilv_scale_point_new(LilvValue* value, LilvValue* label);
+LilvScalePoint* lilv_scale_point_new(LilvNode* value, LilvNode* label);
 void            lilv_scale_point_free(LilvScalePoint* point);
 
 /* ********* Query Results ********* */
@@ -347,7 +339,7 @@ lilv_world_query(LilvWorld*      world,
                  const SordNode* predicate,
                  const SordNode* object);
 
-LilvValues*
+LilvNodes*
 lilv_world_query_values(LilvWorld*      world,
                         const SordNode* subject,
                         const SordNode* predicate,
@@ -361,7 +353,7 @@ static inline bool lilv_matches_end(SordIter* matches) {
 	return sord_iter_end(matches);
 }
 
-LilvValues* lilv_values_from_stream_objects(LilvWorld* w,
+LilvNodes* lilv_nodes_from_stream_objects(LilvWorld* w,
                                             SordIter*  stream);
 
 /* ********* Utilities ********* */

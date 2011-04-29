@@ -53,11 +53,11 @@ lilv_lang_matches(const char* a, const char* b)
 	return LILV_LANG_MATCH_NONE;
 }
 
-LilvValues*
-lilv_values_from_stream_objects_i18n(LilvWorld* world,
+LilvNodes*
+lilv_nodes_from_stream_objects_i18n(LilvWorld* world,
                                      SordIter*  stream)
 {
-	LilvValues*     values  = lilv_values_new();
+	LilvNodes*     values  = lilv_nodes_new();
 	const SordNode* nolang  = NULL; // Untranslated value
 	const SordNode* partial = NULL; // Partial language match
 	char*           syslang = lilv_get_lang();
@@ -79,19 +79,19 @@ lilv_values_from_stream_objects_i18n(LilvWorld* world,
 
 			if (lm == LILV_LANG_MATCH_EXACT) {
 				// Exact language match, add to results
-				lilv_array_append(values, lilv_value_new_from_node(world, value));
+				lilv_array_append(values, lilv_node_new_from_node(world, value));
 			} else if (lm == LILV_LANG_MATCH_PARTIAL) {
 				// Partial language match, save in case we find no exact
 				partial = value;
 			}
 		} else {
-			lilv_array_append(values, lilv_value_new_from_node(world, value));
+			lilv_array_append(values, lilv_node_new_from_node(world, value));
 		}
 	}
 	lilv_match_end(stream);
 	free(syslang);
 
-	if (lilv_values_size(values) > 0) {
+	if (lilv_nodes_size(values) > 0) {
 		return values;
 	}
 
@@ -106,29 +106,29 @@ lilv_values_from_stream_objects_i18n(LilvWorld* world,
 	}
 
 	if (best) {
-		lilv_array_append(values, lilv_value_new_from_node(world, best));
+		lilv_array_append(values, lilv_node_new_from_node(world, best));
 	} else {
 		// No matches whatsoever
-		lilv_values_free(values);
+		lilv_nodes_free(values);
 		values = NULL;
 	}
 
 	return values;
 }
 
-LilvValues*
-lilv_values_from_stream_objects(LilvWorld* world,
+LilvNodes*
+lilv_nodes_from_stream_objects(LilvWorld* world,
                                 SordIter*  stream)
 {
 	if (lilv_matches_end(stream)) {
 		lilv_match_end(stream);
 		return NULL;
 	} else if (world->opt.filter_language) {
-		return lilv_values_from_stream_objects_i18n(world, stream);
+		return lilv_nodes_from_stream_objects_i18n(world, stream);
 	} else {
-		LilvValues* values = lilv_values_new();
+		LilvNodes* values = lilv_nodes_new();
 		FOREACH_MATCH(stream) {
-			LilvValue* value = lilv_value_new_from_node(
+			LilvNode* value = lilv_node_new_from_node(
 				world, lilv_match_object(stream));
 			if (value) {
 				lilv_array_append(values, value);

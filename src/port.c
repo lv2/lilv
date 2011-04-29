@@ -29,16 +29,16 @@ lilv_port_new(LilvWorld* world, uint32_t index, const char* symbol)
 {
 	LilvPort* port = malloc(sizeof(struct LilvPortImpl));
 	port->index = index;
-	port->symbol = lilv_value_new(world, LILV_VALUE_STRING, symbol);
-	port->classes = lilv_values_new();
+	port->symbol = lilv_node_new(world, LILV_VALUE_STRING, symbol);
+	port->classes = lilv_nodes_new();
 	return port;
 }
 
 void
 lilv_port_free(LilvPort* port)
 {
-	lilv_values_free(port->classes);
-	lilv_value_free(port->symbol);
+	lilv_nodes_free(port->classes);
+	lilv_node_free(port->symbol);
 	free(port);
 }
 
@@ -46,10 +46,10 @@ LILV_API
 bool
 lilv_port_is_a(const LilvPlugin* plugin,
                const LilvPort*   port,
-               const LilvValue*  port_class)
+               const LilvNode*  port_class)
 {
-	LILV_FOREACH(values, i, port->classes)
-		if (lilv_value_equals(lilv_values_get(port->classes, i), port_class))
+	LILV_FOREACH(nodes, i, port->classes)
+		if (lilv_node_equals(lilv_nodes_get(port->classes, i), port_class))
 			return true;
 
 	return false;
@@ -67,15 +67,15 @@ lilv_port_get_node(const LilvPlugin* p,
 	const SordNode* ret = NULL;
 	FOREACH_MATCH(ports) {
 		const SordNode*   node   = lilv_match_object(ports);
-		LilvValue* symbol = lilv_plugin_get_unique(
+		LilvNode* symbol = lilv_plugin_get_unique(
 			p,
 			node,
 			p->world->lv2_symbol_node);
 
-		const bool matches = lilv_value_equals(symbol,
+		const bool matches = lilv_node_equals(symbol,
 		                                       lilv_port_get_symbol(p, port));
 
-		lilv_value_free(symbol);
+		lilv_node_free(symbol);
 		if (matches) {
 			ret = node;
 			break;
@@ -90,7 +90,7 @@ LILV_API
 bool
 lilv_port_has_property(const LilvPlugin* p,
                        const LilvPort*   port,
-                       const LilvValue*  property)
+                       const LilvNode*  property)
 {
 	assert(property);
 	const SordNode* port_node = lilv_port_get_node(p, port);
@@ -98,7 +98,7 @@ lilv_port_has_property(const LilvPlugin* p,
 		p->world,
 		port_node,
 		p->world->lv2_portproperty_node,
-		lilv_value_as_node(property));
+		lilv_node_as_node(property));
 
 	const bool ret = !lilv_matches_end(results);
 	lilv_match_end(results);
@@ -109,7 +109,7 @@ LILV_API
 bool
 lilv_port_supports_event(const LilvPlugin* p,
                          const LilvPort*   port,
-                         const LilvValue*  event)
+                         const LilvNode*  event)
 {
 #define NS_EV (const uint8_t*)"http://lv2plug.in/ns/ext/event#"
 
@@ -119,14 +119,14 @@ lilv_port_supports_event(const LilvPlugin* p,
 		p->world,
 		port_node,
 		sord_new_uri(p->world->world, NS_EV "supportsEvent"),
-		lilv_value_as_node(event));
+		lilv_node_as_node(event));
 
 	const bool ret = !lilv_matches_end(results);
 	lilv_match_end(results);
 	return ret;
 }
 
-static LilvValues*
+static LilvNodes*
 lilv_port_get_value_by_node(const LilvPlugin* p,
                             const LilvPort*   port,
                             const SordNode*          predicate)
@@ -140,27 +140,27 @@ lilv_port_get_value_by_node(const LilvPlugin* p,
 		predicate,
 		NULL);
 
-	return lilv_values_from_stream_objects(p->world, results);
+	return lilv_nodes_from_stream_objects(p->world, results);
 }
 
 LILV_API
-LilvValues*
+LilvNodes*
 lilv_port_get_value(const LilvPlugin* p,
                     const LilvPort*   port,
-                    const LilvValue*  predicate)
+                    const LilvNode*  predicate)
 {
-	if ( ! lilv_value_is_uri(predicate)) {
+	if ( ! lilv_node_is_uri(predicate)) {
 		LILV_ERROR("Predicate is not a URI\n");
 		return NULL;
 	}
 
 	return lilv_port_get_value_by_node(
 		p, port,
-		lilv_value_as_node(predicate));
+		lilv_node_as_node(predicate));
 }
 
 LILV_API
-const LilvValue*
+const LilvNode*
 lilv_port_get_symbol(const LilvPlugin* p,
                      const LilvPort*   port)
 {
@@ -168,30 +168,30 @@ lilv_port_get_symbol(const LilvPlugin* p,
 }
 
 LILV_API
-LilvValue*
+LilvNode*
 lilv_port_get_name(const LilvPlugin* p,
                    const LilvPort*   port)
 {
-	LilvValues* results = lilv_port_get_value(p, port,
+	LilvNodes* results = lilv_port_get_value(p, port,
 	                                          p->world->lv2_name_val);
 
-	LilvValue* ret = NULL;
+	LilvNode* ret = NULL;
 	if (results) {
-		LilvValue* val = lilv_values_get_first(results);
-		if (lilv_value_is_string(val))
-			ret = lilv_value_duplicate(val);
-		lilv_values_free(results);
+		LilvNode* val = lilv_nodes_get_first(results);
+		if (lilv_node_is_string(val))
+			ret = lilv_node_duplicate(val);
+		lilv_nodes_free(results);
 	}
 
 	if (!ret)
 		LILV_WARNF("<%s> has no (mandatory) doap:name\n",
-		           lilv_value_as_string(lilv_plugin_get_uri(p)));
+		           lilv_node_as_string(lilv_plugin_get_uri(p)));
 
 	return ret;
 }
 
 LILV_API
-const LilvValues*
+const LilvNodes*
 lilv_port_get_classes(const LilvPlugin* p,
                       const LilvPort*   port)
 {
@@ -202,33 +202,33 @@ LILV_API
 void
 lilv_port_get_range(const LilvPlugin* p,
                     const LilvPort*   port,
-                    LilvValue**       def,
-                    LilvValue**       min,
-                    LilvValue**       max)
+                    LilvNode**       def,
+                    LilvNode**       min,
+                    LilvNode**       max)
 {
 	if (def) {
-		LilvValues* defaults = lilv_port_get_value_by_node(
+		LilvNodes* defaults = lilv_port_get_value_by_node(
 			p, port, p->world->lv2_default_node);
 		*def = defaults
-			? lilv_value_duplicate(lilv_values_get_first(defaults))
+			? lilv_node_duplicate(lilv_nodes_get_first(defaults))
 			: NULL;
-		lilv_values_free(defaults);
+		lilv_nodes_free(defaults);
 	}
 	if (min) {
-		LilvValues* minimums = lilv_port_get_value_by_node(
+		LilvNodes* minimums = lilv_port_get_value_by_node(
 			p, port, p->world->lv2_minimum_node);
 		*min = minimums
-			? lilv_value_duplicate(lilv_values_get_first(minimums))
+			? lilv_node_duplicate(lilv_nodes_get_first(minimums))
 			: NULL;
-		lilv_values_free(minimums);
+		lilv_nodes_free(minimums);
 	}
 	if (max) {
-		LilvValues* maximums = lilv_port_get_value_by_node(
+		LilvNodes* maximums = lilv_port_get_value_by_node(
 			p, port, p->world->lv2_maximum_node);
 		*max = maximums
-			? lilv_value_duplicate(lilv_values_get_first(maximums))
+			? lilv_node_duplicate(lilv_nodes_get_first(maximums))
 			: NULL;
-		lilv_values_free(maximums);
+		lilv_nodes_free(maximums);
 	}
 }
 
@@ -251,12 +251,12 @@ lilv_port_get_scale_points(const LilvPlugin* p,
 	FOREACH_MATCH(points) {
 		const SordNode* point = lilv_match_object(points);
 
-		LilvValue* value = lilv_plugin_get_unique(
+		LilvNode* value = lilv_plugin_get_unique(
 			p,
 			point,
 			p->world->rdf_value_node);
 
-		LilvValue* label = lilv_plugin_get_unique(
+		LilvNode* label = lilv_plugin_get_unique(
 			p,
 			point,
 			p->world->rdfs_label_node);
@@ -267,18 +267,18 @@ lilv_port_get_scale_points(const LilvPlugin* p,
 	}
 	lilv_match_end(points);
 
-	assert(!ret || lilv_values_size(ret) > 0);
+	assert(!ret || lilv_nodes_size(ret) > 0);
 	return ret;
 }
 
 LILV_API
-LilvValues*
+LilvNodes*
 lilv_port_get_properties(const LilvPlugin* p,
                          const LilvPort*   port)
 {
-	LilvValue* pred = lilv_value_new_from_node(
+	LilvNode* pred = lilv_node_new_from_node(
 		p->world, p->world->lv2_portproperty_node);
-	LilvValues* ret = lilv_port_get_value(p, port, pred);
-	lilv_value_free(pred);
+	LilvNodes* ret = lilv_port_get_value(p, port, pred);
+	lilv_node_free(pred);
 	return ret;
 }

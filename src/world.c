@@ -121,39 +121,39 @@ lilv_world_free(LilvWorld* world)
 	lilv_plugin_class_free(world->lv2_plugin_class);
 	world->lv2_plugin_class = NULL;
 
-	lilv_node_free(world, world->dc_replaces_node);
-	lilv_node_free(world, world->dyn_manifest_node);
-	lilv_node_free(world, world->lv2_binary_node);
-	lilv_node_free(world, world->lv2_default_node);
-	lilv_node_free(world, world->lv2_index_node);
-	lilv_node_free(world, world->lv2_maximum_node);
-	lilv_node_free(world, world->lv2_minimum_node);
-	lilv_node_free(world, world->lv2_plugin_node);
-	lilv_node_free(world, world->lv2_port_node);
-	lilv_node_free(world, world->lv2_portproperty_node);
-	lilv_node_free(world, world->lv2_reportslatency_node);
-	lilv_node_free(world, world->lv2_specification_node);
-	lilv_node_free(world, world->lv2_symbol_node);
-	lilv_node_free(world, world->rdf_a_node);
-	lilv_node_free(world, world->rdf_value_node);
-	lilv_node_free(world, world->rdfs_class_node);
-	lilv_node_free(world, world->rdfs_label_node);
-	lilv_node_free(world, world->rdfs_seealso_node);
-	lilv_node_free(world, world->rdfs_subclassof_node);
-	lilv_node_free(world, world->xsd_boolean_node);
-	lilv_node_free(world, world->xsd_decimal_node);
-	lilv_node_free(world, world->xsd_double_node);
-	lilv_node_free(world, world->xsd_integer_node);
-	lilv_value_free(world->doap_name_val);
-	lilv_value_free(world->lv2_name_val);
-	lilv_value_free(world->lv2_optionalFeature_val);
-	lilv_value_free(world->lv2_requiredFeature_val);
+	sord_node_free(world->world, world->dc_replaces_node);
+	sord_node_free(world->world, world->dyn_manifest_node);
+	sord_node_free(world->world, world->lv2_binary_node);
+	sord_node_free(world->world, world->lv2_default_node);
+	sord_node_free(world->world, world->lv2_index_node);
+	sord_node_free(world->world, world->lv2_maximum_node);
+	sord_node_free(world->world, world->lv2_minimum_node);
+	sord_node_free(world->world, world->lv2_plugin_node);
+	sord_node_free(world->world, world->lv2_port_node);
+	sord_node_free(world->world, world->lv2_portproperty_node);
+	sord_node_free(world->world, world->lv2_reportslatency_node);
+	sord_node_free(world->world, world->lv2_specification_node);
+	sord_node_free(world->world, world->lv2_symbol_node);
+	sord_node_free(world->world, world->rdf_a_node);
+	sord_node_free(world->world, world->rdf_value_node);
+	sord_node_free(world->world, world->rdfs_class_node);
+	sord_node_free(world->world, world->rdfs_label_node);
+	sord_node_free(world->world, world->rdfs_seealso_node);
+	sord_node_free(world->world, world->rdfs_subclassof_node);
+	sord_node_free(world->world, world->xsd_boolean_node);
+	sord_node_free(world->world, world->xsd_decimal_node);
+	sord_node_free(world->world, world->xsd_double_node);
+	sord_node_free(world->world, world->xsd_integer_node);
+	lilv_node_free(world->doap_name_val);
+	lilv_node_free(world->lv2_name_val);
+	lilv_node_free(world->lv2_optionalFeature_val);
+	lilv_node_free(world->lv2_requiredFeature_val);
 
 	for (GSList* l = world->specs; l; l = l->next) {
 		LilvSpec* spec = (LilvSpec*)l->data;
-		lilv_node_free(world, spec->spec);
-		lilv_node_free(world, spec->bundle);
-		lilv_values_free(spec->data_uris);
+		sord_node_free(world->world, spec->spec);
+		sord_node_free(world->world, spec->bundle);
+		lilv_nodes_free(spec->data_uris);
 		free(spec);
 	}
 	g_slist_free(world->specs);
@@ -184,16 +184,16 @@ LILV_API
 void
 lilv_world_set_option(LilvWorld*       world,
                       const char*      option,
-                      const LilvValue* value)
+                      const LilvNode* value)
 {
 	if (!strcmp(option, LILV_OPTION_DYN_MANIFEST)) {
-		if (lilv_value_is_bool(value)) {
-			world->opt.dyn_manifest = lilv_value_as_bool(value);
+		if (lilv_node_is_bool(value)) {
+			world->opt.dyn_manifest = lilv_node_as_bool(value);
 			return;
 		}
 	} else if (!strcmp(option, LILV_OPTION_FILTER_LANG)) {
-		if (lilv_value_is_bool(value)) {
-			world->opt.filter_language = lilv_value_as_bool(value);
+		if (lilv_node_is_bool(value)) {
+			world->opt.filter_language = lilv_node_as_bool(value);
 			return;
 		}
 	}
@@ -222,13 +222,13 @@ lilv_world_query(LilvWorld*      world,
 	                                  subject, predicate, object, NULL);
 }
 
-LilvValues*
+LilvNodes*
 lilv_world_query_values(LilvWorld*      world,
                         const SordNode* subject,
                         const SordNode* predicate,
                         const SordNode* object)
 {
-	return lilv_values_from_stream_objects(world,
+	return lilv_nodes_from_stream_objects(world,
 		lilv_world_query(world, subject, predicate, object));
 }
 
@@ -259,17 +259,17 @@ lilv_header_compare_by_uri(const void* a, const void* b, void* user_data)
 {
 	const struct LilvHeader* const header_a = (const struct LilvHeader*)a;
 	const struct LilvHeader* const header_b = (const struct LilvHeader*)b;
-	return strcmp(lilv_value_as_uri(header_a->uri),
-	              lilv_value_as_uri(header_b->uri));
+	return strcmp(lilv_node_as_uri(header_a->uri),
+	              lilv_node_as_uri(header_b->uri));
 }
 
 /** Get an element of a sequence of any object with an LilvHeader by URI. */
 struct LilvHeader*
 lilv_sequence_get_by_uri(const GSequence* const_seq,
-                         const LilvValue* uri)
+                         const LilvNode* uri)
 {
 	GSequence*        seq = (GSequence*)const_seq;
-	struct LilvHeader key = { NULL, (LilvValue*)uri };
+	struct LilvHeader key = { NULL, (LilvNode*)uri };
 	GSequenceIter*    i   = g_sequence_search(
 		seq, &key, lilv_header_compare_by_uri, NULL);
 
@@ -277,7 +277,7 @@ lilv_sequence_get_by_uri(const GSequence* const_seq,
 
 	if (!g_sequence_iter_is_end(i)) {
 		LilvPlugin* p = g_sequence_get(i);
-		if (lilv_value_equals(lilv_plugin_get_uri(p), uri)) {
+		if (lilv_node_equals(lilv_plugin_get_uri(p), uri)) {
 			return (struct LilvHeader*)p;
 		}
 	}
@@ -286,7 +286,7 @@ lilv_sequence_get_by_uri(const GSequence* const_seq,
 		// Check if i is just past a match
 		i = g_sequence_iter_prev(i);
 		LilvPlugin* p = g_sequence_get(i);
-		if (lilv_value_equals(lilv_plugin_get_uri(p), uri)) {
+		if (lilv_node_equals(lilv_plugin_get_uri(p), uri)) {
 			return (struct LilvHeader*)p;
 		}
 	}
@@ -300,9 +300,9 @@ lilv_world_add_spec(LilvWorld*      world,
                     const SordNode* bundle_node)
 {
 	LilvSpec* spec = malloc(sizeof(struct LilvSpecImpl));
-	spec->spec      = lilv_node_copy(specification_node);
-	spec->bundle    = lilv_node_copy(bundle_node);
-	spec->data_uris = lilv_values_new();
+	spec->spec      = sord_node_copy(specification_node);
+	spec->bundle    = sord_node_copy(bundle_node);
+	spec->data_uris = lilv_nodes_new();
 
 	// Add all plugin data files (rdfs:seeAlso)
 	SordIter* files = lilv_world_find_statements(
@@ -314,7 +314,7 @@ lilv_world_add_spec(LilvWorld*      world,
 	FOREACH_MATCH(files) {
 		const SordNode* file_node = lilv_match_object(files);
 		lilv_array_append(spec->data_uris,
-		                  lilv_value_new_from_node(world, file_node));
+		                  lilv_node_new_from_node(world, file_node));
 	}
 	lilv_match_end(files);
 
@@ -329,20 +329,20 @@ lilv_world_add_plugin(LilvWorld*      world,
                       const SordNode* dyn_manifest_lib,
                       const SordNode* bundle_node)
 {
-	LilvValue* plugin_uri  = lilv_value_new_from_node(world, plugin_node);
+	LilvNode* plugin_uri  = lilv_node_new_from_node(world, plugin_node);
 
 	const LilvPlugin* last = lilv_plugins_get_by_uri(world->plugins, plugin_uri);
 	if (last) {
-		LILV_ERRORF("Duplicate plugin <%s>\n", lilv_value_as_uri(plugin_uri));
-		LILV_ERRORF("... found in %s\n", lilv_value_as_string(
+		LILV_ERRORF("Duplicate plugin <%s>\n", lilv_node_as_uri(plugin_uri));
+		LILV_ERRORF("... found in %s\n", lilv_node_as_string(
 			            lilv_plugin_get_bundle_uri(last)));
 		LILV_ERRORF("... and      %s\n", sord_node_get_string(bundle_node));
-		lilv_value_free(plugin_uri);
+		lilv_node_free(plugin_uri);
 		return;
 	}
 
 	// Create LilvPlugin
-	LilvValue*  bundle_uri = lilv_value_new_from_node(world, bundle_node);
+	LilvNode*  bundle_uri = lilv_node_new_from_node(world, bundle_node);
 	LilvPlugin* plugin     = lilv_plugin_new(world, plugin_uri, bundle_uri);
 
 	// Add manifest as plugin data file (as if it were rdfs:seeAlso)
@@ -351,7 +351,7 @@ lilv_world_add_plugin(LilvWorld*      world,
 
 	// Set dynamic manifest library URI, if applicable
 	if (dyn_manifest_lib) {
-		plugin->dynman_uri = lilv_value_new_from_node(world, dyn_manifest_lib);
+		plugin->dynman_uri = lilv_node_new_from_node(world, dyn_manifest_lib);
 	}
 
 	// Add all plugin data files (rdfs:seeAlso)
@@ -364,7 +364,7 @@ lilv_world_add_plugin(LilvWorld*      world,
 	FOREACH_MATCH(files) {
 		const SordNode* file_node = lilv_match_object(files);
 		lilv_array_append(plugin->data_uris,
-		                  lilv_value_new_from_node(world, file_node));
+		                  lilv_node_new_from_node(world, file_node));
 	}
 	lilv_match_end(files);
 
@@ -478,9 +478,9 @@ lilv_world_load_dyn_manifest(LilvWorld* world,
 
 LILV_API
 void
-lilv_world_load_bundle(LilvWorld* world, LilvValue* bundle_uri)
+lilv_world_load_bundle(LilvWorld* world, LilvNode* bundle_uri)
 {
-	if (!lilv_value_is_uri(bundle_uri)) {
+	if (!lilv_node_is_uri(bundle_uri)) {
 		LILV_ERROR("Bundle 'URI' is not a URI\n");
 		return;
 	}
@@ -591,9 +591,9 @@ lilv_world_load_directory(LilvWorld* world, const char* dir_path)
 		DIR* const bundle_dir = opendir(uri + file_scheme_len);
 		if (bundle_dir) {
 			closedir(bundle_dir);
-			LilvValue* uri_val = lilv_new_uri(world, uri);
+			LilvNode* uri_val = lilv_new_uri(world, uri);
 			lilv_world_load_bundle(world, uri_val);
-			lilv_value_free(uri_val);
+			lilv_node_free(uri_val);
 		} else {
 			LILV_WARNF("failed to open bundle `%s'\n", uri);
 		}
@@ -653,10 +653,10 @@ lilv_world_load_specifications(LilvWorld* world)
 {
 	for (GSList* l = world->specs; l; l = l->next) {
 		LilvSpec* spec = (LilvSpec*)l->data;
-		LILV_FOREACH(values, f, spec->data_uris) {
-			LilvValue* file = lilv_collection_get(spec->data_uris, f);
+		LILV_FOREACH(nodes, f, spec->data_uris) {
+			LilvNode* file = lilv_collection_get(spec->data_uris, f);
 			sord_read_file(world->model,
-			               (const uint8_t*)lilv_value_as_uri(file),
+			               (const uint8_t*)lilv_node_as_uri(file),
 			               NULL,
 			               lilv_world_blank_node_prefix(world));
 		}
@@ -743,14 +743,14 @@ lilv_world_load_all(LilvWorld* world)
 
 	LILV_FOREACH(plugins, p, world->plugins) {
 		const LilvPlugin* plugin     = lilv_collection_get(world->plugins, p);
-		const LilvValue*  plugin_uri = lilv_plugin_get_uri(plugin);
+		const LilvNode*  plugin_uri = lilv_plugin_get_uri(plugin);
 
 		// ?new dc:replaces plugin
 		SordIter* replacement = lilv_world_find_statements(
 			world, world->model,
 			NULL,
 			world->dc_replaces_node,
-			lilv_value_as_node(plugin_uri),
+			lilv_node_as_node(plugin_uri),
 			NULL);
 		if (!sord_iter_end(replacement)) {
 			/* TODO: Check if replacement is actually a known plugin,

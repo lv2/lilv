@@ -28,11 +28,11 @@ list_plugins(const LilvPlugins* list, bool show_names)
 	LILV_FOREACH(plugins, i, list) {
 		const LilvPlugin* p = lilv_plugins_get(list, i);
 		if (show_names) {
-			LilvValue* n = lilv_plugin_get_name(p);
-			printf("%s\n", lilv_value_as_string(n));
-			lilv_value_free(n);
+			LilvNode* n = lilv_plugin_get_name(p);
+			printf("%s\n", lilv_node_as_string(n));
+			lilv_node_free(n);
 		} else {
-			printf("%s\n", lilv_value_as_uri(lilv_plugin_get_uri(p)));
+			printf("%s\n", lilv_node_as_uri(lilv_plugin_get_uri(p)));
 		}
 	}
 }
