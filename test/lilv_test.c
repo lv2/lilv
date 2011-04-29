@@ -44,7 +44,7 @@ int test_count  = 0;
 int error_count = 0;
 
 void
-delete_bundle()
+delete_bundle(void)
 {
 	unlink(content_name);
 	unlink(manifest_name);
@@ -52,7 +52,7 @@ delete_bundle()
 }
 
 void
-init_tests()
+init_tests(void)
 {
 	strncpy(bundle_dir_name, getenv("HOME"), 900);
 	strcat(bundle_dir_name, "/.lv2/lilv-test.lv2");
@@ -84,14 +84,14 @@ write_file(const char *name, const char *content)
 }
 
 int
-init_world()
+init_world(void)
 {
 	world = lilv_world_new();
 	return world != NULL;
 }
 
 int
-load_all_bundles()
+load_all_bundles(void)
 {
 	if (!init_world())
 		return 0;
@@ -116,7 +116,7 @@ start_bundle(char *manifest, char *content)
 }
 
 void
-unload_bundle()
+unload_bundle(void)
 {
 	if (world)
 		lilv_world_free(world);
@@ -124,7 +124,7 @@ unload_bundle()
 }
 
 void
-cleanup()
+cleanup(void)
 {
 	delete_bundle();
 }
@@ -140,7 +140,7 @@ cleanup()
 	}\
 } while (0)
 
-typedef int (*TestFunc)();
+typedef int (*TestFunc)(void);
 
 struct TestCase {
 	const char *title;
@@ -168,7 +168,7 @@ static LilvNode* plugin2_uri_value;
 /*****************************************************************************/
 
 void
-init_uris()
+init_uris(void)
 {
 	plugin_uri_value = lilv_new_uri(world, uris_plugin);
 	plugin2_uri_value = lilv_new_uri(world, "http://example.org/foobar");
@@ -177,7 +177,7 @@ init_uris()
 }
 
 void
-cleanup_uris()
+cleanup_uris(void)
 {
 	lilv_node_free(plugin2_uri_value);
 	lilv_node_free(plugin_uri_value);
@@ -188,7 +188,7 @@ cleanup_uris()
 /*****************************************************************************/
 
 int
-test_utils()
+test_utils(void)
 {
 	TEST_ASSERT(!strcmp(lilv_uri_to_path("file:///tmp/blah"), "/tmp/blah"));
 	TEST_ASSERT(!lilv_uri_to_path("file:/example.org/blah"));
@@ -199,7 +199,7 @@ test_utils()
 /*****************************************************************************/
 
 int
-test_value()
+test_value(void)
 {
 	if (!start_bundle(MANIFEST_PREFIXES
 			":plug a lv2:Plugin ; lv2:binary <foo.so> ; rdfs:seeAlso <plugin.ttl> .\n",
@@ -327,7 +327,7 @@ discovery_verify_plugin(const LilvPlugin* plugin)
 }
 
 int
-test_discovery()
+test_discovery(void)
 {
 	if (!start_bundle(MANIFEST_PREFIXES
 			":plug a lv2:Plugin ; lv2:binary <foo.so> ; rdfs:seeAlso <plugin.ttl> .\n",
@@ -370,7 +370,7 @@ test_discovery()
 /*****************************************************************************/
 
 int
-test_verify()
+test_verify(void)
 {
 	if (!start_bundle(MANIFEST_PREFIXES
 			":plug a lv2:Plugin ; lv2:binary <foo.so> ; rdfs:seeAlso <plugin.ttl> .\n",
@@ -394,7 +394,7 @@ test_verify()
 /*****************************************************************************/
 
 int
-test_no_verify()
+test_no_verify(void)
 {
 	if (!start_bundle(MANIFEST_PREFIXES
 			":plug a lv2:Plugin ; lv2:binary <foo.so> ; rdfs:seeAlso <plugin.ttl> .\n",
@@ -414,7 +414,7 @@ test_no_verify()
 /*****************************************************************************/
 
 int
-test_classes()
+test_classes(void)
 {
 	if (!start_bundle(MANIFEST_PREFIXES
 			":plug a lv2:Plugin ; lv2:binary <foo.so> ; rdfs:seeAlso <plugin.ttl> .\n",
@@ -458,7 +458,7 @@ test_classes()
 /*****************************************************************************/
 
 int
-test_plugin()
+test_plugin(void)
 {
 	if (!start_bundle(MANIFEST_PREFIXES
 			":plug a lv2:Plugin ; lv2:binary <foo.so> ; rdfs:seeAlso <plugin.ttl> .\n",
@@ -637,7 +637,7 @@ test_plugin()
 /*****************************************************************************/
 
 int
-test_port()
+test_port(void)
 {
 	if (!start_bundle(MANIFEST_PREFIXES
 			":plug a lv2:Plugin ; lv2:binary <foo.so> ; rdfs:seeAlso <plugin.ttl> .\n",
@@ -824,7 +824,7 @@ test_port()
 /*****************************************************************************/
 
 int
-test_ui()
+test_ui(void)
 {
 	if (!start_bundle(MANIFEST_PREFIXES
 			":plug a lv2:Plugin ; lv2:binary <foo.so> ; rdfs:seeAlso <plugin.ttl> .\n",
@@ -939,7 +939,7 @@ static struct TestCase tests[] = {
 };
 
 void
-run_tests()
+run_tests(void)
 {
 	int i;
 	for (i = 0; tests[i].title; i++) {

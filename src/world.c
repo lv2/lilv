@@ -40,7 +40,7 @@ lilv_world_set_prefix(LilvWorld* world, const char* name, const char* uri)
 
 LILV_API
 LilvWorld*
-lilv_world_new()
+lilv_world_new(void)
 {
 	LilvWorld* world = malloc(sizeof(struct LilvWorldImpl));
 

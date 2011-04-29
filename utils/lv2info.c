@@ -296,7 +296,7 @@ print_plugin(const LilvPlugin* p)
 }
 
 void
-print_version()
+print_version(void)
 {
 	printf(
 		"lv2_inspect (lilv) " LILV_VERSION "\n"
@@ -307,7 +307,7 @@ print_version()
 }
 
 void
-print_usage()
+print_usage(void)
 {
 	printf("Usage: lv2_inspect PLUGIN_URI\n");
 	printf("Show information about an installed LV2 plugin.\n");

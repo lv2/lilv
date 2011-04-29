@@ -78,7 +78,7 @@ lilv_uri_to_path(const char* uri)
  * For example, if LANG is set to "en_CA.utf-8", this returns "en-ca".
  */
 char*
-lilv_get_lang()
+lilv_get_lang(void)
 {
 	const char* const env_lang = getenv("LANG");
 	if (!env_lang || !strcmp(env_lang, "")

@@ -97,7 +97,7 @@ lilv_uis_get_by_uri(const LilvUIs* coll, const LilvNode* uri)
 /* Plugins */
 
 LilvPlugins*
-lilv_plugins_new()
+lilv_plugins_new(void)
 {
 	return g_sequence_new(NULL);
 }

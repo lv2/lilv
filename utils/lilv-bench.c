@@ -21,7 +21,7 @@
 #include "lilv-config.h"
 
 void
-print_version()
+print_version(void)
 {
 	printf("lilv_bench (lilv) " LILV_VERSION "\n");
 	printf("Copyright 2011-2011 David Robillard <http://drobilla.net>\n");
@@ -31,7 +31,7 @@ print_version()
 }
 
 void
-print_usage()
+print_usage(void)
 {
 	printf("Usage: lilv_bench\n");
 	printf("Load all discovered LV2 plugins.\n");
