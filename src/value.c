@@ -34,7 +34,6 @@ lilv_value_set_numerics_from_string(LilvValue* val)
 	switch (val->type) {
 	case LILV_VALUE_URI:
 	case LILV_VALUE_BLANK:
-	case LILV_VALUE_QNAME_UNUSED:
 	case LILV_VALUE_STRING:
 		break;
 	case LILV_VALUE_INT:
@@ -77,7 +76,6 @@ lilv_new(LilvWorld* world, LilvValueType type, const char* str)
 		assert(val->val.uri_val);
 		val->str_val = (char*)sord_node_get_string(val->val.uri_val);
 		break;
-	case LILV_VALUE_QNAME_UNUSED:
 	case LILV_VALUE_BLANK:
 	case LILV_VALUE_STRING:
 	case LILV_VALUE_INT:
@@ -238,7 +236,6 @@ lilv_value_equals(const LilvValue* value, const LilvValue* other)
 		return sord_node_equals(value->val.uri_val, other->val.uri_val);
 	case LILV_VALUE_BLANK:
 	case LILV_VALUE_STRING:
-	case LILV_VALUE_QNAME_UNUSED:
 		return !strcmp(value->str_val, other->str_val);
 	case LILV_VALUE_INT:
 		return (value->val.int_val == other->val.int_val);
@@ -271,7 +268,6 @@ lilv_value_get_turtle_token(const LilvValue* value)
 		snprintf(result, len, "_:%s", value->str_val);
 		break;
 	case LILV_VALUE_STRING:
-	case LILV_VALUE_QNAME_UNUSED:
 	case LILV_VALUE_BOOL:
 		result = lilv_strdup(value->str_val);
 		break;

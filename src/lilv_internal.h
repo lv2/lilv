@@ -284,7 +284,6 @@ void lilv_ui_free(LilvUI* ui);
 
 typedef enum _LilvValueType {
 	LILV_VALUE_URI,
-	LILV_VALUE_QNAME_UNUSED, ///< FIXME: APIBREAK: remove
 	LILV_VALUE_STRING,
 	LILV_VALUE_INT,
 	LILV_VALUE_FLOAT,
