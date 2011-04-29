@@ -172,6 +172,7 @@ def build(bld):
     lib_source = '''
         src/collections.c
         src/instance.c
+        src/node.c
         src/plugin.c
         src/pluginclass.c
         src/port.c
@@ -179,7 +180,6 @@ def build(bld):
         src/scalepoint.c
         src/ui.c
         src/util.c
-        src/value.c
         src/world.c
     '''.split()
 
