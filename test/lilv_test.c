@@ -738,7 +738,7 @@ test_port()
 	LilvIter* sp_iter = lilv_scale_points_begin(points);
 	const LilvScalePoint* sp0 = lilv_scale_points_get(points, sp_iter);
 	TEST_ASSERT(sp0);
-	lilv_scale_points_next(points, sp_iter);
+	sp_iter = lilv_scale_points_next(points, sp_iter);
 	const LilvScalePoint* sp1 = lilv_scale_points_get(points, sp_iter);
 	TEST_ASSERT(sp1);
 
