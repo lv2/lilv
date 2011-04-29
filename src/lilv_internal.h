@@ -344,10 +344,17 @@ void            lilv_scale_point_free(LilvScalePoint* point);
 
 /* ********* Query Results ********* */
 
-LilvMatches lilv_plugin_find_statements(const LilvPlugin* plugin,
-                                        LilvNode          subject,
-                                        LilvNode          predicate,
-                                        LilvNode          object);
+LilvMatches
+lilv_world_query(LilvWorld* world,
+                 LilvNode   subject,
+                 LilvNode   predicate,
+                 LilvNode   object);
+
+LilvValues*
+lilv_world_query_values(LilvWorld* world,
+                        LilvNode   subject,
+                        LilvNode   predicate,
+                        LilvNode   object);
 
 static inline bool lilv_matches_next(LilvMatches matches) {
 	return sord_iter_next(matches);
@@ -357,8 +364,8 @@ static inline bool lilv_matches_end(LilvMatches matches) {
 	return sord_iter_end(matches);
 }
 
-LilvValues* lilv_values_from_stream_objects(const LilvPlugin* p,
-                                            LilvMatches       stream);
+LilvValues* lilv_values_from_stream_objects(LilvWorld*  w,
+                                            LilvMatches stream);
 
 /* ********* Utilities ********* */
 

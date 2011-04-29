@@ -212,6 +212,26 @@ lilv_world_find_statements(LilvWorld* world,
 	return sord_find(model, pat);
 }
 
+LilvMatches
+lilv_world_query(LilvWorld* world,
+                 LilvNode   subject,
+                 LilvNode   predicate,
+                 LilvNode   object)
+{
+	return lilv_world_find_statements(world, world->model,
+	                                  subject, predicate, object, NULL);
+}
+
+LilvValues*
+lilv_world_query_values(LilvWorld* world,
+                        LilvNode   subject,
+                        LilvNode   predicate,
+                        LilvNode   object)
+{
+	return lilv_values_from_stream_objects(world,
+		lilv_world_query(world, subject, predicate, object));
+}
+
 static SerdNode
 lilv_new_uri_relative_to_base(const uint8_t* uri_str,
                               const uint8_t* base_uri_str)

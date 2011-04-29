@@ -59,8 +59,8 @@ static LilvNode
 lilv_port_get_node(const LilvPlugin* p,
                    const LilvPort*   port)
 {
-	LilvMatches ports = lilv_plugin_find_statements(
-		p,
+	LilvMatches ports = lilv_world_query(
+		p->world,
 		p->plugin_uri->val.uri_val,
 		p->world->lv2_port_node,
 		NULL);
@@ -94,8 +94,8 @@ lilv_port_has_property(const LilvPlugin* p,
 {
 	assert(property);
 	LilvNode    port_node = lilv_port_get_node(p, port);
-	LilvMatches results   = lilv_plugin_find_statements(
-		p,
+	LilvMatches results   = lilv_world_query(
+		p->world,
 		port_node,
 		p->world->lv2_portproperty_node,
 		lilv_value_as_node(property));
@@ -115,8 +115,8 @@ lilv_port_supports_event(const LilvPlugin* p,
 
 	assert(event);
 	LilvNode    port_node = lilv_port_get_node(p, port);
-	LilvMatches results   = lilv_plugin_find_statements(
-		p,
+	LilvMatches results   = lilv_world_query(
+		p->world,
 		port_node,
 		sord_new_uri(p->world->world, NS_EV "supportsEvent"),
 		lilv_value_as_node(event));
@@ -134,13 +134,13 @@ lilv_port_get_value_by_node(const LilvPlugin* p,
 	assert(sord_node_get_type(predicate) == SORD_URI);
 
 	LilvNode    port_node = lilv_port_get_node(p, port);
-	LilvMatches results   = lilv_plugin_find_statements(
-		p,
+	LilvMatches results   = lilv_world_query(
+		p->world,
 		port_node,
 		predicate,
 		NULL);
 
-	return lilv_values_from_stream_objects(p, results);
+	return lilv_values_from_stream_objects(p->world, results);
 }
 
 LILV_API
@@ -238,8 +238,8 @@ lilv_port_get_scale_points(const LilvPlugin* p,
                            const LilvPort*   port)
 {
 	LilvNode    port_node = lilv_port_get_node(p, port);
-	LilvMatches points    = lilv_plugin_find_statements(
-		p,
+	LilvMatches points    = lilv_world_query(
+		p->world,
 		port_node,
 		sord_new_uri(p->world->world, (const uint8_t*)LILV_NS_LV2 "scalePoint"),
 		NULL);

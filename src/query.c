@@ -23,17 +23,6 @@
 
 #include "lilv_internal.h"
 
-LilvMatches
-lilv_plugin_find_statements(const LilvPlugin* plugin,
-                            LilvNode          subject,
-                            LilvNode          predicate,
-                            LilvNode          object)
-{
-	lilv_plugin_load_if_necessary(plugin);
-	SordQuad pat = { subject, predicate, object, NULL };
-	return sord_find(plugin->world->model, pat);
-}
-
 typedef enum {
 	LILV_LANG_MATCH_NONE,    ///< Language does not match at all
 	LILV_LANG_MATCH_PARTIAL, ///< Partial (language, but not country) match
@@ -65,8 +54,8 @@ lilv_lang_matches(const char* a, const char* b)
 }
 
 LilvValues*
-lilv_values_from_stream_objects_i18n(const LilvPlugin* p,
-                                     LilvMatches       stream)
+lilv_values_from_stream_objects_i18n(LilvWorld*  world,
+                                     LilvMatches stream)
 {
 	LilvValues* values  = lilv_values_new();
 	LilvNode    nolang  = NULL;  // Untranslated value
@@ -90,13 +79,13 @@ lilv_values_from_stream_objects_i18n(const LilvPlugin* p,
 
 			if (lm == LILV_LANG_MATCH_EXACT) {
 				// Exact language match, add to results
-				lilv_array_append(values, lilv_value_new_from_node(p->world, value));
+				lilv_array_append(values, lilv_value_new_from_node(world, value));
 			} else if (lm == LILV_LANG_MATCH_PARTIAL) {
 				// Partial language match, save in case we find no exact
 				partial = value;
 			}
 		} else {
-			lilv_array_append(values, lilv_value_new_from_node(p->world, value));
+			lilv_array_append(values, lilv_value_new_from_node(world, value));
 		}
 	}
 	lilv_match_end(stream);
@@ -117,7 +106,7 @@ lilv_values_from_stream_objects_i18n(const LilvPlugin* p,
 	}
 
 	if (best) {
-		lilv_array_append(values, lilv_value_new_from_node(p->world, best));
+		lilv_array_append(values, lilv_value_new_from_node(world, best));
 	} else {
 		// No matches whatsoever
 		lilv_values_free(values);
@@ -128,22 +117,22 @@ lilv_values_from_stream_objects_i18n(const LilvPlugin* p,
 }
 
 LilvValues*
-lilv_values_from_stream_objects(const LilvPlugin* p,
-                                LilvMatches       stream)
+lilv_values_from_stream_objects(LilvWorld*  world,
+                                LilvMatches stream)
 {
 	if (lilv_matches_end(stream)) {
 		lilv_match_end(stream);
 		return NULL;
-	} else if (p->world->opt.filter_language) {
-		return lilv_values_from_stream_objects_i18n(p, stream);
+	} else if (world->opt.filter_language) {
+		return lilv_values_from_stream_objects_i18n(world, stream);
 	} else {
 		LilvValues* values = lilv_values_new();
 		FOREACH_MATCH(stream) {
-			lilv_array_append(
-				values,
-				lilv_value_new_from_node(
-					p->world,
-					lilv_match_object(stream)));
+			LilvValue* value = lilv_value_new_from_node(
+				world, lilv_match_object(stream));
+			if (value) {
+				lilv_array_append(values, value);
+			}
 		}
 		lilv_match_end(stream);
 		return values;
