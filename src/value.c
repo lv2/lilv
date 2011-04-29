@@ -64,7 +64,7 @@ lilv_value_set_numerics_from_string(LilvValue* val)
  * exact string value is known.
  */
 LilvValue*
-lilv_new(LilvWorld* world, LilvValueType type, const char* str)
+lilv_value_new(LilvWorld* world, LilvValueType type, const char* str)
 {
 	LilvValue* val = malloc(sizeof(struct LilvValueImpl));
 	val->world = world;
@@ -90,7 +90,7 @@ lilv_new(LilvWorld* world, LilvValueType type, const char* str)
 
 /** Create a new LilvValue from @a node, or return NULL if impossible */
 LilvValue*
-lilv_new_from_node(LilvWorld* world, const SordNode* node)
+lilv_value_new_from_node(LilvWorld* world, const SordNode* node)
 {
 	LilvValue*    result       = NULL;
 	SordNode*     datatype_uri = NULL;
@@ -118,7 +118,7 @@ lilv_new_from_node(LilvWorld* world, const SordNode* node)
 			else
 				LILV_ERRORF("Unknown datatype %s\n", sord_node_get_string(datatype_uri));
 		}
-		result = lilv_new(world, type, (const char*)sord_node_get_string(node));
+		result = lilv_value_new(world, type, (const char*)sord_node_get_string(node));
 		switch (result->type) {
 		case LILV_VALUE_INT:
 		case LILV_VALUE_FLOAT:
@@ -130,7 +130,7 @@ lilv_new_from_node(LilvWorld* world, const SordNode* node)
 		break;
 	case SORD_BLANK:
 		type   = LILV_VALUE_BLANK;
-		result = lilv_new(world, type, (const char*)sord_node_get_string(node));
+		result = lilv_value_new(world, type, (const char*)sord_node_get_string(node));
 		break;
 	default:
 		assert(false);
@@ -143,14 +143,14 @@ LILV_API
 LilvValue*
 lilv_new_uri(LilvWorld* world, const char* uri)
 {
-	return lilv_new(world, LILV_VALUE_URI, uri);
+	return lilv_value_new(world, LILV_VALUE_URI, uri);
 }
 
 LILV_API
 LilvValue*
 lilv_new_string(LilvWorld* world, const char* str)
 {
-	return lilv_new(world, LILV_VALUE_STRING, str);
+	return lilv_value_new(world, LILV_VALUE_STRING, str);
 }
 
 LILV_API
@@ -159,7 +159,7 @@ lilv_new_int(LilvWorld* world, int val)
 {
 	char str[32];
 	snprintf(str, sizeof(str), "%d", val);
-	LilvValue* ret = lilv_new(world, LILV_VALUE_INT, str);
+	LilvValue* ret = lilv_value_new(world, LILV_VALUE_INT, str);
 	ret->val.int_val = val;
 	return ret;
 }
@@ -170,7 +170,7 @@ lilv_new_float(LilvWorld* world, float val)
 {
 	char str[32];
 	snprintf(str, sizeof(str), "%f", val);
-	LilvValue* ret = lilv_new(world, LILV_VALUE_FLOAT, str);
+	LilvValue* ret = lilv_value_new(world, LILV_VALUE_FLOAT, str);
 	ret->val.float_val = val;
 	return ret;
 }
@@ -179,7 +179,7 @@ LILV_API
 LilvValue*
 lilv_new_bool(LilvWorld* world, bool val)
 {
-	LilvValue* ret = lilv_new(world, LILV_VALUE_BOOL, val ? "true" : "false");
+	LilvValue* ret = lilv_value_new(world, LILV_VALUE_BOOL, val ? "true" : "false");
 	ret->val.bool_val = val;
 	return ret;
 }
