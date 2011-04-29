@@ -110,26 +110,3 @@ lilv_get_lang()
 
 	return lang;
 }
-
-uint8_t*
-lilv_qname_expand(const LilvPlugin* p, const char* qname)
-{
-	const size_t qname_len  = strlen(qname);
-	SerdNode     qname_node = { (const uint8_t*)qname,
-	                            qname_len + 1, qname_len,
-	                            SERD_CURIE };
-
-	SerdChunk uri_prefix;
-	SerdChunk uri_suffix;
-	if (serd_env_expand(p->world->namespaces, &qname_node, &uri_prefix, &uri_suffix)) {
-		const size_t uri_len = uri_prefix.len + uri_suffix.len;
-		char*        uri     = malloc(uri_len + 1);
-		memcpy(uri,                  uri_prefix.buf, uri_prefix.len);
-		memcpy(uri + uri_prefix.len, uri_suffix.buf, uri_suffix.len);
-		uri[uri_len] = '\0';
-		return (uint8_t*)uri;
-	} else {
-		LILV_ERRORF("Failed to expand QName `%s'\n", qname);
-		return NULL;
-	}
-}

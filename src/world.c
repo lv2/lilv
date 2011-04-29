@@ -59,36 +59,37 @@ lilv_world_new()
 #define NS_DYNMAN (const uint8_t*)"http://lv2plug.in/ns/ext/dynmanifest#"
 #define NS_DC     (const uint8_t*)"http://dublincore.org/documents/dcmi-namespace/"
 
-#define NEW_URI(uri)     sord_new_uri(world->world, uri)
+#define NEW_URI(uri)     sord_new_uri(world->world, (const uint8_t*)uri)
 #define NEW_URI_VAL(uri) lilv_new_uri(world, (const char*)(uri));
 
-	world->dc_replaces_node        = NEW_URI(NS_DC        "replaces");
-	world->dyn_manifest_node       = NEW_URI(NS_DYNMAN    "DynManifest");
-	world->lv2_specification_node  = NEW_URI(LILV_NS_LV2  "Specification");
-	world->lv2_plugin_node         = NEW_URI(LILV_NS_LV2  "Plugin");
-	world->lv2_binary_node         = NEW_URI(LILV_NS_LV2  "binary");
-	world->lv2_default_node        = NEW_URI(LILV_NS_LV2  "default");
-	world->lv2_minimum_node        = NEW_URI(LILV_NS_LV2  "minimum");
-	world->lv2_maximum_node        = NEW_URI(LILV_NS_LV2  "maximum");
-	world->lv2_port_node           = NEW_URI(LILV_NS_LV2  "port");
-	world->lv2_portproperty_node   = NEW_URI(LILV_NS_LV2  "portProperty");
-	world->lv2_reportslatency_node = NEW_URI(LILV_NS_LV2  "reportsLatency");
-	world->lv2_index_node          = NEW_URI(LILV_NS_LV2  "index");
-	world->lv2_symbol_node         = NEW_URI(LILV_NS_LV2  "symbol");
-	world->rdf_a_node              = NEW_URI(LILV_NS_RDF  "type");
-	world->rdf_value_node          = NEW_URI(LILV_NS_RDF  "value");
-	world->rdfs_class_node         = NEW_URI(LILV_NS_RDFS "Class");
-	world->rdfs_label_node         = NEW_URI(LILV_NS_RDFS "label");
-	world->rdfs_seealso_node       = NEW_URI(LILV_NS_RDFS "seeAlso");
-	world->rdfs_subclassof_node    = NEW_URI(LILV_NS_RDFS "subClassOf");
-	world->lilv_dmanifest_node     = NEW_URI(LILV_NS_LILV "dynamic-manifest");
-	world->xsd_boolean_node        = NEW_URI(LILV_NS_XSD  "boolean");
-	world->xsd_decimal_node        = NEW_URI(LILV_NS_XSD  "decimal");
-	world->xsd_double_node         = NEW_URI(LILV_NS_XSD  "double");
-	world->xsd_integer_node        = NEW_URI(LILV_NS_XSD  "integer");
+	world->dc_replaces_node         = NEW_URI(NS_DC        "replaces");
+	world->dyn_manifest_node        = NEW_URI(NS_DYNMAN    "DynManifest");
+	world->lv2_binary_node          = NEW_URI(LILV_NS_LV2  "binary");
+	world->lv2_default_node         = NEW_URI(LILV_NS_LV2  "default");
+	world->lv2_index_node           = NEW_URI(LILV_NS_LV2  "index");
+	world->lv2_maximum_node         = NEW_URI(LILV_NS_LV2  "maximum");
+	world->lv2_minimum_node         = NEW_URI(LILV_NS_LV2  "minimum");
+	world->lv2_plugin_node          = NEW_URI(LILV_NS_LV2  "Plugin");
+	world->lv2_port_node            = NEW_URI(LILV_NS_LV2  "port");
+	world->lv2_portproperty_node    = NEW_URI(LILV_NS_LV2  "portProperty");
+	world->lv2_reportslatency_node  = NEW_URI(LILV_NS_LV2  "reportsLatency");
+	world->lv2_specification_node   = NEW_URI(LILV_NS_LV2  "Specification");
+	world->lv2_symbol_node          = NEW_URI(LILV_NS_LV2  "symbol");
+	world->rdf_a_node               = NEW_URI(LILV_NS_RDF  "type");
+	world->rdf_value_node           = NEW_URI(LILV_NS_RDF  "value");
+	world->rdfs_class_node          = NEW_URI(LILV_NS_RDFS "Class");
+	world->rdfs_label_node          = NEW_URI(LILV_NS_RDFS "label");
+	world->rdfs_seealso_node        = NEW_URI(LILV_NS_RDFS "seeAlso");
+	world->rdfs_subclassof_node     = NEW_URI(LILV_NS_RDFS "subClassOf");
+	world->xsd_boolean_node         = NEW_URI(LILV_NS_XSD  "boolean");
+	world->xsd_decimal_node         = NEW_URI(LILV_NS_XSD  "decimal");
+	world->xsd_double_node          = NEW_URI(LILV_NS_XSD  "double");
+	world->xsd_integer_node         = NEW_URI(LILV_NS_XSD  "integer");
 
-	world->doap_name_val = NEW_URI_VAL(LILV_NS_DOAP "name");
-	world->lv2_name_val  = NEW_URI_VAL(LILV_NS_LV2  "name");
+	world->doap_name_val           = NEW_URI_VAL(LILV_NS_DOAP "name");
+	world->lv2_name_val            = NEW_URI_VAL(LILV_NS_LV2  "name");
+	world->lv2_optionalFeature_val = NEW_URI_VAL(LILV_NS_LV2  "optionalFeature");
+	world->lv2_requiredFeature_val = NEW_URI_VAL(LILV_NS_LV2  "requiredFeature");
 
 	world->lv2_plugin_class = lilv_plugin_class_new(
 		world, NULL, world->lv2_plugin_node, "Plugin");
@@ -122,30 +123,31 @@ lilv_world_free(LilvWorld* world)
 
 	lilv_node_free(world, world->dc_replaces_node);
 	lilv_node_free(world, world->dyn_manifest_node);
-	lilv_node_free(world, world->lv2_specification_node);
-	lilv_node_free(world, world->lv2_plugin_node);
 	lilv_node_free(world, world->lv2_binary_node);
 	lilv_node_free(world, world->lv2_default_node);
-	lilv_node_free(world, world->lv2_minimum_node);
+	lilv_node_free(world, world->lv2_index_node);
 	lilv_node_free(world, world->lv2_maximum_node);
+	lilv_node_free(world, world->lv2_minimum_node);
+	lilv_node_free(world, world->lv2_plugin_node);
 	lilv_node_free(world, world->lv2_port_node);
 	lilv_node_free(world, world->lv2_portproperty_node);
 	lilv_node_free(world, world->lv2_reportslatency_node);
-	lilv_node_free(world, world->lv2_index_node);
+	lilv_node_free(world, world->lv2_specification_node);
 	lilv_node_free(world, world->lv2_symbol_node);
 	lilv_node_free(world, world->rdf_a_node);
 	lilv_node_free(world, world->rdf_value_node);
+	lilv_node_free(world, world->rdfs_class_node);
 	lilv_node_free(world, world->rdfs_label_node);
 	lilv_node_free(world, world->rdfs_seealso_node);
 	lilv_node_free(world, world->rdfs_subclassof_node);
-	lilv_node_free(world, world->rdfs_class_node);
-	lilv_node_free(world, world->lilv_dmanifest_node);
 	lilv_node_free(world, world->xsd_boolean_node);
 	lilv_node_free(world, world->xsd_decimal_node);
 	lilv_node_free(world, world->xsd_double_node);
 	lilv_node_free(world, world->xsd_integer_node);
 	lilv_value_free(world->doap_name_val);
 	lilv_value_free(world->lv2_name_val);
+	lilv_value_free(world->lv2_optionalFeature_val);
+	lilv_value_free(world->lv2_requiredFeature_val);
 
 	for (GSList* l = world->specs; l; l = l->next) {
 		LilvSpec* spec = (LilvSpec*)l->data;

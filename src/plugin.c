@@ -383,7 +383,9 @@ LILV_API
 bool
 lilv_plugin_verify(const LilvPlugin* plugin)
 {
-	LilvValues* results = lilv_plugin_get_value_by_qname(plugin, "rdf:type");
+	LilvValue*  rdf_type = lilv_new_uri(plugin->world, LILV_NS_RDF "type");
+	LilvValues* results  = lilv_plugin_get_value(plugin, rdf_type);
+	lilv_value_free(rdf_type);
 	if (!results) {
 		return false;
 	}
@@ -395,13 +397,9 @@ lilv_plugin_verify(const LilvPlugin* plugin)
 	}
 
 	lilv_values_free(results);
-	results = lilv_plugin_get_value_by_qname(plugin, "doap:license");
-	if (!results) {
-		return false;
-	}
-
-	lilv_values_free(results);
-	results = lilv_plugin_get_value_by_qname(plugin, "lv2:port");
+	LilvValue*  lv2_port = lilv_new_uri(plugin->world, LILV_NS_LV2 "port");
+	results = lilv_plugin_get_value(plugin, lv2_port);
+	lilv_value_free(lv2_port);
 	if (!results) {
 		return false;
 	}
@@ -438,23 +436,6 @@ lilv_plugin_get_value(const LilvPlugin* p,
                       const LilvValue*  predicate)
 {
 	return lilv_plugin_get_value_for_subject(p, p->plugin_uri, predicate);
-}
-
-LILV_API
-LilvValues*
-lilv_plugin_get_value_by_qname(const LilvPlugin*  p,
-                               const char* predicate)
-{
-	char* pred_uri = (char*)lilv_qname_expand(p, predicate);
-	if (!pred_uri) {
-		return NULL;
-	}
-	LilvValue*  pred_value = lilv_new_uri(p->world, pred_uri);
-	LilvValues* ret        = lilv_plugin_get_value(p, pred_value);
-
-	lilv_value_free(pred_value);
-	free(pred_uri);
-	return ret;
 }
 
 LILV_API
@@ -657,14 +638,14 @@ LILV_API
 LilvValues*
 lilv_plugin_get_optional_features(const LilvPlugin* p)
 {
-	return lilv_plugin_get_value_by_qname(p, "lv2:optionalFeature");
+	return lilv_plugin_get_value(p, p->world->lv2_optionalFeature_val);
 }
 
 LILV_API
 LilvValues*
 lilv_plugin_get_required_features(const LilvPlugin* p)
 {
-	return lilv_plugin_get_value_by_qname(p, "lv2:requiredFeature");
+	return lilv_plugin_get_value(p, p->world->lv2_requiredFeature_val);
 }
 
 LILV_API

@@ -712,17 +712,6 @@ lilv_plugin_get_value(const LilvPlugin* p,
                       const LilvValue*  predicate);
 
 /**
-   Get a value associated with the plugin in a plugin's data files.
-   This function is identical to lilv_plugin_get_value, but takes a QName
-   string parameter for a predicate instead of an LilvValue, which may be
-   more convenient.
-*/
-LILV_API
-LilvValues*
-lilv_plugin_get_value_by_qname(const LilvPlugin* p,
-                               const char*       predicate);
-
-/**
    Get a value associated with some subject in a plugin's data files.
    @a predicate must be either a URI or a QName.
 
@@ -924,15 +913,6 @@ LilvValues*
 lilv_port_get_value(const LilvPlugin* plugin,
                     const LilvPort*   port,
                     const LilvValue*  predicate);
-
-/**
-   Port analog of lilv_plugin_get_value_by_qname.
-*/
-LILV_API
-LilvValues*
-lilv_port_get_value_by_qname(const LilvPlugin* plugin,
-                             const LilvPort*   port,
-                             const char* predicate);
 
 /**
    Return the LV2 port properties of a port.

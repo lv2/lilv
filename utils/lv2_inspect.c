@@ -24,12 +24,13 @@
 
 #include "lilv-config.h"
 
-LilvValue* event_class   = NULL;
-LilvValue* control_class = NULL;
-LilvValue* in_group_pred = NULL;
-LilvValue* role_pred     = NULL;
-LilvValue* preset_pred   = NULL;
-LilvValue* title_pred    = NULL;
+LilvValue* event_class         = NULL;
+LilvValue* control_class       = NULL;
+LilvValue* in_group_pred       = NULL;
+LilvValue* role_pred           = NULL;
+LilvValue* preset_pred         = NULL;
+LilvValue* title_pred          = NULL;
+LilvValue* supports_event_pred = NULL;
 
 void
 print_group(const LilvPlugin* p,
@@ -72,8 +73,8 @@ print_port(const LilvPlugin* p,
 	}
 
 	if (lilv_port_is_a(p, port, event_class)) {
-		LilvValues* supported = lilv_port_get_value_by_qname(p, port,
-			"lv2ev:supportsEvent");
+		LilvValues* supported = lilv_port_get_value(
+			p, port, supports_event_pred);
 		if (lilv_values_size(supported) > 0) {
 			printf("\n\t\tSupported events:\n");
 			LILV_FOREACH(values, i, supported) {
@@ -324,13 +325,15 @@ main(int argc, char** argv)
 #define NS_DC   "http://dublincore.org/documents/dcmi-namespace/"
 #define NS_PG   "http://lv2plug.in/ns/ext/port-groups#"
 #define NS_PSET "http://lv2plug.in/ns/ext/presets#"
+#define NS_EV   "http://lv2plug.in/ns/ext/event#"
 
-	control_class = lilv_new_uri(world, LILV_PORT_CLASS_CONTROL);
-	event_class   = lilv_new_uri(world, LILV_PORT_CLASS_EVENT);
-	in_group_pred = lilv_new_uri(world, NS_PG "inGroup");
-	preset_pred   = lilv_new_uri(world, NS_PSET "hasPreset");
-	role_pred     = lilv_new_uri(world, NS_PG "role");
-	title_pred    = lilv_new_uri(world, NS_DC "title");
+	control_class       = lilv_new_uri(world, LILV_PORT_CLASS_CONTROL);
+	event_class         = lilv_new_uri(world, LILV_PORT_CLASS_EVENT);
+	in_group_pred       = lilv_new_uri(world, NS_PG "inGroup");
+	preset_pred         = lilv_new_uri(world, NS_PSET "hasPreset");
+	role_pred           = lilv_new_uri(world, NS_PG "role");
+	title_pred          = lilv_new_uri(world, NS_DC "title");
+	supports_event_pred = lilv_new_uri(world, NS_EV "supportsEvent");
 
 	if (argc != 2) {
 		print_usage();

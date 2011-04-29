@@ -49,12 +49,12 @@ static inline char* dlerror(void) { return "Unknown error"; }
 
 #include "lilv/lilv.h"
 
-#define LILV_NS_DOAP (const uint8_t*)"http://usefulinc.com/ns/doap#"
-#define LILV_NS_RDFS (const uint8_t*)"http://www.w3.org/2000/01/rdf-schema#"
-#define LILV_NS_LILV (const uint8_t*)"http://drobilla.net/ns/lilv#"
-#define LILV_NS_LV2  (const uint8_t*)"http://lv2plug.in/ns/lv2core#"
-#define LILV_NS_XSD  (const uint8_t*)"http://www.w3.org/2001/XMLSchema#"
-#define LILV_NS_RDF  (const uint8_t*)"http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+#define LILV_NS_DOAP "http://usefulinc.com/ns/doap#"
+#define LILV_NS_RDFS "http://www.w3.org/2000/01/rdf-schema#"
+#define LILV_NS_LILV "http://drobilla.net/ns/lilv#"
+#define LILV_NS_LV2  "http://lv2plug.in/ns/lv2core#"
+#define LILV_NS_XSD  "http://www.w3.org/2001/XMLSchema#"
+#define LILV_NS_RDF  "http://www.w3.org/1999/02/22-rdf-syntax-ns#"
 
 typedef SordIter*       LilvMatches;
 typedef const SordNode* LilvNode;
@@ -228,16 +228,16 @@ struct LilvWorldImpl {
 	LilvPlugins*       plugins;
 	SordNode*          dc_replaces_node;
 	SordNode*          dyn_manifest_node;
-	SordNode*          lv2_specification_node;
-	SordNode*          lv2_plugin_node;
 	SordNode*          lv2_binary_node;
 	SordNode*          lv2_default_node;
-	SordNode*          lv2_minimum_node;
+	SordNode*          lv2_index_node;
 	SordNode*          lv2_maximum_node;
+	SordNode*          lv2_minimum_node;
+	SordNode*          lv2_plugin_node;
 	SordNode*          lv2_port_node;
 	SordNode*          lv2_portproperty_node;
 	SordNode*          lv2_reportslatency_node;
-	SordNode*          lv2_index_node;
+	SordNode*          lv2_specification_node;
 	SordNode*          lv2_symbol_node;
 	SordNode*          rdf_a_node;
 	SordNode*          rdf_value_node;
@@ -245,13 +245,14 @@ struct LilvWorldImpl {
 	SordNode*          rdfs_label_node;
 	SordNode*          rdfs_seealso_node;
 	SordNode*          rdfs_subclassof_node;
-	SordNode*          lilv_dmanifest_node;
 	SordNode*          xsd_boolean_node;
 	SordNode*          xsd_decimal_node;
 	SordNode*          xsd_double_node;
 	SordNode*          xsd_integer_node;
 	LilvValue*         doap_name_val;
 	LilvValue*         lv2_name_val;
+	LilvValue*         lv2_optionalFeature_val;
+	LilvValue*         lv2_requiredFeature_val;
 	LilvOptions        opt;
 };
 
@@ -362,10 +363,9 @@ LilvValues* lilv_values_from_stream_objects(const LilvPlugin* p,
 
 /* ********* Utilities ********* */
 
-char*    lilv_strjoin(const char* first, ...);
-char*    lilv_strdup(const char* str);
-char*    lilv_get_lang();
-uint8_t* lilv_qname_expand(const LilvPlugin* p, const char* qname);
+char* lilv_strjoin(const char* first, ...);
+char* lilv_strdup(const char* str);
+char* lilv_get_lang();
 
 typedef void (*VoidFunc)();
 

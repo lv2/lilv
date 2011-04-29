@@ -168,7 +168,6 @@ struct Port {
 	inline RT name (T1 a1) { return lilv_port_ ## name (parent, me, a1); }
 
 	LILV_PORT_WRAP1(LilvValues*, get_value, LilvValue*, predicate);
-	LILV_PORT_WRAP1(LilvValues*, get_value_by_qname, const char*, predicate);
 	LILV_PORT_WRAP0(LilvValues*, get_properties)
 	LILV_PORT_WRAP1(bool, has_property, LilvValue*, property_uri);
 	LILV_PORT_WRAP1(bool, supports_event, LilvValue*, event_uri);
@@ -196,7 +195,6 @@ struct Plugin {
 	LILV_WRAP0(Value,       plugin, get_name);
 	LILV_WRAP0(PluginClass, plugin, get_class);
 	LILV_WRAP1(Values,      plugin, get_value, Value, pred);
-	LILV_WRAP1(Values,      plugin, get_value_by_qname, const char*, predicate);
 	LILV_WRAP2(Values,      plugin, get_value_for_subject, Value, subject,
 	                                                       Value, predicate);
 	LILV_WRAP1(bool,        plugin, has_feature, Value, feature_uri);
