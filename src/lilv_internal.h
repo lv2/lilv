@@ -325,13 +325,13 @@ lilv_dlfunc(void* handle, const char* symbol)
 static const LV2_Feature* const dman_features = { NULL };
 #endif
 
-#define LILV_ERROR(str)       fprintf(stderr, "%s: error: " str, \
+#define LILV_ERROR(str)       fprintf(stderr, "%s(): error: " str, \
                                       __func__)
-#define LILV_ERRORF(fmt, ...) fprintf(stderr, "%s: error: " fmt, \
+#define LILV_ERRORF(fmt, ...) fprintf(stderr, "%s(): error: " fmt, \
                                       __func__, __VA_ARGS__)
-#define LILV_WARN(str)        fprintf(stderr, "%s: warning: " str, \
+#define LILV_WARN(str)        fprintf(stderr, "%s(): warning: " str, \
                                       __func__)
-#define LILV_WARNF(fmt, ...)  fprintf(stderr, "%s: warning: " fmt, \
+#define LILV_WARNF(fmt, ...)  fprintf(stderr, "%s(): warning: " fmt, \
                                       __func__, __VA_ARGS__)
 
 #ifdef __cplusplus

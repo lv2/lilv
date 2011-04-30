@@ -116,7 +116,8 @@ lilv_node_new_from_node(LilvWorld* world, const SordNode* node)
 			else if (sord_node_equals(datatype_uri, world->xsd_integer_node))
 				type = LILV_VALUE_INT;
 			else
-				LILV_ERRORF("Unknown datatype %s\n", sord_node_get_string(datatype_uri));
+				LILV_ERRORF("Unknown datatype `%s'\n",
+				            sord_node_get_string(datatype_uri));
 		}
 		result = lilv_node_new(world, type, (const char*)sord_node_get_string(node));
 		switch (result->type) {

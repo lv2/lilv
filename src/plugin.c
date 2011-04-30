@@ -129,7 +129,7 @@ lilv_plugin_load(LilvPlugin* p)
 		const char* lib_path = lilv_uri_to_path(lilv_node_as_string(p->dynman_uri));
 		void* lib = dlopen(lib_path, RTLD_LAZY);
 		if (!lib) {
-			LILV_WARNF("Unable to open dynamic manifest %s\n",
+			LILV_WARNF("Failed to open dynamic manifest %s\n",
 			           lilv_node_as_string(p->dynman_uri));
 			return;
 		}
@@ -191,7 +191,8 @@ lilv_plugin_load_ports_if_necessary(const LilvPlugin* const_p)
 				p, port, p->world->lv2_symbol_node);
 
 			if (!lilv_node_is_string(symbol)) {
-				LILV_ERROR("port has a non-string symbol\n");
+				LILV_ERRORF("Plugin <%s> port symbol is not a string\n",
+				            lilv_node_as_uri(p->plugin_uri));
 				p->num_ports = 0;
 				goto error;
 			}
@@ -199,7 +200,8 @@ lilv_plugin_load_ports_if_necessary(const LilvPlugin* const_p)
 			index = lilv_plugin_get_unique(p, port, p->world->lv2_index_node);
 
 			if (!lilv_node_is_int(index)) {
-				LILV_ERROR("port has a non-integer index\n");
+				LILV_ERRORF("Plugin <%s> port index is not an integer\n",
+				            lilv_node_as_uri(p->plugin_uri));
 				p->num_ports = 0;
 				goto error;
 			}
@@ -233,7 +235,8 @@ lilv_plugin_load_ports_if_necessary(const LilvPlugin* const_p)
 						this_port->classes,
 						lilv_node_new_from_node(p->world, type));
 				} else {
-					LILV_WARN("port has non-URI rdf:type\n");
+					LILV_WARNF("Plugin <%s> port type is not a URI\n",
+					           lilv_node_as_uri(p->plugin_uri));
 				}
 			}
 			lilv_match_end(types);
@@ -403,7 +406,7 @@ lilv_plugin_get_name(const LilvPlugin* plugin)
 	}
 
 	if (!ret)
-		LILV_WARNF("<%s> has no (mandatory) doap:name\n",
+		LILV_WARNF("Plugin <%s> has no (mandatory) doap:name\n",
 		           lilv_node_as_string(lilv_plugin_get_uri(plugin)));
 
 	return ret;
@@ -425,11 +428,11 @@ lilv_plugin_get_value_for_subject(const LilvPlugin* p,
 {
 	lilv_plugin_load_ports_if_necessary(p);
 	if (!lilv_node_is_uri(subject) && !lilv_node_is_blank(subject)) {
-		LILV_ERROR("Subject is not a resource\n");
+		LILV_ERRORF("Subject `%s' is not a resource\n", subject->str_val);
 		return NULL;
 	}
 	if (!lilv_node_is_uri(predicate)) {
-		LILV_ERROR("Predicate is not a URI\n");
+		LILV_ERRORF("Predicate `%s' is not a URI\n", predicate->str_val);
 		return NULL;
 	}
 
@@ -756,7 +759,7 @@ lilv_plugin_get_uis(const LilvPlugin* p)
 		    || !lilv_node_is_uri(binary)) {
 			lilv_node_free(binary);
 			lilv_node_free(type);
-			LILV_ERROR("Corrupt UI\n");
+			LILV_ERRORF("Corrupt UI <%s>\n", sord_node_get_string(ui));
 			continue;
 		}
 

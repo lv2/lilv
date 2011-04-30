@@ -47,7 +47,7 @@ lilv_plugin_instantiate(const LilvPlugin*        plugin,
 	dlerror();
 	void* lib = dlopen(lib_path, RTLD_NOW);
 	if (!lib) {
-		LILV_ERRORF("Unable to open library %s (%s)\n", lib_path, dlerror());
+		LILV_ERRORF("Failed to open library %s (%s)\n", lib_path, dlerror());
 		return NULL;
 	}
 
@@ -55,8 +55,7 @@ lilv_plugin_instantiate(const LilvPlugin*        plugin,
 		lilv_dlfunc(lib, "lv2_descriptor");
 
 	if (!df) {
-		LILV_ERRORF("Could not find symbol 'lv2_descriptor', "
-		            "%s is not a LV2 plugin.\n", lib_path);
+		LILV_ERRORF("Failed to find symbol 'lv2_descriptor' in %s\n", lib_path);
 		dlclose(lib);
 		return NULL;
 	} else {
@@ -68,15 +67,16 @@ lilv_plugin_instantiate(const LilvPlugin*        plugin,
 		for (uint32_t i = 0; true; ++i) {
 			const LV2_Descriptor* ld = df(i);
 			if (!ld) {
-				LILV_ERRORF("Did not find plugin %s in %s\n",
-				            lilv_node_as_uri(lilv_plugin_get_uri(plugin)), lib_path);
+				LILV_ERRORF("Failed to find plugin <%s> in %s\n",
+				            lilv_node_as_uri(lilv_plugin_get_uri(plugin)),
+				            lib_path);
 				dlclose(lib);
 				break;  // return NULL
 			} else {
 				// Parse bundle URI to use as base URI
 				const LilvNode* bundle_uri     = lilv_plugin_get_bundle_uri(plugin);
-				const char*      bundle_uri_str = lilv_node_as_uri(bundle_uri);
-				SerdURI          base_uri;
+				const char*     bundle_uri_str = lilv_node_as_uri(bundle_uri);
+				SerdURI         base_uri;
 				if (!serd_uri_parse((const uint8_t*)bundle_uri_str, &base_uri)) {
 					dlclose(lib);
 					break;
@@ -87,7 +87,7 @@ lilv_plugin_instantiate(const LilvPlugin*        plugin,
 				SerdNode abs_uri_node = serd_node_new_uri_from_string(
 					(const uint8_t*)ld->URI, &base_uri, &abs_uri);
 				if (!abs_uri_node.buf) {
-					LILV_ERRORF("Failed to parse library plugin URI `%s'\n", ld->URI);
+					LILV_ERRORF("Failed to parse plugin URI `%s'\n", ld->URI);
 					dlclose(lib);
 					break;
 				}

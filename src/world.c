@@ -430,7 +430,7 @@ lilv_world_load_dyn_manifest(LilvWorld* world,
 		typedef int (*OpenFunc)(LV2_Dyn_Manifest_Handle*, const LV2_Feature *const *);
 		OpenFunc open_func = (OpenFunc)lilv_dlfunc(lib, "lv2_dyn_manifest_open");
 		if (!open_func || open_func(&handle, &dman_features)) {
-			LILV_ERRORF("Missing lv2_dyn_manifest_open in `%s'\n", lib_path);
+			LILV_ERRORF("Failed to find `lv2_dyn_manifest_open' in `%s'\n", lib_path);
 			dlclose(lib);
 			continue;
 		}
@@ -440,7 +440,8 @@ lilv_world_load_dyn_manifest(LilvWorld* world,
 		GetSubjectsFunc get_subjects_func = (GetSubjectsFunc)lilv_dlfunc(
 			lib, "lv2_dyn_manifest_get_subjects");
 		if (!get_subjects_func) {
-			LILV_ERRORF("Missing lv2_dyn_manifest_get_subjects in `%s'\n", lib_path);
+			LILV_ERRORF("Failed to find `lv2_dyn_manifest_get_subjects' in `%s'\n",
+			            lib_path);
 			dlclose(lib);
 			continue;
 		}
@@ -482,7 +483,7 @@ void
 lilv_world_load_bundle(LilvWorld* world, LilvNode* bundle_uri)
 {
 	if (!lilv_node_is_uri(bundle_uri)) {
-		LILV_ERROR("Bundle 'URI' is not a URI\n");
+		LILV_ERRORF ("Bundle URI `%s' is not a URI\n", bundle_uri->str_val);
 		return;
 	}
 
@@ -545,7 +546,7 @@ expand(const char* path)
 		ret = lilv_strdup(p.we_wordv[0]);
 	} else {
 		/* Multiple expansions in a single directory path? */
-		LILV_ERRORF("malformed path `%s' ignored\n", path);
+		LILV_ERRORF("Malformed path `%s' ignored\n", path);
 	}
 	wordfree(&p);
 #elif defined(__WIN32__)
@@ -564,7 +565,7 @@ lilv_world_load_directory(LilvWorld* world, const char* dir_path)
 {
 	char* path = expand(dir_path);
 	if (!path) {
-		LILV_WARNF("empty path `%s'\n", path);
+		LILV_WARNF("Empty path `%s'\n", path);
 		return;
 	}
 

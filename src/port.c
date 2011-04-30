@@ -121,7 +121,7 @@ lilv_port_get_value(const LilvPlugin* p,
                     const LilvNode*   predicate)
 {
 	if (!lilv_node_is_uri(predicate)) {
-		LILV_ERROR("Predicate is not a URI\n");
+		LILV_ERRORF("Predicate `%s' is not a URI\n", predicate->str_val);
 		return NULL;
 	}
 
@@ -155,7 +155,7 @@ lilv_port_get_name(const LilvPlugin* p,
 	}
 
 	if (!ret)
-		LILV_WARNF("<%s> has no (mandatory) doap:name\n",
+		LILV_WARNF("Plugin <%s> port has no (mandatory) doap:name\n",
 		           lilv_node_as_string(lilv_plugin_get_uri(p)));
 
 	return ret;
