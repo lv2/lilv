@@ -24,22 +24,24 @@ namespace Lilv {
 const char* uri_to_path(const char* uri) { return lilv_uri_to_path(uri); }
 
 #define LILV_WRAP0(RT, prefix, name) \
-	inline RT name () { return lilv_ ## prefix ## _ ## name (me); }
+	inline RT name() { return lilv_ ## prefix ## _ ## name (me); }
 
 #define LILV_WRAP0_VOID(prefix, name) \
-	inline void name () { lilv_ ## prefix ## _ ## name (me); }
+	inline void name() { lilv_ ## prefix ## _ ## name(me); }
 
 #define LILV_WRAP1(RT, prefix, name, T1, a1) \
-	inline RT name (T1 a1) { return lilv_ ## prefix ## _ ## name (me, a1); }
+	inline RT name(T1 a1) { return lilv_ ## prefix ## _ ## name (me, a1); }
 
 #define LILV_WRAP1_VOID(prefix, name, T1, a1) \
-	inline void name (T1 a1) { lilv_ ## prefix ## _ ## name (me, a1); }
+	inline void name(T1 a1) { lilv_ ## prefix ## _ ## name(me, a1); }
 
 #define LILV_WRAP2(RT, prefix, name, T1, a1, T2, a2) \
-	inline RT name (T1 a1, T2 a2) { return lilv_ ## prefix ## _ ## name (me, a1, a2); }
+	inline RT name(T1 a1, T2 a2) { \
+		return lilv_ ## prefix ## _ ## name(me, a1, a2); \
+	}
 
 #define LILV_WRAP2_VOID(prefix, name, T1, a1, T2, a2) \
-	inline void name (T1 a1, T2 a2) { lilv_ ## prefix ## _ ## name (me, a1, a2); }
+	inline void name(T1 a1, T2 a2) { lilv_ ## prefix ## _ ## name(me, a1, a2); }
 
 #ifndef SWIG
 #define LILV_WRAP_CONVERSION(CT) \
@@ -152,13 +154,15 @@ struct World {
 	LILV_WRAP0(const LilvPluginClass*, world, get_plugin_class);
 	LILV_WRAP0(const LilvPluginClasses*, world, get_plugin_classes);
 	LILV_WRAP0(Plugins, world, get_all_plugins);
-	//LILV_WRAP1(Plugin, world, get_plugin_by_uri_string, const char*, uri);
 
 	LilvWorld* me;
 };
 
 struct Port {
-	inline Port(const LilvPlugin* p, const LilvPort* c_obj) : parent(p), me(c_obj) {}
+	inline Port(const LilvPlugin* p, const LilvPort* c_obj)
+		: parent(p), me(c_obj)
+	{}
+
 	LILV_WRAP_CONVERSION(const LilvPort);
 
 #define LILV_PORT_WRAP0(RT, name) \

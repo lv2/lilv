@@ -159,7 +159,7 @@ typedef enum {
 
 struct LilvNodeImpl {
 	LilvWorld*    world;
-	char*         str_val; ///< always present
+	char*         str_val;  ///< always present
 	union {
 		int       int_val;
 		float     float_val;
@@ -194,7 +194,9 @@ LilvPort* lilv_port_new(LilvWorld*      world,
                         const char*     symbol);
 void      lilv_port_free(const LilvPlugin* plugin, LilvPort* port);
 
-LilvPlugin* lilv_plugin_new(LilvWorld* world, LilvNode* uri, LilvNode* bundle_uri);
+LilvPlugin* lilv_plugin_new(LilvWorld* world,
+                            LilvNode*  uri,
+                            LilvNode*  bundle_uri);
 void        lilv_plugin_load_if_necessary(const LilvPlugin* p);
 void        lilv_plugin_free(LilvPlugin* plugin);
 LilvNode*   lilv_plugin_get_unique(const LilvPlugin* p,
@@ -233,7 +235,9 @@ LilvUI* lilv_ui_new(LilvWorld* world,
 
 void lilv_ui_free(LilvUI* ui);
 
-LilvNode*       lilv_node_new(LilvWorld* world, LilvNodeType type, const char* val);
+LilvNode*       lilv_node_new(LilvWorld*   world,
+                              LilvNodeType type,
+                              const char*  val);
 LilvNode*       lilv_node_new_from_node(LilvWorld* world, const SordNode* node);
 const SordNode* lilv_node_as_node(const LilvNode* value);
 

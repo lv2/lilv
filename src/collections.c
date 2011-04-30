@@ -42,7 +42,10 @@ lilv_collection_size(const LilvCollection* coll)
 LilvIter*
 lilv_collection_begin(const LilvCollection* collection)
 {
-	return collection ? g_sequence_get_begin_iter((LilvCollection*)collection) : NULL;
+	if (collection) {
+		return g_sequence_get_begin_iter((LilvCollection*)collection);
+	}
+	return NULL;
 }
 
 void*
@@ -82,7 +85,8 @@ lilv_plugin_classes_new(void)
 
 LILV_API
 const LilvPluginClass*
-lilv_plugin_classes_get_by_uri(const LilvPluginClasses* coll, const LilvNode* uri)
+lilv_plugin_classes_get_by_uri(const LilvPluginClasses* coll,
+                               const LilvNode*          uri)
 {
 	return (LilvPluginClass*)lilv_sequence_get_by_uri(coll, uri);
 }

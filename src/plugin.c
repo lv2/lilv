@@ -249,7 +249,7 @@ lilv_plugin_load_ports_if_necessary(const LilvPlugin* const_p)
 					free(p->ports);
 					p->ports = NULL;
 				}
-				break; // Invalid plugin
+				break;  // Invalid plugin
 			}
 		}
 		lilv_match_end(ports);
@@ -337,8 +337,7 @@ lilv_plugin_get_class(const LilvPlugin* const_p)
 			}
 
 			LilvNode* class = lilv_node_new_from_node(p->world, class_node);
-			if ( ! lilv_node_equals(class, p->world->lv2_plugin_class->uri)) {
-
+			if (!lilv_node_equals(class, p->world->lv2_plugin_class->uri)) {
 				const LilvPluginClass* plugin_class = lilv_plugin_classes_get_by_uri(
 					p->world->plugin_classes, class);
 
@@ -425,11 +424,11 @@ lilv_plugin_get_value_for_subject(const LilvPlugin* p,
                                   const LilvNode*   predicate)
 {
 	lilv_plugin_load_ports_if_necessary(p);
-	if ( ! lilv_node_is_uri(subject) && ! lilv_node_is_blank(subject)) {
+	if (!lilv_node_is_uri(subject) && !lilv_node_is_blank(subject)) {
 		LILV_ERROR("Subject is not a resource\n");
 		return NULL;
 	}
-	if ( ! lilv_node_is_uri(predicate)) {
+	if (!lilv_node_is_uri(predicate)) {
 		LILV_ERROR("Predicate is not a URI\n");
 		return NULL;
 	}
@@ -501,7 +500,7 @@ lilv_plugin_get_num_ports_of_class(const LilvPlugin* p,
 		va_start(args, class_1);
 
 		bool matches = true;
-		for (LilvNode* class_i = NULL; (class_i = va_arg(args, LilvNode*)) != NULL ; ) {
+		for (LilvNode* class_i = NULL; (class_i = va_arg(args, LilvNode*)); ) {
 			if (!lilv_port_is_a(p, port, class_i)) {
 				va_end(args);
 				matches = false;

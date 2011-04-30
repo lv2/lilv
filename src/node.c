@@ -284,7 +284,7 @@ lilv_node_get_turtle_token(const LilvNode* value)
 	case LILV_VALUE_FLOAT:
 		// FIXME: locale kludge, need a locale independent snprintf
 		locale = lilv_strdup(setlocale(LC_NUMERIC, NULL));
-		len = 20; // FIXME: proper maximum value?
+		len = 20;  // FIXME: proper maximum value?
 		result = calloc(len, 1);
 		setlocale(LC_NUMERIC, "POSIX");
 		snprintf(result, len, "%f", value->val.float_val);
@@ -395,7 +395,7 @@ lilv_node_as_float(const LilvNode* value)
 	assert(lilv_node_is_float(value) || lilv_node_is_int(value));
 	if (lilv_node_is_float(value))
 		return value->val.float_val;
-	else // lilv_node_is_int(value)
+	else  // lilv_node_is_int(value)
 		return (float)value->val.int_val;
 }
 

@@ -120,7 +120,7 @@ lilv_port_get_value(const LilvPlugin* p,
                     const LilvPort*   port,
                     const LilvNode*   predicate)
 {
-	if ( ! lilv_node_is_uri(predicate)) {
+	if (!lilv_node_is_uri(predicate)) {
 		LILV_ERROR("Predicate is not a URI\n");
 		return NULL;
 	}

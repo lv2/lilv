@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import os
 import sys
+import subprocess
 
 from waflib.extras import autowaf as autowaf
 import waflib.Options as Options
@@ -295,3 +296,6 @@ def test(ctx):
     autowaf.pre_test(ctx, APPNAME)
     autowaf.run_tests(ctx, APPNAME, ['test/lilv_test'], dirs=['./src','./test'])
     autowaf.post_test(ctx, APPNAME)
+
+def lint(ctx):
+    subprocess.call('cpplint.py --filter=+whitespace/comments,-whitespace/tab,-whitespace/braces,-whitespace/labels,-build/header_guard,-readability/casting,-readability/todo,-build/include src/* lilv/*', shell=True)

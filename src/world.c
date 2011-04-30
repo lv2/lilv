@@ -56,8 +56,8 @@ lilv_world_new(void)
 	world->plugin_classes = lilv_plugin_classes_new();
 	world->plugins        = lilv_plugins_new();
 
-#define NS_DYNMAN (const uint8_t*)"http://lv2plug.in/ns/ext/dynmanifest#"
-#define NS_DC     (const uint8_t*)"http://dublincore.org/documents/dcmi-namespace/"
+#define NS_DYNMAN "http://lv2plug.in/ns/ext/dynmanifest#"
+#define NS_DC     "http://dublincore.org/documents/dcmi-namespace/"
 
 #define NEW_URI(uri)     sord_new_uri(world->world, (const uint8_t*)uri)
 #define NEW_URI_VAL(uri) lilv_new_uri(world, (const char*)(uri));
@@ -96,11 +96,11 @@ lilv_world_new(void)
 	assert(world->lv2_plugin_class);
 
 	world->namespaces = serd_env_new();
-	lilv_world_set_prefix(world, "rdf",   "http://www.w3.org/1999/02/22-rdf-syntax-ns#");
-	lilv_world_set_prefix(world, "rdfs",  "http://www.w3.org/2000/01/rdf-schema#");
-	lilv_world_set_prefix(world, "doap",  "http://usefulinc.com/ns/doap#");
-	lilv_world_set_prefix(world, "foaf",  "http://xmlns.com/foaf/0.1/");
-	lilv_world_set_prefix(world, "lv2",   "http://lv2plug.in/ns/lv2core#");
+	lilv_world_set_prefix(world, "rdf",   LILV_NS_RDF);
+	lilv_world_set_prefix(world, "rdfs",  LILV_NS_RDFS);
+	lilv_world_set_prefix(world, "doap",  LILV_NS_DOAP);
+	lilv_world_set_prefix(world, "foaf",  LILV_NS_FOAF);
+	lilv_world_set_prefix(world, "lv2",   LILV_NS_LV2);
 	lilv_world_set_prefix(world, "lv2ev", "http://lv2plug.in/ns/ext/event#");
 
 	world->n_read_files        = 0;
@@ -474,7 +474,7 @@ lilv_world_load_dyn_manifest(LilvWorld* world,
 		dlclose(lib);
 	}
 	lilv_match_end(dmanifests);
-#endif // LILV_DYN_MANIFEST
+#endif  // LILV_DYN_MANIFEST
 }
 
 LILV_API

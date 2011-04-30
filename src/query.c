@@ -24,9 +24,9 @@
 #include "lilv_internal.h"
 
 typedef enum {
-	LILV_LANG_MATCH_NONE,    ///< Language does not match at all
-	LILV_LANG_MATCH_PARTIAL, ///< Partial (language, but not country) match
-	LILV_LANG_MATCH_EXACT    ///< Exact (language and country) match
+	LILV_LANG_MATCH_NONE,     ///< Language does not match at all
+	LILV_LANG_MATCH_PARTIAL,  ///< Partial (language, but not country) match
+	LILV_LANG_MATCH_EXACT     ///< Exact (language and country) match
 } LilvLangMatch;
 
 static LilvLangMatch
@@ -57,9 +57,9 @@ LilvNodes*
 lilv_nodes_from_stream_objects_i18n(LilvWorld* world,
                                     SordIter*  stream)
 {
-	LilvNodes*     values  = lilv_nodes_new();
-	const SordNode* nolang  = NULL; // Untranslated value
-	const SordNode* partial = NULL; // Partial language match
+	LilvNodes*      values  = lilv_nodes_new();
+	const SordNode* nolang  = NULL;  // Untranslated value
+	const SordNode* partial = NULL;  // Partial language match
 	char*           syslang = lilv_get_lang();
 	FOREACH_MATCH(stream) {
 		const SordNode* value = lilv_match_object(stream);

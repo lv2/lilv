@@ -49,6 +49,7 @@ extern "C" {
 #endif
 
 #define LILV_NS_DOAP "http://usefulinc.com/ns/doap#"
+#define LILV_NS_FOAF "http://xmlns.com/foaf/0.1/"
 #define LILV_NS_LILV "http://drobilla.net/ns/lilv#"
 #define LILV_NS_LV2  "http://lv2plug.in/ns/lv2core#"
 #define LILV_NS_RDF  "http://www.w3.org/1999/02/22-rdf-syntax-ns#"
@@ -66,9 +67,9 @@ extern "C" {
 typedef struct LilvPluginImpl      LilvPlugin;       /**< LV2 Plugin. */
 typedef struct LilvPluginClassImpl LilvPluginClass;  /**< Plugin Class. */
 typedef struct LilvPortImpl        LilvPort;         /**< Port. */
-typedef struct LilvScalePointImpl  LilvScalePoint;   /**< Scale Point (Notch). */
+typedef struct LilvScalePointImpl  LilvScalePoint;   /**< Scale Point. */
 typedef struct LilvUIImpl          LilvUI;           /**< Plugin UI. */
-typedef struct LilvNodeImpl       LilvNode;          /**< Typed Value. */
+typedef struct LilvNodeImpl        LilvNode;         /**< Typed Value. */
 typedef struct LilvWorldImpl       LilvWorld;        /**< Lilv World. */
 typedef struct LilvInstanceImpl    LilvInstance;     /**< Plugin instance. */
 
@@ -354,7 +355,7 @@ lilv_plugin_classes_is_end(const LilvPluginClasses* collection, LilvIter* i);
 LILV_API
 const LilvPluginClass*
 lilv_plugin_classes_get_by_uri(const LilvPluginClasses* classes,
-                               const LilvNode*         uri);
+                               const LilvNode*          uri);
 
 /* ScalePoints */
 
@@ -416,7 +417,7 @@ lilv_uis_is_end(const LilvUIs* collection, LilvIter* i);
 */
 LILV_API
 const LilvUI*
-lilv_uis_get_by_uri(const LilvUIs*   uis,
+lilv_uis_get_by_uri(const LilvUIs*  uis,
                     const LilvNode* uri);
 
 /* Values */

@@ -37,8 +37,9 @@ lilv_plugin_instantiate(const LilvPlugin*        plugin,
 		local_features[0] = NULL;
 	}
 
-	const char* const lib_uri  = lilv_node_as_uri(lilv_plugin_get_library_uri(plugin));
-	const char* const lib_path = lilv_uri_to_path(lib_uri);
+	const LilvNode* const lib_uri_node = lilv_plugin_get_library_uri(plugin);
+	const char* const     lib_uri      = lilv_node_as_uri(lib_uri_node);
+	const char* const     lib_path     = lilv_uri_to_path(lib_uri);
 
 	if (!lib_path)
 		return NULL;
@@ -70,7 +71,7 @@ lilv_plugin_instantiate(const LilvPlugin*        plugin,
 				LILV_ERRORF("Did not find plugin %s in %s\n",
 				            lilv_node_as_uri(lilv_plugin_get_uri(plugin)), lib_path);
 				dlclose(lib);
-				break; // return NULL
+				break;  // return NULL
 			} else {
 				// Parse bundle URI to use as base URI
 				const LilvNode* bundle_uri     = lilv_plugin_get_bundle_uri(plugin);
