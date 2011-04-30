@@ -77,7 +77,7 @@ lilv_plugin_instantiate(const LilvPlugin*        plugin,
 				const LilvNode* bundle_uri     = lilv_plugin_get_bundle_uri(plugin);
 				const char*     bundle_uri_str = lilv_node_as_uri(bundle_uri);
 				SerdURI         base_uri;
-				if (!serd_uri_parse((const uint8_t*)bundle_uri_str, &base_uri)) {
+				if (serd_uri_parse((const uint8_t*)bundle_uri_str, &base_uri)) {
 					dlclose(lib);
 					break;
 				}

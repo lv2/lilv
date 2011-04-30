@@ -238,7 +238,7 @@ lilv_new_uri_relative_to_base(const uint8_t* uri_str,
                               const uint8_t* base_uri_str)
 {
 	SerdURI base_uri;
-	if (!serd_uri_parse(base_uri_str, &base_uri)) {
+	if (serd_uri_parse(base_uri_str, &base_uri)) {
 		return SERD_NODE_NULL;
 	}
 
