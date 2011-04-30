@@ -492,8 +492,10 @@ lilv_world_load_bundle(LilvWorld* world, LilvNode* bundle_uri)
 		(const uint8_t*)"manifest.ttl",
 		(const uint8_t*)sord_node_get_string(bundle_node));
 
-	sord_read_file(world->model, manifest_uri.buf, bundle_node,
-	               lilv_world_blank_node_prefix(world));
+	if (!sord_read_file(world->model, manifest_uri.buf, bundle_node,
+	                    lilv_world_blank_node_prefix(world))) {
+		return;
+	}
 
 	// ?plugin a lv2:Plugin
 	SordIter* plug_results = lilv_world_find_statements(
@@ -577,27 +579,21 @@ lilv_world_load_directory(LilvWorld* world, const char* dir_path)
 #else
 	static const char* const file_scheme = "file://";
 #endif
-	const size_t file_scheme_len = strlen(file_scheme);
 
-	struct dirent* pfile;
-	while ((pfile = readdir(pdir))) {
-		if (!strcmp(pfile->d_name, ".") || !strcmp(pfile->d_name, ".."))
+	struct dirent  entry;
+	struct dirent* result;
+	while (!readdir_r(pdir, &entry, &result) && result) {
+		if (!strcmp(entry.d_name, ".") || !strcmp(entry.d_name, ".."))
 			continue;
 
 		char* uri = lilv_strjoin(file_scheme,
 		                         path, "/",
-		                         pfile->d_name, "/",
+		                         entry.d_name, "/",
 		                         NULL);
 
-		DIR* const bundle_dir = opendir(uri + file_scheme_len);
-		if (bundle_dir) {
-			closedir(bundle_dir);
-			LilvNode* uri_val = lilv_new_uri(world, uri);
-			lilv_world_load_bundle(world, uri_val);
-			lilv_node_free(uri_val);
-		} else {
-			LILV_WARNF("failed to open bundle `%s'\n", uri);
-		}
+		LilvNode* uri_val = lilv_new_uri(world, uri);
+		lilv_world_load_bundle(world, uri_val);
+		lilv_node_free(uri_val);
 
 		free(uri);
 	}
