@@ -25,18 +25,23 @@
 #include "lilv_internal.h"
 
 LilvPort*
-lilv_port_new(LilvWorld* world, uint32_t index, const char* symbol)
+lilv_port_new(LilvWorld*      world,
+              const SordNode* node,
+              uint32_t        index,
+              const char*     symbol)
 {
 	LilvPort* port = malloc(sizeof(struct LilvPortImpl));
-	port->index = index;
-	port->symbol = lilv_node_new(world, LILV_VALUE_STRING, symbol);
+	port->node    = sord_node_copy(node);
+	port->index   = index;
+	port->symbol  = lilv_node_new(world, LILV_VALUE_STRING, symbol);
 	port->classes = lilv_nodes_new();
 	return port;
 }
 
 void
-lilv_port_free(LilvPort* port)
+lilv_port_free(const LilvPlugin* plugin, LilvPort* port)
 {
+	sord_node_free(plugin->world->world, port->node);
 	lilv_nodes_free(port->classes);
 	lilv_node_free(port->symbol);
 	free(port);
@@ -55,37 +60,6 @@ lilv_port_is_a(const LilvPlugin* plugin,
 	return false;
 }
 
-static const SordNode*
-lilv_port_get_node(const LilvPlugin* p,
-                   const LilvPort*   port)
-{
-	SordIter* ports = lilv_world_query(
-		p->world,
-		p->plugin_uri->val.uri_val,
-		p->world->lv2_port_node,
-		NULL);
-	const SordNode* ret = NULL;
-	FOREACH_MATCH(ports) {
-		const SordNode*   node   = lilv_match_object(ports);
-		LilvNode* symbol = lilv_plugin_get_unique(
-			p,
-			node,
-			p->world->lv2_symbol_node);
-
-		const bool matches = lilv_node_equals(symbol,
-		                                      lilv_port_get_symbol(p, port));
-
-		lilv_node_free(symbol);
-		if (matches) {
-			ret = node;
-			break;
-		}
-	}
-	lilv_match_end(ports);
-	assert(ret);
-	return ret;
-}
-
 LILV_API
 bool
 lilv_port_has_property(const LilvPlugin* p,
@@ -93,10 +67,9 @@ lilv_port_has_property(const LilvPlugin* p,
                        const LilvNode*   property)
 {
 	assert(property);
-	const SordNode* port_node = lilv_port_get_node(p, port);
-	SordIter*       results   = lilv_world_query(
+	SordIter* results = lilv_world_query(
 		p->world,
-		port_node,
+		port->node,
 		p->world->lv2_portproperty_node,
 		lilv_node_as_node(property));
 
@@ -114,10 +87,9 @@ lilv_port_supports_event(const LilvPlugin* p,
 #define NS_EV (const uint8_t*)"http://lv2plug.in/ns/ext/event#"
 
 	assert(event);
-	const SordNode* port_node = lilv_port_get_node(p, port);
-	SordIter*       results   = lilv_world_query(
+	SordIter* results = lilv_world_query(
 		p->world,
-		port_node,
+		port->node,
 		sord_new_uri(p->world->world, NS_EV "supportsEvent"),
 		lilv_node_as_node(event));
 
@@ -129,14 +101,13 @@ lilv_port_supports_event(const LilvPlugin* p,
 static LilvNodes*
 lilv_port_get_value_by_node(const LilvPlugin* p,
                             const LilvPort*   port,
-                            const SordNode*          predicate)
+                            const SordNode*   predicate)
 {
 	assert(sord_node_get_type(predicate) == SORD_URI);
 
-	const SordNode* port_node = lilv_port_get_node(p, port);
-	SordIter*       results   = lilv_world_query(
+	SordIter* results = lilv_world_query(
 		p->world,
-		port_node,
+		port->node,
 		predicate,
 		NULL);
 
@@ -237,10 +208,9 @@ LilvScalePoints*
 lilv_port_get_scale_points(const LilvPlugin* p,
                            const LilvPort*   port)
 {
-	const SordNode* port_node = lilv_port_get_node(p, port);
-	SordIter*       points    = lilv_world_query(
+	SordIter* points = lilv_world_query(
 		p->world,
-		port_node,
+		port->node,
 		sord_new_uri(p->world->world, (const uint8_t*)LILV_NS_LV2 "scalePoint"),
 		NULL);
 

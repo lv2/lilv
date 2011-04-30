@@ -327,8 +327,8 @@ main(int argc, char** argv)
 #define NS_PSET "http://lv2plug.in/ns/ext/presets#"
 #define NS_EV   "http://lv2plug.in/ns/ext/event#"
 
-	control_class       = lilv_new_uri(world, LILV_PORT_CLASS_CONTROL);
-	event_class         = lilv_new_uri(world, LILV_PORT_CLASS_EVENT);
+	control_class       = lilv_new_uri(world, LILV_URI_CONTROL_PORT);
+	event_class         = lilv_new_uri(world, LILV_URI_EVENT_PORT);
 	in_group_pred       = lilv_new_uri(world, NS_PG "inGroup");
 	preset_pred         = lilv_new_uri(world, NS_PSET "hasPreset");
 	role_pred           = lilv_new_uri(world, NS_PG "role");

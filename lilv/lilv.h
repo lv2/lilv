@@ -48,14 +48,20 @@
 extern "C" {
 #endif
 
-#define LILV_NAMESPACE_LV2      "http://lv2plug.in/ns/lv2core#"
-#define LILV_PORT_CLASS_PORT    "http://lv2plug.in/ns/lv2core#Port"
-#define LILV_PORT_CLASS_INPUT   "http://lv2plug.in/ns/lv2core#InputPort"
-#define LILV_PORT_CLASS_OUTPUT  "http://lv2plug.in/ns/lv2core#OutputPort"
-#define LILV_PORT_CLASS_CONTROL "http://lv2plug.in/ns/lv2core#ControlPort"
-#define LILV_PORT_CLASS_AUDIO   "http://lv2plug.in/ns/lv2core#AudioPort"
-#define LILV_PORT_CLASS_EVENT   "http://lv2plug.in/ns/ext/event#EventPort"
-#define LILV_EVENT_CLASS_MIDI   "http://lv2plug.in/ns/ext/midi#MidiEvent"
+#define LILV_NS_DOAP "http://usefulinc.com/ns/doap#"
+#define LILV_NS_LILV "http://drobilla.net/ns/lilv#"
+#define LILV_NS_LV2  "http://lv2plug.in/ns/lv2core#"
+#define LILV_NS_RDF  "http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+#define LILV_NS_RDFS "http://www.w3.org/2000/01/rdf-schema#"
+#define LILV_NS_XSD  "http://www.w3.org/2001/XMLSchema#"
+
+#define LILV_URI_AUDIO_PORT   "http://lv2plug.in/ns/lv2core#AudioPort"
+#define LILV_URI_CONTROL_PORT "http://lv2plug.in/ns/lv2core#ControlPort"
+#define LILV_URI_EVENT_PORT   "http://lv2plug.in/ns/ext/event#EventPort"
+#define LILV_URI_INPUT_PORT   "http://lv2plug.in/ns/lv2core#InputPort"
+#define LILV_URI_MIDI_EVENT   "http: //lv2plug.in/ns/ext/midi#MidiEvent"
+#define LILV_URI_OUTPUT_PORT  "http://lv2plug.in/ns/lv2core#OutputPort"
+#define LILV_URI_PORT         "http://lv2plug.in/ns/lv2core#Port"
 
 typedef struct LilvPluginImpl      LilvPlugin;       /**< LV2 Plugin. */
 typedef struct LilvPluginClassImpl LilvPluginClass;  /**< Plugin Class. */

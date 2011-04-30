@@ -83,7 +83,7 @@ uri_to_id(LV2_URI_Map_Callback_Data callback_data,
           const char*               uri)
 {
 	/* Note a non-trivial host needs to use an actual dictionary here */
-	if (!strcmp(map, LV2_EVENT_URI) && !strcmp(uri, LILV_EVENT_CLASS_MIDI))
+	if (!strcmp(map, LV2_EVENT_URI) && !strcmp(uri, LILV_URI_MIDI_EVENT))
 		return MIDI_EVENT_ID;
 	else
 		return 0;  /* Refuse to map ID */
@@ -310,13 +310,13 @@ main(int argc, char** argv)
 	const LilvPlugins* plugins = lilv_world_get_all_plugins(world);
 
 	/* Set up the port classes this app supports */
-	host.input_class   = lilv_new_uri(world, LILV_PORT_CLASS_INPUT);
-	host.output_class  = lilv_new_uri(world, LILV_PORT_CLASS_OUTPUT);
-	host.control_class = lilv_new_uri(world, LILV_PORT_CLASS_CONTROL);
-	host.audio_class   = lilv_new_uri(world, LILV_PORT_CLASS_AUDIO);
-	host.event_class   = lilv_new_uri(world, LILV_PORT_CLASS_EVENT);
-	host.midi_class    = lilv_new_uri(world, LILV_EVENT_CLASS_MIDI);
-	host.optional      = lilv_new_uri(world, LILV_NAMESPACE_LV2
+	host.input_class   = lilv_new_uri(world, LILV_URI_INPUT_PORT);
+	host.output_class  = lilv_new_uri(world, LILV_URI_OUTPUT_PORT);
+	host.control_class = lilv_new_uri(world, LILV_URI_CONTROL_PORT);
+	host.audio_class   = lilv_new_uri(world, LILV_URI_AUDIO_PORT);
+	host.event_class   = lilv_new_uri(world, LILV_URI_EVENT_PORT);
+	host.midi_class    = lilv_new_uri(world, LILV_URI_MIDI_EVENT);
+	host.optional      = lilv_new_uri(world, LILV_NS_LV2
 	                                  "connectionOptional");
 
 #ifdef LILV_JACK_SESSION

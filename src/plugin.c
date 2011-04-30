@@ -69,8 +69,9 @@ lilv_plugin_free(LilvPlugin* p)
 #endif
 
 	if (p->ports) {
-		for (uint32_t i = 0; i < p->num_ports; ++i)
-			lilv_port_free(p->ports[i]);
+		for (uint32_t i = 0; i < p->num_ports; ++i) {
+			lilv_port_free(p, p->ports[i]);
+		}
 		free(p->ports);
 		p->ports = NULL;
 	}
@@ -184,9 +185,9 @@ lilv_plugin_load_ports_if_necessary(const LilvPlugin* const_p)
 			NULL);
 
 		FOREACH_MATCH(ports) {
-			LilvNode* index  = NULL;
-			const SordNode*   port   = lilv_match_object(ports);
-			LilvNode* symbol = lilv_plugin_get_unique(
+			LilvNode*       index  = NULL;
+			const SordNode* port   = lilv_match_object(ports);
+			LilvNode*       symbol = lilv_plugin_get_unique(
 				p, port, p->world->lv2_symbol_node);
 
 			if (!lilv_node_is_string(symbol)) {
@@ -217,6 +218,7 @@ lilv_plugin_load_ports_if_necessary(const LilvPlugin* const_p)
 			// Havn't seen this port yet, add it to array
 			if (!this_port) {
 				this_port = lilv_port_new(p->world,
+				                          port,
 				                          this_index,
 				                          lilv_node_as_string(symbol));
 				p->ports[this_index] = this_port;
@@ -241,8 +243,9 @@ lilv_plugin_load_ports_if_necessary(const LilvPlugin* const_p)
 			lilv_node_free(index);
 			if (p->num_ports == 0) {
 				if (p->ports) {
-					for (uint32_t i = 0; i < p->num_ports; ++i)
-						lilv_port_free(p->ports[i]);
+					for (uint32_t i = 0; i < p->num_ports; ++i) {
+						lilv_port_free(p, p->ports[i]);
+					}
 					free(p->ports);
 					p->ports = NULL;
 				}

@@ -48,13 +48,6 @@ static inline char* dlerror(void) { return "Unknown error"; }
 #    include "lv2/lv2plug.in/ns/ext/dyn-manifest/dyn-manifest.h"
 #endif
 
-#define LILV_NS_DOAP "http://usefulinc.com/ns/doap#"
-#define LILV_NS_RDFS "http://www.w3.org/2000/01/rdf-schema#"
-#define LILV_NS_LILV "http://drobilla.net/ns/lilv#"
-#define LILV_NS_LV2  "http://lv2plug.in/ns/lv2core#"
-#define LILV_NS_XSD  "http://www.w3.org/2001/XMLSchema#"
-#define LILV_NS_RDF  "http://www.w3.org/1999/02/22-rdf-syntax-ns#"
-
 /*
  *
  * Types
@@ -66,6 +59,7 @@ typedef struct LilvSpecImpl LilvSpec;
 typedef void LilvCollection;
 
 struct LilvPortImpl {
+	SordNode*  node;     ///< RDF node
 	uint32_t   index;    ///< lv2:index
 	LilvNode*  symbol;   ///< lv2:symbol
 	LilvNodes* classes;  ///< rdf:type
@@ -194,8 +188,11 @@ struct LilvUIImpl {
  *
  */
 
-LilvPort* lilv_port_new(LilvWorld* world, uint32_t index, const char* symbol);
-void      lilv_port_free(LilvPort* port);
+LilvPort* lilv_port_new(LilvWorld*      world,
+                        const SordNode* node,
+                        uint32_t        index,
+                        const char*     symbol);
+void      lilv_port_free(const LilvPlugin* plugin, LilvPort* port);
 
 LilvPlugin* lilv_plugin_new(LilvWorld* world, LilvNode* uri, LilvNode* bundle_uri);
 void        lilv_plugin_load_if_necessary(const LilvPlugin* p);
