@@ -143,7 +143,8 @@ print_port(const LilvPlugin* p,
 }
 
 void
-print_plugin(const LilvPlugin* p)
+print_plugin(LilvWorld*        world,
+             const LilvPlugin* p)
 {
 	LilvNode* val = NULL;
 
@@ -271,8 +272,10 @@ print_plugin(const LilvPlugin* p)
 	if (presets)
 		printf("\tPresets: \n");
 	LILV_FOREACH(nodes, i, presets) {
-		LilvNodes* titles = lilv_plugin_get_value_for_subject(
-			p, lilv_nodes_get(presets, i), title_pred);
+		LilvNodes* titles = lilv_world_find_nodes(world,
+		                                          lilv_nodes_get(presets, i),
+		                                          title_pred,
+		                                          NULL);
 		if (titles) {
 			const LilvNode* title = lilv_nodes_get(titles, lilv_nodes_begin(titles));
 			printf("\t         %s\n", lilv_node_as_string(title));
@@ -361,7 +364,7 @@ main(int argc, char** argv)
 	const LilvPlugin* p = lilv_plugins_get_by_uri(plugins, uri);
 
 	if (p) {
-		print_plugin(p);
+		print_plugin(world, p);
 	} else {
 		fprintf(stderr, "Plugin not found.\n");
 	}

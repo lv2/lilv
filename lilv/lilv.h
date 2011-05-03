@@ -609,6 +609,18 @@ const LilvPlugins*
 lilv_world_get_all_plugins(const LilvWorld* world);
 
 /**
+   Find nodes matching a triple pattern.
+   Either @c subject or @c object may be NULL (i.e. a wildcard), but not both.
+   @return All matches for the wildcard field, or NULL.
+*/
+LILV_API
+LilvNodes*
+lilv_world_find_nodes(LilvWorld*      world,
+                      const LilvNode* subject,
+                      const LilvNode* predicate,
+                      const LilvNode* object);
+
+/**
    @}
    @name Plugin
    @{
@@ -717,27 +729,6 @@ LILV_API
 LilvNodes*
 lilv_plugin_get_value(const LilvPlugin* p,
                       const LilvNode*   predicate);
-
-/**
-   Get a value associated with some subject in a plugin's data files.
-   @a predicate must be either a URI or a QName.
-
-   Returns the ?object of all triples found of the form:
-
-   <code>subject predicate ?object</code>
-
-   This can be used to investigate URIs returned by lilv_plugin_get_value
-   (if information about it is contained in the plugin's data files).
-
-   May return NULL if the property was not found, or if object is not
-   sensibly represented as an LilvNodes (e.g. blank nodes).
-   Return value must be freed by caller with lilv_nodes_free.
-*/
-LILV_API
-LilvNodes*
-lilv_plugin_get_value_for_subject(const LilvPlugin* p,
-                                  const LilvNode*   subject_uri,
-                                  const LilvNode*   predicate_uri);
 
 /**
    Return whether a feature is supported by a plugin.

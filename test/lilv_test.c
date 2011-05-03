@@ -467,7 +467,7 @@ test_plugin(void)
 			PLUGIN_NAME("Test plugin") " ; "
 			LICENSE_GPL " ; "
 			"lv2:optionalFeature lv2:hardRTCapable ; "
-		    "lv2:requiredFeature <http://lv2plug.in/ns/ext/event> ; "
+			"lv2:requiredFeature <http://lv2plug.in/ns/ext/event> ; "
 			":foo 1.6180 ; "
 			":bar true ; "
 			":baz false ; "
@@ -612,7 +612,7 @@ test_plugin(void)
 
 	LilvNode* thing_uri = lilv_new_uri(world, "http://example.org/thing");
 	LilvNode* name_p = lilv_new_uri(world, "http://usefulinc.com/ns/doap#name");
-	LilvNodes* thing_names = lilv_plugin_get_value_for_subject(plug, thing_uri, name_p);
+	LilvNodes* thing_names = lilv_world_find_nodes(world, thing_uri, name_p, NULL);
 	TEST_ASSERT(lilv_nodes_size(thing_names) == 1);
 	LilvNode* thing_name = lilv_nodes_get_first(thing_names);
 	TEST_ASSERT(thing_name);

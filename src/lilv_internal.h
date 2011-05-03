@@ -238,7 +238,8 @@ void lilv_ui_free(LilvUI* ui);
 LilvNode*       lilv_node_new(LilvWorld*   world,
                               LilvNodeType type,
                               const char*  val);
-LilvNode*       lilv_node_new_from_node(LilvWorld* world, const SordNode* node);
+LilvNode*       lilv_node_new_from_node(LilvWorld*      world,
+                                        const SordNode* node);
 const SordNode* lilv_node_as_node(const LilvNode* value);
 
 int lilv_header_compare_by_uri(const void* a, const void* b, void* user_data);
@@ -261,16 +262,16 @@ LilvScalePoint* lilv_scale_point_new(LilvNode* value, LilvNode* label);
 void            lilv_scale_point_free(LilvScalePoint* point);
 
 SordIter*
-lilv_world_query(LilvWorld*      world,
-                 const SordNode* subject,
-                 const SordNode* predicate,
-                 const SordNode* object);
+lilv_world_query_internal(LilvWorld*      world,
+                          const SordNode* subject,
+                          const SordNode* predicate,
+                          const SordNode* object);
 
 LilvNodes*
-lilv_world_query_values(LilvWorld*      world,
-                        const SordNode* subject,
-                        const SordNode* predicate,
-                        const SordNode* object);
+lilv_world_query_values_internal(LilvWorld*      world,
+                                 const SordNode* subject,
+                                 const SordNode* predicate,
+                                 const SordNode* object);
 
 #define FOREACH_MATCH(iter) \
 	for (; !sord_iter_end(iter); sord_iter_next(iter))

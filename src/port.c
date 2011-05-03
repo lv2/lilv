@@ -67,7 +67,7 @@ lilv_port_has_property(const LilvPlugin* p,
                        const LilvNode*   property)
 {
 	assert(property);
-	SordIter* results = lilv_world_query(
+	SordIter* results = lilv_world_query_internal(
 		p->world,
 		port->node,
 		p->world->lv2_portproperty_node,
@@ -87,7 +87,7 @@ lilv_port_supports_event(const LilvPlugin* p,
 #define NS_EV (const uint8_t*)"http://lv2plug.in/ns/ext/event#"
 
 	assert(event);
-	SordIter* results = lilv_world_query(
+	SordIter* results = lilv_world_query_internal(
 		p->world,
 		port->node,
 		sord_new_uri(p->world->world, NS_EV "supportsEvent"),
@@ -105,7 +105,7 @@ lilv_port_get_value_by_node(const LilvPlugin* p,
 {
 	assert(sord_node_get_type(predicate) == SORD_URI);
 
-	SordIter* results = lilv_world_query(
+	SordIter* results = lilv_world_query_internal(
 		p->world,
 		port->node,
 		predicate,
@@ -208,7 +208,7 @@ LilvScalePoints*
 lilv_port_get_scale_points(const LilvPlugin* p,
                            const LilvPort*   port)
 {
-	SordIter* points = lilv_world_query(
+	SordIter* points = lilv_world_query_internal(
 		p->world,
 		port->node,
 		sord_new_uri(p->world->world, (const uint8_t*)LILV_NS_LV2 "scalePoint"),

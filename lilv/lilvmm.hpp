@@ -146,7 +146,10 @@ struct World {
 	inline LilvNode* new_bool(bool val) {
 		return lilv_new_bool(me, val);
 	}
-
+	LILV_WRAP2(Nodes, world, find_nodes,
+	           Node, subject,
+	           Node, predicate,
+	           Node, object);
 	LILV_WRAP2_VOID(world, set_option, const char*, uri, LilvNode*, value);
 	LILV_WRAP0_VOID(world, free);
 	LILV_WRAP0_VOID(world, load_all);
@@ -199,8 +202,6 @@ struct Plugin {
 	LILV_WRAP0(Node,        plugin, get_name);
 	LILV_WRAP0(PluginClass, plugin, get_class);
 	LILV_WRAP1(Nodes,       plugin, get_value, Node, pred);
-	LILV_WRAP2(Nodes,       plugin, get_value_for_subject, Node, subject,
-	                                                       Node, predicate);
 	LILV_WRAP1(bool,        plugin, has_feature, Node, feature_uri);
 	LILV_WRAP0(Nodes,       plugin, get_supported_features);
 	LILV_WRAP0(Nodes,       plugin, get_required_features);

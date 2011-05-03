@@ -201,36 +201,66 @@ lilv_world_set_option(LilvWorld*       world,
 }
 
 static SordIter*
-lilv_world_find_statements(LilvWorld*      world,
-                           SordModel*      model,
-                           const SordNode* subject,
-                           const SordNode* predicate,
-                           const SordNode* object,
-                           const SordNode* graph)
+lilv_world_find_statements(const LilvWorld* world,
+                           SordModel*       model,
+                           const SordNode*  subject,
+                           const SordNode*  predicate,
+                           const SordNode*  object,
+                           const SordNode*  graph)
 {
 	SordQuad pat = { subject, predicate, object, graph };
 	return sord_find(model, pat);
 }
 
+LILV_API
+LilvNodes*
+lilv_world_find_nodes(LilvWorld*      world,
+                      const LilvNode* subject,
+                      const LilvNode* predicate,
+                      const LilvNode* object)
+{
+	if (!lilv_node_is_uri(subject) && !lilv_node_is_blank(subject)) {
+		LILV_ERRORF("Subject `%s' is not a resource\n", subject->str_val);
+		return NULL;
+	}
+	if (!lilv_node_is_uri(predicate)) {
+		LILV_ERRORF("Predicate `%s' is not a URI\n", predicate->str_val);
+		return NULL;
+	}
+
+	SordNode* subject_node = (lilv_node_is_uri(subject))
+		? sord_node_copy(subject->val.uri_val)
+		: sord_new_blank(world->world,
+		                 (const uint8_t*)lilv_node_as_blank(subject));
+
+	LilvNodes* ret = lilv_world_query_values_internal(world,
+	                                                  subject_node,
+	                                                  predicate->val.uri_val,
+	                                                  NULL);
+
+	sord_node_free(world->world, subject_node);
+	return ret;
+}
+
 SordIter*
-lilv_world_query(LilvWorld*      world,
-                 const SordNode* subject,
-                 const SordNode* predicate,
-                 const SordNode* object)
+lilv_world_query_internal(LilvWorld*      world,
+                          const SordNode* subject,
+                          const SordNode* predicate,
+                          const SordNode* object)
 {
 	return lilv_world_find_statements(world, world->model,
 	                                  subject, predicate, object, NULL);
 }
 
 LilvNodes*
-lilv_world_query_values(LilvWorld*      world,
-                        const SordNode* subject,
-                        const SordNode* predicate,
-                        const SordNode* object)
+lilv_world_query_values_internal(LilvWorld*      world,
+                                 const SordNode* subject,
+                                 const SordNode* predicate,
+                                 const SordNode* object)
 {
 	return lilv_nodes_from_stream_objects(
 		world,
-		lilv_world_query(world, subject, predicate, object));
+		lilv_world_query_internal(world, subject, predicate, object));
 }
 
 static SerdNode

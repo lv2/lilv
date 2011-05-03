@@ -73,10 +73,11 @@ lilv_node_new(LilvWorld* world, LilvNodeType type, const char* str)
 	switch (type) {
 	case LILV_VALUE_URI:
 		val->val.uri_val = sord_new_uri(world->world, (const uint8_t*)str);
-		assert(val->val.uri_val);
 		val->str_val = (char*)sord_node_get_string(val->val.uri_val);
 		break;
 	case LILV_VALUE_BLANK:
+		val->val.uri_val = sord_new_blank(world->world, (const uint8_t*)str);
+		val->str_val = (char*)sord_node_get_string(val->val.uri_val);
 	case LILV_VALUE_STRING:
 	case LILV_VALUE_INT:
 	case LILV_VALUE_FLOAT:
@@ -93,14 +94,14 @@ LilvNode*
 lilv_node_new_from_node(LilvWorld* world, const SordNode* node)
 {
 	LilvNode*    result       = NULL;
-	SordNode*     datatype_uri = NULL;
+	SordNode*    datatype_uri = NULL;
 	LilvNodeType type         = LILV_VALUE_STRING;
 
 	switch (sord_node_get_type(node)) {
 	case SORD_URI:
 		type                = LILV_VALUE_URI;
 		result              = malloc(sizeof(struct LilvNodeImpl));
-		result->world       = world;
+		result->world       = (LilvWorld*)world;
 		result->type        = LILV_VALUE_URI;
 		result->val.uri_val = sord_node_copy(node);
 		result->str_val     = (char*)sord_node_get_string(result->val.uri_val);
@@ -196,10 +197,13 @@ lilv_node_duplicate(const LilvNode* val)
 	result->world = val->world;
 	result->type = val->type;
 
-	if (val->type == LILV_VALUE_URI) {
+	switch (val->type) {
+	case LILV_VALUE_URI:
+	case LILV_VALUE_BLANK:
 		result->val.uri_val = sord_node_copy(val->val.uri_val);
 		result->str_val = (char*)sord_node_get_string(result->val.uri_val);
-	} else {
+		break;
+	default:
 		result->str_val = lilv_strdup(val->str_val);
 		result->val = val->val;
 	}
@@ -212,9 +216,12 @@ void
 lilv_node_free(LilvNode* val)
 {
 	if (val) {
-		if (val->type == LILV_VALUE_URI) {
+		switch (val->type) {
+		case LILV_VALUE_URI:
+		case LILV_VALUE_BLANK:
 			sord_node_free(val->world->world, val->val.uri_val);
-		} else {
+			break;
+		default:
 			free(val->str_val);
 		}
 		free(val);
