@@ -146,10 +146,12 @@ struct World {
 	inline LilvNode* new_bool(bool val) {
 		return lilv_new_bool(me, val);
 	}
-	LILV_WRAP2(Nodes, world, find_nodes,
-	           Node, subject,
-	           Node, predicate,
-	           Node, object);
+	inline Nodes find_nodes(const LilvNode* subject,
+	                        const LilvNode* predicate,
+	                        const LilvNode* object) {
+		return lilv_world_find_nodes(me, subject, predicate, object);
+	}
+
 	LILV_WRAP2_VOID(world, set_option, const char*, uri, LilvNode*, value);
 	LILV_WRAP0_VOID(world, free);
 	LILV_WRAP0_VOID(world, load_all);
