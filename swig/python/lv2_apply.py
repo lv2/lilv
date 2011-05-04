@@ -21,7 +21,7 @@ world = lilv.World()
 world.load_all()
 
 # Find plugin
-plugin = world.get_plugin(plugin_uri)
+plugin = world.get_all_plugins.get_by_uri(plugin_uri)
 if not plugin:
     print "Unknown plugin `%s'\n" % plugin_uri
     sys.exit(1)

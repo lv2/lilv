@@ -15,15 +15,12 @@ namespace Lilv {
 		class Iterator(object):
 			def __init__(self, plugins):
 				self.plugins = plugins
-				self.index   = 0
+				self.iter    = plugins.begin()
 	                
-			def __iter__(self):
-				return self
-		
 			def next(self):
-				self.index += 1
-				if self.index < lilv_plugins_size(self.plugins.me):
-					return Plugin(lilv_plugins_get_at(self.plugins.me, self.index))
+				self.iter = self.plugins.next(self.iter)
+				if not self.plugins.is_end(self.iter):
+					return self.plugins.get(self.iter)
 				else:
 					raise StopIteration
 
@@ -34,14 +31,7 @@ namespace Lilv {
 %extend Node {
 %pythoncode %{
 	def __str__(self):
-		return lilv_value_get_turtle_token(self.me)
-%}
-};
-
-%extend World {
-%pythoncode %{
-	def get_plugin(self, uri_str):
-		return Plugin(lilv_world_get_plugin_by_uri_string(self.me, uri_str))
+		return self.get_turtle_token()
 %}
 };
 
