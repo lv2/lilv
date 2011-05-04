@@ -99,15 +99,12 @@ struct PluginClass {
 	LILV_WRAP0(Node, plugin_class, get_parent_uri);
 	LILV_WRAP0(Node, plugin_class, get_uri);
 	LILV_WRAP0(Node, plugin_class, get_label);
-
-	inline LilvPluginClasses* get_children() {
-		return lilv_plugin_class_get_children(me);
-	}
+	LILV_WRAP0(LilvPluginClasses*, plugin_class, get_children);
 
 	const LilvPluginClass* me;
 };
 
-#define LILV_WRAP_COLL(CT, ET, prefix)                                  \
+#define LILV_WRAP_COLL(CT, ET, prefix) \
 	struct CT { \
 		inline CT(const Lilv ## CT* c_obj) : me(c_obj) {} \
 		LILV_WRAP_CONVERSION(const Lilv ## CT); \
@@ -174,6 +171,7 @@ struct Plugin {
 	LILV_WRAP0(Node,        plugin, get_author_name);
 	LILV_WRAP0(Node,        plugin, get_author_email);
 	LILV_WRAP0(Node,        plugin, get_author_homepage);
+	LILV_WRAP0(bool,        plugin, is_replaced);
 
 	inline Port get_port_by_index(unsigned index) {
 		return Port(me, lilv_plugin_get_port_by_index(me, index));
@@ -228,7 +226,7 @@ struct Instance {
 
 struct World {
 	inline World() : me(lilv_world_new()) {}
-	inline ~World() { /*lilv_world_free(me);*/ }
+	inline ~World() { lilv_world_free(me); }
 
 	inline LilvNode* new_uri(const char* uri) {
 		return lilv_new_uri(me, uri);
@@ -252,7 +250,6 @@ struct World {
 	}
 
 	LILV_WRAP2_VOID(world, set_option, const char*, uri, LilvNode*, value);
-	LILV_WRAP0_VOID(world, free);
 	LILV_WRAP0_VOID(world, load_all);
 	LILV_WRAP1_VOID(world, load_bundle, LilvNode*, bundle_uri);
 	LILV_WRAP0(const LilvPluginClass*, world, get_plugin_class);
