@@ -12,23 +12,24 @@ if len(sys.argv) != 4:
     print 'USAGE: lv2_apply.py PLUGIN_URI INPUT_WAV OUTPUT_WAV'
     sys.exit(1)
 
-plugin_uri   = sys.argv[1]
-wav_in_path  = sys.argv[2]
-wav_out_path = sys.argv[3]
-
-# Initialise LILV
+# Initialise Lilv
 world = lilv.World()
 world.load_all()
 
+plugin_uri   = world.new_uri(sys.argv[1])
+wav_in_path  = sys.argv[2]
+wav_out_path = sys.argv[3]
+
+
 # Find plugin
-plugin = world.get_all_plugins.get_by_uri(plugin_uri)
+plugin = world.get_all_plugins().get_by_uri(plugin_uri)
 if not plugin:
     print "Unknown plugin `%s'\n" % plugin_uri
     sys.exit(1)
 
-lv2_InputPort  = world.new_uri(lilv.LILV_PORT_CLASS_INPUT)
-lv2_OutputPort = world.new_uri(lilv.LILV_PORT_CLASS_OUTPUT)
-lv2_AudioPort  = world.new_uri(lilv.LILV_PORT_CLASS_AUDIO)
+lv2_InputPort  = world.new_uri(lilv.LILV_URI_INPUT_PORT)
+lv2_OutputPort = world.new_uri(lilv.LILV_URI_OUTPUT_PORT)
+lv2_AudioPort  = world.new_uri(lilv.LILV_URI_AUDIO_PORT)
 
 n_audio_in  = plugin.get_num_ports_of_class(lv2_InputPort,  lv2_AudioPort)
 n_audio_out = plugin.get_num_ports_of_class(lv2_OutputPort, lv2_AudioPort)
@@ -63,7 +64,7 @@ nframes = wav_in.getnframes()
 instance = lilv.Instance(plugin, rate)
 
 def read_float(wf, nframes):
-    wav        = wf.readframes(nframes)
+    wav = wf.readframes(nframes)
     if wf.getsampwidth() == 4:
         wav = wave.struct.unpack("<%ul" % (len(wav) / 4), wav)
         wav = [ i / float(math.pow(2, 32)) for i in wav ]

@@ -105,21 +105,29 @@ struct PluginClass {
 };
 
 #define LILV_WRAP_COLL(CT, ET, prefix) \
-	struct CT { \
-		inline CT(const Lilv ## CT* c_obj) : me(c_obj) {} \
-		LILV_WRAP_CONVERSION(const Lilv ## CT); \
-		LILV_WRAP0(unsigned, prefix, size); \
-		LILV_WRAP1(const ET, prefix, get, LilvIter*, i); \
-		LILV_WRAP0(LilvIter*, prefix, begin); \
-		LILV_WRAP1(LilvIter*, prefix, next, LilvIter*, i); \
-		LILV_WRAP1(bool, prefix, is_end, LilvIter*, i); \
-		const Lilv ## CT* me; \
-	}; \
+	inline CT(const Lilv ## CT* c_obj) : me(c_obj) {} \
+	LILV_WRAP_CONVERSION(const Lilv ## CT); \
+	LILV_WRAP0(unsigned, prefix, size); \
+	LILV_WRAP1(const ET, prefix, get, LilvIter*, i); \
+	LILV_WRAP0(LilvIter*, prefix, begin); \
+	LILV_WRAP1(LilvIter*, prefix, next, LilvIter*, i); \
+	LILV_WRAP1(bool, prefix, is_end, LilvIter*, i); \
+	const Lilv ## CT* me; \
 
-LILV_WRAP_COLL(PluginClasses, PluginClass, plugin_classes);
-LILV_WRAP_COLL(ScalePoints, ScalePoint, scale_points);
-LILV_WRAP_COLL(Nodes, Node, nodes);
+struct PluginClasses {
+	LILV_WRAP_COLL(PluginClasses, PluginClass, plugin_classes);
+	LILV_WRAP1(const PluginClass, plugin_classes, get_by_uri, const LilvNode*, uri);
+};
 
+struct ScalePoints {
+	LILV_WRAP_COLL(ScalePoints, ScalePoint, scale_points);
+};
+
+struct Nodes {
+	LILV_WRAP_COLL(Nodes, Node, nodes);
+	LILV_WRAP1(bool, nodes, contains, const Node, node);
+};
+		
 struct Port {
 	inline Port(const LilvPlugin* p, const LilvPort* c_obj)
 		: parent(p), me(c_obj)
@@ -197,7 +205,10 @@ struct Plugin {
 	const LilvPlugin* me;
 };
 
-LILV_WRAP_COLL(Plugins, Plugin, plugins);
+struct Plugins {
+	LILV_WRAP_COLL(Plugins, Plugin, plugins);
+	LILV_WRAP1(const Plugin, plugins, get_by_uri, const LilvNode*, uri);
+};
 
 struct Instance {
 	inline Instance(Plugin plugin, double sample_rate) {
@@ -254,7 +265,7 @@ struct World {
 	LILV_WRAP1_VOID(world, load_bundle, LilvNode*, bundle_uri);
 	LILV_WRAP0(const LilvPluginClass*, world, get_plugin_class);
 	LILV_WRAP0(const LilvPluginClasses*, world, get_plugin_classes);
-	LILV_WRAP0(Plugins, world, get_all_plugins);
+	LILV_WRAP0(const Plugins, world, get_all_plugins);
 
 	LilvWorld* me;
 };
