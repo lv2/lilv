@@ -28,16 +28,6 @@
 
 #include "lilv_internal.h"
 
-static void
-lilv_world_set_prefix(LilvWorld* world, const char* name, const char* uri)
-{
-	const SerdNode name_node = serd_node_from_string(SERD_LITERAL,
-	                                                 (const uint8_t*)name);
-	const SerdNode uri_node  = serd_node_from_string(SERD_URI,
-	                                                 (const uint8_t*)uri);
-	serd_env_add(world->namespaces, &name_node, &uri_node);
-}
-
 LILV_API
 LilvWorld*
 lilv_world_new(void)
@@ -94,14 +84,6 @@ lilv_world_new(void)
 	world->lv2_plugin_class = lilv_plugin_class_new(
 		world, NULL, world->lv2_plugin_node, "Plugin");
 	assert(world->lv2_plugin_class);
-
-	world->namespaces = serd_env_new();
-	lilv_world_set_prefix(world, "rdf",   LILV_NS_RDF);
-	lilv_world_set_prefix(world, "rdfs",  LILV_NS_RDFS);
-	lilv_world_set_prefix(world, "doap",  LILV_NS_DOAP);
-	lilv_world_set_prefix(world, "foaf",  LILV_NS_FOAF);
-	lilv_world_set_prefix(world, "lv2",   LILV_NS_LV2);
-	lilv_world_set_prefix(world, "lv2ev", "http://lv2plug.in/ns/ext/event#");
 
 	world->n_read_files        = 0;
 	world->opt.filter_language = true;
@@ -174,8 +156,6 @@ lilv_world_free(LilvWorld* world)
 
 	sord_world_free(world->world);
 	world->world = NULL;
-
-	serd_env_free(world->namespaces);
 
 	free(world);
 }

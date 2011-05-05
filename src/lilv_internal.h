@@ -112,7 +112,6 @@ struct LilvWorldImpl {
 	SordWorld*         world;
 	SordModel*         model;
 	SerdReader*        reader;
-	SerdEnv*           namespaces;
 	unsigned           n_read_files;
 	LilvPluginClass*   lv2_plugin_class;
 	LilvPluginClasses* plugin_classes;
