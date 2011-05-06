@@ -60,7 +60,7 @@ extern "C" {
 #define LILV_URI_CONTROL_PORT "http://lv2plug.in/ns/lv2core#ControlPort"
 #define LILV_URI_EVENT_PORT   "http://lv2plug.in/ns/ext/event#EventPort"
 #define LILV_URI_INPUT_PORT   "http://lv2plug.in/ns/lv2core#InputPort"
-#define LILV_URI_MIDI_EVENT   "http: //lv2plug.in/ns/ext/midi#MidiEvent"
+#define LILV_URI_MIDI_EVENT   "http://lv2plug.in/ns/ext/midi#MidiEvent"
 #define LILV_URI_OUTPUT_PORT  "http://lv2plug.in/ns/lv2core#OutputPort"
 #define LILV_URI_PORT         "http://lv2plug.in/ns/lv2core#Port"
 
