@@ -462,8 +462,10 @@ lilv_world_load_dyn_manifest(LilvWorld* world,
 		rewind(fd);
 
 		// Parse generated data file
-		sord_read_file_handle(world->model, fd, lib_uri, bundle_node,
+		SerdEnv* env = serd_env_new();
+		sord_read_file_handle(world->model, env, fd, lib_uri, bundle_node,
 		                      lilv_world_blank_node_prefix(world));
+		serd_env_free(env);
 
 		// Close (and automatically delete) temporary data file
 		fclose(fd);
@@ -503,10 +505,13 @@ lilv_world_load_bundle(LilvWorld* world, LilvNode* bundle_uri)
 		(const uint8_t*)"manifest.ttl",
 		(const uint8_t*)sord_node_get_string(bundle_node));
 
-	if (!sord_read_file(world->model, manifest_uri.buf, bundle_node,
+	SerdEnv* env = serd_env_new();
+	if (!sord_read_file(world->model, env, manifest_uri.buf, bundle_node,
 	                    lilv_world_blank_node_prefix(world))) {
+		serd_env_free(env);
 		return;
 	}
+	serd_env_free(env);
 
 	// ?plugin a lv2:Plugin
 	SordIter* plug_results = lilv_world_find_statements(
@@ -663,10 +668,13 @@ lilv_world_load_specifications(LilvWorld* world)
 		LilvSpec* spec = (LilvSpec*)l->data;
 		LILV_FOREACH(nodes, f, spec->data_uris) {
 			LilvNode* file = lilv_collection_get(spec->data_uris, f);
+			SerdEnv*  env  = serd_env_new();
 			sord_read_file(world->model,
+			               env,
 			               (const uint8_t*)lilv_node_as_uri(file),
 			               NULL,
 			               lilv_world_blank_node_prefix(world));
+			serd_env_free(env);
 		}
 	}
 }

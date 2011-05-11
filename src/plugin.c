@@ -117,10 +117,13 @@ lilv_plugin_load(LilvPlugin* p)
 	// Parse all the plugin's data files into RDF model
 	LILV_FOREACH(nodes, i, p->data_uris) {
 		const LilvNode* data_uri_val = lilv_nodes_get(p->data_uris, i);
+		SerdEnv* env = serd_env_new();
 		sord_read_file(p->world->model,
+		               env,
 		               sord_node_get_string(data_uri_val->val.uri_val),
 		               p->bundle_uri->val.uri_val,
 		               lilv_world_blank_node_prefix(p->world));
+		serd_env_free(env);
 	}
 
 #ifdef LILV_DYN_MANIFEST
@@ -150,11 +153,14 @@ lilv_plugin_load(LilvPlugin* p)
 			FILE* fd = tmpfile();
 			get_data_func(handle, fd, lilv_node_as_string(p->plugin_uri));
 			rewind(fd);
+			SerdEnv* env = serd_env_new();
 			sord_read_file_handle(p->world->model,
+			                      env,
 			                      fd,
 			                      (const uint8_t*)lilv_node_as_uri(p->dynman_uri),
 			                      p->bundle_uri->val.uri_val,
 			                      lilv_world_blank_node_prefix(p->world));
+			serd_env_free(env);
 			fclose(fd);
 		}
 
