@@ -121,6 +121,7 @@ lilv_plugin_load(LilvPlugin* p)
 		sord_read_file(p->world->model,
 		               env,
 		               sord_node_get_string(data_uri_val->val.uri_val),
+		               NULL,
 		               p->bundle_uri->val.uri_val,
 		               lilv_world_blank_node_prefix(p->world));
 		serd_env_free(env);
