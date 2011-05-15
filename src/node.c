@@ -99,7 +99,6 @@ lilv_node_new_from_node(LilvWorld* world, const SordNode* node)
 
 	switch (sord_node_get_type(node)) {
 	case SORD_URI:
-		type                = LILV_VALUE_URI;
 		result              = malloc(sizeof(struct LilvNodeImpl));
 		result->world       = (LilvWorld*)world;
 		result->type        = LILV_VALUE_URI;
@@ -131,8 +130,8 @@ lilv_node_new_from_node(LilvWorld* world, const SordNode* node)
 		}
 		break;
 	case SORD_BLANK:
-		type   = LILV_VALUE_BLANK;
-		result = lilv_node_new(world, type, (const char*)sord_node_get_string(node));
+		result = lilv_node_new(world, LILV_VALUE_BLANK,
+		                       (const char*)sord_node_get_string(node));
 		break;
 	default:
 		assert(false);
