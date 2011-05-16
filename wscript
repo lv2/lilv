@@ -5,6 +5,7 @@ import subprocess
 
 from waflib.extras import autowaf as autowaf
 import waflib.Options as Options
+import waflib.Logs as Logs
 
 # Version of this package (even if built as a child)
 LILV_VERSION       = '0.0.0'
@@ -258,6 +259,9 @@ def build(bld):
     # Documentation
     autowaf.build_dox(bld, 'LILV', LILV_VERSION, top, out)
 
+    # Man pages
+    bld.install_files('${MANDIR}/man1', bld.path.ant_glob('doc/*.1'))
+
     # Bash completion
     if bld.env['BASH_COMPLETION']:
         bld.install_as(
@@ -280,12 +284,15 @@ def build(bld):
 
 def fix_docs(ctx):
     try:
+        top = os.getcwd()
         os.chdir('build/doc/html')
         os.system("sed -i 's/LILV_API //' group__lilv.html")
-        os.system("sed -i 's/LILV_DEPRECATED //' group__lilv.html")
         os.remove('index.html')
         os.symlink('group__lilv.html',
                    'index.html')
+        os.chdir(top)
+        os.chdir('build/doc/man/man3')
+        os.system("sed -i 's/LILV_API //' lilv.3")
     except Exception, e:
         Logs.error("Failed to fix up Doxygen documentation (%s)\n" % e)
 
