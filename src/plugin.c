@@ -158,6 +158,7 @@ lilv_plugin_load(LilvPlugin* p)
 			sord_read_file_handle(p->world->model,
 			                      env,
 			                      fd,
+			                      "(dyn-manifest)",
 			                      (const uint8_t*)lilv_node_as_uri(p->dynman_uri),
 			                      p->bundle_uri->val.uri_val,
 			                      lilv_world_blank_node_prefix(p->world));

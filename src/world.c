@@ -463,7 +463,8 @@ lilv_world_load_dyn_manifest(LilvWorld* world,
 
 		// Parse generated data file
 		SerdEnv* env = serd_env_new();
-		sord_read_file_handle(world->model, env, fd, lib_uri, bundle_node,
+		sord_read_file_handle(world->model, env, fd, "(dyn-manifest)",
+		                      lib_uri, bundle_node,
 		                      lilv_world_blank_node_prefix(world));
 		serd_env_free(env);
 
