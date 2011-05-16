@@ -1,2 +1,0 @@
-(run (csc -s -o lilv.so lilv.scm lilv_wrap.c -llilv))
-(install-extension 'lilv '("lilv.so"))
