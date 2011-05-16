@@ -51,7 +51,7 @@ def options(opt):
                    help="Default LV2 path to use if $LV2_PATH is unset (globs and ~ supported)")
 
 def configure(conf):
-    conf.line_just = max(conf.line_just, 63)
+    conf.line_just = 63
     autowaf.configure(conf)
     autowaf.display_header('Lilv Configuration')
     conf.load('compiler_cc')
