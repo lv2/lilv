@@ -36,11 +36,11 @@ def options(opt):
     opt.add_option('--no-jack-session', action='store_true', default=False,
                    dest='no_jack_session',
                    help="Do not build JACK session support")
-    opt.add_option('--no-swig', action='store_true', default=False, dest='no_swig',
-                   help="Do not build python bindings")
-    opt.add_option('--no-dyn-manifest', action='store_true', default=False,
-                   dest='no_dyn_manifest',
-                   help="Don't build support for dynamic manifests")
+    opt.add_option('--bindings', action='store_true', default=False, dest='bindings',
+                   help="Build python bindings")
+    opt.add_option('--dyn-manifest', action='store_true', default=False,
+                   dest='dyn_manifest',
+                   help="Build support for dynamic manifests")
     opt.add_option('--test', action='store_true', default=False, dest='build_tests',
                    help="Build unit tests")
     opt.add_option('--no-bash-completion', action='store_true', default=False,
@@ -51,17 +51,17 @@ def options(opt):
                    help="Default LV2 path to use if $LV2_PATH is unset (globs and ~ supported)")
 
 def configure(conf):
-    conf.line_just = max(conf.line_just, 59)
+    conf.line_just = max(conf.line_just, 63)
     autowaf.configure(conf)
     autowaf.display_header('Lilv Configuration')
     conf.load('compiler_cc')
     conf.load('python')
 
-    if not Options.options.no_swig:
+    if Options.options.bindings:
         try:
             conf.load('swig python')
             conf.check_python_headers()
-            autowaf.define(conf, 'LILV_SWIG', 1);
+            autowaf.define(conf, 'LILV_BINDINGS', 1);
         except:
             pass
 
@@ -92,7 +92,7 @@ def configure(conf):
 
     conf.env.append_value('CFLAGS', '-std=c99')
     autowaf.define(conf, 'LILV_VERSION', LILV_VERSION)
-    if not Options.options.no_dyn_manifest:
+    if Options.options.dyn_manifest:
         autowaf.define(conf, 'LILV_DYN_MANIFEST', 1)
 
     lilv_path_sep = ':'
@@ -158,7 +158,7 @@ def configure(conf):
     autowaf.display_msg(conf, "Dynamic manifest support",
                         bool(conf.env['LILV_DYN_MANIFEST']))
     autowaf.display_msg(conf, "Python bindings",
-                        conf.is_defined('LILV_SWIG'))
+                        conf.is_defined('LILV_PYTHON'))
     print('')
 
 def build(bld):
@@ -267,18 +267,18 @@ def build(bld):
         bld.install_as(
             '/etc/bash_completion.d/lilv', 'utils/lilv.bash_completion')
 
-    if bld.is_defined('LILV_SWIG'):
+    if bld.is_defined('LILV_PYTHON'):
         # Python Wrapper
         obj = bld(features   = 'cxx cxxshlib pyext',
-                  source     = 'swig/lilv.i',
-                  target     = 'swig/_lilv',
+                  source     = 'bindings/lilv.i',
+                  target     = 'bindings/_lilv',
                   includes   = ['..'],
                   swig_flags = '-c++ -python -Wall -I.. -llilv -features autodoc=1',
                   vnum       = LILV_LIB_VERSION,
                   use        = 'liblilv')
         autowaf.use_lib(bld, obj, 'LILV')
 
-        bld.install_files('${PYTHONDIR}', 'swig/lilv.py')
+        bld.install_files('${PYTHONDIR}', 'bindings/lilv.py')
 
     bld.add_post_fun(autowaf.run_ldconfig)
 
