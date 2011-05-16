@@ -1,7 +1,7 @@
 .\" First parameter, NAME, should be all caps
 .\" Second parameter, SECTION, should be 1-8, maybe w/ subsection
 .\" other parameters are allowed: see man(7), man(1)
-.TH LV2_SIMPLE_JACK_HOST 1 "4 May 2009"
+.TH LV2_INSPECT 1 "4 May 2009"
 .\" Please adjust this date whenever revising the manpage.
 .\"
 .\" Some roff macros, for reference:
@@ -15,20 +15,17 @@
 .\" .sp <n>    insert n+1 empty lines
 .\" for manpage-specific macros, see man(7)
 .SH NAME
-.B lv2_simple_jack_host \- Run an LV2 plugin as a JACK application (audio only).
-
+.B lv2info \- print information about an LV2 plugin in human-readable form.
 .SH SYNOPSIS
-.B lv2_simple_jack_host PLUGIN_URI
+.B lv2info PLUGIN_URI
 
 .SH SEE ALSO
 .BR lilv(3),
 .BR lv2_list(1),
 .BR lv2_jack_host(1),
-.BR lv2_simple_jack_host(1),
-.BR jackd(1)
 
 .SH AUTHOR
-lv2_inspect was written by David Robillard <d@drobilla.net>
+lv2info was written by David Robillard <d@drobilla.net>
 .PP
 This manual page was written by Jaromír Mikes <mira.mikes@seznam.cz>
 and David Robillard <d@drobilla.net>

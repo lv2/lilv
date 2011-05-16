@@ -1,7 +1,8 @@
-# Bash auto-completion script written for lv2_inspect, lv2_jack_host
-# and lv2_simple_jack_host. Could be adapted to any other program
-# that takes an LV2 plugin URI as parameter.
+# Bash auto-completion script written for lv2info and lv2jack.
+# Could be adapted to any other program that takes an
+# LV2 plugin URI as parameter.
 
+# Updated for Lilv by David Robillard <d@drobilla.net> on 2011-05-21.
 # Written by Lars Luthman <lars.luthman@gmail.com> on 2009-10-12. 
 # No copyright claimed for this script. Do what you want with it.
 
@@ -13,7 +14,7 @@
 # It probably breaks in some special cases but for most common uses
 # it should work fine.
 
-function _lv2_inspect() {
+function _lv2info() {
     local uri cur opts w wn raw_reply len type
     opts=`lv2_list | xargs -n1 echo -n " "`
     
@@ -52,8 +53,7 @@ function _lv2_inspect() {
     done
 }
 
-complete -F _lv2_inspect lv2_inspect
+complete -F _lv2info lv2info
 
-# And the same for lv2_jack_host and lv2_simple_jack_host.
-complete -F _lv2_inspect lv2_jack_host
-complete -F _lv2_inspect lv2_simple_jack_host
+# And the same for lv2jack.
+complete -F _lv2info lv2jack
