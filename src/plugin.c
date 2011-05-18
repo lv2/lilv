@@ -453,18 +453,25 @@ lilv_plugin_get_port_ranges_float(const LilvPlugin* p,
                                   float*            def_values)
 {
 	lilv_plugin_load_ports_if_necessary(p);
+	LilvNode *min, *max, *def;
+	LilvNode** minptr = min_values ? &min : NULL;
+	LilvNode** maxptr = max_values ? &max : NULL;
+	LilvNode** defptr = def_values ? &def : NULL;
+
 	for (uint32_t i = 0; i < p->num_ports; ++i) {
-		LilvNode *def, *min, *max;
-		lilv_port_get_range(p, p->ports[i], &def, &min, &max);
+		lilv_port_get_range(p, p->ports[i], defptr, minptr, maxptr);
 
-		if (min_values)
-			min_values[i] = min ? lilv_node_as_float(min) : NAN;
+		min_values[i] = (minptr && lilv_node_is_float(min))
+			? lilv_node_as_float(min)
+			: NAN;
 
-		if (max_values)
-			max_values[i] = max ? lilv_node_as_float(max) : NAN;
+		max_values[i] = (maxptr && lilv_node_is_float(max))
+			? lilv_node_as_float(max)
+			: NAN;
 
-		if (def_values)
-			def_values[i] = def ? lilv_node_as_float(def) : NAN;
+		def_values[i] = (defptr && lilv_node_is_float(def))
+			? lilv_node_as_float(def)
+			: NAN;
 
 		lilv_node_free(def);
 		lilv_node_free(min);
