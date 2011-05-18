@@ -114,17 +114,29 @@ lilv_plugin_get_unique(const LilvPlugin* p,
 static void
 lilv_plugin_load(LilvPlugin* p)
 {
+	SordNode*       bundle_uri_node  = p->bundle_uri->val.uri_val;
+	const SerdNode* bundle_uri_snode = sord_node_to_serd_node(bundle_uri_node);
+
+	SerdEnv*    env    = serd_env_new(bundle_uri_snode);
+	SerdReader* reader = sord_new_reader(p->world->model, env, SERD_TURTLE,
+	                                     bundle_uri_node);
+
 	// Parse all the plugin's data files into RDF model
 	LILV_FOREACH(nodes, i, p->data_uris) {
 		const LilvNode* data_uri_val = lilv_nodes_get(p->data_uris, i);
-		SerdEnv* env = serd_env_new();
-		sord_read_file(p->world->model,
-		               env,
-		               sord_node_get_string(data_uri_val->val.uri_val),
-		               NULL,
-		               p->bundle_uri->val.uri_val,
-		               lilv_world_blank_node_prefix(p->world));
-		serd_env_free(env);
+		const char*     data_uri_str = lilv_node_as_uri(data_uri_val);
+		if (strncmp((const char*)data_uri_str,
+		            (const char*)bundle_uri_snode->buf,
+		            bundle_uri_snode->n_bytes)) {
+			LILV_WARNF("Ignored data file <%s> not in bundle <%s>\n",
+			           (const char*)data_uri_str,
+			           (const char*)bundle_uri_snode->buf);
+			continue;
+		}
+
+		serd_reader_add_blank_prefix(reader,
+		                             lilv_world_blank_node_prefix(p->world));
+		serd_reader_read_file(reader, (const uint8_t*)data_uri_str);
 	}
 
 #ifdef LILV_DYN_MANIFEST
@@ -154,15 +166,8 @@ lilv_plugin_load(LilvPlugin* p)
 			FILE* fd = tmpfile();
 			get_data_func(handle, fd, lilv_node_as_string(p->plugin_uri));
 			rewind(fd);
-			SerdEnv* env = serd_env_new();
-			sord_read_file_handle(p->world->model,
-			                      env,
-			                      fd,
-			                      "(dyn-manifest)",
-			                      (const uint8_t*)lilv_node_as_uri(p->dynman_uri),
-			                      p->bundle_uri->val.uri_val,
-			                      lilv_world_blank_node_prefix(p->world));
-			serd_env_free(env);
+			serd_reader_read_file_handle(reader, fd,
+			                             (const uint8_t*)"(dyn-manifest)");
 			fclose(fd);
 		}
 
@@ -172,6 +177,8 @@ lilv_plugin_load(LilvPlugin* p)
 			close_func(handle);
 	}
 #endif
+	serd_reader_free(reader);
+	serd_env_free(env);
 
 	p->loaded = true;
 }

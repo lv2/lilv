@@ -385,8 +385,8 @@ lilv_world_add_plugin(LilvWorld*      world,
 
 static void
 lilv_world_load_dyn_manifest(LilvWorld* world,
-                             SordNode* bundle_node,
-                             SerdNode  manifest_uri)
+                             SordNode*  bundle_node,
+                             SerdNode   manifest_uri)
 {
 #ifdef LILV_DYN_MANIFEST
 	if (!world->opt.dyn_manifest) {
@@ -462,10 +462,12 @@ lilv_world_load_dyn_manifest(LilvWorld* world,
 		rewind(fd);
 
 		// Parse generated data file
-		SerdEnv* env = serd_env_new();
-		sord_read_file_handle(world->model, env, fd, "(dyn-manifest)",
-		                      lib_uri, bundle_node,
-		                      lilv_world_blank_node_prefix(world));
+		SerdEnv*    env    = serd_env_new(bundle_node);
+		SerdReader* reader = sord_new_reader(
+			world->model, env, SERD_TURTLE, bundle_node);
+		serd_reader_read_file_handle(reader, fd,
+		                             (const uint8_t*)"(dyn-manifest)");
+		serd_reader_free(reader);
 		serd_env_free(env);
 
 		// Close (and automatically delete) temporary data file
@@ -496,7 +498,7 @@ void
 lilv_world_load_bundle(LilvWorld* world, LilvNode* bundle_uri)
 {
 	if (!lilv_node_is_uri(bundle_uri)) {
-		LILV_ERRORF ("Bundle URI `%s' is not a URI\n", bundle_uri->str_val);
+		LILV_ERRORF("Bundle URI `%s' is not a URI\n", bundle_uri->str_val);
 		return;
 	}
 
@@ -506,13 +508,17 @@ lilv_world_load_bundle(LilvWorld* world, LilvNode* bundle_uri)
 		(const uint8_t*)"manifest.ttl",
 		(const uint8_t*)sord_node_get_string(bundle_node));
 
-	SerdEnv* env = serd_env_new();
-	if (!sord_read_file(world->model, env, manifest_uri.buf, NULL, bundle_node,
-	                    lilv_world_blank_node_prefix(world))) {
-		serd_env_free(env);
+	SerdEnv*    env    = serd_env_new(&manifest_uri);
+	SerdReader* reader = sord_new_reader(world->model, env, SERD_TURTLE,
+	                                     bundle_node);
+	serd_reader_add_blank_prefix(reader, lilv_world_blank_node_prefix(world));
+
+	SerdStatus st = serd_reader_read_file(reader, manifest_uri.buf);
+	serd_env_free(env);
+	if (st) {
+		LILV_ERRORF("Error reading %s\n", manifest_uri.buf);
 		return;
 	}
-	serd_env_free(env);
 
 	// ?plugin a lv2:Plugin
 	SordIter* plug_results = lilv_world_find_statements(
@@ -668,14 +674,16 @@ lilv_world_load_specifications(LilvWorld* world)
 	for (GSList* l = world->specs; l; l = l->next) {
 		LilvSpec* spec = (LilvSpec*)l->data;
 		LILV_FOREACH(nodes, f, spec->data_uris) {
-			LilvNode* file = lilv_collection_get(spec->data_uris, f);
-			SerdEnv*  env  = serd_env_new();
-			sord_read_file(world->model,
-			               env,
-			               (const uint8_t*)lilv_node_as_uri(file),
-			               NULL,
-			               NULL,
-			               lilv_world_blank_node_prefix(world));
+			LilvNode*      file     = lilv_collection_get(spec->data_uris, f);
+			const uint8_t* file_uri = (const uint8_t*)lilv_node_as_uri(file);
+			SerdEnv*       env      = serd_env_new(
+				sord_node_to_serd_node(file->val.uri_val));
+			SerdReader*    reader   = sord_new_reader(world->model, env,
+			                                          SERD_TURTLE, NULL);
+			serd_reader_add_blank_prefix(reader, 
+			                             lilv_world_blank_node_prefix(world));
+			serd_reader_read_file(reader, file_uri);
+			serd_reader_free(reader);
 			serd_env_free(env);
 		}
 	}

@@ -70,10 +70,8 @@ def configure(conf):
                       atleast_version='2.0.0', mandatory=True)
     autowaf.check_pkg(conf, 'gthread-2.0', uselib_store='GTHREAD',
                       atleast_version='2.0.0', mandatory=False)
-    autowaf.check_pkg(conf, 'serd-0', uselib_store='SERD',
-                      atleast_version='0.2.0', mandatory=True)
     autowaf.check_pkg(conf, 'sord-0', uselib_store='SORD',
-                      atleast_version='0.2.0', mandatory=True)
+                      atleast_version='0.3.0', mandatory=True)
     autowaf.check_pkg(conf, 'jack', uselib_store='JACK',
                       atleast_version='0.107.0', mandatory=False)
     autowaf.check_pkg(conf, 'jack', uselib_store='NEW_JACK',
