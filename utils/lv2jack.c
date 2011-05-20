@@ -252,7 +252,7 @@ jack_session_cb(jack_session_event_t* event, void* arg)
 	struct JackHost* host = (struct JackHost*)arg;
 
 	char cmd[256];
-	snprintf(cmd, sizeof(cmd), "lv2_jack_host %s %s",
+	snprintf(cmd, sizeof(cmd), "lv2jack %s %s",
 	         lilv_node_as_uri(lilv_plugin_get_uri(host->plugin)),
 	         event->client_uuid);
 
