@@ -353,7 +353,7 @@ lilv_world_add_plugin(LilvWorld*      world,
 	}
 
 	// Create LilvPlugin
-	LilvNode*  bundle_uri = lilv_node_new_from_node(world, bundle_node);
+	LilvNode*   bundle_uri = lilv_node_new_from_node(world, bundle_node);
 	LilvPlugin* plugin     = lilv_plugin_new(world, plugin_uri, bundle_uri);
 
 	// Add manifest as plugin data file (as if it were rdfs:seeAlso)
@@ -514,6 +514,7 @@ lilv_world_load_bundle(LilvWorld* world, LilvNode* bundle_uri)
 	serd_reader_add_blank_prefix(reader, lilv_world_blank_node_prefix(world));
 
 	SerdStatus st = serd_reader_read_file(reader, manifest_uri.buf);
+	serd_reader_free(reader);
 	serd_env_free(env);
 	if (st) {
 		LILV_ERRORF("Error reading %s\n", manifest_uri.buf);

@@ -105,6 +105,13 @@ lilv_node_new_from_node(LilvWorld* world, const SordNode* node)
 		result->val.uri_val = sord_node_copy(node);
 		result->str_val     = (char*)sord_node_get_string(result->val.uri_val);
 		break;
+	case SORD_BLANK:
+		result              = malloc(sizeof(struct LilvNodeImpl));
+		result->world       = (LilvWorld*)world;
+		result->type        = LILV_VALUE_BLANK;
+		result->val.uri_val = sord_node_copy(node);
+		result->str_val     = (char*)sord_node_get_string(result->val.uri_val);
+		break;
 	case SORD_LITERAL:
 		datatype_uri = sord_node_get_datatype(node);
 		if (datatype_uri) {
@@ -128,10 +135,6 @@ lilv_node_new_from_node(LilvWorld* world, const SordNode* node)
 		default:
 			break;
 		}
-		break;
-	case SORD_BLANK:
-		result = lilv_node_new(world, LILV_VALUE_BLANK,
-		                       (const char*)sord_node_get_string(node));
 		break;
 	default:
 		assert(false);
