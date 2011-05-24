@@ -78,7 +78,7 @@ typedef void LilvPluginClasses;  /**< set<PluginClass>. */
 typedef void LilvPlugins;        /**< set<Plugin>. */
 typedef void LilvScalePoints;    /**< set<ScalePoint>. */
 typedef void LilvUIs;            /**< set<UI>. */
-typedef void LilvNodes;          /**< set<Value>. */
+typedef void LilvNodes;          /**< set<Node>. */
 
 /**
    @defgroup lilv Lilv
@@ -90,7 +90,7 @@ typedef void LilvNodes;          /**< set<Value>. */
 */
 
 /**
-   @name Value
+   @name Node
    @{
 */
 
@@ -420,7 +420,7 @@ const LilvUI*
 lilv_uis_get_by_uri(const LilvUIs*  uis,
                     const LilvNode* uri);
 
-/* Values */
+/* Nodes */
 
 LILV_API
 void

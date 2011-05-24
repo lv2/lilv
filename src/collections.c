@@ -113,7 +113,7 @@ lilv_plugins_get_by_uri(const LilvPlugins* list, const LilvNode* uri)
 	return (LilvPlugin*)lilv_sequence_get_by_uri((LilvPlugins*)list, uri);
 }
 
-/* Values */
+/* Nodes */
 
 LILV_API
 bool
