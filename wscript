@@ -279,6 +279,8 @@ def build(bld):
         bld.install_files('${PYTHONDIR}', 'bindings/lilv.py')
 
     bld.add_post_fun(autowaf.run_ldconfig)
+    if bld.env['DOCS']:
+        bld.add_post_fun(fix_docs)
 
 def fix_docs(ctx):
     try:
