@@ -71,7 +71,7 @@ def configure(conf):
     autowaf.check_pkg(conf, 'gthread-2.0', uselib_store='GTHREAD',
                       atleast_version='2.0.0', mandatory=False)
     autowaf.check_pkg(conf, 'sord-0', uselib_store='SORD',
-                      atleast_version='0.3.0', mandatory=True)
+                      atleast_version='0.4.0', mandatory=True)
     autowaf.check_pkg(conf, 'jack', uselib_store='JACK',
                       atleast_version='0.107.0', mandatory=False)
     autowaf.check_pkg(conf, 'jack', uselib_store='NEW_JACK',
@@ -131,11 +131,11 @@ def configure(conf):
 
     if conf.is_defined('HAVE_JACK') and not Options.options.no_jack:
         autowaf.check_header(conf, 'lv2/lv2plug.in/ns/ext/event/event.h',
-                             'HAVE_LV2_EVENT')
+                             'HAVE_LV2_EVENT', mandatory=False)
         autowaf.check_header(conf, 'lv2/lv2plug.in/ns/ext/event/event-helpers.h',
-                             'HAVE_LV2_EVENT_HELPERS')
+                             'HAVE_LV2_EVENT_HELPERS', mandatory=False)
         autowaf.check_header(conf, 'lv2/lv2plug.in/ns/ext/uri-map/uri-map.h',
-                             'HAVE_LV2_URI_MAP')
+                             'HAVE_LV2_URI_MAP', mandatory=False)
         if (conf.is_defined('HAVE_LV2_EVENT')
             and conf.is_defined('HAVE_LV2_EVENT_HELPERS')
             and conf.is_defined('HAVE_LV2_URI_MAP')):
@@ -166,7 +166,7 @@ def build(bld):
     bld.install_files(includedir, bld.path.ant_glob('lilv/*.hpp'))
 
     # Pkgconfig file
-    autowaf.build_pc(bld, 'LILV', LILV_VERSION, LILV_MAJOR_VERSION, ['SORD','GLIB'],
+    autowaf.build_pc(bld, 'LILV', LILV_VERSION, LILV_MAJOR_VERSION, [],
                      {'LILV_MAJOR_VERSION' : LILV_MAJOR_VERSION})
 
     lib_source = '''
@@ -282,22 +282,30 @@ def build(bld):
     if bld.env['DOCS']:
         bld.add_post_fun(fix_docs)
 
+def build_dir(ctx, subdir):
+    if autowaf.is_child():
+        return os.path.join('build', APPNAME, subdir)
+    else:
+        return os.path.join('build', subdir)
+
 def fix_docs(ctx):
     try:
         top = os.getcwd()
-        os.chdir('build/doc/html')
+        os.chdir(build_dir(ctx, 'doc/html'))
         os.system("sed -i 's/LILV_API //' group__lilv.html")
+        os.system("sed -i 's/LILV_DEPRECATED //' group__lilv.html")
         os.remove('index.html')
         os.symlink('group__lilv.html',
                    'index.html')
         os.chdir(top)
-        os.chdir('build/doc/man/man3')
+        os.chdir(build_dir(ctx, 'doc/man/man3'))
         os.system("sed -i 's/LILV_API //' lilv.3")
+        os.chdir(top)
     except:
-        Logs.error("Failed to fix up documentation\n")
+        Logs.error("Failed to fix up %s documentation" % APPNAME)
 
 def upload_docs(ctx):
-    os.system("rsync -avz --delete -e ssh build/doc/html/* drobilla@drobilla.net:~/drobilla.net/docs/lilv")
+    os.system("rsync -ravz --delete -e ssh build/doc/html/ drobilla@drobilla.net:~/drobilla.net/docs/lilv/")
 
 def test(ctx):
     autowaf.pre_test(ctx, APPNAME)
