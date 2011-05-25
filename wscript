@@ -293,8 +293,8 @@ def fix_docs(ctx):
         os.chdir(top)
         os.chdir('build/doc/man/man3')
         os.system("sed -i 's/LILV_API //' lilv.3")
-    except Exception, e:
-        Logs.error("Failed to fix up Doxygen documentation (%s)\n" % e)
+    except:
+        Logs.error("Failed to fix up documentation\n")
 
 def upload_docs(ctx):
     os.system("rsync -avz --delete -e ssh build/doc/html/* drobilla@drobilla.net:~/drobilla.net/docs/lilv")
