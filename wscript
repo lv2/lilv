@@ -8,7 +8,7 @@ import waflib.Options as Options
 import waflib.Logs as Logs
 
 # Version of this package (even if built as a child)
-LILV_VERSION       = '0.4.0'
+LILV_VERSION       = '0.4.2'
 LILV_MAJOR_VERSION = '0'
 
 # Library version (UNIX style major, minor, micro)
@@ -128,6 +128,8 @@ def configure(conf):
     conf.env['BUILD_TESTS']     = Options.options.build_tests
     conf.env['BUILD_UTILS']     = not Options.options.no_utils
     conf.env['BASH_COMPLETION'] = not Options.options.no_bash_completion
+
+    conf.env['LIB_LILV'] = ['lilv-%s' % LILV_MAJOR_VERSION]
 
     if conf.is_defined('HAVE_JACK') and not Options.options.no_jack:
         autowaf.check_header(conf, 'lv2/lv2plug.in/ns/ext/event/event.h',

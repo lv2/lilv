@@ -6,5 +6,5 @@ includedir=@includedir@
 Name: Lilv
 Version: @LILV_VERSION@
 Description: Simple C library for hosting LV2 plugins
-Libs: -L${libdir} -llilv-@LILV_MAJOR_VERSION@ -ldl
+Libs: -L${libdir} -l@LIB_LILV@ -ldl
 Cflags: -I${includedir}/lilv-@LILV_MAJOR_VERSION@
