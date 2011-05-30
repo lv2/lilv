@@ -61,7 +61,7 @@ def configure(conf):
         try:
             conf.load('swig python')
             conf.check_python_headers()
-            autowaf.define(conf, 'LILV_BINDINGS', 1);
+            autowaf.define(conf, 'LILV_PYTHON', 1);
         except:
             pass
 
