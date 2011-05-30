@@ -274,7 +274,6 @@ def build(bld):
                   target     = 'bindings/_lilv',
                   includes   = ['..'],
                   swig_flags = '-c++ -python -Wall -I.. -llilv -features autodoc=1',
-                  vnum       = LILV_LIB_VERSION,
                   use        = 'liblilv')
         autowaf.use_lib(bld, obj, 'LILV')
 
