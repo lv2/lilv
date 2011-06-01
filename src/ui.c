@@ -80,14 +80,13 @@ LILV_API
 unsigned
 lilv_ui_is_supported(const LilvUI*       ui,
                      LilvUISupportedFunc supported_func,
-                     const LilvNode*    container_type,
-                     const LilvNode**   ui_type)
+                     const LilvNode*     container_type,
+                     const LilvNode**    ui_type)
 {
-#ifdef HAVE_SUIL
 	const LilvNodes* classes = lilv_ui_get_classes(ui);
 	LILV_FOREACH(nodes, c, classes) {
 		const LilvNode* type = lilv_nodes_get(classes, c);
-		const unsigned   q    = supported_func(lilv_node_as_uri(container_type),
+		const unsigned  q    = supported_func(lilv_node_as_uri(container_type),
 		                                       lilv_node_as_uri(type));
 		if (q) {
 			if (ui_type) {
@@ -96,7 +95,7 @@ lilv_ui_is_supported(const LilvUI*       ui,
 			return q;
 		}
 	}
-#endif
+
 	return 0;
 }
 

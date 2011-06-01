@@ -1,3 +1,9 @@
+lilv (UNRELEASED) unstable; urgency=low
+
+  * Fix lilv_ui_is_supported when Lilv is built independently
+
+  -- David Robillard <d@drobilla.net>  UNRELEASED
+
 lilv (0.4.2) unstable; urgency=low
 
   * Fix compilation issues on some systems
