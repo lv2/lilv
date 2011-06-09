@@ -101,7 +101,7 @@ void
 lilv_world_free(LilvWorld* world)
 {
 	if (!world) {
-		return NULL;
+		return;
 	}
 
 	lilv_plugin_class_free(world->lv2_plugin_class);
