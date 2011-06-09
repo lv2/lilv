@@ -30,9 +30,11 @@ lilv_scale_point_new(LilvNode* value, LilvNode* label)
 void
 lilv_scale_point_free(LilvScalePoint* point)
 {
-	lilv_node_free(point->value);
-	lilv_node_free(point->label);
-	free(point);
+	if (point) {
+		lilv_node_free(point->value);
+		lilv_node_free(point->label);
+		free(point);
+	}
 }
 
 LILV_API

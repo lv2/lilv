@@ -145,14 +145,15 @@ LilvNode*
 lilv_new_bool(LilvWorld* world, bool val);
 
 /**
-   Free an LilvNode.
+   Free a LilvNode.
+   It is safe to call this function on NULL.
 */
 LILV_API
 void
 lilv_node_free(LilvNode* val);
 
 /**
-   Duplicate an LilvNode.
+   Duplicate a LilvNode.
 */
 LILV_API
 LilvNode*
@@ -538,6 +539,7 @@ lilv_world_set_option(LilvWorld*      world,
 
 /**
    Destroy the world, mwahaha.
+   It is safe to call this function on NULL.
    Note that destroying @a world will destroy all the objects it contains
    (e.g. instances of LilvPlugin).  Do not destroy the world until you are
    finished with all objects that came from it.
@@ -722,7 +724,7 @@ lilv_plugin_get_class(const LilvPlugin* plugin);
    <code>&lt;plugin-uri&gt; predicate ?object</code>
 
    May return NULL if the property was not found, or if object(s) is not
-   sensibly represented as an LilvNodes (e.g. blank nodes).
+   sensibly represented as a LilvNodes (e.g. blank nodes).
    Return value must be freed by caller with lilv_nodes_free.
 */
 LILV_API
@@ -974,7 +976,7 @@ lilv_port_get_classes(const LilvPlugin* plugin,
 /**
    Determine if a port is of a given class (input, output, audio, etc).
    For convenience/performance/extensibility reasons, hosts are expected to
-   create an LilvNode for each port class they "care about".  Well-known type
+   create a LilvNode for each port class they "care about".  Well-known type
    URI strings are defined (e.g. LILV_PORT_CLASS_INPUT) for convenience, but
    this function is designed so that Lilv is usable with any port types
    without requiring explicit support in Lilv.
@@ -1118,6 +1120,7 @@ lilv_plugin_instantiate(const LilvPlugin*        plugin,
 
 /**
    Free a plugin instance.
+   It is safe to call this function on NULL.
    @a instance is invalid after this call.
 */
 LILV_API

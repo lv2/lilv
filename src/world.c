@@ -100,6 +100,10 @@ LILV_API
 void
 lilv_world_free(LilvWorld* world)
 {
+	if (!world) {
+		return NULL;
+	}
+
 	lilv_plugin_class_free(world->lv2_plugin_class);
 	world->lv2_plugin_class = NULL;
 
