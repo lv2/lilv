@@ -123,17 +123,11 @@ lilv_plugin_load(LilvPlugin* p)
 
 	// Parse all the plugin's data files into RDF model
 	LILV_FOREACH(nodes, i, p->data_uris) {
-		const LilvNode* data_uri_val = lilv_nodes_get(p->data_uris, i);
-		const char*     data_uri_str = lilv_node_as_uri(data_uri_val);
-		if (strncmp((const char*)data_uri_str,
-		            (const char*)bundle_uri_snode->buf,
-		            bundle_uri_snode->n_bytes)) {
-			LILV_WARNF("Ignored data file <%s> not in bundle <%s>\n",
-			           (const char*)data_uri_str,
-			           (const char*)bundle_uri_snode->buf);
-			continue;
-		}
+		const LilvNode* data_uri_val  = lilv_nodes_get(p->data_uris, i);
+		const SordNode* data_uri_node = data_uri_val->val.uri_val;
+		const char*     data_uri_str  = lilv_node_as_uri(data_uri_val);
 
+		serd_env_set_base_uri(env, sord_node_to_serd_node(data_uri_node));
 		serd_reader_add_blank_prefix(reader,
 		                             lilv_world_blank_node_prefix(p->world));
 		serd_reader_read_file(reader, (const uint8_t*)data_uri_str);
