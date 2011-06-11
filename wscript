@@ -31,11 +31,6 @@ def options(opt):
     opt.load('python')
     opt.add_option('--no-utils', action='store_true', default=False, dest='no_utils',
                    help="Do not build command line utilities")
-    opt.add_option('--no-jack', action='store_true', default=False, dest='no_jack',
-                   help="Do not build JACK clients")
-    opt.add_option('--no-jack-session', action='store_true', default=False,
-                   dest='no_jack_session',
-                   help="Do not build JACK session support")
     opt.add_option('--bindings', action='store_true', default=False, dest='bindings',
                    help="Build python bindings")
     opt.add_option('--dyn-manifest', action='store_true', default=False,
@@ -72,10 +67,6 @@ def configure(conf):
                       atleast_version='2.0.0', mandatory=False)
     autowaf.check_pkg(conf, 'sord-0', uselib_store='SORD',
                       atleast_version='0.4.0', mandatory=True)
-    autowaf.check_pkg(conf, 'jack', uselib_store='JACK',
-                      atleast_version='0.107.0', mandatory=False)
-    autowaf.check_pkg(conf, 'jack', uselib_store='NEW_JACK',
-                      atleast_version='0.120.0', mandatory=False)
 
     conf.check(function_name='wordexp',
                header_name='wordexp.h',
@@ -83,10 +74,6 @@ def configure(conf):
                mandatory=False)
 
     autowaf.check_header(conf, 'lv2/lv2plug.in/ns/lv2core/lv2.h')
-
-    if not Options.options.no_jack_session:
-        if conf.is_defined('HAVE_NEW_JACK') and conf.is_defined('HAVE_GTHREAD'):
-            autowaf.define(conf, 'LILV_JACK_SESSION', 1)
 
     conf.env.append_value('CFLAGS', '-std=c99')
     autowaf.define(conf, 'LILV_VERSION', LILV_VERSION)
@@ -131,28 +118,12 @@ def configure(conf):
 
     conf.env['LIB_LILV'] = ['lilv-%s' % LILV_MAJOR_VERSION]
 
-    if conf.is_defined('HAVE_JACK') and not Options.options.no_jack:
-        autowaf.check_header(conf, 'lv2/lv2plug.in/ns/ext/event/event.h',
-                             'HAVE_LV2_EVENT', mandatory=False)
-        autowaf.check_header(conf, 'lv2/lv2plug.in/ns/ext/event/event-helpers.h',
-                             'HAVE_LV2_EVENT_HELPERS', mandatory=False)
-        autowaf.check_header(conf, 'lv2/lv2plug.in/ns/ext/uri-map/uri-map.h',
-                             'HAVE_LV2_URI_MAP', mandatory=False)
-        if (conf.is_defined('HAVE_LV2_EVENT')
-            and conf.is_defined('HAVE_LV2_EVENT_HELPERS')
-            and conf.is_defined('HAVE_LV2_URI_MAP')):
-            autowaf.define(conf, 'LILV_USE_JACK', 1)
-
     conf.write_config_header('lilv-config.h', remove=False)
 
     autowaf.display_msg(conf, "Default LV2_PATH",
                         conf.env['LILV_DEFAULT_LV2_PATH'])
     autowaf.display_msg(conf, "Utilities",
                         bool(conf.env['BUILD_UTILS']))
-    autowaf.display_msg(conf, "Jack clients",
-                        bool(conf.is_defined('LILV_USE_JACK')))
-    autowaf.display_msg(conf, "Jack session support",
-                        bool(conf.env['LILV_JACK_SESSION']))
     autowaf.display_msg(conf, "Unit tests",
                         bool(conf.env['BUILD_TESTS']))
     autowaf.display_msg(conf, "Dynamic manifest support",
@@ -243,18 +214,6 @@ def build(bld):
                       use          = 'liblilv',
                       target       = i,
                       install_path = '${BINDIR}')
-
-    # JACK Host
-    if bld.is_defined('LILV_USE_JACK'):
-        obj = bld(features     = 'c cprogram',
-                  source       = 'utils/lv2jack.c',
-                  includes     = ['.', './src', './utils'],
-                  uselib       = 'JACK',
-                  use          = 'liblilv',
-                  target       = 'utils/lv2jack',
-                  install_path = '${BINDIR}')
-        if bld.is_defined('LILV_JACK_SESSION'):
-            autowaf.use_lib(bld, obj, 'GLIB GTHREAD')
 
     # Documentation
     autowaf.build_dox(bld, 'LILV', LILV_VERSION, top, out)
