@@ -1,5 +1,7 @@
 lilv (UNRELEASED) unstable; urgency=low
 
+  * Remove lv2jack (replaced by jalv)
+  * Fix parsing extra plugin data files in other bundles
   * Fix lilv_ui_is_supported when Lilv is built independently
 
   -- David Robillard <d@drobilla.net>  UNRELEASED
