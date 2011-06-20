@@ -90,7 +90,7 @@ lilv_ui_is_supported(const LilvUI*       ui,
 		                                       lilv_node_as_uri(type));
 		if (q) {
 			if (ui_type) {
-				*ui_type = lilv_node_duplicate(type);
+				*ui_type = type;
 			}
 			return q;
 		}
