@@ -28,6 +28,7 @@ out = 'build'
 
 def options(opt):
     autowaf.set_options(opt)
+    opt.load('compiler_c')
     opt.load('python')
     opt.add_option('--no-utils', action='store_true', default=False, dest='no_utils',
                    help="Do not build command line utilities")
@@ -49,7 +50,7 @@ def configure(conf):
     conf.line_just = 63
     autowaf.configure(conf)
     autowaf.display_header('Lilv Configuration')
-    conf.load('compiler_cc')
+    conf.load('compiler_c')
     conf.load('python')
 
     if Options.options.bindings:
@@ -73,7 +74,7 @@ def configure(conf):
                define_name='HAVE_WORDEXP',
                mandatory=False)
 
-    autowaf.check_header(conf, 'lv2/lv2plug.in/ns/lv2core/lv2.h')
+    autowaf.check_header(conf, 'c', 'lv2/lv2plug.in/ns/lv2core/lv2.h')
 
     conf.env.append_value('CFLAGS', '-std=c99')
     autowaf.define(conf, 'LILV_VERSION', LILV_VERSION)
