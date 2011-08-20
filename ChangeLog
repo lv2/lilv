@@ -1,3 +1,9 @@
+lilv (UNRELEASED) unstable; urgency=low
+
+  * Add lv2core as a pkg-config dependency (for lv2.h header include)
+
+  -- David Robillard <d@drobilla.net>  (UNRELEASED)
+
 lilv (0.4.4) unstable; urgency=low
 
   * Fix building python bindings
