@@ -977,7 +977,7 @@ lilv_port_get_classes(const LilvPlugin* plugin,
    Determine if a port is of a given class (input, output, audio, etc).
    For convenience/performance/extensibility reasons, hosts are expected to
    create a LilvNode for each port class they "care about".  Well-known type
-   URI strings are defined (e.g. LILV_PORT_CLASS_INPUT) for convenience, but
+   URI strings are defined (e.g. LILV_URI_INPUT_PORT) for convenience, but
    this function is designed so that Lilv is usable with any port types
    without requiring explicit support in Lilv.
 */
