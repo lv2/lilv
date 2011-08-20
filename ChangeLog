@@ -1,6 +1,7 @@
 lilv (UNRELEASED) unstable; urgency=low
 
   * Add lv2core as a pkg-config dependency (for lv2.h header include)
+  * Obey prefix when installing bash completion script
 
   -- David Robillard <d@drobilla.net>  (UNRELEASED)
 

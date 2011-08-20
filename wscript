@@ -41,7 +41,7 @@ def options(opt):
                    help="Build unit tests")
     opt.add_option('--no-bash-completion', action='store_true', default=False,
                    dest='no_bash_completion',
-                   help="Install bash completion script in /etc/bash_completion.d")
+                   help="Don't install bash completion script in CONFIGDIR")
     opt.add_option('--default-lv2-path', type='string', default='',
                    dest='default_lv2_path',
                    help="Default LV2 path to use if $LV2_PATH is unset (globs and ~ supported)")
@@ -225,7 +225,7 @@ def build(bld):
     # Bash completion
     if bld.env['BASH_COMPLETION']:
         bld.install_as(
-            '/etc/bash_completion.d/lilv', 'utils/lilv.bash_completion')
+            '${SYSCONFDIR}/bash_completion.d/lilv', 'utils/lilv.bash_completion')
 
     if bld.is_defined('LILV_PYTHON'):
         # Python Wrapper
