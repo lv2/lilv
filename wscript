@@ -29,6 +29,7 @@ out = 'build'
 def options(opt):
     autowaf.set_options(opt)
     opt.load('compiler_c')
+    opt.load('compiler_cxx')
     opt.load('python')
     opt.add_option('--no-utils', action='store_true', default=False, dest='no_utils',
                    help="Do not build command line utilities")
@@ -51,6 +52,7 @@ def configure(conf):
     autowaf.configure(conf)
     autowaf.display_header('Lilv Configuration')
     conf.load('compiler_c')
+    conf.load('compiler_cxx')
     conf.load('python')
 
     if Options.options.bindings:
