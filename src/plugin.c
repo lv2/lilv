@@ -457,20 +457,35 @@ lilv_plugin_get_port_ranges_float(const LilvPlugin* p,
 	for (uint32_t i = 0; i < p->num_ports; ++i) {
 		lilv_port_get_range(p, p->ports[i], defptr, minptr, maxptr);
 
-		if (min_values)
-			min_values[i] = lilv_node_is_float(min)
-				? lilv_node_as_float(min)
-				: NAN;
+		if (min_values) {
+			if (lilv_node_is_float(min)) {
+				min_values[i] = lilv_node_as_float(min);
+			} else if (lilv_node_is_int(min)) {
+				min_values[i] = lilv_node_as_int(min);
+			} else {
+				min_values[i] = NAN;
+			}
+		}
 
-		if (max_values)
-			max_values[i] = lilv_node_is_float(max)
-				? lilv_node_as_float(max)
-				: NAN;
+		if (max_values) {
+			if (lilv_node_is_float(max)) {
+				max_values[i] = lilv_node_as_float(max);
+			} else if (lilv_node_is_int(max)) {
+				max_values[i] = lilv_node_as_int(max);
+			} else {
+				max_values[i] = NAN;
+			}
+		}
 
-		if (def_values)
-			def_values[i] = lilv_node_is_float(def)
-				? lilv_node_as_float(def)
-				: NAN;
+		if (def_values) {
+			if (lilv_node_is_float(def)) {
+				def_values[i] = lilv_node_as_float(def);
+			} else if (lilv_node_is_int(def)) {
+				def_values[i] = lilv_node_as_int(def);
+			} else {
+				def_values[i] = NAN;
+			}
+		}
 
 		lilv_node_free(def);
 		lilv_node_free(min);
