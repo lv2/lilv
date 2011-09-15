@@ -466,7 +466,7 @@ lilv_world_load_dyn_manifest(LilvWorld* world,
 		rewind(fd);
 
 		// Parse generated data file
-		SerdEnv*    env    = serd_env_new(bundle_node);
+		SerdEnv*    env    = serd_env_new(sord_node_to_serd_node(bundle_node));
 		SerdReader* reader = sord_new_reader(
 			world->model, env, SERD_TURTLE, bundle_node);
 		serd_reader_read_file_handle(reader, fd,
