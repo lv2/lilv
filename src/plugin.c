@@ -157,6 +157,8 @@ lilv_plugin_load(LilvPlugin* p)
 		GetDataFunc get_data_func = (GetDataFunc)lilv_dlfunc(
 			lib, "lv2_dyn_manifest_get_data");
 		if (get_data_func) {
+			serd_env_set_base_uri(
+				env, sord_node_to_serd_node(p->dynman_uri->val.uri_val));
 			FILE* fd = tmpfile();
 			get_data_func(handle, fd, lilv_node_as_string(p->plugin_uri));
 			rewind(fd);
