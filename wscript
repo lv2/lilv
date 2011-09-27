@@ -27,10 +27,10 @@ top = '.'
 out = 'build'
 
 def options(opt):
-    autowaf.set_options(opt)
     opt.load('compiler_c')
     opt.load('compiler_cxx')
     opt.load('python')
+    autowaf.set_options(opt)
     opt.add_option('--no-utils', action='store_true', default=False, dest='no_utils',
                    help="Do not build command line utilities")
     opt.add_option('--bindings', action='store_true', default=False, dest='bindings',
@@ -48,9 +48,6 @@ def options(opt):
                    help="Default LV2 path to use if $LV2_PATH is unset (globs and ~ supported)")
 
 def configure(conf):
-    conf.line_just = 63
-    autowaf.configure(conf)
-    autowaf.display_header('Lilv Configuration')
     conf.load('compiler_c')
     conf.load('compiler_cxx')
     conf.load('python')
@@ -62,6 +59,10 @@ def configure(conf):
             autowaf.define(conf, 'LILV_PYTHON', 1);
         except:
             pass
+
+    conf.line_just = 63
+    autowaf.configure(conf)
+    autowaf.display_header('Lilv Configuration')
 
     autowaf.check_pkg(conf, 'lv2core', uselib_store='LV2CORE', mandatory=True)
     autowaf.check_pkg(conf, 'glib-2.0', uselib_store='GLIB',
