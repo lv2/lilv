@@ -24,6 +24,7 @@
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
+#include <stdio.h>
 
 #include "lv2/lv2plug.in/ns/lv2core/lv2.h"
 
@@ -52,6 +53,7 @@ extern "C" {
 #define LILV_NS_FOAF "http://xmlns.com/foaf/0.1/"
 #define LILV_NS_LILV "http://drobilla.net/ns/lilv#"
 #define LILV_NS_LV2  "http://lv2plug.in/ns/lv2core#"
+#define LILV_NS_OWL  "http://www.w3.org/2002/07/owl#"
 #define LILV_NS_RDF  "http://www.w3.org/1999/02/22-rdf-syntax-ns#"
 #define LILV_NS_RDFS "http://www.w3.org/2000/01/rdf-schema#"
 #define LILV_NS_XSD  "http://www.w3.org/2001/XMLSchema#"
@@ -898,6 +900,27 @@ lilv_plugin_get_author_homepage(const LilvPlugin* plugin);
 LILV_API
 bool
 lilv_plugin_is_replaced(const LilvPlugin* plugin);
+
+/**
+   Write the Turtle description of @c plugin to @c file.
+
+   This function is particularly useful for porting plugins in conjunction with
+   an LV2 bridge such as NASPRO.
+*/
+LILV_API
+void
+lilv_plugin_write_description(LilvWorld*        world,
+                              const LilvPlugin* plugin,
+                              const LilvNode*   base_uri,
+                              FILE*             plugin_file);
+
+LILV_API
+void
+lilv_plugin_write_manifest_entry(LilvWorld*        world,
+                                 const LilvPlugin* plugin,
+                                 const LilvNode*   base_uri,
+                                 FILE*             manifest_file,
+                                 const char*       plugin_file_path);
 
 /**
    @}

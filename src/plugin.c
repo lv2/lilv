@@ -18,6 +18,7 @@
 
 #include <assert.h>
 #include <math.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -792,4 +793,122 @@ lilv_plugin_get_uis(const LilvPlugin* p)
 		lilv_uis_free(result);
 		return NULL;
 	}
+}
+
+static size_t
+file_sink(const void* buf, size_t len, void* stream)
+{
+	FILE* file = (FILE*)stream;
+	return fwrite(buf, 1, len, file);
+}
+
+static SerdEnv*
+new_lv2_env(const SerdNode* base)
+{
+	SerdEnv* env = serd_env_new(base);
+
+#define USTR(s) ((const uint8_t*)s)
+	serd_env_set_prefix_from_strings(env, USTR("doap"), USTR(LILV_NS_DOAP));
+	serd_env_set_prefix_from_strings(env, USTR("foaf"), USTR(LILV_NS_FOAF));
+	serd_env_set_prefix_from_strings(env, USTR("lv2"),  USTR(LILV_NS_LV2));
+	serd_env_set_prefix_from_strings(env, USTR("owl"),  USTR(LILV_NS_OWL));
+	serd_env_set_prefix_from_strings(env, USTR("rdf"),  USTR(LILV_NS_RDF));
+	serd_env_set_prefix_from_strings(env, USTR("rdfs"), USTR(LILV_NS_RDFS));
+	serd_env_set_prefix_from_strings(env, USTR("xsd"),  USTR(LILV_NS_XSD));
+
+	return env;
+}
+
+static void
+maybe_write_prefixes(SerdWriter* writer, SerdEnv* env, FILE* file)
+{
+	fseek(file, 0, SEEK_END);
+	if (ftell(file) == 0) {
+		serd_env_foreach(
+			env, (SerdPrefixSink)serd_writer_set_prefix, writer);
+	} else {
+		fprintf(file, "\n");
+	}
+}
+
+LILV_API
+void
+lilv_plugin_write_description(LilvWorld*        world,
+                              const LilvPlugin* plugin,
+                              const LilvNode*   base_uri,
+                              FILE*             plugin_file)
+{
+	const LilvNode* subject   = lilv_plugin_get_uri(plugin);
+	const uint32_t  num_ports = lilv_plugin_get_num_ports(plugin);
+	const SerdNode* base      = sord_node_to_serd_node(base_uri->val.uri_val);
+	SerdEnv*        env       = new_lv2_env(base);
+	
+	SerdWriter* writer = serd_writer_new(
+		SERD_TURTLE,
+		SERD_STYLE_ABBREVIATED|SERD_STYLE_CURIED,
+		env,
+		NULL,
+		file_sink,
+		plugin_file);
+
+	// Write prefixes if this is a new file
+	maybe_write_prefixes(writer, env, plugin_file);
+
+	// Write plugin description
+	SordIter* iter = lilv_world_query_internal(
+		world, subject->val.uri_val, NULL, NULL);
+	sord_write_iter(iter, writer);
+
+	// Write port descriptions
+	for (uint32_t i = 0; i < num_ports; ++i) {
+		const LilvPort* port = plugin->ports[i];
+		SordIter* iter = lilv_world_query_internal(
+			world, port->node, NULL, NULL);
+		sord_write_iter(iter, writer);
+	}
+		
+	serd_writer_free(writer);
+	serd_env_free(env);
+}
+
+LILV_API
+void
+lilv_plugin_write_manifest_entry(LilvWorld*        world,
+                                 const LilvPlugin* plugin,
+                                 const LilvNode*   base_uri,
+                                 FILE*             manifest_file,
+                                 const char*       plugin_file_path)
+{
+	const LilvNode* subject = lilv_plugin_get_uri(plugin);
+	const SerdNode* base    = sord_node_to_serd_node(base_uri->val.uri_val);
+	SerdEnv*        env     = new_lv2_env(base);
+
+	SerdWriter* writer = serd_writer_new(
+		SERD_TURTLE,
+		SERD_STYLE_ABBREVIATED|SERD_STYLE_CURIED,
+		env,
+		NULL,
+		file_sink,
+		manifest_file);
+
+	// Write prefixes if this is a new file
+	maybe_write_prefixes(writer, env, manifest_file);
+
+	// Write manifest entry
+	serd_writer_write_statement(
+		writer, 0, NULL,
+		sord_node_to_serd_node(subject->val.uri_val),
+		sord_node_to_serd_node(plugin->world->rdf_a_node),
+		sord_node_to_serd_node(plugin->world->lv2_plugin_node), 0, 0);
+
+	const SerdNode file_node = serd_node_from_string(
+		SERD_URI, (const uint8_t*)plugin_file_path);
+	serd_writer_write_statement(
+		writer, 0, NULL,
+		sord_node_to_serd_node(subject->val.uri_val),
+		sord_node_to_serd_node(plugin->world->rdfs_seealso_node),
+		&file_node, 0, 0);
+
+	serd_writer_free(writer);
+	serd_env_free(env);
 }

@@ -312,15 +312,50 @@ print_version(void)
 void
 print_usage(void)
 {
-	printf("Usage: lv2info PLUGIN_URI\n");
-	printf("Show information about an installed LV2 plugin.\n");
+	printf(
+		"Usage: lv2info [OPTIONS] PLUGIN_URI\n"
+		"Show information about an installed LV2 plugin.\n\n"
+		"  -p FILE      Write Turtle description of plugin to FILE\n"
+		"  -m FILE      Add record of plugin to manifest FILE\n"
+		"  --help       Display this help and exit\n"
+		"  --version    Output version information and exit\n\n"
+		"For -p and -m, Turtle files are appended to (not overwritten),\n"
+		"and @prefix directives are only written if the file was empty.\n"
+		"This allows several plugins to be added to a single file.\n");
 }
 
 int
 main(int argc, char** argv)
 {
+	if (argc == 1) {
+		print_usage();
+		return 1;
+	}
+
+	const char* plugin_file   = NULL;
+	const char* manifest_file = NULL;
+	const char* plugin_uri    = NULL;
+	for (int i = 1; i < argc; ++i) {
+		if (!strcmp(argv[i], "--version")) {
+			print_version();
+			return 0;
+		} else if (!strcmp(argv[i], "--help")) {
+			print_usage();
+			return 0;
+		} else if (!strcmp(argv[i], "-p")) {
+			plugin_file = argv[++i];
+		} else if (!strcmp(argv[i], "-m")) {
+			manifest_file = argv[++i];
+		} else if (argv[i][0] == '-') {
+			print_usage();
+			return 1;
+		} else if (i == argc - 1) {
+			plugin_uri = argv[i];
+		}
+	}
+
 	int ret = 0;
-	setlocale (LC_ALL, "");
+	setlocale(LC_ALL, "");
 
 	LilvWorld* world = lilv_world_new();
 	lilv_world_load_all(world);
@@ -338,32 +373,25 @@ main(int argc, char** argv)
 	title_pred          = lilv_new_uri(world, NS_DC "title");
 	supports_event_pred = lilv_new_uri(world, NS_EV "supportsEvent");
 
-	if (argc != 2) {
-		print_usage();
-		ret = 1;
-		goto done;
-	}
-
-	if (!strcmp(argv[1], "--version")) {
-		print_version();
-		ret = 0;
-		goto done;
-	} else if (!strcmp(argv[1], "--help")) {
-		print_usage();
-		ret = 0;
-		goto done;
-	} else if (argv[1][0] == '-') {
-		print_usage();
-		ret = 2;
-		goto done;
-	}
-
 	const LilvPlugins* plugins = lilv_world_get_all_plugins(world);
-	LilvNode*          uri     = lilv_new_uri(world, argv[1]);
+	LilvNode*          uri     = lilv_new_uri(world, plugin_uri);
+	const LilvPlugin*  p       = lilv_plugins_get_by_uri(plugins, uri);
 
-	const LilvPlugin* p = lilv_plugins_get_by_uri(plugins, uri);
+	if (p && plugin_file) {
+		LilvNode* base = lilv_new_uri(world, plugin_file);
 
-	if (p) {
+		FILE* plugin_fd = fopen(plugin_file, "a");
+		lilv_plugin_write_description(world, p, base, plugin_fd);
+		fclose(plugin_fd);
+
+		if (manifest_file) {
+			FILE* manifest_fd = fopen(manifest_file, "a");
+			lilv_plugin_write_manifest_entry(
+				world, p, base, manifest_fd, plugin_file);
+			fclose(manifest_fd);
+		}
+		lilv_node_free(base);
+	} else if (p) {
 		print_plugin(world, p);
 	} else {
 		fprintf(stderr, "Plugin not found.\n");
@@ -373,7 +401,6 @@ main(int argc, char** argv)
 
 	lilv_node_free(uri);
 
-done:
 	lilv_node_free(title_pred);
 	lilv_node_free(role_pred);
 	lilv_node_free(preset_pred);
