@@ -430,6 +430,7 @@ lilv_world_load_dyn_manifest(LilvWorld* world,
 		const char*     lib_path = lilv_uri_to_path((const char*)lib_uri);
 		if (!lib_path) {
 			LILV_ERROR("No dynamic manifest library path\n");
+			lilv_match_end(binaries);
 			continue;
 		}
 
@@ -437,6 +438,7 @@ lilv_world_load_dyn_manifest(LilvWorld* world,
 		void* lib = dlopen(lib_path, RTLD_LAZY);
 		if (!lib) {
 			LILV_ERRORF("Failed to open dynamic manifest library `%s'\n", lib_path);
+			lilv_match_end(binaries);
 			continue;
 		}
 
@@ -445,6 +447,7 @@ lilv_world_load_dyn_manifest(LilvWorld* world,
 		OpenFunc open_func = (OpenFunc)lilv_dlfunc(lib, "lv2_dyn_manifest_open");
 		if (!open_func || open_func(&handle, &dman_features)) {
 			LILV_ERRORF("Failed to find `lv2_dyn_manifest_open' in `%s'\n", lib_path);
+			lilv_match_end(binaries);
 			dlclose(lib);
 			continue;
 		}
@@ -456,6 +459,7 @@ lilv_world_load_dyn_manifest(LilvWorld* world,
 		if (!get_subjects_func) {
 			LILV_ERRORF("Failed to find `lv2_dyn_manifest_get_subjects' in `%s'\n",
 			            lib_path);
+			lilv_match_end(binaries);
 			dlclose(lib);
 			continue;
 		}
@@ -491,6 +495,7 @@ lilv_world_load_dyn_manifest(LilvWorld* world,
 		}
 		lilv_match_end(plug_results);
 
+		lilv_match_end(binaries);
 		dlclose(lib);
 	}
 	lilv_match_end(dmanifests);
