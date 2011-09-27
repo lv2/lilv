@@ -78,7 +78,7 @@ def configure(conf):
 
     autowaf.check_header(conf, 'c', 'lv2/lv2plug.in/ns/lv2core/lv2.h')
 
-    conf.env.append_value('CFLAGS', '-std=c99')
+    conf.env.append_unique('CFLAGS', '-std=c99')
     autowaf.define(conf, 'LILV_VERSION', LILV_VERSION)
     if Options.options.dyn_manifest:
         autowaf.define(conf, 'LILV_DYN_MANIFEST', 1)
