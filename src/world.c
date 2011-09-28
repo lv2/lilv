@@ -149,10 +149,10 @@ lilv_world_free(LilvWorld* world)
 		const LilvPlugin* p = lilv_plugins_get(world->plugins, i);
 		lilv_plugin_free((LilvPlugin*)p);
 	}
-	g_sequence_free(world->plugins);
+	zix_tree_free(world->plugins);
 	world->plugins = NULL;
 
-	g_sequence_free(world->plugin_classes);
+	zix_tree_free(world->plugin_classes);
 	world->plugin_classes = NULL;
 
 	sord_free(world->model);
@@ -278,34 +278,20 @@ lilv_header_compare_by_uri(const void* a, const void* b, void* user_data)
 	              lilv_node_as_uri(header_b->uri));
 }
 
-/** Get an element of a sequence of any object with an LilvHeader by URI. */
+/** Get an element of a collection of any object with an LilvHeader by URI. */
 struct LilvHeader*
-lilv_sequence_get_by_uri(const GSequence* const_seq,
-                         const LilvNode* uri)
+lilv_collection_get_by_uri(const ZixTree*  const_seq,
+                           const LilvNode* uri)
 {
-	GSequence*        seq = (GSequence*)const_seq;
+	ZixTree*          seq = (ZixTree*)const_seq;
 	struct LilvHeader key = { NULL, (LilvNode*)uri };
-	GSequenceIter*    i   = g_sequence_search(
-		seq, &key, lilv_header_compare_by_uri, NULL);
 
-	// i points to where plugin would be inserted (not necessarily a match)
-
-	if (!g_sequence_iter_is_end(i)) {
-		LilvPlugin* p = g_sequence_get(i);
-		if (lilv_node_equals(lilv_plugin_get_uri(p), uri)) {
-			return (struct LilvHeader*)p;
-		}
+	ZixTreeIter* i  = NULL;
+	ZixStatus    st = zix_tree_find(seq, &key, &i);
+	if (!st) {
+		return (struct LilvHeader*)zix_tree_get(i);
 	}
-
-	if (!g_sequence_iter_is_begin(i)) {
-		// Check if i is just past a match
-		i = g_sequence_iter_prev(i);
-		LilvPlugin* p = g_sequence_get(i);
-		if (lilv_node_equals(lilv_plugin_get_uri(p), uri)) {
-			return (struct LilvHeader*)p;
-		}
-	}
-
+	
 	return NULL;
 }
 
@@ -328,8 +314,9 @@ lilv_world_add_spec(LilvWorld*      world,
 		NULL);
 	FOREACH_MATCH(files) {
 		const SordNode* file_node = lilv_match_object(files);
-		lilv_array_append(spec->data_uris,
-		                  lilv_node_new_from_node(world, file_node));
+		zix_tree_insert(spec->data_uris,
+		                lilv_node_new_from_node(world, file_node),
+		                NULL);
 	}
 	lilv_match_end(files);
 
@@ -362,8 +349,9 @@ lilv_world_add_plugin(LilvWorld*      world,
 	LilvPlugin* plugin     = lilv_plugin_new(world, plugin_uri, bundle_uri);
 
 	// Add manifest as plugin data file (as if it were rdfs:seeAlso)
-	lilv_array_append(plugin->data_uris,
-	                  lilv_new_uri(world, (const char*)manifest_uri->buf));
+	zix_tree_insert(plugin->data_uris,
+	                lilv_new_uri(world, (const char*)manifest_uri->buf),
+	                NULL);
 
 	// Set dynamic manifest library URI, if applicable
 	if (dyn_manifest_lib) {
@@ -379,13 +367,14 @@ lilv_world_add_plugin(LilvWorld*      world,
 		NULL);
 	FOREACH_MATCH(files) {
 		const SordNode* file_node = lilv_match_object(files);
-		lilv_array_append(plugin->data_uris,
-		                  lilv_node_new_from_node(world, file_node));
+		zix_tree_insert(plugin->data_uris,
+		                lilv_node_new_from_node(world, file_node),
+		                NULL);
 	}
 	lilv_match_end(files);
 
 	// Add plugin to world plugin sequence
-	lilv_sequence_insert(world->plugins, plugin);
+	zix_tree_insert(world->plugins, plugin, NULL);
 }
 
 static void
@@ -760,7 +749,7 @@ lilv_world_load_plugin_classes(LilvWorld* world)
 			world, parent_node, class_node, (const char*)label);
 
 		if (pclass) {
-			lilv_sequence_insert(classes, pclass);
+			zix_tree_insert(classes, pclass, NULL);
 		}
 	}
 	lilv_match_end(classes);

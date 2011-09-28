@@ -232,7 +232,7 @@ lilv_port_get_scale_points(const LilvPlugin* p,
 			p->world->rdfs_label_node);
 
 		if (value && label) {
-			lilv_array_append(ret, lilv_scale_point_new(value, label));
+			zix_tree_insert(ret, lilv_scale_point_new(value, label), NULL);
 		}
 	}
 	lilv_match_end(points);

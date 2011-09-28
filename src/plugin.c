@@ -18,6 +18,7 @@
 
 #include <assert.h>
 #include <math.h>
+#include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -244,9 +245,9 @@ lilv_plugin_load_ports_if_necessary(const LilvPlugin* const_p)
 			FOREACH_MATCH(types) {
 				const SordNode* type = lilv_match_object(types);
 				if (sord_node_get_type(type) == SORD_URI) {
-					lilv_array_append(
+					zix_tree_insert(
 						this_port->classes,
-						lilv_node_new_from_node(p->world, type));
+						lilv_node_new_from_node(p->world, type), NULL);
 				} else {
 					LILV_WARNF("Plugin <%s> port type is not a URI\n",
 					           lilv_node_as_uri(p->plugin_uri));
@@ -619,11 +620,11 @@ lilv_plugin_get_supported_features(const LilvPlugin* p)
 	LilvNodes* result   = lilv_nodes_new();
 
 	LILV_FOREACH(nodes, i, optional)
-		lilv_array_append(
-			result, lilv_node_duplicate(lilv_nodes_get(optional, i)));
+		zix_tree_insert(
+			result, lilv_node_duplicate(lilv_nodes_get(optional, i)), NULL);
 	LILV_FOREACH(nodes, i, required)
-		lilv_array_append(
-			result, lilv_node_duplicate(lilv_nodes_get(required, i)));
+		zix_tree_insert(
+			result, lilv_node_duplicate(lilv_nodes_get(required, i)), NULL);
 
 	lilv_nodes_free(optional);
 	lilv_nodes_free(required);
@@ -780,7 +781,7 @@ lilv_plugin_get_uis(const LilvPlugin* p)
 			type,
 			binary);
 
-		lilv_sequence_insert(result, lilv_ui);
+		zix_tree_insert(result, lilv_ui, NULL);
 	}
 	lilv_match_end(uis);
 

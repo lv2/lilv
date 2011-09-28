@@ -65,10 +65,6 @@ def configure(conf):
     autowaf.display_header('Lilv Configuration')
 
     autowaf.check_pkg(conf, 'lv2core', uselib_store='LV2CORE', mandatory=True)
-    autowaf.check_pkg(conf, 'glib-2.0', uselib_store='GLIB',
-                      atleast_version='2.0.0', mandatory=True)
-    autowaf.check_pkg(conf, 'gthread-2.0', uselib_store='GTHREAD',
-                      atleast_version='2.0.0', mandatory=False)
     autowaf.check_pkg(conf, 'sord-0', uselib_store='SORD',
                       atleast_version='0.4.0', mandatory=True)
 
@@ -158,6 +154,7 @@ def build(bld):
         src/ui.c
         src/util.c
         src/world.c
+        src/zix/tree.c
     '''.split()
 
     linkflags = [ '-ldl' ]
@@ -179,7 +176,7 @@ def build(bld):
                                   '-DLILV_SHARED',
                                   '-DLILV_INTERNAL' ],
               linkflags       = linkflags)
-    autowaf.use_lib(bld, obj, 'SORD SERD LV2CORE GLIB')
+    autowaf.use_lib(bld, obj, 'SORD LV2CORE')
 
     if bld.env['BUILD_TESTS']:
         # Static library (for unit test code coverage)
@@ -191,14 +188,14 @@ def build(bld):
                   install_path = '',
                   cflags       = [ '-fprofile-arcs',  '-ftest-coverage', '-DLILV_INTERNAL' ],
                   linkflags    = linkflags)
-        autowaf.use_lib(bld, obj, 'SORD SERD LV2CORE GLIB')
+        autowaf.use_lib(bld, obj, 'SORD LV2CORE')
 
         # Unit test program
         obj = bld(features     = 'c cprogram',
                   source       = 'test/lilv_test.c',
                   includes     = ['.', './src'],
                   use          = 'liblilv_static',
-                  uselib       = 'SORD SERD LV2CORE',
+                  uselib       = 'SORD LV2CORE',
                   linkflags    = linkflags + ['-lgcov'],
                   target       = 'test/lilv_test',
                   install_path = '',

@@ -82,16 +82,16 @@ lilv_plugin_class_get_children(const LilvPluginClass* plugin_class)
 {
 	// Returned list doesn't own categories
 	LilvPluginClasses* all    = plugin_class->world->plugin_classes;
-	LilvPluginClasses* result = g_sequence_new(NULL);
+	LilvPluginClasses* result = zix_tree_new(false, lilv_ptr_cmp, NULL, NULL);
 
-	for (GSequenceIter* i = g_sequence_get_begin_iter(all);
-	     i != g_sequence_get_end_iter(all);
-	     i = g_sequence_iter_next(i)) {
-		const LilvPluginClass* c      = g_sequence_get(i);
-		const LilvNode*       parent = lilv_plugin_class_get_parent_uri(c);
+	for (ZixTreeIter* i = zix_tree_begin(all);
+	     i != zix_tree_end(all);
+	     i = zix_tree_iter_next(i)) {
+		const LilvPluginClass* c      = zix_tree_get(i);
+		const LilvNode*        parent = lilv_plugin_class_get_parent_uri(c);
 		if (parent && lilv_node_equals(lilv_plugin_class_get_uri(plugin_class),
 		                               parent))
-			lilv_sequence_insert(result, (LilvPluginClass*)c);
+			zix_tree_insert(result, (LilvPluginClass*)c, NULL);
 	}
 
 	return result;

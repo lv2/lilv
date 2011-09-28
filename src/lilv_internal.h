@@ -36,10 +36,10 @@ static inline char* dlerror(void) { return "Unknown error"; }
 #    include <dlfcn.h>
 #endif
 
-#include <glib.h>
-
 #include "serd/serd.h"
 #include "sord/sord.h"
+
+#include "zix/tree.h"
 
 #include "lilv-config.h"
 #include "lilv/lilv.h"
@@ -76,7 +76,7 @@ struct LilvSpecImpl {
 /**
    Header of an LilvPlugin, LilvPluginClass, or LilvUI.
    Any of these structs may be safely casted to LilvHeader, which is used to
-   implement sequences without code duplication (see lilv_sequence_get_by_uri).
+   implement collections using the same comparator.
 */
 struct LilvHeader {
 	LilvWorld* world;
@@ -244,19 +244,11 @@ const SordNode* lilv_node_as_node(const LilvNode* value);
 
 int lilv_header_compare_by_uri(const void* a, const void* b, void* user_data);
 
-static inline void
-lilv_sequence_insert(GSequence* seq, void* value)
-{
-	g_sequence_insert_sorted(seq, value, lilv_header_compare_by_uri, NULL);
-}
-
-static inline void
-lilv_array_append(GSequence* seq, void* value) {
-	g_sequence_append(seq, value);
-}
+int
+lilv_ptr_cmp(const void* a, const void* b, void* user_data);
 
 struct LilvHeader*
-lilv_sequence_get_by_uri(const GSequence* seq, const LilvNode* uri);
+lilv_collection_get_by_uri(const ZixTree* seq, const LilvNode* uri);
 
 LilvScalePoint* lilv_scale_point_new(LilvNode* value, LilvNode* label);
 void            lilv_scale_point_free(LilvScalePoint* point);

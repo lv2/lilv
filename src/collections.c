@@ -14,36 +14,40 @@
   OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 */
 
-#include <glib.h>
-
 #include "lilv_internal.h"
+
+int
+lilv_ptr_cmp(const void* a, const void* b, void* user_data)
+{
+	return (intptr_t)a - (intptr_t)b;
+}
 
 /* Generic collection functions */
 
 static inline LilvCollection*
-lilv_collection_new(GDestroyNotify destructor)
+lilv_collection_new(ZixComparator cmp, ZixDestroyFunc destructor)
 {
-	return g_sequence_new(destructor);
+	return zix_tree_new(false, cmp, NULL, destructor);
 }
 
 void
 lilv_collection_free(LilvCollection* coll)
 {
 	if (coll)
-		g_sequence_free((GSequence*)coll);
+		zix_tree_free((ZixTree*)coll);
 }
 
 unsigned
 lilv_collection_size(const LilvCollection* coll)
 {
-	return (coll ? g_sequence_get_length((GSequence*)coll) : 0);
+	return (coll ? zix_tree_size((ZixTree*)coll) : 0);
 }
 
 LilvIter*
 lilv_collection_begin(const LilvCollection* collection)
 {
 	if (collection) {
-		return g_sequence_get_begin_iter((LilvCollection*)collection);
+		return zix_tree_begin((LilvCollection*)collection);
 	}
 	return NULL;
 }
@@ -52,7 +56,7 @@ void*
 lilv_collection_get(const LilvCollection* collection,
                     const LilvIter*       i)
 {
-	return g_sequence_get((GSequenceIter*)i);
+	return zix_tree_get((ZixTreeIter*)i);
 }
 
 /* Constructors */
@@ -60,25 +64,29 @@ lilv_collection_get(const LilvCollection* collection,
 LilvScalePoints*
 lilv_scale_points_new(void)
 {
-	return lilv_collection_new((GDestroyNotify)lilv_scale_point_free);
+	return lilv_collection_new(lilv_ptr_cmp,
+	                           (ZixDestroyFunc)lilv_scale_point_free);
 }
 
 LilvNodes*
 lilv_nodes_new(void)
 {
-	return lilv_collection_new((GDestroyNotify)lilv_node_free);
+	return lilv_collection_new(lilv_ptr_cmp,
+	                           (ZixDestroyFunc)lilv_node_free);
 }
 
 LilvUIs*
 lilv_uis_new(void)
 {
-	return lilv_collection_new((GDestroyNotify)lilv_ui_free);
+	return lilv_collection_new(lilv_header_compare_by_uri,
+	                           (ZixDestroyFunc)lilv_ui_free);
 }
 
 LilvPluginClasses*
 lilv_plugin_classes_new(void)
 {
-	return lilv_collection_new((GDestroyNotify)lilv_plugin_class_free);
+	return lilv_collection_new(lilv_header_compare_by_uri,
+	                           (ZixDestroyFunc)lilv_plugin_class_free);
 }
 
 /* URI based accessors (for collections of things with URIs) */
@@ -88,14 +96,14 @@ const LilvPluginClass*
 lilv_plugin_classes_get_by_uri(const LilvPluginClasses* coll,
                                const LilvNode*          uri)
 {
-	return (LilvPluginClass*)lilv_sequence_get_by_uri(coll, uri);
+	return (LilvPluginClass*)lilv_collection_get_by_uri(coll, uri);
 }
 
 LILV_API
 const LilvUI*
 lilv_uis_get_by_uri(const LilvUIs* coll, const LilvNode* uri)
 {
-	return (LilvUI*)lilv_sequence_get_by_uri((LilvUIs*)coll, uri);
+	return (LilvUI*)lilv_collection_get_by_uri((LilvUIs*)coll, uri);
 }
 
 /* Plugins */
@@ -103,14 +111,14 @@ lilv_uis_get_by_uri(const LilvUIs* coll, const LilvNode* uri)
 LilvPlugins*
 lilv_plugins_new(void)
 {
-	return g_sequence_new(NULL);
+	return lilv_collection_new(lilv_header_compare_by_uri, NULL);
 }
 
 LILV_API
 const LilvPlugin*
 lilv_plugins_get_by_uri(const LilvPlugins* list, const LilvNode* uri)
 {
-	return (LilvPlugin*)lilv_sequence_get_by_uri((LilvPlugins*)list, uri);
+	return (LilvPlugin*)lilv_collection_get_by_uri((LilvPlugins*)list, uri);
 }
 
 /* Nodes */
@@ -131,13 +139,13 @@ lilv_nodes_contains(const LilvNodes* list, const LilvNode* value)
 LilvIter*
 lilv_iter_next(LilvIter* i)
 {
-	return g_sequence_iter_next((GSequenceIter*)i);
+	return zix_tree_iter_next((ZixTreeIter*)i);
 }
 
 bool
 lilv_iter_end(LilvIter* i)
 {
-	return !i || g_sequence_iter_is_end((GSequenceIter*)i);
+	return !i || zix_tree_iter_is_end((ZixTreeIter*)i);
 }
 
 #define LILV_COLLECTION_IMPL(prefix, CT, ET) \

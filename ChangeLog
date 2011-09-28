@@ -1,5 +1,6 @@
 lilv (UNRELEASED) unstable; urgency=low
 
+  * Remove glib dependency
   * Add lv2core as a pkg-config dependency (for lv2.h header include)
   * Obey prefix when installing bash completion script
   * Support integer minimum, maximum, and default port values in

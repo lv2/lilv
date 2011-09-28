@@ -45,7 +45,7 @@ lilv_ui_new(LilvWorld* world,
 	free(bundle);
 
 	ui->classes = lilv_nodes_new();
-	lilv_array_append(ui->classes, type_uri);
+	zix_tree_insert(ui->classes, type_uri, NULL);
 
 	return ui;
 }
