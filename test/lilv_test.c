@@ -469,6 +469,7 @@ test_plugin(void)
 			":foo 1.6180 ; "
 			":bar true ; "
 			":baz false ; "
+			":blank [ a <http://example.org/blank> ] ; "
 			"doap:maintainer [ foaf:name \"David Robillard\" ; "
 			"  foaf:homepage <http://drobilla.net> ; foaf:mbox <mailto:d@drobilla.net> ] ; "
 			"lv2:port [ "
@@ -595,6 +596,19 @@ test_plugin(void)
 	TEST_ASSERT(lilv_node_as_bool(lilv_nodes_get_first(bazs)) == false);
 	lilv_node_free(baz_p);
 	lilv_nodes_free(bazs);
+
+	LilvNode*  blank_p = lilv_new_uri(world, "http://example.org/blank");
+	LilvNodes* blanks  = lilv_plugin_get_value(plug, blank_p);
+	TEST_ASSERT(lilv_nodes_size(blanks) == 1);
+	LilvNode*  blank = lilv_nodes_get_first(blanks);
+	TEST_ASSERT(lilv_node_is_blank(blank));
+	const char* blank_str = lilv_node_as_blank(blank);
+	char*       blank_tok = lilv_node_get_turtle_token(blank);
+	TEST_ASSERT(!strncmp(blank_tok, "_:", 2));
+	TEST_ASSERT(!strcmp(blank_tok + 2, blank_str));
+	free(blank_tok);
+	lilv_node_free(blank_p);
+	lilv_nodes_free(blanks);
 
 	LilvNode* author_name = lilv_plugin_get_author_name(plug);
 	TEST_ASSERT(!strcmp(lilv_node_as_string(author_name), "David Robillard"));
@@ -783,6 +797,8 @@ test_port(void)
 	LilvNode* true_val  = lilv_new_bool(world, true);
 	LilvNode* false_val = lilv_new_bool(world, false);
 
+	TEST_ASSERT(!lilv_node_equals(true_val, false_val));
+
 	lilv_world_set_option(world, LILV_OPTION_FILTER_LANG, false_val);
 	names = lilv_port_get_value(plug, p, name_p);
 	TEST_ASSERT(lilv_nodes_size(names) == 4);
@@ -820,6 +836,13 @@ test_port(void)
 }
 
 /*****************************************************************************/
+
+static unsigned
+ui_supported(const char* container_type_uri,
+             const char* ui_type_uri)
+{
+	return !strcmp(container_type_uri, ui_type_uri);
+}
 
 int
 test_ui(void)
@@ -875,6 +898,7 @@ test_ui(void)
 
 	const LilvUI* ui0_2 = lilv_uis_get_by_uri(uis, ui_uri);
 	TEST_ASSERT(ui0 == ui0_2);
+	TEST_ASSERT(lilv_node_equals(lilv_ui_get_uri(ui0_2), ui_uri));
 
 	const LilvUI* ui2 = lilv_uis_get_by_uri(uis, ui2_uri);
 	TEST_ASSERT(ui2 != ui0);
@@ -893,6 +917,10 @@ test_ui(void)
 
 	TEST_ASSERT(lilv_node_equals(lilv_nodes_get_first(classes), ui_class_uri));
 	TEST_ASSERT(lilv_ui_is_a(ui0, ui_class_uri));
+
+	const LilvNode* ui_type = NULL;
+	TEST_ASSERT(lilv_ui_is_supported(ui0, ui_supported, ui_class_uri, &ui_type));
+	TEST_ASSERT(lilv_node_equals(ui_type, ui_class_uri));
 
 	const LilvNode* plug_bundle_uri = lilv_plugin_get_bundle_uri(plug);
 	const LilvNode* ui_bundle_uri   = lilv_ui_get_bundle_uri(ui0);
