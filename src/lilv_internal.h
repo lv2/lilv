@@ -203,9 +203,6 @@ LilvNode*   lilv_plugin_get_unique(const LilvPlugin* p,
                                    const SordNode*   subject,
                                    const SordNode*   predicate);
 
-LilvIter* lilv_iter_next(LilvIter* i);
-bool      lilv_iter_end(LilvIter* i);
-
 void      lilv_collection_free(LilvCollection* collection);
 unsigned  lilv_collection_size(const LilvCollection* collection);
 LilvIter* lilv_collection_begin(const LilvCollection* collection);

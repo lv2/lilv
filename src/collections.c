@@ -136,18 +136,6 @@ lilv_nodes_contains(const LilvNodes* list, const LilvNode* value)
 
 /* Iterator */
 
-LilvIter*
-lilv_iter_next(LilvIter* i)
-{
-	return zix_tree_iter_next((ZixTreeIter*)i);
-}
-
-bool
-lilv_iter_end(LilvIter* i)
-{
-	return !i || zix_tree_iter_is_end((ZixTreeIter*)i);
-}
-
 #define LILV_COLLECTION_IMPL(prefix, CT, ET) \
 LILV_API \
 unsigned \
@@ -170,13 +158,13 @@ prefix##_get(const CT* collection, LilvIter* i) { \
 LILV_API \
 LilvIter* \
 prefix##_next(const CT* collection, LilvIter* i) { \
-	return lilv_iter_next(i); \
+	return zix_tree_iter_next(i); \
 } \
 \
 LILV_API \
 bool \
 prefix##_is_end(const CT* collection, LilvIter* i) { \
-	return lilv_iter_end(i); \
+	return zix_tree_iter_is_end(i); \
 }
 
 LILV_COLLECTION_IMPL(lilv_plugin_classes, LilvPluginClasses, LilvPluginClass)
