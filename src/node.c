@@ -21,8 +21,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include <glib.h>
-
 #include "lilv_internal.h"
 
 static void

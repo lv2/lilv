@@ -135,14 +135,14 @@ lilv_world_free(LilvWorld* world)
 	lilv_node_free(world->lv2_optionalFeature_val);
 	lilv_node_free(world->lv2_requiredFeature_val);
 
-	for (GSList* l = world->specs; l; l = l->next) {
-		LilvSpec* spec = (LilvSpec*)l->data;
+	for (LilvSpec* spec = world->specs; spec;) {
+		LilvSpec* next = spec->next;
 		sord_node_free(world->world, spec->spec);
 		sord_node_free(world->world, spec->bundle);
 		lilv_nodes_free(spec->data_uris);
 		free(spec);
+		spec = next;
 	}
-	g_slist_free(world->specs);
 	world->specs = NULL;
 
 	LILV_FOREACH(plugins, i, world->plugins) {
@@ -333,8 +333,9 @@ lilv_world_add_spec(LilvWorld*      world,
 	}
 	lilv_match_end(files);
 
-	// Add specification to world specification sequence
-	world->specs = g_slist_prepend(world->specs, spec);
+	// Add specification to world specification list
+	spec->next   = world->specs;
+	world->specs = spec;
 }
 
 static void
@@ -681,8 +682,7 @@ lilv_world_load_path(LilvWorld*  world,
 static void
 lilv_world_load_specifications(LilvWorld* world)
 {
-	for (GSList* l = world->specs; l; l = l->next) {
-		LilvSpec* spec = (LilvSpec*)l->data;
+	for (LilvSpec* spec = world->specs; spec; spec = spec->next) {
 		LILV_FOREACH(nodes, f, spec->data_uris) {
 			LilvNode*      file     = lilv_collection_get(spec->data_uris, f);
 			const uint8_t* file_uri = (const uint8_t*)lilv_node_as_uri(file);

@@ -67,9 +67,10 @@ struct LilvPortImpl {
 
 
 struct LilvSpecImpl {
-	SordNode*  spec;
-	SordNode*  bundle;
-	LilvNodes* data_uris;
+	SordNode*            spec;
+	SordNode*            bundle;
+	LilvNodes*           data_uris;
+	struct LilvSpecImpl* next;
 };
 
 /**
@@ -115,7 +116,7 @@ struct LilvWorldImpl {
 	unsigned           n_read_files;
 	LilvPluginClass*   lv2_plugin_class;
 	LilvPluginClasses* plugin_classes;
-	GSList*            specs;
+	LilvSpec*          specs;
 	LilvPlugins*       plugins;
 	SordNode*          dc_replaces_node;
 	SordNode*          dyn_manifest_node;
