@@ -1012,7 +1012,7 @@ lilv_port_is_a(const LilvPlugin* plugin,
 
 /**
    Get the default, minimum, and maximum values of a port.
-   
+
    @a def, @a min, and @a max are outputs, pass pointers to uninitialized
    LilvNode* variables.  These will be set to point at new values (which must
    be freed by the caller using lilv_node_free), or NULL if the value does not

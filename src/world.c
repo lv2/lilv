@@ -291,7 +291,7 @@ lilv_collection_get_by_uri(const ZixTree*  const_seq,
 	if (!st) {
 		return (struct LilvHeader*)zix_tree_get(i);
 	}
-	
+
 	return NULL;
 }
 
@@ -679,7 +679,7 @@ lilv_world_load_specifications(LilvWorld* world)
 				sord_node_to_serd_node(file->val.uri_val));
 			SerdReader*    reader   = sord_new_reader(world->model, env,
 			                                          SERD_TURTLE, NULL);
-			serd_reader_add_blank_prefix(reader, 
+			serd_reader_add_blank_prefix(reader,
 			                             lilv_world_blank_node_prefix(world));
 			serd_reader_read_file(reader, file_uri);
 			serd_reader_free(reader);

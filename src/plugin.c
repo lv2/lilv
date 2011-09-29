@@ -843,7 +843,7 @@ lilv_plugin_write_description(LilvWorld*        world,
 	const uint32_t  num_ports = lilv_plugin_get_num_ports(plugin);
 	const SerdNode* base      = sord_node_to_serd_node(base_uri->val.uri_val);
 	SerdEnv*        env       = new_lv2_env(base);
-	
+
 	SerdWriter* writer = serd_writer_new(
 		SERD_TURTLE,
 		SERD_STYLE_ABBREVIATED|SERD_STYLE_CURIED,
@@ -867,7 +867,7 @@ lilv_plugin_write_description(LilvWorld*        world,
 			world, port->node, NULL, NULL);
 		sord_write_iter(iter, writer);
 	}
-		
+
 	serd_writer_free(writer);
 	serd_env_free(env);
 }
