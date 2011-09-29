@@ -127,7 +127,7 @@ struct Nodes {
 	LILV_WRAP_COLL(Nodes, Node, nodes);
 	LILV_WRAP1(bool, nodes, contains, const Node, node);
 };
-		
+
 struct Port {
 	inline Port(const LilvPlugin* p, const LilvPort* c_obj)
 		: parent(p), me(c_obj)

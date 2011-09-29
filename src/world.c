@@ -332,7 +332,7 @@ lilv_world_add_plugin(LilvWorld*      world,
                       const SordNode* dyn_manifest_lib,
                       const SordNode* bundle_node)
 {
-	LilvNode* plugin_uri  = lilv_node_new_from_node(world, plugin_node);
+	LilvNode* plugin_uri = lilv_node_new_from_node(world, plugin_node);
 
 	const LilvPlugin* last = lilv_plugins_get_by_uri(world->plugins, plugin_uri);
 	if (last) {
@@ -740,8 +740,8 @@ lilv_world_load_plugin_classes(LilvWorld* world)
 			continue;
 		}
 
-		const SordNode*       label_node = lilv_match_object(labels);
-		const uint8_t* label      = (const uint8_t*)sord_node_get_string(label_node);
+		const SordNode* label_node = lilv_match_object(labels);
+		const uint8_t*  label      = sord_node_get_string(label_node);
 		lilv_match_end(labels);
 
 		LilvPluginClasses* classes = world->plugin_classes;
