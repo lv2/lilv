@@ -1,4 +1,4 @@
-lilv (UNRELEASED) unstable; urgency=low
+lilv (0.5.0) unstable; urgency=low
 
   * Remove glib dependency
   * Add lv2core as a pkg-config dependency (for lv2.h header include)
@@ -7,7 +7,7 @@ lilv (UNRELEASED) unstable; urgency=low
     lilv_plugin_get_port_ranges_float
   * Add ability to build static library
 
-  -- David Robillard <d@drobilla.net>  (UNRELEASED)
+  -- David Robillard <d@drobilla.net>  Thu, 29 Sep 2011 00:00:00 -0400
 
 lilv (0.4.4) unstable; urgency=low
 
