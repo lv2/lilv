@@ -5,6 +5,7 @@ lilv (UNRELEASED) unstable; urgency=low
   * Obey prefix when installing bash completion script
   * Support integer minimum, maximum, and default port values in
     lilv_plugin_get_port_ranges_float
+  * Add ability to build static library
 
   -- David Robillard <d@drobilla.net>  (UNRELEASED)
 

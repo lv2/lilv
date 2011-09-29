@@ -46,6 +46,8 @@ def options(opt):
     opt.add_option('--default-lv2-path', type='string', default='',
                    dest='default_lv2_path',
                    help="Default LV2 path to use if $LV2_PATH is unset (globs and ~ supported)")
+    opt.add_option('--static', action='store_true', default=False, dest='static',
+                   help="Build static library")
 
 def configure(conf):
     conf.load('compiler_c')
@@ -114,6 +116,7 @@ def configure(conf):
 
     conf.env['BUILD_TESTS']     = Options.options.build_tests
     conf.env['BUILD_UTILS']     = not Options.options.no_utils
+    conf.env['BUILD_STATIC']    = Options.options.static
     conf.env['BASH_COMPLETION'] = not Options.options.no_bash_completion
 
     conf.env['LIB_LILV'] = ['lilv-%s' % LILV_MAJOR_VERSION]
@@ -163,7 +166,7 @@ def build(bld):
         linkflags = []
         libflags  = []
 
-    # Library
+    # Shared Library
     obj = bld(features        = 'c cshlib',
               export_includes = ['.'],
               source          = lib_source,
@@ -172,34 +175,48 @@ def build(bld):
               target          = 'lilv-%s' % LILV_MAJOR_VERSION,
               vnum            = LILV_LIB_VERSION,
               install_path    = '${LIBDIR}',
-              cflags          = libflags + [
-                                  '-DLILV_SHARED',
-                                  '-DLILV_INTERNAL' ],
+              cflags          = libflags + [ '-DLILV_SHARED',
+                                             '-DLILV_INTERNAL' ],
               linkflags       = linkflags)
     autowaf.use_lib(bld, obj, 'SORD LV2CORE')
 
+    # Static library
+    if bld.env['BUILD_STATIC']:
+        obj = bld(features        = 'c cstlib',
+                  export_includes = ['.'],
+                  source          = lib_source,
+                  includes        = ['.', './src'],
+                  name            = 'liblilv_static',
+                  target          = 'lilv-%s' % LILV_MAJOR_VERSION,
+                  vnum            = LILV_LIB_VERSION,
+                  install_path    = '${LIBDIR}',
+                  cflags          = [ '-DLILV_INTERNAL' ])
+        autowaf.use_lib(bld, obj, 'SORD LV2CORE')
+
     if bld.env['BUILD_TESTS']:
-        # Static library (for unit test code coverage)
+        # Static profiled library (for unit test code coverage)
         obj = bld(features     = 'c cstlib',
                   source       = lib_source,
                   includes     = ['.', './src'],
-                  name         = 'liblilv_static',
-                  target       = 'lilv_static',
+                  name         = 'liblilv_profiled',
+                  target       = 'lilv_profiled',
                   install_path = '',
-                  cflags       = [ '-fprofile-arcs',  '-ftest-coverage', '-DLILV_INTERNAL' ],
-                  linkflags    = linkflags)
+                  cflags       = [ '-fprofile-arcs', '-ftest-coverage',
+                                   '-DLILV_INTERNAL' ],
+                  linkflags    = linkflags + ['-lgcov'])
         autowaf.use_lib(bld, obj, 'SORD LV2CORE')
 
         # Unit test program
         obj = bld(features     = 'c cprogram',
                   source       = 'test/lilv_test.c',
                   includes     = ['.', './src'],
-                  use          = 'liblilv_static',
+                  use          = 'liblilv_profiled',
                   uselib       = 'SORD LV2CORE',
                   linkflags    = linkflags + ['-lgcov'],
                   target       = 'test/lilv_test',
                   install_path = '',
                   cflags       = [ '-fprofile-arcs',  '-ftest-coverage' ])
+        autowaf.use_lib(bld, obj, 'SORD LV2CORE')
 
     # Utilities
     if bld.env['BUILD_UTILS']:
