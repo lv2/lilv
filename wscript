@@ -66,7 +66,7 @@ def configure(conf):
 
     autowaf.check_pkg(conf, 'lv2core', uselib_store='LV2CORE', mandatory=True)
     autowaf.check_pkg(conf, 'sord-0', uselib_store='SORD',
-                      atleast_version='0.4.0', mandatory=True)
+                      atleast_version='0.5.0', mandatory=True)
 
     conf.check(function_name='wordexp',
                header_name='wordexp.h',
