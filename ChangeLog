@@ -1,3 +1,9 @@
+lilv (UNRELEASED) unstable; urgency=low
+
+  * Use path variables in pkgconfig files
+
+ -- David Robillard <d@drobilla.net>  (UNRELEASED)
+
 lilv (0.5.0) unstable; urgency=low
 
   * Remove glib dependency
