@@ -47,7 +47,7 @@ lilv_world_new(void)
 	world->plugins        = lilv_plugins_new();
 
 #define NS_DYNMAN "http://lv2plug.in/ns/ext/dynmanifest#"
-#define NS_DC     "http://dublincore.org/documents/dcmi-namespace/"
+#define NS_DC     "http://purl.org/dc/elements/1.1/"
 
 #define NEW_URI(uri)     sord_new_uri(world->world, (const uint8_t*)uri)
 #define NEW_URI_VAL(uri) lilv_new_uri(world, (const char*)(uri));

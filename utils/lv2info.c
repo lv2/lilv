@@ -29,7 +29,7 @@ LilvNode* control_class       = NULL;
 LilvNode* in_group_pred       = NULL;
 LilvNode* role_pred           = NULL;
 LilvNode* preset_pred         = NULL;
-LilvNode* title_pred          = NULL;
+LilvNode* label_pred          = NULL;
 LilvNode* supports_event_pred = NULL;
 
 void
@@ -360,7 +360,7 @@ main(int argc, char** argv)
 	LilvWorld* world = lilv_world_new();
 	lilv_world_load_all(world);
 
-#define NS_DC   "http://dublincore.org/documents/dcmi-namespace/"
+#define NS_DC   "http://purl.org/dc/elements/1.1/"
 #define NS_PG   "http://lv2plug.in/ns/ext/port-groups#"
 #define NS_PSET "http://lv2plug.in/ns/ext/presets#"
 #define NS_EV   "http://lv2plug.in/ns/ext/event#"
@@ -370,7 +370,7 @@ main(int argc, char** argv)
 	in_group_pred       = lilv_new_uri(world, NS_PG "inGroup");
 	preset_pred         = lilv_new_uri(world, NS_PSET "hasPreset");
 	role_pred           = lilv_new_uri(world, NS_PG "role");
-	title_pred          = lilv_new_uri(world, NS_DC "title");
+	label_pred          = lilv_new_uri(world, LILB_NS_RDFS "label");
 	supports_event_pred = lilv_new_uri(world, NS_EV "supportsEvent");
 
 	const LilvPlugins* plugins = lilv_world_get_all_plugins(world);
@@ -401,7 +401,7 @@ main(int argc, char** argv)
 
 	lilv_node_free(uri);
 
-	lilv_node_free(title_pred);
+	lilv_node_free(label_pred);
 	lilv_node_free(role_pred);
 	lilv_node_free(preset_pred);
 	lilv_node_free(in_group_pred);
