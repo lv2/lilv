@@ -3,6 +3,8 @@ lilv (UNRELEASED) unstable; urgency=low
   * Use path variables in pkgconfig files
   * Install man page to DATADIR (e.g. PREFIX/share/man, not PREFIX/man)
   * Make Lilv::uri_to_path static inline (fix linking errors)
+  * Use correct URI for dcterms:replaces (for hiding old plugins):
+    "http://purl.org/dc/terms/replaces"
 
  -- David Robillard <d@drobilla.net>  (UNRELEASED)
 

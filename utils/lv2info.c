@@ -360,7 +360,6 @@ main(int argc, char** argv)
 	LilvWorld* world = lilv_world_new();
 	lilv_world_load_all(world);
 
-#define NS_DC   "http://purl.org/dc/elements/1.1/"
 #define NS_PG   "http://lv2plug.in/ns/ext/port-groups#"
 #define NS_PSET "http://lv2plug.in/ns/ext/presets#"
 #define NS_EV   "http://lv2plug.in/ns/ext/event#"

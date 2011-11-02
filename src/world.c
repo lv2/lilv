@@ -46,13 +46,13 @@ lilv_world_new(void)
 	world->plugin_classes = lilv_plugin_classes_new();
 	world->plugins        = lilv_plugins_new();
 
-#define NS_DYNMAN "http://lv2plug.in/ns/ext/dynmanifest#"
-#define NS_DC     "http://purl.org/dc/elements/1.1/"
+#define NS_DYNMAN  "http://lv2plug.in/ns/ext/dynmanifest#"
+#define NS_DCTERMS "http://purl.org/dc/terms/"
 
 #define NEW_URI(uri)     sord_new_uri(world->world, (const uint8_t*)uri)
 #define NEW_URI_VAL(uri) lilv_new_uri(world, (const char*)(uri));
 
-	world->dc_replaces_node         = NEW_URI(NS_DC        "replaces");
+	world->dc_replaces_node         = NEW_URI(NS_DCTERMS   "replaces");
 	world->dyn_manifest_node        = NEW_URI(NS_DYNMAN    "DynManifest");
 	world->lv2_binary_node          = NEW_URI(LILV_NS_LV2  "binary");
 	world->lv2_default_node         = NEW_URI(LILV_NS_LV2  "default");
