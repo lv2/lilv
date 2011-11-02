@@ -274,7 +274,7 @@ print_plugin(LilvWorld*        world,
 	LILV_FOREACH(nodes, i, presets) {
 		LilvNodes* titles = lilv_world_find_nodes(world,
 		                                          lilv_nodes_get(presets, i),
-		                                          title_pred,
+		                                          label_pred,
 		                                          NULL);
 		if (titles) {
 			const LilvNode* title = lilv_nodes_get(titles, lilv_nodes_begin(titles));
@@ -369,7 +369,7 @@ main(int argc, char** argv)
 	in_group_pred       = lilv_new_uri(world, NS_PG "inGroup");
 	preset_pred         = lilv_new_uri(world, NS_PSET "hasPreset");
 	role_pred           = lilv_new_uri(world, NS_PG "role");
-	label_pred          = lilv_new_uri(world, LILB_NS_RDFS "label");
+	label_pred          = lilv_new_uri(world, LILV_NS_RDFS "label");
 	supports_event_pred = lilv_new_uri(world, NS_EV "supportsEvent");
 
 	const LilvPlugins* plugins = lilv_world_get_all_plugins(world);
