@@ -5,6 +5,7 @@ lilv (UNRELEASED) unstable; urgency=low
   * Make Lilv::uri_to_path static inline (fix linking errors)
   * Use correct URI for dcterms:replaces (for hiding old plugins):
     "http://purl.org/dc/terms/replaces"
+  * Fix compilation on BSD
 
  -- David Robillard <d@drobilla.net>  (UNRELEASED)
 
