@@ -163,6 +163,8 @@ def build(bld):
     if sys.platform == 'win32':
         linkflags = []
         libflags  = []
+    elif sys.platform.find('bsd') > 0:
+        linkflags = []
 
     # Shared Library
     obj = bld(features        = 'c cshlib',
