@@ -14,7 +14,7 @@
   OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 */
 
-#define _XOPEN_SOURCE 500
+#define _POSIX_SOURCE 1
 
 #include <assert.h>
 #include <errno.h>
