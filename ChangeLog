@@ -1,5 +1,6 @@
 lilv (UNRELEASED) unstable; urgency=low
 
+  * Add lilv_plugin_get_extension_data
   * Use path variables in pkgconfig files
   * Install man page to DATADIR (e.g. PREFIX/share/man, not PREFIX/man)
   * Make Lilv::uri_to_path static inline (fix linking errors)

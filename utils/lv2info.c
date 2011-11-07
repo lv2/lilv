@@ -266,6 +266,22 @@ print_plugin(LilvWorld*        world,
 		printf("\n");
 	lilv_nodes_free(features);
 
+	/* Extension Data */
+	LilvNodes* data = lilv_plugin_get_extension_data(p);
+	if (data)
+		printf("\tExtension Data:    ");
+	first = true;
+	LILV_FOREACH(nodes, i, data) {
+		if (!first) {
+			printf("\n\t                   ");
+		}
+		printf("%s", lilv_node_as_uri(lilv_nodes_get(data, i)));
+		first = false;
+	}
+	if (features)
+		printf("\n");
+	lilv_nodes_free(data);
+		
 	/* Presets */
 
 	LilvNodes* presets = lilv_plugin_get_value(p, preset_pred);

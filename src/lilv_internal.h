@@ -142,6 +142,7 @@ struct LilvWorldImpl {
 	SordNode*          xsd_double_node;
 	SordNode*          xsd_integer_node;
 	LilvNode*          doap_name_val;
+	LilvNode*          lv2_extensionData_val;
 	LilvNode*          lv2_name_val;
 	LilvNode*          lv2_optionalFeature_val;
 	LilvNode*          lv2_requiredFeature_val;

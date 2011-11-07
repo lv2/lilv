@@ -645,6 +645,13 @@ lilv_plugin_get_required_features(const LilvPlugin* p)
 }
 
 LILV_API
+LilvNodes*
+lilv_plugin_get_extension_data(const LilvPlugin* p)
+{
+	return lilv_plugin_get_value(p, p->world->lv2_extensionData_val);
+}
+
+LILV_API
 const LilvPort*
 lilv_plugin_get_port_by_index(const LilvPlugin* p,
                               uint32_t          index)

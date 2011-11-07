@@ -77,6 +77,7 @@ lilv_world_new(void)
 	world->xsd_integer_node         = NEW_URI(LILV_NS_XSD  "integer");
 
 	world->doap_name_val           = NEW_URI_VAL(LILV_NS_DOAP "name");
+	world->lv2_extensionData_val   = NEW_URI_VAL(LILV_NS_LV2  "extensionData");
 	world->lv2_name_val            = NEW_URI_VAL(LILV_NS_LV2  "name");
 	world->lv2_optionalFeature_val = NEW_URI_VAL(LILV_NS_LV2  "optionalFeature");
 	world->lv2_requiredFeature_val = NEW_URI_VAL(LILV_NS_LV2  "requiredFeature");
@@ -131,6 +132,7 @@ lilv_world_free(LilvWorld* world)
 	sord_node_free(world->world, world->xsd_double_node);
 	sord_node_free(world->world, world->xsd_integer_node);
 	lilv_node_free(world->doap_name_val);
+	lilv_node_free(world->lv2_extensionData_val);
 	lilv_node_free(world->lv2_name_val);
 	lilv_node_free(world->lv2_optionalFeature_val);
 	lilv_node_free(world->lv2_requiredFeature_val);
