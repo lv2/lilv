@@ -15,8 +15,6 @@
   OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 */
 
-#define _XOPEN_SOURCE 600
-
 #include <unistd.h>
 #include <string.h>
 #include <stdio.h>
