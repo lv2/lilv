@@ -756,10 +756,18 @@ test_port(void)
 	const LilvScalePoint* sp1 = lilv_scale_points_get(points, sp_iter);
 	TEST_ASSERT(sp1);
 
-	TEST_ASSERT(!strcmp(lilv_node_as_string(lilv_scale_point_get_label(sp0)), "Sin"));
-	TEST_ASSERT(lilv_node_as_float(lilv_scale_point_get_value(sp0)) == 3);
-	TEST_ASSERT(!strcmp(lilv_node_as_string(lilv_scale_point_get_label(sp1)), "Cos"));
-	TEST_ASSERT(lilv_node_as_float(lilv_scale_point_get_value(sp1)) == 4);
+	TEST_ASSERT(
+		((!strcmp(lilv_node_as_string(lilv_scale_point_get_label(sp0)), "Sin")
+		  && lilv_node_as_float(lilv_scale_point_get_value(sp0)) == 3)
+		 &&
+		 (!strcmp(lilv_node_as_string(lilv_scale_point_get_label(sp1)), "Cos")
+		  && lilv_node_as_float(lilv_scale_point_get_value(sp1)) == 4))
+		||
+		((!strcmp(lilv_node_as_string(lilv_scale_point_get_label(sp0)), "Cos")
+		  && lilv_node_as_float(lilv_scale_point_get_value(sp0)) == 4)
+		 &&
+		 (!strcmp(lilv_node_as_string(lilv_scale_point_get_label(sp1)), "Sin")
+		  && lilv_node_as_float(lilv_scale_point_get_value(sp1)) == 3)));
 
 	LilvNode* homepage_p = lilv_new_uri(world, "http://usefulinc.com/ns/doap#homepage");
 	LilvNodes* homepages = lilv_plugin_get_value(plug, homepage_p);
