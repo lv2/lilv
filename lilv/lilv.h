@@ -786,7 +786,15 @@ LilvNodes*
 lilv_plugin_get_optional_features(const LilvPlugin* p);
 
 /**
-   Get the extension data implemented by a plugin.
+   Return whether or not a plugin provides a specific extension data.
+*/
+LILV_API
+bool
+lilv_plugin_has_extension_data(const LilvPlugin* p,
+                               const LilvNode*   uri);
+
+/**
+   Get a sequence of all extension data provided by a plugin.
    This can be used to find which URIs lilv_instance_get_extension_data()
    will return a value for without instantiating the plugin.
 */

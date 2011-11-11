@@ -468,6 +468,7 @@ test_plugin(void)
 			LICENSE_GPL " ; "
 			"lv2:optionalFeature lv2:hardRTCapable ; "
 			"lv2:requiredFeature <http://lv2plug.in/ns/ext/event> ; "
+			"lv2:extensionData <http://example.org/extdata> ;"
 			":foo 1.6180 ; "
 			":bar true ; "
 			":baz false ; "
@@ -636,6 +637,16 @@ test_plugin(void)
 	LilvUIs* uis = lilv_plugin_get_uis(plug);
 	TEST_ASSERT(lilv_uis_size(uis) == 0);
 	lilv_uis_free(uis);
+
+	LilvNode* extdata = lilv_new_uri(world, "http://example.org/extdata");
+	LilvNode* noextdata = lilv_new_uri(world, "http://example.org/noextdata");
+	LilvNodes* extdatas = lilv_plugin_get_extension_data(plug);
+	TEST_ASSERT(lilv_plugin_has_extension_data(plug, extdata));
+	TEST_ASSERT(!lilv_plugin_has_extension_data(plug, noextdata));
+	TEST_ASSERT(lilv_nodes_size(extdatas) == 1);
+	TEST_ASSERT(lilv_node_equals(lilv_nodes_get_first(extdatas), extdata));
+	lilv_node_free(extdata);
+	lilv_nodes_free(extdatas);
 
 	lilv_nodes_free(thing_names);
 	lilv_node_free(thing_uri);

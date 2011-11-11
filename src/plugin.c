@@ -268,6 +268,17 @@ lilv_plugin_load_ports_if_necessary(const LilvPlugin* const_p)
 			}
 		}
 		lilv_match_end(ports);
+
+		// Check sanity
+		for (uint32_t i = 0; i < p->num_ports; ++i) {
+			if (!p->ports[i]) {
+				LILV_ERRORF("Plugin <%s> is missing port %d/%d\n",
+				            lilv_node_as_uri(p->plugin_uri), i, p->num_ports);
+				free(p->ports);
+				p->ports     = NULL;
+				p->num_ports = 0;
+			}
+		}
 	}
 }
 
@@ -644,6 +655,30 @@ lilv_plugin_get_required_features(const LilvPlugin* p)
 	return lilv_plugin_get_value(p, p->world->lv2_requiredFeature_val);
 }
 
+LILV_API
+bool
+lilv_plugin_has_extension_data(const LilvPlugin* p,
+                               const LilvNode*   uri)
+{
+	if (!lilv_node_is_uri(uri)) {
+		LILV_ERRORF("Extension data `%s' is not a URI\n", uri->str_val);
+		return false;
+	}
+
+	SordIter* iter = lilv_world_query_internal(
+		p->world,
+		p->plugin_uri->val.uri_val,
+		p->world->lv2_extensionData_val->val.uri_val,
+		uri->val.uri_val);
+
+	if (iter) {
+		sord_iter_free(iter);
+		return true;
+	} else {
+		return false;
+	}
+}
+	
 LILV_API
 LilvNodes*
 lilv_plugin_get_extension_data(const LilvPlugin* p)
