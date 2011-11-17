@@ -900,7 +900,7 @@ LilvNode*
 lilv_plugin_get_author_email(const LilvPlugin* plugin);
 
 /**
-   Get the email address of the plugin's author.
+   Get the address of the plugin author's home page.
    Returns NULL if author homepage is not present.
    Returned value must be freed by caller.
 */
