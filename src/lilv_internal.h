@@ -45,7 +45,7 @@ static inline char* dlerror(void) { return "Unknown error"; }
 #include "lilv/lilv.h"
 
 #ifdef LILV_DYN_MANIFEST
-#    include "lv2/lv2plug.in/ns/ext/dyn-manifest/dyn-manifest.h"
+#    include "lv2/lv2plug.in/ns/ext/dynmanifest/dynmanifest.h"
 #endif
 
 /*
