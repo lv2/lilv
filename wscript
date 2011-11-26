@@ -158,13 +158,13 @@ def build(bld):
         src/zix/tree.c
     '''.split()
 
-    linkflags = [ '-ldl' ]
+    lib = [ 'dl' ]
     libflags  = [ '-fvisibility=hidden' ]
     if sys.platform == 'win32':
-        linkflags = []
+        lib = []
         libflags  = []
     elif sys.platform.find('bsd') > 0:
-        linkflags = []
+        lib = []
 
     # Shared Library
     obj = bld(features        = 'c cshlib',
@@ -177,7 +177,7 @@ def build(bld):
               install_path    = '${LIBDIR}',
               cflags          = libflags + [ '-DLILV_SHARED',
                                              '-DLILV_INTERNAL' ],
-              linkflags       = linkflags)
+              lib             = lib)
     autowaf.use_lib(bld, obj, 'SORD LV2CORE')
 
     # Static library
@@ -203,7 +203,7 @@ def build(bld):
                   install_path = '',
                   cflags       = [ '-fprofile-arcs', '-ftest-coverage',
                                    '-DLILV_INTERNAL' ],
-                  linkflags    = linkflags + ['-lgcov'])
+                  lib          = lib + ['gcov'])
         autowaf.use_lib(bld, obj, 'SORD LV2CORE')
 
         # Unit test program
@@ -212,7 +212,7 @@ def build(bld):
                   includes     = ['.', './src'],
                   use          = 'liblilv_profiled',
                   uselib       = 'SORD LV2CORE',
-                  linkflags    = linkflags + ['-lgcov'],
+                  lib          = lib + ['gcov'],
                   target       = 'test/lilv_test',
                   install_path = '',
                   cflags       = [ '-fprofile-arcs',  '-ftest-coverage' ])
