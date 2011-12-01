@@ -561,7 +561,10 @@ expand(const char* path)
 #ifdef HAVE_WORDEXP
 	char*     ret = NULL;
 	wordexp_t p;
-	wordexp(path, &p, 0);
+	if (wordexp(path, &p, 0)) {
+		LILV_ERRORF("Error expanding path `%s'\n", path);
+		return lilv_strdup (path);
+	}
 	if (p.we_wordc == 0) {
 		/* Literal directory path (e.g. no variables or ~) */
 		ret = lilv_strdup(path);

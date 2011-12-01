@@ -7,6 +7,7 @@ lilv (UNRELEASED) unstable; urgency=low
   * Use correct URI for dcterms:replaces (for hiding old plugins):
     "http://purl.org/dc/terms/replaces"
   * Fix compilation on BSD
+  * Fix crash in wordexp when LV2_PATH is corrupt
 
  -- David Robillard <d@drobilla.net>  (UNRELEASED)
 
