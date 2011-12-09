@@ -645,6 +645,7 @@ test_plugin(void)
 	TEST_ASSERT(!lilv_plugin_has_extension_data(plug, noextdata));
 	TEST_ASSERT(lilv_nodes_size(extdatas) == 1);
 	TEST_ASSERT(lilv_node_equals(lilv_nodes_get_first(extdatas), extdata));
+	lilv_node_free(noextdata);
 	lilv_node_free(extdata);
 	lilv_nodes_free(extdatas);
 
