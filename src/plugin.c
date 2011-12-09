@@ -39,7 +39,7 @@ lilv_plugin_new(LilvWorld* world, LilvNode* uri, LilvNode* bundle_uri)
 	plugin->bundle_uri   = bundle_uri;
 	plugin->binary_uri   = NULL;
 #ifdef LILV_DYN_MANIFEST
-	plugin->dynman_uri   = NULL;
+	plugin->dynmanifest  = NULL;
 #endif
 	plugin->plugin_class = NULL;
 	plugin->data_uris    = lilv_nodes_new();
@@ -54,6 +54,21 @@ lilv_plugin_new(LilvWorld* world, LilvNode* uri, LilvNode* bundle_uri)
 void
 lilv_plugin_free(LilvPlugin* p)
 {
+#ifdef LILV_DYN_MANIFEST
+	if (p->dynmanifest && --p->dynmanifest->refs == 0) {
+		typedef int (*CloseFunc)(LV2_Dyn_Manifest_Handle);
+		CloseFunc close_func = (CloseFunc)lilv_dlfunc(p->dynmanifest->lib,
+		                                              "lv2_dyn_manifest_close");
+		if (close_func) {
+			close_func(p->dynmanifest->handle);
+		}
+
+		dlclose(p->dynmanifest->lib);
+		lilv_node_free(p->dynmanifest->uri);
+		free(p->dynmanifest);
+	}
+#endif
+
 	lilv_node_free(p->plugin_uri);
 	p->plugin_uri = NULL;
 
@@ -62,11 +77,6 @@ lilv_plugin_free(LilvPlugin* p)
 
 	lilv_node_free(p->binary_uri);
 	p->binary_uri = NULL;
-
-#ifdef LILV_DYN_MANIFEST
-	lilv_node_free(p->dynman_uri);
-	p->dynman_uri = NULL;
-#endif
 
 	if (p->ports) {
 		for (uint32_t i = 0; i < p->num_ports; ++i) {
@@ -136,41 +146,23 @@ lilv_plugin_load(LilvPlugin* p)
 #ifdef LILV_DYN_MANIFEST
 	typedef void* LV2_Dyn_Manifest_Handle;
 	// Load and parse dynamic manifest data, if this is a library
-	if (p->dynman_uri) {
-		const char* lib_path = lilv_uri_to_path(lilv_node_as_string(p->dynman_uri));
-		void* lib = dlopen(lib_path, RTLD_LAZY);
-		if (!lib) {
-			LILV_WARNF("Failed to open dynamic manifest %s\n",
-			           lilv_node_as_string(p->dynman_uri));
-			return;
-		}
-
-		typedef int (*OpenFunc)(LV2_Dyn_Manifest_Handle*, const LV2_Feature *const *);
-		OpenFunc open_func = (OpenFunc)lilv_dlfunc(lib, "lv2_dyn_manifest_open");
-		LV2_Dyn_Manifest_Handle handle = NULL;
-		if (open_func)
-			open_func(&handle, &dman_features);
-
+	if (p->dynmanifest) {
 		typedef int (*GetDataFunc)(LV2_Dyn_Manifest_Handle handle,
 		                           FILE*                   fp,
 		                           const char*             uri);
 		GetDataFunc get_data_func = (GetDataFunc)lilv_dlfunc(
-			lib, "lv2_dyn_manifest_get_data");
+			p->dynmanifest->lib, "lv2_dyn_manifest_get_data");
 		if (get_data_func) {
 			serd_env_set_base_uri(
-				env, sord_node_to_serd_node(p->dynman_uri->val.uri_val));
+				env, sord_node_to_serd_node(p->dynmanifest->uri->val.uri_val));
 			FILE* fd = tmpfile();
-			get_data_func(handle, fd, lilv_node_as_string(p->plugin_uri));
+			get_data_func(p->dynmanifest->handle, fd,
+			              lilv_node_as_string(p->plugin_uri));
 			rewind(fd);
 			serd_reader_read_file_handle(reader, fd,
 			                             (const uint8_t*)"(dyn-manifest)");
 			fclose(fd);
 		}
-
-		typedef int (*CloseFunc)(LV2_Dyn_Manifest_Handle);
-		CloseFunc close_func = (CloseFunc)lilv_dlfunc(lib, "lv2_dyn_manifest_close");
-		if (close_func)
-			close_func(handle);
 	}
 #endif
 	serd_reader_free(reader);

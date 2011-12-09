@@ -83,12 +83,23 @@ struct LilvHeader {
 	LilvNode*  uri;
 };
 
+#ifdef LILV_DYN_MANIFEST
+typedef struct {
+	LilvNode*               uri;
+	void*                   lib;
+	LV2_Dyn_Manifest_Handle handle;
+	uint32_t                refs;
+} LilvDynManifest;
+#endif
+
 struct LilvPluginImpl {
 	LilvWorld*             world;
 	LilvNode*              plugin_uri;
 	LilvNode*              bundle_uri;  ///< Bundle plugin was loaded from
 	LilvNode*              binary_uri;  ///< lv2:binary
-	LilvNode*              dynman_uri;  ///< dynamic manifest binary
+#ifdef LILV_DYN_MANIFEST
+	LilvDynManifest*       dynmanifest;
+#endif
 	const LilvPluginClass* plugin_class;
 	LilvNodes*             data_uris;  ///< rdfs::seeAlso
 	LilvPort**             ports;
@@ -176,7 +187,7 @@ struct LilvScalePointImpl {
 };
 
 struct LilvUIImpl {
-	LilvWorld*  world;
+	LilvWorld* world;
 	LilvNode*  uri;
 	LilvNode*  bundle_uri;
 	LilvNode*  binary_uri;

@@ -328,11 +328,11 @@ lilv_world_add_spec(LilvWorld*      world,
 }
 
 static void
-lilv_world_add_plugin(LilvWorld*      world,
-                      const SordNode* plugin_node,
-                      SerdNode*       manifest_uri,
-                      const SordNode* dyn_manifest_lib,
-                      const SordNode* bundle_node)
+lilv_world_add_plugin(LilvWorld*       world,
+                      const SordNode*  plugin_node,
+                      SerdNode*        manifest_uri,
+                      void*            dynmanifest,
+                      const SordNode*  bundle_node)
 {
 	LilvNode* plugin_uri = lilv_node_new_from_node(world, plugin_node);
 
@@ -355,10 +355,13 @@ lilv_world_add_plugin(LilvWorld*      world,
 	                lilv_new_uri(world, (const char*)manifest_uri->buf),
 	                NULL);
 
+#ifdef LILV_DYN_MANIFEST
 	// Set dynamic manifest library URI, if applicable
-	if (dyn_manifest_lib) {
-		plugin->dynman_uri = lilv_node_new_from_node(world, dyn_manifest_lib);
+	if (dynmanifest) {
+		plugin->dynmanifest = (LilvDynManifest*)dynmanifest;
+		++((LilvDynManifest*)dynmanifest)->refs;
 	}
+#endif
 
 	// Add all plugin data files (rdfs:seeAlso)
 	SordIter* files = lilv_world_find_statements(
@@ -456,6 +459,12 @@ lilv_world_load_dyn_manifest(LilvWorld* world,
 			continue;
 		}
 
+		LilvDynManifest* desc = malloc(sizeof(LilvDynManifest));
+		desc->uri    = lilv_node_new_from_node(world, dmanifest);
+		desc->lib    = lib;
+		desc->handle = handle;
+		desc->refs   = 0;
+
 		// Generate data file
 		FILE* fd = tmpfile();
 		get_subjects_func(handle, fd);
@@ -483,12 +492,11 @@ lilv_world_load_dyn_manifest(LilvWorld* world,
 		FOREACH_MATCH(plug_results) {
 			const SordNode* plugin_node = lilv_match_subject(plug_results);
 			lilv_world_add_plugin(world, plugin_node,
-			                      &manifest_uri, binary, bundle_node);
+			                      &manifest_uri, desc, bundle_node);
 		}
 		lilv_match_end(plug_results);
 
 		lilv_match_end(binaries);
-		dlclose(lib);
 	}
 	lilv_match_end(dmanifests);
 #endif  // LILV_DYN_MANIFEST

@@ -8,6 +8,7 @@ lilv (UNRELEASED) unstable; urgency=low
     "http://purl.org/dc/terms/replaces"
   * Fix compilation on BSD
   * Fix crash in wordexp when LV2_PATH is corrupt
+  * Only load dynmanifest libraries once per bundle, not once per plugin
 
  -- David Robillard <d@drobilla.net>  (UNRELEASED)
 
