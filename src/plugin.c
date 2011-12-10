@@ -64,7 +64,7 @@ lilv_plugin_free(LilvPlugin* p)
 		}
 
 		dlclose(p->dynmanifest->lib);
-		lilv_node_free(p->dynmanifest->uri);
+		lilv_node_free(p->dynmanifest->bundle);
 		free(p->dynmanifest);
 	}
 #endif
@@ -154,7 +154,7 @@ lilv_plugin_load(LilvPlugin* p)
 			p->dynmanifest->lib, "lv2_dyn_manifest_get_data");
 		if (get_data_func) {
 			serd_env_set_base_uri(
-				env, sord_node_to_serd_node(p->dynmanifest->uri->val.uri_val));
+				env, sord_node_to_serd_node(p->dynmanifest->bundle->val.uri_val));
 			FILE* fd = tmpfile();
 			get_data_func(p->dynmanifest->handle, fd,
 			              lilv_node_as_string(p->plugin_uri));

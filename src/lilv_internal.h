@@ -85,7 +85,7 @@ struct LilvHeader {
 
 #ifdef LILV_DYN_MANIFEST
 typedef struct {
-	LilvNode*               uri;
+	LilvNode*               bundle;
 	void*                   lib;
 	LV2_Dyn_Manifest_Handle handle;
 	uint32_t                refs;

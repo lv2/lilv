@@ -460,7 +460,7 @@ lilv_world_load_dyn_manifest(LilvWorld* world,
 		}
 
 		LilvDynManifest* desc = malloc(sizeof(LilvDynManifest));
-		desc->uri    = lilv_node_new_from_node(world, dmanifest);
+		desc->bundle = lilv_node_new_from_node(world, bundle_node);
 		desc->lib    = lib;
 		desc->handle = handle;
 		desc->refs   = 0;
