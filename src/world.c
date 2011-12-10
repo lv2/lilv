@@ -168,8 +168,8 @@ lilv_world_free(LilvWorld* world)
 
 LILV_API
 void
-lilv_world_set_option(LilvWorld*       world,
-                      const char*      option,
+lilv_world_set_option(LilvWorld*      world,
+                      const char*     option,
                       const LilvNode* value)
 {
 	if (!strcmp(option, LILV_OPTION_DYN_MANIFEST)) {
