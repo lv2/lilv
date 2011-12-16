@@ -129,6 +129,7 @@ struct LilvWorldImpl {
 	LilvPluginClasses* plugin_classes;
 	LilvSpec*          specs;
 	LilvPlugins*       plugins;
+	LilvNodes*         loaded_files;
 	SordNode*          dc_replaces_node;
 	SordNode*          dyn_manifest_node;
 	SordNode*          lv2_binary_node;
@@ -153,6 +154,7 @@ struct LilvWorldImpl {
 	SordNode*          xsd_double_node;
 	SordNode*          xsd_integer_node;
 	LilvNode*          doap_name_val;
+	LilvNode*          lv2_applies_to_val;
 	LilvNode*          lv2_extensionData_val;
 	LilvNode*          lv2_name_val;
 	LilvNode*          lv2_optionalFeature_val;
@@ -256,6 +258,9 @@ int lilv_header_compare_by_uri(const void* a, const void* b, void* user_data);
 int
 lilv_ptr_cmp(const void* a, const void* b, void* user_data);
 
+int
+lilv_resource_node_cmp(const void* a, const void* b, void* user_data);
+
 struct LilvHeader*
 lilv_collection_get_by_uri(const ZixTree* seq, const LilvNode* uri);
 
@@ -306,7 +311,8 @@ static inline bool lilv_matches_end(SordIter* matches) {
 }
 
 LilvNodes* lilv_nodes_from_stream_objects(LilvWorld* w,
-                                          SordIter*  stream);
+                                          SordIter*  stream,
+                                          bool       object);
 
 char* lilv_strjoin(const char* first, ...);
 char* lilv_strdup(const char* str);

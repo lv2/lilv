@@ -109,7 +109,7 @@ lilv_port_get_value_by_node(const LilvPlugin* p,
 		predicate,
 		NULL);
 
-	return lilv_nodes_from_stream_objects(p->world, results);
+	return lilv_nodes_from_stream_objects(p->world, results, true);
 }
 
 LILV_API

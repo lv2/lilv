@@ -583,6 +583,19 @@ lilv_world_load_bundle(LilvWorld* world,
                        LilvNode*  bundle_uri);
 
 /**
+   Load all the data associated with the given @c resource.
+   @param resource Must be a subject (i.e. a URI or a blank node).
+   @return The number of files parsed, or -1 on error
+
+   All accessible data files linked to @c resource with rdfs:seeAlso will be
+   loaded into the world model.
+*/
+LILV_API
+int
+lilv_world_load_resource(LilvWorld*      world,
+                         const LilvNode* resource);
+
+/**
    Get the parent of all other plugin classes, lv2:Plugin.
 */
 LILV_API
@@ -919,7 +932,7 @@ bool
 lilv_plugin_is_replaced(const LilvPlugin* plugin);
 
 /**
-   Write the Turtle description of @c plugin to @c file.
+   Write the Turtle description of @c plugin to @c plugin_file.
 
    This function is particularly useful for porting plugins in conjunction with
    an LV2 bridge such as NASPRO.
@@ -931,6 +944,12 @@ lilv_plugin_write_description(LilvWorld*        world,
                               const LilvNode*   base_uri,
                               FILE*             plugin_file);
 
+/**
+   Write a manifest entry for @c plugin to @c manifest_file.
+
+   This function is intended for use with lilv_plugin_write_description to
+   write a complete description of a plugin to a bundle.
+*/
 LILV_API
 void
 lilv_plugin_write_manifest_entry(LilvWorld*        world,
@@ -938,6 +957,23 @@ lilv_plugin_write_manifest_entry(LilvWorld*        world,
                                  const LilvNode*   base_uri,
                                  FILE*             manifest_file,
                                  const char*       plugin_file_path);
+
+/**
+   Get the resources related to @c plugin with lv2:appliesTo.
+
+   Some plugin-related resources are not linked directly to the plugin with
+   rdfs:seeAlso and thus will not be automatically loaded along with the plugin
+   data (usually for performance reasons).  All such resources of the given @c
+   type related to @c plugin can be accessed with this function.
+
+   If @c type is NULL, all such resources will be returned, regardless of type.
+
+   To actually load the data for each returned resource, use
+   lilv_world_load_resource.
+*/
+LILV_API
+LilvNodes*
+lilv_plugin_get_related(const LilvPlugin* plugin, const LilvNode* type);
 
 /**
    @}

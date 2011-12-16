@@ -45,6 +45,9 @@ lilv_world_new(void)
 	world->specs          = NULL;
 	world->plugin_classes = lilv_plugin_classes_new();
 	world->plugins        = lilv_plugins_new();
+	world->loaded_files   = zix_tree_new(
+		false, lilv_resource_node_cmp, NULL, (ZixDestroyFunc)lilv_node_free);
+
 
 #define NS_DYNMAN  "http://lv2plug.in/ns/ext/dynmanifest#"
 #define NS_DCTERMS "http://purl.org/dc/terms/"
@@ -77,6 +80,7 @@ lilv_world_new(void)
 	world->xsd_integer_node         = NEW_URI(LILV_NS_XSD  "integer");
 
 	world->doap_name_val           = NEW_URI_VAL(LILV_NS_DOAP "name");
+	world->lv2_applies_to_val      = NEW_URI_VAL(LILV_NS_LV2  "appliesTo");
 	world->lv2_extensionData_val   = NEW_URI_VAL(LILV_NS_LV2  "extensionData");
 	world->lv2_name_val            = NEW_URI_VAL(LILV_NS_LV2  "name");
 	world->lv2_optionalFeature_val = NEW_URI_VAL(LILV_NS_LV2  "optionalFeature");
@@ -132,6 +136,7 @@ lilv_world_free(LilvWorld* world)
 	sord_node_free(world->world, world->xsd_double_node);
 	sord_node_free(world->world, world->xsd_integer_node);
 	lilv_node_free(world->doap_name_val);
+	lilv_node_free(world->lv2_applies_to_val);
 	lilv_node_free(world->lv2_extensionData_val);
 	lilv_node_free(world->lv2_name_val);
 	lilv_node_free(world->lv2_optionalFeature_val);
@@ -153,6 +158,9 @@ lilv_world_free(LilvWorld* world)
 	}
 	zix_tree_free(world->plugins);
 	world->plugins = NULL;
+
+	zix_tree_free(world->loaded_files);
+	world->loaded_files = NULL;
 
 	zix_tree_free(world->plugin_classes);
 	world->plugin_classes = NULL;
@@ -205,7 +213,7 @@ lilv_world_find_nodes(LilvWorld*      world,
                       const LilvNode* predicate,
                       const LilvNode* object)
 {
-	if (!lilv_node_is_uri(subject) && !lilv_node_is_blank(subject)) {
+	if (subject && !lilv_node_is_uri(subject) && !lilv_node_is_blank(subject)) {
 		LILV_ERRORF("Subject `%s' is not a resource\n", subject->str_val);
 		return NULL;
 	}
@@ -213,18 +221,24 @@ lilv_world_find_nodes(LilvWorld*      world,
 		LILV_ERRORF("Predicate `%s' is not a URI\n", predicate->str_val);
 		return NULL;
 	}
+	if (!subject && !object) {
+		LILV_ERROR("Both subject and object are NULL\n");
+		return NULL;
+	}
 
-	SordNode* subject_node = (lilv_node_is_uri(subject))
+	SordNode* const subject_node = subject
 		? sord_node_copy(subject->val.uri_val)
-		: sord_new_blank(world->world,
-		                 (const uint8_t*)lilv_node_as_blank(subject));
+		: NULL;
 
-	LilvNodes* ret = lilv_world_query_values_internal(world,
-	                                                  subject_node,
-	                                                  predicate->val.uri_val,
-	                                                  NULL);
+	SordNode* const object_node = object
+		? sord_node_copy(object->val.uri_val)
+		: NULL;
+
+	LilvNodes* ret = lilv_world_query_values_internal(
+		world, subject_node, predicate->val.uri_val, object_node);
 
 	sord_node_free(world->world, subject_node);
+	sord_node_free(world->world, object_node);
 	return ret;
 }
 
@@ -246,7 +260,8 @@ lilv_world_query_values_internal(LilvWorld*      world,
 {
 	return lilv_nodes_from_stream_objects(
 		world,
-		lilv_world_query_internal(world, subject, predicate, object));
+		lilv_world_query_internal(world, subject, predicate, object),
+		(object == NULL));
 }
 
 static SerdNode
@@ -802,6 +817,52 @@ lilv_world_load_all(LilvWorld* world)
 	// Query out things to cache
 	lilv_world_load_specifications(world);
 	lilv_world_load_plugin_classes(world);
+}
+
+LILV_API
+int
+lilv_world_load_resource(LilvWorld*      world,
+                         const LilvNode* resource)
+{
+	if (!lilv_node_is_uri(resource) && !lilv_node_is_blank(resource)) {
+		LILV_ERRORF("Node `%s' is not a resource\n", resource->str_val);
+		return -1;
+	}
+
+	int       n_read = 0;
+	SordIter* files  = lilv_world_find_statements(world, world->model,
+	                                              resource->val.uri_val,
+	                                              world->rdfs_seealso_node,
+	                                              NULL, NULL);
+	FOREACH_MATCH(files) {
+		const SordNode* file      = lilv_match_object(files);
+		const uint8_t*  str       = sord_node_get_string(file);
+		LilvNode*       file_node = lilv_node_new_from_node(world, file);
+		ZixTreeIter*    iter;
+		if (zix_tree_find(world->loaded_files, file, &iter)) {
+			if (sord_node_get_type(file) == SORD_URI) {
+				const SerdNode* base   = sord_node_to_serd_node(file);
+				SerdEnv*        env    = serd_env_new(base);
+				SerdReader*     reader = sord_new_reader(
+					world->model, env, SERD_TURTLE, (SordNode*)file);
+				if (!serd_reader_read_file(reader, str)) {
+					++n_read;
+					zix_tree_insert(world->loaded_files, file_node, NULL);
+					file_node = NULL;  // prevent deletion...
+				} else {
+					LILV_ERRORF("Error loading resource `%s'\n", str);
+				}
+				serd_reader_free(reader);
+				serd_env_free(env);
+			} else {
+				LILV_ERRORF("rdfs:seeAlso node `%s' is not a URI\n", str);
+			}
+		}
+		lilv_node_free(file_node);  // ...here
+	}
+	lilv_match_end(files);
+
+	return n_read;
 }
 
 LILV_API

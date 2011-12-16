@@ -828,6 +828,35 @@ lilv_plugin_get_uis(const LilvPlugin* p)
 	}
 }
 
+LILV_API
+LilvNodes*
+lilv_plugin_get_related(const LilvPlugin* plugin, const LilvNode* type)
+{
+	LilvWorld* const world   = plugin->world;
+	LilvNodes* const related = lilv_world_find_nodes(
+		world, NULL, world->lv2_applies_to_val, lilv_plugin_get_uri(plugin));
+
+	if (!type) {
+		return related;
+	}
+
+	LilvNodes* matches = lilv_nodes_new();
+	LILV_FOREACH(nodes, i, related) {
+		LilvNode* node  = lilv_collection_get(related, i);
+		SordIter* titer = lilv_world_query_internal(
+			world, node->val.uri_val, world->rdf_a_node, type->val.uri_val);
+		if (!sord_iter_end(titer)) {
+			zix_tree_insert(matches,
+			                lilv_node_new_from_node(world, node->val.uri_val),
+			                NULL);
+		}
+		sord_iter_free(titer);
+	}
+
+	lilv_nodes_free(related);
+	return matches;
+}
+
 static size_t
 file_sink(const void* buf, size_t len, void* stream)
 {

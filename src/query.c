@@ -53,14 +53,17 @@ lilv_lang_matches(const char* a, const char* b)
 
 LilvNodes*
 lilv_nodes_from_stream_objects_i18n(LilvWorld* world,
-                                    SordIter*  stream)
+                                    SordIter*  stream,
+                                    bool       object)
 {
 	LilvNodes*      values  = lilv_nodes_new();
 	const SordNode* nolang  = NULL;  // Untranslated value
 	const SordNode* partial = NULL;  // Partial language match
 	char*           syslang = lilv_get_lang();
 	FOREACH_MATCH(stream) {
-		const SordNode* value = lilv_match_object(stream);
+		const SordNode* value = object
+			? lilv_match_object(stream)
+			: lilv_match_subject(stream);
 		if (sord_node_get_type(value) == SORD_LITERAL) {
 			const char*   lang = sord_node_get_language(value);
 			LilvLangMatch lm   = LILV_LANG_MATCH_NONE;
@@ -117,20 +120,23 @@ lilv_nodes_from_stream_objects_i18n(LilvWorld* world,
 
 LilvNodes*
 lilv_nodes_from_stream_objects(LilvWorld* world,
-                               SordIter*  stream)
+                               SordIter*  stream,
+                               bool       object)
 {
 	if (lilv_matches_end(stream)) {
 		lilv_match_end(stream);
 		return NULL;
 	} else if (world->opt.filter_language) {
-		return lilv_nodes_from_stream_objects_i18n(world, stream);
+		return lilv_nodes_from_stream_objects_i18n(world, stream, object);
 	} else {
 		LilvNodes* values = lilv_nodes_new();
 		FOREACH_MATCH(stream) {
-			LilvNode* value = lilv_node_new_from_node(
-				world, lilv_match_object(stream));
-			if (value) {
-				zix_tree_insert(values, value, NULL);
+			const SordNode* value = object
+				? lilv_match_object(stream)
+				: lilv_match_subject(stream);
+			LilvNode* node = lilv_node_new_from_node(world, value);
+			if (node) {
+				zix_tree_insert(values, node, NULL);
 			}
 		}
 		lilv_match_end(stream);

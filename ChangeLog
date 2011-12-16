@@ -9,6 +9,11 @@ lilv (UNRELEASED) unstable; urgency=low
   * Fix compilation on BSD
   * Fix crash in wordexp when LV2_PATH is corrupt
   * Only load dynmanifest libraries once per bundle, not once per plugin
+  * Fix lilv_world_find_nodes to work with wildcard subjects
+  * Add lilv_plugin_get_related to get resources related to plugins that
+    are not directly rdfs:seeAlso linked (e.g. presets)
+  * Add lilv_world_load_resource for related resources (e.g. presets)
+  * Print presets in lv2info
 
  -- David Robillard <d@drobilla.net>  (UNRELEASED)
 

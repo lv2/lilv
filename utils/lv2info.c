@@ -24,19 +24,20 @@
 
 #include "lilv-config.h"
 
-LilvNode* event_class         = NULL;
+LilvNode* applies_to_pred     = NULL;
 LilvNode* control_class       = NULL;
+LilvNode* event_class         = NULL;
 LilvNode* in_group_pred       = NULL;
-LilvNode* role_pred           = NULL;
-LilvNode* preset_pred         = NULL;
 LilvNode* label_pred          = NULL;
+LilvNode* preset_class        = NULL;
+LilvNode* role_pred           = NULL;
 LilvNode* supports_event_pred = NULL;
 
 void
 print_group(const LilvPlugin* p,
-            const LilvNode*  group,
-            LilvNode*        type,
-            LilvNode*        symbol)
+            const LilvNode*   group,
+            LilvNode*         type,
+            LilvNode*         symbol)
 {
 	printf("\n\tGroup %s:\n", lilv_node_as_string(group));
 	printf("\t\tType: %s\n", lilv_node_as_string(type));
@@ -198,23 +199,23 @@ print_plugin(LilvWorld*        world,
 
 	LilvUIs* uis = lilv_plugin_get_uis(p);
 	if (lilv_nodes_size(uis) > 0) {
-		printf("\tUI:                ");
+		printf("\tUIs:\n");
 		LILV_FOREACH(uis, i, uis) {
 			const LilvUI* ui = lilv_uis_get(uis, i);
-			printf("%s\n", lilv_node_as_uri(lilv_ui_get_uri(ui)));
+			printf("\t\t%s\n", lilv_node_as_uri(lilv_ui_get_uri(ui)));
 
 			const char* binary = lilv_node_as_uri(lilv_ui_get_binary_uri(ui));
 
 			const LilvNodes* types = lilv_ui_get_classes(ui);
 			LILV_FOREACH(nodes, i, types) {
-				printf("\t                       Class:  %s\n",
+				printf("\t\t\tClass:  %s\n",
 				       lilv_node_as_uri(lilv_nodes_get(types, i)));
 			}
 
 			if (binary)
-				printf("\t                       Binary: %s\n", binary);
+				printf("\t\t\tBinary: %s\n", binary);
 
-			printf("\t                       Bundle: %s\n",
+			printf("\t\t\tBundle: %s\n",
 			       lilv_node_as_uri(lilv_ui_get_bundle_uri(ui)));
 		}
 	}
@@ -267,6 +268,7 @@ print_plugin(LilvWorld*        world,
 	lilv_nodes_free(features);
 
 	/* Extension Data */
+
 	LilvNodes* data = lilv_plugin_get_extension_data(p);
 	if (data)
 		printf("\tExtension Data:    ");
@@ -278,25 +280,30 @@ print_plugin(LilvWorld*        world,
 		printf("%s", lilv_node_as_uri(lilv_nodes_get(data, i)));
 		first = false;
 	}
-	if (features)
+	if (data)
 		printf("\n");
 	lilv_nodes_free(data);
 		
 	/* Presets */
 
-	LilvNodes* presets = lilv_plugin_get_value(p, preset_pred);
+	LilvNodes* presets = lilv_plugin_get_related(p, preset_class);
 	if (presets)
 		printf("\tPresets: \n");
 	LILV_FOREACH(nodes, i, presets) {
-		LilvNodes* titles = lilv_world_find_nodes(world,
-		                                          lilv_nodes_get(presets, i),
-		                                          label_pred,
-		                                          NULL);
+		const LilvNode* preset = lilv_nodes_get(presets, i); 
+		lilv_world_load_resource(world, preset);
+		LilvNodes* titles = lilv_world_find_nodes(
+			world, preset, label_pred, NULL);
 		if (titles) {
-			const LilvNode* title = lilv_nodes_get(titles, lilv_nodes_begin(titles));
+			const LilvNode* title = lilv_nodes_get_first(titles);
 			printf("\t         %s\n", lilv_node_as_string(title));
+			lilv_nodes_free(titles);
+		} else {
+			fprintf(stderr, "Preset <%s> has no rdfs:label\n",
+			        lilv_node_as_string(lilv_nodes_get(presets, i)));
 		}
 	}
+	lilv_nodes_free(presets);
 
 	/* Ports */
 
@@ -380,12 +387,13 @@ main(int argc, char** argv)
 #define NS_PSET "http://lv2plug.in/ns/ext/presets#"
 #define NS_EV   "http://lv2plug.in/ns/ext/event#"
 
+	applies_to_pred     = lilv_new_uri(world, LILV_NS_LV2 "appliesTo");
 	control_class       = lilv_new_uri(world, LILV_URI_CONTROL_PORT);
 	event_class         = lilv_new_uri(world, LILV_URI_EVENT_PORT);
 	in_group_pred       = lilv_new_uri(world, NS_PG "inGroup");
-	preset_pred         = lilv_new_uri(world, NS_PSET "hasPreset");
-	role_pred           = lilv_new_uri(world, NS_PG "role");
 	label_pred          = lilv_new_uri(world, LILV_NS_RDFS "label");
+	preset_class        = lilv_new_uri(world, NS_PSET "Preset");
+	role_pred           = lilv_new_uri(world, NS_PG "role");
 	supports_event_pred = lilv_new_uri(world, NS_EV "supportsEvent");
 
 	const LilvPlugins* plugins = lilv_world_get_all_plugins(world);
@@ -416,12 +424,15 @@ main(int argc, char** argv)
 
 	lilv_node_free(uri);
 
-	lilv_node_free(label_pred);
+	lilv_node_free(supports_event_pred);
 	lilv_node_free(role_pred);
-	lilv_node_free(preset_pred);
+	lilv_node_free(preset_class);
+	lilv_node_free(label_pred);
 	lilv_node_free(in_group_pred);
 	lilv_node_free(event_class);
 	lilv_node_free(control_class);
+	lilv_node_free(applies_to_pred);
+
 	lilv_world_free(world);
 	return ret;
 }
