@@ -26,7 +26,7 @@ int
 lilv_resource_node_cmp(const void* a, const void* b, void* user_data)
 {
 	const SordNode* an = ((LilvNode*)a)->val.uri_val;
-	const SordNode* bn = ((LilvNode*)a)->val.uri_val;
+	const SordNode* bn = ((LilvNode*)b)->val.uri_val;
 	return (intptr_t)an - (intptr_t)bn;
 }
 

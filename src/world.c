@@ -48,7 +48,6 @@ lilv_world_new(void)
 	world->loaded_files   = zix_tree_new(
 		false, lilv_resource_node_cmp, NULL, (ZixDestroyFunc)lilv_node_free);
 
-
 #define NS_DYNMAN  "http://lv2plug.in/ns/ext/dynmanifest#"
 #define NS_DCTERMS "http://purl.org/dc/terms/"
 
