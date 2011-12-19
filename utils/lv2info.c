@@ -14,7 +14,6 @@
   OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 */
 
-#include <locale.h>
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -378,7 +377,6 @@ main(int argc, char** argv)
 	}
 
 	int ret = 0;
-	setlocale(LC_ALL, "");
 
 	LilvWorld* world = lilv_world_new();
 	lilv_world_load_all(world);

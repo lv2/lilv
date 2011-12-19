@@ -15,7 +15,6 @@
 */
 
 #include <assert.h>
-#include <locale.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -24,7 +23,6 @@
 static void
 lilv_node_set_numerics_from_string(LilvNode* val)
 {
-	char* locale;
 	char* endptr;
 
 	switch (val->type) {
@@ -33,20 +31,10 @@ lilv_node_set_numerics_from_string(LilvNode* val)
 	case LILV_VALUE_STRING:
 		break;
 	case LILV_VALUE_INT:
-		// FIXME: locale kludge, need a locale independent strtol
-		locale = lilv_strdup(setlocale(LC_NUMERIC, NULL));
-		setlocale(LC_NUMERIC, "POSIX");
 		val->val.int_val = strtol(val->str_val, &endptr, 10);
-		setlocale(LC_NUMERIC, locale);
-		free(locale);
 		break;
 	case LILV_VALUE_FLOAT:
-		// FIXME: locale kludge, need a locale independent strtod
-		locale = lilv_strdup(setlocale(LC_NUMERIC, NULL));
-		setlocale(LC_NUMERIC, "POSIX");
-		val->val.float_val = strtod(val->str_val, &endptr);
-		setlocale(LC_NUMERIC, locale);
-		free(locale);
+		val->val.float_val = serd_strtod(val->str_val, &endptr);
 		break;
 	case LILV_VALUE_BOOL:
 		val->val.bool_val = (!strcmp(val->str_val, "true"));
@@ -258,9 +246,9 @@ LILV_API
 char*
 lilv_node_get_turtle_token(const LilvNode* value)
 {
-	size_t len    = 0;
-	char*  result = NULL;
-	char*  locale = NULL;
+	size_t   len    = 0;
+	char*    result = NULL;
+	SerdNode node;
 
 	switch (value->type) {
 	case LILV_VALUE_URI:
@@ -278,27 +266,14 @@ lilv_node_get_turtle_token(const LilvNode* value)
 		result = lilv_strdup(value->str_val);
 		break;
 	case LILV_VALUE_INT:
-		// INT64_MAX is 9223372036854775807 (19 digits) + 1 for sign
-		// FIXME: locale kludge, need a locale independent snprintf
-		locale = lilv_strdup(setlocale(LC_NUMERIC, NULL));
-		len = 20;
-		result = calloc(len, 1);
-		setlocale(LC_NUMERIC, "POSIX");
-		snprintf(result, len, "%d", value->val.int_val);
-		setlocale(LC_NUMERIC, locale);
+		node   = serd_node_new_integer(value->val.int_val);
+		result = (char*)node.buf;
 		break;
 	case LILV_VALUE_FLOAT:
-		// FIXME: locale kludge, need a locale independent snprintf
-		locale = lilv_strdup(setlocale(LC_NUMERIC, NULL));
-		len = 20;  // FIXME: proper maximum value?
-		result = calloc(len, 1);
-		setlocale(LC_NUMERIC, "POSIX");
-		snprintf(result, len, "%f", value->val.float_val);
-		setlocale(LC_NUMERIC, locale);
+		node = serd_node_new_decimal(value->val.float_val, 8);
+		result = (char*)node.buf;
 		break;
 	}
-
-	free(locale);
 
 	return result;
 }

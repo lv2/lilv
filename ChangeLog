@@ -14,6 +14,8 @@ lilv (UNRELEASED) unstable; urgency=low
     are not directly rdfs:seeAlso linked (e.g. presets)
   * Add lilv_world_load_resource for related resources (e.g. presets)
   * Print presets in lv2info
+  * Remove locale smashing kludges and use new serd functions for converting
+    nodes to/from numbers.
 
  -- David Robillard <d@drobilla.net>  (UNRELEASED)
 
