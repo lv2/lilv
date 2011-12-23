@@ -8,7 +8,7 @@ import waflib.Options as Options
 import waflib.Logs as Logs
 
 # Version of this package (even if built as a child)
-LILV_VERSION       = '0.8.0'
+LILV_VERSION       = '0.9.0'
 LILV_MAJOR_VERSION = '0'
 
 # Library version (UNIX style major, minor, micro)
@@ -65,19 +65,40 @@ def configure(conf):
     conf.line_just = 51
     autowaf.configure(conf)
     autowaf.display_header('Lilv Configuration')
+    conf.env.append_unique('CFLAGS', '-std=c99')
 
     autowaf.check_pkg(conf, 'lv2core', uselib_store='LV2CORE', mandatory=True)
     autowaf.check_pkg(conf, 'serd-0', uselib_store='SERD',
                       atleast_version='0.7.0', mandatory=True)
     autowaf.check_pkg(conf, 'sord-0', uselib_store='SORD',
                       atleast_version='0.5.0', mandatory=True)
+    autowaf.check_pkg(conf, 'lv2-lv2plug.in-ns-ext-state',
+                      uselib_store='LV2_STATE', mandatory=True)
 
-    conf.check(function_name='wordexp',
-               header_name='wordexp.h',
-               define_name='HAVE_WORDEXP',
-               mandatory=False)
+    conf.check_cc(function_name='wordexp',
+                  header_name='wordexp.h',
+                  defines='_POSIX_SOURCE',
+                  define_name='HAVE_WORDEXP',
+                  mandatory=False)
 
-    conf.env.append_unique('CFLAGS', '-std=c99')
+    conf.check_cc(function_name='lockf',
+                  header_name='unistd.h',
+                  defines='_BSD_SOURCE',
+                  define_name='HAVE_LOCKF',
+                  mandatory=False)
+
+    conf.check_cc(function_name='fileno',
+                  header_name='stdio.h',
+                  defines='_POSIX_SOURCE',
+                  define_name='HAVE_FILENO',
+                  mandatory=False)
+
+    conf.check_cc(function_name='mkdir',
+                  header_name=['sys/stat.h','sys/types.h'],
+                  defines='_POSIX_SOURCE',
+                  define_name='HAVE_MKDIR',
+                  mandatory=False)
+
     autowaf.define(conf, 'LILV_VERSION', LILV_VERSION)
     if Options.options.dyn_manifest:
         autowaf.define(conf, 'LILV_DYN_MANIFEST', 1)
@@ -131,6 +152,8 @@ def configure(conf):
                         bool(conf.env['BUILD_TESTS']))
     autowaf.display_msg(conf, "Dynamic manifest support",
                         bool(conf.env['LILV_DYN_MANIFEST']))
+    autowaf.display_msg(conf, "State/Preset support",
+                        conf.is_defined('HAVE_LV2_STATE'))
     autowaf.display_msg(conf, "Python bindings",
                         conf.is_defined('LILV_PYTHON'))
     print('')
@@ -154,6 +177,7 @@ def build(bld):
         src/port.c
         src/query.c
         src/scalepoint.c
+        src/state.c
         src/ui.c
         src/util.c
         src/world.c

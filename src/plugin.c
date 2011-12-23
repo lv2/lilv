@@ -670,7 +670,7 @@ lilv_plugin_has_extension_data(const LilvPlugin* p,
 		return false;
 	}
 }
-	
+
 LILV_API
 LilvNodes*
 lilv_plugin_get_extension_data(const LilvPlugin* p)
@@ -833,8 +833,11 @@ LilvNodes*
 lilv_plugin_get_related(const LilvPlugin* plugin, const LilvNode* type)
 {
 	LilvWorld* const world   = plugin->world;
-	LilvNodes* const related = lilv_world_find_nodes(
-		world, NULL, world->lv2_applies_to_val, lilv_plugin_get_uri(plugin));
+	LilvNodes* const related = lilv_world_query_values_internal(
+		world,
+		NULL,
+		world->lv2_appliesTo_node,
+		lilv_plugin_get_uri(plugin)->val.uri_val);
 
 	if (!type) {
 		return related;
@@ -855,13 +858,6 @@ lilv_plugin_get_related(const LilvPlugin* plugin, const LilvNode* type)
 
 	lilv_nodes_free(related);
 	return matches;
-}
-
-static size_t
-file_sink(const void* buf, size_t len, void* stream)
-{
-	FILE* file = (FILE*)stream;
-	return fwrite(buf, 1, len, file);
 }
 
 static SerdEnv*
@@ -910,7 +906,7 @@ lilv_plugin_write_description(LilvWorld*        world,
 		SERD_STYLE_ABBREVIATED|SERD_STYLE_CURIED,
 		env,
 		NULL,
-		file_sink,
+		serd_file_sink,
 		plugin_file);
 
 	// Write prefixes if this is a new file
@@ -950,7 +946,7 @@ lilv_plugin_write_manifest_entry(LilvWorld*        world,
 		SERD_STYLE_ABBREVIATED|SERD_STYLE_CURIED,
 		env,
 		NULL,
-		file_sink,
+		serd_file_sink,
 		manifest_file);
 
 	// Write prefixes if this is a new file

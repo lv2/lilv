@@ -461,7 +461,7 @@ ZIX_API
 void*
 zix_tree_get(ZixTreeIter* ti)
 {
-	return ti->data;
+	return ti ? ti->data : NULL;
 }
 
 ZIX_API

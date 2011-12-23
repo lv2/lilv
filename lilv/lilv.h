@@ -27,6 +27,7 @@
 #include <stdio.h>
 
 #include "lv2/lv2plug.in/ns/lv2core/lv2.h"
+#include "lv2/lv2plug.in/ns/ext/urid/urid.h"
 
 #ifdef LILV_SHARED
 #    ifdef __WIN32__
@@ -74,6 +75,7 @@ typedef struct LilvUIImpl          LilvUI;           /**< Plugin UI. */
 typedef struct LilvNodeImpl        LilvNode;         /**< Typed Value. */
 typedef struct LilvWorldImpl       LilvWorld;        /**< Lilv World. */
 typedef struct LilvInstanceImpl    LilvInstance;     /**< Plugin instance. */
+typedef struct LilvStateImpl       LilvState;        /**< Plugin state. */
 
 typedef void LilvIter;           /**< Collection iterator */
 typedef void LilvPluginClasses;  /**< set<PluginClass>. */
@@ -1090,6 +1092,170 @@ LILV_API
 LilvScalePoints*
 lilv_port_get_scale_points(const LilvPlugin* plugin,
                            const LilvPort*   port);
+
+/**
+   @}
+   @name Plugin State
+   @{
+*/
+
+/**
+   Free @c state.
+*/
+LILV_API
+void
+lilv_state_free(LilvState* state);
+
+/**
+   Get the URI of the plugin @c state applies to.
+*/
+LILV_API
+const LilvNode*
+lilv_state_get_plugin_uri(const LilvState* state);
+
+/**
+   Get the label of @c state.
+*/
+LILV_API
+const char*
+lilv_state_get_label(const LilvState* state);
+
+/**
+   Set the label of @c state.
+*/
+LILV_API
+void
+lilv_state_set_label(LilvState*  state,
+                     const char* label);
+
+/**
+   Load a state snapshot from @c world's RDF model.
+   @param subject The subject of the state description (e.g. a preset URI).
+   @return A new LilvState which must be freed with lilv_state_free().
+*/
+LILV_API
+LilvState*
+lilv_state_new_from_world(LilvWorld*      world,
+                          LV2_URID_Map*   map,
+                          const LilvNode* subject);
+
+/**
+   Load a state snapshot from a file.
+   @param subject The subject of the state description (e.g. a preset URI).
+   @param path The path of the file containing the state description.
+   @return A new LilvState which must be freed with lilv_state_free().
+
+   If @c subject is NULL, it is taken to be the URI of the file (i.e.
+   "<>" in Turtle).
+
+   This function parses the file separately to create the state, it does not
+   parse the file into the world model, i.e. the returned state is the only
+   new memory consumed once this function returns.
+*/
+LILV_API
+LilvState*
+lilv_state_new_from_file(LilvWorld*      world,
+                         LV2_URID_Map*   map,
+                         const LilvNode* subject,
+                         const char*     path);
+
+/**
+   Save state to a file.
+   @param unmap URID unmapper.
+   @param state State to save.
+   @param uri URI of state, may be NULL.
+   @param path Path of file to save state to, may be NULL.
+   @param manifest_path Path of manifest file to add entry to, may be NULL.
+
+   The format of state on disk is compatible with that defined in the LV2
+   preset extension, i.e. this function may be used to save presets which can
+   be loaded by any host.  If @c path is NULL, then the default user preset
+   bundle (~/.lv2/presets.lv2) is used.  In this case, the label of @c state
+   MUST be set since it is used to generate a filename.
+
+   If @c uri is NULL, the state will be saved without an absolute URI (but
+   the bundle will still work correctly as a preset bundle).
+*/
+LILV_API
+int
+lilv_state_save(LilvWorld*       world,
+                LV2_URID_Unmap*  unmap,
+                const LilvState* state,
+                const char*      uri,
+                const char*      path,
+                const char*      manifest_path);
+
+/**
+   Function to get a port value.
+   @return A node the caller (lilv) takes ownership of and must free.
+*/
+typedef LilvNode* (*LilvGetPortValueFunc)(const char* port_symbol,
+                                          void*       user_data);
+
+/**
+   Create a new state snapshot from a plugin instance.
+   @param plugin The plugin this state applies to.
+   @param instance An instance of @c plugin.
+   @param flags Bitwise OR of LV2_State_Flags values.
+   @param features Features to pass LV2_State_Interface.save().
+   @return A new LilvState which must be freed with lilv_state_free().
+
+   The returned state will have all properties set from the plugin, but no port
+   values set (since it is impossible for Lilv to do this in general).  To get
+   a complete snapshot of plugin state, call this function, then set the
+   appropriate port values with lilv_state_set_port_value.
+
+   This function may be called simultaneously with any instance function
+   (except discovery functions) unless the threading class of that function
+   explicitly disallows this.
+
+   See <a href="http://lv2plug.in/ns/ext/state/state.h">state.h</a> from the
+   LV2 State extension for details on the @c flags and @c features parameters.
+*/
+LILV_API
+LilvState*
+lilv_state_new_from_instance(const LilvPlugin*          plugin,
+                             LilvInstance*              instance,
+                             LilvGetPortValueFunc       get_value,
+                             void*                      user_data,
+                             uint32_t                   flags,
+                             const LV2_Feature *const * features);
+
+/**
+   Function to set a port value.
+*/
+typedef void (*LilvSetPortValueFunc)(const char*     port_symbol,
+                                     const LilvNode* value,
+                                     void*           user_data);
+
+/**
+   Restore a plugin instance from a state snapshot.
+   @param state The state to restore, which must apply to the correct plugin.
+   @param instance An instance of the plugin @c state applies to.
+   @param set_value A function to set a port value (may be NULL).
+   @param flags Bitwise OR of LV2_State_Flags values.
+   @param features Features to pass LV2_State_Interface.restore().
+
+   This will set all the properties of @c instance to the values stored in @c
+   state.  If @c set_value is provided, it will be called (with the given @c
+   user_data) to restore each port value, otherwise the host must restore the
+   port values itself (using lilv_state_get_port_value) in order to completely
+   restore @c state.
+
+   This function is in the "instantiation" threading class, i.e. it MUST NOT be
+   called simultaneously with any function on the same plugin instance.
+
+   See <a href="http://lv2plug.in/ns/ext/state/state.h">state.h</a> from the
+   LV2 State extension for details on the @c flags and @c features parameters.
+*/
+LILV_API
+void
+lilv_state_restore(const LilvState*           state,
+                   LilvInstance*              instance,
+                   LilvSetPortValueFunc       set_value,
+                   void*                      user_data,
+                   uint32_t                   flags,
+                   const LV2_Feature *const * features);
 
 /**
    @}

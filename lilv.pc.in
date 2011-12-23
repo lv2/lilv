@@ -6,6 +6,6 @@ includedir=@INCLUDEDIR@
 Name: Lilv
 Version: @LILV_VERSION@
 Description: Simple C library for hosting LV2 plugins
-Requires: lv2core
+Requires: lv2core lv2-lv2plug.in-ns-ext-state
 Libs: -L${libdir} -l@LIB_LILV@ -ldl
 Cflags: -I${includedir}/lilv-@LILV_MAJOR_VERSION@

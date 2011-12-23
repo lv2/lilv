@@ -65,7 +65,6 @@ struct LilvPortImpl {
 	LilvNodes* classes;  ///< rdf:type
 };
 
-
 struct LilvSpecImpl {
 	SordNode*            spec;
 	SordNode*            bundle;
@@ -132,6 +131,7 @@ struct LilvWorldImpl {
 	LilvNodes*         loaded_files;
 	SordNode*          dc_replaces_node;
 	SordNode*          dyn_manifest_node;
+	SordNode*          lv2_appliesTo_node;
 	SordNode*          lv2_binary_node;
 	SordNode*          lv2_default_node;
 	SordNode*          lv2_index_node;
@@ -143,6 +143,7 @@ struct LilvWorldImpl {
 	SordNode*          lv2_reportslatency_node;
 	SordNode*          lv2_specification_node;
 	SordNode*          lv2_symbol_node;
+	SordNode*          pset_value_node;
 	SordNode*          rdf_a_node;
 	SordNode*          rdf_value_node;
 	SordNode*          rdfs_class_node;
@@ -154,7 +155,6 @@ struct LilvWorldImpl {
 	SordNode*          xsd_double_node;
 	SordNode*          xsd_integer_node;
 	LilvNode*          doap_name_val;
-	LilvNode*          lv2_applies_to_val;
 	LilvNode*          lv2_extensionData_val;
 	LilvNode*          lv2_name_val;
 	LilvNode*          lv2_optionalFeature_val;
@@ -287,6 +287,13 @@ lilv_match_subject(SordIter* iter) {
 	SordQuad tup;
 	sord_iter_get(iter, tup);
 	return tup[SORD_SUBJECT];
+}
+
+static inline const SordNode*
+lilv_match_predicate(SordIter* iter) {
+	SordQuad tup;
+	sord_iter_get(iter, tup);
+	return tup[SORD_PREDICATE];
 }
 
 static inline const SordNode*

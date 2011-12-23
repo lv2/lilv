@@ -14,7 +14,7 @@
   OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 */
 
-#define _POSIX_SOURCE 1
+#define _POSIX_SOURCE 1 /* for wordexp */
 
 #include <assert.h>
 #include <errno.h>
@@ -22,11 +22,12 @@
 #include <string.h>
 
 #include <dirent.h>
-#ifdef HAVE_WORDEXP
-#include <wordexp.h>
-#endif
 
 #include "lilv_internal.h"
+
+#ifdef HAVE_WORDEXP
+#    include <wordexp.h>
+#endif
 
 LILV_API
 LilvWorld*
@@ -48,14 +49,16 @@ lilv_world_new(void)
 	world->loaded_files   = zix_tree_new(
 		false, lilv_resource_node_cmp, NULL, (ZixDestroyFunc)lilv_node_free);
 
-#define NS_DYNMAN  "http://lv2plug.in/ns/ext/dynmanifest#"
 #define NS_DCTERMS "http://purl.org/dc/terms/"
+#define NS_DYNMAN  "http://lv2plug.in/ns/ext/dynmanifest#"
+#define NS_PSET    "http://lv2plug.in/ns/ext/presets#"
 
 #define NEW_URI(uri)     sord_new_uri(world->world, (const uint8_t*)uri)
 #define NEW_URI_VAL(uri) lilv_new_uri(world, (const char*)(uri));
 
 	world->dc_replaces_node         = NEW_URI(NS_DCTERMS   "replaces");
 	world->dyn_manifest_node        = NEW_URI(NS_DYNMAN    "DynManifest");
+	world->lv2_appliesTo_node       = NEW_URI(LILV_NS_LV2  "appliesTo");
 	world->lv2_binary_node          = NEW_URI(LILV_NS_LV2  "binary");
 	world->lv2_default_node         = NEW_URI(LILV_NS_LV2  "default");
 	world->lv2_index_node           = NEW_URI(LILV_NS_LV2  "index");
@@ -67,6 +70,7 @@ lilv_world_new(void)
 	world->lv2_reportslatency_node  = NEW_URI(LILV_NS_LV2  "reportsLatency");
 	world->lv2_specification_node   = NEW_URI(LILV_NS_LV2  "Specification");
 	world->lv2_symbol_node          = NEW_URI(LILV_NS_LV2  "symbol");
+	world->pset_value_node          = NEW_URI(NS_PSET "value");
 	world->rdf_a_node               = NEW_URI(LILV_NS_RDF  "type");
 	world->rdf_value_node           = NEW_URI(LILV_NS_RDF  "value");
 	world->rdfs_class_node          = NEW_URI(LILV_NS_RDFS "Class");
@@ -79,7 +83,6 @@ lilv_world_new(void)
 	world->xsd_integer_node         = NEW_URI(LILV_NS_XSD  "integer");
 
 	world->doap_name_val           = NEW_URI_VAL(LILV_NS_DOAP "name");
-	world->lv2_applies_to_val      = NEW_URI_VAL(LILV_NS_LV2  "appliesTo");
 	world->lv2_extensionData_val   = NEW_URI_VAL(LILV_NS_LV2  "extensionData");
 	world->lv2_name_val            = NEW_URI_VAL(LILV_NS_LV2  "name");
 	world->lv2_optionalFeature_val = NEW_URI_VAL(LILV_NS_LV2  "optionalFeature");
@@ -113,6 +116,7 @@ lilv_world_free(LilvWorld* world)
 
 	sord_node_free(world->world, world->dc_replaces_node);
 	sord_node_free(world->world, world->dyn_manifest_node);
+	sord_node_free(world->world, world->lv2_appliesTo_node);
 	sord_node_free(world->world, world->lv2_binary_node);
 	sord_node_free(world->world, world->lv2_default_node);
 	sord_node_free(world->world, world->lv2_index_node);
@@ -124,6 +128,7 @@ lilv_world_free(LilvWorld* world)
 	sord_node_free(world->world, world->lv2_reportslatency_node);
 	sord_node_free(world->world, world->lv2_specification_node);
 	sord_node_free(world->world, world->lv2_symbol_node);
+	sord_node_free(world->world, world->pset_value_node);
 	sord_node_free(world->world, world->rdf_a_node);
 	sord_node_free(world->world, world->rdf_value_node);
 	sord_node_free(world->world, world->rdfs_class_node);
@@ -135,7 +140,6 @@ lilv_world_free(LilvWorld* world)
 	sord_node_free(world->world, world->xsd_double_node);
 	sord_node_free(world->world, world->xsd_integer_node);
 	lilv_node_free(world->doap_name_val);
-	lilv_node_free(world->lv2_applies_to_val);
 	lilv_node_free(world->lv2_extensionData_val);
 	lilv_node_free(world->lv2_name_val);
 	lilv_node_free(world->lv2_optionalFeature_val);
@@ -585,7 +589,7 @@ expand(const char* path)
 	wordexp_t p;
 	if (wordexp(path, &p, 0)) {
 		LILV_ERRORF("Error expanding path `%s'\n", path);
-		return lilv_strdup (path);
+		return lilv_strdup(path);
 	}
 	if (p.we_wordc == 0) {
 		/* Literal directory path (e.g. no variables or ~) */

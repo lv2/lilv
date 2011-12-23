@@ -16,6 +16,10 @@ lilv (UNRELEASED) unstable; urgency=low
   * Print presets in lv2info
   * Remove locale smashing kludges and use new serd functions for converting
     nodes to/from numbers.
+  * Add LilvState API for handling plugin state.  This makes it simple to
+    save and restore plugin state both in memory and on disk, as well as
+    save presets in a host-sharable way since the disk format is identical
+    to the LV2 presets format.
 
  -- David Robillard <d@drobilla.net>  (UNRELEASED)
 
