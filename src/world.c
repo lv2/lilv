@@ -77,6 +77,7 @@ lilv_world_new(void)
 	world->rdfs_label_node          = NEW_URI(LILV_NS_RDFS "label");
 	world->rdfs_seealso_node        = NEW_URI(LILV_NS_RDFS "seeAlso");
 	world->rdfs_subclassof_node     = NEW_URI(LILV_NS_RDFS "subClassOf");
+	world->xsd_base64Binary_node    = NEW_URI(LILV_NS_XSD  "base64Binary");
 	world->xsd_boolean_node         = NEW_URI(LILV_NS_XSD  "boolean");
 	world->xsd_decimal_node         = NEW_URI(LILV_NS_XSD  "decimal");
 	world->xsd_double_node          = NEW_URI(LILV_NS_XSD  "double");
@@ -135,6 +136,7 @@ lilv_world_free(LilvWorld* world)
 	sord_node_free(world->world, world->rdfs_label_node);
 	sord_node_free(world->world, world->rdfs_seealso_node);
 	sord_node_free(world->world, world->rdfs_subclassof_node);
+	sord_node_free(world->world, world->xsd_base64Binary_node);
 	sord_node_free(world->world, world->xsd_boolean_node);
 	sord_node_free(world->world, world->xsd_decimal_node);
 	sord_node_free(world->world, world->xsd_double_node);

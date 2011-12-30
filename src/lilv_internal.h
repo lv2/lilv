@@ -150,6 +150,7 @@ struct LilvWorldImpl {
 	SordNode*          rdfs_label_node;
 	SordNode*          rdfs_seealso_node;
 	SordNode*          rdfs_subclassof_node;
+	SordNode*          xsd_base64Binary_node;
 	SordNode*          xsd_boolean_node;
 	SordNode*          xsd_decimal_node;
 	SordNode*          xsd_double_node;
@@ -168,7 +169,8 @@ typedef enum {
 	LILV_VALUE_INT,
 	LILV_VALUE_FLOAT,
 	LILV_VALUE_BOOL,
-	LILV_VALUE_BLANK
+	LILV_VALUE_BLANK,
+	LILV_VALUE_BLOB
 } LilvNodeType;
 
 struct LilvNodeImpl {
@@ -179,6 +181,10 @@ struct LilvNodeImpl {
 		float     float_val;
 		bool      bool_val;
 		SordNode* uri_val;
+		struct {
+			void*  buf;
+			size_t size;
+		} blob_val;
 	} val;
 	LilvNodeType  type;
 };

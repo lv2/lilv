@@ -27,6 +27,8 @@ lilv_plugin_instantiate(const LilvPlugin*        plugin,
                         double                   sample_rate,
                         const LV2_Feature*const* features)
 {
+	lilv_plugin_load_if_necessary(plugin);
+
 	LilvInstance* result = NULL;
 
 	const LV2_Feature** local_features = NULL;

@@ -73,6 +73,14 @@ property_cmp(const void* a, const void* b)
 	return pa->key - pb->key;
 }
 
+static int
+value_cmp(const void* a, const void* b)
+{
+	const PortValue* pa = (const PortValue*)a;
+	const PortValue* pb = (const PortValue*)b;
+	return strcmp(pa->symbol, pb->symbol);
+}
+
 LILV_API
 const LilvNode*
 lilv_state_get_plugin_uri(const LilvState* state)
@@ -131,7 +139,7 @@ store_callback(void*       handle,
 	state->props = realloc(state->props,
 	                       (++state->num_props) * sizeof(Property));
 	Property* const prop = &state->props[state->num_props - 1];
-	
+
 	prop->value = malloc(size);
 	memcpy(prop->value, value, size);
 
@@ -183,10 +191,12 @@ lilv_state_new_from_instance(const LilvPlugin*          plugin,
 #endif  // HAVE_LV2_STATE
 
 	qsort(state->props, state->num_props, sizeof(Property), property_cmp);
+	qsort(state->values, state->num_values, sizeof(PortValue), value_cmp);
 
 	return state;
 }
 
+#ifdef HAVE_LV2_STATE
 static const void*
 retrieve_callback(void*     handle,
                   uint32_t  key,
@@ -208,6 +218,7 @@ retrieve_callback(void*     handle,
 	}
 	return NULL;
 }
+#endif  // HAVE_LV2_STATE
 
 LILV_API
 void
@@ -261,9 +272,6 @@ property_from_node(LilvWorld*      world,
 		prop->type = map->map(map->handle, NS_ATOM "URID");
 		prop->size = sizeof(uint32_t);
 		break;
-	case LILV_VALUE_BLANK:
-		// TODO: Hmm...
-		break;
 	case LILV_VALUE_STRING:
 		prop->size = strlen(str) + 1;
 		prop->value = malloc(prop->size);
@@ -288,8 +296,11 @@ property_from_node(LilvWorld*      world,
 		prop->type = map->map(map->handle, NS_ATOM "Float");
 		prop->size = sizeof(float);
 		break;
+	case LILV_VALUE_BLANK:
+	case LILV_VALUE_BLOB:
+		// TODO: Blank nodes in state
+		break;
 	}
-	prop->flags = LV2_STATE_IS_POD|LV2_STATE_IS_PORTABLE;
 }
 
 static LilvState*
@@ -302,9 +313,9 @@ new_state_from_model(LilvWorld*      world,
 	memset(state, '\0', sizeof(LilvState));
 
 	// Get the plugin URI this state applies to
-	const SordQuad pat1 = {
+	const SordQuad upat = {
 		node, world->lv2_appliesTo_node, NULL, NULL };
-	SordIter* i = sord_find(model, pat1);
+	SordIter* i = sord_find(model, upat);
 	if (i) {
 		state->plugin_uri = lilv_node_new_from_node(
 			world, lilv_match_object(i));
@@ -314,9 +325,19 @@ new_state_from_model(LilvWorld*      world,
 		            sord_node_get_string(node));
 	}
 
+	// Get the state label
+	const SordQuad lpat = {
+		node, world->rdfs_label_node, NULL, NULL };
+	i = sord_find(model, lpat);
+	if (i) {
+		state->label = lilv_strdup(
+			(const char*)sord_node_get_string(lilv_match_object(i)));
+		sord_iter_free(i);
+	}
+
 	// Get port values
-	const SordQuad pat2 = { node, world->lv2_port_node, NULL, NULL };
-	SordIter* ports = sord_find(model, pat2);
+	const SordQuad ppat = { node, world->lv2_port_node, NULL, NULL };
+	SordIter* ports = sord_find(model, ppat);
 	FOREACH_MATCH(ports) {
 		const SordNode* port   = lilv_match_object(ports);
 		const SordNode* label  = get_one(model, port, world->rdfs_label_node);
@@ -346,31 +367,53 @@ new_state_from_model(LilvWorld*      world,
 	SordNode* statep = sord_new_uri(world->world, USTR(NS_STATE "state"));
 	const SordNode* state_node = get_one(model, node, statep);
 	if (state_node) {
-		const SordQuad pat3  = { state_node, NULL, NULL };
-		SordIter*      props = sord_find(model, pat3);
+		const SordQuad spat  = { state_node, NULL, NULL };
+		SordIter*      props = sord_find(model, spat);
 		FOREACH_MATCH(props) {
-			const SordNode* p     = lilv_match_predicate(props);
-			const SordNode* o     = lilv_match_object(props);
-			LilvNode*       onode = lilv_node_new_from_node(world, o);
-			
-			Property prop = { NULL, 0, 0, 0, 0 };
+			const SordNode* p = lilv_match_predicate(props);
+			const SordNode* o = lilv_match_object(props);
+
+			uint32_t flags = 0;
+#ifdef HAVE_LV2_STATE
+			flags = LV2_STATE_IS_POD|LV2_STATE_IS_PORTABLE;
+#endif
+			Property prop = { NULL, 0, 0, 0, flags };
 			prop.key      = map->map(map->handle,
 			                         (const char*)sord_node_get_string(p));
-			property_from_node(world, map, onode, &prop);
+
+			if (sord_node_get_type(o) == SORD_BLANK) {
+				const SordNode* type  = get_one(model, o, world->rdf_a_node);
+				const SordNode* value = get_one(model, o, world->rdf_value_node);
+				if (type && value) {
+					size_t         len;
+					const uint8_t* b64 = sord_node_get_string_counted(value, &len);
+					prop.value = serd_base64_decode(b64, len, &prop.size);
+					prop.type = map->map(map->handle,
+					                     (const char*)sord_node_get_string(type));
+				} else {
+					LILV_ERRORF("Unable to parse blank node property <%p>\n",
+					            sord_node_get_string(p));
+				}
+			} else {
+				LilvNode* onode = lilv_node_new_from_node(world, o);
+				property_from_node(world, map, onode, &prop);
+				lilv_node_free(onode);
+			}
+
 			if (prop.value) {
 				state->props = realloc(
 					state->props, (++state->num_props) * sizeof(Property));
 				state->props[state->num_props - 1] = prop;
 			}
 
-			lilv_node_free(onode);
 		}
 		sord_iter_free(props);
 	}
 	sord_node_free(world->world, statep);
 
 	qsort(state->props, state->num_props, sizeof(Property), property_cmp);
-	
+	qsort(state->values, state->num_values, sizeof(PortValue), value_cmp);
+
 	return state;
 }
 
@@ -425,10 +468,14 @@ lilv_state_new_from_file(LilvWorld*      world,
 }
 
 static LilvNode*
-node_from_property(LilvWorld* world, const char* type, void* value, size_t size)
+node_from_property(LilvWorld* world, LV2_URID_Unmap* unmap,
+                   const char* type, void* value, size_t size)
 {
 	if (!strcmp(type, NS_ATOM "String")) {
 		return lilv_new_string(world, (const char*)value);
+	} else if (!strcmp(type, NS_ATOM "URID")) {
+		const char* str = unmap->unmap(unmap->handle, *(uint32_t*)value);
+		return lilv_new_uri(world, str);
 	} else if (!strcmp(type, NS_ATOM "Int32")) {
 		if (size == sizeof(int32_t)) {
 			return lilv_new_int(world, *(int32_t*)value);
@@ -491,8 +538,8 @@ add_state_to_manifest(const LilvNode* plugin_uri,
 {
 	FILE* fd = fopen((char*)manifest_path, "a");
 	if (!fd) {
-		fprintf(stderr, "error: Failed to open %s (%s)\n",
-		        manifest_path, strerror(errno));
+		LILV_ERRORF("Failed to open %s (%s)\n",
+		            manifest_path, strerror(errno));
 		return 4;
 	}
 
@@ -508,6 +555,7 @@ add_state_to_manifest(const LilvNode* plugin_uri,
 	SerdEnv* env = serd_env_new(NULL);
 	serd_env_set_prefix_from_strings(env, USTR("lv2"),  USTR(LILV_NS_LV2));
 	serd_env_set_prefix_from_strings(env, USTR("pset"), USTR(NS_PSET));
+	serd_env_set_prefix_from_strings(env, USTR("rdf"),  USTR(LILV_NS_RDF));
 	serd_env_set_prefix_from_strings(env, USTR("rdfs"), USTR(LILV_NS_RDFS));
 
 #if defined(HAVE_LOCKF) && defined(HAVE_FILENO)
@@ -607,15 +655,14 @@ lilv_state_save(LilvWorld*       world,
 
 		const char* const home = getenv("HOME");
 		if (!home) {
-			fprintf(stderr, "error: $HOME is undefined\n");
+			LILV_ERROR("$HOME is undefined\n");
 			return 2;
 		}
 
 		// Create ~/.lv2/
 		char* const lv2dir = lilv_strjoin(home, "/.lv2/", NULL);
 		if (mkdir(lv2dir, 0755) && errno != EEXIST) {
-			fprintf(stderr, "error: Unable to create %s (%s)\n",
-			        lv2dir, strerror(errno));
+			LILV_ERRORF("Unable to create %s (%s)\n", lv2dir, strerror(errno));
 			free(lv2dir);
 			return 3;
 		}
@@ -623,13 +670,12 @@ lilv_state_save(LilvWorld*       world,
 		// Create ~/.lv2/presets.lv2/
 		char* const bundle = lilv_strjoin(lv2dir, "presets.lv2/", NULL);
 		if (mkdir(bundle, 0755) && errno != EEXIST) {
-			fprintf(stderr, "error: Unable to create %s (%s)\n",
-			        lv2dir, strerror(errno));
+			LILV_ERRORF("Unable to create %s (%s)\n", lv2dir, strerror(errno));
 			free(lv2dir);
 			free(bundle);
 			return 4;
 		}
-		
+
 		char* const filename  = pathify(state->label);
 		default_path          = lilv_strjoin(bundle, filename, ".ttl", NULL);
 		default_manifest_path = lilv_strjoin(bundle, "manifest.ttl", NULL);
@@ -648,8 +694,7 @@ lilv_state_save(LilvWorld*       world,
 
 	FILE* fd = fopen(path, "w");
 	if (!fd) {
-		fprintf(stderr, "error: Failed to open %s (%s)\n",
-		        path, strerror(errno));
+		LILV_ERRORF("Failed to open %s (%s)\n", path, strerror(errno));
 		free(default_path);
 		free(default_manifest_path);
 		return 4;
@@ -658,6 +703,7 @@ lilv_state_save(LilvWorld*       world,
 	SerdEnv* env = serd_env_new(NULL);
 	serd_env_set_prefix_from_strings(env, USTR("lv2"),   USTR(LILV_NS_LV2));
 	serd_env_set_prefix_from_strings(env, USTR("pset"),  USTR(NS_PSET));
+	serd_env_set_prefix_from_strings(env, USTR("rdf"),   USTR(LILV_NS_RDF));
 	serd_env_set_prefix_from_strings(env, USTR("rdfs"),  USTR(LILV_NS_RDFS));
 	serd_env_set_prefix_from_strings(env, USTR("state"), USTR(NS_STATE));
 
@@ -744,20 +790,50 @@ lilv_state_save(LilvWorld*       world,
 			LILV_WARNF("Failed to unmap property key `%d'\n", prop->key);
 		} else if (!type) {
 			LILV_WARNF("Failed to unmap property type `%d'\n", prop->type);
-		} else if (!(prop->flags & LV2_STATE_IS_PORTABLE)) {
+#ifdef HAVE_LV2_STATE
+		} else if (!(prop->flags & LV2_STATE_IS_PORTABLE)
+		           || !(prop->flags & LV2_STATE_IS_POD)) {
 			LILV_WARNF("Unable to save non-portable property <%s>\n", type);
+#endif
 		} else {
+			SerdNode t;
+			p = serd_node_from_string(SERD_URI, USTR(key));
 			LilvNode* const node = node_from_property(
-				world, type, prop->value, prop->size);
+				world, unmap, type, prop->value, prop->size);
 			if (node) {
-				p = serd_node_from_string(SERD_URI, USTR(key));
-				SerdNode t;
 				node_to_serd(node, &o, &t);
 				serd_writer_write_statement(
 					writer, SERD_ANON_CONT, NULL,
 					&state_node, &p, &o, &t, NULL);
 			} else {
-				LILV_WARNF("Unable to save property type <%s>\n", type);
+				char name[16];
+				snprintf(name, sizeof(name), "b%u", i);
+				const SerdNode blank = serd_node_from_string(
+					SERD_BLANK, (const uint8_t*)name);
+
+				// <state> <key> [
+				serd_writer_write_statement(
+					writer, SERD_ANON_O_BEGIN, NULL,
+					&state_node, &p, &blank, NULL, NULL);
+
+				// rdf:type <type>
+				p = serd_node_from_string(SERD_URI, USTR(LILV_NS_RDF "type"));
+				o = serd_node_from_string(SERD_URI, USTR(type));
+				serd_writer_write_statement(
+					writer, SERD_ANON_CONT, NULL,
+					&blank, &p, &o, NULL, NULL);
+
+				// rdf:value "string"^^<xsd:base64Binary>
+				SerdNode blob = serd_node_new_blob(prop->value, prop->size, true);
+				p = serd_node_from_string(SERD_URI, USTR(LILV_NS_RDF "value"));
+				t = serd_node_from_string(SERD_URI,
+				                          USTR(LILV_NS_XSD "base64Binary"));
+				serd_writer_write_statement(
+					writer, SERD_ANON_CONT, NULL,
+					&blank, &p, &blob, &t, NULL);
+				serd_node_free(&blob);
+
+				serd_writer_end_anon(writer, &blank);  // ]
 			}
 		}
 	}
@@ -778,6 +854,44 @@ lilv_state_save(LilvWorld*       world,
 	free(default_path);
 	free(default_manifest_path);
 	return 0;
+}
+
+LILV_API
+bool
+lilv_state_equals(const LilvState* a, const LilvState* b)
+{
+	if (!lilv_node_equals(a->plugin_uri, b->plugin_uri)
+	    || (a->label && !b->label)
+	    || (b->label && !a->label)
+	    || (a->label && b->label && strcmp(a->label, b->label))
+	    || a->num_props != b->num_props
+	    || a->num_values != b->num_values) {
+		return false;
+	}
+
+	for (uint32_t i = 0; i < a->num_values; ++i) {
+		PortValue* const av = &a->values[i];
+		PortValue* const bv = &b->values[i];
+		if (strcmp(av->symbol, bv->symbol)) {
+			return false;
+		} else if (!lilv_node_equals(av->value, bv->value)) {
+			return false;
+		}
+	}
+
+	for (uint32_t i = 0; i < a->num_props; ++i) {
+		Property* const ap = &a->props[i];
+		Property* const bp = &b->props[i];
+		if (ap->size != bp->size
+		    || ap->key != bp->key
+		    || ap->type != bp->type
+		    || ap->flags != bp->flags
+		    || memcmp(ap->value, bp->value, ap->size)) {
+			return false;
+		}
+	}
+
+	return true;
 }
 
 LILV_API

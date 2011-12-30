@@ -69,11 +69,13 @@ def configure(conf):
 
     autowaf.check_pkg(conf, 'lv2core', uselib_store='LV2CORE', mandatory=True)
     autowaf.check_pkg(conf, 'serd-0', uselib_store='SERD',
-                      atleast_version='0.7.0', mandatory=True)
+                      atleast_version='0.9.0', mandatory=True)
     autowaf.check_pkg(conf, 'sord-0', uselib_store='SORD',
                       atleast_version='0.5.0', mandatory=True)
+    autowaf.check_pkg(conf, 'lv2-lv2plug.in-ns-ext-urid',
+                      uselib_store='LV2_URID', mandatory=True)
     autowaf.check_pkg(conf, 'lv2-lv2plug.in-ns-ext-state',
-                      uselib_store='LV2_STATE', mandatory=True)
+                      uselib_store='LV2_STATE', mandatory=False)
 
     conf.check_cc(function_name='wordexp',
                   header_name='wordexp.h',
@@ -204,7 +206,7 @@ def build(bld):
               cflags          = libflags + [ '-DLILV_SHARED',
                                              '-DLILV_INTERNAL' ],
               lib             = lib)
-    autowaf.use_lib(bld, obj, 'SORD LV2CORE')
+    autowaf.use_lib(bld, obj, 'SORD LV2CORE LV2_STATE LV2_URID')
 
     # Static library
     if bld.env['BUILD_STATIC']:
@@ -217,9 +219,30 @@ def build(bld):
                   vnum            = LILV_LIB_VERSION,
                   install_path    = '${LIBDIR}',
                   cflags          = [ '-DLILV_INTERNAL' ])
-        autowaf.use_lib(bld, obj, 'SORD LV2CORE')
+        autowaf.use_lib(bld, obj, 'SORD LV2CORE LV2_STATE LV2_URID')
 
     if bld.env['BUILD_TESTS']:
+        # Test plugin library
+        penv          = bld.env.derive()
+        shlib_pattern = penv['cshlib_PATTERN']
+        if shlib_pattern.startswith('lib'):
+            shlib_pattern = shlib_pattern[3:]
+        penv['cshlib_PATTERN'] = shlib_pattern
+        obj = bld(features     = 'c cshlib',
+                  env          = penv,
+                  source       = 'test/test_plugin.c',
+                  name         = 'test_plugin',
+                  target       = 'test/test_plugin.lv2/test_plugin',
+                  install_path = None,
+                  uselib       = 'LV2CORE LV2_STATE LV2_URID')
+
+        # Test plugin data files
+        for i in [ 'manifest.ttl', 'test_plugin.ttl' ]:
+            bld(rule         = 'cp ${SRC} ${TGT}',
+                source       = 'test/' + i,
+                target       = 'test/test_plugin.lv2/' + i,
+                install_path = None)
+
         # Static profiled library (for unit test code coverage)
         obj = bld(features     = 'c cstlib',
                   source       = lib_source,
@@ -230,7 +253,7 @@ def build(bld):
                   cflags       = [ '-fprofile-arcs', '-ftest-coverage',
                                    '-DLILV_INTERNAL' ],
                   lib          = lib + ['gcov'])
-        autowaf.use_lib(bld, obj, 'SORD LV2CORE')
+        autowaf.use_lib(bld, obj, 'SORD LV2CORE LV2_STATE LV2_URID')
 
         # Unit test program
         obj = bld(features     = 'c cprogram',
@@ -241,8 +264,10 @@ def build(bld):
                   lib          = lib + ['gcov'],
                   target       = 'test/lilv_test',
                   install_path = '',
+                  defines      = ['LILV_TEST_BUNDLE=\"%s/\"' % os.path.abspath(
+                    os.path.join(out, 'test', 'test_plugin.lv2'))],
                   cflags       = [ '-fprofile-arcs',  '-ftest-coverage' ])
-        autowaf.use_lib(bld, obj, 'SORD LV2CORE')
+        autowaf.use_lib(bld, obj, 'SORD LV2CORE LV2_STATE LV2_URID')
 
     # Utilities
     if bld.env['BUILD_UTILS']:

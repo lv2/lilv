@@ -21,7 +21,7 @@
 #include "lilv_internal.h"
 
 static void
-lilv_node_set_numerics_from_string(LilvNode* val)
+lilv_node_set_numerics_from_string(LilvNode* val, size_t len)
 {
 	char* endptr;
 
@@ -39,6 +39,9 @@ lilv_node_set_numerics_from_string(LilvNode* val)
 	case LILV_VALUE_BOOL:
 		val->val.bool_val = (!strcmp(val->str_val, "true"));
 		break;
+	case LILV_VALUE_BLOB:
+		val->val.blob_val.buf = serd_base64_decode(
+			(const uint8_t*)val->str_val, len, &val->val.blob_val.size);
 	}
 }
 
@@ -66,6 +69,7 @@ lilv_node_new(LilvWorld* world, LilvNodeType type, const char* str)
 	case LILV_VALUE_INT:
 	case LILV_VALUE_FLOAT:
 	case LILV_VALUE_BOOL:
+	case LILV_VALUE_BLOB:
 		val->str_val = lilv_strdup(str);
 		break;
 	}
@@ -80,6 +84,7 @@ lilv_node_new_from_node(LilvWorld* world, const SordNode* node)
 	LilvNode*    result       = NULL;
 	SordNode*    datatype_uri = NULL;
 	LilvNodeType type         = LILV_VALUE_STRING;
+	size_t       len          = 0;
 
 	switch (sord_node_get_type(node)) {
 	case SORD_URI:
@@ -106,19 +111,15 @@ lilv_node_new_from_node(LilvWorld* world, const SordNode* node)
 				type = LILV_VALUE_FLOAT;
 			else if (sord_node_equals(datatype_uri, world->xsd_integer_node))
 				type = LILV_VALUE_INT;
+			else if (sord_node_equals(datatype_uri, world->xsd_base64Binary_node))
+				type = LILV_VALUE_BLOB;
 			else
 				LILV_ERRORF("Unknown datatype `%s'\n",
 				            sord_node_get_string(datatype_uri));
 		}
-		result = lilv_node_new(world, type, (const char*)sord_node_get_string(node));
-		switch (result->type) {
-		case LILV_VALUE_INT:
-		case LILV_VALUE_FLOAT:
-		case LILV_VALUE_BOOL:
-			lilv_node_set_numerics_from_string(result);
-		default:
-			break;
-		}
+		result = lilv_node_new(
+			world, type, (const char*)sord_node_get_string_counted(node, &len));
+		lilv_node_set_numerics_from_string(result, len);
 		break;
 	default:
 		assert(false);
@@ -237,6 +238,10 @@ lilv_node_equals(const LilvNode* value, const LilvNode* other)
 		return (value->val.float_val == other->val.float_val);
 	case LILV_VALUE_BOOL:
 		return (value->val.bool_val == other->val.bool_val);
+	case LILV_VALUE_BLOB:
+		return (value->val.blob_val.size == other->val.blob_val.size)
+			&& !memcmp(value->val.blob_val.buf, other->val.blob_val.buf,
+			           value->val.blob_val.size);
 	}
 
 	return false; /* shouldn't get here */
@@ -263,6 +268,7 @@ lilv_node_get_turtle_token(const LilvNode* value)
 		break;
 	case LILV_VALUE_STRING:
 	case LILV_VALUE_BOOL:
+	case LILV_VALUE_BLOB:
 		result = lilv_strdup(value->str_val);
 		break;
 	case LILV_VALUE_INT:

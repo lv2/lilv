@@ -1107,6 +1107,13 @@ void
 lilv_state_free(LilvState* state);
 
 /**
+   Return true iff @c a is equivalent to @c b.
+*/
+LILV_API
+bool
+lilv_state_equals(const LilvState* a, const LilvState* b);
+
+/**
    Get the URI of the plugin @c state applies to.
 */
 LILV_API

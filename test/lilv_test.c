@@ -28,6 +28,9 @@
 #include <math.h>
 
 #include "lilv/lilv.h"
+#include "../src/lilv_internal.h"
+
+#include "lv2/lv2plug.in/ns/ext/urid/urid.h"
 
 #define TEST_PATH_MAX 1024
 
@@ -972,6 +975,156 @@ test_ui(void)
 
 /*****************************************************************************/
 
+float in  = 1.0;
+float out = 42.0;
+
+LilvNode*
+get_port_value(const char* port_symbol, void* user_data)
+{
+	if (!strcmp(port_symbol, "input")) {
+		return lilv_new_float((LilvWorld*)user_data, in);
+	} else if (!strcmp(port_symbol, "output")) {
+		return lilv_new_float((LilvWorld*)user_data, out);
+	} else {
+		fprintf(stderr, "error: get_port_value for nonexistent port `%s'\n",
+		        port_symbol);
+		return NULL;
+	}
+}
+
+void
+set_port_value(const char*     port_symbol,
+               const LilvNode* value,
+               void*           user_data)
+{
+	if (!strcmp(port_symbol, "input")) {
+		in = lilv_node_as_float(value);
+	} else if (!strcmp(port_symbol, "output")) {
+		out = lilv_node_as_float(value);
+	} else {
+		fprintf(stderr, "error: set_port_value for nonexistent port `%s'\n",
+		        port_symbol);
+	}
+}
+
+char** uris   = NULL;
+size_t n_uris = 0;
+
+LV2_URID
+map_uri(LV2_URID_Map_Handle handle,
+        const char*         uri)
+{
+	for (size_t i = 0; i < n_uris; ++i) {
+		if (!strcmp(uris[i], uri)) {
+			return i + 1;
+		}
+	}
+
+	uris = realloc(uris, ++n_uris * sizeof(char*));
+	uris[n_uris - 1] = lilv_strdup(uri);
+	return n_uris;
+}
+
+const char*
+unmap_uri(LV2_URID_Map_Handle handle,
+          LV2_URID            urid)
+{
+	if (urid > 0 && urid <= n_uris) {
+		return uris[urid - 1];
+	}
+	return NULL;
+}
+
+int
+test_state(void)
+{
+	LilvWorld* world      = lilv_world_new();
+	LilvNode*  bundle_uri = lilv_new_uri(world, LILV_TEST_BUNDLE);
+	LilvNode*  plugin_uri = lilv_new_uri(world,
+	                                     "http://example.org/lilv-test-plugin");
+	lilv_world_load_bundle(world, bundle_uri);
+
+	const LilvPlugins* plugins = lilv_world_get_all_plugins(world);
+	const LilvPlugin*  plugin  = lilv_plugins_get_by_uri(plugins, plugin_uri);
+	TEST_ASSERT(plugin);
+
+	LV2_URID_Map       map           = { NULL, map_uri };
+	LV2_Feature        map_feature   = { LV2_URID_MAP_URI, &map };
+	LV2_URID_Unmap     unmap         = { NULL, unmap_uri };
+	LV2_Feature        unmap_feature = { LV2_URID_UNMAP_URI, &unmap };
+	const LV2_Feature* features[]    = { &map_feature, &unmap_feature, NULL };
+
+	LilvInstance* instance = lilv_plugin_instantiate(plugin, 48000.0, features);
+	TEST_ASSERT(instance);
+
+	lilv_instance_connect_port(instance, 0, &in);
+	lilv_instance_connect_port(instance, 1, &out);
+
+	lilv_instance_run(instance, 1);
+	TEST_ASSERT(in == 1.0);
+	TEST_ASSERT(out == 1.0);
+
+	// Get instance state state
+	LilvState* state = lilv_state_new_from_instance(
+		plugin, instance, get_port_value, world, 0, NULL);
+
+	// Get another instance state
+	LilvState* state2 = lilv_state_new_from_instance(
+		plugin, instance, get_port_value, world, 0, NULL);
+
+	// Ensure they are equal
+	TEST_ASSERT(lilv_state_equals(state, state2));
+
+	const LilvNode* state_plugin_uri = lilv_state_get_plugin_uri(state);
+	TEST_ASSERT(lilv_node_equals(state_plugin_uri, plugin_uri));
+
+	// Tinker with the label of the first state
+	TEST_ASSERT(lilv_state_get_label(state) == NULL);
+	lilv_state_set_label(state, "Test State Old Label");
+	TEST_ASSERT(!strcmp(lilv_state_get_label(state), "Test State Old Label"));
+	lilv_state_set_label(state, "Test State");
+	TEST_ASSERT(!strcmp(lilv_state_get_label(state), "Test State"));
+
+	TEST_ASSERT(!lilv_state_equals(state, state2));  // Label changed
+
+	// Run and get a new instance state (which should now differ)
+	lilv_instance_run(instance, 1);
+	LilvState* state3 = lilv_state_new_from_instance(
+		plugin, instance, get_port_value, world, 0, NULL);
+	TEST_ASSERT(!lilv_state_equals(state2, state3));  // num_runs changed
+
+	// Restore instance state to original state
+	lilv_state_restore(state2, instance, set_port_value, NULL, 0, NULL);
+
+	// Take a new snapshot and ensure it matches the set state
+	LilvState* state4 = lilv_state_new_from_instance(
+		plugin, instance, get_port_value, world, 0, NULL);
+	TEST_ASSERT(lilv_state_equals(state2, state4));
+
+	// Save state to a file
+	int ret = lilv_state_save(world, &unmap, state, NULL,
+	                          "state.ttl", "manifest.ttl");
+	TEST_ASSERT(!ret);
+
+	// Load state from file
+	LilvState* state5 = lilv_state_new_from_file(world, &map, NULL, "state.ttl");
+	TEST_ASSERT(lilv_state_equals(state, state5));  // Round trip accuracy
+	
+	lilv_state_free(state);
+	lilv_state_free(state2);
+	lilv_state_free(state3);
+	lilv_state_free(state4);
+	lilv_state_free(state5);
+
+	lilv_instance_free(instance);
+
+	lilv_node_free(bundle_uri);
+	lilv_world_free(world);
+	return 1;
+}
+
+/*****************************************************************************/
+
 /* add tests here */
 static struct TestCase tests[] = {
 	TEST_CASE(utils),
@@ -983,6 +1136,7 @@ static struct TestCase tests[] = {
 	TEST_CASE(plugin),
 	TEST_CASE(port),
 	TEST_CASE(ui),
+	TEST_CASE(state),
 	{ NULL, NULL }
 };
 
