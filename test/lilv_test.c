@@ -1151,6 +1151,70 @@ test_state(void)
 
 	lilv_node_free(bundle_uri);
 	lilv_world_free(world);
+
+	cleanup_uris();
+	return 1;
+}
+
+/*****************************************************************************/
+
+int
+test_bad_port_symbol(void)
+{
+	if (!start_bundle(MANIFEST_PREFIXES
+			":plug a lv2:Plugin ; lv2:binary <foo.so> ; rdfs:seeAlso <plugin.ttl> .\n",
+			BUNDLE_PREFIXES PREFIX_LV2EV
+			":plug a lv2:Plugin ; "
+			PLUGIN_NAME("Test plugin") " ; "
+			LICENSE_GPL " ; "
+			"doap:homepage <http://example.org/someplug> ; "
+			"lv2:port [ "
+			"  a lv2:ControlPort ; a lv2:InputPort ; "
+			"  lv2:index 0 ; lv2:symbol \"0invalid\" ;"
+			"  lv2:name \"Invalid\" ; "
+			"] ."))
+		return 0;
+
+	init_uris();
+
+	const LilvPlugins* plugins = lilv_world_get_all_plugins(world);
+	const LilvPlugin*  plug    = lilv_plugins_get_by_uri(plugins, plugin_uri_value);
+
+	uint32_t n_ports = lilv_plugin_get_num_ports(plug);
+	TEST_ASSERT(n_ports == 0);
+
+	cleanup_uris();
+	return 1;
+}
+
+/*****************************************************************************/
+
+int
+test_bad_port_index(void)
+{
+	if (!start_bundle(MANIFEST_PREFIXES
+			":plug a lv2:Plugin ; lv2:binary <foo.so> ; rdfs:seeAlso <plugin.ttl> .\n",
+			BUNDLE_PREFIXES PREFIX_LV2EV
+			":plug a lv2:Plugin ; "
+			PLUGIN_NAME("Test plugin") " ; "
+			LICENSE_GPL " ; "
+			"doap:homepage <http://example.org/someplug> ; "
+			"lv2:port [ "
+			"  a lv2:ControlPort ; a lv2:InputPort ; "
+			"  lv2:index \"notaninteger\" ; lv2:symbol \"invalid\" ;"
+			"  lv2:name \"Invalid\" ; "
+			"] ."))
+		return 0;
+
+	init_uris();
+
+	const LilvPlugins* plugins = lilv_world_get_all_plugins(world);
+	const LilvPlugin*  plug    = lilv_plugins_get_by_uri(plugins, plugin_uri_value);
+
+	uint32_t n_ports = lilv_plugin_get_num_ports(plug);
+	TEST_ASSERT(n_ports == 0);
+
+	cleanup_uris();
 	return 1;
 }
 
@@ -1168,6 +1232,8 @@ static struct TestCase tests[] = {
 	TEST_CASE(port),
 	TEST_CASE(ui),
 	TEST_CASE(state),
+	TEST_CASE(bad_port_symbol),
+	TEST_CASE(bad_port_index),
 	{ NULL, NULL }
 };
 

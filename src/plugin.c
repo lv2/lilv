@@ -51,6 +51,19 @@ lilv_plugin_new(LilvWorld* world, LilvNode* uri, LilvNode* bundle_uri)
 	return plugin;
 }
 
+static void
+lilv_plugin_free_ports(LilvPlugin* p)
+{
+	if (p->ports) {
+		for (uint32_t i = 0; i < p->num_ports; ++i) {
+			lilv_port_free(p, p->ports[i]);
+		}
+		free(p->ports);
+		p->num_ports = 0;
+		p->ports     = NULL;
+	}
+}
+
 void
 lilv_plugin_free(LilvPlugin* p)
 {
@@ -78,13 +91,7 @@ lilv_plugin_free(LilvPlugin* p)
 	lilv_node_free(p->binary_uri);
 	p->binary_uri = NULL;
 
-	if (p->ports) {
-		for (uint32_t i = 0; i < p->num_ports; ++i) {
-			lilv_port_free(p, p->ports[i]);
-		}
-		free(p->ports);
-		p->ports = NULL;
-	}
+	lilv_plugin_free_ports(p);
 
 	lilv_nodes_free(p->data_uris);
 	p->data_uris = NULL;
@@ -171,6 +178,21 @@ lilv_plugin_load(LilvPlugin* p)
 	p->loaded = true;
 }
 
+static bool
+is_symbol(const char* str)
+{
+	const size_t len = strlen(str);
+	for (size_t i = 0; i < len; ++i) {
+		if (!((str[i] >= 'a' && str[i] <= 'z')
+		      || (str[i] >= 'A' && str[i] <= 'Z')
+		      || (i > 0 && str[i] >= '0' && str[i] <= '9')
+		      || str[i] == '_')) {
+			return false;
+		}
+	}
+	return true;
+}
+
 static void
 lilv_plugin_load_ports_if_necessary(const LilvPlugin* const_p)
 {
@@ -189,24 +211,22 @@ lilv_plugin_load_ports_if_necessary(const LilvPlugin* const_p)
 			NULL);
 
 		FOREACH_MATCH(ports) {
-			LilvNode*       index  = NULL;
-			const SordNode* port   = lilv_match_object(ports);
-			LilvNode*       symbol = lilv_plugin_get_unique(
+			const SordNode* port = lilv_match_object(ports);
+			LilvNode* index = lilv_plugin_get_unique(
+				p, port, p->world->lv2_index_node);
+			LilvNode* symbol = lilv_plugin_get_unique(
 				p, port, p->world->lv2_symbol_node);
 
-			if (!lilv_node_is_string(symbol)) {
-				LILV_ERRORF("Plugin <%s> port symbol is not a string\n",
-				            lilv_node_as_uri(p->plugin_uri));
-				p->num_ports = 0;
+			if (!lilv_node_is_string(symbol) || !is_symbol(symbol->str_val)) {
+				LILV_ERRORF("Plugin <%s> port symbol `%s' is invalid\n",
+				            lilv_node_as_uri(p->plugin_uri),
+				            lilv_node_as_string(symbol));
 				goto error;
 			}
-
-			index = lilv_plugin_get_unique(p, port, p->world->lv2_index_node);
 
 			if (!lilv_node_is_int(index)) {
 				LILV_ERRORF("Plugin <%s> port index is not an integer\n",
 				            lilv_node_as_uri(p->plugin_uri));
-				p->num_ports = 0;
 				goto error;
 			}
 
@@ -245,19 +265,13 @@ lilv_plugin_load_ports_if_necessary(const LilvPlugin* const_p)
 			}
 			lilv_match_end(types);
 
+			continue;
+
 		error:
 			lilv_node_free(symbol);
 			lilv_node_free(index);
-			if (p->num_ports == 0) {
-				if (p->ports) {
-					for (uint32_t i = 0; i < p->num_ports; ++i) {
-						lilv_port_free(p, p->ports[i]);
-					}
-					free(p->ports);
-					p->ports = NULL;
-				}
-				break;  // Invalid plugin
-			}
+			lilv_plugin_free_ports(p);
+			break;  // Invalid plugin
 		}
 		lilv_match_end(ports);
 
@@ -266,9 +280,8 @@ lilv_plugin_load_ports_if_necessary(const LilvPlugin* const_p)
 			if (!p->ports[i]) {
 				LILV_ERRORF("Plugin <%s> is missing port %d/%d\n",
 				            lilv_node_as_uri(p->plugin_uri), i, p->num_ports);
-				free(p->ports);
-				p->ports     = NULL;
-				p->num_ports = 0;
+				lilv_plugin_free_ports(p);
+				break;
 			}
 		}
 	}
@@ -394,7 +407,7 @@ lilv_plugin_verify(const LilvPlugin* plugin)
 	}
 
 	lilv_nodes_free(results);
-	LilvNode*  lv2_port = lilv_new_uri(plugin->world, LILV_NS_LV2 "port");
+	LilvNode* lv2_port = lilv_new_uri(plugin->world, LILV_NS_LV2 "port");
 	results = lilv_plugin_get_value(plugin, lv2_port);
 	lilv_node_free(lv2_port);
 	if (!results) {
@@ -463,30 +476,24 @@ lilv_plugin_get_port_ranges_float(const LilvPlugin* p,
 		lilv_port_get_range(p, p->ports[i], defptr, minptr, maxptr);
 
 		if (min_values) {
-			if (lilv_node_is_float(min)) {
+			if (lilv_node_is_float(min) || lilv_node_is_int(min)) {
 				min_values[i] = lilv_node_as_float(min);
-			} else if (lilv_node_is_int(min)) {
-				min_values[i] = lilv_node_as_int(min);
 			} else {
 				min_values[i] = NAN;
 			}
 		}
 
 		if (max_values) {
-			if (lilv_node_is_float(max)) {
+			if (lilv_node_is_float(max) || lilv_node_is_int(max)) {
 				max_values[i] = lilv_node_as_float(max);
-			} else if (lilv_node_is_int(max)) {
-				max_values[i] = lilv_node_as_int(max);
 			} else {
 				max_values[i] = NAN;
 			}
 		}
 
 		if (def_values) {
-			if (lilv_node_is_float(def)) {
+			if (lilv_node_is_float(def) || lilv_node_is_int(def)) {
 				def_values[i] = lilv_node_as_float(def);
-			} else if (lilv_node_is_int(def)) {
-				def_values[i] = lilv_node_as_int(def);
 			} else {
 				def_values[i] = NAN;
 			}

@@ -349,7 +349,7 @@ LILV_API
 const char*
 lilv_node_as_string(const LilvNode* value)
 {
-	return value->str_val;
+	return value ? value->str_val : NULL;
 }
 
 LILV_API
@@ -380,10 +380,11 @@ float
 lilv_node_as_float(const LilvNode* value)
 {
 	assert(lilv_node_is_float(value) || lilv_node_is_int(value));
-	if (lilv_node_is_float(value))
+	if (lilv_node_is_float(value)) {
 		return value->val.float_val;
-	else  // lilv_node_is_int(value)
+	} else {  // lilv_node_is_int(value)
 		return (float)value->val.int_val;
+	}
 }
 
 LILV_API
