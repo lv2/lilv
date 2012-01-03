@@ -681,6 +681,7 @@ test_port(void)
 			"  lv2:name \"store\" ; "
 			"  lv2:name \"dépanneur\"@fr-ca ; lv2:name \"épicerie\"@fr-fr ; "
 			"  lv2:name \"tienda\"@es ; "
+			"  rdfs:comment \"comment\"@en , \"commentaires\"@fr ; "
      		"  lv2:portProperty lv2:integer ; "
 			"  lv2:minimum -1.0 ; lv2:maximum 1.0 ; lv2:default 0.5 ; "
 			"  lv2:scalePoint [ rdfs:label \"Sin\"; rdf:value 3 ] ; "
@@ -695,18 +696,18 @@ test_port(void)
 
 	init_uris();
 	const LilvPlugins* plugins = lilv_world_get_all_plugins(world);
-	const LilvPlugin* plug = lilv_plugins_get_by_uri(plugins, plugin_uri_value);
+	const LilvPlugin*  plug    = lilv_plugins_get_by_uri(plugins, plugin_uri_value);
 	TEST_ASSERT(plug);
 
-	LilvNode* psym = lilv_new_string(world, "foo");
-	const LilvPort*  p    = lilv_plugin_get_port_by_index(plug, 0);
-	const LilvPort*  p2   = lilv_plugin_get_port_by_symbol(plug, psym);
+	LilvNode*       psym = lilv_new_string(world, "foo");
+	const LilvPort* p    = lilv_plugin_get_port_by_index(plug, 0);
+	const LilvPort* p2   = lilv_plugin_get_port_by_symbol(plug, psym);
 	lilv_node_free(psym);
 	TEST_ASSERT(p != NULL);
 	TEST_ASSERT(p2 != NULL);
 	TEST_ASSERT(p == p2);
 
-	LilvNode*      nopsym = lilv_new_string(world, "thisaintnoportfoo");
+	LilvNode*       nopsym = lilv_new_string(world, "thisaintnoportfoo");
 	const LilvPort* p3     = lilv_plugin_get_port_by_symbol(plug, nopsym);
 	TEST_ASSERT(p3 == NULL);
 	lilv_node_free(nopsym);
@@ -759,8 +760,38 @@ test_port(void)
 	TEST_ASSERT(!strcmp(lilv_node_as_string(name), "tienda"));
 	lilv_node_free(name);
 
-	setenv("LANG", "C", 1);  // Reset locale
+	// No language match (choose untranslated value)
+	setenv("LANG", "cn", 1);
+	name = lilv_port_get_name(plug, p);
+	TEST_ASSERT(!strcmp(lilv_node_as_string(name), "store"));
+	lilv_node_free(name);
 
+	setenv("LANG", "en_CA.utf-8", 1);
+
+	// Language tagged value with no untranslated values
+	LilvNode*  rdfs_comment = lilv_new_uri(world, LILV_NS_RDFS "comment");
+	LilvNodes* comments     = lilv_port_get_value(plug, p, rdfs_comment);
+	TEST_ASSERT(!strcmp(lilv_node_as_string(lilv_nodes_get_first(comments)),
+	                    "comment"));
+	lilv_nodes_free(comments);
+
+	setenv("LANG", "fr", 1);
+
+	comments = lilv_port_get_value(plug, p, rdfs_comment);
+	TEST_ASSERT(!strcmp(lilv_node_as_string(lilv_nodes_get_first(comments)),
+	                    "commentaires"));
+	lilv_nodes_free(comments);
+
+	setenv("LANG", "cn", 1);
+
+	comments = lilv_port_get_value(plug, p, rdfs_comment);
+	TEST_ASSERT(!comments);
+	lilv_nodes_free(comments);
+
+	lilv_node_free(rdfs_comment);
+
+	setenv("LANG", "C", 1);  // Reset locale
+	
 	LilvScalePoints* points = lilv_port_get_scale_points(plug, p);
 	TEST_ASSERT(lilv_scale_points_size(points) == 2);
 

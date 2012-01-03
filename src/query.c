@@ -35,19 +35,14 @@ lilv_lang_matches(const char* a, const char* b)
 	}
 
 	const char*  a_dash     = strchr(a, '-');
-	const size_t a_lang_len = a_dash ? (a_dash - a) : 0;
+	const size_t a_lang_len = a_dash ? (size_t)(a_dash - a) : strlen(a);
 	const char*  b_dash     = strchr(b, '-');
-	const size_t b_lang_len = b_dash ? (b_dash - b) : 0;
+	const size_t b_lang_len = b_dash ? (size_t)(b_dash - b) : strlen(b);
 
-	if (a_lang_len && b_lang_len) {
-		if (a_lang_len == b_lang_len && !strncmp(a, b, a_lang_len)) {
-			return LILV_LANG_MATCH_PARTIAL;  // e.g. a="en-gb", b="en-ca"
-		}
-	} else if (a_lang_len && !strncmp(a, b, a_lang_len)) {
-		return LILV_LANG_MATCH_PARTIAL;  // e.g. a="en", b="en-ca"
-	} else if (b_lang_len && !strncmp(a, b, b_lang_len)) {
-		return LILV_LANG_MATCH_PARTIAL;  // e.g. a="en-ca", b="en"
+	if (a_lang_len == b_lang_len && !strncmp(a, b, a_lang_len)) {
+		return LILV_LANG_MATCH_PARTIAL;
 	}
+
 	return LILV_LANG_MATCH_NONE;
 }
 
