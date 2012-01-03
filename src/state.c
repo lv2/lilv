@@ -81,13 +81,6 @@ value_cmp(const void* a, const void* b)
 	return strcmp(pa->symbol, pb->symbol);
 }
 
-LILV_API
-const LilvNode*
-lilv_state_get_plugin_uri(const LilvState* state)
-{
-	return state->plugin_uri;
-}
-
 static PortValue*
 append_port_value(LilvState*  state,
                   const char* port_symbol,
@@ -99,25 +92,6 @@ append_port_value(LilvState*  state,
 	pv->symbol = lilv_strdup(port_symbol);
 	pv->value  = value;
 	return pv;
-}
-
-LILV_API
-const char*
-lilv_state_get_label(const LilvState* state)
-{
-	return state->label;
-}
-
-LILV_API
-void
-lilv_state_set_label(LilvState*  state,
-                     const char* label)
-{
-	if (state->label) {
-		free(state->label);
-	}
-
-	state->label = label ? lilv_strdup(label) : NULL;
 }
 
 #ifdef HAVE_LV2_STATE
@@ -857,6 +831,19 @@ lilv_state_save(LilvWorld*       world,
 }
 
 LILV_API
+void
+lilv_state_free(LilvState* state)
+{
+	if (state) {
+		lilv_node_free(state->plugin_uri);
+		free(state->props);
+		free(state->values);
+		free(state->label);
+		free(state);
+	}
+}
+
+LILV_API
 bool
 lilv_state_equals(const LilvState* a, const LilvState* b)
 {
@@ -895,14 +882,34 @@ lilv_state_equals(const LilvState* a, const LilvState* b)
 }
 
 LILV_API
-void
-lilv_state_free(LilvState* state)
+unsigned
+lilv_state_get_num_properties(const LilvState* state)
 {
-	if (state) {
-		lilv_node_free(state->plugin_uri);
-		free(state->props);
-		free(state->values);
+	return state->num_props;
+}
+
+LILV_API
+const LilvNode*
+lilv_state_get_plugin_uri(const LilvState* state)
+{
+	return state->plugin_uri;
+}
+
+LILV_API
+const char*
+lilv_state_get_label(const LilvState* state)
+{
+	return state->label;
+}
+
+LILV_API
+void
+lilv_state_set_label(LilvState*  state,
+                     const char* label)
+{
+	if (state->label) {
 		free(state->label);
-		free(state);
 	}
+
+	state->label = label ? lilv_strdup(label) : NULL;
 }

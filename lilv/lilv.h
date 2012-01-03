@@ -1100,42 +1100,6 @@ lilv_port_get_scale_points(const LilvPlugin* plugin,
 */
 
 /**
-   Free @c state.
-*/
-LILV_API
-void
-lilv_state_free(LilvState* state);
-
-/**
-   Return true iff @c a is equivalent to @c b.
-*/
-LILV_API
-bool
-lilv_state_equals(const LilvState* a, const LilvState* b);
-
-/**
-   Get the URI of the plugin @c state applies to.
-*/
-LILV_API
-const LilvNode*
-lilv_state_get_plugin_uri(const LilvState* state);
-
-/**
-   Get the label of @c state.
-*/
-LILV_API
-const char*
-lilv_state_get_label(const LilvState* state);
-
-/**
-   Set the label of @c state.
-*/
-LILV_API
-void
-lilv_state_set_label(LilvState*  state,
-                     const char* label);
-
-/**
    Load a state snapshot from @c world's RDF model.
    @param subject The subject of the state description (e.g. a preset URI).
    @return A new LilvState which must be freed with lilv_state_free().
@@ -1165,32 +1129,6 @@ lilv_state_new_from_file(LilvWorld*      world,
                          LV2_URID_Map*   map,
                          const LilvNode* subject,
                          const char*     path);
-
-/**
-   Save state to a file.
-   @param unmap URID unmapper.
-   @param state State to save.
-   @param uri URI of state, may be NULL.
-   @param path Path of file to save state to, may be NULL.
-   @param manifest_path Path of manifest file to add entry to, may be NULL.
-
-   The format of state on disk is compatible with that defined in the LV2
-   preset extension, i.e. this function may be used to save presets which can
-   be loaded by any host.  If @c path is NULL, then the default user preset
-   bundle (~/.lv2/presets.lv2) is used.  In this case, the label of @c state
-   MUST be set since it is used to generate a filename.
-
-   If @c uri is NULL, the state will be saved without an absolute URI (but
-   the bundle will still work correctly as a preset bundle).
-*/
-LILV_API
-int
-lilv_state_save(LilvWorld*       world,
-                LV2_URID_Unmap*  unmap,
-                const LilvState* state,
-                const char*      uri,
-                const char*      path,
-                const char*      manifest_path);
 
 /**
    Function to get a port value.
@@ -1229,6 +1167,49 @@ lilv_state_new_from_instance(const LilvPlugin*          plugin,
                              const LV2_Feature *const * features);
 
 /**
+   Free @c state.
+*/
+LILV_API
+void
+lilv_state_free(LilvState* state);
+
+/**
+   Return true iff @c a is equivalent to @c b.
+*/
+LILV_API
+bool
+lilv_state_equals(const LilvState* a, const LilvState* b);
+
+/**
+   Return the number of properties in @c state.
+*/
+LILV_API
+unsigned
+lilv_state_get_num_properties(const LilvState* state);
+
+/**
+   Get the URI of the plugin @c state applies to.
+*/
+LILV_API
+const LilvNode*
+lilv_state_get_plugin_uri(const LilvState* state);
+
+/**
+   Get the label of @c state.
+*/
+LILV_API
+const char*
+lilv_state_get_label(const LilvState* state);
+
+/**
+   Set the label of @c state.
+*/
+LILV_API
+void
+lilv_state_set_label(LilvState*  state,
+                     const char* label);
+
+/**
    Function to set a port value.
 */
 typedef void (*LilvSetPortValueFunc)(const char*     port_symbol,
@@ -1249,8 +1230,10 @@ typedef void (*LilvSetPortValueFunc)(const char*     port_symbol,
    port values itself (using lilv_state_get_port_value) in order to completely
    restore @c state.
 
-   This function is in the "instantiation" threading class, i.e. it MUST NOT be
-   called simultaneously with any function on the same plugin instance.
+   If the state has properties, this function is in the "instantiation"
+   threading class, i.e. it MUST NOT be called simultaneously with any function
+   on the same plugin instance.  If the state has no properties, only port
+   values are set via @c set_value.
 
    See <a href="http://lv2plug.in/ns/ext/state/state.h">state.h</a> from the
    LV2 State extension for details on the @c flags and @c features parameters.
@@ -1263,6 +1246,32 @@ lilv_state_restore(const LilvState*           state,
                    void*                      user_data,
                    uint32_t                   flags,
                    const LV2_Feature *const * features);
+
+/**
+   Save state to a file.
+   @param unmap URID unmapper.
+   @param state State to save.
+   @param uri URI of state, may be NULL.
+   @param path Path of file to save state to, may be NULL.
+   @param manifest_path Path of manifest file to add entry to, may be NULL.
+
+   The format of state on disk is compatible with that defined in the LV2
+   preset extension, i.e. this function may be used to save presets which can
+   be loaded by any host.  If @c path is NULL, then the default user preset
+   bundle (~/.lv2/presets.lv2) is used.  In this case, the label of @c state
+   MUST be set since it is used to generate a filename.
+
+   If @c uri is NULL, the state will be saved without an absolute URI (but
+   the bundle will still work correctly as a preset bundle).
+*/
+LILV_API
+int
+lilv_state_save(LilvWorld*       world,
+                LV2_URID_Unmap*  unmap,
+                const LilvState* state,
+                const char*      uri,
+                const char*      path,
+                const char*      manifest_path);
 
 /**
    @}
