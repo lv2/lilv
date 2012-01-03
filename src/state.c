@@ -275,7 +275,7 @@ property_from_node(LilvWorld*      world,
 	case LILV_VALUE_STRING:
 		prop->size = strlen(str) + 1;
 		prop->value = malloc(prop->size);
-		memcpy(prop->value, str, prop->size + 1);
+		memcpy(prop->value, str, prop->size);
 		prop->type = map->map(map->handle, NS_ATOM "String");
 		break;
 	case LILV_VALUE_BOOL:
