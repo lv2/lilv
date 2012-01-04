@@ -307,6 +307,7 @@ new_state_from_model(LilvWorld*      world,
 		state->label = lilv_strdup(
 			(const char*)sord_node_get_string(lilv_match_object(i)));
 		sord_iter_free(i);
+	} else {
 	}
 
 	// Get port values
@@ -609,6 +610,70 @@ pathify(const char* in)
 	return out;
 }
 
+static int
+mkdir_p(const char* dir_path)
+{
+	char*        path     = lilv_strdup(dir_path);
+	const size_t path_len = strlen(path);
+	for (size_t i = 1; i <= path_len; ++i) {
+		if (path[i] == LILV_DIR_SEP[0] || path[i] == '\0') {
+			path[i] = '\0';
+			if (mkdir(path, 0755) && errno != EEXIST) {
+				LILV_ERRORF("Failed to create %s (%s)\n",
+				            path, strerror(errno));
+				free(path);
+				return 1;
+			}
+			path[i] = LILV_DIR_SEP[0];
+		}
+	}
+
+	free(path);
+	return 0;
+}
+
+static int
+lilv_default_state_path(LilvWorld*       world,
+                        const LilvState* state,
+                        char**           path,
+                        char**           manifest_path)
+{
+#ifdef HAVE_MKDIR
+	if (!state->label) {
+		LILV_ERROR("Attempt to save state with no label or path.\n");
+		return 1;
+	}
+
+	char* state_bundle = getenv("LV2_STATE_BUNDLE");
+	if (!state_bundle) {
+		state_bundle = LILV_DEFAULT_STATE_BUNDLE;
+	}
+
+	// Create ~/.lv2/presets.lv2/
+	char* const bundle = lilv_expand(state_bundle);
+	if (mkdir_p(bundle)) {
+		free(bundle);
+		return 3;
+	}
+
+	char* const filename = pathify(state->label);
+
+	*path = lilv_strjoin(
+		bundle, LILV_DIR_SEP, filename, ".ttl", NULL);
+
+	*manifest_path = lilv_strjoin(
+		bundle, LILV_DIR_SEP, "manifest.ttl", NULL);
+
+	free(bundle);
+	free(filename);
+
+	return 0;
+#else
+	LILV_ERROR("Save to default state path but mkdir is unavailable.\n");
+	return 4;
+#endif
+}
+
 LILV_API
 int
 lilv_state_save(LilvWorld*       world,
@@ -621,49 +686,13 @@ lilv_state_save(LilvWorld*       world,
 	char* default_path          = NULL;
 	char* default_manifest_path = NULL;
 	if (!path) {
-#ifdef HAVE_MKDIR
-		if (!state->label) {
-			LILV_ERROR("Attempt to save state with no label or path.\n");
+		if (lilv_default_state_path(
+			    world, state, &default_path, &default_manifest_path)) {
 			return 1;
 		}
-
-		const char* const home = getenv("HOME");
-		if (!home) {
-			LILV_ERROR("$HOME is undefined\n");
-			return 2;
-		}
-
-		// Create ~/.lv2/
-		char* const lv2dir = lilv_strjoin(home, "/.lv2/", NULL);
-		if (mkdir(lv2dir, 0755) && errno != EEXIST) {
-			LILV_ERRORF("Unable to create %s (%s)\n", lv2dir, strerror(errno));
-			free(lv2dir);
-			return 3;
-		}
-
-		// Create ~/.lv2/presets.lv2/
-		char* const bundle = lilv_strjoin(lv2dir, "presets.lv2/", NULL);
-		if (mkdir(bundle, 0755) && errno != EEXIST) {
-			LILV_ERRORF("Unable to create %s (%s)\n", lv2dir, strerror(errno));
-			free(lv2dir);
-			free(bundle);
-			return 4;
-		}
-
-		char* const filename  = pathify(state->label);
-		default_path          = lilv_strjoin(bundle, filename, ".ttl", NULL);
-		default_manifest_path = lilv_strjoin(bundle, "manifest.ttl", NULL);
-
+			
 		path          = default_path;
 		manifest_path = default_manifest_path;
-
-		free(lv2dir);
-		free(bundle);
-		free(filename);
-#else
-		LILV_ERROR("Save to default state path but mkdir is unavailable.\n");
-		return 1;
-#endif
 	}
 
 	FILE* fd = fopen(path, "w");
@@ -779,6 +808,7 @@ lilv_state_save(LilvWorld*       world,
 				serd_writer_write_statement(
 					writer, SERD_ANON_CONT, NULL,
 					&state_node, &p, &o, &t, NULL);
+				lilv_node_free(node);
 			} else {
 				char name[16];
 				snprintf(name, sizeof(name), "b%u", i);
@@ -835,6 +865,13 @@ void
 lilv_state_free(LilvState* state)
 {
 	if (state) {
+		for (uint32_t i = 0; i < state->num_props; ++i) {
+			free(state->props[i].value);
+		}
+		for (uint32_t i = 0; i < state->num_values; ++i) {
+			lilv_node_free(state->values[i].value);
+			free(state->values[i].symbol);
+		}
 		lilv_node_free(state->plugin_uri);
 		free(state->props);
 		free(state->values);

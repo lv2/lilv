@@ -14,7 +14,7 @@
   OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 */
 
-#define _POSIX_SOURCE 1 /* for wordexp */
+#define _POSIX_SOURCE 1  /* for readdir_r */
 
 #include <assert.h>
 #include <errno.h>
@@ -24,10 +24,6 @@
 #include <dirent.h>
 
 #include "lilv_internal.h"
-
-#ifdef HAVE_WORDEXP
-#    include <wordexp.h>
-#endif
 
 LILV_API
 LilvWorld*
@@ -582,43 +578,11 @@ lilv_world_load_bundle(LilvWorld* world, LilvNode* bundle_uri)
 	serd_node_free(&manifest_uri);
 }
 
-/** Expand variables (e.g. POSIX ~ or $FOO, Windows %FOO%) in @a path. */
-static char*
-expand(const char* path)
-{
-#ifdef HAVE_WORDEXP
-	char*     ret = NULL;
-	wordexp_t p;
-	if (wordexp(path, &p, 0)) {
-		LILV_ERRORF("Error expanding path `%s'\n", path);
-		return lilv_strdup(path);
-	}
-	if (p.we_wordc == 0) {
-		/* Literal directory path (e.g. no variables or ~) */
-		ret = lilv_strdup(path);
-	} else if (p.we_wordc == 1) {
-		/* Directory path expands (e.g. contains ~ or $FOO) */
-		ret = lilv_strdup(p.we_wordv[0]);
-	} else {
-		/* Multiple expansions in a single directory path? */
-		LILV_ERRORF("Malformed path `%s' ignored\n", path);
-	}
-	wordfree(&p);
-#elif defined(__WIN32__)
-	static const size_t len = 32767;
-	char*               ret = malloc(len);
-	ExpandEnvironmentStrings(path, ret, len);
-#else
-	char* ret = lilv_strdup(path);
-#endif
-	return ret;
-}
-
 /** Load all bundles in the directory at @a dir_path. */
 static void
 lilv_world_load_directory(LilvWorld* world, const char* dir_path)
 {
-	char* path = expand(dir_path);
+	char* path = lilv_expand(dir_path);
 	if (!path) {
 		LILV_WARNF("Empty path `%s'\n", path);
 		return;

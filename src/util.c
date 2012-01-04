@@ -14,12 +14,18 @@
   OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 */
 
+#define _POSIX_SOURCE 1  /* for wordexp */
+
 #include <assert.h>
 #include <stdarg.h>
 #include <stdlib.h>
 #include <string.h>
 
 #include "lilv_internal.h"
+
+#ifdef HAVE_WORDEXP
+#    include <wordexp.h>
+#endif
 
 char*
 lilv_strjoin(const char* first, ...)
@@ -98,4 +104,37 @@ lilv_get_lang(void)
 	}
 
 	return lang;
+}
+
+/** Expand variables (e.g. POSIX ~ or $FOO, Windows %FOO%) in @a path. */
+char*
+lilv_expand(const char* path)
+{
+#ifdef HAVE_WORDEXP
+	char*     ret = NULL;
+	wordexp_t p;
+	if (wordexp(path, &p, 0)) {
+		LILV_ERRORF("Error expanding path `%s'\n", path);
+		return lilv_strdup(path);
+	}
+	if (p.we_wordc == 0) {
+		/* Literal directory path (e.g. no variables or ~) */
+		ret = lilv_strdup(path);
+	} else if (p.we_wordc == 1) {
+		/* Directory path expands (e.g. contains ~ or $FOO) */
+		ret = lilv_strdup(p.we_wordv[0]);
+	} else {
+		/* Multiple expansions in a single directory path? */
+		LILV_ERRORF("Malformed path `%s'\n", path);
+		ret = lilv_strdup(path);
+	}
+	wordfree(&p);
+#elif defined(__WIN32__)
+	static const size_t len = 32767;
+	char*               ret = malloc(len);
+	ExpandEnvironmentStrings(path, ret, len);
+#else
+	char* ret = lilv_strdup(path);
+#endif
+	return ret;
 }

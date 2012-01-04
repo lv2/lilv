@@ -1140,15 +1140,49 @@ test_state(void)
 	// Load state from file
 	LilvState* state5 = lilv_state_new_from_file(world, &map, NULL, "state.ttl");
 	TEST_ASSERT(lilv_state_equals(state, state5));  // Round trip accuracy
+
+	// Save state to default bundle
+	setenv("LV2_STATE_BUNDLE", "lv2/lilv-test-state.lv2", 1);
+	const char* state_uri = "http://example.org/test-state";
+	ret = lilv_state_save(world, &unmap, state, state_uri, NULL, NULL);
+	TEST_ASSERT(!ret);
+
+	// Load default bundle into world and load state from it
+	LilvNode* test_state_bundle = lilv_new_uri(world, "lv2/lilv-test-state.lv2/");
+	LilvNode* test_state_node   = lilv_new_uri(world, state_uri);
+	lilv_world_load_bundle(world, test_state_bundle);
+	lilv_world_load_resource(world, test_state_node);
+
+	LilvState* state6 = lilv_state_new_from_world(world, &map, test_state_node);
+	TEST_ASSERT(lilv_state_equals(state, state6));  // Round trip accuracy
 	
+	unsetenv("LV2_STATE_BUNDLE");
+
+	LilvNode*  num     = lilv_new_int(world, 5);
+	LilvState* nostate = lilv_state_new_from_file(world, &map, num, "/junk");
+	TEST_ASSERT(!nostate);
+
+	lilv_node_free(num);
+	lilv_node_free(test_state_bundle);
+	lilv_node_free(test_state_node);
+
 	lilv_state_free(state);
 	lilv_state_free(state2);
 	lilv_state_free(state3);
 	lilv_state_free(state4);
 	lilv_state_free(state5);
+	lilv_state_free(state6);
+
+	// Free URI map
+	for (size_t i = 0; i < n_uris; ++i) {
+		free(uris[i]);
+	}
+	free(uris);
+	n_uris = 0;
 
 	lilv_instance_free(instance);
 
+	lilv_node_free(plugin_uri);
 	lilv_node_free(bundle_uri);
 	lilv_world_free(world);
 

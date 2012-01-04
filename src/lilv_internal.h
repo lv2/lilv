@@ -330,6 +330,7 @@ LilvNodes* lilv_nodes_from_stream_objects(LilvWorld* w,
 char* lilv_strjoin(const char* first, ...);
 char* lilv_strdup(const char* str);
 char* lilv_get_lang(void);
+char* lilv_expand(const char* path);
 
 typedef void (*VoidFunc)(void);
 
