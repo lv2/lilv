@@ -243,6 +243,8 @@ def build(bld):
         if shlib_pattern.startswith('lib'):
             shlib_pattern = shlib_pattern[3:]
         penv['cshlib_PATTERN'] = shlib_pattern
+        shlib_ext = shlib_pattern[shlib_pattern.rfind('.'):]
+
         obj = bld(features     = 'c cshlib',
                   env          = penv,
                   source       = 'test/test_plugin.c',
@@ -252,11 +254,12 @@ def build(bld):
                   uselib       = 'LV2CORE LV2_STATE LV2_URID')
 
         # Test plugin data files
-        for i in [ 'manifest.ttl', 'test_plugin.ttl' ]:
-            bld(rule         = 'cp ${SRC} ${TGT}',
+        for i in [ 'manifest.ttl.in', 'test_plugin.ttl.in' ]:
+            bld(features     = 'subst',
                 source       = 'test/' + i,
-                target       = 'test/test_plugin.lv2/' + i,
-                install_path = None)
+                target       = 'test/test_plugin.lv2/' + i.replace('.in', ''),
+                install_path = None,
+                SHLIB_EXT    = shlib_ext)
 
         # Static profiled library (for unit test code coverage)
         obj = bld(features     = 'c cstlib',

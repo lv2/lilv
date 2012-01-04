@@ -34,6 +34,14 @@
 
 #define TEST_PATH_MAX 1024
 
+#if defined(__APPLE__)
+#    define SHLIB_EXT ".dylib"
+#elif defined(__WIN32__)
+#    define SHLIB_EXT ".dll"
+#else
+#    define SHLIB_EXT ".so"
+#endif
+
 static char bundle_dir_name[TEST_PATH_MAX];
 static char bundle_dir_uri[TEST_PATH_MAX];
 static char manifest_name[TEST_PATH_MAX];
@@ -205,7 +213,7 @@ int
 test_value(void)
 {
 	if (!start_bundle(MANIFEST_PREFIXES
-			":plug a lv2:Plugin ; lv2:binary <foo.so> ; rdfs:seeAlso <plugin.ttl> .\n",
+			":plug a lv2:Plugin ; lv2:binary <foo" SHLIB_EXT "> ; rdfs:seeAlso <plugin.ttl> .\n",
 			BUNDLE_PREFIXES
 			":plug a lv2:Plugin ; a lv2:CompressorPlugin ; "
 			PLUGIN_NAME("Test plugin") " ; "
@@ -324,7 +332,7 @@ discovery_verify_plugin(const LilvPlugin* plugin)
 		TEST_ASSERT(lib_uri);
 		TEST_ASSERT(lilv_node_is_uri(lib_uri));
 		TEST_ASSERT(lilv_node_as_uri(lib_uri));
-		TEST_ASSERT(strstr(lilv_node_as_uri(lib_uri), "foo.so"));
+		TEST_ASSERT(strstr(lilv_node_as_uri(lib_uri), "foo" SHLIB_EXT));
 		TEST_ASSERT(lilv_plugin_verify(plugin));
 	}
 }
@@ -333,7 +341,7 @@ int
 test_discovery(void)
 {
 	if (!start_bundle(MANIFEST_PREFIXES
-			":plug a lv2:Plugin ; lv2:binary <foo.so> ; rdfs:seeAlso <plugin.ttl> .\n",
+			":plug a lv2:Plugin ; lv2:binary <foo" SHLIB_EXT "> ; rdfs:seeAlso <plugin.ttl> .\n",
 			BUNDLE_PREFIXES
 			":plug a lv2:Plugin ;"
 			PLUGIN_NAME("Test plugin") " ; "
@@ -376,7 +384,7 @@ int
 test_verify(void)
 {
 	if (!start_bundle(MANIFEST_PREFIXES
-			":plug a lv2:Plugin ; lv2:binary <foo.so> ; rdfs:seeAlso <plugin.ttl> .\n",
+			":plug a lv2:Plugin ; lv2:binary <foo" SHLIB_EXT "> ; rdfs:seeAlso <plugin.ttl> .\n",
 			BUNDLE_PREFIXES
 			":plug a lv2:Plugin ; "
 			PLUGIN_NAME("Test plugin") " ; "
@@ -400,7 +408,7 @@ int
 test_no_verify(void)
 {
 	if (!start_bundle(MANIFEST_PREFIXES
-			":plug a lv2:Plugin ; lv2:binary <foo.so> ; rdfs:seeAlso <plugin.ttl> .\n",
+			":plug a lv2:Plugin ; lv2:binary <foo" SHLIB_EXT "> ; rdfs:seeAlso <plugin.ttl> .\n",
 			BUNDLE_PREFIXES
 			":plug a lv2:Plugin . "))
 		return 0;
@@ -420,7 +428,7 @@ int
 test_classes(void)
 {
 	if (!start_bundle(MANIFEST_PREFIXES
-			":plug a lv2:Plugin ; lv2:binary <foo.so> ; rdfs:seeAlso <plugin.ttl> .\n",
+			":plug a lv2:Plugin ; lv2:binary <foo" SHLIB_EXT "> ; rdfs:seeAlso <plugin.ttl> .\n",
 			BUNDLE_PREFIXES
 			":plug a lv2:Plugin ; a lv2:CompressorPlugin ; "
 			PLUGIN_NAME("Test plugin") " ; "
@@ -464,7 +472,7 @@ int
 test_plugin(void)
 {
 	if (!start_bundle(MANIFEST_PREFIXES
-			":plug a lv2:Plugin ; lv2:binary <foo.so> ; rdfs:seeAlso <plugin.ttl> .\n",
+			":plug a lv2:Plugin ; lv2:binary <foo" SHLIB_EXT "> ; rdfs:seeAlso <plugin.ttl> .\n",
 			BUNDLE_PREFIXES
 			":plug a lv2:Plugin ; a lv2:CompressorPlugin ; "
 			PLUGIN_NAME("Test plugin") " ; "
@@ -669,7 +677,7 @@ int
 test_port(void)
 {
 	if (!start_bundle(MANIFEST_PREFIXES
-			":plug a lv2:Plugin ; lv2:binary <foo.so> ; rdfs:seeAlso <plugin.ttl> .\n",
+			":plug a lv2:Plugin ; lv2:binary <foo" SHLIB_EXT "> ; rdfs:seeAlso <plugin.ttl> .\n",
 			BUNDLE_PREFIXES PREFIX_LV2EV
 			":plug a lv2:Plugin ; "
 			PLUGIN_NAME("Test plugin") " ; "
@@ -904,7 +912,7 @@ int
 test_ui(void)
 {
 	if (!start_bundle(MANIFEST_PREFIXES
-			":plug a lv2:Plugin ; lv2:binary <foo.so> ; rdfs:seeAlso <plugin.ttl> .\n",
+			":plug a lv2:Plugin ; lv2:binary <foo" SHLIB_EXT "> ; rdfs:seeAlso <plugin.ttl> .\n",
 			BUNDLE_PREFIXES PREFIX_LV2UI
 			":plug a lv2:Plugin ; a lv2:CompressorPlugin ; "
 			PLUGIN_NAME("Test plugin") " ; "
@@ -929,11 +937,11 @@ test_ui(void)
 			"] .\n"
 			":ui a lv2ui:GtkUI ; "
 			"  lv2ui:requiredFeature lv2ui:makeResident ; "
-			"  lv2ui:binary <ui.so> ; "
+			"  lv2ui:binary <ui" SHLIB_EXT "> ; "
 			"  lv2ui:optionalFeature lv2ui:ext_presets . "
-			":ui2 a lv2ui:GtkUI ; lv2ui:binary <ui2.so> . "
-			":ui3 a lv2ui:GtkUI ; lv2ui:binary <ui3.so> . "
-			":ui4 a lv2ui:GtkUI ; lv2ui:binary <ui4.so> . "))
+			":ui2 a lv2ui:GtkUI ; lv2ui:binary <ui2" SHLIB_EXT "> . "
+			":ui3 a lv2ui:GtkUI ; lv2ui:binary <ui3" SHLIB_EXT "> . "
+			":ui4 a lv2ui:GtkUI ; lv2ui:binary <ui4" SHLIB_EXT "> . "))
 		return 0;
 
 	init_uris();
@@ -984,7 +992,7 @@ test_ui(void)
 
 	char* ui_binary_uri_str = (char*)malloc(TEST_PATH_MAX);
 	snprintf(ui_binary_uri_str, TEST_PATH_MAX, "%s%s",
-			lilv_node_as_string(plug_bundle_uri), "ui.so");
+			lilv_node_as_string(plug_bundle_uri), "ui" SHLIB_EXT);
 
 	const LilvNode* ui_binary_uri = lilv_ui_get_binary_uri(ui0);
 
@@ -1196,7 +1204,7 @@ int
 test_bad_port_symbol(void)
 {
 	if (!start_bundle(MANIFEST_PREFIXES
-			":plug a lv2:Plugin ; lv2:binary <foo.so> ; rdfs:seeAlso <plugin.ttl> .\n",
+			":plug a lv2:Plugin ; lv2:binary <foo" SHLIB_EXT "> ; rdfs:seeAlso <plugin.ttl> .\n",
 			BUNDLE_PREFIXES PREFIX_LV2EV
 			":plug a lv2:Plugin ; "
 			PLUGIN_NAME("Test plugin") " ; "
@@ -1227,7 +1235,7 @@ int
 test_bad_port_index(void)
 {
 	if (!start_bundle(MANIFEST_PREFIXES
-			":plug a lv2:Plugin ; lv2:binary <foo.so> ; rdfs:seeAlso <plugin.ttl> .\n",
+			":plug a lv2:Plugin ; lv2:binary <foo" SHLIB_EXT "> ; rdfs:seeAlso <plugin.ttl> .\n",
 			BUNDLE_PREFIXES PREFIX_LV2EV
 			":plug a lv2:Plugin ; "
 			PLUGIN_NAME("Test plugin") " ; "
