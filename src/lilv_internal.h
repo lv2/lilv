@@ -130,17 +130,22 @@ struct LilvWorldImpl {
 	LilvPlugins*       plugins;
 	LilvNodes*         loaded_files;
 	SordNode*          dc_replaces_node;
+	SordNode*          doap_name_node;
 	SordNode*          dyn_manifest_node;
 	SordNode*          lv2_appliesTo_node;
 	SordNode*          lv2_binary_node;
 	SordNode*          lv2_default_node;
+	SordNode*          lv2_extensionData_node;
 	SordNode*          lv2_index_node;
 	SordNode*          lv2_maximum_node;
 	SordNode*          lv2_minimum_node;
+	SordNode*          lv2_name_node;
+	SordNode*          lv2_optionalFeature_node;
 	SordNode*          lv2_plugin_node;
 	SordNode*          lv2_port_node;
 	SordNode*          lv2_portproperty_node;
 	SordNode*          lv2_reportslatency_node;
+	SordNode*          lv2_requiredFeature_node;
 	SordNode*          lv2_specification_node;
 	SordNode*          lv2_symbol_node;
 	SordNode*          pset_value_node;
@@ -155,11 +160,6 @@ struct LilvWorldImpl {
 	SordNode*          xsd_decimal_node;
 	SordNode*          xsd_double_node;
 	SordNode*          xsd_integer_node;
-	LilvNode*          doap_name_val;
-	LilvNode*          lv2_extensionData_val;
-	LilvNode*          lv2_name_val;
-	LilvNode*          lv2_optionalFeature_val;
-	LilvNode*          lv2_requiredFeature_val;
 	LilvOptions        opt;
 };
 

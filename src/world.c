@@ -50,20 +50,24 @@ lilv_world_new(void)
 #define NS_PSET    "http://lv2plug.in/ns/ext/presets#"
 
 #define NEW_URI(uri)     sord_new_uri(world->world, (const uint8_t*)uri)
-#define NEW_URI_VAL(uri) lilv_new_uri(world, (const char*)(uri));
 
 	world->dc_replaces_node         = NEW_URI(NS_DCTERMS   "replaces");
+	world->doap_name_node           = NEW_URI(LILV_NS_DOAP "name");
 	world->dyn_manifest_node        = NEW_URI(NS_DYNMAN    "DynManifest");
 	world->lv2_appliesTo_node       = NEW_URI(LILV_NS_LV2  "appliesTo");
 	world->lv2_binary_node          = NEW_URI(LILV_NS_LV2  "binary");
 	world->lv2_default_node         = NEW_URI(LILV_NS_LV2  "default");
+	world->lv2_extensionData_node   = NEW_URI(LILV_NS_LV2  "extensionData");
 	world->lv2_index_node           = NEW_URI(LILV_NS_LV2  "index");
 	world->lv2_maximum_node         = NEW_URI(LILV_NS_LV2  "maximum");
 	world->lv2_minimum_node         = NEW_URI(LILV_NS_LV2  "minimum");
+	world->lv2_name_node            = NEW_URI(LILV_NS_LV2  "name");
+	world->lv2_optionalFeature_node = NEW_URI(LILV_NS_LV2  "optionalFeature");
 	world->lv2_plugin_node          = NEW_URI(LILV_NS_LV2  "Plugin");
 	world->lv2_port_node            = NEW_URI(LILV_NS_LV2  "port");
 	world->lv2_portproperty_node    = NEW_URI(LILV_NS_LV2  "portProperty");
 	world->lv2_reportslatency_node  = NEW_URI(LILV_NS_LV2  "reportsLatency");
+	world->lv2_requiredFeature_node = NEW_URI(LILV_NS_LV2  "requiredFeature");
 	world->lv2_specification_node   = NEW_URI(LILV_NS_LV2  "Specification");
 	world->lv2_symbol_node          = NEW_URI(LILV_NS_LV2  "symbol");
 	world->pset_value_node          = NEW_URI(NS_PSET "value");
@@ -78,12 +82,6 @@ lilv_world_new(void)
 	world->xsd_decimal_node         = NEW_URI(LILV_NS_XSD  "decimal");
 	world->xsd_double_node          = NEW_URI(LILV_NS_XSD  "double");
 	world->xsd_integer_node         = NEW_URI(LILV_NS_XSD  "integer");
-
-	world->doap_name_val           = NEW_URI_VAL(LILV_NS_DOAP "name");
-	world->lv2_extensionData_val   = NEW_URI_VAL(LILV_NS_LV2  "extensionData");
-	world->lv2_name_val            = NEW_URI_VAL(LILV_NS_LV2  "name");
-	world->lv2_optionalFeature_val = NEW_URI_VAL(LILV_NS_LV2  "optionalFeature");
-	world->lv2_requiredFeature_val = NEW_URI_VAL(LILV_NS_LV2  "requiredFeature");
 
 	world->lv2_plugin_class = lilv_plugin_class_new(
 		world, NULL, world->lv2_plugin_node, "Plugin");
@@ -112,17 +110,22 @@ lilv_world_free(LilvWorld* world)
 	world->lv2_plugin_class = NULL;
 
 	sord_node_free(world->world, world->dc_replaces_node);
+	sord_node_free(world->world, world->doap_name_node);
 	sord_node_free(world->world, world->dyn_manifest_node);
 	sord_node_free(world->world, world->lv2_appliesTo_node);
 	sord_node_free(world->world, world->lv2_binary_node);
 	sord_node_free(world->world, world->lv2_default_node);
+	sord_node_free(world->world, world->lv2_extensionData_node);
 	sord_node_free(world->world, world->lv2_index_node);
 	sord_node_free(world->world, world->lv2_maximum_node);
 	sord_node_free(world->world, world->lv2_minimum_node);
+	sord_node_free(world->world, world->lv2_name_node);
+	sord_node_free(world->world, world->lv2_optionalFeature_node);
 	sord_node_free(world->world, world->lv2_plugin_node);
 	sord_node_free(world->world, world->lv2_port_node);
 	sord_node_free(world->world, world->lv2_portproperty_node);
 	sord_node_free(world->world, world->lv2_reportslatency_node);
+	sord_node_free(world->world, world->lv2_requiredFeature_node);
 	sord_node_free(world->world, world->lv2_specification_node);
 	sord_node_free(world->world, world->lv2_symbol_node);
 	sord_node_free(world->world, world->pset_value_node);
@@ -137,11 +140,6 @@ lilv_world_free(LilvWorld* world)
 	sord_node_free(world->world, world->xsd_decimal_node);
 	sord_node_free(world->world, world->xsd_double_node);
 	sord_node_free(world->world, world->xsd_integer_node);
-	lilv_node_free(world->doap_name_val);
-	lilv_node_free(world->lv2_extensionData_val);
-	lilv_node_free(world->lv2_name_val);
-	lilv_node_free(world->lv2_optionalFeature_val);
-	lilv_node_free(world->lv2_requiredFeature_val);
 
 	for (LilvSpec* spec = world->specs; spec;) {
 		LilvSpec* next = spec->next;

@@ -141,8 +141,8 @@ LilvNode*
 lilv_port_get_name(const LilvPlugin* p,
                    const LilvPort*   port)
 {
-	LilvNodes* results = lilv_port_get_value(p, port,
-	                                         p->world->lv2_name_val);
+	LilvNodes* results = lilv_port_get_value_by_node(
+		p, port, p->world->lv2_name_node);
 
 	LilvNode* ret = NULL;
 	if (results) {

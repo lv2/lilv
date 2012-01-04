@@ -392,6 +392,15 @@ lilv_plugin_get_class(const LilvPlugin* const_p)
 	return p->plugin_class;
 }
 
+static LilvNodes*
+lilv_plugin_get_value_internal(const LilvPlugin* p,
+                               const SordNode*   predicate)
+{
+	lilv_plugin_load_if_necessary(p);
+	return lilv_world_query_values_internal(
+		p->world, p->plugin_uri->val.uri_val, predicate, NULL);
+}
+
 LILV_API
 bool
 lilv_plugin_verify(const LilvPlugin* plugin)
@@ -404,7 +413,8 @@ lilv_plugin_verify(const LilvPlugin* plugin)
 	}
 
 	lilv_nodes_free(results);
-	results = lilv_plugin_get_value(plugin, plugin->world->doap_name_val);
+	results = lilv_plugin_get_value_internal(plugin,
+	                                         plugin->world->doap_name_node);
 	if (!results) {
 		return false;
 	}
@@ -425,8 +435,8 @@ LILV_API
 LilvNode*
 lilv_plugin_get_name(const LilvPlugin* plugin)
 {
-	LilvNodes* results = lilv_plugin_get_value(plugin,
-	                                           plugin->world->doap_name_val);
+	LilvNodes* results = lilv_plugin_get_value_internal(
+		plugin, plugin->world->doap_name_node);
 
 	LilvNode* ret = NULL;
 	if (results) {
@@ -647,14 +657,14 @@ LILV_API
 LilvNodes*
 lilv_plugin_get_optional_features(const LilvPlugin* p)
 {
-	return lilv_plugin_get_value(p, p->world->lv2_optionalFeature_val);
+	return lilv_plugin_get_value_internal(p, p->world->lv2_optionalFeature_node);
 }
 
 LILV_API
 LilvNodes*
 lilv_plugin_get_required_features(const LilvPlugin* p)
 {
-	return lilv_plugin_get_value(p, p->world->lv2_requiredFeature_val);
+	return lilv_plugin_get_value_internal(p, p->world->lv2_requiredFeature_node);
 }
 
 LILV_API
@@ -670,7 +680,7 @@ lilv_plugin_has_extension_data(const LilvPlugin* p,
 	SordIter* iter = lilv_world_query_internal(
 		p->world,
 		p->plugin_uri->val.uri_val,
-		p->world->lv2_extensionData_val->val.uri_val,
+		p->world->lv2_extensionData_node,
 		uri->val.uri_val);
 
 	if (iter) {
@@ -685,7 +695,7 @@ LILV_API
 LilvNodes*
 lilv_plugin_get_extension_data(const LilvPlugin* p)
 {
-	return lilv_plugin_get_value(p, p->world->lv2_extensionData_val);
+	return lilv_plugin_get_value_internal(p, p->world->lv2_extensionData_node);
 }
 
 LILV_API
