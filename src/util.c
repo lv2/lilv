@@ -15,7 +15,6 @@
 */
 
 #define _POSIX_SOURCE 1  /* for wordexp, fileno */
-#define _BSD_SOURCE   1  /* for lockf */
 
 #include <assert.h>
 #include <errno.h>
@@ -27,6 +26,10 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
+
+#if defined(HAVE_FLOCK) && defined(HAVE_FILENO)
+#    include <sys/file.h>
+#endif
 
 #include "lilv_internal.h"
 
@@ -354,8 +357,8 @@ lilv_path_is_child(const char* path, const char* dir)
 int
 lilv_flock(FILE* file, bool lock)
 {
-#if defined(HAVE_LOCKF) && defined(HAVE_FILENO)
-	return lockf(fileno(file), lock ? F_LOCK : F_ULOCK, 0);
+#if defined(HAVE_FLOCK) && defined(HAVE_FILENO)
+	return flock(fileno(file), lock ? LOCK_EX : LOCK_UN);
 #else
 	return 0;
 #endif

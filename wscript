@@ -86,10 +86,9 @@ def configure(conf):
                   define_name='HAVE_WORDEXP',
                   mandatory=False)
 
-    conf.check_cc(function_name='lockf',
-                  header_name='unistd.h',
-                  defines='_BSD_SOURCE',
-                  define_name='HAVE_LOCKF',
+    conf.check_cc(function_name='flock',
+                  header_name='sys/file.h',
+                  define_name='HAVE_FLOCK',
                   mandatory=False)
 
     conf.check_cc(function_name='fileno',
