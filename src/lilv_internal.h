@@ -349,6 +349,9 @@ char*  lilv_get_latest_copy(const char* path);
 char*  lilv_path_relative_to(const char* path, const char* base);
 bool   lilv_path_is_child(const char* path, const char* dir);
 int    lilv_flock(FILE* file, bool lock);
+char*  lilv_realpath(const char* path);
+int    lilv_symlink(const char* oldpath, const char* newpath);
+int    lilv_mkdir_p(const char* path);
 
 char*
 lilv_find_free_path(const char* in_path,

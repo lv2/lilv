@@ -15,6 +15,7 @@
 */
 
 #define _POSIX_SOURCE 1  /* for wordexp, fileno */
+#define _BSD_SOURCE   1  /* for realpath, symlink */
 
 #include <assert.h>
 #include <errno.h>
@@ -27,11 +28,11 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+#include "lilv_internal.h"
+
 #if defined(HAVE_FLOCK) && defined(HAVE_FILENO)
 #    include <sys/file.h>
 #endif
-
-#include "lilv_internal.h"
 
 #ifdef HAVE_WORDEXP
 #    include <wordexp.h>
@@ -306,6 +307,18 @@ lilv_get_latest_copy(const char* path)
 }
 
 char*
+lilv_realpath(const char* path)
+{
+	return realpath(path, NULL);
+}
+
+int
+lilv_symlink(const char* oldpath, const char* newpath)
+{
+	return symlink(oldpath, newpath);
+}
+
+char*
 lilv_path_relative_to(const char* path, const char* base)
 {
 	const size_t path_len = strlen(path);
@@ -377,4 +390,26 @@ lilv_dir_for_each(const char* path,
 		}
 		closedir(dir);
 	}
+}
+
+int
+lilv_mkdir_p(const char* dir_path)
+{
+	char*        path     = lilv_strdup(dir_path);
+	const size_t path_len = strlen(path);
+	for (size_t i = 1; i <= path_len; ++i) {
+		if (path[i] == LILV_DIR_SEP[0] || path[i] == '\0') {
+			path[i] = '\0';
+			if (mkdir(path, 0755) && errno != EEXIST) {
+				LILV_ERRORF("Failed to create %s (%s)\n",
+				            path, strerror(errno));
+				free(path);
+				return 1;
+			}
+			path[i] = LILV_DIR_SEP[0];
+		}
+	}
+
+	free(path);
+	return 0;
 }

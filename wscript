@@ -97,12 +97,6 @@ def configure(conf):
                   define_name='HAVE_FILENO',
                   mandatory=False)
 
-    conf.check_cc(function_name='mkdir',
-                  header_name=['sys/stat.h','sys/types.h'],
-                  defines='_POSIX_SOURCE',
-                  define_name='HAVE_MKDIR',
-                  mandatory=False)
-
     autowaf.define(conf, 'LILV_VERSION', LILV_VERSION)
     if Options.options.dyn_manifest:
         autowaf.define(conf, 'LILV_DYN_MANIFEST', 1)

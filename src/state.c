@@ -14,8 +14,6 @@
   OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 */
 
-#define _BSD_SOURCE 1  /* for realpath, symlink */
-
 #include <errno.h>
 #include <stdio.h>
 #include <string.h>
@@ -26,13 +24,6 @@
 #ifdef HAVE_LV2_STATE
 #    include "lv2/lv2plug.in/ns/ext/state/state.h"
 #endif
-
-#ifdef HAVE_MKDIR
-#    include <sys/stat.h>
-#    include <sys/types.h>
-#endif
-
-#include <unistd.h>
 
 #define NS_ATOM  "http://lv2plug.in/ns/ext/atom#"
 #define NS_PSET  "http://lv2plug.in/ns/ext/presets#"
@@ -200,7 +191,7 @@ abstract_path(LV2_State_Map_Path_Handle handle,
 	LilvState*    state        = (LilvState*)handle;
 	const size_t  file_dir_len = state->file_dir ? strlen(state->file_dir) : 0;
 	char*         path         = NULL;
-	char*         real_path    = realpath(absolute_path, NULL);
+	char*         real_path    = lilv_realpath(absolute_path);
 	const PathMap key          = { (char*)real_path, NULL };
 	ZixTreeIter*  iter         = NULL;
 
@@ -294,7 +285,7 @@ lilv_state_new_from_instance(const LilvPlugin*          plugin,
 	state->plugin_uri = lilv_node_duplicate(lilv_plugin_get_uri(plugin));
 	state->abs2rel    = zix_tree_new(false, abs_cmp, NULL, path_rel_free);
 	state->rel2abs    = zix_tree_new(false, rel_cmp, NULL, NULL);
-	state->file_dir   = dir ? realpath(dir, NULL) : NULL;
+	state->file_dir   = dir ? lilv_realpath(dir) : NULL;
 	state->state_Path = map->map(map->handle, LV2_STATE_PATH_URI);
 
 #ifdef HAVE_LV2_STATE
@@ -614,7 +605,7 @@ lilv_state_new_from_file(LilvWorld*      world,
 		: sord_node_from_serd_node(world->world, env, &base, NULL, NULL);
 
 	char* dirname   = lilv_dirname(path);
-	char* real_path = realpath(dirname, NULL);
+	char* real_path = lilv_realpath(dirname);
 	LilvState* state = new_state_from_model(
 		world, map, model, subject_node, real_path);
 	free(dirname);
@@ -776,7 +767,7 @@ add_state_to_manifest(const LilvNode* plugin_uri,
 static char*
 pathify(const char* in)
 {
-	const size_t in_len  = strlen(in);
+	const size_t in_len = strlen(in);
 
 	char* out = calloc(in_len + 1, 1);
 	for (size_t i = 0; i < in_len; ++i) {
@@ -791,32 +782,9 @@ pathify(const char* in)
 	return out;
 }
 
-static int
-mkdir_p(const char* dir_path)
-{
-	char*        path     = lilv_strdup(dir_path);
-	const size_t path_len = strlen(path);
-	for (size_t i = 1; i <= path_len; ++i) {
-		if (path[i] == LILV_DIR_SEP[0] || path[i] == '\0') {
-			path[i] = '\0';
-			if (mkdir(path, 0755) && errno != EEXIST) {
-				LILV_ERRORF("Failed to create %s (%s)\n",
-				            path, strerror(errno));
-				free(path);
-				return 1;
-			}
-			path[i] = LILV_DIR_SEP[0];
-		}
-	}
-
-	free(path);
-	return 0;
-}
-
 static char*
 lilv_default_state_dir(LilvWorld* world)
 {
-#ifdef HAVE_MKDIR
 	// Use environment variable or default value if it is unset
 	char* state_bundle = getenv("LV2_STATE_BUNDLE");
 	if (!state_bundle) {
@@ -825,10 +793,6 @@ lilv_default_state_dir(LilvWorld* world)
 
 	// Expand any variables and create if necessary
 	return lilv_expand(state_bundle);
-#else
-	LILV_ERROR("Save to default state path but mkdir is unavailable.\n");
-	return NULL;
-#endif
 }
 
 LILV_API
@@ -846,7 +810,7 @@ lilv_state_save(LilvWorld*                 world,
 	if (!dir) {
 		dir = default_dir = lilv_default_state_dir(world);
 	}
-	if (mkdir_p(dir)) {
+	if (lilv_mkdir_p(dir)) {
 		free(default_dir);
 		return 1;
 	}
@@ -950,12 +914,12 @@ lilv_state_save(LilvWorld*                 world,
 	     i = zix_tree_iter_next(i)) {
 		const PathMap* pm = (const PathMap*)zix_tree_get(i);
 		
-		char* real_dir    = lilv_strjoin(realpath(dir, NULL), "/", NULL);
+		char* real_dir    = lilv_strjoin(lilv_realpath(dir), "/", NULL);
 		char* rel_path    = lilv_strjoin(dir, "/", pm->rel, NULL);
 		char* target_path = lilv_path_is_child(pm->abs, state->file_dir)
 			? lilv_path_relative_to(pm->abs, real_dir)
 			: lilv_strdup(pm->abs);
-		if (symlink(target_path, rel_path)) {
+		if (lilv_symlink(target_path, rel_path)) {
 			LILV_ERRORF("Failed to link `%s' => `%s' (%s)\n",
 			            pm->abs, pm->rel, strerror(errno));
 		}
@@ -1109,8 +1073,8 @@ lilv_state_equals(const LilvState* a, const LilvState* b)
 		if (ap->type == a->state_Path) {
 			const char* const a_abs  = lilv_state_rel2abs(a, ap->value);
 			const char* const b_abs  = lilv_state_rel2abs(b, bp->value);
-			char* const       a_real = realpath(a_abs, NULL);
-			char* const       b_real = realpath(b_abs, NULL);
+			char* const       a_real = lilv_realpath(a_abs);
+			char* const       b_real = lilv_realpath(b_abs);
 			const int         cmp    = strcmp(a_real, b_real);
 			free(a_real);
 			free(b_real);
