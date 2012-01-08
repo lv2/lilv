@@ -114,6 +114,17 @@ append_port_value(LilvState*  state,
 	return pv;
 }
 
+static const char*
+lilv_state_rel2abs(const LilvState* state, const char* path)
+{
+	ZixTreeIter*  iter = NULL;
+	const PathMap key  = { NULL, (char*)path };
+	if (state->rel2abs && !zix_tree_find(state->rel2abs, &key, &iter)) {
+		return ((const PathMap*)zix_tree_get(iter))->abs;
+	}
+	return path;
+}
+
 #ifdef HAVE_LV2_STATE
 
 static int
@@ -165,17 +176,6 @@ retrieve_callback(void*     handle,
 		return prop->value;
 	}
 	return NULL;
-}
-
-static const char*
-lilv_state_rel2abs(const LilvState* state, const char* path)
-{
-	ZixTreeIter*  iter = NULL;
-	const PathMap key  = { NULL, (char*)path };
-	if (state->rel2abs && !zix_tree_find(state->rel2abs, &key, &iter)) {
-		return ((const PathMap*)zix_tree_get(iter))->abs;
-	}
-	return path;
 }
 
 static bool
@@ -286,9 +286,9 @@ lilv_state_new_from_instance(const LilvPlugin*          plugin,
 	state->abs2rel    = zix_tree_new(false, abs_cmp, NULL, path_rel_free);
 	state->rel2abs    = zix_tree_new(false, rel_cmp, NULL, NULL);
 	state->file_dir   = dir ? lilv_realpath(dir) : NULL;
-	state->state_Path = map->map(map->handle, LV2_STATE_PATH_URI);
 
 #ifdef HAVE_LV2_STATE
+	state->state_Path = map->map(map->handle, LV2_STATE_PATH_URI);
 	if (dir) {
 		LV2_State_Map_Path map_path = { state, abstract_path, absolute_path };
 		LV2_Feature        feature  = { LV2_STATE_MAP_PATH_URI, &map_path };
@@ -432,8 +432,11 @@ new_state_from_model(LilvWorld*       world,
 {
 	LilvState* const state = malloc(sizeof(LilvState));
 	memset(state, '\0', sizeof(LilvState));
+	state->dir = dir ? lilv_strdup(dir) : NULL;
+
+#ifdef HAVE_LV2_STATE
 	state->state_Path = map->map(map->handle, LV2_STATE_PATH_URI);
-	state->dir        = dir ? lilv_strdup(dir) : NULL;
+#endif
 
 	// Get the plugin URI this state applies to
 	const SordQuad upat = {
@@ -494,8 +497,11 @@ new_state_from_model(LilvWorld*       world,
 	}
 	sord_iter_free(ports);
 
+#ifdef HAVE_LV2_STATE
 	SordNode* state_path_node = sord_new_uri(world->world,
 	                                         USTR(LV2_STATE_PATH_URI));
+#endif
+
 	// Get properties
 	SordNode* statep = sord_new_uri(world->world, USTR(NS_STATE "state"));
 	const SordNode* state_node = get_one(model, node, statep);
@@ -552,7 +558,9 @@ new_state_from_model(LilvWorld*       world,
 		sord_iter_free(props);
 	}
 	sord_node_free(world->world, statep);
+#ifdef HAVE_LV2_STATE
 	sord_node_free(world->world, state_path_node);
+#endif
 
 	qsort(state->props, state->num_props, sizeof(Property), property_cmp);
 	qsort(state->values, state->num_values, sizeof(PortValue), value_cmp);
