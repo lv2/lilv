@@ -264,46 +264,45 @@ lilv_size_mtime(const char* path, off_t* size, time_t* time)
 	*time = buf.st_mtime;
 }
 
+typedef struct {
+	char*  pattern;
+	off_t  orig_size;
+	time_t time;
+	char*  latest;
+} Latest;
+
+static void
+update_latest(const char* path, const char* name, void* data)
+{
+	Latest* latest     = (Latest*)data;
+	char*   entry_path = lilv_strjoin(path, "/", name, NULL);
+	unsigned num;
+	if (sscanf(entry_path, latest->pattern, &num) == 1) {
+		off_t  entry_size;
+		time_t entry_time;
+		lilv_size_mtime(entry_path, &entry_size, &entry_time);
+		if (entry_size == latest->orig_size && entry_time >= latest->time) {
+			free(latest->latest);
+			latest->latest = entry_path;
+		}
+	}
+	if (entry_path != latest->latest) {
+		free(entry_path);
+	}
+}	
+	              
 /** Return the latest copy of the file at @c path that is newer. */
 char*
 lilv_get_latest_copy(const char* path)
 {
-	char* dirname = lilv_dirname(path);
-	DIR*  dir     = opendir(dirname);
-	if (!dir) {
-		free(dirname);
-		return NULL;
-	}
+	char*  dirname = lilv_dirname(path);
+	Latest latest  = { lilv_strjoin(path, "%u", NULL), 0, 0, NULL };
+	lilv_size_mtime(path, &latest.orig_size, &latest.time);
 
-	char* pat    = lilv_strjoin(path, "%u", NULL);
-	char* latest = NULL;
+	lilv_dir_for_each(dirname, &latest, update_latest);
 
-	off_t  path_size;
-	time_t path_time;
-	lilv_size_mtime(path, &path_size, &path_time);
-	
-	struct dirent  entry;
-	struct dirent* result;
-	while (!readdir_r(dir, &entry, &result) && result) {
-		char* entry_path = lilv_strjoin(dirname, "/", entry.d_name, NULL);
-		unsigned num;
-		if (sscanf(entry_path, pat, &num) == 1) {
-			off_t  entry_size;
-			time_t entry_time;
-			lilv_size_mtime(entry_path, &entry_size, &entry_time);
-			if (entry_size == path_size && entry_time >= path_time) {
-				free(latest);
-				latest = entry_path;
-			}
-		}
-		if (entry_path != latest) {
-			free(entry_path);
-		}
-	}
-	free(dirname);
-	free(pat);
-
-	return latest;
+	free(latest.pattern);
+	return latest.latest;
 }
 
 char*
@@ -362,4 +361,20 @@ lilv_flock(FILE* file, bool lock)
 #else
 	return 0;
 #endif
+}
+
+void
+lilv_dir_for_each(const char* path,
+                  void*       data,
+                  void (*f)(const char* path, const char* name, void* data))
+{
+	DIR* dir = opendir(path);
+	if (dir) {
+		struct dirent  entry;
+		struct dirent* result;
+		while (!readdir_r(dir, &entry, &result) && result) {
+			f(path, entry.d_name, data);
+		}
+		closedir(dir);
+	}
 }

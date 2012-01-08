@@ -342,8 +342,6 @@ char*  lilv_strdup(const char* str);
 char*  lilv_get_lang(void);
 char*  lilv_expand(const char* path);
 char*  lilv_dirname(const char* path);
-char*  lilv_find_free_path(
-	const char* in_path, bool (*exists)(const char*, void*), void* user_data);
 int    lilv_copy_file(const char* src, const char* dst);
 bool   lilv_path_exists(const char* path, void* ignored);
 bool   lilv_path_is_absolute(const char* path);
@@ -351,6 +349,15 @@ char*  lilv_get_latest_copy(const char* path);
 char*  lilv_path_relative_to(const char* path, const char* base);
 bool   lilv_path_is_child(const char* path, const char* dir);
 int    lilv_flock(FILE* file, bool lock);
+
+char*
+lilv_find_free_path(const char* in_path,
+                    bool (*exists)(const char*, void*), void* user_data);
+
+void
+lilv_dir_for_each(const char* path,
+                  void*       data,
+                  void (*f)(const char* path, const char* name, void* data));
 
 typedef void (*VoidFunc)(void);
 

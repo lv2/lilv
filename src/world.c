@@ -14,14 +14,10 @@
   OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 */
 
-#define _POSIX_SOURCE 1  /* for readdir_r */
-
 #include <assert.h>
 #include <errno.h>
 #include <stdlib.h>
 #include <string.h>
-
-#include <dirent.h>
 
 #include "lilv_internal.h"
 
@@ -549,6 +545,22 @@ lilv_world_load_bundle(LilvWorld* world, LilvNode* bundle_uri)
 	serd_node_free(&manifest_uri);
 }
 
+static void
+load_dir_entry(const char* dir, const char* name, void* data)
+{
+	LilvWorld* world = (LilvWorld*)data;
+	if (!strcmp(name, ".") || !strcmp(name, ".."))
+		return;
+
+	const char* scheme  = (dir[0] == '/') ? "file://" : "file:///";
+	char*       uri     = lilv_strjoin(scheme, dir, "/", name, "/", NULL);
+	LilvNode*   uri_val = lilv_new_uri(world, uri);
+
+	lilv_world_load_bundle(world, uri_val);
+	lilv_node_free(uri_val);
+	free(uri);
+}
+
 /** Load all bundles in the directory at @a dir_path. */
 static void
 lilv_world_load_directory(LilvWorld* world, const char* dir_path)
@@ -559,38 +571,7 @@ lilv_world_load_directory(LilvWorld* world, const char* dir_path)
 		return;
 	}
 
-	DIR* pdir = opendir(path);
-	if (!pdir) {
-		free(path);
-		return;
-	}
-
-#ifdef __WIN32__
-	static const char* const file_scheme = "file:///";
-#else
-	static const char* const file_scheme = "file://";
-#endif
-
-	struct dirent  entry;
-	struct dirent* result;
-	while (!readdir_r(pdir, &entry, &result) && result) {
-		if (!strcmp(entry.d_name, ".") || !strcmp(entry.d_name, ".."))
-			continue;
-
-		char* uri = lilv_strjoin(file_scheme,
-		                         path, "/",
-		                         entry.d_name, "/",
-		                         NULL);
-
-		LilvNode* uri_val = lilv_new_uri(world, uri);
-		lilv_world_load_bundle(world, uri_val);
-		lilv_node_free(uri_val);
-
-		free(uri);
-	}
-
-	free(path);
-	closedir(pdir);
+	lilv_dir_for_each(path, world, load_dir_entry);
 }
 
 static bool
