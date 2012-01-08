@@ -39,10 +39,12 @@ lilv_port_new(LilvWorld*      world,
 void
 lilv_port_free(const LilvPlugin* plugin, LilvPort* port)
 {
-	sord_node_free(plugin->world->world, port->node);
-	lilv_nodes_free(port->classes);
-	lilv_node_free(port->symbol);
-	free(port);
+	if (port) {
+		sord_node_free(plugin->world->world, port->node);
+		lilv_nodes_free(port->classes);
+		lilv_node_free(port->symbol);
+		free(port);
+	}
 }
 
 LILV_API
