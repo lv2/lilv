@@ -20,6 +20,7 @@ lilv (UNRELEASED) unstable; urgency=low
     save and restore plugin state both in memory and on disk, as well as
     save presets in a host-sharable way since the disk format is identical
     to the LV2 presets format.
+  * Update old references to lv2_list (now lv2ls)
 
  -- David Robillard <d@drobilla.net>  (UNRELEASED)
 

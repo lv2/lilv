@@ -1,7 +1,7 @@
 .\" First parameter, NAME, should be all caps
 .\" Second parameter, SECTION, should be 1-8, maybe w/ subsection
 .\" other parameters are allowed: see man(7), man(1)
-.TH LV2_LIST 1 "4 May 2009"
+.TH LV2_LIST 1 "8 Jan 2012"
 .\" Please adjust this date whenever revising the manpage.
 .\"
 .\" Some roff macros, for reference:
@@ -15,15 +15,27 @@
 .\" .sp <n>    insert n+1 empty lines
 .\" for manpage-specific macros, see man(7)
 .SH NAME
-.B lv2_list \- List all installed LV2 plugins.
+.B lv2ls \- List all installed LV2 plugins.
 
 .SH SYNOPSIS
-.B lv2_list
+.B lv2ls [OPTIONS]
+
+.SH OPTIONS
+.TP
+\fB\-n\fT, \fB\-\-names\fR
+Show names instead of URIs
+
+.TP
+\fB\-\-help\fR
+Display help and exit
+
+.TP
+\fB\-\-version\fR
+Display version information and exit
 
 .SH SEE ALSO
 .BR lilv(3),
-.BR lv2ls(1),
-.BR lv2jack(1),
+.BR lv2info(1)
 
 .SH AUTHOR
 lv2ls was written by David Robillard <d@drobilla.net>

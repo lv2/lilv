@@ -41,7 +41,7 @@ void
 print_version(void)
 {
 	printf(
-		"lv2_list (lilv) " LILV_VERSION "\n"
+		"lv2ls (lilv) " LILV_VERSION "\n"
 		"Copyright 2007-2011 David Robillard <http://drobilla.net>\n"
 		"License: <http://www.opensource.org/licenses/isc-license>\n"
 		"This is free software: you are free to change and redistribute it.\n"
@@ -51,12 +51,12 @@ print_version(void)
 void
 print_usage(void)
 {
-	printf("Usage: lv2_list [OPTIONS]\n");
+	printf("Usage: lv2ls [OPTIONS]\n");
 	printf("List all installed LV2 plugins.\n");
 	printf("\n");
 	printf("  -n, --names    Show names instead of URIs\n");
 	printf("  --help         Display this help and exit\n");
-	printf("  --version      Output version information and exit\n");
+	printf("  --version      Display version information and exit\n");
 	printf("\n");
 	printf("The environment variable LV2_PATH can be used to control where\n");
 	printf("this (and all other lilv based LV2 hosts) will search for plugins.\n");

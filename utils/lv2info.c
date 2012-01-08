@@ -336,11 +336,11 @@ print_usage(void)
 {
 	printf(
 		"Usage: lv2info [OPTIONS] PLUGIN_URI\n"
-		"Show information about an installed LV2 plugin.\n\n"
+		"Print information about an installed LV2 plugin.\n\n"
 		"  -p FILE      Write Turtle description of plugin to FILE\n"
 		"  -m FILE      Add record of plugin to manifest FILE\n"
 		"  --help       Display this help and exit\n"
-		"  --version    Output version information and exit\n\n"
+		"  --version    Display version information and exit\n\n"
 		"For -p and -m, Turtle files are appended to (not overwritten),\n"
 		"and @prefix directives are only written if the file was empty.\n"
 		"This allows several plugins to be added to a single file.\n");
