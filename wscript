@@ -80,20 +80,25 @@ def configure(conf):
     autowaf.check_pkg(conf, 'lv2-lv2plug.in-ns-ext-state',
                       uselib_store='LV2_STATE', mandatory=False)
 
+    defines = ['_POSIX_C_SOURCE', '_BSD_SOURCE']
+    if Options.platform == 'darwin':
+        defines += ['_DARWIN_C_SOURCE']
+
     conf.check_cc(function_name='wordexp',
                   header_name='wordexp.h',
-                  defines='_POSIX_SOURCE',
+                  defines=defines,
                   define_name='HAVE_WORDEXP',
                   mandatory=False)
 
     conf.check_cc(function_name='flock',
                   header_name='sys/file.h',
+                  defines=defines,
                   define_name='HAVE_FLOCK',
                   mandatory=False)
 
     conf.check_cc(function_name='fileno',
                   header_name='stdio.h',
-                  defines='_POSIX_SOURCE',
+                  defines=defines,
                   define_name='HAVE_FILENO',
                   mandatory=False)
 

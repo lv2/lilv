@@ -14,8 +14,12 @@
   OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 */
 
-#define _POSIX_SOURCE 1  /* for wordexp, fileno */
-#define _BSD_SOURCE   1  /* for realpath, symlink */
+#define _POSIX_C_SOURCE 1  /* for wordexp, fileno */
+#define _BSD_SOURCE     1  /* for realpath, symlink */
+
+#ifdef __APPLE__
+#    define _DARWIN_C_SOURCE 1  /* for flock */
+#endif
 
 #include <assert.h>
 #include <errno.h>
