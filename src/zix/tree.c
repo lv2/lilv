@@ -101,8 +101,10 @@ ZIX_API
 void
 zix_tree_free(ZixTree* t)
 {
-	zix_tree_free_rec(t, t->root);
-	free(t);
+	if (t) {
+		zix_tree_free_rec(t, t->root);
+		free(t);
+	}
 }
 
 size_t

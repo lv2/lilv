@@ -68,7 +68,7 @@ lilv_port_has_property(const LilvPlugin* p,
 	SordIter* results = lilv_world_query_internal(
 		p->world,
 		port->node,
-		p->world->lv2_portproperty_node,
+		p->world->uris.lv2_portProperty,
 		lilv_node_as_node(property));
 
 	const bool ret = !lilv_matches_end(results);
@@ -142,7 +142,7 @@ lilv_port_get_name(const LilvPlugin* p,
                    const LilvPort*   port)
 {
 	LilvNodes* results = lilv_port_get_value_by_node(
-		p, port, p->world->lv2_name_node);
+		p, port, p->world->uris.lv2_name);
 
 	LilvNode* ret = NULL;
 	if (results) {
@@ -177,7 +177,7 @@ lilv_port_get_range(const LilvPlugin* p,
 {
 	if (def) {
 		LilvNodes* defaults = lilv_port_get_value_by_node(
-			p, port, p->world->lv2_default_node);
+			p, port, p->world->uris.lv2_default);
 		*def = defaults
 			? lilv_node_duplicate(lilv_nodes_get_first(defaults))
 			: NULL;
@@ -185,7 +185,7 @@ lilv_port_get_range(const LilvPlugin* p,
 	}
 	if (min) {
 		LilvNodes* minimums = lilv_port_get_value_by_node(
-			p, port, p->world->lv2_minimum_node);
+			p, port, p->world->uris.lv2_minimum);
 		*min = minimums
 			? lilv_node_duplicate(lilv_nodes_get_first(minimums))
 			: NULL;
@@ -193,7 +193,7 @@ lilv_port_get_range(const LilvPlugin* p,
 	}
 	if (max) {
 		LilvNodes* maximums = lilv_port_get_value_by_node(
-			p, port, p->world->lv2_maximum_node);
+			p, port, p->world->uris.lv2_maximum);
 		*max = maximums
 			? lilv_node_duplicate(lilv_nodes_get_first(maximums))
 			: NULL;
@@ -222,12 +222,12 @@ lilv_port_get_scale_points(const LilvPlugin* p,
 		LilvNode* value = lilv_plugin_get_unique(
 			p,
 			point,
-			p->world->rdf_value_node);
+			p->world->uris.rdf_value);
 
 		LilvNode* label = lilv_plugin_get_unique(
 			p,
 			point,
-			p->world->rdfs_label_node);
+			p->world->uris.rdfs_label);
 
 		if (value && label) {
 			zix_tree_insert(ret, lilv_scale_point_new(value, label), NULL);
@@ -245,7 +245,7 @@ lilv_port_get_properties(const LilvPlugin* p,
                          const LilvPort*   port)
 {
 	LilvNode* pred = lilv_node_new_from_node(
-		p->world, p->world->lv2_portproperty_node);
+		p->world, p->world->uris.lv2_portProperty);
 	LilvNodes* ret = lilv_port_get_value(p, port, pred);
 	lilv_node_free(pred);
 	return ret;

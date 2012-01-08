@@ -15,6 +15,9 @@
   OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 */
 
+#define _BSD_SOURCE  /* for realpath */
+
+#include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -39,6 +42,10 @@ typedef struct {
 		LV2_URID atom_Float;
 	} uris;
 
+	char* tmp_file_path;
+	char* rec_file_path;
+	FILE* rec_file;
+
 	float*   input;
 	float*   output;
 	unsigned num_runs;
@@ -47,6 +54,10 @@ typedef struct {
 static void
 cleanup(LV2_Handle instance)
 {
+	Test* test = (Test*)instance;
+	if (test->rec_file) {
+		fclose(test->rec_file);
+	}
 	free(instance);
 }
 
@@ -79,26 +90,43 @@ instantiate(const LV2_Descriptor*     descriptor,
 		return NULL;
 	}
 
-	test->map      = NULL;
-	test->input    = NULL;
-	test->output   = NULL;
-	test->num_runs = 0;
+	test->map           = NULL;
+	test->input         = NULL;
+	test->output        = NULL;
+	test->num_runs      = 0;
+	test->tmp_file_path = malloc(L_tmpnam);
+	test->rec_file_path = NULL;
+	test->rec_file      = NULL;
 
-	/* Scan host features for URID map */
+	tmpnam(test->tmp_file_path);
+
+	LV2_State_Make_Path* make_path = NULL;
+
 	for (int i = 0; features[i]; ++i) {
 		if (!strcmp(features[i]->URI, LV2_URID_URI "#map")) {
 			test->map = (LV2_URID_Map*)features[i]->data;
 			test->uris.atom_Float = test->map->map(
 				test->map->handle, NS_ATOM "Float");
+		} else if (!strcmp(features[i]->URI, LV2_STATE_MAKE_PATH_URI)) {
+			make_path = (LV2_State_Make_Path*)features[i]->data;
 		}
 	}
 
 	if (!test->map) {
-		fprintf(stderr, "Host does not support urid:map.\n");
+		fprintf(stderr, "Host does not support urid:map\n");
 		free(test);
 		return NULL;
 	}
 
+	if (make_path) {
+		test->rec_file_path = make_path->path(make_path->handle, "recfile");
+		if (!(test->rec_file = fopen(test->rec_file_path, "w"))) {
+			fprintf(stderr, "ERROR: Failed to open rec file\n");
+		}
+		fprintf(test->rec_file, "instantiate\n");
+
+	}
+		
 	return (LV2_Handle)test;
 }
 
@@ -108,7 +136,11 @@ run(LV2_Handle instance,
 {
 	Test* test = (Test*)instance;
 	*test->output = *test->input;
-	++test->num_runs;
+	if (sample_count == 1) {
+		++test->num_runs;
+	} else if (sample_count == 2 && test->rec_file) {
+		fprintf(test->rec_file, "run\n");
+	}
 }
 
 static uint32_t
@@ -125,6 +157,16 @@ save(LV2_Handle                instance,
      const LV2_Feature* const* features)
 {
 	Test* plugin = (Test*)instance;
+
+	LV2_State_Map_Path*  map_path  = NULL;
+	//LV2_State_Make_Path* make_path = NULL;
+	for (int i = 0; features && features[i]; ++i) {
+		if (!strcmp(features[i]->URI, LV2_STATE_MAP_PATH_URI)) {
+			map_path = (LV2_State_Map_Path*)features[i]->data;
+		}/* else if (!strcmp(features[i]->URI, LV2_STATE_MAKE_PATH_URI)) {
+			make_path = (LV2_State_Make_Path*)features[i]->data;
+			}*/
+	}
 
 	store(callback_data,
 	      map_uri(plugin, "http://example.org/greeting"),
@@ -181,6 +223,44 @@ save(LV2_Handle                instance,
 	      sizeof(blob),
 	      map_uri(plugin, "http://example.org/SomeUnknownType"),
 	      LV2_STATE_IS_POD | LV2_STATE_IS_PORTABLE);
+
+	if (map_path) {
+		FILE* file = fopen(plugin->tmp_file_path, "w");
+		fprintf(file, "Hello\n");
+		fclose(file);
+		char* apath = map_path->abstract_path(map_path->handle,
+		                                      plugin->tmp_file_path);
+		char* apath2 = map_path->abstract_path(map_path->handle,
+		                                       plugin->tmp_file_path);
+		if (strcmp(apath, apath2)) {
+			fprintf(stderr, "ERROR: Path %s != %s\n", apath, apath2);
+		}
+
+		store(callback_data,
+		      map_uri(plugin, "http://example.org/extfile"),
+		      apath,
+		      strlen(apath) + 1,
+		      map_uri(plugin, LV2_STATE_PATH_URI),
+		      LV2_STATE_IS_PORTABLE);
+
+		free(apath);
+		free(apath2);
+
+		if (plugin->rec_file) {
+			fflush(plugin->rec_file);
+			apath = map_path->abstract_path(map_path->handle,
+			                                plugin->rec_file_path);
+
+			store(callback_data,
+			      map_uri(plugin, "http://example.org/recfile"),
+			      apath,
+			      strlen(apath) + 1,
+			      map_uri(plugin, LV2_STATE_PATH_URI),
+			      LV2_STATE_IS_PORTABLE);
+
+			free(apath);
+		}
+	}
 }
 
 static void
@@ -192,6 +272,13 @@ restore(LV2_Handle                  instance,
 {
 	Test* plugin = (Test*)instance;
 
+	LV2_State_Map_Path* map_path = NULL;
+	for (int i = 0; features && features[i]; ++i) {
+		if (!strcmp(features[i]->URI, LV2_STATE_MAP_PATH_URI)) {
+			map_path = (LV2_State_Map_Path*)features[i]->data;
+		}
+	}
+
 	size_t   size;
 	uint32_t type;
 	uint32_t valflags;
@@ -200,6 +287,20 @@ restore(LV2_Handle                  instance,
 		callback_data,
 		map_uri(plugin, "http://example.org/num-runs"),
 		&size, &type, &valflags);
+
+	char* apath = (char*)retrieve(
+		callback_data,
+		map_uri(plugin, "http://example.org/extfile"),
+		&size, &type, &valflags);
+
+	if (map_path && apath) {
+		char* path      = map_path->absolute_path(map_path->handle, apath);
+		char* real_path = realpath(path, NULL);
+		if (strcmp(real_path, plugin->tmp_file_path)) {
+			fprintf(stderr, "ERROR: Restored bad path `%s' != `%s'\n",
+			        real_path, plugin->tmp_file_path);
+		}
+	}
 }
 
 const void*

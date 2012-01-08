@@ -1141,18 +1141,21 @@ typedef LilvNode* (*LilvGetPortValueFunc)(const char* port_symbol,
    Create a new state snapshot from a plugin instance.
    @param plugin The plugin this state applies to.
    @param instance An instance of @c plugin.
+   @param dir Directory containing files created by plugin (or NULL).
    @param flags Bitwise OR of LV2_State_Flags values.
    @param features Features to pass LV2_State_Interface.save().
    @return A new LilvState which must be freed with lilv_state_free().
 
-   The returned state will have all properties set from the plugin, but no port
-   values set (since it is impossible for Lilv to do this in general).  To get
-   a complete snapshot of plugin state, call this function, then set the
-   appropriate port values with lilv_state_set_port_value.
-
    This function may be called simultaneously with any instance function
    (except discovery functions) unless the threading class of that function
    explicitly disallows this.
+
+   If supported (via state:makePath passed to LV2_Descriptor::instantiate()),
+   @c dir should be the directory where any plugin-created files are stored.
+   Lilv will assume any files within this directory (recursively) are created
+   by the plugin and all other files are immutable.  This function creates a
+   new LilvState, but does not save state to disk.  To save the state
+   permanently, use lilv_state_save().
 
    See <a href="http://lv2plug.in/ns/ext/state/state.h">state.h</a> from the
    LV2 State extension for details on the @c flags and @c features parameters.
@@ -1161,6 +1164,8 @@ LILV_API
 LilvState*
 lilv_state_new_from_instance(const LilvPlugin*          plugin,
                              LilvInstance*              instance,
+                             LV2_URID_Map*              map,
+                             const char*                dir,
                              LilvGetPortValueFunc       get_value,
                              void*                      user_data,
                              uint32_t                   flags,
@@ -1252,26 +1257,28 @@ lilv_state_restore(const LilvState*           state,
    @param unmap URID unmapper.
    @param state State to save.
    @param uri URI of state, may be NULL.
-   @param path Path of file to save state to, may be NULL.
-   @param manifest_path Path of manifest file to add entry to, may be NULL.
+   @param dir Path of the bundle directory to save into, may be NULL.
+   @param filename Filename for the state file (no extension), may be NULL.
+   @param features Host provided features.
 
    The format of state on disk is compatible with that defined in the LV2
    preset extension, i.e. this function may be used to save presets which can
-   be loaded by any host.  If @c path is NULL, then the default user preset
-   bundle (~/.lv2/presets.lv2) is used.  In this case, the label of @c state
-   MUST be set since it is used to generate a filename.
+   be loaded by any host.  If @c dir is NULL, then the default user preset
+   bundle (~/.lv2/presets.lv2) is used.  If @c filename is NULL, one will be
+   generated from the state's label, so it must be set.
 
    If @c uri is NULL, the state will be saved without an absolute URI (but
    the bundle will still work correctly as a preset bundle).
 */
 LILV_API
 int
-lilv_state_save(LilvWorld*       world,
-                LV2_URID_Unmap*  unmap,
-                const LilvState* state,
-                const char*      uri,
-                const char*      path,
-                const char*      manifest_path);
+lilv_state_save(LilvWorld*                 world,
+                LV2_URID_Unmap*            unmap,
+                const LilvState*           state,
+                const char*                uri,
+                const char*                dir,
+                const char*                filename,
+                const LV2_Feature *const * features);
 
 /**
    @}

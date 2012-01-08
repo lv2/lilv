@@ -51,40 +51,41 @@ lilv_world_new(void)
 
 #define NEW_URI(uri)     sord_new_uri(world->world, (const uint8_t*)uri)
 
-	world->dc_replaces_node         = NEW_URI(NS_DCTERMS   "replaces");
-	world->doap_name_node           = NEW_URI(LILV_NS_DOAP "name");
-	world->dyn_manifest_node        = NEW_URI(NS_DYNMAN    "DynManifest");
-	world->lv2_appliesTo_node       = NEW_URI(LILV_NS_LV2  "appliesTo");
-	world->lv2_binary_node          = NEW_URI(LILV_NS_LV2  "binary");
-	world->lv2_default_node         = NEW_URI(LILV_NS_LV2  "default");
-	world->lv2_extensionData_node   = NEW_URI(LILV_NS_LV2  "extensionData");
-	world->lv2_index_node           = NEW_URI(LILV_NS_LV2  "index");
-	world->lv2_maximum_node         = NEW_URI(LILV_NS_LV2  "maximum");
-	world->lv2_minimum_node         = NEW_URI(LILV_NS_LV2  "minimum");
-	world->lv2_name_node            = NEW_URI(LILV_NS_LV2  "name");
-	world->lv2_optionalFeature_node = NEW_URI(LILV_NS_LV2  "optionalFeature");
-	world->lv2_plugin_node          = NEW_URI(LILV_NS_LV2  "Plugin");
-	world->lv2_port_node            = NEW_URI(LILV_NS_LV2  "port");
-	world->lv2_portproperty_node    = NEW_URI(LILV_NS_LV2  "portProperty");
-	world->lv2_reportslatency_node  = NEW_URI(LILV_NS_LV2  "reportsLatency");
-	world->lv2_requiredFeature_node = NEW_URI(LILV_NS_LV2  "requiredFeature");
-	world->lv2_specification_node   = NEW_URI(LILV_NS_LV2  "Specification");
-	world->lv2_symbol_node          = NEW_URI(LILV_NS_LV2  "symbol");
-	world->pset_value_node          = NEW_URI(NS_PSET "value");
-	world->rdf_a_node               = NEW_URI(LILV_NS_RDF  "type");
-	world->rdf_value_node           = NEW_URI(LILV_NS_RDF  "value");
-	world->rdfs_class_node          = NEW_URI(LILV_NS_RDFS "Class");
-	world->rdfs_label_node          = NEW_URI(LILV_NS_RDFS "label");
-	world->rdfs_seealso_node        = NEW_URI(LILV_NS_RDFS "seeAlso");
-	world->rdfs_subclassof_node     = NEW_URI(LILV_NS_RDFS "subClassOf");
-	world->xsd_base64Binary_node    = NEW_URI(LILV_NS_XSD  "base64Binary");
-	world->xsd_boolean_node         = NEW_URI(LILV_NS_XSD  "boolean");
-	world->xsd_decimal_node         = NEW_URI(LILV_NS_XSD  "decimal");
-	world->xsd_double_node          = NEW_URI(LILV_NS_XSD  "double");
-	world->xsd_integer_node         = NEW_URI(LILV_NS_XSD  "integer");
+	world->uris.dc_replaces         = NEW_URI(NS_DCTERMS   "replaces");
+	world->uris.doap_name           = NEW_URI(LILV_NS_DOAP "name");
+	world->uris.dman_DynManifest    = NEW_URI(NS_DYNMAN    "DynManifest");
+	world->uris.lv2_appliesTo       = NEW_URI(LILV_NS_LV2  "appliesTo");
+	world->uris.lv2_binary          = NEW_URI(LILV_NS_LV2  "binary");
+	world->uris.lv2_default         = NEW_URI(LILV_NS_LV2  "default");
+	world->uris.lv2_extensionData   = NEW_URI(LILV_NS_LV2  "extensionData");
+	world->uris.lv2_index           = NEW_URI(LILV_NS_LV2  "index");
+	world->uris.lv2_maximum         = NEW_URI(LILV_NS_LV2  "maximum");
+	world->uris.lv2_minimum         = NEW_URI(LILV_NS_LV2  "minimum");
+	world->uris.lv2_name            = NEW_URI(LILV_NS_LV2  "name");
+	world->uris.lv2_optionalFeature = NEW_URI(LILV_NS_LV2  "optionalFeature");
+	world->uris.lv2_Plugin          = NEW_URI(LILV_NS_LV2  "Plugin");
+	world->uris.lv2_port            = NEW_URI(LILV_NS_LV2  "port");
+	world->uris.lv2_portProperty    = NEW_URI(LILV_NS_LV2  "portProperty");
+	world->uris.lv2_reportsLatency  = NEW_URI(LILV_NS_LV2  "reportsLatency");
+	world->uris.lv2_requiredFeature = NEW_URI(LILV_NS_LV2  "requiredFeature");
+	world->uris.lv2_Specification   = NEW_URI(LILV_NS_LV2  "Specification");
+	world->uris.lv2_symbol          = NEW_URI(LILV_NS_LV2  "symbol");
+	world->uris.pset_value          = NEW_URI(NS_PSET      "value");
+	world->uris.rdf_a               = NEW_URI(LILV_NS_RDF  "type");
+	world->uris.rdf_value           = NEW_URI(LILV_NS_RDF  "value");
+	world->uris.rdfs_Class          = NEW_URI(LILV_NS_RDFS "Class");
+	world->uris.rdfs_label          = NEW_URI(LILV_NS_RDFS "label");
+	world->uris.rdfs_seeAlso        = NEW_URI(LILV_NS_RDFS "seeAlso");
+	world->uris.rdfs_subClassOf     = NEW_URI(LILV_NS_RDFS "subClassOf");
+	world->uris.xsd_base64Binary    = NEW_URI(LILV_NS_XSD  "base64Binary");
+	world->uris.xsd_boolean         = NEW_URI(LILV_NS_XSD  "boolean");
+	world->uris.xsd_decimal         = NEW_URI(LILV_NS_XSD  "decimal");
+	world->uris.xsd_double          = NEW_URI(LILV_NS_XSD  "double");
+	world->uris.xsd_integer         = NEW_URI(LILV_NS_XSD  "integer");
+	world->uris.null_uri            = NULL;
 
 	world->lv2_plugin_class = lilv_plugin_class_new(
-		world, NULL, world->lv2_plugin_node, "Plugin");
+		world, NULL, world->uris.lv2_Plugin, "Plugin");
 	assert(world->lv2_plugin_class);
 
 	world->n_read_files        = 0;
@@ -109,37 +110,9 @@ lilv_world_free(LilvWorld* world)
 	lilv_plugin_class_free(world->lv2_plugin_class);
 	world->lv2_plugin_class = NULL;
 
-	sord_node_free(world->world, world->dc_replaces_node);
-	sord_node_free(world->world, world->doap_name_node);
-	sord_node_free(world->world, world->dyn_manifest_node);
-	sord_node_free(world->world, world->lv2_appliesTo_node);
-	sord_node_free(world->world, world->lv2_binary_node);
-	sord_node_free(world->world, world->lv2_default_node);
-	sord_node_free(world->world, world->lv2_extensionData_node);
-	sord_node_free(world->world, world->lv2_index_node);
-	sord_node_free(world->world, world->lv2_maximum_node);
-	sord_node_free(world->world, world->lv2_minimum_node);
-	sord_node_free(world->world, world->lv2_name_node);
-	sord_node_free(world->world, world->lv2_optionalFeature_node);
-	sord_node_free(world->world, world->lv2_plugin_node);
-	sord_node_free(world->world, world->lv2_port_node);
-	sord_node_free(world->world, world->lv2_portproperty_node);
-	sord_node_free(world->world, world->lv2_reportslatency_node);
-	sord_node_free(world->world, world->lv2_requiredFeature_node);
-	sord_node_free(world->world, world->lv2_specification_node);
-	sord_node_free(world->world, world->lv2_symbol_node);
-	sord_node_free(world->world, world->pset_value_node);
-	sord_node_free(world->world, world->rdf_a_node);
-	sord_node_free(world->world, world->rdf_value_node);
-	sord_node_free(world->world, world->rdfs_class_node);
-	sord_node_free(world->world, world->rdfs_label_node);
-	sord_node_free(world->world, world->rdfs_seealso_node);
-	sord_node_free(world->world, world->rdfs_subclassof_node);
-	sord_node_free(world->world, world->xsd_base64Binary_node);
-	sord_node_free(world->world, world->xsd_boolean_node);
-	sord_node_free(world->world, world->xsd_decimal_node);
-	sord_node_free(world->world, world->xsd_double_node);
-	sord_node_free(world->world, world->xsd_integer_node);
+	for (SordNode** n = (SordNode**)&world->uris; *n; ++n) {
+		sord_node_free(world->world, *n);
+	}
 
 	for (LilvSpec* spec = world->specs; spec;) {
 		LilvSpec* next = spec->next;
@@ -325,7 +298,7 @@ lilv_world_add_spec(LilvWorld*      world,
 	SordIter* files = lilv_world_find_statements(
 		world, world->model,
 		specification_node,
-		world->rdfs_seealso_node,
+		world->uris.rdfs_seeAlso,
 		NULL,
 		NULL);
 	FOREACH_MATCH(files) {
@@ -381,7 +354,7 @@ lilv_world_add_plugin(LilvWorld*       world,
 	SordIter* files = lilv_world_find_statements(
 		world, world->model,
 		plugin_node,
-		world->rdfs_seealso_node,
+		world->uris.rdfs_seeAlso,
 		NULL,
 		NULL);
 	FOREACH_MATCH(files) {
@@ -413,8 +386,8 @@ lilv_world_load_dyn_manifest(LilvWorld* world,
 	SordIter* dmanifests = lilv_world_find_statements(
 		world, world->model,
 		NULL,
-		world->rdf_a_node,
-		world->dyn_manifest_node,
+		world->uris.rdf_a,
+		world->uris.dyn_manifest,
 		bundle_node);
 	FOREACH_MATCH(dmanifests) {
 		const SordNode* dmanifest = lilv_match_subject(dmanifests);
@@ -423,7 +396,7 @@ lilv_world_load_dyn_manifest(LilvWorld* world,
 		SordIter* binaries  = lilv_world_find_statements(
 			world, world->model,
 			dmanifest,
-			world->lv2_binary_node,
+			world->uris.lv2_binary,
 			NULL,
 			bundle_node);
 		if (lilv_matches_end(binaries)) {
@@ -500,8 +473,8 @@ lilv_world_load_dyn_manifest(LilvWorld* world,
 		SordIter* plug_results = lilv_world_find_statements(
 			world, world->model,
 			NULL,
-			world->rdf_a_node,
-			world->lv2_plugin_node,
+			world->uris.rdf_a,
+			world->uris.lv2_plugin,
 			bundle_node);
 		FOREACH_MATCH(plug_results) {
 			const SordNode* plugin_node = lilv_match_subject(plug_results);
@@ -548,8 +521,8 @@ lilv_world_load_bundle(LilvWorld* world, LilvNode* bundle_uri)
 	SordIter* plug_results = lilv_world_find_statements(
 		world, world->model,
 		NULL,
-		world->rdf_a_node,
-		world->lv2_plugin_node,
+		world->uris.rdf_a,
+		world->uris.lv2_Plugin,
 		bundle_node);
 	FOREACH_MATCH(plug_results) {
 		const SordNode* plugin_node = lilv_match_subject(plug_results);
@@ -564,8 +537,8 @@ lilv_world_load_bundle(LilvWorld* world, LilvNode* bundle_uri)
 	SordIter* spec_results = lilv_world_find_statements(
 		world, world->model,
 		NULL,
-		world->rdf_a_node,
-		world->lv2_specification_node,
+		world->uris.rdf_a,
+		world->uris.lv2_Specification,
 		bundle_node);
 	FOREACH_MATCH(spec_results) {
 		const SordNode* spec = lilv_match_subject(spec_results);
@@ -695,8 +668,8 @@ lilv_world_load_plugin_classes(LilvWorld* world)
 	SordIter* classes = lilv_world_find_statements(
 		world, world->model,
 		NULL,
-		world->rdf_a_node,
-		world->rdfs_class_node,
+		world->uris.rdf_a,
+		world->uris.rdfs_Class,
 		NULL);
 	FOREACH_MATCH(classes) {
 		const SordNode* class_node = lilv_match_subject(classes);
@@ -705,7 +678,7 @@ lilv_world_load_plugin_classes(LilvWorld* world)
 		SordIter* parents = lilv_world_find_statements(
 			world, world->model,
 			class_node,
-			world->rdfs_subclassof_node,
+			world->uris.rdfs_subClassOf,
 			NULL,
 			NULL);
 
@@ -726,7 +699,7 @@ lilv_world_load_plugin_classes(LilvWorld* world)
 		SordIter* labels = lilv_world_find_statements(
 			world, world->model,
 			class_node,
-			world->rdfs_label_node,
+			world->uris.rdfs_label,
 			NULL,
 			NULL);
 
@@ -769,7 +742,7 @@ lilv_world_load_all(LilvWorld* world)
 		SordIter* replacement = lilv_world_find_statements(
 			world, world->model,
 			NULL,
-			world->dc_replaces_node,
+			world->uris.dc_replaces,
 			lilv_node_as_node(plugin_uri),
 			NULL);
 		if (!sord_iter_end(replacement)) {
@@ -799,7 +772,7 @@ lilv_world_load_resource(LilvWorld*      world,
 	int       n_read = 0;
 	SordIter* files  = lilv_world_find_statements(world, world->model,
 	                                              resource->val.uri_val,
-	                                              world->rdfs_seealso_node,
+	                                              world->uris.rdfs_seeAlso,
 	                                              NULL, NULL);
 	FOREACH_MATCH(files) {
 		const SordNode* file      = lilv_match_object(files);

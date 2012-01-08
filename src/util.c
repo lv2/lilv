@@ -14,12 +14,19 @@
   OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 */
 
-#define _POSIX_SOURCE 1  /* for wordexp */
+#define _POSIX_SOURCE 1  /* for wordexp, fileno */
+#define _BSD_SOURCE   1  /* for lockf */
 
 #include <assert.h>
+#include <errno.h>
 #include <stdarg.h>
 #include <stdlib.h>
 #include <string.h>
+
+#include <dirent.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
 
 #include "lilv_internal.h"
 
@@ -137,4 +144,219 @@ lilv_expand(const char* path)
 	char* ret = lilv_strdup(path);
 #endif
 	return ret;
+}
+
+char*
+lilv_dirname(const char* path)
+{
+	const char* s = path + strlen(path) - 1;  // Last character
+	for (; s > path && *s == LILV_DIR_SEP[0]; --s) {}  // Last non-slash
+	for (; s > path && *s != LILV_DIR_SEP[0]; --s) {}  // Last internal slash
+	for (; s > path && *s == LILV_DIR_SEP[0]; --s) {}  // Skip duplicates
+
+	if (s == path) {  // Hit beginning
+		return (*s == '/') ? lilv_strdup("/") : lilv_strdup(".");
+	} else {  // Pointing to the last character of the result (inclusive)
+		char* dirname = malloc(s - path + 2);
+		memcpy(dirname, path, s - path + 1);
+		dirname[s - path + 1] = '\0';
+		return dirname;
+	}
+}
+
+bool
+lilv_path_exists(const char* path, void* ignored)
+{
+	return !access(path, F_OK);
+}
+
+char*
+lilv_find_free_path(
+	const char* in_path, bool (*exists)(const char*, void*), void* user_data)
+{
+	const size_t in_path_len = strlen(in_path);
+	char*        path        = malloc(in_path_len + 7);
+	memcpy(path, in_path, in_path_len + 1);
+
+	for (int i = 2; i < 1000000; ++i) {
+		if (!exists(path, user_data)) {
+			return path;
+		}
+		snprintf(path, in_path_len + 7, "%s%u", in_path, i);
+	}
+
+	return NULL;
+}
+
+int
+lilv_copy_file(const char* src, const char* dst)
+{
+	FILE* in = fopen(src, "r");
+	if (!in) {
+		LILV_ERRORF("error opening %s (%s)\n", src, strerror(errno));
+		return 1;
+	}
+
+	FILE* out = fopen(dst, "w");
+	if (!out) {
+		LILV_ERRORF("error opening %s (%s)\n", dst, strerror(errno));
+		fclose(in);
+		return 2;
+	}
+
+	static const size_t PAGE_SIZE = 4096;
+	char*               page      = malloc(PAGE_SIZE);
+	size_t              n_read    = 0;
+	while ((n_read = fread(page, 1, PAGE_SIZE, in)) > 0) {
+		if (fwrite(page, 1, n_read, out) != n_read) {
+			LILV_ERRORF("write to %s failed (%s)\n", dst, strerror(errno));
+			break;
+		}
+	}
+
+	const int ret = ferror(in) || ferror(out);
+	if (ferror(in)) {
+		LILV_ERRORF("read from %s failed (%s)\n", src, strerror(errno));
+	}
+
+	free(page);
+	fclose(in);
+	fclose(out);
+
+	return ret;
+}
+
+static bool
+lilv_is_dir_sep(const char c)
+{
+	return c == '/' || c == LILV_DIR_SEP[0];
+}
+
+bool
+lilv_path_is_absolute(const char* path)
+{
+	if (lilv_is_dir_sep(path[0])) {
+		return true;
+	}
+
+#ifdef __WIN32__
+	if (isalpha(path[0]) && path[1] == ':' && lilv_is_dir_sep(path[2])) {
+		return true;
+	}
+#endif
+
+	return false;
+}
+
+static void
+lilv_size_mtime(const char* path, off_t* size, time_t* time)
+{
+	struct stat buf;
+	if (stat(path, &buf)) {
+		LILV_ERRORF("stat(%s) (%s)\n", path, strerror(errno));
+		*size = *time = 0;
+	}
+
+	*size = buf.st_size;
+	*time = buf.st_mtime;
+}
+
+/** Return the latest copy of the file at @c path that is newer. */
+char*
+lilv_get_latest_copy(const char* path)
+{
+	char* dirname = lilv_dirname(path);
+	DIR*  dir     = opendir(dirname);
+	if (!dir) {
+		free(dirname);
+		return NULL;
+	}
+
+	char* pat    = lilv_strjoin(path, "%u", NULL);
+	char* latest = NULL;
+
+	off_t  path_size;
+	time_t path_time;
+	lilv_size_mtime(path, &path_size, &path_time);
+	
+	struct dirent  entry;
+	struct dirent* result;
+	while (!readdir_r(dir, &entry, &result) && result) {
+		char* entry_path = lilv_strjoin(dirname, "/", entry.d_name, NULL);
+		unsigned num;
+		if (sscanf(entry_path, pat, &num) == 1) {
+			off_t  entry_size;
+			time_t entry_time;
+			lilv_size_mtime(entry_path, &entry_size, &entry_time);
+			if (entry_size == path_size && entry_time >= path_time) {
+				free(latest);
+				latest = entry_path;
+			}
+		}
+		if (entry_path != latest) {
+			free(entry_path);
+		}
+	}
+	free(dirname);
+	free(pat);
+
+	return latest;
+}
+
+char*
+lilv_path_relative_to(const char* path, const char* base)
+{
+	const size_t path_len = strlen(path);
+	const size_t base_len = strlen(base);
+	const size_t min_len  = (path_len < base_len) ? path_len : base_len;
+
+	// Find the last separator common to both paths
+	size_t last_shared_sep = 0;
+	for (size_t i = 0; i < min_len && path[i] == base[i]; ++i) {
+		if (lilv_is_dir_sep(path[i])) {
+			last_shared_sep = i;
+		}
+	}
+
+	if (last_shared_sep == 0) {
+		// No common components, return path
+		return lilv_strdup(path);
+	}
+
+	// Find the number of up references ("..") required
+	size_t up = 0;
+	for (size_t i = last_shared_sep + 1; i < base_len; ++i) {
+		if (lilv_is_dir_sep(base[i])) {
+			++up;
+		}
+	}
+
+	// Write up references
+	const size_t suffix_len = path_len - last_shared_sep;
+	char*        rel        = calloc(1, suffix_len + (up * 3) + 1);
+	for (size_t i = 0; i < up; ++i) {
+		memcpy(rel + (i * 3), ".." LILV_DIR_SEP, 3);
+	}
+
+	// Write suffix
+	memcpy(rel + (up * 3), path + last_shared_sep + 1, suffix_len);
+	return rel;
+}
+
+bool
+lilv_path_is_child(const char* path, const char* dir)
+{
+	const size_t path_len = strlen(path);
+	const size_t dir_len  = strlen(dir);
+	return dir && path_len >= dir_len && !strncmp(path, dir, dir_len);
+}
+
+int
+lilv_flock(FILE* file, bool lock)
+{
+#if defined(HAVE_LOCKF) && defined(HAVE_FILENO)
+	return lockf(fileno(file), lock ? F_LOCK : F_ULOCK, 0);
+#else
+	return 0;
+#endif
 }

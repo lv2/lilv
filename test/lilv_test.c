@@ -30,6 +30,7 @@
 #include "lilv/lilv.h"
 #include "../src/lilv_internal.h"
 
+#include "lv2/lv2plug.in/ns/ext/state/state.h"
 #include "lv2/lv2plug.in/ns/ext/urid/urid.h"
 
 #define TEST_PATH_MAX 1024
@@ -1074,6 +1075,15 @@ unmap_uri(LV2_URID_Map_Handle handle,
 	return NULL;
 }
 
+static const char* file_dir = "files";
+
+char*
+lilv_make_path(LV2_State_Make_Path_Handle handle,
+               const char*                path)
+{
+	return lilv_strjoin(file_dir, "/", path, NULL);
+}
+
 int
 test_state(void)
 {
@@ -1093,23 +1103,28 @@ test_state(void)
 	LV2_Feature        unmap_feature = { LV2_URID_UNMAP_URI, &unmap };
 	const LV2_Feature* features[]    = { &map_feature, &unmap_feature, NULL };
 
+	LilvNode*  num     = lilv_new_int(world, 5);
+	LilvState* nostate = lilv_state_new_from_file(world, &map, num, "/junk");
+	TEST_ASSERT(!nostate);
+
 	LilvInstance* instance = lilv_plugin_instantiate(plugin, 48000.0, features);
 	TEST_ASSERT(instance);
-
+	lilv_instance_activate(instance);
 	lilv_instance_connect_port(instance, 0, &in);
 	lilv_instance_connect_port(instance, 1, &out);
-
 	lilv_instance_run(instance, 1);
 	TEST_ASSERT(in == 1.0);
 	TEST_ASSERT(out == 1.0);
 
+	const char* tmpdir = NULL;
+	
 	// Get instance state state
 	LilvState* state = lilv_state_new_from_instance(
-		plugin, instance, get_port_value, world, 0, NULL);
+		plugin, instance, &map, tmpdir, get_port_value, world, 0, NULL);
 
 	// Get another instance state
 	LilvState* state2 = lilv_state_new_from_instance(
-		plugin, instance, get_port_value, world, 0, NULL);
+		plugin, instance, &map, tmpdir, get_port_value, world, 0, NULL);
 
 	// Ensure they are equal
 	TEST_ASSERT(lilv_state_equals(state, state2));
@@ -1129,7 +1144,7 @@ test_state(void)
 	// Run and get a new instance state (which should now differ)
 	lilv_instance_run(instance, 1);
 	LilvState* state3 = lilv_state_new_from_instance(
-		plugin, instance, get_port_value, world, 0, NULL);
+		plugin, instance, &map, tmpdir, get_port_value, world, 0, NULL);
 	TEST_ASSERT(!lilv_state_equals(state2, state3));  // num_runs changed
 
 	// Restore instance state to original state
@@ -1137,22 +1152,23 @@ test_state(void)
 
 	// Take a new snapshot and ensure it matches the set state
 	LilvState* state4 = lilv_state_new_from_instance(
-		plugin, instance, get_port_value, world, 0, NULL);
+		plugin, instance, &map, tmpdir, get_port_value, world, 0, NULL);
 	TEST_ASSERT(lilv_state_equals(state2, state4));
 
-	// Save state to a file
+	// Save state to a directory
 	int ret = lilv_state_save(world, &unmap, state, NULL,
-	                          "state.ttl", "manifest.ttl");
+	                          "./state.lv2", "state", NULL);
 	TEST_ASSERT(!ret);
 
-	// Load state from file
-	LilvState* state5 = lilv_state_new_from_file(world, &map, NULL, "state.ttl");
+	// Load state from directory
+	LilvState* state5 = lilv_state_new_from_file(world, &map, NULL,
+	                                             "./state.lv2/state.ttl");
 	TEST_ASSERT(lilv_state_equals(state, state5));  // Round trip accuracy
 
 	// Save state to default bundle
 	setenv("LV2_STATE_BUNDLE", "lv2/lilv-test-state.lv2", 1);
 	const char* state_uri = "http://example.org/test-state";
-	ret = lilv_state_save(world, &unmap, state, state_uri, NULL, NULL);
+	ret = lilv_state_save(world, &unmap, state, state_uri, NULL, NULL, NULL);
 	TEST_ASSERT(!ret);
 
 	// Load default bundle into world and load state from it
@@ -1166,9 +1182,92 @@ test_state(void)
 	
 	unsetenv("LV2_STATE_BUNDLE");
 
-	LilvNode*  num     = lilv_new_int(world, 5);
-	LilvState* nostate = lilv_state_new_from_file(world, &map, num, "/junk");
-	TEST_ASSERT(!nostate);
+	// Make a temporary directory and test files support
+	tmpdir = file_dir;
+	mkdir(tmpdir, 0700);
+
+	LV2_State_Make_Path make_path         = { NULL, lilv_make_path };
+	LV2_Feature         make_path_feature = { LV2_STATE_MAKE_PATH_URI, &make_path };
+	const LV2_Feature*  ffeatures[]       = { &make_path_feature, &map_feature, NULL };
+
+	lilv_instance_deactivate(instance);
+	lilv_instance_free(instance);
+	instance = lilv_plugin_instantiate(plugin, 48000.0, ffeatures);
+	lilv_instance_activate(instance);
+	lilv_instance_connect_port(instance, 0, &in);
+	lilv_instance_connect_port(instance, 1, &out);
+	lilv_instance_run(instance, 1);
+
+	// Get instance state state
+	LilvState* fstate = lilv_state_new_from_instance(
+		plugin, instance, &map, tmpdir, get_port_value, world, 0, ffeatures);
+
+	// Get another instance state
+	LilvState* fstate2 = lilv_state_new_from_instance(
+		plugin, instance, &map, tmpdir, get_port_value, world, 0, ffeatures);
+
+	// Should be identical
+	TEST_ASSERT(lilv_state_equals(fstate, fstate2));
+
+	// Run, writing more to rec file
+	lilv_instance_run(instance, 2);
+
+	// Get yet another instance state
+	LilvState* fstate3 = lilv_state_new_from_instance(
+		plugin, instance, &map, tmpdir, get_port_value, world, 0, ffeatures);
+
+	// Should be different
+	TEST_ASSERT(!lilv_state_equals(fstate, fstate3));
+
+	// Save state to a directory
+	ret = lilv_state_save(world, &unmap, fstate, NULL,
+	                      "./fstate.lv2", "fstate", ffeatures);
+	TEST_ASSERT(!ret);
+
+	// Load state from directory
+	LilvState* fstate4 = lilv_state_new_from_file(world, &map, NULL,
+	                                              "./fstate.lv2/fstate.ttl");
+	TEST_ASSERT(lilv_state_equals(fstate, fstate4));  // Round trip accuracy
+
+	// Restore instance state to loaded state
+	lilv_state_restore(fstate, instance, set_port_value, NULL, 0, ffeatures);
+
+	// Take a new snapshot and ensure it matches
+	LilvState* fstate5 = lilv_state_new_from_instance(
+		plugin, instance, &map, tmpdir, get_port_value, world, 0, ffeatures);
+	TEST_ASSERT(lilv_state_equals(fstate3, fstate5));
+
+	// Save state to a directory again
+	ret = lilv_state_save(world, &unmap, fstate, NULL,
+	                      "./fstate6.lv2", "fstate6", ffeatures);
+	TEST_ASSERT(!ret);
+
+	// Reload it and ensure it's identical to the other loaded version
+	LilvState* fstate6 = lilv_state_new_from_file(world, &map, NULL,
+	                                              "./fstate6.lv2/fstate6.ttl");
+	TEST_ASSERT(lilv_state_equals(fstate4, fstate6));
+
+	// Run, writing more to rec file
+	lilv_instance_run(instance, 2);
+
+	// Take a new snapshot
+	LilvState* fstate7 = lilv_state_new_from_instance(
+		plugin, instance, &map, tmpdir, get_port_value, world, 0, ffeatures);
+	TEST_ASSERT(lilv_state_equals(fstate3, fstate5));
+
+	// Save the changed state to a directory again
+	ret = lilv_state_save(world, &unmap, fstate7, NULL,
+	                      "./fstate7.lv2", "fstate7", ffeatures);
+	TEST_ASSERT(!ret);
+
+	// Reload it and ensure it's changed
+	LilvState* fstate72 = lilv_state_new_from_file(world, &map, NULL,
+	                                              "./fstate7.lv2/fstate7.ttl");
+	TEST_ASSERT(lilv_state_equals(fstate72, fstate7));
+	TEST_ASSERT(!lilv_state_equals(fstate6, fstate72));
+	
+	lilv_instance_deactivate(instance);
+	lilv_instance_free(instance);
 
 	lilv_node_free(num);
 	lilv_node_free(test_state_bundle);
@@ -1180,6 +1279,11 @@ test_state(void)
 	lilv_state_free(state4);
 	lilv_state_free(state5);
 	lilv_state_free(state6);
+	lilv_state_free(fstate);
+	lilv_state_free(fstate2);
+	lilv_state_free(fstate3);
+	lilv_state_free(fstate4);
+	lilv_state_free(fstate5);
 
 	// Free URI map
 	for (size_t i = 0; i < n_uris; ++i) {
@@ -1187,8 +1291,6 @@ test_state(void)
 	}
 	free(uris);
 	n_uris = 0;
-
-	lilv_instance_free(instance);
 
 	lilv_node_free(plugin_uri);
 	lilv_node_free(bundle_uri);
@@ -1262,6 +1364,29 @@ test_bad_port_index(void)
 
 /*****************************************************************************/
 
+int
+test_string(void)
+{
+	char* s = NULL;
+
+	TEST_ASSERT(!strcmp((s = lilv_dirname("/foo/bar")), "/foo"));
+	TEST_ASSERT(!strcmp((s = lilv_dirname("/foo/bar/")), "/foo"));
+	TEST_ASSERT(!strcmp((s = lilv_dirname("/foo///bar/")), "/foo"));
+	TEST_ASSERT(!strcmp((s = lilv_dirname("/foo///bar//")), "/foo"));
+	TEST_ASSERT(!strcmp((s = lilv_dirname("foo")), "."));
+	TEST_ASSERT(!strcmp((s = lilv_dirname("/foo")), "/"));
+	TEST_ASSERT(!strcmp((s = lilv_dirname("/")), "/"));
+	TEST_ASSERT(!strcmp((s = lilv_dirname("//")), "/"));
+	TEST_ASSERT(!strcmp((s = lilv_path_relative_to("/a/b", "/a/")), "b"));
+	TEST_ASSERT(!strcmp((s = lilv_path_relative_to("/a", "/b/c/")), "/a"));
+	TEST_ASSERT(!strcmp((s = lilv_path_relative_to("/a/b/c", "/a/b/d/")), "../c"));
+	TEST_ASSERT(!strcmp((s = lilv_path_relative_to("/a/b/c", "/a/b/d/e/")), "../../c"));
+
+	return 1;
+}
+
+/*****************************************************************************/
+
 /* add tests here */
 static struct TestCase tests[] = {
 	TEST_CASE(utils),
@@ -1276,6 +1401,8 @@ static struct TestCase tests[] = {
 	TEST_CASE(state),
 	TEST_CASE(bad_port_symbol),
 	TEST_CASE(bad_port_index),
+	TEST_CASE(bad_port_index),
+	TEST_CASE(string),
 	{ NULL, NULL }
 };
 

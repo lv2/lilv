@@ -64,7 +64,7 @@ typedef bool (*ZixEqualFunc)(const void* a, const void* b);
 /**
    Function to destroy an element.
 */
-typedef void (*ZixDestroyFunc)(const void* ptr);
+typedef void (*ZixDestroyFunc)(void* ptr);
 
 /**@}
 */

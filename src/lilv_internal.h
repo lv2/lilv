@@ -129,38 +129,41 @@ struct LilvWorldImpl {
 	LilvSpec*          specs;
 	LilvPlugins*       plugins;
 	LilvNodes*         loaded_files;
-	SordNode*          dc_replaces_node;
-	SordNode*          doap_name_node;
-	SordNode*          dyn_manifest_node;
-	SordNode*          lv2_appliesTo_node;
-	SordNode*          lv2_binary_node;
-	SordNode*          lv2_default_node;
-	SordNode*          lv2_extensionData_node;
-	SordNode*          lv2_index_node;
-	SordNode*          lv2_maximum_node;
-	SordNode*          lv2_minimum_node;
-	SordNode*          lv2_name_node;
-	SordNode*          lv2_optionalFeature_node;
-	SordNode*          lv2_plugin_node;
-	SordNode*          lv2_port_node;
-	SordNode*          lv2_portproperty_node;
-	SordNode*          lv2_reportslatency_node;
-	SordNode*          lv2_requiredFeature_node;
-	SordNode*          lv2_specification_node;
-	SordNode*          lv2_symbol_node;
-	SordNode*          pset_value_node;
-	SordNode*          rdf_a_node;
-	SordNode*          rdf_value_node;
-	SordNode*          rdfs_class_node;
-	SordNode*          rdfs_label_node;
-	SordNode*          rdfs_seealso_node;
-	SordNode*          rdfs_subclassof_node;
-	SordNode*          xsd_base64Binary_node;
-	SordNode*          xsd_boolean_node;
-	SordNode*          xsd_decimal_node;
-	SordNode*          xsd_double_node;
-	SordNode*          xsd_integer_node;
-	LilvOptions        opt;
+	struct {
+		SordNode* dc_replaces;
+		SordNode* doap_name;
+		SordNode* dman_DynManifest;
+		SordNode* lv2_appliesTo;
+		SordNode* lv2_binary;
+		SordNode* lv2_default;
+		SordNode* lv2_extensionData;
+		SordNode* lv2_index;
+		SordNode* lv2_maximum;
+		SordNode* lv2_minimum;
+		SordNode* lv2_name;
+		SordNode* lv2_optionalFeature;
+		SordNode* lv2_Plugin;
+		SordNode* lv2_port;
+		SordNode* lv2_portProperty;
+		SordNode* lv2_reportsLatency;
+		SordNode* lv2_requiredFeature;
+		SordNode* lv2_Specification;
+		SordNode* lv2_symbol;
+		SordNode* pset_value;
+		SordNode* rdf_a;
+		SordNode* rdf_value;
+		SordNode* rdfs_Class;
+		SordNode* rdfs_label;
+		SordNode* rdfs_seeAlso;
+		SordNode* rdfs_subClassOf;
+		SordNode* xsd_base64Binary;
+		SordNode* xsd_boolean;
+		SordNode* xsd_decimal;
+		SordNode* xsd_double;
+		SordNode* xsd_integer;
+		SordNode* null_uri;
+	} uris;
+	LilvOptions opt;
 };
 
 typedef enum {
@@ -309,6 +312,13 @@ lilv_match_object(SordIter* iter) {
 	return tup[SORD_OBJECT];
 }
 
+static inline const SordNode*
+lilv_match_graph(SordIter* iter) {
+	SordQuad tup;
+	sord_iter_get(iter, tup);
+	return tup[SORD_GRAPH];
+}
+
 static inline void
 lilv_match_end(SordIter* iter)
 {
@@ -327,10 +337,20 @@ LilvNodes* lilv_nodes_from_stream_objects(LilvWorld* w,
                                           SordIter*  stream,
                                           bool       object);
 
-char* lilv_strjoin(const char* first, ...);
-char* lilv_strdup(const char* str);
-char* lilv_get_lang(void);
-char* lilv_expand(const char* path);
+char*  lilv_strjoin(const char* first, ...);
+char*  lilv_strdup(const char* str);
+char*  lilv_get_lang(void);
+char*  lilv_expand(const char* path);
+char*  lilv_dirname(const char* path);
+char*  lilv_find_free_path(
+	const char* in_path, bool (*exists)(const char*, void*), void* user_data);
+int    lilv_copy_file(const char* src, const char* dst);
+bool   lilv_path_exists(const char* path, void* ignored);
+bool   lilv_path_is_absolute(const char* path);
+char*  lilv_get_latest_copy(const char* path);
+char*  lilv_path_relative_to(const char* path, const char* base);
+bool   lilv_path_is_child(const char* path, const char* dir);
+int    lilv_flock(FILE* file, bool lock);
 
 typedef void (*VoidFunc)(void);
 
