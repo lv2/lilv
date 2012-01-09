@@ -1157,7 +1157,7 @@ test_state(void)
 
 	// Save state to a directory
 	int ret = lilv_state_save(world, &unmap, state, NULL,
-	                          "./state.lv2", "state", NULL);
+	                          "./state.lv2", "state.ttl", NULL);
 	TEST_ASSERT(!ret);
 
 	// Load state from directory
@@ -1221,7 +1221,7 @@ test_state(void)
 
 	// Save state to a directory
 	ret = lilv_state_save(world, &unmap, fstate, NULL,
-	                      "./fstate.lv2", "fstate", ffeatures);
+	                      "./fstate.lv2", "fstate.ttl", ffeatures);
 	TEST_ASSERT(!ret);
 
 	// Load state from directory
@@ -1239,7 +1239,7 @@ test_state(void)
 
 	// Save state to a directory again
 	ret = lilv_state_save(world, &unmap, fstate, NULL,
-	                      "./fstate6.lv2", "fstate6", ffeatures);
+	                      "./fstate6.lv2", "fstate6.ttl", ffeatures);
 	TEST_ASSERT(!ret);
 
 	// Reload it and ensure it's identical to the other loaded version
@@ -1257,7 +1257,7 @@ test_state(void)
 
 	// Save the changed state to a directory again
 	ret = lilv_state_save(world, &unmap, fstate7, NULL,
-	                      "./fstate7.lv2", "fstate7", ffeatures);
+	                      "./fstate7.lv2", "fstate7.ttl", ffeatures);
 	TEST_ASSERT(!ret);
 
 	// Reload it and ensure it's changed
@@ -1381,6 +1381,10 @@ test_string(void)
 	TEST_ASSERT(!strcmp((s = lilv_path_relative_to("/a", "/b/c/")), "/a"));
 	TEST_ASSERT(!strcmp((s = lilv_path_relative_to("/a/b/c", "/a/b/d/")), "../c"));
 	TEST_ASSERT(!strcmp((s = lilv_path_relative_to("/a/b/c", "/a/b/d/e/")), "../../c"));
+	TEST_ASSERT(!strcmp((s = lilv_path_join("/a", "b")), "/a/b"));
+	TEST_ASSERT(!strcmp((s = lilv_path_join("/a", "/b")), "/a/b"));
+	TEST_ASSERT(!strcmp((s = lilv_path_join("/a/", "/b")), "/a/b"));
+	TEST_ASSERT(!strcmp((s = lilv_path_join("/a/", "b")), "/a/b"));
 
 	return 1;
 }
@@ -1398,11 +1402,11 @@ static struct TestCase tests[] = {
 	TEST_CASE(plugin),
 	TEST_CASE(port),
 	TEST_CASE(ui),
-	TEST_CASE(state),
 	TEST_CASE(bad_port_symbol),
 	TEST_CASE(bad_port_index),
 	TEST_CASE(bad_port_index),
 	TEST_CASE(string),
+	TEST_CASE(state),
 	{ NULL, NULL }
 };
 

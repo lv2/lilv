@@ -256,6 +256,21 @@ lilv_path_is_absolute(const char* path)
 	return false;
 }
 
+char*
+lilv_path_join(const char* a, const char* b)
+{
+	const size_t a_len   = strlen(a);
+	const size_t b_len   = strlen(b);
+	const size_t pre_len = a_len - (lilv_is_dir_sep(a[a_len - 1]) ? 1 : 0);
+	char*        path    = calloc(1, a_len + b_len + 2);
+	memcpy(path, a, pre_len);
+	path[pre_len] = LILV_DIR_SEP[0];
+	memcpy(path + pre_len + 1,
+	       b + (lilv_is_dir_sep(b[0]) ? 1 : 0),
+	       lilv_is_dir_sep(b[0]) ? b_len - 1 : b_len);
+	return path;
+}
+
 static void
 lilv_size_mtime(const char* path, off_t* size, time_t* time)
 {

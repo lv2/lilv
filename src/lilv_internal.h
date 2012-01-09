@@ -352,6 +352,7 @@ int    lilv_flock(FILE* file, bool lock);
 char*  lilv_realpath(const char* path);
 int    lilv_symlink(const char* oldpath, const char* newpath);
 int    lilv_mkdir_p(const char* path);
+char*  lilv_path_join(const char* a, const char* b);
 
 char*
 lilv_find_free_path(const char* in_path,

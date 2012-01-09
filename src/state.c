@@ -242,7 +242,7 @@ absolute_path(LV2_State_Map_Path_Handle handle,
 		path = lilv_strdup(abstract_path);
 	} else {
 		// Relative path inside state directory
-		path = lilv_strjoin(state->dir, "/", abstract_path, NULL);
+		path = lilv_path_join(state->dir, abstract_path);
 	}
 
 	return path;
@@ -539,8 +539,8 @@ new_state_from_model(LilvWorld*       world,
 				prop.size  = strlen((const char*)sord_node_get_string(o)) + 1;
 				prop.type  = map->map(map->handle, LV2_STATE_PATH_URI);
 				prop.flags = LV2_STATE_IS_PORTABLE;
-				prop.value = lilv_strjoin(
-					state->dir, "/", sord_node_get_string(o), NULL);
+				prop.value = lilv_path_join(
+					state->dir, (const char*)sord_node_get_string(o));
 #endif
 			} else {
 				LilvNode* onode = lilv_node_new_from_node(world, o);
@@ -824,11 +824,13 @@ lilv_state_save(LilvWorld*                 world,
 	}
 
 	if (!filename) {
-		filename = default_filename = pathify(state->label);
+		char* gen_name = pathify(state->label);
+		filename = default_filename = lilv_strjoin(gen_name, ".ttl", NULL);
+		free(gen_name);
 	}
 
-	char* const path = lilv_strjoin(dir, "/", filename, ".ttl", NULL);
-	FILE* fd = fopen(path, "w");
+	char* const path = lilv_path_join(dir, filename);
+	FILE*       fd   = fopen(path, "w");
 	if (!fd) {
 		LILV_ERRORF("Failed to open %s (%s)\n", path, strerror(errno));
 		free(default_dir);
@@ -840,7 +842,7 @@ lilv_state_save(LilvWorld*                 world,
 	// FIXME: make parameter non-const?
 	((LilvState*)state)->dir = lilv_strdup(dir);
 
-	char* const manifest = lilv_strjoin(dir, "/manifest.ttl", NULL);
+	char* const manifest = lilv_path_join(dir, "manifest.ttl");
 
 	SerdEnv* env = serd_env_new(NULL);
 	serd_env_set_prefix_from_strings(env, USTR("lv2"),   USTR(LILV_NS_LV2));
@@ -923,7 +925,7 @@ lilv_state_save(LilvWorld*                 world,
 		const PathMap* pm = (const PathMap*)zix_tree_get(i);
 		
 		char* real_dir    = lilv_strjoin(lilv_realpath(dir), "/", NULL);
-		char* rel_path    = lilv_strjoin(dir, "/", pm->rel, NULL);
+		char* rel_path    = lilv_path_join(dir, pm->rel);
 		char* target_path = lilv_path_is_child(pm->abs, state->file_dir)
 			? lilv_path_relative_to(pm->abs, real_dir)
 			: lilv_strdup(pm->abs);

@@ -1258,7 +1258,7 @@ lilv_state_restore(const LilvState*           state,
    @param state State to save.
    @param uri URI of state, may be NULL.
    @param dir Path of the bundle directory to save into, may be NULL.
-   @param filename Filename for the state file (no extension), may be NULL.
+   @param filename Filename for the state file, may be NULL.
    @param features Host provided features.
 
    The format of state on disk is compatible with that defined in the LV2
