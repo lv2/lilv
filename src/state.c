@@ -505,7 +505,7 @@ new_state_from_model(LilvWorld*       world,
 	// Get properties
 	SordNode* statep = sord_new_uri(world->world, USTR(NS_STATE "state"));
 	const SordNode* state_node = get_one(model, node, statep);
-	if (state) {
+	if (state_node) {
 		const SordQuad spat  = { state_node, NULL, NULL };
 		SordIter*      props = sord_find(model, spat);
 		FOREACH_MATCH(props) {
@@ -530,7 +530,7 @@ new_state_from_model(LilvWorld*       world,
 					prop.type = map->map(map->handle,
 					                     (const char*)sord_node_get_string(type));
 				} else {
-					LILV_ERRORF("Unable to parse blank node property <%p>\n",
+					LILV_ERRORF("Unable to parse blank node property <%s>\n",
 					            sord_node_get_string(p));
 				}
 #ifdef HAVE_LV2_STATE
