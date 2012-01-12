@@ -300,7 +300,8 @@ lilv_node_as_bool(const LilvNode* value);
    <li>LilvUIs (function prefix "lilv_uis_")</li>
    </ul>
 
-   Each collection type supports a similar basic API:
+   Each collection type supports a similar basic API (except LilvPlugins which
+   is internal and thus lacks a free function):
    <ul>
    <li>void PREFIX_free (coll)</li>
    <li>unsigned PREFIX_size (coll)</li>
