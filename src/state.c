@@ -689,6 +689,41 @@ node_to_serd(const LilvNode* node, SerdNode* value, SerdNode* type)
 		: SERD_NODE_NULL;
 }
 
+static SerdWriter*
+open_ttl_writer(FILE* fd, const uint8_t* uri, SerdEnv** new_env)
+{
+	SerdURI base_uri;
+	SerdNode base = serd_node_new_uri_from_string(
+		(const uint8_t*)uri, NULL, &base_uri);
+
+	SerdEnv* env = serd_env_new(&base);
+	serd_env_set_prefix_from_strings(env, USTR("lv2"),   USTR(LILV_NS_LV2));
+	serd_env_set_prefix_from_strings(env, USTR("pset"),  USTR(NS_PSET));
+	serd_env_set_prefix_from_strings(env, USTR("rdf"),   USTR(LILV_NS_RDF));
+	serd_env_set_prefix_from_strings(env, USTR("rdfs"),  USTR(LILV_NS_RDFS));
+	serd_env_set_prefix_from_strings(env, USTR("state"), USTR(NS_STATE));
+
+	SerdWriter* writer = serd_writer_new(
+		SERD_TURTLE,
+		SERD_STYLE_ABBREVIATED|SERD_STYLE_CURIED,
+		env,
+		&base_uri,
+		serd_file_sink,
+		fd);
+
+	fseek(fd, 0, SEEK_END);
+	if (ftell(fd) == 0) {
+		serd_env_foreach(env, (SerdPrefixSink)serd_writer_set_prefix, writer);
+	} else {
+		fprintf(fd, "\n");
+	}
+
+	serd_node_free(&base);
+
+	*new_env = env;
+	return writer;
+}
+
 static int
 add_state_to_manifest(const LilvNode* plugin_uri,
                       const char*     manifest_path,
@@ -711,32 +746,11 @@ add_state_to_manifest(const LilvNode* plugin_uri,
 		}
 	}
 
-	SerdEnv* env = serd_env_new(NULL);
-	serd_env_set_prefix_from_strings(env, USTR("lv2"),  USTR(LILV_NS_LV2));
-	serd_env_set_prefix_from_strings(env, USTR("pset"), USTR(NS_PSET));
-	serd_env_set_prefix_from_strings(env, USTR("rdf"),  USTR(LILV_NS_RDF));
-	serd_env_set_prefix_from_strings(env, USTR("rdfs"), USTR(LILV_NS_RDFS));
-
 	lilv_flock(fd, true);
 
 	char* const manifest_uri = lilv_strjoin("file://", manifest_path, NULL);
-
-	SerdURI base_uri;
-	SerdNode base = serd_node_new_uri_from_string(
-		(const uint8_t*)manifest_uri, NULL, &base_uri);
-
-	SerdWriter* writer = serd_writer_new(
-		SERD_TURTLE, SERD_STYLE_ABBREVIATED|SERD_STYLE_CURIED,
-		env, &base_uri,
-		serd_file_sink,
-		fd);
-
-	fseek(fd, 0, SEEK_END);
-	if (ftell(fd) == 0) {
-		serd_env_foreach(env, (SerdPrefixSink)serd_writer_set_prefix, writer);
-	} else {
-		fprintf(fd, "\n");
-	}
+	SerdEnv*    env          = NULL;
+	SerdWriter* writer       = open_ttl_writer(fd, USTR(manifest_uri), &env);
 
 	if (!state_uri) {
 		state_uri = state_file_uri;
@@ -761,13 +775,11 @@ add_state_to_manifest(const LilvNode* plugin_uri,
 	serd_writer_write_statement(writer, 0, NULL, &s, &p, &o, NULL, NULL);
 
 	serd_writer_free(writer);
-	serd_node_free(&base);
+	serd_env_free(env);
+	free(manifest_uri);
 
 	lilv_flock(fd, false);
-
 	fclose(fd);
-	free(manifest_uri);
-	serd_env_free(env);
 
 	return 0;
 }
@@ -844,13 +856,6 @@ lilv_state_save(LilvWorld*                 world,
 
 	char* const manifest = lilv_path_join(dir, "manifest.ttl");
 
-	SerdEnv* env = serd_env_new(NULL);
-	serd_env_set_prefix_from_strings(env, USTR("lv2"),   USTR(LILV_NS_LV2));
-	serd_env_set_prefix_from_strings(env, USTR("pset"),  USTR(NS_PSET));
-	serd_env_set_prefix_from_strings(env, USTR("rdf"),   USTR(LILV_NS_RDF));
-	serd_env_set_prefix_from_strings(env, USTR("rdfs"),  USTR(LILV_NS_RDFS));
-	serd_env_set_prefix_from_strings(env, USTR("state"), USTR(NS_STATE));
-
 	SerdNode lv2_appliesTo = serd_node_from_string(
 		SERD_CURIE, USTR("lv2:appliesTo"));
 
@@ -859,15 +864,8 @@ lilv_state_save(LilvWorld*                 world,
 
 	SerdNode subject = serd_node_from_string(SERD_URI, USTR(uri ? uri : ""));
 
-	SerdWriter* writer = serd_writer_new(
-		SERD_TURTLE,
-		SERD_STYLE_ABBREVIATED|SERD_STYLE_CURIED,
-		env,
-		&SERD_URI_NULL,
-		serd_file_sink,
-		fd);
-
-	serd_env_foreach(env, (SerdPrefixSink)serd_writer_set_prefix, writer);
+	SerdEnv*    env    = NULL;
+	SerdWriter* writer = open_ttl_writer(fd, USTR(manifest), &env);
 
 	// <subject> a pset:Preset
 	SerdNode p = serd_node_from_string(SERD_URI, USTR(LILV_NS_RDF "type"));
@@ -1012,8 +1010,8 @@ lilv_state_save(LilvWorld*                 world,
 
 	// Close state file and clean up Serd
 	serd_writer_free(writer);
-	fclose(fd);
 	serd_env_free(env);
+	fclose(fd);
 
 	if (manifest) {
 		add_state_to_manifest(state->plugin_uri, manifest, uri, path);
