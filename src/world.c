@@ -383,7 +383,7 @@ lilv_world_load_dyn_manifest(LilvWorld* world,
 		world, world->model,
 		NULL,
 		world->uris.rdf_a,
-		world->uris.dyn_manifest,
+		world->uris.dman_DynManifest,
 		bundle_node);
 	FOREACH_MATCH(dmanifests) {
 		const SordNode* dmanifest = lilv_match_subject(dmanifests);
@@ -470,7 +470,7 @@ lilv_world_load_dyn_manifest(LilvWorld* world,
 			world, world->model,
 			NULL,
 			world->uris.rdf_a,
-			world->uris.lv2_plugin,
+			world->uris.lv2_Plugin,
 			bundle_node);
 		FOREACH_MATCH(plug_results) {
 			const SordNode* plugin_node = lilv_match_subject(plug_results);
