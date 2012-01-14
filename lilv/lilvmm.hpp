@@ -119,7 +119,8 @@ struct PluginClass {
 
 struct PluginClasses {
 	LILV_WRAP_COLL(PluginClasses, PluginClass, plugin_classes);
-	LILV_WRAP1(const PluginClass, plugin_classes, get_by_uri, const LilvNode*, uri);
+	LILV_WRAP1(const PluginClass, plugin_classes,
+	           get_by_uri, const LilvNode*, uri);
 };
 
 struct ScalePoints {

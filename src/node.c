@@ -111,7 +111,8 @@ lilv_node_new_from_node(LilvWorld* world, const SordNode* node)
 				type = LILV_VALUE_FLOAT;
 			else if (sord_node_equals(datatype_uri, world->uris.xsd_integer))
 				type = LILV_VALUE_INT;
-			else if (sord_node_equals(datatype_uri, world->uris.xsd_base64Binary))
+			else if (sord_node_equals(datatype_uri,
+			                          world->uris.xsd_base64Binary))
 				type = LILV_VALUE_BLOB;
 			else
 				LILV_ERRORF("Unknown datatype `%s'\n",
@@ -168,7 +169,8 @@ LILV_API
 LilvNode*
 lilv_new_bool(LilvWorld* world, bool val)
 {
-	LilvNode* ret = lilv_node_new(world, LILV_VALUE_BOOL, val ? "true" : "false");
+	LilvNode* ret = lilv_node_new(world, LILV_VALUE_BOOL,
+	                              val ? "true" : "false");
 	ret->val.bool_val = val;
 	return ret;
 }

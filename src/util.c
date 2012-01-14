@@ -309,8 +309,8 @@ update_latest(const char* path, const char* name, void* data)
 	if (entry_path != latest->latest) {
 		free(entry_path);
 	}
-}	
-	              
+}
+
 /** Return the latest copy of the file at @c path that is newer. */
 char*
 lilv_get_latest_copy(const char* path)

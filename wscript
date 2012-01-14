@@ -358,4 +358,4 @@ def test(ctx):
     autowaf.post_test(ctx, APPNAME)
 
 def lint(ctx):
-    subprocess.call('cpplint.py --filter=+whitespace/comments,-whitespace/tab,-whitespace/braces,-whitespace/labels,-build/header_guard,-readability/casting,-readability/todo,-build/include src/* lilv/*', shell=True)
+    subprocess.call('cpplint.py --filter=+whitespace/comments,-whitespace/tab,-whitespace/braces,-whitespace/labels,-build/header_guard,-readability/casting,-readability/todo,-build/include,-runtime/sizeof src/* lilv/*', shell=True)

@@ -82,7 +82,9 @@ lilv_nodes_from_stream_objects_i18n(LilvWorld* world,
 				partial = value;
 			}
 		} else {
-			zix_tree_insert(values, lilv_node_new_from_node(world, value), NULL);
+			zix_tree_insert(values,
+			                lilv_node_new_from_node(world, value),
+			                NULL);
 		}
 	}
 	lilv_match_end(stream);

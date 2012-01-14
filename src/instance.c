@@ -55,7 +55,7 @@ lilv_plugin_instantiate(const LilvPlugin*        plugin,
 		lilv_dlfunc(lib, "lv2_descriptor");
 
 	if (!df) {
-		LILV_ERRORF("Failed to find symbol 'lv2_descriptor' in %s\n", lib_path);
+		LILV_ERRORF("No `lv2_descriptor' in %s\n", lib_path);
 		dlclose(lib);
 		return NULL;
 	} else {
@@ -67,7 +67,7 @@ lilv_plugin_instantiate(const LilvPlugin*        plugin,
 		for (uint32_t i = 0; true; ++i) {
 			const LV2_Descriptor* ld = df(i);
 			if (!ld) {
-				LILV_ERRORF("Failed to find plugin <%s> in %s\n",
+				LILV_ERRORF("No plugin <%s> in %s\n",
 				            lilv_node_as_uri(lilv_plugin_get_uri(plugin)),
 				            lib_path);
 				dlclose(lib);

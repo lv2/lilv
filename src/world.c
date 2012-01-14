@@ -319,7 +319,8 @@ lilv_world_add_plugin(LilvWorld*       world,
 {
 	LilvNode* plugin_uri = lilv_node_new_from_node(world, plugin_node);
 
-	const LilvPlugin* last = lilv_plugins_get_by_uri(world->plugins, plugin_uri);
+	const LilvPlugin* last = lilv_plugins_get_by_uri(world->plugins,
+	                                                 plugin_uri);
 	if (last) {
 		LILV_ERRORF("Duplicate plugin <%s>\n", lilv_node_as_uri(plugin_uri));
 		LILV_ERRORF("... found in %s\n", lilv_node_as_string(
@@ -415,16 +416,17 @@ lilv_world_load_dyn_manifest(LilvWorld* world,
 		// Open library
 		void* lib = dlopen(lib_path, RTLD_LAZY);
 		if (!lib) {
-			LILV_ERRORF("Failed to open dynamic manifest library `%s'\n", lib_path);
+			LILV_ERRORF("Failed to open dynmanifest library `%s'\n", lib_path);
 			lilv_match_end(binaries);
 			continue;
 		}
 
 		// Open dynamic manifest
-		typedef int (*OpenFunc)(LV2_Dyn_Manifest_Handle*, const LV2_Feature *const *);
-		OpenFunc open_func = (OpenFunc)lilv_dlfunc(lib, "lv2_dyn_manifest_open");
-		if (!open_func || open_func(&handle, &dman_features)) {
-			LILV_ERRORF("Failed to find `lv2_dyn_manifest_open' in `%s'\n", lib_path);
+		typedef int (*OpenFunc)(LV2_Dyn_Manifest_Handle*,
+		                        const LV2_Feature *const *);
+		OpenFunc dmopen = (OpenFunc)lilv_dlfunc(lib, "lv2_dyn_manifest_open");
+		if (!dmopen || dmopen(&handle, &dman_features)) {
+			LILV_ERRORF("No `lv2_dyn_manifest_open' in `%s'\n", lib_path);
 			lilv_match_end(binaries);
 			dlclose(lib);
 			continue;
@@ -435,7 +437,7 @@ lilv_world_load_dyn_manifest(LilvWorld* world,
 		GetSubjectsFunc get_subjects_func = (GetSubjectsFunc)lilv_dlfunc(
 			lib, "lv2_dyn_manifest_get_subjects");
 		if (!get_subjects_func) {
-			LILV_ERRORF("Failed to find `lv2_dyn_manifest_get_subjects' in `%s'\n",
+			LILV_ERRORF("No `lv2_dyn_manifest_get_subjects' in `%s'\n",
 			            lib_path);
 			lilv_match_end(binaries);
 			dlclose(lib);

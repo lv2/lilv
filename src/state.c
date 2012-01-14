@@ -209,7 +209,7 @@ abstract_path(LV2_State_Map_Path_Handle handle,
 			lilv_copy_file(real_path, copy);
 		}
 		real_path = copy;
-			
+
 		// Refer to the latest copy in plugin state
 		path = lilv_strdup(copy + file_dir_len + 1);
 	} else {
@@ -318,7 +318,8 @@ lilv_state_new_from_instance(const LilvPlugin*          plugin,
 		: NULL;
 
 	if (iface) {
-		iface->save(instance->lv2_handle, store_callback, state, flags, features);
+		iface->save(instance->lv2_handle, store_callback,
+		            state, flags, features);
 	}
 #endif  // HAVE_LV2_STATE
 
@@ -339,9 +340,12 @@ lilv_state_restore(const LilvState*           state,
                    const LV2_Feature *const * features)
 {
 #ifdef HAVE_LV2_STATE
-	LV2_State_Map_Path map_path = { (LilvState*)state, abstract_path, absolute_path };
-	LV2_Feature        feature  = { LV2_STATE_MAP_PATH_URI, &map_path };
-	
+	LV2_State_Map_Path map_path = { (LilvState*)state,
+	                                abstract_path,
+	                                absolute_path };
+
+	LV2_Feature feature = { LV2_STATE_MAP_PATH_URI, &map_path };
+
 	const LV2_Feature** local_features = add_feature(features, &feature);
 	features = local_features;
 
@@ -369,7 +373,7 @@ lilv_state_restore(const LilvState*           state,
 }
 
 static SordNode*
-get_one(SordModel* model, const SordNode* s, const SordNode* p)
+get1(SordModel* model, const SordNode* s, const SordNode* p)
 {
 	const SordQuad  pat  = { s, p, NULL, NULL };
 	SordIter* const i    = sord_find(model, pat);
@@ -474,9 +478,9 @@ new_state_from_model(LilvWorld*       world,
 	SordIter* ports = sord_find(model, ppat);
 	FOREACH_MATCH(ports) {
 		const SordNode* port   = lilv_match_object(ports);
-		const SordNode* label  = get_one(model, port, world->uris.rdfs_label);
-		const SordNode* symbol = get_one(model, port, world->uris.lv2_symbol);
-		const SordNode* value  = get_one(model, port, world->uris.pset_value);
+		const SordNode* label  = get1(model, port, world->uris.rdfs_label);
+		const SordNode* symbol = get1(model, port, world->uris.lv2_symbol);
+		const SordNode* value  = get1(model, port, world->uris.pset_value);
 		if (!symbol) {
 			LILV_ERRORF("State `%s' port missing symbol.\n",
 			            sord_node_get_string(node));
@@ -504,7 +508,7 @@ new_state_from_model(LilvWorld*       world,
 
 	// Get properties
 	SordNode* statep = sord_new_uri(world->world, USTR(NS_STATE "state"));
-	const SordNode* state_node = get_one(model, node, statep);
+	const SordNode* state_node = get1(model, node, statep);
 	if (state_node) {
 		const SordQuad spat  = { state_node, NULL, NULL };
 		SordIter*      props = sord_find(model, spat);
@@ -521,14 +525,15 @@ new_state_from_model(LilvWorld*       world,
 			                         (const char*)sord_node_get_string(p));
 
 			if (sord_node_get_type(o) == SORD_BLANK) {
-				const SordNode* type  = get_one(model, o, world->uris.rdf_a);
-				const SordNode* value = get_one(model, o, world->uris.rdf_value);
+				const SordNode* type  = get1(model, o, world->uris.rdf_a);
+				const SordNode* value = get1(model, o, world->uris.rdf_value);
 				if (type && value) {
 					size_t         len;
-					const uint8_t* b64 = sord_node_get_string_counted(value, &len);
+					const uint8_t* b64 = sord_node_get_string_counted(
+						value, &len);
 					prop.value = serd_base64_decode(b64, len, &prop.size);
-					prop.type = map->map(map->handle,
-					                     (const char*)sord_node_get_string(type));
+					prop.type = map->map(
+						map->handle, (const char*)sord_node_get_string(type));
 				} else {
 					LILV_ERRORF("Unable to parse blank node property <%s>\n",
 					            sord_node_get_string(p));
@@ -553,7 +558,6 @@ new_state_from_model(LilvWorld*       world,
 					state->props, (++state->num_props) * sizeof(Property));
 				state->props[state->num_props - 1] = prop;
 			}
-
 		}
 		sord_iter_free(props);
 	}
@@ -921,7 +925,7 @@ lilv_state_save(LilvWorld*                 world,
 	     i != zix_tree_end(state->abs2rel);
 	     i = zix_tree_iter_next(i)) {
 		const PathMap* pm = (const PathMap*)zix_tree_get(i);
-		
+
 		char* real_dir    = lilv_strjoin(lilv_realpath(dir), "/", NULL);
 		char* rel_path    = lilv_path_join(dir, pm->rel);
 		char* target_path = lilv_path_is_child(pm->abs, state->file_dir)
@@ -943,7 +947,6 @@ lilv_state_save(LilvWorld*                 world,
 		p = serd_node_from_string(SERD_URI, USTR(NS_STATE "state"));
 		serd_writer_write_statement(writer, SERD_ANON_O_BEGIN, NULL,
 		                            &subject, &p, &state_node, NULL, NULL);
-
 	}
 	for (uint32_t i = 0; i < state->num_props; ++i) {
 		Property*   prop = &state->props[i];
@@ -973,7 +976,7 @@ lilv_state_save(LilvWorld*                 world,
 				serd_writer_write_statement(
 					writer, SERD_ANON_CONT, NULL,
 					&state_node, &p, &o, &t, NULL);
-#endif 
+#endif
 			} else {
 				char name[16];
 				snprintf(name, sizeof(name), "b%u", i);
@@ -992,7 +995,8 @@ lilv_state_save(LilvWorld*                 world,
 				                            &blank, &p, &o, NULL, NULL);
 
 				// rdf:value "string"^^<xsd:base64Binary>
-				SerdNode blob = serd_node_new_blob(prop->value, prop->size, true);
+				SerdNode blob = serd_node_new_blob(
+					prop->value, prop->size, true);
 				p = serd_node_from_string(SERD_URI, USTR(LILV_NS_RDF "value"));
 				t = serd_node_from_string(SERD_URI,
 				                          USTR(LILV_NS_XSD "base64Binary"));

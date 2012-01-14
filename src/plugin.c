@@ -160,8 +160,8 @@ lilv_plugin_load(LilvPlugin* p)
 		GetDataFunc get_data_func = (GetDataFunc)lilv_dlfunc(
 			p->dynmanifest->lib, "lv2_dyn_manifest_get_data");
 		if (get_data_func) {
-			serd_env_set_base_uri(
-				env, sord_node_to_serd_node(p->dynmanifest->bundle->val.uri_val));
+			const SordNode* bundle = p->dynmanifest->bundle->val.uri_val;
+			serd_env_set_base_uri(env, sord_node_to_serd_node(bundle));
 			FILE* fd = tmpfile();
 			get_data_func(p->dynmanifest->handle, fd,
 			              lilv_node_as_string(p->plugin_uri));
@@ -238,7 +238,8 @@ lilv_plugin_load_ports_if_necessary(const LilvPlugin* const_p)
 			if (p->num_ports > this_index) {
 				this_port = p->ports[this_index];
 			} else {
-				p->ports = realloc(p->ports, (this_index + 1) * sizeof(LilvPort*));
+				p->ports = realloc(p->ports,
+				                   (this_index + 1) * sizeof(LilvPort*));
 				memset(p->ports + p->num_ports, '\0',
 				       (this_index - p->num_ports) * sizeof(LilvPort*));
 				p->num_ports = this_index + 1;
@@ -372,11 +373,11 @@ lilv_plugin_get_class(const LilvPlugin* const_p)
 
 			LilvNode* class = lilv_node_new_from_node(p->world, class_node);
 			if (!lilv_node_equals(class, p->world->lv2_plugin_class->uri)) {
-				const LilvPluginClass* plugin_class = lilv_plugin_classes_get_by_uri(
+				const LilvPluginClass* pclass = lilv_plugin_classes_get_by_uri(
 					p->world->plugin_classes, class);
 
-				if (plugin_class) {
-					((LilvPlugin*)p)->plugin_class = plugin_class;
+				if (pclass) {
+					((LilvPlugin*)p)->plugin_class = pclass;
 					lilv_node_free(class);
 					break;
 				}
@@ -626,7 +627,8 @@ lilv_plugin_has_feature(const LilvPlugin* p,
 {
 	LilvNodes* features = lilv_plugin_get_supported_features(p);
 
-	const bool ret = features && feature && lilv_nodes_contains(features, feature);
+	const bool ret = (features && feature
+	                  && lilv_nodes_contains(features, feature));
 
 	lilv_nodes_free(features);
 	return ret;
@@ -657,14 +659,16 @@ LILV_API
 LilvNodes*
 lilv_plugin_get_optional_features(const LilvPlugin* p)
 {
-	return lilv_plugin_get_value_internal(p, p->world->uris.lv2_optionalFeature);
+	return lilv_plugin_get_value_internal(
+		p, p->world->uris.lv2_optionalFeature);
 }
 
 LILV_API
 LilvNodes*
 lilv_plugin_get_required_features(const LilvPlugin* p)
 {
-	return lilv_plugin_get_value_internal(p, p->world->uris.lv2_requiredFeature);
+	return lilv_plugin_get_value_internal(
+		p, p->world->uris.lv2_requiredFeature);
 }
 
 LILV_API
@@ -814,9 +818,10 @@ lilv_plugin_get_uis(const LilvPlugin* p)
 		NULL);
 
 	FOREACH_MATCH(uis) {
-		const SordNode* ui     = lilv_match_object(uis);
-		LilvNode*       type   = lilv_plugin_get_unique(p, ui, p->world->uris.rdf_a);
-		LilvNode*       binary = lilv_plugin_get_unique(p, ui, ui_binary_node);
+		const SordNode* ui = lilv_match_object(uis);
+
+		LilvNode* type   = lilv_plugin_get_unique(p, ui, p->world->uris.rdf_a);
+		LilvNode* binary = lilv_plugin_get_unique(p, ui, ui_binary_node);
 
 		if (sord_node_get_type(ui) != SORD_URI
 		    || !lilv_node_is_uri(type)
