@@ -66,15 +66,26 @@ struct LilvStateImpl {
 static int
 abs_cmp(const void* a, const void* b, void* user_data)
 {
-	return strcmp(((const PathMap*)a)->abs,
-	              ((const PathMap*)b)->abs);
+	return strcmp(((const PathMap*)a)->abs, ((const PathMap*)b)->abs);
 }
 
 static int
 rel_cmp(const void* a, const void* b, void* user_data)
 {
-	return strcmp(((const PathMap*)a)->rel,
-	              ((const PathMap*)b)->rel);
+	return strcmp(((const PathMap*)a)->rel, ((const PathMap*)b)->rel);
+}
+
+static int
+property_cmp(const void* a, const void* b)
+{
+	return ((const Property*)a)->key - ((const Property*)b)->key;
+}
+
+static int
+value_cmp(const void* a, const void* b)
+{
+	return strcmp(((const PortValue*)a)->symbol,
+	              ((const PortValue*)b)->symbol);
 }
 
 static void
@@ -83,22 +94,6 @@ path_rel_free(void* ptr)
 	free(((PathMap*)ptr)->abs);
 	free(((PathMap*)ptr)->rel);
 	free(ptr);
-}
-
-static int
-property_cmp(const void* a, const void* b)
-{
-	const Property* pa = (const Property*)a;
-	const Property* pb = (const Property*)b;
-	return pa->key - pb->key;
-}
-
-static int
-value_cmp(const void* a, const void* b)
-{
-	const PortValue* pa = (const PortValue*)a;
-	const PortValue* pb = (const PortValue*)b;
-	return strcmp(pa->symbol, pb->symbol);
 }
 
 static PortValue*
