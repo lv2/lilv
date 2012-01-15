@@ -574,6 +574,7 @@ lilv_world_load_directory(LilvWorld* world, const char* dir_path)
 	}
 
 	lilv_dir_for_each(path, world, load_dir_entry);
+	free(path);
 }
 
 static bool
