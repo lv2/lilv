@@ -26,7 +26,7 @@ extern "C" {
 #include <stdint.h>
 #include <stdlib.h>
 
-#ifdef __WIN32__
+#ifdef _WIN32
 #    include <windows.h>
 #    define dlopen(path, flags) LoadLibrary(path)
 #    define dlclose(lib) FreeLibrary(lib)

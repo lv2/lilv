@@ -30,7 +30,7 @@
 #include "lv2/lv2plug.in/ns/ext/urid/urid.h"
 
 #ifdef LILV_SHARED
-#    ifdef __WIN32__
+#    ifdef _WIN32
 #        define LILV_LIB_IMPORT __declspec(dllimport)
 #        define LILV_LIB_EXPORT __declspec(dllexport)
 #    else

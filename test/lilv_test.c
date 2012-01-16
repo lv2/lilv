@@ -37,7 +37,7 @@
 
 #if defined(__APPLE__)
 #    define SHLIB_EXT ".dylib"
-#elif defined(__WIN32__)
+#elif defined(_WIN32)
 #    define SHLIB_EXT ".dll"
 #else
 #    define SHLIB_EXT ".so"

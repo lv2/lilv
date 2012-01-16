@@ -144,7 +144,7 @@ lilv_expand(const char* path)
 		ret = lilv_strdup(path);
 	}
 	wordfree(&p);
-#elif defined(__WIN32__)
+#elif defined(_WIN32)
 	static const size_t len = 32767;
 	char*               ret = malloc(len);
 	ExpandEnvironmentStrings(path, ret, len);
@@ -247,7 +247,7 @@ lilv_path_is_absolute(const char* path)
 		return true;
 	}
 
-#ifdef __WIN32__
+#ifdef _WIN32
 	if (isalpha(path[0]) && path[1] == ':' && lilv_is_dir_sep(path[2])) {
 		return true;
 	}

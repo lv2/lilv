@@ -26,7 +26,7 @@
 
 /** @cond */
 #ifdef ZIX_SHARED
-#    ifdef __WIN32__
+#    ifdef _WIN32
 #        define ZIX_LIB_IMPORT __declspec(dllimport)
 #        define ZIX_LIB_EXPORT __declspec(dllexport)
 #    else
