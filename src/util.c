@@ -170,7 +170,7 @@ lilv_expand(const char* path)
 		if (*s == '$') {
 			// Hit $ (variable reference, e.g. $VAR_NAME)
 			for (const char* t = s + 1; ; ++t) {
-				if (!*t || !(isupper(*t) || isdigit(*t) || *t == '_')) {
+				if (!*t || !isupper(*t) || !isdigit(*t) || *t != '_') {
 					// Append preceding chunk
 					out = strappend(out, &len, start, s - start);
 
