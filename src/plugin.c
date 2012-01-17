@@ -33,7 +33,7 @@ LilvPlugin*
 lilv_plugin_new(LilvWorld* world, LilvNode* uri, LilvNode* bundle_uri)
 {
 	assert(bundle_uri);
-	LilvPlugin* plugin = malloc(sizeof(struct LilvPluginImpl));
+	LilvPlugin* plugin = (LilvPlugin*)malloc(sizeof(LilvPlugin));
 	plugin->world        = world;
 	plugin->plugin_uri   = uri;
 	plugin->bundle_uri   = bundle_uri;
@@ -201,7 +201,7 @@ lilv_plugin_load_ports_if_necessary(const LilvPlugin* const_p)
 		lilv_plugin_load(p);
 
 	if (!p->ports) {
-		p->ports = malloc(sizeof(LilvPort*));
+		p->ports = (LilvPort**)malloc(sizeof(LilvPort*));
 		p->ports[0] = NULL;
 
 		SordIter* ports = lilv_world_query_internal(
@@ -238,8 +238,8 @@ lilv_plugin_load_ports_if_necessary(const LilvPlugin* const_p)
 			if (p->num_ports > this_index) {
 				this_port = p->ports[this_index];
 			} else {
-				p->ports = realloc(p->ports,
-				                   (this_index + 1) * sizeof(LilvPort*));
+				p->ports = (LilvPort**)realloc(
+					p->ports, (this_index + 1) * sizeof(LilvPort*));
 				memset(p->ports + p->num_ports, '\0',
 				       (this_index - p->num_ports) * sizeof(LilvPort*));
 				p->num_ports = this_index + 1;
@@ -260,7 +260,7 @@ lilv_plugin_load_ports_if_necessary(const LilvPlugin* const_p)
 				const SordNode* type = lilv_match_object(types);
 				if (sord_node_get_type(type) == SORD_URI) {
 					zix_tree_insert(
-						this_port->classes,
+						(ZixTree*)this_port->classes,
 						lilv_node_new_from_node(p->world, type), NULL);
 				} else {
 					LILV_WARNF("Plugin <%s> port type is not a URI\n",
@@ -371,19 +371,19 @@ lilv_plugin_get_class(const LilvPlugin* const_p)
 				continue;
 			}
 
-			LilvNode* class = lilv_node_new_from_node(p->world, class_node);
-			if (!lilv_node_equals(class, p->world->lv2_plugin_class->uri)) {
+			LilvNode* klass = lilv_node_new_from_node(p->world, class_node);
+			if (!lilv_node_equals(klass, p->world->lv2_plugin_class->uri)) {
 				const LilvPluginClass* pclass = lilv_plugin_classes_get_by_uri(
-					p->world->plugin_classes, class);
+					p->world->plugin_classes, klass);
 
 				if (pclass) {
 					((LilvPlugin*)p)->plugin_class = pclass;
-					lilv_node_free(class);
+					lilv_node_free(klass);
 					break;
 				}
 			}
 
-			lilv_node_free(class);
+			lilv_node_free(klass);
 		}
 		lilv_match_end(results);
 
@@ -643,11 +643,13 @@ lilv_plugin_get_supported_features(const LilvPlugin* p)
 	LilvNodes* result   = lilv_nodes_new();
 
 	LILV_FOREACH(nodes, i, optional)
-		zix_tree_insert(
-			result, lilv_node_duplicate(lilv_nodes_get(optional, i)), NULL);
+		zix_tree_insert((ZixTree*)result,
+		                lilv_node_duplicate(lilv_nodes_get(optional, i)),
+		                NULL);
 	LILV_FOREACH(nodes, i, required)
-		zix_tree_insert(
-			result, lilv_node_duplicate(lilv_nodes_get(required, i)), NULL);
+		zix_tree_insert((ZixTree*)result,
+		                lilv_node_duplicate(lilv_nodes_get(required, i)),
+		                NULL);
 
 	lilv_nodes_free(optional);
 	lilv_nodes_free(required);
@@ -838,7 +840,7 @@ lilv_plugin_get_uis(const LilvPlugin* p)
 			type,
 			binary);
 
-		zix_tree_insert(result, lilv_ui, NULL);
+		zix_tree_insert((ZixTree*)result, lilv_ui, NULL);
 	}
 	lilv_match_end(uis);
 
@@ -870,11 +872,11 @@ lilv_plugin_get_related(const LilvPlugin* plugin, const LilvNode* type)
 
 	LilvNodes* matches = lilv_nodes_new();
 	LILV_FOREACH(nodes, i, related) {
-		LilvNode* node  = lilv_collection_get(related, i);
+		LilvNode* node  = (LilvNode*)lilv_collection_get((ZixTree*)related, i);
 		SordIter* titer = lilv_world_query_internal(
 			world, node->val.uri_val, world->uris.rdf_a, type->val.uri_val);
 		if (!sord_iter_end(titer)) {
-			zix_tree_insert(matches,
+			zix_tree_insert((ZixTree*)matches,
 			                lilv_node_new_from_node(world, node->val.uri_val),
 			                NULL);
 		}
@@ -928,7 +930,7 @@ lilv_plugin_write_description(LilvWorld*        world,
 
 	SerdWriter* writer = serd_writer_new(
 		SERD_TURTLE,
-		SERD_STYLE_ABBREVIATED|SERD_STYLE_CURIED,
+		(SerdStyle)(SERD_STYLE_ABBREVIATED|SERD_STYLE_CURIED),
 		env,
 		NULL,
 		serd_file_sink,
@@ -968,7 +970,7 @@ lilv_plugin_write_manifest_entry(LilvWorld*        world,
 
 	SerdWriter* writer = serd_writer_new(
 		SERD_TURTLE,
-		SERD_STYLE_ABBREVIATED|SERD_STYLE_CURIED,
+		(SerdStyle)(SERD_STYLE_ABBREVIATED|SERD_STYLE_CURIED),
 		env,
 		NULL,
 		serd_file_sink,

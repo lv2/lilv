@@ -28,7 +28,7 @@ lilv_port_new(LilvWorld*      world,
               uint32_t        index,
               const char*     symbol)
 {
-	LilvPort* port = malloc(sizeof(struct LilvPortImpl));
+	LilvPort* port = (LilvPort*)malloc(sizeof(LilvPort));
 	port->node    = sord_node_copy(node);
 	port->index   = index;
 	port->symbol  = lilv_node_new(world, LILV_VALUE_STRING, symbol);
@@ -232,7 +232,8 @@ lilv_port_get_scale_points(const LilvPlugin* p,
 			p->world->uris.rdfs_label);
 
 		if (value && label) {
-			zix_tree_insert(ret, lilv_scale_point_new(value, label), NULL);
+			zix_tree_insert(
+				(ZixTree*)ret, lilv_scale_point_new(value, label), NULL);
 		}
 	}
 	lilv_match_end(points);

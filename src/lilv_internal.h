@@ -21,16 +21,21 @@
 extern "C" {
 #endif
 
-#include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <stdlib.h>
+#include <float.h>
 
 #ifdef _WIN32
 #    include <windows.h>
 #    define dlopen(path, flags) LoadLibrary(path)
-#    define dlclose(lib) FreeLibrary(lib)
+#    define dlclose(lib) FreeLibrary((HMODULE)lib)
 #    define dlsym GetProcAddress
+#    ifdef _MSC_VER
+#        define __func__ __FUNCTION__
+#        define INFINITY DBL_MAX + DBL_MAX
+#        define NAN INFINITY - INFINITY
+#    endif
 static inline char* dlerror(void) { return "Unknown error"; }
 #else
 #    include <dlfcn.h>

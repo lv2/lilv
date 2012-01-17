@@ -14,6 +14,7 @@
   OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 */
 
+#include <float.h>
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -22,6 +23,10 @@
 #include "lilv/lilv.h"
 
 #include "lilv-config.h"
+
+#ifdef _MSC_VER
+#    define isnan _isnan
+#endif
 
 LilvNode* applies_to_pred     = NULL;
 LilvNode* control_class       = NULL;
@@ -307,9 +312,9 @@ print_plugin(LilvWorld*        world,
 	/* Ports */
 
 	const uint32_t num_ports = lilv_plugin_get_num_ports(p);
-	float* mins     = calloc(num_ports, sizeof(float));
-	float* maxes    = calloc(num_ports, sizeof(float));
-	float* defaults = calloc(num_ports, sizeof(float));
+	float* mins     = (float*)calloc(num_ports, sizeof(float));
+	float* maxes    = (float*)calloc(num_ports, sizeof(float));
+	float* defaults = (float*)calloc(num_ports, sizeof(float));
 	lilv_plugin_get_port_ranges_float(p, mins, maxes, defaults);
 
 	for (uint32_t i = 0; i < num_ports; ++i)

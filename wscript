@@ -68,7 +68,11 @@ def configure(conf):
     conf.line_just = 51
     autowaf.configure(conf)
     autowaf.display_header('Lilv Configuration')
-    conf.env.append_unique('CFLAGS', '-std=c99')
+
+    if conf.env['MSVC_COMPILER']:
+        conf.env.append_unique('CFLAGS', ['-TP', '-MD'])
+    else:
+        conf.env.append_unique('CFLAGS', '-std=c99')
 
     autowaf.check_pkg(conf, 'lv2core', uselib_store='LV2CORE', mandatory=True)
     autowaf.check_pkg(conf, 'serd-0', uselib_store='SERD',
@@ -199,11 +203,13 @@ def build(bld):
         src/zix/tree.c
     '''.split()
 
-    lib = [ 'dl' ]
-    libflags  = [ '-fvisibility=hidden' ]
-    if sys.platform == 'win32':
-        lib = []
-        libflags  = []
+    lib      = [ 'dl' ]
+    libflags = [ '-fvisibility=hidden' ]
+    defines  = []
+    if bld.env['MSVC_COMPILER']:
+        lib      = []
+        libflags = []
+        defines  = ['snprintf=_snprintf']
     elif sys.platform.find('bsd') > 0:
         lib = []
 
@@ -216,6 +222,7 @@ def build(bld):
               target          = 'lilv-%s' % LILV_MAJOR_VERSION,
               vnum            = LILV_LIB_VERSION,
               install_path    = '${LIBDIR}',
+              defines         = defines,
               cflags          = libflags + [ '-DLILV_SHARED',
                                              '-DLILV_INTERNAL' ],
               lib             = lib)
@@ -231,6 +238,7 @@ def build(bld):
                   target          = 'lilv-%s' % LILV_MAJOR_VERSION,
                   vnum            = LILV_LIB_VERSION,
                   install_path    = '${LIBDIR}',
+                  defines         = defines,
                   cflags          = [ '-DLILV_INTERNAL' ])
         autowaf.use_lib(bld, obj, 'SORD LV2CORE LV2_STATE LV2_URID')
 
@@ -249,6 +257,7 @@ def build(bld):
                   name         = 'test_plugin',
                   target       = 'test/test_plugin.lv2/test_plugin',
                   install_path = None,
+                  defines      = defines,
                   uselib       = 'LV2CORE LV2_STATE LV2_URID')
 
         # Test plugin data files
@@ -266,6 +275,7 @@ def build(bld):
                   name         = 'liblilv_profiled',
                   target       = 'lilv_profiled',
                   install_path = '',
+                  defines        = defines,
                   cflags       = [ '-fprofile-arcs', '-ftest-coverage',
                                    '-DLILV_INTERNAL' ],
                   lib          = lib + ['gcov'])
@@ -280,7 +290,7 @@ def build(bld):
                   lib          = lib + ['gcov'],
                   target       = 'test/lilv_test',
                   install_path = '',
-                  defines      = ['LILV_TEST_BUNDLE=\"%s/\"' % os.path.abspath(
+                  defines      = defines + ['LILV_TEST_BUNDLE=\"%s/\"' % os.path.abspath(
                     os.path.join(out, 'test', 'test_plugin.lv2'))],
                   cflags       = [ '-fprofile-arcs',  '-ftest-coverage' ])
         autowaf.use_lib(bld, obj, 'SORD LV2CORE LV2_STATE LV2_URID')
@@ -298,6 +308,7 @@ def build(bld):
                       includes     = ['.', './src', './utils'],
                       use          = 'liblilv',
                       target       = i,
+                      defines      = defines,
                       install_path = '${BINDIR}')
 
     # Documentation

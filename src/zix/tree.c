@@ -15,7 +15,6 @@
 */
 
 #include <assert.h>
-#include <inttypes.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -74,7 +73,7 @@ zix_tree_new(bool           allow_duplicates,
              void*          cmp_data,
              ZixDestroyFunc destroy)
 {
-	ZixTree* t = malloc(sizeof(ZixTree));
+	ZixTree* t = (ZixTree*)malloc(sizeof(ZixTree));
 	t->root             = NULL;
 	t->destroy          = destroy;
 	t->cmp              = cmp;
@@ -368,7 +367,7 @@ zix_tree_insert(ZixTree* t, void* e, ZixTreeIter** ti)
 	}
 
 	// Allocate a new node n
-	if (!(n = malloc(sizeof(ZixTreeNode)))) {
+	if (!(n = (ZixTreeNode*)malloc(sizeof(ZixTreeNode)))) {
 		return ZIX_STATUS_NO_MEM;
 	}
 	memset(n, '\0', sizeof(ZixTreeNode));

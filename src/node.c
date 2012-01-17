@@ -53,7 +53,7 @@ lilv_node_set_numerics_from_string(LilvNode* val, size_t len)
 LilvNode*
 lilv_node_new(LilvWorld* world, LilvNodeType type, const char* str)
 {
-	LilvNode* val = malloc(sizeof(struct LilvNodeImpl));
+	LilvNode* val = (LilvNode*)malloc(sizeof(LilvNode));
 	val->world = world;
 	val->type  = type;
 
@@ -88,14 +88,14 @@ lilv_node_new_from_node(LilvWorld* world, const SordNode* node)
 
 	switch (sord_node_get_type(node)) {
 	case SORD_URI:
-		result              = malloc(sizeof(struct LilvNodeImpl));
+		result              = (LilvNode*)malloc(sizeof(LilvNode));
 		result->world       = (LilvWorld*)world;
 		result->type        = LILV_VALUE_URI;
 		result->val.uri_val = sord_node_copy(node);
 		result->str_val     = (char*)sord_node_get_string(result->val.uri_val);
 		break;
 	case SORD_BLANK:
-		result              = malloc(sizeof(struct LilvNodeImpl));
+		result              = (LilvNode*)malloc(sizeof(LilvNode));
 		result->world       = (LilvWorld*)world;
 		result->type        = LILV_VALUE_BLANK;
 		result->val.uri_val = sord_node_copy(node);
@@ -182,7 +182,7 @@ lilv_node_duplicate(const LilvNode* val)
 	if (val == NULL)
 		return NULL;
 
-	LilvNode* result = malloc(sizeof(struct LilvNodeImpl));
+	LilvNode* result = (LilvNode*)malloc(sizeof(LilvNode));
 	result->world = val->world;
 	result->type = val->type;
 
@@ -260,12 +260,12 @@ lilv_node_get_turtle_token(const LilvNode* value)
 	switch (value->type) {
 	case LILV_VALUE_URI:
 		len = strlen(value->str_val) + 3;
-		result = calloc(len, 1);
+		result = (char*)calloc(len, 1);
 		snprintf(result, len, "<%s>", value->str_val);
 		break;
 	case LILV_VALUE_BLANK:
 		len = strlen(value->str_val) + 3;
-		result = calloc(len, 1);
+		result = (char*)calloc(len, 1);
 		snprintf(result, len, "_:%s", value->str_val);
 		break;
 	case LILV_VALUE_STRING:

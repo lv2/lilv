@@ -17,8 +17,6 @@
 #ifndef ZIX_COMMON_H
 #define ZIX_COMMON_H
 
-#include <stdbool.h>
-
 /**
    @addtogroup zix
    @{
@@ -43,6 +41,12 @@
 #endif
 /** @endcond */
 
+#ifdef __cplusplus
+extern "C" {
+#else
+#    include <stdbool.h>
+#endif
+
 typedef enum {
 	ZIX_STATUS_SUCCESS,
 	ZIX_STATUS_ERROR,
@@ -66,7 +70,12 @@ typedef bool (*ZixEqualFunc)(const void* a, const void* b);
 */
 typedef void (*ZixDestroyFunc)(void* ptr);
 
-/**@}
+/**
+   @}
 */
+
+#ifdef __cplusplus
+}  /* extern "C" */
+#endif
 
 #endif  /* ZIX_COMMON_H */

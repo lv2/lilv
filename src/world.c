@@ -25,7 +25,7 @@ LILV_API
 LilvWorld*
 lilv_world_new(void)
 {
-	LilvWorld* world = malloc(sizeof(struct LilvWorldImpl));
+	LilvWorld* world = (LilvWorld*)malloc(sizeof(LilvWorld));
 
 	world->world = sord_world_new();
 	if (!world->world)
@@ -124,13 +124,13 @@ lilv_world_free(LilvWorld* world)
 		const LilvPlugin* p = lilv_plugins_get(world->plugins, i);
 		lilv_plugin_free((LilvPlugin*)p);
 	}
-	zix_tree_free(world->plugins);
+	zix_tree_free((ZixTree*)world->plugins);
 	world->plugins = NULL;
 
-	zix_tree_free(world->loaded_files);
+	zix_tree_free((ZixTree*)world->loaded_files);
 	world->loaded_files = NULL;
 
-	zix_tree_free(world->plugin_classes);
+	zix_tree_free((ZixTree*)world->plugin_classes);
 	world->plugin_classes = NULL;
 
 	sord_free(world->model);
@@ -285,7 +285,7 @@ lilv_world_add_spec(LilvWorld*      world,
                     const SordNode* specification_node,
                     const SordNode* bundle_node)
 {
-	LilvSpec* spec = malloc(sizeof(struct LilvSpecImpl));
+	LilvSpec* spec = (LilvSpec*)malloc(sizeof(LilvSpec));
 	spec->spec      = sord_node_copy(specification_node);
 	spec->bundle    = sord_node_copy(bundle_node);
 	spec->data_uris = lilv_nodes_new();
@@ -299,7 +299,7 @@ lilv_world_add_spec(LilvWorld*      world,
 		NULL);
 	FOREACH_MATCH(files) {
 		const SordNode* file_node = lilv_match_object(files);
-		zix_tree_insert(spec->data_uris,
+		zix_tree_insert((ZixTree*)spec->data_uris,
 		                lilv_node_new_from_node(world, file_node),
 		                NULL);
 	}
@@ -335,7 +335,7 @@ lilv_world_add_plugin(LilvWorld*       world,
 	LilvPlugin* plugin     = lilv_plugin_new(world, plugin_uri, bundle_uri);
 
 	// Add manifest as plugin data file (as if it were rdfs:seeAlso)
-	zix_tree_insert(plugin->data_uris,
+	zix_tree_insert((ZixTree*)plugin->data_uris,
 	                lilv_new_uri(world, (const char*)manifest_uri->buf),
 	                NULL);
 
@@ -356,14 +356,14 @@ lilv_world_add_plugin(LilvWorld*       world,
 		NULL);
 	FOREACH_MATCH(files) {
 		const SordNode* file_node = lilv_match_object(files);
-		zix_tree_insert(plugin->data_uris,
+		zix_tree_insert((ZixTree*)plugin->data_uris,
 		                lilv_node_new_from_node(world, file_node),
 		                NULL);
 	}
 	lilv_match_end(files);
 
 	// Add plugin to world plugin sequence
-	zix_tree_insert(world->plugins, plugin, NULL);
+	zix_tree_insert((ZixTree*)world->plugins, plugin, NULL);
 }
 
 static void
@@ -607,7 +607,7 @@ lilv_world_load_path(LilvWorld*  world,
 		const char* const sep = first_path_sep(lv2_path);
 		if (sep) {
 			const size_t dir_len = sep - lv2_path;
-			char* const  dir     = malloc(dir_len + 1);
+			char* const  dir     = (char*)malloc(dir_len + 1);
 			memcpy(dir, lv2_path, dir_len);
 			dir[dir_len] = '\0';
 			lilv_world_load_directory(world, dir);
@@ -625,15 +625,15 @@ lilv_world_load_specifications(LilvWorld* world)
 {
 	for (LilvSpec* spec = world->specs; spec; spec = spec->next) {
 		LILV_FOREACH(nodes, f, spec->data_uris) {
-			LilvNode*      file     = lilv_collection_get(spec->data_uris, f);
-			const uint8_t* file_uri = (const uint8_t*)lilv_node_as_uri(file);
-			SerdEnv*       env      = serd_env_new(
-				sord_node_to_serd_node(file->val.uri_val));
-			SerdReader*    reader   = sord_new_reader(world->model, env,
-			                                          SERD_TURTLE, NULL);
+			LilvNode* file = (LilvNode*)lilv_collection_get(spec->data_uris, f);
+			
+			const SerdNode* node   = sord_node_to_serd_node(file->val.uri_val);
+			SerdEnv*        env    = serd_env_new(node);
+			SerdReader*     reader = sord_new_reader(world->model, env,
+			                                         SERD_TURTLE, NULL);
 			serd_reader_add_blank_prefix(reader,
 			                             lilv_world_blank_node_prefix(world));
-			serd_reader_read_file(reader, file_uri);
+			serd_reader_read_file(reader, node->buf);
 			serd_reader_free(reader);
 			serd_env_free(env);
 		}
@@ -701,7 +701,7 @@ lilv_world_load_plugin_classes(LilvWorld* world)
 			world, parent_node, class_node, (const char*)label);
 
 		if (pclass) {
-			zix_tree_insert(classes, pclass, NULL);
+			zix_tree_insert((ZixTree*)classes, pclass, NULL);
 		}
 	}
 	lilv_match_end(classes);
@@ -719,15 +719,15 @@ lilv_world_load_all(LilvWorld* world)
 	lilv_world_load_path(world, lv2_path);
 
 	LILV_FOREACH(plugins, p, world->plugins) {
-		const LilvPlugin* plugin     = lilv_collection_get(world->plugins, p);
-		const LilvNode*   plugin_uri = lilv_plugin_get_uri(plugin);
+		const LilvPlugin* plugin = (const LilvPlugin*)lilv_collection_get(
+			(ZixTree*)world->plugins, p);
 
 		// ?new dc:replaces plugin
 		SordIter* replacement = lilv_world_find_statements(
 			world, world->model,
 			NULL,
 			world->uris.dc_replaces,
-			lilv_node_as_node(plugin_uri),
+			lilv_node_as_node(lilv_plugin_get_uri(plugin)),
 			NULL);
 		if (!sord_iter_end(replacement)) {
 			/* TODO: Check if replacement is actually a known plugin,
@@ -763,7 +763,7 @@ lilv_world_load_resource(LilvWorld*      world,
 		const uint8_t*  str       = sord_node_get_string(file);
 		LilvNode*       file_node = lilv_node_new_from_node(world, file);
 		ZixTreeIter*    iter;
-		if (zix_tree_find(world->loaded_files, file, &iter)) {
+		if (zix_tree_find((ZixTree*)world->loaded_files, file, &iter)) {
 			if (sord_node_get_type(file) == SORD_URI) {
 				const SerdNode* base   = sord_node_to_serd_node(file);
 				SerdEnv*        env    = serd_env_new(base);
@@ -771,7 +771,8 @@ lilv_world_load_resource(LilvWorld*      world,
 					world->model, env, SERD_TURTLE, (SordNode*)file);
 				if (!serd_reader_read_file(reader, str)) {
 					++n_read;
-					zix_tree_insert(world->loaded_files, file_node, NULL);
+					zix_tree_insert(
+						(ZixTree*)world->loaded_files, file_node, NULL);
 					file_node = NULL;  // prevent deletion...
 				} else {
 					LILV_ERRORF("Error loading resource `%s'\n", str);

@@ -101,8 +101,8 @@ append_port_value(LilvState*  state,
                   const char* port_symbol,
                   LilvNode*   value)
 {
-	state->values = realloc(state->values,
-	                        (++state->num_values) * sizeof(PortValue));
+	state->values = (PortValue*)realloc(
+		state->values, (++state->num_values) * sizeof(PortValue));
 	PortValue* pv = &state->values[state->num_values - 1];
 	pv->symbol = lilv_strdup(port_symbol);
 	pv->value  = value;
@@ -252,7 +252,8 @@ add_feature(const LV2_Feature *const * features, const LV2_Feature* feature)
 	size_t n_features = 0;
 	for (; features && features[n_features]; ++n_features) {}
 
-	const LV2_Feature** ret = malloc((n_features + 2) * sizeof(LV2_Feature*));
+	const LV2_Feature** ret = (const LV2_Feature**)malloc(
+		(n_features + 2) * sizeof(LV2_Feature*));
 
 	ret[0] = feature;
 	if (features) {
@@ -275,7 +276,7 @@ lilv_state_new_from_instance(const LilvPlugin*          plugin,
 {
 	const LV2_Feature** local_features = NULL;
 	LilvWorld* const    world          = plugin->world;
-	LilvState* const    state          = malloc(sizeof(LilvState));
+	LilvState* const    state          = (LilvState*)malloc(sizeof(LilvState));
 	memset(state, '\0', sizeof(LilvState));
 	state->plugin_uri = lilv_node_duplicate(lilv_plugin_get_uri(plugin));
 	state->abs2rel    = zix_tree_new(false, abs_cmp, NULL, path_rel_free);
@@ -429,7 +430,7 @@ new_state_from_model(LilvWorld*       world,
                      const SordNode*  node,
                      const char*      dir)
 {
-	LilvState* const state = malloc(sizeof(LilvState));
+	LilvState* const state = (LilvState*)malloc(sizeof(LilvState));
 	memset(state, '\0', sizeof(LilvState));
 	state->dir = dir ? lilv_strdup(dir) : NULL;
 
@@ -549,7 +550,7 @@ new_state_from_model(LilvWorld*       world,
 			}
 
 			if (prop.value) {
-				state->props = realloc(
+				state->props = (Property*)realloc(
 					state->props, (++state->num_props) * sizeof(Property));
 				state->props[state->num_props - 1] = prop;
 			}
@@ -704,7 +705,7 @@ open_ttl_writer(FILE* fd, const uint8_t* uri, SerdEnv** new_env)
 
 	SerdWriter* writer = serd_writer_new(
 		SERD_TURTLE,
-		SERD_STYLE_ABBREVIATED|SERD_STYLE_CURIED,
+		(SerdStyle)(SERD_STYLE_ABBREVIATED|SERD_STYLE_CURIED),
 		env,
 		&base_uri,
 		serd_file_sink,
@@ -788,7 +789,7 @@ pathify(const char* in)
 {
 	const size_t in_len = strlen(in);
 
-	char* out = calloc(in_len + 1, 1);
+	char* out = (char*)calloc(in_len + 1, 1);
 	for (size_t i = 0; i < in_len; ++i) {
 		char c = in[i];
 		if (!((c >= 'a' && c <= 'z')
@@ -1078,8 +1079,8 @@ lilv_state_equals(const LilvState* a, const LilvState* b)
 		}
 
 		if (ap->type == a->state_Path) {
-			const char* const a_abs  = lilv_state_rel2abs(a, ap->value);
-			const char* const b_abs  = lilv_state_rel2abs(b, bp->value);
+			const char* const a_abs  = lilv_state_rel2abs(a, (char*)ap->value);
+			const char* const b_abs  = lilv_state_rel2abs(b, (char*)bp->value);
 			char* const       a_real = lilv_realpath(a_abs);
 			char* const       b_real = lilv_realpath(b_abs);
 			const int         cmp    = strcmp(a_real, b_real);

@@ -21,6 +21,7 @@ lilv (UNRELEASED) unstable; urgency=low
     save presets in a host-sharable way since the disk format is identical
     to the LV2 presets format.
   * Update old references to lv2_list (now lv2ls)
+  * Support compilation as C++ under MSVC++.
 
  -- David Robillard <d@drobilla.net>  (UNRELEASED)
 

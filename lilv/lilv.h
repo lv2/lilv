@@ -21,7 +21,6 @@
 #ifndef LILV_LILV_H
 #define LILV_LILV_H
 
-#include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -48,6 +47,8 @@
 
 #ifdef __cplusplus
 extern "C" {
+#else
+#   include <stdbool.h>
 #endif
 
 #define LILV_NS_DOAP "http://usefulinc.com/ns/doap#"

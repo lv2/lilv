@@ -33,7 +33,7 @@ lilv_plugin_instantiate(const LilvPlugin*        plugin,
 
 	const LV2_Feature** local_features = NULL;
 	if (features == NULL) {
-		local_features = malloc(sizeof(LV2_Feature));
+		local_features = (const LV2_Feature**)malloc(sizeof(LV2_Feature));
 		local_features[0] = NULL;
 	}
 
@@ -96,7 +96,7 @@ lilv_plugin_instantiate(const LilvPlugin*        plugin,
 			if (!strcmp((const char*)abs_uri_node.buf,
 			            lilv_node_as_uri(lilv_plugin_get_uri(plugin)))) {
 				// Create LilvInstance to return
-				result = malloc(sizeof(struct LilvInstanceImpl));
+				result = (LilvInstance*)malloc(sizeof(LilvInstance));
 				result->lv2_descriptor = ld;
 				result->lv2_handle = ld->instantiate(
 					ld, sample_rate, (char*)bundle_path,

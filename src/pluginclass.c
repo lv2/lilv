@@ -29,7 +29,7 @@ lilv_plugin_class_new(LilvWorld*      world,
 	if (parent_node && sord_node_get_type(parent_node) != SORD_URI) {
 		return NULL;  // Not an LV2 plugin superclass (FIXME: discover properly)
 	}
-	LilvPluginClass* pc = malloc(sizeof(struct LilvPluginClassImpl));
+	LilvPluginClass* pc = (LilvPluginClass*)malloc(sizeof(LilvPluginClass));
 	pc->world      = world;
 	pc->uri        = lilv_node_new_from_node(world, uri);
 	pc->label      = lilv_node_new(world, LILV_VALUE_STRING, label);
@@ -82,14 +82,14 @@ lilv_plugin_class_get_children(const LilvPluginClass* plugin_class)
 	LilvPluginClasses* all    = plugin_class->world->plugin_classes;
 	LilvPluginClasses* result = zix_tree_new(false, lilv_ptr_cmp, NULL, NULL);
 
-	for (ZixTreeIter* i = zix_tree_begin(all);
-	     i != zix_tree_end(all);
+	for (ZixTreeIter* i = zix_tree_begin((ZixTree*)all);
+	     i != zix_tree_end((ZixTree*)all);
 	     i = zix_tree_iter_next(i)) {
-		const LilvPluginClass* c      = zix_tree_get(i);
+		const LilvPluginClass* c      = (LilvPluginClass*)zix_tree_get(i);
 		const LilvNode*        parent = lilv_plugin_class_get_parent_uri(c);
 		if (parent && lilv_node_equals(lilv_plugin_class_get_uri(plugin_class),
 		                               parent))
-			zix_tree_insert(result, (LilvPluginClass*)c, NULL);
+			zix_tree_insert((ZixTree*)result, (LilvPluginClass*)c, NULL);
 	}
 
 	return result;

@@ -55,7 +55,7 @@ LilvIter*
 lilv_collection_begin(const LilvCollection* collection)
 {
 	if (collection) {
-		return zix_tree_begin((LilvCollection*)collection);
+		return (LilvIter*)zix_tree_begin((ZixTree*)collection);
 	}
 	return NULL;
 }
@@ -104,14 +104,14 @@ const LilvPluginClass*
 lilv_plugin_classes_get_by_uri(const LilvPluginClasses* coll,
                                const LilvNode*          uri)
 {
-	return (LilvPluginClass*)lilv_collection_get_by_uri(coll, uri);
+	return (LilvPluginClass*)lilv_collection_get_by_uri((ZixTree*)coll, uri);
 }
 
 LILV_API
 const LilvUI*
 lilv_uis_get_by_uri(const LilvUIs* coll, const LilvNode* uri)
 {
-	return (LilvUI*)lilv_collection_get_by_uri((LilvUIs*)coll, uri);
+	return (LilvUI*)lilv_collection_get_by_uri((ZixTree*)coll, uri);
 }
 
 /* Plugins */
@@ -126,7 +126,7 @@ LILV_API
 const LilvPlugin*
 lilv_plugins_get_by_uri(const LilvPlugins* list, const LilvNode* uri)
 {
-	return (LilvPlugin*)lilv_collection_get_by_uri((LilvPlugins*)list, uri);
+	return (LilvPlugin*)lilv_collection_get_by_uri((ZixTree*)list, uri);
 }
 
 /* Nodes */
@@ -166,13 +166,13 @@ prefix##_get(const CT* collection, LilvIter* i) { \
 LILV_API \
 LilvIter* \
 prefix##_next(const CT* collection, LilvIter* i) { \
-	return zix_tree_iter_next(i); \
+	return zix_tree_iter_next((ZixTreeIter*)i); \
 } \
 \
 LILV_API \
 bool \
 prefix##_is_end(const CT* collection, LilvIter* i) { \
-	return zix_tree_iter_is_end(i); \
+	return zix_tree_iter_is_end((ZixTreeIter*)i); \
 }
 
 LILV_COLLECTION_IMPL(lilv_plugin_classes, LilvPluginClasses, LilvPluginClass)

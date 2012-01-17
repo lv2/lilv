@@ -30,7 +30,7 @@ lilv_ui_new(LilvWorld* world,
 	assert(type_uri);
 	assert(binary_uri);
 
-	LilvUI* ui = malloc(sizeof(struct LilvUIImpl));
+	LilvUI* ui = (LilvUI*)malloc(sizeof(LilvUI));
 	ui->world      = world;
 	ui->uri        = uri;
 	ui->binary_uri = binary_uri;
@@ -43,7 +43,7 @@ lilv_ui_new(LilvWorld* world,
 	free(bundle);
 
 	ui->classes = lilv_nodes_new();
-	zix_tree_insert(ui->classes, type_uri, NULL);
+	zix_tree_insert((ZixTree*)ui->classes, type_uri, NULL);
 
 	return ui;
 }

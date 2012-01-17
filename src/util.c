@@ -22,15 +22,24 @@
 #endif
 
 #include <assert.h>
+#include <ctype.h>
 #include <errno.h>
 #include <stdarg.h>
 #include <stdlib.h>
 #include <string.h>
 
-#include <dirent.h>
+#ifdef _MSC_VER
+#    include <direct.h>
+#    include <io.h>
+#    define F_OK 0
+#    define mkdir(path, flags) _mkdir(path)
+#else
+#    include <dirent.h>
+#    include <unistd.h>
+#endif
+
 #include <sys/stat.h>
 #include <sys/types.h>
-#include <unistd.h>
 
 #include "lilv_internal.h"
 
@@ -46,7 +55,7 @@ char*
 lilv_strjoin(const char* first, ...)
 {
 	size_t  len    = strlen(first);
-	char*   result = malloc(len + 1);
+	char*   result = (char*)malloc(len + 1);
 
 	memcpy(result, first, len);
 
@@ -58,7 +67,7 @@ lilv_strjoin(const char* first, ...)
 			break;
 
 		const size_t this_len = strlen(s);
-		result = realloc(result, len + this_len + 1);
+		result = (char*)realloc(result, len + this_len + 1);
 		memcpy(result + len, s, this_len);
 		len += this_len;
 	}
@@ -73,7 +82,7 @@ char*
 lilv_strdup(const char* str)
 {
 	const size_t len = strlen(str);
-	char*        dup = malloc(len + 1);
+	char*        dup = (char*)malloc(len + 1);
 	memcpy(dup, str, len + 1);
 	return dup;
 }
@@ -97,7 +106,7 @@ lilv_get_lang(void)
 	}
 
 	const size_t env_lang_len = strlen(env_lang);
-	char* const  lang         = malloc(env_lang_len + 1);
+	char* const  lang         = (char*)malloc(env_lang_len + 1);
 	for (size_t i = 0; i < env_lang_len + 1; ++i) {
 		if (env_lang[i] == '_') {
 			lang[i] = '-';  // Convert _ to -
@@ -145,9 +154,8 @@ lilv_expand(const char* path)
 	}
 	wordfree(&p);
 #elif defined(_WIN32)
-	static const size_t len = 32767;
-	char*               ret = malloc(len);
-	ExpandEnvironmentStrings(path, ret, len);
+	char* ret = (char*)malloc(MAX_PATH);
+	ExpandEnvironmentStrings(path, ret, MAX_PATH);
 #else
 	char* ret = lilv_strdup(path);
 #endif
@@ -165,7 +173,7 @@ lilv_dirname(const char* path)
 	if (s == path) {  // Hit beginning
 		return (*s == '/') ? lilv_strdup("/") : lilv_strdup(".");
 	} else {  // Pointing to the last character of the result (inclusive)
-		char* dirname = malloc(s - path + 2);
+		char* dirname = (char*)malloc(s - path + 2);
 		memcpy(dirname, path, s - path + 1);
 		dirname[s - path + 1] = '\0';
 		return dirname;
@@ -183,7 +191,7 @@ lilv_find_free_path(
 	const char* in_path, bool (*exists)(const char*, void*), void* user_data)
 {
 	const size_t in_path_len = strlen(in_path);
-	char*        path        = malloc(in_path_len + 7);
+	char*        path        = (char*)malloc(in_path_len + 7);
 	memcpy(path, in_path, in_path_len + 1);
 
 	for (int i = 2; i < 1000000; ++i) {
@@ -213,7 +221,7 @@ lilv_copy_file(const char* src, const char* dst)
 	}
 
 	static const size_t PAGE_SIZE = 4096;
-	char*               page      = malloc(PAGE_SIZE);
+	char*               page      = (char*)malloc(PAGE_SIZE);
 	size_t              n_read    = 0;
 	while ((n_read = fread(page, 1, PAGE_SIZE, in)) > 0) {
 		if (fwrite(page, 1, n_read, out) != n_read) {
@@ -262,7 +270,7 @@ lilv_path_join(const char* a, const char* b)
 	const size_t a_len   = strlen(a);
 	const size_t b_len   = strlen(b);
 	const size_t pre_len = a_len - (lilv_is_dir_sep(a[a_len - 1]) ? 1 : 0);
-	char*        path    = calloc(1, a_len + b_len + 2);
+	char*        path    = (char*)calloc(1, a_len + b_len + 2);
 	memcpy(path, a, pre_len);
 	path[pre_len] = LILV_DIR_SEP[0];
 	memcpy(path + pre_len + 1,
@@ -328,13 +336,23 @@ lilv_get_latest_copy(const char* path)
 char*
 lilv_realpath(const char* path)
 {
+#ifdef _WIN32
+	char* out = (char*)malloc(MAX_PATH);
+	GetFullPathName(path, MAX_PATH, out, NULL);
+	return out;
+#else
 	return realpath(path, NULL);
+#endif
 }
 
 int
 lilv_symlink(const char* oldpath, const char* newpath)
 {
+#ifdef _WIN32
+	return !CreateSymbolicLink(newpath, oldpath, 0);
+#else
 	return symlink(oldpath, newpath);
+#endif
 }
 
 char*
@@ -367,7 +385,7 @@ lilv_path_relative_to(const char* path, const char* base)
 
 	// Write up references
 	const size_t suffix_len = path_len - last_shared_sep;
-	char*        rel        = calloc(1, suffix_len + (up * 3) + 1);
+	char*        rel        = (char*)calloc(1, suffix_len + (up * 3) + 1);
 	for (size_t i = 0; i < up; ++i) {
 		memcpy(rel + (i * 3), ".." LILV_DIR_SEP, 3);
 	}
@@ -400,6 +418,15 @@ lilv_dir_for_each(const char* path,
                   void*       data,
                   void (*f)(const char* path, const char* name, void* data))
 {
+#ifdef _WIN32
+	char*           pat = lilv_path_join(path, "*");
+	WIN32_FIND_DATA fd;
+	HANDLE          fh  = FindFirstFile(pat, &fd);
+	do {
+		f(path, fd.cFileName, data);
+	} while (FindNextFile(fh, &fd));
+	free(pat);
+#else
 	DIR* dir = opendir(path);
 	if (dir) {
 		struct dirent  entry;
@@ -409,6 +436,7 @@ lilv_dir_for_each(const char* path,
 		}
 		closedir(dir);
 	}
+#endif
 }
 
 int

@@ -75,14 +75,15 @@ lilv_nodes_from_stream_objects_i18n(LilvWorld* world,
 
 			if (lm == LILV_LANG_MATCH_EXACT) {
 				// Exact language match, add to results
-				zix_tree_insert(
-					values, lilv_node_new_from_node(world, value), NULL);
+				zix_tree_insert((ZixTree*)values,
+				                lilv_node_new_from_node(world, value),
+				                NULL);
 			} else if (lm == LILV_LANG_MATCH_PARTIAL) {
 				// Partial language match, save in case we find no exact
 				partial = value;
 			}
 		} else {
-			zix_tree_insert(values,
+			zix_tree_insert((ZixTree*)values,
 			                lilv_node_new_from_node(world, value),
 			                NULL);
 		}
@@ -105,7 +106,8 @@ lilv_nodes_from_stream_objects_i18n(LilvWorld* world,
 	}
 
 	if (best) {
-		zix_tree_insert(values, lilv_node_new_from_node(world, best), NULL);
+		zix_tree_insert(
+			(ZixTree*)values, lilv_node_new_from_node(world, best), NULL);
 	} else {
 		// No matches whatsoever
 		lilv_nodes_free(values);
@@ -133,7 +135,7 @@ lilv_nodes_from_stream_objects(LilvWorld* world,
 				: lilv_match_subject(stream);
 			LilvNode* node = lilv_node_new_from_node(world, value);
 			if (node) {
-				zix_tree_insert(values, node, NULL);
+				zix_tree_insert((ZixTree*)values, node, NULL);
 			}
 		}
 		lilv_match_end(stream);
