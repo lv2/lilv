@@ -17,15 +17,16 @@
 
 #define _POSIX_C_SOURCE 200112L /* for setenv */
 
-#include <unistd.h>
-#include <string.h>
+#include <assert.h>
+#include <ctype.h>
+#include <float.h>
+#include <limits.h>
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <assert.h>
+#include <string.h>
 #include <sys/stat.h>
-#include <limits.h>
-#include <float.h>
-#include <math.h>
+#include <unistd.h>
 
 #include "lilv/lilv.h"
 #include "../src/lilv_internal.h"
@@ -375,6 +376,40 @@ test_discovery(void)
 	plugins = NULL;
 
 	cleanup_uris();
+
+	return 1;
+}
+
+/*****************************************************************************/
+
+int
+test_lv2_path(void)
+{
+	char* orig_lv2_path = lilv_strdup(getenv("LV2_PATH"));
+
+	setenv("LV2_PATH", "~/.lv2:/usr/local/lib/lv2:/usr/lib/lv2", 1);
+
+	LilvWorld* world = lilv_world_new();
+	lilv_world_load_all(world);
+
+	const LilvPlugins* plugins = lilv_world_get_all_plugins(world);
+	const size_t n_plugins     = lilv_plugins_size(plugins);
+
+	lilv_world_free(world);
+
+	setenv("LV2_PATH", "$HOME/.lv2:/usr/local/lib/lv2:/usr/lib/lv2", 1);
+	world = lilv_world_new();
+	lilv_world_load_all(world);
+	plugins = lilv_world_get_all_plugins(world);
+	TEST_ASSERT(lilv_plugins_size(plugins) == n_plugins);
+	lilv_world_free(world);
+
+	if (orig_lv2_path) {
+		setenv("LV2_PATH", orig_lv2_path, 1);
+	} else {
+		unsetenv("LV2_PATH");
+	}
+	free(orig_lv2_path);
 
 	return 1;
 }
@@ -1398,6 +1433,7 @@ static struct TestCase tests[] = {
 	TEST_CASE(verify),
 	TEST_CASE(no_verify),
 	TEST_CASE(discovery),
+	TEST_CASE(lv2_path),
 	TEST_CASE(classes),
 	TEST_CASE(plugin),
 	TEST_CASE(port),

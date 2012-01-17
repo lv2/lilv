@@ -88,12 +88,6 @@ def configure(conf):
     if Options.platform == 'darwin':
         defines += ['_DARWIN_C_SOURCE']
 
-    conf.check_cc(function_name='wordexp',
-                  header_name='wordexp.h',
-                  defines=defines,
-                  define_name='HAVE_WORDEXP',
-                  mandatory=False)
-
     conf.check_cc(function_name='flock',
                   header_name='sys/file.h',
                   defines=defines,

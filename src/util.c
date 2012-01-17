@@ -14,7 +14,7 @@
   OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 */
 
-#define _POSIX_C_SOURCE 1  /* for wordexp, fileno */
+#define _POSIX_C_SOURCE 1  /* for fileno */
 #define _BSD_SOURCE     1  /* for realpath, symlink */
 
 #ifdef __APPLE__
@@ -47,10 +47,6 @@
 #    include <sys/file.h>
 #endif
 
-#ifdef HAVE_WORDEXP
-#    include <wordexp.h>
-#endif
-
 char*
 lilv_strjoin(const char* first, ...)
 {
@@ -81,6 +77,10 @@ lilv_strjoin(const char* first, ...)
 char*
 lilv_strdup(const char* str)
 {
+	if (!str) {
+		return NULL;
+	}
+
 	const size_t len = strlen(str);
 	char*        dup = (char*)malloc(len + 1);
 	memcpy(dup, str, len + 1);
@@ -130,36 +130,77 @@ lilv_get_lang(void)
 	return lang;
 }
 
+/** Append suffix to dst, update dst_len, and return the realloc'd result. */
+char*
+strappend(char* dst, size_t* dst_len, const char* suffix, size_t suffix_len)
+{
+	dst = (char*)realloc(dst, *dst_len + suffix_len + 1);
+	memcpy(dst + *dst_len, suffix, suffix_len);
+	dst[(*dst_len += suffix_len)] = '\0';
+	return dst;
+}
+
+/** Append the value of the environment variable var to dst. */
+char*
+append_var(char* dst, size_t* dst_len, const char* var)
+{
+	// Get value from environment
+	const char* val = getenv(var);
+	if (val) {  // Value found, append it
+		return strappend(dst, dst_len, val, strlen(val));
+	} else {  // No value found, append variable reference as-is
+		return strappend(strappend(dst, dst_len, "$", 1),
+		                 dst_len, var, strlen(var));
+	}
+}
+
 /** Expand variables (e.g. POSIX ~ or $FOO, Windows %FOO%) in @a path. */
 char*
 lilv_expand(const char* path)
 {
-#ifdef HAVE_WORDEXP
-	char*     ret = NULL;
-	wordexp_t p;
-	if (wordexp(path, &p, 0)) {
-		LILV_ERRORF("Error expanding path `%s'\n", path);
-		return lilv_strdup(path);
-	}
-	if (p.we_wordc == 0) {
-		/* Literal directory path (e.g. no variables or ~) */
-		ret = lilv_strdup(path);
-	} else if (p.we_wordc == 1) {
-		/* Directory path expands (e.g. contains ~ or $FOO) */
-		ret = lilv_strdup(p.we_wordv[0]);
-	} else {
-		/* Multiple expansions in a single directory path? */
-		LILV_ERRORF("Malformed path `%s'\n", path);
-		ret = lilv_strdup(path);
-	}
-	wordfree(&p);
-#elif defined(_WIN32)
+#ifdef _WIN32
 	char* ret = (char*)malloc(MAX_PATH);
 	ExpandEnvironmentStrings(path, ret, MAX_PATH);
 #else
-	char* ret = lilv_strdup(path);
+	char*  out = NULL;
+	size_t len = 0;
+
+	const char* start = path;  // Start of current chunk to copy
+	for (const char* s = path; *s;) {
+		if (*s == '$') {
+			// Hit $ (variable reference, e.g. $VAR_NAME)
+			for (const char* t = s + 1; ; ++t) {
+				if (*t == '\0' || !(isupper(*t) || *t == '_')) {
+					// Append preceding chunk
+					out = strappend(out, &len, start, s - start);
+
+					// Append variable value (or $VAR_NAME if not found)
+					char* var = (char*)calloc(t - s, 1);
+					memcpy(var, s + 1, t - s - 1);
+					append_var(out, &len, var);
+					free(var);
+
+					// Continue after variable reference
+					start = s = t;
+					break;
+				}
+			}
+		} else if (*s == '~' && (*(s + 1) == '/' || (*(s + 1) == '\0'))) {
+			// Hit ~ before slash or end of string (home directory reference)
+			out = strappend(out, &len, start, s - start);
+			append_var(out, &len, "HOME");
+			start = ++s;
+		} else {
+			++s;
+		}
+	}
+
+	if (*start) {
+		out = strappend(out, &len, start, strlen(start));
+	}
+
+	return out;
 #endif
-	return ret;
 }
 
 char*

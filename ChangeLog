@@ -7,7 +7,6 @@ lilv (UNRELEASED) unstable; urgency=low
   * Use correct URI for dcterms:replaces (for hiding old plugins):
     "http://purl.org/dc/terms/replaces"
   * Fix compilation on BSD
-  * Fix crash in wordexp when LV2_PATH is corrupt
   * Only load dynmanifest libraries once per bundle, not once per plugin
   * Fix lilv_world_find_nodes to work with wildcard subjects
   * Add lilv_plugin_get_related to get resources related to plugins that
@@ -22,6 +21,7 @@ lilv (UNRELEASED) unstable; urgency=low
     to the LV2 presets format.
   * Update old references to lv2_list (now lv2ls)
   * Support compilation as C++ under MSVC++.
+  * Remove use of wordexp.
 
  -- David Robillard <d@drobilla.net>  (UNRELEASED)
 
