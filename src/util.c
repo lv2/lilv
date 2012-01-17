@@ -170,7 +170,7 @@ lilv_expand(const char* path)
 		if (*s == '$') {
 			// Hit $ (variable reference, e.g. $VAR_NAME)
 			for (const char* t = s + 1; ; ++t) {
-				if (*t == '\0' || !(isupper(*t) || *t == '_')) {
+				if (!*t || !(isupper(*t) || isdigit(*t) || *t == '_')) {
 					// Append preceding chunk
 					out = strappend(out, &len, start, s - start);
 
@@ -185,7 +185,7 @@ lilv_expand(const char* path)
 					break;
 				}
 			}
-		} else if (*s == '~' && (*(s + 1) == '/' || (*(s + 1) == '\0'))) {
+		} else if (*s == '~' && (*(s + 1) == '/' || !*(s + 1))) {
 			// Hit ~ before slash or end of string (home directory reference)
 			out = strappend(out, &len, start, s - start);
 			append_var(out, &len, "HOME");

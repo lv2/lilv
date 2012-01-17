@@ -1421,6 +1421,16 @@ test_string(void)
 	TEST_ASSERT(!strcmp((s = lilv_path_join("/a/", "/b")), "/a/b"));
 	TEST_ASSERT(!strcmp((s = lilv_path_join("/a/", "b")), "/a/b"));
 
+	setenv("LILV_TEST_1", "test", 1);
+	char* home_foo = lilv_strjoin(getenv("HOME"), "/foo", NULL);
+	TEST_ASSERT(!strcmp((s = lilv_expand("$LILV_TEST_1")), "test"));
+	TEST_ASSERT(!strcmp((s = lilv_expand("~")), getenv("HOME")));
+	TEST_ASSERT(!strcmp((s = lilv_expand("~foo")), "~foo"));
+	TEST_ASSERT(!strcmp((s = lilv_expand("~/foo")), home_foo));
+	TEST_ASSERT(!strcmp((s = lilv_expand("$NOT_A_VAR")), "$NOT_A_VAR"));
+	free(home_foo);
+	unsetenv("LILV_TEST_1");
+
 	return 1;
 }
 
