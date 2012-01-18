@@ -1155,9 +1155,8 @@ typedef LilvNode* (*LilvGetPortValueFunc)(const char* port_symbol,
    If supported (via state:makePath passed to LV2_Descriptor::instantiate()),
    @c dir should be the directory where any plugin-created files are stored.
    Lilv will assume any files within this directory (recursively) are created
-   by the plugin and all other files are immutable.  This function creates a
-   new LilvState, but does not save state to disk.  To save the state
-   permanently, use lilv_state_save().
+   by the plugin and all other files are immutable.  Note that this function
+   does not save the state, use lilv_state_save() for that.
 
    See <a href="http://lv2plug.in/ns/ext/state/state.h">state.h</a> from the
    LV2 State extension for details on the @c flags and @c features parameters.
