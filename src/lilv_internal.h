@@ -46,7 +46,7 @@ static inline char* dlerror(void) { return "Unknown error"; }
 
 #include "zix/tree.h"
 
-#include "lilv-config.h"
+#include "lilv_config.h"
 #include "lilv/lilv.h"
 
 #ifdef LILV_DYN_MANIFEST

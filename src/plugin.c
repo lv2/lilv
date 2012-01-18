@@ -21,7 +21,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "lilv-config.h"
+#include "lilv_config.h"
 #include "lilv_internal.h"
 
 #define NS_UI   (const uint8_t*)"http://lv2plug.in/ns/extensions/ui#"

@@ -22,7 +22,7 @@
 
 #include "lilv/lilv.h"
 
-#include "lilv-config.h"
+#include "lilv_config.h"
 
 #ifdef _MSC_VER
 #    define isnan _isnan

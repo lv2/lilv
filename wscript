@@ -153,7 +153,7 @@ def configure(conf):
 
     conf.env['LIB_LILV'] = ['lilv-%s' % LILV_MAJOR_VERSION]
 
-    conf.write_config_header('lilv-config.h', remove=False)
+    conf.write_config_header('lilv_config.h', remove=False)
 
     autowaf.display_msg(conf, "Default LV2_PATH",
                         conf.env['LILV_DEFAULT_LV2_PATH'])

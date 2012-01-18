@@ -18,7 +18,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "lilv-config.h"
+#include "lilv_config.h"
 #include "lilv_internal.h"
 
 #ifdef HAVE_LV2_STATE

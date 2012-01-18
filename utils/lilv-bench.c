@@ -18,7 +18,7 @@
 
 #include "lilv/lilv.h"
 
-#include "lilv-config.h"
+#include "lilv_config.h"
 
 void
 print_version(void)

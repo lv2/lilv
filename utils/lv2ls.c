@@ -19,7 +19,7 @@
 
 #include "lilv/lilv.h"
 
-#include "lilv-config.h"
+#include "lilv_config.h"
 
 void
 list_plugins(const LilvPlugins* list, bool show_names)
