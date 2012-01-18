@@ -626,7 +626,7 @@ lilv_world_load_specifications(LilvWorld* world)
 	for (LilvSpec* spec = world->specs; spec; spec = spec->next) {
 		LILV_FOREACH(nodes, f, spec->data_uris) {
 			LilvNode* file = (LilvNode*)lilv_collection_get(spec->data_uris, f);
-			
+
 			const SerdNode* node   = sord_node_to_serd_node(file->val.uri_val);
 			SerdEnv*        env    = serd_env_new(node);
 			SerdReader*     reader = sord_new_reader(world->model, env,
