@@ -203,6 +203,7 @@ abstract_path(LV2_State_Map_Path_Handle handle,
 			copy = lilv_find_free_path(real_path, lilv_path_exists, NULL);
 			lilv_copy_file(real_path, copy);
 		}
+		free(real_path);
 		real_path = copy;
 
 		// Refer to the latest copy in plugin state
@@ -852,6 +853,9 @@ lilv_state_save(LilvWorld*                 world,
 	}
 
 	// FIXME: make parameter non-const?
+	if (state->dir) {
+		free(state->dir);
+	}
 	((LilvState*)state)->dir = lilv_strdup(dir);
 
 	char* const manifest = lilv_path_join(dir, "manifest.ttl");
@@ -922,10 +926,11 @@ lilv_state_save(LilvWorld*                 world,
 	     i = zix_tree_iter_next(i)) {
 		const PathMap* pm = (const PathMap*)zix_tree_get(i);
 
-		char* real_dir    = lilv_strjoin(lilv_realpath(dir), "/", NULL);
+		char* real_dir    = lilv_realpath(dir);
+		char* base        = lilv_path_join(real_dir, NULL);
 		char* rel_path    = lilv_path_join(dir, pm->rel);
 		char* target_path = lilv_path_is_child(pm->abs, state->file_dir)
-			? lilv_path_relative_to(pm->abs, real_dir)
+			? lilv_path_relative_to(pm->abs, base)
 			: lilv_strdup(pm->abs);
 		if (lilv_symlink(target_path, rel_path)) {
 			LILV_ERRORF("Failed to link `%s' => `%s' (%s)\n",
@@ -933,6 +938,8 @@ lilv_state_save(LilvWorld*                 world,
 		}
 		free(target_path);
 		free(rel_path);
+		free(base);
+		free(real_dir);
 	}
 #endif
 
@@ -1019,6 +1026,8 @@ lilv_state_save(LilvWorld*                 world,
 
 	free(default_dir);
 	free(default_filename);
+	free(manifest);
+	free(path);
 	return 0;
 }
 

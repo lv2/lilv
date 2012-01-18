@@ -58,6 +58,8 @@ cleanup(LV2_Handle instance)
 	if (test->rec_file) {
 		fclose(test->rec_file);
 	}
+	free(test->tmp_file_path);
+	free(test->rec_file_path);
 	free(instance);
 }
 
@@ -124,7 +126,6 @@ instantiate(const LV2_Descriptor*     descriptor,
 			fprintf(stderr, "ERROR: Failed to open rec file\n");
 		}
 		fprintf(test->rec_file, "instantiate\n");
-
 	}
 		
 	return (LV2_Handle)test;
@@ -300,6 +301,8 @@ restore(LV2_Handle                  instance,
 			fprintf(stderr, "ERROR: Restored bad path `%s' != `%s'\n",
 			        real_path, plugin->tmp_file_path);
 		}
+		free(real_path);
+		free(path);
 	}
 }
 

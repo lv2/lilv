@@ -170,7 +170,7 @@ lilv_expand(const char* path)
 		if (*s == '$') {
 			// Hit $ (variable reference, e.g. $VAR_NAME)
 			for (const char* t = s + 1; ; ++t) {
-				if (!*t || !isupper(*t) || !isdigit(*t) || *t != '_') {
+				if (!*t || (!isupper(*t) && !isdigit(*t) && *t != '_')) {
 					// Append preceding chunk
 					out = strappend(out, &len, start, s - start);
 
@@ -309,14 +309,16 @@ char*
 lilv_path_join(const char* a, const char* b)
 {
 	const size_t a_len   = strlen(a);
-	const size_t b_len   = strlen(b);
+	const size_t b_len   = b ? strlen(b) : 0;
 	const size_t pre_len = a_len - (lilv_is_dir_sep(a[a_len - 1]) ? 1 : 0);
 	char*        path    = (char*)calloc(1, a_len + b_len + 2);
 	memcpy(path, a, pre_len);
 	path[pre_len] = LILV_DIR_SEP[0];
-	memcpy(path + pre_len + 1,
-	       b + (lilv_is_dir_sep(b[0]) ? 1 : 0),
-	       lilv_is_dir_sep(b[0]) ? b_len - 1 : b_len);
+	if (b) {
+		memcpy(path + pre_len + 1,
+		       b + (lilv_is_dir_sep(b[0]) ? 1 : 0),
+		       lilv_is_dir_sep(b[0]) ? b_len - 1 : b_len);
+	}
 	return path;
 }
 
@@ -371,6 +373,7 @@ lilv_get_latest_copy(const char* path)
 	lilv_dir_for_each(dirname, &latest, update_latest);
 
 	free(latest.pattern);
+	free(dirname);
 	return latest.latest;
 }
 

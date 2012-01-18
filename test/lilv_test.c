@@ -1116,7 +1116,7 @@ char*
 lilv_make_path(LV2_State_Make_Path_Handle handle,
                const char*                path)
 {
-	return lilv_strjoin(file_dir, "/", path, NULL);
+	return lilv_path_join(file_dir, path);
 }
 
 int
@@ -1319,6 +1319,9 @@ test_state(void)
 	lilv_state_free(fstate3);
 	lilv_state_free(fstate4);
 	lilv_state_free(fstate5);
+	lilv_state_free(fstate6);
+	lilv_state_free(fstate7);
+	lilv_state_free(fstate72);
 
 	// Free URI map
 	for (size_t i = 0; i < n_uris; ++i) {
@@ -1404,30 +1407,31 @@ test_string(void)
 {
 	char* s = NULL;
 
-	TEST_ASSERT(!strcmp((s = lilv_dirname("/foo/bar")), "/foo"));
-	TEST_ASSERT(!strcmp((s = lilv_dirname("/foo/bar/")), "/foo"));
-	TEST_ASSERT(!strcmp((s = lilv_dirname("/foo///bar/")), "/foo"));
-	TEST_ASSERT(!strcmp((s = lilv_dirname("/foo///bar//")), "/foo"));
-	TEST_ASSERT(!strcmp((s = lilv_dirname("foo")), "."));
-	TEST_ASSERT(!strcmp((s = lilv_dirname("/foo")), "/"));
-	TEST_ASSERT(!strcmp((s = lilv_dirname("/")), "/"));
-	TEST_ASSERT(!strcmp((s = lilv_dirname("//")), "/"));
-	TEST_ASSERT(!strcmp((s = lilv_path_relative_to("/a/b", "/a/")), "b"));
-	TEST_ASSERT(!strcmp((s = lilv_path_relative_to("/a", "/b/c/")), "/a"));
-	TEST_ASSERT(!strcmp((s = lilv_path_relative_to("/a/b/c", "/a/b/d/")), "../c"));
-	TEST_ASSERT(!strcmp((s = lilv_path_relative_to("/a/b/c", "/a/b/d/e/")), "../../c"));
-	TEST_ASSERT(!strcmp((s = lilv_path_join("/a", "b")), "/a/b"));
-	TEST_ASSERT(!strcmp((s = lilv_path_join("/a", "/b")), "/a/b"));
-	TEST_ASSERT(!strcmp((s = lilv_path_join("/a/", "/b")), "/a/b"));
-	TEST_ASSERT(!strcmp((s = lilv_path_join("/a/", "b")), "/a/b"));
+	TEST_ASSERT(!strcmp((s = lilv_dirname("/foo/bar")), "/foo")); free(s);
+	TEST_ASSERT(!strcmp((s = lilv_dirname("/foo/bar/")), "/foo")); free(s);
+	TEST_ASSERT(!strcmp((s = lilv_dirname("/foo///bar/")), "/foo")); free(s);
+	TEST_ASSERT(!strcmp((s = lilv_dirname("/foo///bar//")), "/foo")); free(s);
+	TEST_ASSERT(!strcmp((s = lilv_dirname("foo")), ".")); free(s);
+	TEST_ASSERT(!strcmp((s = lilv_dirname("/foo")), "/")); free(s);
+	TEST_ASSERT(!strcmp((s = lilv_dirname("/")), "/")); free(s);
+	TEST_ASSERT(!strcmp((s = lilv_dirname("//")), "/")); free(s);
+	TEST_ASSERT(!strcmp((s = lilv_path_relative_to("/a/b", "/a/")), "b")); free(s);
+	TEST_ASSERT(!strcmp((s = lilv_path_relative_to("/a", "/b/c/")), "/a")); free(s);
+	TEST_ASSERT(!strcmp((s = lilv_path_relative_to("/a/b/c", "/a/b/d/")), "../c")); free(s);
+	TEST_ASSERT(!strcmp((s = lilv_path_relative_to("/a/b/c", "/a/b/d/e/")), "../../c")); free(s);
+	TEST_ASSERT(!strcmp((s = lilv_path_join("/a", "b")), "/a/b")); free(s);
+	TEST_ASSERT(!strcmp((s = lilv_path_join("/a", "/b")), "/a/b")); free(s);
+	TEST_ASSERT(!strcmp((s = lilv_path_join("/a/", "/b")), "/a/b")); free(s);
+	TEST_ASSERT(!strcmp((s = lilv_path_join("/a/", "b")), "/a/b")); free(s);
+	TEST_ASSERT(!strcmp((s = lilv_path_join("/a", NULL)), "/a/")); free(s);
 
 	setenv("LILV_TEST_1", "test", 1);
 	char* home_foo = lilv_strjoin(getenv("HOME"), "/foo", NULL);
-	TEST_ASSERT(!strcmp((s = lilv_expand("$LILV_TEST_1")), "test"));
-	TEST_ASSERT(!strcmp((s = lilv_expand("~")), getenv("HOME")));
-	TEST_ASSERT(!strcmp((s = lilv_expand("~foo")), "~foo"));
-	TEST_ASSERT(!strcmp((s = lilv_expand("~/foo")), home_foo));
-	TEST_ASSERT(!strcmp((s = lilv_expand("$NOT_A_VAR")), "$NOT_A_VAR"));
+	TEST_ASSERT(!strcmp((s = lilv_expand("$LILV_TEST_1")), "test")); free(s);
+	TEST_ASSERT(!strcmp((s = lilv_expand("~")), getenv("HOME"))); free(s);
+	TEST_ASSERT(!strcmp((s = lilv_expand("~foo")), "~foo")); free(s);
+	TEST_ASSERT(!strcmp((s = lilv_expand("~/foo")), home_foo)); free(s);
+	TEST_ASSERT(!strcmp((s = lilv_expand("$NOT_A_VAR")), "$NOT_A_VAR")); free(s);
 	free(home_foo);
 	unsetenv("LILV_TEST_1");
 
