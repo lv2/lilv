@@ -177,7 +177,7 @@ lilv_expand(const char* path)
 					// Append variable value (or $VAR_NAME if not found)
 					char* var = (char*)calloc(t - s, 1);
 					memcpy(var, s + 1, t - s - 1);
-					append_var(out, &len, var);
+					out = append_var(out, &len, var);
 					free(var);
 
 					// Continue after variable reference
@@ -188,7 +188,7 @@ lilv_expand(const char* path)
 		} else if (*s == '~' && (*(s + 1) == '/' || !*(s + 1))) {
 			// Hit ~ before slash or end of string (home directory reference)
 			out = strappend(out, &len, start, s - start);
-			append_var(out, &len, "HOME");
+			out = append_var(out, &len, "HOME");
 			start = ++s;
 		} else {
 			++s;
