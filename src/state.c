@@ -52,7 +52,9 @@ typedef struct {
 struct LilvStateImpl {
 	LilvNode*  plugin_uri;
 	char*      dir;       ///< Save directory (if saved)
-	char*      file_dir;  ///< Directory of files created by plugin
+	char*      file_dir;
+	char*      copy_dir;
+	char*      link_dir;
 	char*      label;
 	ZixTree*   abs2rel;  ///< PathMap sorted by abs
 	ZixTree*   rel2abs;  ///< PathMap sorted by rel
@@ -101,12 +103,15 @@ append_port_value(LilvState*  state,
                   const char* port_symbol,
                   LilvNode*   value)
 {
-	state->values = (PortValue*)realloc(
-		state->values, (++state->num_values) * sizeof(PortValue));
-	PortValue* pv = &state->values[state->num_values - 1];
-	pv->symbol = lilv_strdup(port_symbol);
-	pv->value  = value;
-	return pv;
+	if (value) {
+		state->values = (PortValue*)realloc(
+			state->values, (++state->num_values) * sizeof(PortValue));
+		PortValue* pv = &state->values[state->num_values - 1];
+		pv->symbol = lilv_strdup(port_symbol);
+		pv->value  = value;
+		return pv;
+	}
+	return NULL;
 }
 
 static const char*
@@ -180,34 +185,57 @@ lilv_state_has_path(const char* path, void* state)
 }
 
 static char*
+make_path(LV2_State_Make_Path_Handle handle,
+          const char*                path)
+{
+	LilvState* state = (LilvState*)handle;
+	if (!lilv_path_exists(state->dir, NULL)) {
+		lilv_mkdir_p(state->dir);
+	}
+
+	return lilv_path_join(state->dir, path);
+}
+
+static char*
 abstract_path(LV2_State_Map_Path_Handle handle,
               const char*               absolute_path)
 {
-	LilvState*    state        = (LilvState*)handle;
-	const size_t  file_dir_len = state->file_dir ? strlen(state->file_dir) : 0;
-	char*         path         = NULL;
-	char*         real_path    = lilv_realpath(absolute_path);
-	const PathMap key          = { (char*)real_path, NULL };
-	ZixTreeIter*  iter         = NULL;
+	LilvState*    state     = (LilvState*)handle;
+	char*         path      = NULL;
+	char*         real_path = lilv_realpath(absolute_path);
+	const PathMap key       = { (char*)real_path, NULL };
+	ZixTreeIter*  iter      = NULL;
 
-	if (!zix_tree_find(state->abs2rel, &key, &iter)) {
+	if (absolute_path[0] == '\0') {
+		return lilv_strdup(absolute_path);
+	} else if (!zix_tree_find(state->abs2rel, &key, &iter)) {
 		// Already mapped path in a previous call
 		PathMap* pm = (PathMap*)zix_tree_get(iter);
 		free(real_path);
 		return lilv_strdup(pm->rel);
-	} else if (lilv_path_is_child(real_path, state->file_dir)) {
-		// File created by plugin
-		char* copy = lilv_get_latest_copy(real_path);
-		if (!copy) {
-			// No recent enough copy, make a new one
-			copy = lilv_find_free_path(real_path, lilv_path_exists, NULL);
-			lilv_copy_file(real_path, copy);
-		}
-		free(real_path);
-		real_path = copy;
+	} else if (lilv_path_is_child(absolute_path, state->dir)) {
+		// File in state directory (loaded, or created by plugin during save
+		path = lilv_path_relative_to(absolute_path, state->dir);
+	} else if (lilv_path_is_child(absolute_path, state->file_dir)) {
+		// File created by plugin earlier
+		path = lilv_path_relative_to(absolute_path, state->file_dir);
+		if (state->copy_dir) {
+			if (!lilv_path_exists(state->copy_dir, NULL)) {
+				lilv_mkdir_p(state->copy_dir);
+			}
+			char* cpath = lilv_path_join(state->copy_dir, path);
+			char* copy  = lilv_get_latest_copy(absolute_path, cpath);
+			if (!copy || !lilv_file_equals(real_path, copy)) {
+				// No recent enough copy, make a new one
+				copy = lilv_find_free_path(cpath, lilv_path_exists, NULL);
+				lilv_copy_file(absolute_path, copy);
+			}
+			free(real_path);
+			free(cpath);
 
-		// Refer to the latest copy in plugin state
-		path = lilv_strdup(copy + file_dir_len + 1);
+			// Refer to the latest copy in plugin state
+			real_path = copy;
+		}
 	} else {
 		// New path outside state directory
 		const char* slash = strrchr(real_path, '/');
@@ -236,9 +264,12 @@ absolute_path(LV2_State_Map_Path_Handle handle,
 	if (lilv_path_is_absolute(abstract_path)) {
 		// Absolute path, return identical path
 		path = lilv_strdup(abstract_path);
-	} else {
+	} else if (state->dir) {
 		// Relative path inside state directory
 		path = lilv_path_join(state->dir, abstract_path);
+	} else {
+		// State has not been saved, unmap
+		path = lilv_strdup(lilv_state_rel2abs(state, abstract_path));
 	}
 
 	return path;
@@ -248,20 +279,42 @@ absolute_path(LV2_State_Map_Path_Handle handle,
 
 /** Return a new features array which is @c feature added to @c features. */
 const LV2_Feature**
-add_feature(const LV2_Feature *const * features, const LV2_Feature* feature)
+add_features(const LV2_Feature *const * features,
+             const LV2_Feature* map, const LV2_Feature* make)
 {
 	size_t n_features = 0;
 	for (; features && features[n_features]; ++n_features) {}
 
 	const LV2_Feature** ret = (const LV2_Feature**)malloc(
-		(n_features + 2) * sizeof(LV2_Feature*));
+		(n_features + 3) * sizeof(LV2_Feature*));
 
-	ret[0] = feature;
 	if (features) {
-		memcpy(ret + 1, features, n_features * sizeof(LV2_Feature*));
+		memcpy(ret, features, n_features * sizeof(LV2_Feature*));
 	}
-	ret[n_features + 1] = NULL;
+
+	for (size_t i = 0; i < n_features; ++i) {
+		if (map && !strcmp(ret[i]->URI, map->URI)) {
+			ret[i] = map;
+			map = NULL;
+		} else if (make && !strcmp(ret[i]->URI, make->URI)) {
+			ret[i] = make;
+			make = NULL;
+		}
+	}
+
+	ret[n_features]     = map;
+	ret[n_features + 1] = make;
+	ret[n_features + 2] = NULL;
 	return ret;
+}
+
+static char*
+absolute_dir(const char* path, bool resolve)
+{
+	char* abs_path = resolve ? lilv_realpath(path) : lilv_path_absolute(path);
+	char* base     = lilv_path_join(abs_path, NULL);
+	free(abs_path);
+	return base;
 }
 
 LILV_API
@@ -269,28 +322,35 @@ LilvState*
 lilv_state_new_from_instance(const LilvPlugin*          plugin,
                              LilvInstance*              instance,
                              LV2_URID_Map*              map,
-                             const char*                dir,
+                             const char*                file_dir,
+                             const char*                copy_dir,
+                             const char*                link_dir,
+                             const char*                save_dir,
                              LilvGetPortValueFunc       get_value,
                              void*                      user_data,
                              uint32_t                   flags,
                              const LV2_Feature *const * features)
 {
-	const LV2_Feature** local_features = NULL;
-	LilvWorld* const    world          = plugin->world;
-	LilvState* const    state          = (LilvState*)malloc(sizeof(LilvState));
+	const LV2_Feature** sfeatures = NULL;
+	LilvWorld* const    world     = plugin->world;
+	LilvState* const    state     = (LilvState*)malloc(sizeof(LilvState));
 	memset(state, '\0', sizeof(LilvState));
 	state->plugin_uri = lilv_node_duplicate(lilv_plugin_get_uri(plugin));
 	state->abs2rel    = zix_tree_new(false, abs_cmp, NULL, path_rel_free);
 	state->rel2abs    = zix_tree_new(false, rel_cmp, NULL, NULL);
-	state->file_dir   = dir ? lilv_realpath(dir) : NULL;
+	state->file_dir   = file_dir ? absolute_dir(file_dir, false) : NULL;
+	state->copy_dir   = copy_dir ? absolute_dir(copy_dir, false) : NULL;
+	state->link_dir   = link_dir ? absolute_dir(link_dir, false) : NULL;
+	state->dir        = save_dir ? absolute_dir(save_dir, false) : NULL;
 
 #ifdef HAVE_LV2_STATE
 	state->state_Path = map->map(map->handle, LV2_STATE_PATH_URI);
-	if (dir) {
-		LV2_State_Map_Path map_path = { state, abstract_path, absolute_path };
-		LV2_Feature        feature  = { LV2_STATE_MAP_PATH_URI, &map_path };
-		features = local_features = add_feature(features, &feature);
-	}
+	LV2_State_Map_Path  pmap          = { state, abstract_path, absolute_path };
+	LV2_Feature         pmap_feature  = { LV2_STATE_MAP_PATH_URI, &pmap };
+	LV2_State_Make_Path pmake         = { state, make_path };
+	LV2_Feature         pmake_feature = { LV2_STATE_MAKE_PATH_URI, &pmake };
+	features = sfeatures = add_features(features, &pmap_feature,
+	                                    save_dir ? &pmake_feature : NULL);
 #endif
 
 	// Store port values
@@ -323,7 +383,7 @@ lilv_state_new_from_instance(const LilvPlugin*          plugin,
 	qsort(state->props, state->num_props, sizeof(Property), property_cmp);
 	qsort(state->values, state->num_values, sizeof(PortValue), value_cmp);
 
-	free(local_features);
+	free(sfeatures);
 	return state;
 }
 
@@ -337,14 +397,12 @@ lilv_state_restore(const LilvState*           state,
                    const LV2_Feature *const * features)
 {
 #ifdef HAVE_LV2_STATE
-	LV2_State_Map_Path map_path = { (LilvState*)state,
-	                                abstract_path,
-	                                absolute_path };
+	LV2_State_Map_Path map_path = {
+		(LilvState*)state, abstract_path, absolute_path };
+	LV2_Feature map_feature = { LV2_STATE_MAP_PATH_URI, &map_path };
 
-	LV2_Feature feature = { LV2_STATE_MAP_PATH_URI, &map_path };
-
-	const LV2_Feature** local_features = add_feature(features, &feature);
-	features = local_features;
+	const LV2_Feature** sfeatures = add_features(features, &map_feature, NULL);
+	features = sfeatures;
 
 	const LV2_Descriptor*      descriptor = instance->lv2_descriptor;
 	const LV2_State_Interface* iface      = (descriptor->extension_data)
@@ -356,7 +414,7 @@ lilv_state_restore(const LilvState*           state,
 		               (LV2_State_Handle)state, flags, features);
 	}
 
-	free(local_features);
+	free(sfeatures);
 
 #endif  // HAVE_LV2_STATE
 
@@ -785,35 +843,17 @@ add_state_to_manifest(const LilvNode* plugin_uri,
 	return 0;
 }
 
-static char*
-pathify(const char* in)
+static bool
+link_exists(const char* path, void* data)
 {
-	const size_t in_len = strlen(in);
-
-	char* out = (char*)calloc(in_len + 1, 1);
-	for (size_t i = 0; i < in_len; ++i) {
-		char c = in[i];
-		if (!((c >= 'a' && c <= 'z')
-		      || (c >= 'A' && c <= 'Z')
-		      || (c >= '0' && c <= '9'))) {
-			c = '-';
-		}
-		out[i] = c;
+	const char* target = (const char*)data;
+	if (!lilv_path_exists(path, NULL)) {
+		return false;
 	}
-	return out;
-}
-
-static char*
-lilv_default_state_dir(LilvWorld* world)
-{
-	// Use environment variable or default value if it is unset
-	char* state_bundle = getenv("LV2_STATE_BUNDLE");
-	if (!state_bundle) {
-		state_bundle = LILV_DEFAULT_STATE_BUNDLE;
-	}
-
-	// Expand any variables and create if necessary
-	return lilv_expand(state_bundle);
+	char* real_path = lilv_realpath(path);
+	bool  matches   = !strcmp(real_path, target);
+	free(real_path);
+	return !matches;
 }
 
 LILV_API
@@ -826,37 +866,27 @@ lilv_state_save(LilvWorld*                 world,
                 const char*                filename,
                 const LV2_Feature *const * features)
 {
-	char* default_dir      = NULL;
-	char* default_filename = NULL;
-	if (!dir) {
-		dir = default_dir = lilv_default_state_dir(world);
-	}
-	if (lilv_mkdir_p(dir)) {
-		free(default_dir);
+	if (!filename || !dir || lilv_mkdir_p(dir)) {
 		return 1;
 	}
 
-	if (!filename) {
-		char* gen_name = pathify(state->label);
-		filename = default_filename = lilv_strjoin(gen_name, ".ttl", NULL);
-		free(gen_name);
-	}
+	char* abs_dir = absolute_dir(dir, true);
+	dir = abs_dir;
 
 	char* const path = lilv_path_join(dir, filename);
 	FILE*       fd   = fopen(path, "w");
 	if (!fd) {
 		LILV_ERRORF("Failed to open %s (%s)\n", path, strerror(errno));
-		free(default_dir);
-		free(default_filename);
+		free(abs_dir);
 		free(path);
 		return 4;
 	}
 
 	// FIXME: make parameter non-const?
-	if (state->dir) {
+	if (state->dir && strcmp(state->dir, dir)) {
 		free(state->dir);
+		((LilvState*)state)->dir = lilv_strdup(dir);
 	}
-	((LilvState*)state)->dir = lilv_strdup(dir);
 
 	char* const manifest = lilv_path_join(dir, "manifest.ttl");
 
@@ -919,27 +949,43 @@ lilv_state_save(LilvWorld*                 world,
 		serd_writer_end_anon(writer, &port);
 	}
 
-	// Create symlinks to external files
+	// Create symlinks to files
 #ifdef HAVE_LV2_STATE
 	for (ZixTreeIter* i = zix_tree_begin(state->abs2rel);
 	     i != zix_tree_end(state->abs2rel);
 	     i = zix_tree_iter_next(i)) {
 		const PathMap* pm = (const PathMap*)zix_tree_get(i);
 
-		char* real_dir    = lilv_realpath(dir);
-		char* base        = lilv_path_join(real_dir, NULL);
-		char* rel_path    = lilv_path_join(dir, pm->rel);
-		char* target_path = lilv_path_is_child(pm->abs, state->file_dir)
-			? lilv_path_relative_to(pm->abs, base)
-			: lilv_strdup(pm->abs);
-		if (lilv_symlink(target_path, rel_path)) {
-			LILV_ERRORF("Failed to link `%s' => `%s' (%s)\n",
-			            pm->abs, pm->rel, strerror(errno));
+		char* path = lilv_path_join(abs_dir, pm->rel);
+		if (lilv_path_is_child(pm->abs, state->copy_dir)
+		    && strcmp(state->copy_dir, dir)) {
+			// Link directly to snapshot in the copy directory
+			char* target = lilv_path_relative_to(pm->abs, dir);
+			lilv_symlink(target, path);
+			free(target);
+		} else if (!lilv_path_is_child(pm->abs, dir)) {
+			const char* link_dir = state->link_dir ? state->link_dir : dir;
+			char*       pat      = lilv_path_join(link_dir, pm->rel);
+			if (!strcmp(dir, link_dir)) {
+				// Link directory is save directory, make link at exact path
+				remove(pat);
+				lilv_symlink(pm->abs, pat);
+			} else {
+				// Make a link in the link directory to external file
+				char* lpath = lilv_find_free_path(pat, link_exists, pm->abs);
+				if (!lilv_path_exists(lpath, NULL)) {
+					lilv_symlink(pm->abs, lpath);
+				}
+
+				// Make a link in the save directory to the external link
+				char* target = lilv_path_relative_to(lpath, dir);
+				lilv_symlink(target, path);
+				free(target);
+				free(lpath);
+			}
+			free(pat);
 		}
-		free(target_path);
-		free(rel_path);
-		free(base);
-		free(real_dir);
+		free(path);
 	}
 #endif
 
@@ -1024,8 +1070,7 @@ lilv_state_save(LilvWorld*                 world,
 		add_state_to_manifest(state->plugin_uri, manifest, uri, path);
 	}
 
-	free(default_dir);
-	free(default_filename);
+	free(abs_dir);
 	free(manifest);
 	free(path);
 	return 0;
@@ -1088,14 +1133,8 @@ lilv_state_equals(const LilvState* a, const LilvState* b)
 		}
 
 		if (ap->type == a->state_Path) {
-			const char* const a_abs  = lilv_state_rel2abs(a, (char*)ap->value);
-			const char* const b_abs  = lilv_state_rel2abs(b, (char*)bp->value);
-			char* const       a_real = lilv_realpath(a_abs);
-			char* const       b_real = lilv_realpath(b_abs);
-			const int         cmp    = strcmp(a_real, b_real);
-			free(a_real);
-			free(b_real);
-			if (cmp) {
+			if (!lilv_file_equals(lilv_state_rel2abs(a, (char*)ap->value),
+			                      lilv_state_rel2abs(b, (char*)bp->value))) {
 				return false;
 			}
 		} else if (ap->size != bp->size

@@ -228,8 +228,8 @@ lilv_path_exists(const char* path, void* ignored)
 }
 
 char*
-lilv_find_free_path(
-	const char* in_path, bool (*exists)(const char*, void*), void* user_data)
+lilv_find_free_path(const char* in_path,
+                    bool (*exists)(const char*, void*), void* user_data)
 {
 	const size_t in_path_len = strlen(in_path);
 	char*        path        = (char*)malloc(in_path_len + 7);
@@ -239,7 +239,7 @@ lilv_find_free_path(
 		if (!exists(path, user_data)) {
 			return path;
 		}
-		snprintf(path, in_path_len + 7, "%s%u", in_path, i);
+		snprintf(path, in_path_len + 7, "%s.%u", in_path, i);
 	}
 
 	return NULL;
@@ -306,8 +306,25 @@ lilv_path_is_absolute(const char* path)
 }
 
 char*
+lilv_path_absolute(const char* path)
+{
+	if (lilv_path_is_absolute(path)) {
+		return lilv_strdup(path);
+	} else {
+		char* cwd      = getcwd(NULL, 0);
+		char* abs_path = lilv_path_join(cwd, path);
+		free(cwd);
+		return abs_path;
+	}
+}
+
+char*
 lilv_path_join(const char* a, const char* b)
 {
+	if (!a) {
+		return lilv_strdup(b);
+	}
+
 	const size_t a_len   = strlen(a);
 	const size_t b_len   = b ? strlen(b) : 0;
 	const size_t pre_len = a_len - (lilv_is_dir_sep(a[a_len - 1]) ? 1 : 0);
@@ -331,8 +348,12 @@ lilv_size_mtime(const char* path, off_t* size, time_t* time)
 		*size = *time = 0;
 	}
 
-	*size = buf.st_size;
-	*time = buf.st_mtime;
+	if (size) {
+		*size = buf.st_size;
+	}
+	if (time) {
+		*time = buf.st_mtime;
+	}
 }
 
 typedef struct {
@@ -346,7 +367,7 @@ static void
 update_latest(const char* path, const char* name, void* data)
 {
 	Latest* latest     = (Latest*)data;
-	char*   entry_path = lilv_strjoin(path, "/", name, NULL);
+	char*   entry_path = lilv_path_join(path, name);
 	unsigned num;
 	if (sscanf(entry_path, latest->pattern, &num) == 1) {
 		off_t  entry_size;
@@ -364,16 +385,16 @@ update_latest(const char* path, const char* name, void* data)
 
 /** Return the latest copy of the file at @c path that is newer. */
 char*
-lilv_get_latest_copy(const char* path)
+lilv_get_latest_copy(const char* path, const char* copy_path)
 {
-	char*  dirname = lilv_dirname(path);
-	Latest latest  = { lilv_strjoin(path, "%u", NULL), 0, 0, NULL };
+	char*  copy_dir = lilv_dirname(copy_path);
+	Latest latest   = { lilv_strjoin(copy_path, "%u", NULL), 0, 0, NULL };
 	lilv_size_mtime(path, &latest.orig_size, &latest.time);
 
-	lilv_dir_for_each(dirname, &latest, update_latest);
+	lilv_dir_for_each(copy_dir, &latest, update_latest);
 
 	free(latest.pattern);
-	free(dirname);
+	free(copy_dir);
 	return latest.latest;
 }
 
@@ -392,11 +413,19 @@ lilv_realpath(const char* path)
 int
 lilv_symlink(const char* oldpath, const char* newpath)
 {
+	int ret = 0;
+	if (strcmp(oldpath, newpath)) {
 #ifdef _WIN32
-	return !CreateSymbolicLink(newpath, oldpath, 0);
+		ret = !CreateSymbolicLink(newpath, oldpath, 0);
 #else
-	return symlink(oldpath, newpath);
+		ret = symlink(oldpath, newpath);
 #endif
+	}
+	if (ret) {
+		LILV_ERRORF("Failed to link %s => %s (%s)\n",
+		            newpath, oldpath, strerror(errno));
+	}
+	return ret;
 }
 
 char*
@@ -442,9 +471,12 @@ lilv_path_relative_to(const char* path, const char* base)
 bool
 lilv_path_is_child(const char* path, const char* dir)
 {
-	const size_t path_len = strlen(path);
-	const size_t dir_len  = strlen(dir);
-	return dir && path_len >= dir_len && !strncmp(path, dir, dir_len);
+	if (path && dir) {
+		const size_t path_len = strlen(path);
+		const size_t dir_len  = strlen(dir);
+		return dir && path_len >= dir_len && !strncmp(path, dir, dir_len);
+	}
+	return false;
 }
 
 int
@@ -503,4 +535,55 @@ lilv_mkdir_p(const char* dir_path)
 
 	free(path);
 	return 0;
+}
+
+bool
+lilv_file_equals(const char* a_path, const char* b_path)
+{
+	if (!strcmp(a_path, b_path)) {
+		return true;  // Paths match
+	}
+
+	char* const a_real = lilv_realpath(a_path);
+	char* const b_real = lilv_realpath(b_path);
+	if (!a_real || !b_real) {
+		return false;  // Missing file matches nothing
+	}
+		
+	if (!strcmp(a_real, b_real)) {
+		return true;  // Real paths match
+	}
+
+	off_t a_size;
+	off_t b_size;
+	lilv_size_mtime(a_path, &a_size, NULL);
+	lilv_size_mtime(b_path, &b_size, NULL);
+	if (a_size != b_size) {
+		return false;  // Sizes differ
+	}
+
+	FILE* a_file = fopen(a_real, "rb");
+	if (!a_file) {
+		return false;  // Missing file matches nothing
+	}
+
+	FILE* b_file = fopen(b_real, "rb");
+	if (!b_file) {
+		fclose(a_file);
+		return false;  // Missing file matches nothing
+	}
+
+	bool match = true;
+
+	// TODO: Improve performance by reading chunks
+	while (!feof(a_file) && !feof(b_file)) {
+		if (fgetc(a_file) != fgetc(b_file)) {
+			match = false;
+			break;
+		}
+	}
+
+	fclose(a_file);
+	fclose(b_file);
+	return match;
 }

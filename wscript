@@ -46,9 +46,6 @@ def options(opt):
     opt.add_option('--default-lv2-path', type='string', default='',
                    dest='default_lv2_path',
                    help="Default LV2 path to use if $LV2_PATH is unset (globs and ~ supported)")
-    opt.add_option('--default-state-bundle', type='string', default='',
-                   dest='default_state_bundle',
-                   help="Default path to use for user-writable state/preset bundle")
     opt.add_option('--static', action='store_true', default=False, dest='static',
                    help="Build static library")
 
@@ -135,17 +132,6 @@ def configure(conf):
                                            '/usr/local/%s/lv2' % libdirname])
     autowaf.define(conf, 'LILV_DEFAULT_LV2_PATH', lv2_path)
 
-    # Set default state bundle
-    state_bundle = Options.options.default_state_bundle
-    if state_bundle == '':
-        if Options.platform == 'darwin':
-            state_bundle = '~/Library/Audio/Plug-Ins/LV2/presets.lv2'
-        elif Options.platform == 'win32':
-            state_bundle = '%APPDATA%\\\\LV2\\\\presets.lv2'
-        else:
-            state_bundle = '~/.lv2/presets.lv2'
-    autowaf.define(conf, 'LILV_DEFAULT_STATE_BUNDLE', state_bundle)
-
     conf.env['BUILD_TESTS']     = Options.options.build_tests
     conf.env['BUILD_UTILS']     = not Options.options.no_utils
     conf.env['BUILD_STATIC']    = Options.options.static
@@ -157,8 +143,6 @@ def configure(conf):
 
     autowaf.display_msg(conf, "Default LV2_PATH",
                         conf.env['LILV_DEFAULT_LV2_PATH'])
-    autowaf.display_msg(conf, "Default state/preset bundle",
-                        conf.env['LILV_DEFAULT_STATE_BUNDLE'])
     autowaf.display_msg(conf, "Utilities",
                         bool(conf.env['BUILD_UTILS']))
     autowaf.display_msg(conf, "Unit tests",

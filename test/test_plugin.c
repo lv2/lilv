@@ -140,7 +140,13 @@ run(LV2_Handle instance,
 	if (sample_count == 1) {
 		++test->num_runs;
 	} else if (sample_count == 2 && test->rec_file) {
+		// Append to rec file (changes size)
 		fprintf(test->rec_file, "run\n");
+	} else if (sample_count == 3 && test->rec_file) {
+		// Change the first byte of rec file (doesn't change size)
+		fseek(test->rec_file, 0, SEEK_SET);
+		fprintf(test->rec_file, "X");
+		fseek(test->rec_file, 0, SEEK_END);
 	}
 }
 
@@ -160,13 +166,13 @@ save(LV2_Handle                instance,
 	Test* plugin = (Test*)instance;
 
 	LV2_State_Map_Path*  map_path  = NULL;
-	//LV2_State_Make_Path* make_path = NULL;
+	LV2_State_Make_Path* make_path = NULL;
 	for (int i = 0; features && features[i]; ++i) {
 		if (!strcmp(features[i]->URI, LV2_STATE_MAP_PATH_URI)) {
 			map_path = (LV2_State_Map_Path*)features[i]->data;
-		}/* else if (!strcmp(features[i]->URI, LV2_STATE_MAKE_PATH_URI)) {
+		} else if (!strcmp(features[i]->URI, LV2_STATE_MAKE_PATH_URI)) {
 			make_path = (LV2_State_Make_Path*)features[i]->data;
-			}*/
+		}
 	}
 
 	store(callback_data,
@@ -261,6 +267,22 @@ save(LV2_Handle                instance,
 
 			free(apath);
 		}
+
+		if (make_path) {
+			char* spath = make_path->path(make_path->handle, "save");
+			FILE* sfile = fopen(spath, "w");
+			fprintf(sfile, "save");
+			fclose(sfile);
+
+			apath = map_path->abstract_path(map_path->handle, spath);
+			store(callback_data,
+			      map_uri(plugin, "http://example.org/save-file"),
+			      apath,
+			      strlen(apath) + 1,
+			      map_uri(plugin, LV2_STATE_PATH_URI),
+			      LV2_STATE_IS_PORTABLE);
+			free(apath);
+		}
 	}
 }
 
@@ -289,12 +311,16 @@ restore(LV2_Handle                  instance,
 		map_uri(plugin, "http://example.org/num-runs"),
 		&size, &type, &valflags);
 
+	if (!map_path) {
+		return;
+	}
+	
 	char* apath = (char*)retrieve(
 		callback_data,
 		map_uri(plugin, "http://example.org/extfile"),
 		&size, &type, &valflags);
 
-	if (map_path && apath) {
+	if (apath) {
 		char* path      = map_path->absolute_path(map_path->handle, apath);
 		char* real_path = realpath(path, NULL);
 		if (strcmp(real_path, plugin->tmp_file_path)) {
@@ -303,6 +329,22 @@ restore(LV2_Handle                  instance,
 		}
 		free(real_path);
 		free(path);
+	}
+
+	apath = (char*)retrieve(
+		callback_data,
+		map_uri(plugin, "http://example.org/save-file"),
+		&size, &type, &valflags);
+	if (apath) {
+		char* spath = map_path->absolute_path(map_path->handle, apath);
+		FILE* sfile = fopen(spath, "r");
+		if (!sfile) {
+			fprintf(stderr, "error: Failed to open save file %s\n", spath);
+		} else {
+			fclose(sfile);
+		}
+	} else {
+		fprintf(stderr, "error: Failed to restore save file.\n");
 	}
 }
 

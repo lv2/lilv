@@ -1141,19 +1141,54 @@ typedef LilvNode* (*LilvGetPortValueFunc)(const char* port_symbol,
 
 /**
    Create a new state snapshot from a plugin instance.
+   
    @param plugin The plugin this state applies to.
+
    @param instance An instance of @c plugin.
-   @param dir Directory containing files created by plugin (or NULL).
+
+   @param file_dir Directory of files created by the plugin earlier (or NULL).
+   This is for hosts that support file creation at any time with state
+   state:makePath.  These files will be copied as necessary to @c copy_dir and
+   not be referred to directly in state (a temporary directory is appropriate).
+
+   @param copy_dir Directory of copies of files in @c file_dir (or NULL).  This
+   directory will have the same structure as @c file_dir but with possibly
+   modified file names to distinguish different revisions.  If you only care
+   about saving one state snapshot, it can be the same as @c save_dir.  Plugin
+   state will refer to files in this directory.
+
+   @param save_dir Directory of files created by plugin during save (or NULL).
+   If the state will be saved, this should be the bundle directory later passed
+   to lilv_state_save.
+
+   @param link_dir Directory of links to external files (or NULL).  A link will
+   be made in this directory to any external files referred to in plugin state.
+   In turn, links will be created in the save directory to these links (e.g.
+   save_dir/file => link_dir/file => /foo/bar/file).  This allows many state
+   snapshots to share a single link to an external file, so archival
+   (e.g. with tar -h) will not create several copies of the file.  If this is
+   not required, it can be the same as save_dir.
+
    @param flags Bitwise OR of LV2_State_Flags values.
+
    @param features Features to pass LV2_State_Interface.save().
+
    @return A new LilvState which must be freed with lilv_state_free().
 
    This function may be called simultaneously with any instance function
    (except discovery functions) unless the threading class of that function
    explicitly disallows this.
 
+   To support advanced file functionality, there are several directory
+   parameters.  Simple hosts that only wish to save a single plugins state once
+   may simply use the same directory for all of them (or pass NULL to not
+   support files at all).  The multiple parameters are necessary to support
+   saving an instances state many times while avoiding any duplication of data.
+   
    If supported (via state:makePath passed to LV2_Descriptor::instantiate()),
-   @c dir should be the directory where any plugin-created files are stored.
+   @c file_dir should be the directory where any files created by the plugin
+   (not during save time, e.g. during instantiation) are stored.  These files
+   will be copied to preserve their state at this time.plugin-created files are stored.
    Lilv will assume any files within this directory (recursively) are created
    by the plugin and all other files are immutable.  Note that this function
    does not save the state, use lilv_state_save() for that.
@@ -1166,7 +1201,10 @@ LilvState*
 lilv_state_new_from_instance(const LilvPlugin*          plugin,
                              LilvInstance*              instance,
                              LV2_URID_Map*              map,
-                             const char*                dir,
+                             const char*                file_dir,
+                             const char*                copy_dir,
+                             const char*                link_dir,
+                             const char*                save_dir,
                              LilvGetPortValueFunc       get_value,
                              void*                      user_data,
                              uint32_t                   flags,
@@ -1258,18 +1296,16 @@ lilv_state_restore(const LilvState*           state,
    @param unmap URID unmapper.
    @param state State to save.
    @param uri URI of state, may be NULL.
-   @param dir Path of the bundle directory to save into, may be NULL.
-   @param filename Filename for the state file, may be NULL.
+   @param dir Path of the bundle directory to save into.
+   @param filename Path of the state file relative to @c dir.
    @param features Host provided features.
 
    The format of state on disk is compatible with that defined in the LV2
    preset extension, i.e. this function may be used to save presets which can
-   be loaded by any host.  If @c dir is NULL, then the default user preset
-   bundle (~/.lv2/presets.lv2) is used.  If @c filename is NULL, one will be
-   generated from the state's label, so it must be set.
+   be loaded by any host.
 
-   If @c uri is NULL, the state will be saved without an absolute URI (but
-   the bundle will still work correctly as a preset bundle).
+   If @c uri is NULL, the preset URI will be a file URI, but the bundle
+   can safely be moved (i.e. the state file will use "<>" as the subject).
 */
 LILV_API
 int
