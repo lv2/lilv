@@ -456,9 +456,10 @@ lilv_world_load_dyn_manifest(LilvWorld* world,
 		rewind(fd);
 
 		// Parse generated data file
-		SerdEnv*    env    = serd_env_new(sord_node_to_serd_node(bundle_node));
-		SerdReader* reader = sord_new_reader(
-			world->model, env, SERD_TURTLE, bundle_node);
+		const SerdNode* base   = sord_node_to_serd_node(dmanifest);
+		SerdEnv*        env    = serd_env_new(base);
+		SerdReader*     reader = sord_new_reader(
+			world->model, env, SERD_TURTLE, sord_node_copy(dmanifest));
 		serd_reader_read_file_handle(reader, fd,
 		                             (const uint8_t*)"(dyn-manifest)");
 		serd_reader_free(reader);
@@ -473,7 +474,7 @@ lilv_world_load_dyn_manifest(LilvWorld* world,
 			NULL,
 			world->uris.rdf_a,
 			world->uris.lv2_Plugin,
-			bundle_node);
+			dmanifest);
 		FOREACH_MATCH(plug_results) {
 			const SordNode* plugin_node = lilv_match_subject(plug_results);
 			lilv_world_add_plugin(world, plugin_node,
