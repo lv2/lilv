@@ -135,7 +135,7 @@ def configure(conf):
                                            '/boot/common/add-ons/lv2'])
         elif Options.platform == 'win32':
             lv2_path = lilv_path_sep.join(['%APPDATA%\\\\LV2',
-                                           '%PROGRAMFILES%\\\\LV2'])
+                                           '%COMMONPROGRAMFILES%\\\\LV2'])
         else:
             libdirname = os.path.basename(conf.env['LIBDIR'])
             lv2_path = lilv_path_sep.join(['~/.lv2',
