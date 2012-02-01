@@ -136,8 +136,8 @@ store_callback(void*       handle,
                uint32_t    flags)
 {
 	LilvState* const state = (LilvState*)handle;
-	state->props = realloc(state->props,
-	                       (++state->num_props) * sizeof(Property));
+	state->props = (Property*)realloc(
+		state->props, (++state->num_props) * sizeof(Property));
 	Property* const prop = &state->props[state->num_props - 1];
 
 	if ((flags & LV2_STATE_IS_POD) || type == state->state_Path) {
@@ -246,7 +246,7 @@ abstract_path(LV2_State_Map_Path_Handle handle,
 	}
 
 	// Add record to path mapping
-	PathMap* pm = malloc(sizeof(PathMap));
+	PathMap* pm = (PathMap*)malloc(sizeof(PathMap));
 	pm->abs = real_path;
 	pm->rel = lilv_strdup(path);
 	zix_tree_insert(state->abs2rel, pm, NULL);
@@ -369,9 +369,9 @@ lilv_state_new_from_instance(const LilvPlugin*          plugin,
 
 	// Store properties
 #ifdef HAVE_LV2_STATE
-	const LV2_Descriptor*      descriptor = instance->lv2_descriptor;
-	const LV2_State_Interface* iface      = (descriptor->extension_data)
-		? descriptor->extension_data(LV2_STATE_INTERFACE_URI)
+	const LV2_Descriptor*      desc  = instance->lv2_descriptor;
+	const LV2_State_Interface* iface = (desc->extension_data)
+		? (LV2_State_Interface*)desc->extension_data(LV2_STATE_INTERFACE_URI)
 		: NULL;
 
 	if (iface) {
@@ -404,9 +404,9 @@ lilv_state_restore(const LilvState*           state,
 	const LV2_Feature** sfeatures = add_features(features, &map_feature, NULL);
 	features = sfeatures;
 
-	const LV2_Descriptor*      descriptor = instance->lv2_descriptor;
-	const LV2_State_Interface* iface      = (descriptor->extension_data)
-		? descriptor->extension_data(LV2_STATE_INTERFACE_URI)
+	const LV2_Descriptor*      desc  = instance->lv2_descriptor;
+	const LV2_State_Interface* iface = (desc->extension_data)
+		? (LV2_State_Interface*)desc->extension_data(LV2_STATE_INTERFACE_URI)
 		: NULL;
 
 	if (iface) {
@@ -1019,7 +1019,8 @@ lilv_state_save(LilvWorld*                 world,
 				lilv_node_free(node);
 #ifdef HAVE_LV2_STATE
 			} else if (!strcmp(type, NS_STATE "Path")) {
-				o = serd_node_from_string(SERD_LITERAL, prop->value);
+				o = serd_node_from_string(SERD_LITERAL,
+				                          (const uint8_t*)prop->value);
 				t = serd_node_from_string(SERD_URI, (const uint8_t*)type);
 				// <state> <key> "the/path"^^<state:Path>
 				serd_writer_write_statement(

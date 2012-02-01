@@ -19,6 +19,7 @@
 
 #include <assert.h>
 #include <ctype.h>
+#include <errno.h>
 #include <float.h>
 #include <limits.h>
 #include <math.h>
@@ -26,7 +27,16 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
-#include <unistd.h>
+
+#ifdef _MSC_VER
+#    include <direct.h>
+#    define mkdir(path, flags) _mkdir(path)
+#    define setenv(n, v, r) SetEnvironmentVariable((n), (v))
+#    define unsetenv(n) SetEnvironmentVariable((n), NULL)
+#else
+#    include <dirent.h>
+#    include <unistd.h>
+#endif
 
 #include "lilv/lilv.h"
 #include "../src/lilv_internal.h"
@@ -59,7 +69,7 @@ delete_bundle(void)
 {
 	unlink(content_name);
 	unlink(manifest_name);
-	rmdir(bundle_dir_name);
+	remove(bundle_dir_name);
 }
 
 void
@@ -115,7 +125,7 @@ load_all_bundles(void)
 void
 create_bundle(char *manifest, char *content)
 {
-	if (mkdir(bundle_dir_name, 0700))
+	if (mkdir(bundle_dir_name, 0700) && errno != EEXIST)
 		fatal_error("Cannot create directory %s\n", bundle_dir_name);
 	write_file(manifest_name, manifest);
 	write_file(content_name, content);
@@ -357,9 +367,9 @@ test_discovery(void)
 	const LilvPlugins* plugins = lilv_world_get_all_plugins(world);
 	TEST_ASSERT(lilv_plugins_size(plugins) > 0);
 
-	const const LilvPlugin* explug = lilv_plugins_get_by_uri(plugins, plugin_uri_value);
+	const LilvPlugin* explug = lilv_plugins_get_by_uri(plugins, plugin_uri_value);
 	TEST_ASSERT(explug != NULL);
-	const const LilvPlugin* explug2 = lilv_plugins_get_by_uri(plugins, plugin2_uri_value);
+	const LilvPlugin* explug2 = lilv_plugins_get_by_uri(plugins, plugin2_uri_value);
 	TEST_ASSERT(explug2 == NULL);
 
 	if (explug) {
@@ -385,6 +395,7 @@ test_discovery(void)
 int
 test_lv2_path(void)
 {
+#ifndef _WIN32
 	char* orig_lv2_path = lilv_strdup(getenv("LV2_PATH"));
 
 	setenv("LV2_PATH", "~/.lv2:/usr/local/lib/lv2:/usr/lib/lv2", 1);
@@ -410,7 +421,7 @@ test_lv2_path(void)
 		unsetenv("LV2_PATH");
 	}
 	free(orig_lv2_path);
-
+#endif
 	return 1;
 }
 
@@ -431,7 +442,7 @@ test_verify(void)
 
 	init_uris();
 	const LilvPlugins* plugins = lilv_world_get_all_plugins(world);
-	const const LilvPlugin* explug = lilv_plugins_get_by_uri(plugins, plugin_uri_value);
+	const LilvPlugin* explug = lilv_plugins_get_by_uri(plugins, plugin_uri_value);
 	TEST_ASSERT(explug);
 	TEST_ASSERT(lilv_plugin_verify(explug));
 	cleanup_uris();
@@ -484,7 +495,7 @@ test_classes(void)
 	TEST_ASSERT(lilv_plugin_classes_size(classes) > lilv_plugin_classes_size(children));
 	TEST_ASSERT(!strcmp(lilv_node_as_string(lilv_plugin_class_get_label(plugin)), "Plugin"));
 	TEST_ASSERT(!strcmp(lilv_node_as_string(lilv_plugin_class_get_uri(plugin)),
-			"http://lv2plug.in/ns/lv2core#Plugin"));
+	                    "http://lv2plug.in/ns/lv2core#Plugin"));
 
 	LILV_FOREACH(plugin_classes, i, children) {
 		TEST_ASSERT(lilv_node_equals(
@@ -543,9 +554,9 @@ test_plugin(void)
 	const LilvPlugin* plug = lilv_plugins_get_by_uri(plugins, plugin_uri_value);
 	TEST_ASSERT(plug);
 
-	const LilvPluginClass* class = lilv_plugin_get_class(plug);
-	const LilvNode* class_uri = lilv_plugin_class_get_uri(class);
-	TEST_ASSERT(!strcmp(lilv_node_as_string(class_uri),
+	const LilvPluginClass* klass = lilv_plugin_get_class(plug);
+	const LilvNode* klass_uri = lilv_plugin_class_get_uri(klass);
+	TEST_ASSERT(!strcmp(lilv_node_as_string(klass_uri),
 			"http://lv2plug.in/ns/lv2core#CompressorPlugin"));
 
 	const LilvNode* plug_bundle_uri = lilv_plugin_get_bundle_uri(plug);
@@ -1095,7 +1106,7 @@ map_uri(LV2_URID_Map_Handle handle,
 		}
 	}
 
-	uris = realloc(uris, ++n_uris * sizeof(char*));
+	uris = (char**)realloc(uris, ++n_uris * sizeof(char*));
 	uris[n_uris - 1] = lilv_strdup(uri);
 	return n_uris;
 }
@@ -1441,6 +1452,7 @@ test_string(void)
 	TEST_ASSERT(!strcmp((s = lilv_path_join("/a/", "b")), "/a/b")); free(s);
 	TEST_ASSERT(!strcmp((s = lilv_path_join("/a", NULL)), "/a/")); free(s);
 
+#ifndef _WIN32
 	setenv("LILV_TEST_1", "test", 1);
 	char* home_foo = lilv_strjoin(getenv("HOME"), "/foo", NULL);
 	TEST_ASSERT(!strcmp((s = lilv_expand("$LILV_TEST_1")), "test")); free(s);
@@ -1450,6 +1462,7 @@ test_string(void)
 	TEST_ASSERT(!strcmp((s = lilv_expand("$NOT_A_VAR")), "$NOT_A_VAR")); free(s);
 	free(home_foo);
 	unsetenv("LILV_TEST_1");
+#endif
 
 	return 1;
 }

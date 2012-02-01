@@ -96,7 +96,7 @@ instantiate(const LV2_Descriptor*     descriptor,
 	test->input         = NULL;
 	test->output        = NULL;
 	test->num_runs      = 0;
-	test->tmp_file_path = malloc(L_tmpnam);
+	test->tmp_file_path = (char*)malloc(L_tmpnam);
 	test->rec_file_path = NULL;
 	test->rec_file      = NULL;
 
@@ -321,13 +321,11 @@ restore(LV2_Handle                  instance,
 		&size, &type, &valflags);
 
 	if (apath) {
-		char* path      = map_path->absolute_path(map_path->handle, apath);
-		char* real_path = realpath(path, NULL);
-		if (strcmp(real_path, plugin->tmp_file_path)) {
+		char* path = map_path->absolute_path(map_path->handle, apath);
+		if (strcmp(path, plugin->tmp_file_path)) {
 			fprintf(stderr, "ERROR: Restored bad path `%s' != `%s'\n",
-			        real_path, plugin->tmp_file_path);
+			        path, plugin->tmp_file_path);
 		}
-		free(real_path);
 		free(path);
 	}
 

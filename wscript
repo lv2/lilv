@@ -71,6 +71,11 @@ def configure(conf):
     else:
         conf.env.append_unique('CFLAGS', '-std=c99')
 
+    conf.env['BUILD_TESTS']     = Options.options.build_tests
+    conf.env['BUILD_UTILS']     = not Options.options.no_utils
+    conf.env['BUILD_STATIC']    = Options.options.static
+    conf.env['BASH_COMPLETION'] = not Options.options.no_bash_completion
+
     autowaf.check_pkg(conf, 'lv2core', uselib_store='LV2CORE', mandatory=True)
     autowaf.check_pkg(conf, 'serd-0', uselib_store='SERD',
                       atleast_version='0.9.0', mandatory=True)
@@ -84,6 +89,12 @@ def configure(conf):
     defines = ['_POSIX_C_SOURCE', '_BSD_SOURCE']
     if Options.platform == 'darwin':
         defines += ['_DARWIN_C_SOURCE']
+
+    # Check for gcov library (for test coverage)
+    if conf.env['BUILD_TESTS']:
+        conf.check_cc(lib='gcov',
+                      define_name='HAVE_GCOV',
+                      mandatory=False)
 
     conf.check_cc(function_name='flock',
                   header_name='sys/file.h',
@@ -132,11 +143,6 @@ def configure(conf):
                                            '/usr/local/%s/lv2' % libdirname])
     autowaf.define(conf, 'LILV_DEFAULT_LV2_PATH', lv2_path)
 
-    conf.env['BUILD_TESTS']     = Options.options.build_tests
-    conf.env['BUILD_UTILS']     = not Options.options.no_utils
-    conf.env['BUILD_STATIC']    = Options.options.static
-    conf.env['BASH_COMPLETION'] = not Options.options.no_bash_completion
-
     conf.env['LIB_LILV'] = ['lilv-%s' % LILV_MAJOR_VERSION]
 
     conf.write_config_header('lilv_config.h', remove=False)
@@ -153,6 +159,8 @@ def configure(conf):
                         conf.is_defined('HAVE_LV2_STATE'))
     autowaf.display_msg(conf, "Python bindings",
                         conf.is_defined('LILV_PYTHON'))
+
+    conf.undefine('LILV_DEFAULT_LV2_PATH')  # Cmd line errors with VC++
     print('')
 
 def build(bld):
@@ -181,8 +189,8 @@ def build(bld):
         src/zix/tree.c
     '''.split()
 
-    lib      = [ 'dl' ]
-    libflags = [ '-fvisibility=hidden' ]
+    lib      = ['dl']
+    libflags = ['-fvisibility=hidden']
     defines  = []
     if bld.env['MSVC_COMPILER']:
         lib      = []
@@ -221,12 +229,18 @@ def build(bld):
         autowaf.use_lib(bld, obj, 'SORD LV2CORE LV2_STATE LV2_URID')
 
     if bld.env['BUILD_TESTS']:
+        test_libs   = lib
+        test_cflags = ['']
+        if bld.is_defined('HAVE_GCOV'):
+            test_libs   += ['gcov']
+            test_cflags += ['-fprofile-arcs', '-ftest-coverage']
+
         # Test plugin library
         penv          = bld.env.derive()
         shlib_pattern = penv['cshlib_PATTERN']
         if shlib_pattern.startswith('lib'):
             shlib_pattern = shlib_pattern[3:]
-        penv['cshlib_PATTERN'] = shlib_pattern
+        penv['cshlib_PATTERN']   = shlib_pattern
         shlib_ext = shlib_pattern[shlib_pattern.rfind('.'):]
 
         obj = bld(features     = 'c cshlib',
@@ -236,6 +250,7 @@ def build(bld):
                   target       = 'test/test_plugin.lv2/test_plugin',
                   install_path = None,
                   defines      = defines,
+                  cflags       = test_cflags,
                   uselib       = 'LV2CORE LV2_STATE LV2_URID')
 
         # Test plugin data files
@@ -252,25 +267,25 @@ def build(bld):
                   includes     = ['.', './src'],
                   name         = 'liblilv_profiled',
                   target       = 'lilv_profiled',
-                  install_path = '',
-                  defines        = defines,
-                  cflags       = [ '-fprofile-arcs', '-ftest-coverage',
-                                   '-DLILV_INTERNAL' ],
-                  lib          = lib + ['gcov'])
+                  install_path = None,
+                  defines      = defines,
+                  cflags       = test_cflags + ['-DLILV_INTERNAL'],
+                  lib          = test_libs)
         autowaf.use_lib(bld, obj, 'SORD LV2CORE LV2_STATE LV2_URID')
 
         # Unit test program
+        bpath = os.path.abspath(os.path.join(out, 'test', 'test_plugin.lv2'))
+        bpath = bpath.replace('\\', '/')
         obj = bld(features     = 'c cprogram',
                   source       = 'test/lilv_test.c',
                   includes     = ['.', './src'],
                   use          = 'liblilv_profiled',
                   uselib       = 'SORD LV2CORE',
-                  lib          = lib + ['gcov'],
+                  lib          = test_libs,
                   target       = 'test/lilv_test',
-                  install_path = '',
-                  defines      = defines + ['LILV_TEST_BUNDLE=\"%s/\"' % os.path.abspath(
-                    os.path.join(out, 'test', 'test_plugin.lv2'))],
-                  cflags       = [ '-fprofile-arcs',  '-ftest-coverage' ])
+                  install_path = None,
+                  defines      = defines + ['LILV_TEST_BUNDLE=\"%s/\"' % bpath],
+                  cflags       = test_cflags)
         autowaf.use_lib(bld, obj, 'SORD LV2CORE LV2_STATE LV2_URID')
 
     # Utilities
@@ -343,7 +358,8 @@ def upload_docs(ctx):
 
 def test(ctx):
     autowaf.pre_test(ctx, APPNAME)
-    autowaf.run_tests(ctx, APPNAME, ['test/lilv_test'], dirs=['./src','./test'])
+    os.environ['PATH'] = 'test' + os.pathsep + os.getenv('PATH')
+    autowaf.run_tests(ctx, APPNAME, ['lilv_test'], dirs=['./src','./test'])
     autowaf.post_test(ctx, APPNAME)
 
 def lint(ctx):
