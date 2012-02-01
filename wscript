@@ -251,6 +251,7 @@ def build(bld):
                   install_path = None,
                   defines      = defines,
                   cflags       = test_cflags,
+                  lib          = test_libs,
                   uselib       = 'LV2CORE LV2_STATE LV2_URID')
 
         # Test plugin data files
