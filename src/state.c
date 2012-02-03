@@ -354,18 +354,20 @@ lilv_state_new_from_instance(const LilvPlugin*          plugin,
 #endif
 
 	// Store port values
-	LilvNode* lv2_ControlPort = lilv_new_uri(world, LILV_URI_CONTROL_PORT);
-	LilvNode* lv2_InputPort   = lilv_new_uri(world, LILV_URI_INPUT_PORT);
-	for (uint32_t i = 0; i < plugin->num_ports; ++i) {
-		const LilvPort* const port = plugin->ports[i];
-		if (lilv_port_is_a(plugin, port, lv2_ControlPort)
-		    && lilv_port_is_a(plugin, port, lv2_InputPort)) {
-			const char* sym = lilv_node_as_string(port->symbol);
-			append_port_value(state, sym, get_value(sym, user_data));
+	if (get_value) {
+		LilvNode* lv2_ControlPort = lilv_new_uri(world, LILV_URI_CONTROL_PORT);
+		LilvNode* lv2_InputPort   = lilv_new_uri(world, LILV_URI_INPUT_PORT);
+		for (uint32_t i = 0; i < plugin->num_ports; ++i) {
+			const LilvPort* const port = plugin->ports[i];
+			if (lilv_port_is_a(plugin, port, lv2_ControlPort)
+			    && lilv_port_is_a(plugin, port, lv2_InputPort)) {
+				const char* sym = lilv_node_as_string(port->symbol);
+				append_port_value(state, sym, get_value(sym, user_data));
+			}
 		}
+		lilv_node_free(lv2_ControlPort);
+		lilv_node_free(lv2_InputPort);
 	}
-	lilv_node_free(lv2_ControlPort);
-	lilv_node_free(lv2_InputPort);
 
 	// Store properties
 #ifdef HAVE_LV2_STATE
