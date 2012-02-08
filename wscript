@@ -170,8 +170,12 @@ def build(bld):
     bld.install_files(includedir, bld.path.ant_glob('lilv/*.hpp'))
 
     # Pkgconfig file
+    pkg_deps = 'lv2-lv2plug.in-ns-ext-urid'
+    if bld.is_defined('HAVE_LV2_STATE'):
+        pkg_deps += ' lv2-lv2plug.in-ns-ext-state'
     autowaf.build_pc(bld, 'LILV', LILV_VERSION, LILV_MAJOR_VERSION, [],
-                     {'LILV_MAJOR_VERSION' : LILV_MAJOR_VERSION})
+                     {'LILV_MAJOR_VERSION' : LILV_MAJOR_VERSION,
+                      'LILV_PKG_DEPS'      : pkg_deps})
 
     lib_source = '''
         src/collections.c
