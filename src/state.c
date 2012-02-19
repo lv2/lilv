@@ -22,6 +22,7 @@
 #include "lilv_internal.h"
 
 #ifdef HAVE_LV2_STATE
+#    include "lv2/lv2plug.in/ns/ext/atom/atom.h"
 #    include "lv2/lv2plug.in/ns/ext/state/state.h"
 #endif
 
@@ -344,11 +345,11 @@ lilv_state_new_from_instance(const LilvPlugin*          plugin,
 	state->dir        = save_dir ? absolute_dir(save_dir, false) : NULL;
 
 #ifdef HAVE_LV2_STATE
-	state->state_Path = map->map(map->handle, LV2_STATE_PATH_URI);
+	state->state_Path = map->map(map->handle, LV2_ATOM__Path);
 	LV2_State_Map_Path  pmap          = { state, abstract_path, absolute_path };
-	LV2_Feature         pmap_feature  = { LV2_STATE_MAP_PATH_URI, &pmap };
+	LV2_Feature         pmap_feature  = { LV2_STATE__mapPath, &pmap };
 	LV2_State_Make_Path pmake         = { state, make_path };
-	LV2_Feature         pmake_feature = { LV2_STATE_MAKE_PATH_URI, &pmake };
+	LV2_Feature         pmake_feature = { LV2_STATE__makePath, &pmake };
 	features = sfeatures = add_features(features, &pmap_feature,
 	                                    save_dir ? &pmake_feature : NULL);
 #endif
@@ -373,7 +374,7 @@ lilv_state_new_from_instance(const LilvPlugin*          plugin,
 #ifdef HAVE_LV2_STATE
 	const LV2_Descriptor*      desc  = instance->lv2_descriptor;
 	const LV2_State_Interface* iface = (desc->extension_data)
-		? (LV2_State_Interface*)desc->extension_data(LV2_STATE_INTERFACE_URI)
+		? (LV2_State_Interface*)desc->extension_data(LV2_STATE__Interface)
 		: NULL;
 
 	if (iface) {
@@ -401,14 +402,14 @@ lilv_state_restore(const LilvState*           state,
 #ifdef HAVE_LV2_STATE
 	LV2_State_Map_Path map_path = {
 		(LilvState*)state, abstract_path, absolute_path };
-	LV2_Feature map_feature = { LV2_STATE_MAP_PATH_URI, &map_path };
+	LV2_Feature map_feature = { LV2_STATE__mapPath, &map_path };
 
 	const LV2_Feature** sfeatures = add_features(features, &map_feature, NULL);
 	features = sfeatures;
 
 	const LV2_Descriptor*      desc  = instance->lv2_descriptor;
 	const LV2_State_Interface* iface = (desc->extension_data)
-		? (LV2_State_Interface*)desc->extension_data(LV2_STATE_INTERFACE_URI)
+		? (LV2_State_Interface*)desc->extension_data(LV2_STATE__Interface)
 		: NULL;
 
 	if (iface) {
@@ -496,7 +497,7 @@ new_state_from_model(LilvWorld*       world,
 	state->dir = dir ? lilv_strdup(dir) : NULL;
 
 #ifdef HAVE_LV2_STATE
-	state->state_Path = map->map(map->handle, LV2_STATE_PATH_URI);
+	state->state_Path = map->map(map->handle, LV2_ATOM__Path);
 #endif
 
 	// Get the plugin URI this state applies to
@@ -560,7 +561,7 @@ new_state_from_model(LilvWorld*       world,
 
 #ifdef HAVE_LV2_STATE
 	SordNode* state_path_node = sord_new_uri(world->world,
-	                                         USTR(LV2_STATE_PATH_URI));
+	                                         USTR(LV2_ATOM__Path));
 #endif
 
 	// Get properties
@@ -599,7 +600,7 @@ new_state_from_model(LilvWorld*       world,
 			} else if (sord_node_equals(sord_node_get_datatype(o),
 			                            state_path_node)) {
 				prop.size  = strlen((const char*)sord_node_get_string(o)) + 1;
-				prop.type  = map->map(map->handle, LV2_STATE_PATH_URI);
+				prop.type  = map->map(map->handle, LV2_ATOM__Path);
 				prop.flags = LV2_STATE_IS_PORTABLE;
 				prop.value = lilv_path_join(
 					state->dir, (const char*)sord_node_get_string(o));

@@ -1242,7 +1242,7 @@ test_state(void)
 	link_dir = lilv_realpath("links");
 
 	LV2_State_Make_Path make_path         = { NULL, lilv_make_path };
-	LV2_Feature         make_path_feature = { LV2_STATE_MAKE_PATH_URI, &make_path };
+	LV2_Feature         make_path_feature = { LV2_STATE__makePath, &make_path };
 	const LV2_Feature*  ffeatures[]       = { &make_path_feature, &map_feature, NULL };
 
 	lilv_instance_deactivate(instance);

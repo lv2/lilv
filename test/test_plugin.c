@@ -22,6 +22,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "lv2/lv2plug.in/ns/ext/atom/atom.h"
 #include "lv2/lv2plug.in/ns/ext/state/state.h"
 #include "lv2/lv2plug.in/ns/ext/urid/urid.h"
 #include "lv2/lv2plug.in/ns/lv2core/lv2.h"
@@ -109,7 +110,7 @@ instantiate(const LV2_Descriptor*     descriptor,
 			test->map = (LV2_URID_Map*)features[i]->data;
 			test->uris.atom_Float = test->map->map(
 				test->map->handle, NS_ATOM "Float");
-		} else if (!strcmp(features[i]->URI, LV2_STATE_MAKE_PATH_URI)) {
+		} else if (!strcmp(features[i]->URI, LV2_STATE__makePath)) {
 			make_path = (LV2_State_Make_Path*)features[i]->data;
 		}
 	}
@@ -168,9 +169,9 @@ save(LV2_Handle                instance,
 	LV2_State_Map_Path*  map_path  = NULL;
 	LV2_State_Make_Path* make_path = NULL;
 	for (int i = 0; features && features[i]; ++i) {
-		if (!strcmp(features[i]->URI, LV2_STATE_MAP_PATH_URI)) {
+		if (!strcmp(features[i]->URI, LV2_STATE__mapPath)) {
 			map_path = (LV2_State_Map_Path*)features[i]->data;
-		} else if (!strcmp(features[i]->URI, LV2_STATE_MAKE_PATH_URI)) {
+		} else if (!strcmp(features[i]->URI, LV2_STATE__makePath)) {
 			make_path = (LV2_State_Make_Path*)features[i]->data;
 		}
 	}
@@ -247,7 +248,7 @@ save(LV2_Handle                instance,
 		      map_uri(plugin, "http://example.org/extfile"),
 		      apath,
 		      strlen(apath) + 1,
-		      map_uri(plugin, LV2_STATE_PATH_URI),
+		      map_uri(plugin, LV2_ATOM__Path),
 		      LV2_STATE_IS_PORTABLE);
 
 		free(apath);
@@ -262,7 +263,7 @@ save(LV2_Handle                instance,
 			      map_uri(plugin, "http://example.org/recfile"),
 			      apath,
 			      strlen(apath) + 1,
-			      map_uri(plugin, LV2_STATE_PATH_URI),
+			      map_uri(plugin, LV2_ATOM__Path),
 			      LV2_STATE_IS_PORTABLE);
 
 			free(apath);
@@ -279,7 +280,7 @@ save(LV2_Handle                instance,
 			      map_uri(plugin, "http://example.org/save-file"),
 			      apath,
 			      strlen(apath) + 1,
-			      map_uri(plugin, LV2_STATE_PATH_URI),
+			      map_uri(plugin, LV2_ATOM__Path),
 			      LV2_STATE_IS_PORTABLE);
 			free(apath);
 		}
@@ -297,7 +298,7 @@ restore(LV2_Handle                  instance,
 
 	LV2_State_Map_Path* map_path = NULL;
 	for (int i = 0; features && features[i]; ++i) {
-		if (!strcmp(features[i]->URI, LV2_STATE_MAP_PATH_URI)) {
+		if (!strcmp(features[i]->URI, LV2_STATE__mapPath)) {
 			map_path = (LV2_State_Map_Path*)features[i]->data;
 		}
 	}
@@ -350,7 +351,7 @@ const void*
 extension_data(const char* uri)
 {
 	static const LV2_State_Interface state = { save, restore };
-	if (!strcmp(uri, LV2_STATE_INTERFACE_URI)) {
+	if (!strcmp(uri, LV2_STATE__Interface)) {
 		return &state;
 	}
 	return NULL;
