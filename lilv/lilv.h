@@ -899,6 +899,17 @@ lilv_plugin_get_port_by_symbol(const LilvPlugin* plugin,
                                const LilvNode*   symbol);
 
 /**
+   Get a port on @c plugin by an lv2:PortProperty.
+   This function only makes sense for port properties which apply to a single
+   port per plugin (like lv2:reportsLatency).  Otherwise, the matching port
+   with the lowest index will be returned.
+*/
+LILV_API
+LilvPort*
+lilv_plugin_get_port_by_property(const LilvPlugin* plugin,
+                                 const LilvNode*   port_property);
+
+/**
    Get the full name of the plugin's author.
    Returns NULL if author name is not present.
    Returned value must be freed by caller.
@@ -1019,6 +1030,16 @@ bool
 lilv_port_supports_event(const LilvPlugin* p,
                          const LilvPort*   port,
                          const LilvNode*   event_uri);
+
+/**
+   Get the index of a port.
+   The index is only valid for the life of the plugin and may change between
+   versions.  For a stable identifier, use the symbol.
+*/
+LILV_API
+uint32_t
+lilv_port_get_index(const LilvPlugin* plugin,
+                    const LilvPort*   port);
 
 /**
    Get the symbol of a port.

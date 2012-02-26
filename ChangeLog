@@ -22,6 +22,8 @@ lilv (UNRELEASED) unstable; urgency=low
   * Update old references to lv2_list (now lv2ls)
   * Support compilation as C++ under MSVC++.
   * Remove use of wordexp.
+  * Add lilv_plugin_get_port_by_property() and lilv_port_get_index() as an
+    improved generic alternative to lilv_plugin_get_latency_port_index().
 
  -- David Robillard <d@drobilla.net>  (UNRELEASED)
 

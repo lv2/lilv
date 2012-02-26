@@ -586,38 +586,39 @@ lilv_plugin_has_latency(const LilvPlugin* p)
 }
 
 LILV_API
+LilvPort*
+lilv_plugin_get_port_by_property(const LilvPlugin* plugin,
+                                 const LilvNode*   port_property)
+{
+	lilv_plugin_load_ports_if_necessary(plugin);
+	for (uint32_t i = 0; i < plugin->num_ports; ++i) {
+		LilvPort* port = plugin->ports[i];
+		SordIter* iter = lilv_world_query_internal(
+			plugin->world,
+			port->node,
+			plugin->world->uris.lv2_portProperty,
+			port_property->val.uri_val);
+
+		const bool found = !lilv_matches_end(iter);
+		lilv_match_end(iter);
+
+		if (found) {
+			return port;
+		}
+	}
+
+	return NULL;
+}
+
+LILV_API
 uint32_t
 lilv_plugin_get_latency_port_index(const LilvPlugin* p)
 {
-	lilv_plugin_load_if_necessary(p);
-	SordIter* ports = lilv_world_query_internal(
-		p->world,
-		p->plugin_uri->val.uri_val,
-		p->world->uris.lv2_port,
-		NULL);
-
-	uint32_t ret = 0;
-	FOREACH_MATCH(ports) {
-		const SordNode* port            = lilv_match_object(ports);
-		SordIter*       reports_latency = lilv_world_query_internal(
-			p->world,
-			port,
-			p->world->uris.lv2_portProperty,
-			p->world->uris.lv2_reportsLatency);
-		if (!lilv_matches_end(reports_latency)) {
-			LilvNode* index = lilv_plugin_get_unique(
-				p, port, p->world->uris.lv2_index);
-
-			ret = lilv_node_as_int(index);
-			lilv_node_free(index);
-			lilv_match_end(reports_latency);
-			break;
-		}
-		lilv_match_end(reports_latency);
-	}
-	lilv_match_end(ports);
-
-	return ret;  // FIXME: error handling
+	LilvNode* property = lilv_node_new_from_node(
+		p->world, p->world->uris.lv2_reportsLatency);
+	LilvPort* latency_port = lilv_plugin_get_port_by_property(p, property);
+	lilv_node_free(property);
+	return latency_port ? latency_port->index : UINT32_MAX;
 }
 
 LILV_API

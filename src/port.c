@@ -131,6 +131,14 @@ lilv_port_get_value(const LilvPlugin* p,
 }
 
 LILV_API
+uint32_t
+lilv_port_get_index(const LilvPlugin* p,
+                    const LilvPort*   port)
+{
+	return port->index;
+}
+
+LILV_API
 const LilvNode*
 lilv_port_get_symbol(const LilvPlugin* p,
                      const LilvPort*   port)
