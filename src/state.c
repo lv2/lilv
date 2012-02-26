@@ -61,7 +61,7 @@ struct LilvStateImpl {
 	ZixTree*   rel2abs;  ///< PathMap sorted by rel
 	Property*  props;
 	PortValue* values;
-	uint32_t   state_Path;
+	uint32_t   atom_Path;
 	uint32_t   num_props;
 	uint32_t   num_values;
 };
@@ -141,7 +141,7 @@ store_callback(void*       handle,
 		state->props, (++state->num_props) * sizeof(Property));
 	Property* const prop = &state->props[state->num_props - 1];
 
-	if ((flags & LV2_STATE_IS_POD) || type == state->state_Path) {
+	if ((flags & LV2_STATE_IS_POD) || type == state->atom_Path) {
 		prop->value = malloc(size);
 		memcpy(prop->value, value, size);
 	} else {
@@ -345,7 +345,7 @@ lilv_state_new_from_instance(const LilvPlugin*          plugin,
 	state->dir        = save_dir ? absolute_dir(save_dir, false) : NULL;
 
 #ifdef HAVE_LV2_STATE
-	state->state_Path = map->map(map->handle, LV2_ATOM__Path);
+	state->atom_Path = map->map(map->handle, LV2_ATOM__Path);
 	LV2_State_Map_Path  pmap          = { state, abstract_path, absolute_path };
 	LV2_Feature         pmap_feature  = { LV2_STATE__mapPath, &pmap };
 	LV2_State_Make_Path pmake         = { state, make_path };
@@ -497,7 +497,7 @@ new_state_from_model(LilvWorld*       world,
 	state->dir = dir ? lilv_strdup(dir) : NULL;
 
 #ifdef HAVE_LV2_STATE
-	state->state_Path = map->map(map->handle, LV2_ATOM__Path);
+	state->atom_Path = map->map(map->handle, LV2_ATOM__Path);
 #endif
 
 	// Get the plugin URI this state applies to
@@ -560,8 +560,8 @@ new_state_from_model(LilvWorld*       world,
 	sord_iter_free(ports);
 
 #ifdef HAVE_LV2_STATE
-	SordNode* state_path_node = sord_new_uri(world->world,
-	                                         USTR(LV2_ATOM__Path));
+	SordNode* atom_path_node = sord_new_uri(world->world,
+	                                        USTR(LV2_ATOM__Path));
 #endif
 
 	// Get properties
@@ -598,7 +598,7 @@ new_state_from_model(LilvWorld*       world,
 				}
 #ifdef HAVE_LV2_STATE
 			} else if (sord_node_equals(sord_node_get_datatype(o),
-			                            state_path_node)) {
+			                            atom_path_node)) {
 				prop.size  = strlen((const char*)sord_node_get_string(o)) + 1;
 				prop.type  = map->map(map->handle, LV2_ATOM__Path);
 				prop.flags = LV2_STATE_IS_PORTABLE;
@@ -621,7 +621,7 @@ new_state_from_model(LilvWorld*       world,
 	}
 	sord_node_free(world->world, statep);
 #ifdef HAVE_LV2_STATE
-	sord_node_free(world->world, state_path_node);
+	sord_node_free(world->world, atom_path_node);
 #endif
 
 	qsort(state->props, state->num_props, sizeof(Property), property_cmp);
@@ -1021,7 +1021,7 @@ lilv_state_save(LilvWorld*                 world,
 					&state_node, &p, &o, &t, NULL);
 				lilv_node_free(node);
 #ifdef HAVE_LV2_STATE
-			} else if (!strcmp(type, NS_STATE "Path")) {
+			} else if (!strcmp(type, LV2_ATOM__Path)) {
 				o = serd_node_from_string(SERD_LITERAL,
 				                          (const uint8_t*)prop->value);
 				t = serd_node_from_string(SERD_URI, (const uint8_t*)type);
@@ -1136,7 +1136,7 @@ lilv_state_equals(const LilvState* a, const LilvState* b)
 			return false;
 		}
 
-		if (ap->type == a->state_Path) {
+		if (ap->type == a->atom_Path) {
 			if (!lilv_file_equals(lilv_state_rel2abs(a, (char*)ap->value),
 			                      lilv_state_rel2abs(b, (char*)bp->value))) {
 				return false;
