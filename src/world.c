@@ -62,6 +62,7 @@ lilv_world_new(void)
 	world->uris.lv2_Plugin          = NEW_URI(LILV_NS_LV2  "Plugin");
 	world->uris.lv2_port            = NEW_URI(LILV_NS_LV2  "port");
 	world->uris.lv2_portProperty    = NEW_URI(LILV_NS_LV2  "portProperty");
+	world->uris.lv2_relation        = NEW_URI(LILV_NS_LV2  "relation");
 	world->uris.lv2_reportsLatency  = NEW_URI(LILV_NS_LV2  "reportsLatency");
 	world->uris.lv2_requiredFeature = NEW_URI(LILV_NS_LV2  "requiredFeature");
 	world->uris.lv2_Specification   = NEW_URI(LILV_NS_LV2  "Specification");

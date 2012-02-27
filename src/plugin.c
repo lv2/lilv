@@ -585,8 +585,7 @@ lilv_plugin_has_latency(const LilvPlugin* p)
 	return ret;
 }
 
-LILV_API
-LilvPort*
+static LilvPort*
 lilv_plugin_get_port_by_property(const LilvPlugin* plugin,
                                  const LilvNode*   port_property)
 {
@@ -598,6 +597,31 @@ lilv_plugin_get_port_by_property(const LilvPlugin* plugin,
 			port->node,
 			plugin->world->uris.lv2_portProperty,
 			port_property->val.uri_val);
+
+		const bool found = !lilv_matches_end(iter);
+		lilv_match_end(iter);
+
+		if (found) {
+			return port;
+		}
+	}
+
+	return NULL;
+}
+
+LILV_API
+LilvPort*
+lilv_plugin_get_port_by_relation(const LilvPlugin* plugin,
+                                 const LilvNode*   relation)
+{
+	lilv_plugin_load_ports_if_necessary(plugin);
+	for (uint32_t i = 0; i < plugin->num_ports; ++i) {
+		LilvPort* port = plugin->ports[i];
+		SordIter* iter = lilv_world_query_internal(
+			plugin->world,
+			port->node,
+			plugin->world->uris.lv2_relation,
+			relation->val.uri_val);
 
 		const bool found = !lilv_matches_end(iter);
 		lilv_match_end(iter);

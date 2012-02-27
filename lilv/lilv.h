@@ -899,15 +899,14 @@ lilv_plugin_get_port_by_symbol(const LilvPlugin* plugin,
                                const LilvNode*   symbol);
 
 /**
-   Get a port on @c plugin by an lv2:PortProperty.
-   This function only makes sense for port properties which apply to a single
-   port per plugin (like lv2:reportsLatency).  Otherwise, the matching port
-   with the lowest index will be returned.
+   Get a port on @c plugin by the lv2:relation it represents.
+   If the plugin has multiple ports with the same relation (which it should
+   not), the one with the lowest index will be returned.
 */
 LILV_API
 LilvPort*
-lilv_plugin_get_port_by_property(const LilvPlugin* plugin,
-                                 const LilvNode*   port_property);
+lilv_plugin_get_port_by_relation(const LilvPlugin* plugin,
+                                 const LilvNode*   relation);
 
 /**
    Get the full name of the plugin's author.
