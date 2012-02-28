@@ -545,7 +545,7 @@ test_plugin(void)
 			"  a lv2:ControlPort ; a lv2:OutputPort ; "
 			"  lv2:index 2 ; lv2:symbol \"latency\" ; lv2:name \"Latency\" ; "
 			"  lv2:portProperty lv2:reportsLatency ; "
-			"  lv2:relation lv2:latency "
+			"  lv2:isParameter lv2:latency "
 			"] . \n"
 			":thing doap:name \"Something else\" .\n"))
 		return 0;
@@ -615,8 +615,8 @@ test_plugin(void)
 
 	LilvNode* lv2_latency = lilv_new_uri(world,
 			"http://lv2plug.in/ns/lv2core#latency");
-	LilvPort* latency_port = lilv_plugin_get_port_by_relation(
-		plug, lv2_latency);
+	LilvPort* latency_port = lilv_plugin_get_port_by_parameter(
+		plug, out_class, lv2_latency);
 
 	TEST_ASSERT(latency_port);
 	TEST_ASSERT(lilv_port_get_index(plug, latency_port) == 2);

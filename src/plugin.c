@@ -611,19 +611,22 @@ lilv_plugin_get_port_by_property(const LilvPlugin* plugin,
 
 LILV_API
 LilvPort*
-lilv_plugin_get_port_by_relation(const LilvPlugin* plugin,
-                                 const LilvNode*   relation)
+lilv_plugin_get_port_by_parameter(const LilvPlugin* plugin,
+                                  const LilvNode*   port_class,
+                                  const LilvNode*   parameter)
 {
+	LilvWorld* world = plugin->world;
 	lilv_plugin_load_ports_if_necessary(plugin);
 	for (uint32_t i = 0; i < plugin->num_ports; ++i) {
 		LilvPort* port = plugin->ports[i];
 		SordIter* iter = lilv_world_query_internal(
-			plugin->world,
+			world,
 			port->node,
-			plugin->world->uris.lv2_relation,
-			relation->val.uri_val);
+			world->uris.lv2_isParameter,
+			parameter->val.uri_val);
 
-		const bool found = !lilv_matches_end(iter);
+		const bool found = !lilv_matches_end(iter) &&
+			lilv_port_is_a(plugin, port, port_class);
 		lilv_match_end(iter);
 
 		if (found) {

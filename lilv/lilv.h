@@ -899,14 +899,16 @@ lilv_plugin_get_port_by_symbol(const LilvPlugin* plugin,
                                const LilvNode*   symbol);
 
 /**
-   Get a port on @c plugin by the lv2:relation it represents.
-   If the plugin has multiple ports with the same relation (which it should
-   not), the one with the lowest index will be returned.
+   Get a port on @c plugin by the parameter it represents.
+   If found, the port with matching @a port_class and @a parameter is be
+   returned, otherwise NULL is returned.  The @a port_class can be used to
+   distinguish the input and output ports for a parameter.
 */
 LILV_API
 LilvPort*
-lilv_plugin_get_port_by_relation(const LilvPlugin* plugin,
-                                 const LilvNode*   relation);
+lilv_plugin_get_port_by_parameter(const LilvPlugin* plugin,
+                                  const LilvNode*   port_class,
+                                  const LilvNode*   parameter);
 
 /**
    Get the full name of the plugin's author.

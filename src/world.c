@@ -45,7 +45,7 @@ lilv_world_new(void)
 #define NS_DYNMAN  "http://lv2plug.in/ns/ext/dynmanifest#"
 #define NS_PSET    "http://lv2plug.in/ns/ext/presets#"
 
-#define NEW_URI(uri)     sord_new_uri(world->world, (const uint8_t*)uri)
+#define NEW_URI(uri) sord_new_uri(world->world, (const uint8_t*)uri)
 
 	world->uris.dc_replaces         = NEW_URI(NS_DCTERMS   "replaces");
 	world->uris.doap_name           = NEW_URI(LILV_NS_DOAP "name");
@@ -62,11 +62,11 @@ lilv_world_new(void)
 	world->uris.lv2_Plugin          = NEW_URI(LILV_NS_LV2  "Plugin");
 	world->uris.lv2_port            = NEW_URI(LILV_NS_LV2  "port");
 	world->uris.lv2_portProperty    = NEW_URI(LILV_NS_LV2  "portProperty");
-	world->uris.lv2_relation        = NEW_URI(LILV_NS_LV2  "relation");
 	world->uris.lv2_reportsLatency  = NEW_URI(LILV_NS_LV2  "reportsLatency");
 	world->uris.lv2_requiredFeature = NEW_URI(LILV_NS_LV2  "requiredFeature");
 	world->uris.lv2_Specification   = NEW_URI(LILV_NS_LV2  "Specification");
 	world->uris.lv2_symbol          = NEW_URI(LILV_NS_LV2  "symbol");
+	world->uris.lv2_isParameter     = NEW_URI(LILV_NS_LV2  "isParameter");
 	world->uris.pset_value          = NEW_URI(NS_PSET      "value");
 	world->uris.rdf_a               = NEW_URI(LILV_NS_RDF  "type");
 	world->uris.rdf_value           = NEW_URI(LILV_NS_RDF  "value");

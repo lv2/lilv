@@ -150,11 +150,11 @@ struct LilvWorldImpl {
 		SordNode* lv2_Plugin;
 		SordNode* lv2_port;
 		SordNode* lv2_portProperty;
-		SordNode* lv2_relation;
 		SordNode* lv2_reportsLatency;
 		SordNode* lv2_requiredFeature;
 		SordNode* lv2_Specification;
 		SordNode* lv2_symbol;
+		SordNode* lv2_isParameter;
 		SordNode* pset_value;
 		SordNode* rdf_a;
 		SordNode* rdf_value;

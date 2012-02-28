@@ -32,6 +32,7 @@ LilvNode* applies_to_pred     = NULL;
 LilvNode* control_class       = NULL;
 LilvNode* event_class         = NULL;
 LilvNode* in_group_pred       = NULL;
+LilvNode* is_parameter_pred   = NULL;
 LilvNode* label_pred          = NULL;
 LilvNode* preset_class        = NULL;
 LilvNode* role_pred           = NULL;
@@ -107,6 +108,13 @@ print_port(const LilvPlugin* p,
 	LilvNode* name = lilv_port_get_name(p, port);
 	printf("\t\tName:       %s\n", lilv_node_as_string(name));
 	lilv_node_free(name);
+
+	LilvNodes* parameters = lilv_port_get_value(p, port, is_parameter_pred);
+	if (lilv_nodes_size(parameters) > 0)
+		printf("\t\tParameter:  %s\n",
+		       lilv_node_as_string(
+			       lilv_nodes_get(parameters, lilv_nodes_begin(parameters))));
+	lilv_nodes_free(parameters);
 
 	LilvNodes* groups = lilv_port_get_value(p, port, in_group_pred);
 	if (lilv_nodes_size(groups) > 0)
@@ -394,6 +402,7 @@ main(int argc, char** argv)
 	control_class       = lilv_new_uri(world, LILV_URI_CONTROL_PORT);
 	event_class         = lilv_new_uri(world, LILV_URI_EVENT_PORT);
 	in_group_pred       = lilv_new_uri(world, NS_PG "inGroup");
+	is_parameter_pred   = lilv_new_uri(world, LILV_NS_LV2 "isParameter");
 	label_pred          = lilv_new_uri(world, LILV_NS_RDFS "label");
 	preset_class        = lilv_new_uri(world, NS_PSET "Preset");
 	role_pred           = lilv_new_uri(world, NS_PG "role");
@@ -431,6 +440,7 @@ main(int argc, char** argv)
 	lilv_node_free(role_pred);
 	lilv_node_free(preset_class);
 	lilv_node_free(label_pred);
+	lilv_node_free(is_parameter_pred);
 	lilv_node_free(in_group_pred);
 	lilv_node_free(event_class);
 	lilv_node_free(control_class);
