@@ -584,9 +584,9 @@ test_plugin(void)
 	free(manifest_uri);
 	free(data_uri);
 
-	float mins[1];
-	float maxs[1];
-	float defs[1];
+	float mins[3];
+	float maxs[3];
+	float defs[3];
 	lilv_plugin_get_port_ranges_float(plug, mins, maxs, defs);
 	TEST_ASSERT(mins[0] == -1.0f);
 	TEST_ASSERT(maxs[0] == 1.0f);
