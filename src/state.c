@@ -437,7 +437,7 @@ get1(SordModel* model, const SordNode* s, const SordNode* p)
 {
 	const SordQuad  pat  = { s, p, NULL, NULL };
 	SordIter* const i    = sord_find(model, pat);
-	SordNode* const node = i ? sord_node_copy(lilv_match_object(i)) : NULL;
+	SordNode* const node = i ? sord_node_copy(sord_iter_get_node(i, SORD_OBJECT)) : NULL;
 	sord_iter_free(i);
 	return node;
 }
@@ -459,11 +459,11 @@ new_state_from_model(LilvWorld*       world,
 		node, world->uris.lv2_appliesTo, NULL, NULL };
 	SordIter* i = sord_find(model, upat);
 	if (i) {
-		state->plugin_uri = lilv_node_new_from_node(
-			world, lilv_match_object(i));
+		const SordNode* object = sord_iter_get_node(i, SORD_OBJECT);
+		const SordNode* graph  = sord_iter_get_node(i, SORD_GRAPH);
+		state->plugin_uri = lilv_node_new_from_node(world, object);
 		if (!state->dir) {
-			state->dir = lilv_strdup(
-				(const char*)sord_node_get_string(lilv_match_graph(i)));
+			state->dir = lilv_strdup((const char*)sord_node_get_string(graph));
 		}
 		sord_iter_free(i);
 	} else {
@@ -475,11 +475,11 @@ new_state_from_model(LilvWorld*       world,
 	const SordQuad lpat = { node, world->uris.rdfs_label, NULL, NULL };
 	i = sord_find(model, lpat);
 	if (i) {
-		state->label = lilv_strdup(
-			(const char*)sord_node_get_string(lilv_match_object(i)));
+		const SordNode* object = sord_iter_get_node(i, SORD_OBJECT);
+		const SordNode* graph  = sord_iter_get_node(i, SORD_GRAPH);
+		state->label = lilv_strdup((const char*)sord_node_get_string(object));
 		if (!state->dir) {
-			state->dir = lilv_strdup(
-				(const char*)sord_node_get_string(lilv_match_graph(i)));
+			state->dir = lilv_strdup((const char*)sord_node_get_string(graph));
 		}
 		sord_iter_free(i);
 	}
@@ -488,7 +488,7 @@ new_state_from_model(LilvWorld*       world,
 	const SordQuad ppat  = { node, world->uris.lv2_port, NULL, NULL };
 	SordIter*      ports = sord_find(model, ppat);
 	FOREACH_MATCH(ports) {
-		const SordNode* port   = lilv_match_object(ports);
+		const SordNode* port   = sord_iter_get_node(ports, SORD_OBJECT);
 		const SordNode* label  = get1(model, port, world->uris.rdfs_label);
 		const SordNode* symbol = get1(model, port, world->uris.lv2_symbol);
 		const SordNode* value  = get1(model, port, world->uris.pset_value);
@@ -529,8 +529,8 @@ new_state_from_model(LilvWorld*       world,
 		lv2_atom_forge_init(&forge, map);
 
 		FOREACH_MATCH(props) {
-			const SordNode* p = lilv_match_predicate(props);
-			const SordNode* o = lilv_match_object(props);
+			const SordNode* p = sord_iter_get_node(props, SORD_PREDICATE);
+			const SordNode* o = sord_iter_get_node(props, SORD_OBJECT);
 
 			chunk.len = 0;
 			lv2_atom_forge_set_sink(

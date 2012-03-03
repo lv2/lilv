@@ -297,51 +297,9 @@ lilv_world_query_values_internal(LilvWorld*      world,
 #define FOREACH_MATCH(iter) \
 	for (; !sord_iter_end(iter); sord_iter_next(iter))
 
-static inline const SordNode*
-lilv_match_subject(SordIter* iter) {
-	SordQuad tup;
-	sord_iter_get(iter, tup);
-	return tup[SORD_SUBJECT];
-}
-
-static inline const SordNode*
-lilv_match_predicate(SordIter* iter) {
-	SordQuad tup;
-	sord_iter_get(iter, tup);
-	return tup[SORD_PREDICATE];
-}
-
-static inline const SordNode*
-lilv_match_object(SordIter* iter) {
-	SordQuad tup;
-	sord_iter_get(iter, tup);
-	return tup[SORD_OBJECT];
-}
-
-static inline const SordNode*
-lilv_match_graph(SordIter* iter) {
-	SordQuad tup;
-	sord_iter_get(iter, tup);
-	return tup[SORD_GRAPH];
-}
-
-static inline void
-lilv_match_end(SordIter* iter)
-{
-	sord_iter_free(iter);
-}
-
-static inline bool lilv_matches_next(SordIter* matches) {
-	return sord_iter_next(matches);
-}
-
-static inline bool lilv_matches_end(SordIter* matches) {
-	return sord_iter_end(matches);
-}
-
-LilvNodes* lilv_nodes_from_stream_objects(LilvWorld* w,
-                                          SordIter*  stream,
-                                          bool       object);
+LilvNodes* lilv_nodes_from_stream_objects(LilvWorld*    w,
+                                          SordIter*     stream,
+                                          SordQuadIndex field);
 
 char*  lilv_strjoin(const char* first, ...);
 char*  lilv_strdup(const char* str);

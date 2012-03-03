@@ -80,7 +80,7 @@ def configure(conf):
     autowaf.check_pkg(conf, 'serd-0', uselib_store='SERD',
                       atleast_version='0.11.0', mandatory=True)
     autowaf.check_pkg(conf, 'sord-0', uselib_store='SORD',
-                      atleast_version='0.5.0', mandatory=True)
+                      atleast_version='0.6.0', mandatory=True)
     autowaf.check_pkg(conf, 'lv2-lv2plug.in-ns-ext-urid',
                       uselib_store='LV2_URID', mandatory=True)
     autowaf.check_pkg(conf, 'lv2-lv2plug.in-ns-ext-state',

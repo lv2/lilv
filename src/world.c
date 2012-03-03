@@ -230,7 +230,7 @@ lilv_world_query_values_internal(LilvWorld*      world,
 	return lilv_nodes_from_stream_objects(
 		world,
 		lilv_world_query_internal(world, subject, predicate, object),
-		(object == NULL));
+		(object == NULL) ? SORD_OBJECT : SORD_SUBJECT);
 }
 
 static SerdNode
@@ -299,12 +299,12 @@ lilv_world_add_spec(LilvWorld*      world,
 		NULL,
 		NULL);
 	FOREACH_MATCH(files) {
-		const SordNode* file_node = lilv_match_object(files);
+		const SordNode* file_node = sord_iter_get_node(files, SORD_OBJECT);
 		zix_tree_insert((ZixTree*)spec->data_uris,
 		                lilv_node_new_from_node(world, file_node),
 		                NULL);
 	}
-	lilv_match_end(files);
+	sord_iter_free(files);
 
 	// Add specification to world specification list
 	spec->next   = world->specs;
@@ -356,12 +356,12 @@ lilv_world_add_plugin(LilvWorld*       world,
 		NULL,
 		NULL);
 	FOREACH_MATCH(files) {
-		const SordNode* file_node = lilv_match_object(files);
+		const SordNode* file_node = sord_iter_get_node(files, SORD_OBJECT);
 		zix_tree_insert((ZixTree*)plugin->data_uris,
 		                lilv_node_new_from_node(world, file_node),
 		                NULL);
 	}
-	lilv_match_end(files);
+	sord_iter_free(files);
 
 	// Add plugin to world plugin sequence
 	zix_tree_insert((ZixTree*)world->plugins, plugin, NULL);
@@ -388,7 +388,7 @@ lilv_world_load_dyn_manifest(LilvWorld* world,
 		world->uris.dman_DynManifest,
 		bundle_node);
 	FOREACH_MATCH(dmanifests) {
-		const SordNode* dmanifest = lilv_match_subject(dmanifests);
+		const SordNode* dmanifest = sord_iter_get_node(dmanifests, SORD_SUBJECT);
 
 		// ?dman lv2:binary ?binary
 		SordIter* binaries  = lilv_world_find_statements(
@@ -397,20 +397,20 @@ lilv_world_load_dyn_manifest(LilvWorld* world,
 			world->uris.lv2_binary,
 			NULL,
 			bundle_node);
-		if (lilv_matches_end(binaries)) {
-			lilv_match_end(binaries);
+		if (sord_iter_end(binaries)) {
+			sord_iter_free(binaries);
 			LILV_ERRORF("Dynamic manifest in <%s> has no binaries, ignored\n",
 			            sord_node_get_string(bundle_node));
 			continue;
 		}
 
 		// Get binary path
-		const SordNode* binary   = lilv_match_object(binaries);
+		const SordNode* binary   = sord_iter_get_node(binaries, SORD_OBJECT);
 		const uint8_t*  lib_uri  = sord_node_get_string(binary);
 		const char*     lib_path = lilv_uri_to_path((const char*)lib_uri);
 		if (!lib_path) {
 			LILV_ERROR("No dynamic manifest library path\n");
-			lilv_match_end(binaries);
+			sord_iter_free(binaries);
 			continue;
 		}
 
@@ -418,7 +418,7 @@ lilv_world_load_dyn_manifest(LilvWorld* world,
 		void* lib = dlopen(lib_path, RTLD_LAZY);
 		if (!lib) {
 			LILV_ERRORF("Failed to open dynmanifest library `%s'\n", lib_path);
-			lilv_match_end(binaries);
+			sord_iter_free(binaries);
 			continue;
 		}
 
@@ -428,7 +428,7 @@ lilv_world_load_dyn_manifest(LilvWorld* world,
 		OpenFunc dmopen = (OpenFunc)lilv_dlfunc(lib, "lv2_dyn_manifest_open");
 		if (!dmopen || dmopen(&handle, &dman_features)) {
 			LILV_ERRORF("No `lv2_dyn_manifest_open' in `%s'\n", lib_path);
-			lilv_match_end(binaries);
+			sord_iter_free(binaries);
 			dlclose(lib);
 			continue;
 		}
@@ -440,7 +440,7 @@ lilv_world_load_dyn_manifest(LilvWorld* world,
 		if (!get_subjects_func) {
 			LILV_ERRORF("No `lv2_dyn_manifest_get_subjects' in `%s'\n",
 			            lib_path);
-			lilv_match_end(binaries);
+			sord_iter_free(binaries);
 			dlclose(lib);
 			continue;
 		}
@@ -477,15 +477,15 @@ lilv_world_load_dyn_manifest(LilvWorld* world,
 			world->uris.lv2_Plugin,
 			dmanifest);
 		FOREACH_MATCH(plug_results) {
-			const SordNode* plugin_node = lilv_match_subject(plug_results);
+			const SordNode* plugin_node = sord_iter_get_node(plug_results, SORD_SUBJECT);
 			lilv_world_add_plugin(world, plugin_node,
 			                      &manifest_uri, desc, bundle_node);
 		}
-		lilv_match_end(plug_results);
+		sord_iter_free(plug_results);
 
-		lilv_match_end(binaries);
+		sord_iter_free(binaries);
 	}
-	lilv_match_end(dmanifests);
+	sord_iter_free(dmanifests);
 #endif  // LILV_DYN_MANIFEST
 }
 
@@ -525,11 +525,11 @@ lilv_world_load_bundle(LilvWorld* world, LilvNode* bundle_uri)
 		world->uris.lv2_Plugin,
 		bundle_node);
 	FOREACH_MATCH(plug_results) {
-		const SordNode* plugin_node = lilv_match_subject(plug_results);
+		const SordNode* plugin_node = sord_iter_get_node(plug_results, SORD_SUBJECT);
 		lilv_world_add_plugin(world, plugin_node,
 		                      &manifest_uri, NULL, bundle_node);
 	}
-	lilv_match_end(plug_results);
+	sord_iter_free(plug_results);
 
 	lilv_world_load_dyn_manifest(world, bundle_node, manifest_uri);
 
@@ -541,10 +541,10 @@ lilv_world_load_bundle(LilvWorld* world, LilvNode* bundle_uri)
 		world->uris.lv2_Specification,
 		bundle_node);
 	FOREACH_MATCH(spec_results) {
-		const SordNode* spec = lilv_match_subject(spec_results);
+		const SordNode* spec = sord_iter_get_node(spec_results, SORD_SUBJECT);
 		lilv_world_add_spec(world, spec, bundle_node);
 	}
-	lilv_match_end(spec_results);
+	sord_iter_free(spec_results);
 
 	serd_node_free(&manifest_uri);
 }
@@ -658,7 +658,7 @@ lilv_world_load_plugin_classes(LilvWorld* world)
 		world->uris.rdfs_Class,
 		NULL);
 	FOREACH_MATCH(classes) {
-		const SordNode* class_node = lilv_match_subject(classes);
+		const SordNode* class_node = sord_iter_get_node(classes, SORD_SUBJECT);
 
 		// Get parents (superclasses)
 		SordIter* parents = lilv_world_find_statements(
@@ -668,13 +668,13 @@ lilv_world_load_plugin_classes(LilvWorld* world)
 			NULL,
 			NULL);
 
-		if (lilv_matches_end(parents)) {
-			lilv_match_end(parents);
+		if (sord_iter_end(parents)) {
+			sord_iter_free(parents);
 			continue;
 		}
 
-		const SordNode* parent_node = lilv_match_object(parents);
-		lilv_match_end(parents);
+		const SordNode* parent_node = sord_iter_get_node(parents, SORD_OBJECT);
+		sord_iter_free(parents);
 
 		if (!sord_node_get_type(parent_node) == SORD_URI) {
 			// Class parent is not a resource, ignore (e.g. owl restriction)
@@ -689,14 +689,14 @@ lilv_world_load_plugin_classes(LilvWorld* world)
 			NULL,
 			NULL);
 
-		if (lilv_matches_end(labels)) {
-			lilv_match_end(labels);
+		if (sord_iter_end(labels)) {
+			sord_iter_free(labels);
 			continue;
 		}
 
-		const SordNode* label_node = lilv_match_object(labels);
+		const SordNode* label_node = sord_iter_get_node(labels, SORD_OBJECT);
 		const uint8_t*  label      = sord_node_get_string(label_node);
-		lilv_match_end(labels);
+		sord_iter_free(labels);
 
 		LilvPluginClasses* classes = world->plugin_classes;
 		LilvPluginClass*   pclass  = lilv_plugin_class_new(
@@ -706,7 +706,7 @@ lilv_world_load_plugin_classes(LilvWorld* world)
 			zix_tree_insert((ZixTree*)classes, pclass, NULL);
 		}
 	}
-	lilv_match_end(classes);
+	sord_iter_free(classes);
 }
 
 LILV_API
@@ -737,7 +737,7 @@ lilv_world_load_all(LilvWorld* world)
 			*/
 			((LilvPlugin*)plugin)->replaced = true;
 		}
-		lilv_match_end(replacement);
+		sord_iter_free(replacement);
 	}
 
 	// Query out things to cache
@@ -761,7 +761,7 @@ lilv_world_load_resource(LilvWorld*      world,
 	                                              world->uris.rdfs_seeAlso,
 	                                              NULL, NULL);
 	FOREACH_MATCH(files) {
-		const SordNode* file      = lilv_match_object(files);
+		const SordNode* file      = sord_iter_get_node(files, SORD_OBJECT);
 		const uint8_t*  str       = sord_node_get_string(file);
 		LilvNode*       file_node = lilv_node_new_from_node(world, file);
 		ZixTreeIter*    iter;
@@ -787,7 +787,7 @@ lilv_world_load_resource(LilvWorld*      world,
 		}
 		lilv_node_free(file_node);  // ...here
 	}
-	lilv_match_end(files);
+	sord_iter_free(files);
 
 	return n_read;
 }

@@ -73,8 +73,8 @@ lilv_port_has_property(const LilvPlugin* p,
 		p->world->uris.lv2_portProperty,
 		lilv_node_as_node(property));
 
-	const bool ret = !lilv_matches_end(results);
-	lilv_match_end(results);
+	const bool ret = !sord_iter_end(results);
+	sord_iter_free(results);
 	return ret;
 }
 
@@ -93,8 +93,8 @@ lilv_port_supports_event(const LilvPlugin* p,
 		sord_new_uri(p->world->world, NS_EV "supportsEvent"),
 		lilv_node_as_node(event));
 
-	const bool ret = !lilv_matches_end(results);
-	lilv_match_end(results);
+	const bool ret = !sord_iter_end(results);
+	sord_iter_free(results);
 	return ret;
 }
 
@@ -111,7 +111,7 @@ lilv_port_get_value_by_node(const LilvPlugin* p,
 		predicate,
 		NULL);
 
-	return lilv_nodes_from_stream_objects(p->world, results, true);
+	return lilv_nodes_from_stream_objects(p->world, results, SORD_OBJECT);
 }
 
 LILV_API
@@ -223,11 +223,11 @@ lilv_port_get_scale_points(const LilvPlugin* p,
 		NULL);
 
 	LilvScalePoints* ret = NULL;
-	if (!lilv_matches_end(points))
+	if (!sord_iter_end(points))
 		ret = lilv_scale_points_new();
 
 	FOREACH_MATCH(points) {
-		const SordNode* point = lilv_match_object(points);
+		const SordNode* point = sord_iter_get_node(points, SORD_OBJECT);
 
 		LilvNode* value = lilv_plugin_get_unique(
 			p,
@@ -244,7 +244,7 @@ lilv_port_get_scale_points(const LilvPlugin* p,
 				(ZixTree*)ret, lilv_scale_point_new(value, label), NULL);
 		}
 	}
-	lilv_match_end(points);
+	sord_iter_free(points);
 
 	assert(!ret || lilv_nodes_size(ret) > 0);
 	return ret;

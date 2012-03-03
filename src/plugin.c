@@ -107,10 +107,10 @@ lilv_plugin_get_one(const LilvPlugin* p,
 	LilvNode* ret    = NULL;
 	SordIter* stream = lilv_world_query_internal(
 		p->world, subject, predicate, NULL);
-	if (!lilv_matches_end(stream)) {
-		ret = lilv_node_new_from_node(p->world, lilv_match_object(stream));
+	if (!sord_iter_end(stream)) {
+		ret = lilv_node_new_from_node(p->world, sord_iter_get_node(stream, SORD_OBJECT));
 	}
-	lilv_match_end(stream);
+	sord_iter_free(stream);
 	return ret;
 }
 
@@ -211,7 +211,7 @@ lilv_plugin_load_ports_if_necessary(const LilvPlugin* const_p)
 			NULL);
 
 		FOREACH_MATCH(ports) {
-			const SordNode* port = lilv_match_object(ports);
+			const SordNode* port = sord_iter_get_node(ports, SORD_OBJECT);
 			LilvNode* index = lilv_plugin_get_unique(
 				p, port, p->world->uris.lv2_index);
 			LilvNode* symbol = lilv_plugin_get_unique(
@@ -257,7 +257,7 @@ lilv_plugin_load_ports_if_necessary(const LilvPlugin* const_p)
 			SordIter* types = lilv_world_query_internal(
 				p->world, port, p->world->uris.rdf_a, NULL);
 			FOREACH_MATCH(types) {
-				const SordNode* type = lilv_match_object(types);
+				const SordNode* type = sord_iter_get_node(types, SORD_OBJECT);
 				if (sord_node_get_type(type) == SORD_URI) {
 					zix_tree_insert(
 						(ZixTree*)this_port->classes,
@@ -267,7 +267,7 @@ lilv_plugin_load_ports_if_necessary(const LilvPlugin* const_p)
 					           lilv_node_as_uri(p->plugin_uri));
 				}
 			}
-			lilv_match_end(types);
+			sord_iter_free(types);
 
 		done:
 			lilv_node_free(symbol);
@@ -277,7 +277,7 @@ lilv_plugin_load_ports_if_necessary(const LilvPlugin* const_p)
 				break;
 			}
 		}
-		lilv_match_end(ports);
+		sord_iter_free(ports);
 
 		// Check sanity
 		for (uint32_t i = 0; i < p->num_ports; ++i) {
@@ -330,13 +330,13 @@ lilv_plugin_get_library_uri(const LilvPlugin* const_p)
 			p->world->uris.lv2_binary,
 			NULL);
 		FOREACH_MATCH(results) {
-			const SordNode* binary_node = lilv_match_object(results);
+			const SordNode* binary_node = sord_iter_get_node(results, SORD_OBJECT);
 			if (sord_node_get_type(binary_node) == SORD_URI) {
 				p->binary_uri = lilv_node_new_from_node(p->world, binary_node);
 				break;
 			}
 		}
-		lilv_match_end(results);
+		sord_iter_free(results);
 	}
 	if (!p->binary_uri) {
 		LILV_WARNF("Plugin <%s> has no lv2:binary\n",
@@ -366,7 +366,7 @@ lilv_plugin_get_class(const LilvPlugin* const_p)
 			p->world->uris.rdf_a,
 			NULL);
 		FOREACH_MATCH(results) {
-			const SordNode* class_node = lilv_match_object(results);
+			const SordNode* class_node = sord_iter_get_node(results, SORD_OBJECT);
 			if (sord_node_get_type(class_node) != SORD_URI) {
 				continue;
 			}
@@ -385,7 +385,7 @@ lilv_plugin_get_class(const LilvPlugin* const_p)
 
 			lilv_node_free(klass);
 		}
-		lilv_match_end(results);
+		sord_iter_free(results);
 
 		if (p->plugin_class == NULL)
 			p->plugin_class = p->world->lv2_plugin_class;
@@ -567,20 +567,20 @@ lilv_plugin_has_latency(const LilvPlugin* p)
 
 	bool ret = false;
 	FOREACH_MATCH(ports) {
-		const SordNode* port            = lilv_match_object(ports);
+		const SordNode* port            = sord_iter_get_node(ports, SORD_OBJECT);
 		SordIter*       reports_latency = lilv_world_query_internal(
 			p->world,
 			port,
 			p->world->uris.lv2_portProperty,
 			p->world->uris.lv2_reportsLatency);
-		const bool end = lilv_matches_end(reports_latency);
-		lilv_match_end(reports_latency);
+		const bool end = sord_iter_end(reports_latency);
+		sord_iter_free(reports_latency);
 		if (!end) {
 			ret = true;
 			break;
 		}
 	}
-	lilv_match_end(ports);
+	sord_iter_free(ports);
 
 	return ret;
 }
@@ -598,8 +598,8 @@ lilv_plugin_get_port_by_property(const LilvPlugin* plugin,
 			plugin->world->uris.lv2_portProperty,
 			port_property->val.uri_val);
 
-		const bool found = !lilv_matches_end(iter);
-		lilv_match_end(iter);
+		const bool found = !sord_iter_end(iter);
+		sord_iter_free(iter);
 
 		if (found) {
 			return port;
@@ -625,9 +625,9 @@ lilv_plugin_get_port_by_parameter(const LilvPlugin* plugin,
 			world->uris.lv2_isParameter,
 			parameter->val.uri_val);
 
-		const bool found = !lilv_matches_end(iter) &&
+		const bool found = !sord_iter_end(iter) &&
 			lilv_port_is_a(plugin, port, port_class);
-		lilv_match_end(iter);
+		sord_iter_free(iter);
 
 		if (found) {
 			return port;
@@ -775,13 +775,13 @@ lilv_plugin_get_author(const LilvPlugin* p)
 
 	sord_node_free(p->world->world, doap_maintainer);
 
-	if (lilv_matches_end(maintainers)) {
+	if (sord_iter_end(maintainers)) {
 		return NULL;
 	}
 
-	const SordNode* author = lilv_match_object(maintainers);
+	const SordNode* author = sord_iter_get_node(maintainers, SORD_OBJECT);
 
-	lilv_match_end(maintainers);
+	sord_iter_free(maintainers);
 	return author;
 }
 
@@ -848,7 +848,7 @@ lilv_plugin_get_uis(const LilvPlugin* p)
 		NULL);
 
 	FOREACH_MATCH(uis) {
-		const SordNode* ui = lilv_match_object(uis);
+		const SordNode* ui = sord_iter_get_node(uis, SORD_OBJECT);
 
 		LilvNode* type   = lilv_plugin_get_unique(p, ui, p->world->uris.rdf_a);
 		LilvNode* binary = lilv_plugin_get_unique(p, ui, ui_binary_node);
@@ -870,7 +870,7 @@ lilv_plugin_get_uis(const LilvPlugin* p)
 
 		zix_tree_insert((ZixTree*)result, lilv_ui, NULL);
 	}
-	lilv_match_end(uis);
+	sord_iter_free(uis);
 
 	sord_node_free(p->world->world, ui_binary_node);
 	sord_node_free(p->world->world, ui_ui_node);

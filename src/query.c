@@ -47,18 +47,16 @@ lilv_lang_matches(const char* a, const char* b)
 }
 
 LilvNodes*
-lilv_nodes_from_stream_objects_i18n(LilvWorld* world,
-                                    SordIter*  stream,
-                                    bool       object)
+lilv_nodes_from_stream_objects_i18n(LilvWorld*    world,
+                                    SordIter*     stream,
+                                    SordQuadIndex field)
 {
 	LilvNodes*      values  = lilv_nodes_new();
 	const SordNode* nolang  = NULL;  // Untranslated value
 	const SordNode* partial = NULL;  // Partial language match
 	char*           syslang = lilv_get_lang();
 	FOREACH_MATCH(stream) {
-		const SordNode* value = object
-			? lilv_match_object(stream)
-			: lilv_match_subject(stream);
+		const SordNode* value = sord_iter_get_node(stream, field);
 		if (sord_node_get_type(value) == SORD_LITERAL) {
 			const char*   lang = sord_node_get_language(value);
 			LilvLangMatch lm   = LILV_LANG_MATCH_NONE;
@@ -88,7 +86,7 @@ lilv_nodes_from_stream_objects_i18n(LilvWorld* world,
 			                NULL);
 		}
 	}
-	lilv_match_end(stream);
+	sord_iter_free(stream);
 	free(syslang);
 
 	if (lilv_nodes_size(values) > 0) {
@@ -118,27 +116,25 @@ lilv_nodes_from_stream_objects_i18n(LilvWorld* world,
 }
 
 LilvNodes*
-lilv_nodes_from_stream_objects(LilvWorld* world,
-                               SordIter*  stream,
-                               bool       object)
+lilv_nodes_from_stream_objects(LilvWorld*    world,
+                               SordIter*     stream,
+                               SordQuadIndex field)
 {
-	if (lilv_matches_end(stream)) {
-		lilv_match_end(stream);
+	if (sord_iter_end(stream)) {
+		sord_iter_free(stream);
 		return NULL;
 	} else if (world->opt.filter_language) {
-		return lilv_nodes_from_stream_objects_i18n(world, stream, object);
+		return lilv_nodes_from_stream_objects_i18n(world, stream, field);
 	} else {
 		LilvNodes* values = lilv_nodes_new();
 		FOREACH_MATCH(stream) {
-			const SordNode* value = object
-				? lilv_match_object(stream)
-				: lilv_match_subject(stream);
+			const SordNode* value = sord_iter_get_node(stream, field);
 			LilvNode* node = lilv_node_new_from_node(world, value);
 			if (node) {
 				zix_tree_insert((ZixTree*)values, node, NULL);
 			}
 		}
-		lilv_match_end(stream);
+		sord_iter_free(stream);
 		return values;
 	}
 }
