@@ -222,9 +222,7 @@ save(LV2_Handle                instance,
 	      map_uri(plugin, NS_ATOM "Bool"),
 	      LV2_STATE_IS_POD | LV2_STATE_IS_PORTABLE);
 
-	const uint8_t blob[] = "This is a bunch of data that happens to be text"
-		" but could really be anything at all, lest you feel like cramming"
-		" all sorts of ridiculous binary stuff in Turtle";
+	const uint8_t blob[] = "I am a blob of arbitrary data.";
 	store(callback_data,
 	      map_uri(plugin, "http://example.org/blob"),
 	      blob,

@@ -23,8 +23,11 @@
 
 #ifdef HAVE_LV2_STATE
 #    include "lv2/lv2plug.in/ns/ext/atom/atom.h"
+#    include "lv2/lv2plug.in/ns/ext/atom/forge.h"
 #    include "lv2/lv2plug.in/ns/ext/state/state.h"
 #endif
+
+#include "sratom/sratom.h"
 
 #define NS_ATOM  "http://lv2plug.in/ns/ext/atom#"
 #define NS_PSET  "http://lv2plug.in/ns/ext/presets#"
@@ -186,8 +189,7 @@ lilv_state_has_path(const char* path, void* state)
 }
 
 static char*
-make_path(LV2_State_Make_Path_Handle handle,
-          const char*                path)
+make_path(LV2_State_Make_Path_Handle handle, const char* path)
 {
 	LilvState* state = (LilvState*)handle;
 	if (!lilv_path_exists(state->dir, NULL)) {
@@ -343,9 +345,9 @@ lilv_state_new_from_instance(const LilvPlugin*          plugin,
 	state->copy_dir   = copy_dir ? absolute_dir(copy_dir, false) : NULL;
 	state->link_dir   = link_dir ? absolute_dir(link_dir, false) : NULL;
 	state->dir        = save_dir ? absolute_dir(save_dir, false) : NULL;
+	state->atom_Path  = map->map(map->handle, LV2_ATOM__Path);
 
 #ifdef HAVE_LV2_STATE
-	state->atom_Path = map->map(map->handle, LV2_ATOM__Path);
 	LV2_State_Map_Path  pmap          = { state, abstract_path, absolute_path };
 	LV2_Feature         pmap_feature  = { LV2_STATE__mapPath, &pmap };
 	LV2_State_Make_Path pmake         = { state, make_path };
@@ -440,51 +442,6 @@ get1(SordModel* model, const SordNode* s, const SordNode* p)
 	return node;
 }
 
-static void
-property_from_node(LilvWorld*      world,
-                   LV2_URID_Map*   map,
-                   const LilvNode* node,
-                   Property*       prop)
-{
-	const char* str = lilv_node_as_string(node);
-	switch (node->type) {
-	case LILV_VALUE_URI:
-		prop->value = malloc(sizeof(uint32_t));
-		*(uint32_t*)prop->value = map->map(map->handle, str);
-		prop->type = map->map(map->handle, NS_ATOM "URID");
-		prop->size = sizeof(uint32_t);
-		break;
-	case LILV_VALUE_STRING:
-		prop->size = strlen(str) + 1;
-		prop->value = malloc(prop->size);
-		memcpy(prop->value, str, prop->size);
-		prop->type = map->map(map->handle, NS_ATOM "String");
-		break;
-	case LILV_VALUE_BOOL:
-		prop->value = malloc(sizeof(uint32_t));
-		*(uint32_t*)prop->value = lilv_node_as_bool(node) ? 1 : 0;
-		prop->type = map->map(map->handle, NS_ATOM "Bool");
-		prop->size = sizeof(uint32_t);
-		break;
-	case LILV_VALUE_INT:
-		prop->value = malloc(sizeof(uint32_t));
-		*(uint32_t*)prop->value = lilv_node_as_int(node);
-		prop->type = map->map(map->handle, NS_ATOM "Int32");
-		prop->size = sizeof(uint32_t);
-		break;
-	case LILV_VALUE_FLOAT:
-		prop->value = malloc(sizeof(float));
-		*(float*)prop->value = lilv_node_as_float(node);
-		prop->type = map->map(map->handle, NS_ATOM "Float");
-		prop->size = sizeof(float);
-		break;
-	case LILV_VALUE_BLANK:
-	case LILV_VALUE_BLOB:
-		// TODO: Blank nodes in state
-		break;
-	}
-}
-
 static LilvState*
 new_state_from_model(LilvWorld*       world,
                      LV2_URID_Map*    map,
@@ -494,11 +451,8 @@ new_state_from_model(LilvWorld*       world,
 {
 	LilvState* const state = (LilvState*)malloc(sizeof(LilvState));
 	memset(state, '\0', sizeof(LilvState));
-	state->dir = dir ? lilv_strdup(dir) : NULL;
-
-#ifdef HAVE_LV2_STATE
+	state->dir       = lilv_strdup(dir);
 	state->atom_Path = map->map(map->handle, LV2_ATOM__Path);
-#endif
 
 	// Get the plugin URI this state applies to
 	const SordQuad upat = {
@@ -518,8 +472,7 @@ new_state_from_model(LilvWorld*       world,
 	}
 
 	// Get the state label
-	const SordQuad lpat = {
-		node, world->uris.rdfs_label, NULL, NULL };
+	const SordQuad lpat = { node, world->uris.rdfs_label, NULL, NULL };
 	i = sord_find(model, lpat);
 	if (i) {
 		state->label = lilv_strdup(
@@ -532,8 +485,8 @@ new_state_from_model(LilvWorld*       world,
 	}
 
 	// Get port values
-	const SordQuad ppat = { node, world->uris.lv2_port, NULL, NULL };
-	SordIter* ports = sord_find(model, ppat);
+	const SordQuad ppat  = { node, world->uris.lv2_port, NULL, NULL };
+	SordIter*      ports = sord_find(model, ppat);
 	FOREACH_MATCH(ports) {
 		const SordNode* port   = lilv_match_object(ports);
 		const SordNode* label  = get1(model, port, world->uris.rdfs_label);
@@ -547,13 +500,13 @@ new_state_from_model(LilvWorld*       world,
 			            sord_node_get_string(symbol),
 			            sord_node_get_string(node));
 		} else {
-			const char* sym    = (const char*)sord_node_get_string(symbol);
-			LilvNode*   lvalue = lilv_node_new_from_node(world, value);
-			append_port_value(state, sym, lvalue);
+			append_port_value(state,
+			                  (const char*)sord_node_get_string(symbol),
+			                  lilv_node_new_from_node(world, value));
 
 			if (label) {
-				lilv_state_set_label(
-					state, (const char*)sord_node_get_string(label));
+				lilv_state_set_label(state,
+				                     (const char*)sord_node_get_string(label));
 			}
 		}
 	}
@@ -568,47 +521,41 @@ new_state_from_model(LilvWorld*       world,
 	SordNode* statep = sord_new_uri(world->world, USTR(NS_STATE "state"));
 	const SordNode* state_node = get1(model, node, statep);
 	if (state_node) {
-		const SordQuad spat  = { state_node, NULL, NULL };
-		SordIter*      props = sord_find(model, spat);
+		const SordQuad spat   = { state_node, NULL, NULL };
+		SordIter*      props  = sord_find(model, spat);
+		Sratom*        sratom = sratom_new(map);
+		SerdChunk      chunk  = { NULL, 0 };
+		LV2_Atom_Forge forge;
+		lv2_atom_forge_init(&forge, map);
+
 		FOREACH_MATCH(props) {
 			const SordNode* p = lilv_match_predicate(props);
 			const SordNode* o = lilv_match_object(props);
+
+			chunk.len = 0;
+			lv2_atom_forge_set_sink(
+				&forge, sratom_forge_sink, sratom_forge_deref, &chunk);
+
+			sratom_read(sratom, &forge, world->world, model, o);
+			LV2_Atom* atom = (LV2_Atom*)chunk.buf;
 
 			uint32_t flags = 0;
 #ifdef HAVE_LV2_STATE
 			flags = LV2_STATE_IS_POD|LV2_STATE_IS_PORTABLE;
 #endif
 			Property prop = { NULL, 0, 0, 0, flags };
-			prop.key      = map->map(map->handle,
-			                         (const char*)sord_node_get_string(p));
 
-			if (sord_node_get_type(o) == SORD_BLANK) {
-				const SordNode* type  = get1(model, o, world->uris.rdf_a);
-				const SordNode* value = get1(model, o, world->uris.rdf_value);
-				if (type && value) {
-					size_t         len;
-					const uint8_t* b64 = sord_node_get_string_counted(
-						value, &len);
-					prop.value = serd_base64_decode(b64, len, &prop.size);
-					prop.type = map->map(
-						map->handle, (const char*)sord_node_get_string(type));
-				} else {
-					LILV_ERRORF("Unable to parse blank node property <%s>\n",
-					            sord_node_get_string(p));
-				}
-#ifdef HAVE_LV2_STATE
-			} else if (sord_node_equals(sord_node_get_datatype(o),
-			                            atom_path_node)) {
-				prop.size  = strlen((const char*)sord_node_get_string(o)) + 1;
-				prop.type  = map->map(map->handle, LV2_ATOM__Path);
+			prop.key = map->map(map->handle, (const char*)sord_node_get_string(p));
+
+			prop.type = atom->type;
+			if (atom->type == forge.Path) {
 				prop.flags = LV2_STATE_IS_PORTABLE;
-				prop.value = lilv_path_join(
-					state->dir, (const char*)sord_node_get_string(o));
-#endif
+				prop.value = lilv_path_join(state->dir, LV2_ATOM_BODY(atom));
+				prop.size = strlen(prop.value) + 1;
 			} else {
-				LilvNode* onode = lilv_node_new_from_node(world, o);
-				property_from_node(world, map, onode, &prop);
-				lilv_node_free(onode);
+				prop.size  = atom->size;
+				prop.value = malloc(atom->size);
+				memcpy(prop.value, LV2_ATOM_BODY(atom), atom->size);
 			}
 
 			if (prop.value) {
@@ -618,6 +565,7 @@ new_state_from_model(LilvWorld*       world,
 			}
 		}
 		sord_iter_free(props);
+		sratom_free(sratom);
 	}
 	sord_node_free(world->world, statep);
 #ifdef HAVE_LV2_STATE
@@ -688,37 +636,6 @@ lilv_state_new_from_file(LilvWorld*      world,
 	return state;
 }
 
-static LilvNode*
-node_from_property(LilvWorld* world, LV2_URID_Unmap* unmap,
-                   const char* type, void* value, size_t size)
-{
-	if (!strcmp(type, NS_ATOM "String")) {
-		return lilv_new_string(world, (const char*)value);
-	} else if (!strcmp(type, NS_ATOM "URID")) {
-		const char* str = unmap->unmap(unmap->handle, *(uint32_t*)value);
-		return lilv_new_uri(world, str);
-	} else if (!strcmp(type, NS_ATOM "Int32")) {
-		if (size == sizeof(int32_t)) {
-			return lilv_new_int(world, *(int32_t*)value);
-		} else {
-			LILV_WARNF("Int32 property <%s> has size %zu\n", type, size);
-		}
-	} else if (!strcmp(type, NS_ATOM "Float")) {
-		if (size == sizeof(float)) {
-			return lilv_new_float(world, *(float*)value);
-		} else {
-			LILV_WARNF("Float property <%s> has size %zu\n", type, size);
-		}
-	} else if (!strcmp(type, NS_ATOM "Bool")) {
-		if (size == sizeof(int32_t)) {
-			return lilv_new_bool(world, *(int32_t*)value);
-		} else {
-			LILV_WARNF("Bool property <%s> has size %zu\n", type, size);
-		}
-	}
-	return NULL;
-}
-
 static void
 node_to_serd(const LilvNode* node, SerdNode* value, SerdNode* type)
 {
@@ -752,37 +669,49 @@ node_to_serd(const LilvNode* node, SerdNode* value, SerdNode* type)
 }
 
 static SerdWriter*
-open_ttl_writer(FILE* fd, const uint8_t* uri, SerdEnv** new_env)
+ttl_writer(SerdSink sink, void* stream, const uint8_t* uri, SerdEnv** new_env)
 {
-	SerdURI base_uri;
-	SerdNode base = serd_node_new_uri_from_string(
-		(const uint8_t*)uri, NULL, &base_uri);
+	SerdURI  base_uri = SERD_URI_NULL;
+	SerdNode base     = SERD_NODE_NULL;
+	if (uri) {
+		base = serd_node_new_uri_from_string(uri, NULL, &base_uri);
+	}
 
 	SerdEnv* env = serd_env_new(&base);
+	serd_env_set_prefix_from_strings(env, USTR("atom"),  USTR(NS_ATOM));
 	serd_env_set_prefix_from_strings(env, USTR("lv2"),   USTR(LILV_NS_LV2));
 	serd_env_set_prefix_from_strings(env, USTR("pset"),  USTR(NS_PSET));
 	serd_env_set_prefix_from_strings(env, USTR("rdf"),   USTR(LILV_NS_RDF));
 	serd_env_set_prefix_from_strings(env, USTR("rdfs"),  USTR(LILV_NS_RDFS));
 	serd_env_set_prefix_from_strings(env, USTR("state"), USTR(NS_STATE));
+	serd_env_set_prefix_from_strings(env, USTR("xsd"),   USTR(LILV_NS_XSD));
 
 	SerdWriter* writer = serd_writer_new(
 		SERD_TURTLE,
 		(SerdStyle)(SERD_STYLE_ABBREVIATED|SERD_STYLE_CURIED),
 		env,
 		&base_uri,
-		serd_file_sink,
-		fd);
-
-	fseek(fd, 0, SEEK_END);
-	if (ftell(fd) == 0) {
-		serd_env_foreach(env, (SerdPrefixSink)serd_writer_set_prefix, writer);
-	} else {
-		fprintf(fd, "\n");
-	}
+		sink,
+		stream);
 
 	serd_node_free(&base);
 
 	*new_env = env;
+	return writer;
+}
+
+static SerdWriter*
+ttl_file_writer(FILE* fd, const uint8_t* uri, SerdEnv** env)
+{
+	SerdWriter* writer = ttl_writer(serd_file_sink, fd, uri, env);
+
+	fseek(fd, 0, SEEK_END);
+	if (ftell(fd) == 0) {
+		serd_env_foreach(*env, (SerdPrefixSink)serd_writer_set_prefix, writer);
+	} else {
+		fprintf(fd, "\n");
+	}
+
 	return writer;
 }
 
@@ -812,7 +741,7 @@ add_state_to_manifest(const LilvNode* plugin_uri,
 
 	char* const manifest_uri = lilv_strjoin("file://", manifest_path, NULL);
 	SerdEnv*    env          = NULL;
-	SerdWriter* writer       = open_ttl_writer(fd, USTR(manifest_uri), &env);
+	SerdWriter* writer       = ttl_file_writer(fd, USTR(manifest_uri), &env);
 
 	if (!state_uri) {
 		state_uri = state_file_uri;
@@ -859,40 +788,14 @@ link_exists(const char* path, void* data)
 	return !matches;
 }
 
-LILV_API
-int
-lilv_state_save(LilvWorld*                 world,
-                LV2_URID_Unmap*            unmap,
-                const LilvState*           state,
-                const char*                uri,
-                const char*                dir,
-                const char*                filename,
-                const LV2_Feature *const * features)
+static int
+lilv_state_write(LilvWorld*       world,
+                 LV2_URID_Map*    map,
+                 LV2_URID_Unmap*  unmap,
+                 const LilvState* state,
+                 SerdWriter*      writer,
+                 const char*      uri)
 {
-	if (!filename || !dir || lilv_mkdir_p(dir)) {
-		return 1;
-	}
-
-	char* abs_dir = absolute_dir(dir, true);
-	dir = abs_dir;
-
-	char* const path = lilv_path_join(dir, filename);
-	FILE*       fd   = fopen(path, "w");
-	if (!fd) {
-		LILV_ERRORF("Failed to open %s (%s)\n", path, strerror(errno));
-		free(abs_dir);
-		free(path);
-		return 4;
-	}
-
-	// FIXME: make parameter non-const?
-	if (state->dir && strcmp(state->dir, dir)) {
-		free(state->dir);
-		((LilvState*)state)->dir = lilv_strdup(dir);
-	}
-
-	char* const manifest = lilv_path_join(dir, "manifest.ttl");
-
 	SerdNode lv2_appliesTo = serd_node_from_string(
 		SERD_CURIE, USTR("lv2:appliesTo"));
 
@@ -900,9 +803,6 @@ lilv_state_save(LilvWorld*                 world,
 		state->plugin_uri->val.uri_val);
 
 	SerdNode subject = serd_node_from_string(SERD_URI, USTR(uri ? uri : ""));
-
-	SerdEnv*    env    = NULL;
-	SerdWriter* writer = open_ttl_writer(fd, USTR(manifest), &env);
 
 	// <subject> a pset:Preset
 	SerdNode p = serd_node_from_string(SERD_URI, USTR(LILV_NS_RDF "type"));
@@ -924,7 +824,7 @@ lilv_state_save(LilvWorld*                 world,
 		                            NULL, &subject, &p, &o, NULL, NULL);
 	}
 
-	// Save port values
+	// Write port values
 	for (uint32_t i = 0; i < state->num_values; ++i) {
 		PortValue* const value = &state->values[i];
 
@@ -952,6 +852,33 @@ lilv_state_save(LilvWorld*                 world,
 		serd_writer_end_anon(writer, &port);
 	}
 
+	// Write properties
+	const SerdNode state_node = serd_node_from_string(SERD_BLANK,
+	                                                  USTR("2state"));
+	if (state->num_props > 0) {
+		p = serd_node_from_string(SERD_URI, USTR(NS_STATE "state"));
+		serd_writer_write_statement(writer, SERD_ANON_O_BEGIN, NULL,
+		                            &subject, &p, &state_node, NULL, NULL);
+	}
+	Sratom* sratom = sratom_new(map);
+	for (uint32_t i = 0; i < state->num_props; ++i) {
+		Property*   prop = &state->props[i];
+		const char* key  = unmap->unmap(unmap->handle, prop->key);
+
+		p = serd_node_from_string(SERD_URI, (const uint8_t*)key);
+		sratom_write(sratom, unmap, writer, SERD_ANON_CONT,
+		             &state_node, &p, prop->type, prop->size, prop->value);
+	}
+	if (state->num_props > 0) {
+		serd_writer_end_anon(writer, &state_node);
+	}
+
+	return 0;
+}
+
+static void
+lilv_state_make_links(const LilvState* state, const char* dir)
+{
 	// Create symlinks to files
 #ifdef HAVE_LV2_STATE
 	for (ZixTreeIter* i = zix_tree_begin(state->abs2rel);
@@ -959,7 +886,7 @@ lilv_state_save(LilvWorld*                 world,
 	     i = zix_tree_iter_next(i)) {
 		const PathMap* pm = (const PathMap*)zix_tree_get(i);
 
-		char* path = lilv_path_join(abs_dir, pm->rel);
+		char* path = lilv_path_join(dir, pm->rel);
 		if (lilv_path_is_child(pm->abs, state->copy_dir)
 		    && strcmp(state->copy_dir, dir)) {
 			// Link directly to snapshot in the copy directory
@@ -991,81 +918,49 @@ lilv_state_save(LilvWorld*                 world,
 		free(path);
 	}
 #endif
+}
 
-	// Save properties
-	const SerdNode state_node = serd_node_from_string(SERD_BLANK,
-	                                                  USTR("2state"));
-	if (state->num_props > 0) {
-		p = serd_node_from_string(SERD_URI, USTR(NS_STATE "state"));
-		serd_writer_write_statement(writer, SERD_ANON_O_BEGIN, NULL,
-		                            &subject, &p, &state_node, NULL, NULL);
-	}
-	for (uint32_t i = 0; i < state->num_props; ++i) {
-		Property*   prop = &state->props[i];
-		const char* key  = unmap->unmap(unmap->handle, prop->key);
-		const char* type = unmap->unmap(unmap->handle, prop->type);
-		if (!key) {
-			LILV_WARNF("Failed to unmap property key `%d'\n", prop->key);
-		} else if (!type) {
-			LILV_WARNF("Failed to unmap property type `%d'\n", prop->type);
-		} else {
-			SerdNode t;
-			p = serd_node_from_string(SERD_URI, USTR(key));
-			LilvNode* const node = node_from_property(
-				world, unmap, type, prop->value, prop->size);
-			if (node) {
-				node_to_serd(node, &o, &t);
-				// <state> <key> value
-				serd_writer_write_statement(
-					writer, SERD_ANON_CONT, NULL,
-					&state_node, &p, &o, &t, NULL);
-				lilv_node_free(node);
-#ifdef HAVE_LV2_STATE
-			} else if (!strcmp(type, LV2_ATOM__Path)) {
-				o = serd_node_from_string(SERD_LITERAL,
-				                          (const uint8_t*)prop->value);
-				t = serd_node_from_string(SERD_URI, (const uint8_t*)type);
-				// <state> <key> "the/path"^^<state:Path>
-				serd_writer_write_statement(
-					writer, SERD_ANON_CONT, NULL,
-					&state_node, &p, &o, &t, NULL);
-#endif
-			} else {
-				char name[16];
-				snprintf(name, sizeof(name), "b%u", i);
-				const SerdNode blank = serd_node_from_string(
-					SERD_BLANK, (const uint8_t*)name);
-
-				// <state> <key> [
-				serd_writer_write_statement(
-					writer, SERD_ANON_CONT|SERD_ANON_O_BEGIN, NULL,
-					&state_node, &p, &blank, NULL, NULL);
-
-				// rdf:type <type>
-				p = serd_node_from_string(SERD_URI, USTR(LILV_NS_RDF "type"));
-				o = serd_node_from_string(SERD_URI, USTR(type));
-				serd_writer_write_statement(writer, SERD_ANON_CONT, NULL,
-				                            &blank, &p, &o, NULL, NULL);
-
-				// rdf:value "string"^^<xsd:base64Binary>
-				SerdNode blob = serd_node_new_blob(
-					prop->value, prop->size, true);
-				p = serd_node_from_string(SERD_URI, USTR(LILV_NS_RDF "value"));
-				t = serd_node_from_string(SERD_URI,
-				                          USTR(LILV_NS_XSD "base64Binary"));
-				serd_writer_write_statement(writer, SERD_ANON_CONT, NULL,
-				                            &blank, &p, &blob, &t, NULL);
-				serd_node_free(&blob);
-
-				serd_writer_end_anon(writer, &blank);  // ]
-			}
-		}
-	}
-	if (state->num_props > 0) {
-		serd_writer_end_anon(writer, &state_node);
+LILV_API
+int
+lilv_state_save(LilvWorld*       world,
+                LV2_URID_Map*    map,
+                LV2_URID_Unmap*  unmap,
+                const LilvState* state,
+                const char*      uri,
+                const char*      dir,
+                const char*      filename)
+{
+	if (!filename || !dir || lilv_mkdir_p(dir)) {
+		return 1;
 	}
 
-	// Close state file and clean up Serd
+	char*       abs_dir = absolute_dir(dir, true);
+	char* const path    = lilv_path_join(abs_dir, filename);
+	FILE*       fd      = fopen(path, "w");
+	if (!fd) {
+		LILV_ERRORF("Failed to open %s (%s)\n", path, strerror(errno));
+		free(abs_dir);
+		free(path);
+		return 4;
+	}
+
+	// FIXME: make parameter non-const?
+	if (state->dir && strcmp(state->dir, abs_dir)) {
+		free(state->dir);
+		((LilvState*)state)->dir = lilv_strdup(abs_dir);
+	}
+
+	char* const manifest = lilv_path_join(abs_dir, "manifest.ttl");
+
+	// Create symlinks to files if necessary
+	lilv_state_make_links(state, abs_dir);
+
+	// Write state to Turtle file
+	SerdEnv*    env    = NULL;
+	SerdWriter* writer = ttl_file_writer(fd, USTR(path), &env);
+
+	int ret = lilv_state_write(world, map, unmap, state, writer, uri);
+
 	serd_writer_free(writer);
 	serd_env_free(env);
 	fclose(fd);
@@ -1077,7 +972,26 @@ lilv_state_save(LilvWorld*                 world,
 	free(abs_dir);
 	free(manifest);
 	free(path);
-	return 0;
+	return ret;
+}
+
+LILV_API
+char*
+lilv_state_to_string(LilvWorld*       world,
+                     LV2_URID_Map*    map,
+                     LV2_URID_Unmap*  unmap,
+                     const LilvState* state,
+                     const char*      uri)
+{
+	SerdChunk   chunk  = { NULL, 0 };
+	SerdEnv*    env    = NULL;
+	SerdWriter* writer = ttl_writer(serd_chunk_sink, &chunk, NULL, &env);
+
+	lilv_state_write(world, map, unmap, state, writer, uri);
+
+	serd_writer_free(writer);
+	serd_env_free(env);
+	return (char*)serd_chunk_sink_finish(&chunk);
 }
 
 LILV_API
@@ -1134,9 +1048,7 @@ lilv_state_equals(const LilvState* a, const LilvState* b)
 		    || ap->type != bp->type
 		    || ap->flags != bp->flags) {
 			return false;
-		}
-
-		if (ap->type == a->atom_Path) {
+		} else if (ap->type == a->atom_Path) {
 			if (!lilv_file_equals(lilv_state_rel2abs(a, (char*)ap->value),
 			                      lilv_state_rel2abs(b, (char*)bp->value))) {
 				return false;
@@ -1176,9 +1088,7 @@ void
 lilv_state_set_label(LilvState*  state,
                      const char* label)
 {
-	if (state->label) {
-		free(state->label);
-	}
-
-	state->label = label ? lilv_strdup(label) : NULL;
+	const size_t len = strlen(label);
+	state->label = realloc(state->label, len + 1);
+	memcpy(state->label, label, len + 1);
 }

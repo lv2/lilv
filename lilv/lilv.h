@@ -1332,12 +1332,23 @@ lilv_state_restore(const LilvState*           state,
 LILV_API
 int
 lilv_state_save(LilvWorld*                 world,
+                LV2_URID_Map*              map,
                 LV2_URID_Unmap*            unmap,
                 const LilvState*           state,
                 const char*                uri,
                 const char*                dir,
-                const char*                filename,
-                const LV2_Feature *const * features);
+                const char*                filename);
+
+/**
+   Save state to a string.  This function does not use the filesystem.
+*/
+LILV_API
+char*
+lilv_state_to_string(LilvWorld*       world,
+                     LV2_URID_Map*    map,
+                     LV2_URID_Unmap*  unmap,
+                     const LilvState* state,
+                     const char*      uri);
 
 /**
    @}

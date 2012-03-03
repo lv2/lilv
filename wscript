@@ -8,7 +8,7 @@ import waflib.Options as Options
 import waflib.Logs as Logs
 
 # Version of this package (even if built as a child)
-LILV_VERSION       = '0.10.0'
+LILV_VERSION       = '0.11.0'
 LILV_MAJOR_VERSION = '0'
 
 # Library version (UNIX style major, minor, micro)
@@ -78,7 +78,7 @@ def configure(conf):
 
     autowaf.check_pkg(conf, 'lv2core', uselib_store='LV2CORE', mandatory=True)
     autowaf.check_pkg(conf, 'serd-0', uselib_store='SERD',
-                      atleast_version='0.9.0', mandatory=True)
+                      atleast_version='0.11.0', mandatory=True)
     autowaf.check_pkg(conf, 'sord-0', uselib_store='SORD',
                       atleast_version='0.5.0', mandatory=True)
     autowaf.check_pkg(conf, 'lv2-lv2plug.in-ns-ext-urid',
@@ -186,6 +186,7 @@ def build(bld):
         src/port.c
         src/query.c
         src/scalepoint.c
+        src/sratom/sratom.c
         src/state.c
         src/ui.c
         src/util.c
