@@ -44,8 +44,8 @@ typedef struct {
 } Property;
 
 typedef struct {
-	char*     symbol;
-	LilvNode* value;
+	char*     symbol;  ///< Symbol of port
+	LilvNode* value;   ///< Value of port
 } PortValue;
 
 typedef struct {
@@ -54,19 +54,19 @@ typedef struct {
 } PathMap;
 
 struct LilvStateImpl {
-	LilvNode*  plugin_uri;
-	char*      dir;       ///< Save directory (if saved)
-	char*      file_dir;
-	char*      copy_dir;
-	char*      link_dir;
-	char*      label;
-	ZixTree*   abs2rel;  ///< PathMap sorted by abs
-	ZixTree*   rel2abs;  ///< PathMap sorted by rel
-	Property*  props;
-	PortValue* values;
-	uint32_t   atom_Path;
-	uint32_t   num_props;
-	uint32_t   num_values;
+	LilvNode*  plugin_uri;  ///< Plugin URI
+	char*      dir;         ///< Save directory (if saved)
+	char*      file_dir;    ///< Directory for files created by plugin
+	char*      copy_dir;    ///< Directory for snapshots of external files
+	char*      link_dir;    ///< Directory for links to external files
+	char*      label;       ///< State/Preset label
+	ZixTree*   abs2rel;     ///< PathMap sorted by abs
+	ZixTree*   rel2abs;     ///< PathMap sorted by rel
+	Property*  props;       ///< State properties
+	PortValue* values;      ///< Port values
+	uint32_t   atom_Path;   ///< atom:Path URID
+	uint32_t   num_props;   ///< Number of state properties
+	uint32_t   num_values;  ///< Number of port values
 };
 
 static int
@@ -103,9 +103,7 @@ path_rel_free(void* ptr)
 }
 
 static PortValue*
-append_port_value(LilvState*  state,
-                  const char* port_symbol,
-                  LilvNode*   value)
+append_port_value(LilvState* state, const char* port_symbol, LilvNode* value)
 {
 	if (value) {
 		state->values = (PortValue*)realloc(
@@ -131,7 +129,7 @@ lilv_state_rel2abs(const LilvState* state, const char* path)
 
 #ifdef HAVE_LV2_STATE
 
-static int
+static LV2_State_Status
 store_callback(void*       handle,
                uint32_t    key,
                const void* value,
@@ -1085,8 +1083,7 @@ lilv_state_get_label(const LilvState* state)
 
 LILV_API
 void
-lilv_state_set_label(LilvState*  state,
-                     const char* label)
+lilv_state_set_label(LilvState* state, const char* label)
 {
 	const size_t len = strlen(label);
 	state->label = realloc(state->label, len + 1);
