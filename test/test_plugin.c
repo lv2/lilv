@@ -15,8 +15,6 @@
   OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 */
 
-#define _BSD_SOURCE  /* for realpath */
-
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -319,9 +317,13 @@ restore(LV2_Handle                  instance,
 
 	if (apath) {
 		char* path = map_path->absolute_path(map_path->handle, apath);
-		if (strcmp(path, plugin->tmp_file_path)) {
-			fprintf(stderr, "ERROR: Restored bad path `%s' != `%s'\n",
-			        path, plugin->tmp_file_path);
+		FILE* f    = fopen(path, "r");
+		char  str[8];
+		fread(str, 1, sizeof(str), f);
+		fclose(f);
+		if (strcmp(str, "Hello\n")) {
+			fprintf(stderr, "error: Restored bad file contents `%s' != `Hello'\n",
+			        str);
 		}
 		free(path);
 	}
