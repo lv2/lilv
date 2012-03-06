@@ -1206,6 +1206,16 @@ test_state(void)
 	// Ensure they are equal
 	TEST_ASSERT(lilv_state_equals(state, state2));
 
+	// Save state to a string
+	char* state1_str = lilv_state_to_string(
+		world, &map, &unmap, state, "http://example.org/state1");
+
+	// Restore from string
+	LilvState* from_str = lilv_state_new_from_string(world, &map, state1_str);
+
+	// Ensure they are equal
+	TEST_ASSERT(lilv_state_equals(state, from_str));
+
 	const LilvNode* state_plugin_uri = lilv_state_get_plugin_uri(state);
 	TEST_ASSERT(lilv_node_equals(state_plugin_uri, plugin_uri));
 
@@ -1367,6 +1377,7 @@ test_state(void)
 	lilv_node_free(num);
 
 	lilv_state_free(state);
+	lilv_state_free(from_str);
 	lilv_state_free(state2);
 	lilv_state_free(state3);
 	lilv_state_free(state4);

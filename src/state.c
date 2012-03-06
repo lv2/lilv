@@ -471,7 +471,7 @@ new_state_from_model(LilvWorld*       world,
 		const SordNode* object = sord_iter_get_node(i, SORD_OBJECT);
 		const SordNode* graph  = sord_iter_get_node(i, SORD_GRAPH);
 		state->plugin_uri = lilv_node_new_from_node(world, object);
-		if (!state->dir) {
+		if (!state->dir && graph) {
 			state->dir = lilv_strdup((const char*)sord_node_get_string(graph));
 		}
 		sord_iter_free(i);
@@ -653,6 +653,47 @@ lilv_state_new_from_file(LilvWorld*      world,
 	return state;
 }
 
+static void
+set_prefixes(SerdEnv* env)
+{
+	serd_env_set_prefix_from_strings(env, USTR("atom"),  USTR(NS_ATOM));
+	serd_env_set_prefix_from_strings(env, USTR("lv2"),   USTR(LILV_NS_LV2));
+	serd_env_set_prefix_from_strings(env, USTR("pset"),  USTR(NS_PSET));
+	serd_env_set_prefix_from_strings(env, USTR("rdf"),   USTR(LILV_NS_RDF));
+	serd_env_set_prefix_from_strings(env, USTR("rdfs"),  USTR(LILV_NS_RDFS));
+	serd_env_set_prefix_from_strings(env, USTR("state"), USTR(NS_STATE));
+	serd_env_set_prefix_from_strings(env, USTR("xsd"),   USTR(LILV_NS_XSD));
+}
+
+LILV_API
+LilvState*
+lilv_state_new_from_string(LilvWorld*    world,
+                           LV2_URID_Map* map,
+                           const char*   str)
+{
+	SerdNode    base   = SERD_NODE_NULL;
+	SerdEnv*    env    = serd_env_new(&base);
+	SordModel*  model  = sord_new(world->world, SORD_SPO|SORD_OPS, false);
+	SerdReader* reader = sord_new_reader(model, env, SERD_TURTLE, NULL);
+
+	set_prefixes(env);
+	serd_reader_read_string(reader, USTR(str));
+
+	const SordNode* p   = sord_new_uri(world->world, USTR(LILV_NS_RDF "type"));
+	const SordNode* o   = sord_new_uri(world->world, USTR(NS_PSET "Preset"));
+	const SordQuad  pat = { NULL, p, o, NULL };
+	SordIter* const i   = sord_find(model, pat);
+	const SordNode* s   = sord_iter_get_node(i, SORD_SUBJECT);
+
+	LilvState* state = new_state_from_model(world, map, model, s, NULL);
+
+	serd_reader_free(reader);
+	sord_free(model);
+	serd_env_free(env);
+
+	return state;
+}
+
 static SerdWriter*
 ttl_writer(SerdSink sink, void* stream, const uint8_t* uri, SerdEnv** new_env)
 {
@@ -663,13 +704,7 @@ ttl_writer(SerdSink sink, void* stream, const uint8_t* uri, SerdEnv** new_env)
 	}
 
 	SerdEnv* env = serd_env_new(&base);
-	serd_env_set_prefix_from_strings(env, USTR("atom"),  USTR(NS_ATOM));
-	serd_env_set_prefix_from_strings(env, USTR("lv2"),   USTR(LILV_NS_LV2));
-	serd_env_set_prefix_from_strings(env, USTR("pset"),  USTR(NS_PSET));
-	serd_env_set_prefix_from_strings(env, USTR("rdf"),   USTR(LILV_NS_RDF));
-	serd_env_set_prefix_from_strings(env, USTR("rdfs"),  USTR(LILV_NS_RDFS));
-	serd_env_set_prefix_from_strings(env, USTR("state"), USTR(NS_STATE));
-	serd_env_set_prefix_from_strings(env, USTR("xsd"),   USTR(LILV_NS_XSD));
+	set_prefixes(env);
 
 	SerdWriter* writer = serd_writer_new(
 		SERD_TURTLE,
@@ -737,7 +772,7 @@ add_state_to_manifest(const LilvNode* plugin_uri,
 
 	// <state> a pset:Preset
 	SerdNode p = serd_node_from_string(SERD_URI, USTR(LILV_NS_RDF "type"));
-	SerdNode o = serd_node_from_string(SERD_CURIE, USTR("pset:Preset"));
+	SerdNode o = serd_node_from_string(SERD_URI, USTR(NS_PSET "Preset"));
 	serd_writer_write_statement(writer, 0, NULL, &s, &p, &o, NULL, NULL);
 
 	// <state> rdfs:seeAlso <file>
@@ -779,7 +814,8 @@ lilv_state_write(LilvWorld*       world,
                  LV2_URID_Unmap*  unmap,
                  const LilvState* state,
                  SerdWriter*      writer,
-                 const char*      uri)
+                 const char*      uri,
+                 const char*      dir)
 {
 	SerdNode lv2_appliesTo = serd_node_from_string(
 		SERD_CURIE, USTR("lv2:appliesTo"));
@@ -791,7 +827,7 @@ lilv_state_write(LilvWorld*       world,
 
 	// <subject> a pset:Preset
 	SerdNode p = serd_node_from_string(SERD_URI, USTR(LILV_NS_RDF "type"));
-	SerdNode o = serd_node_from_string(SERD_CURIE, USTR("pset:Preset"));
+	SerdNode o = serd_node_from_string(SERD_URI, USTR(NS_PSET "Preset"));
 	serd_writer_write_statement(writer, 0, NULL,
 	                            &subject, &p, &o, NULL, NULL);
 
@@ -850,8 +886,15 @@ lilv_state_write(LilvWorld*       world,
 		const char* key  = unmap->unmap(unmap->handle, prop->key);
 
 		p = serd_node_from_string(SERD_URI, (const uint8_t*)key);
-		sratom_write(sratom, unmap, writer, SERD_ANON_CONT,
-		             &state_node, &p, prop->type, prop->size, prop->value);
+		if (prop->type == state->atom_Path && !dir) {
+			const char* abs_path = lilv_state_rel2abs(state, prop->value);
+			sratom_write(sratom, unmap, writer, SERD_ANON_CONT,
+			             &state_node, &p, prop->type,
+			             strlen(abs_path) + 1, abs_path);
+		} else {
+			sratom_write(sratom, unmap, writer, SERD_ANON_CONT,
+			             &state_node, &p, prop->type, prop->size, prop->value);
+		}
 	}
 	if (state->num_props > 0) {
 		serd_writer_end_anon(writer, &state_node);
@@ -943,7 +986,7 @@ lilv_state_save(LilvWorld*       world,
 	SerdEnv*    env    = NULL;
 	SerdWriter* writer = ttl_file_writer(fd, USTR(path), &env);
 
-	int ret = lilv_state_write(world, map, unmap, state, writer, uri);
+	int ret = lilv_state_write(world, map, unmap, state, writer, uri, dir);
 
 	serd_writer_free(writer);
 	serd_env_free(env);
@@ -971,7 +1014,7 @@ lilv_state_to_string(LilvWorld*       world,
 	SerdEnv*    env    = NULL;
 	SerdWriter* writer = ttl_writer(serd_chunk_sink, &chunk, NULL, &env);
 
-	lilv_state_write(world, map, unmap, state, writer, uri);
+	lilv_state_write(world, map, unmap, state, writer, uri, NULL);
 
 	serd_writer_free(writer);
 	serd_env_free(env);

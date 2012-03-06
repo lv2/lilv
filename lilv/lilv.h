@@ -1155,6 +1155,15 @@ lilv_state_new_from_file(LilvWorld*      world,
                          const char*     path);
 
 /**
+   Load a state snapshot from a string made by lilv_state_to_string().
+*/
+LILV_API
+LilvState*
+lilv_state_new_from_string(LilvWorld*    world,
+                           LV2_URID_Map* map,
+                           const char*   str);
+
+/**
    Function to get a port value.
    @param port_symbol The symbol of the port.
    @param user_data The user_data passed to lilv_state_new_from_instance().
