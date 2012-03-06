@@ -1070,32 +1070,43 @@ test_ui(void)
 
 /*****************************************************************************/
 
-float in  = 1.0;
-float out = 42.0;
+uint32_t atom_Float = 0;
+float    in         = 1.0;
+float    out        = 42.0;
 
-LilvNode*
-get_port_value(const char* port_symbol, void* user_data)
+const void*
+get_port_value(const char* port_symbol,
+               void*       user_data,
+               uint32_t*   size,
+               uint32_t*   type)
 {
 	if (!strcmp(port_symbol, "input")) {
-		return lilv_new_float((LilvWorld*)user_data, in);
+		*size = sizeof(float);
+		*type = atom_Float;
+		return &in;
 	} else if (!strcmp(port_symbol, "output")) {
-		return lilv_new_float((LilvWorld*)user_data, out);
+		*size = sizeof(float);
+		*type = atom_Float;
+		return &out;
 	} else {
 		fprintf(stderr, "error: get_port_value for nonexistent port `%s'\n",
 		        port_symbol);
+		*size = *type = 0;
 		return NULL;
 	}
 }
 
 void
 set_port_value(const char*     port_symbol,
-               const LilvNode* value,
-               void*           user_data)
+               void*           user_data,
+               const void*     value,
+               uint32_t        size,
+               uint32_t        type)
 {
 	if (!strcmp(port_symbol, "input")) {
-		in = lilv_node_as_float(value);
+		in = *(float*)value;
 	} else if (!strcmp(port_symbol, "output")) {
-		out = lilv_node_as_float(value);
+		out = *(float*)value;
 	} else {
 		fprintf(stderr, "error: set_port_value for nonexistent port `%s'\n",
 		        port_symbol);
@@ -1157,6 +1168,8 @@ test_state(void)
 	LV2_URID_Unmap     unmap         = { NULL, unmap_uri };
 	LV2_Feature        unmap_feature = { LV2_URID_UNMAP_URI, &unmap };
 	const LV2_Feature* features[]    = { &map_feature, &unmap_feature, NULL };
+
+	atom_Float = map.map(map.handle, "http://lv2plug.in/ns/ext/atom#Float");
 
 	LilvNode*  num     = lilv_new_int(world, 5);
 	LilvState* nostate = lilv_state_new_from_file(world, &map, num, "/junk");

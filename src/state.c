@@ -36,16 +36,18 @@
 #define USTR(s) ((const uint8_t*)(s))
 
 typedef struct {
-	void*    value;
-	size_t   size;
-	uint32_t key;
-	uint32_t type;
-	uint32_t flags;
+	void*    value;  ///< Value/Object
+	size_t   size;   ///< Size of value
+	uint32_t key;    ///< Key/Predicate (URID)
+	uint32_t type;   ///< Type of value (URID)
+	uint32_t flags;  ///< State flags (POD, etc)
 } Property;
 
 typedef struct {
-	char*     symbol;  ///< Symbol of port
-	LilvNode* value;   ///< Value of port
+	char*    symbol;  ///< Symbol of port
+	void*    value;   ///< Value of port
+	uint32_t size;    ///< Size of value
+	uint32_t type;    ///< Type of value (URID)
 } PortValue;
 
 typedef struct {
@@ -103,14 +105,21 @@ path_rel_free(void* ptr)
 }
 
 static PortValue*
-append_port_value(LilvState* state, const char* port_symbol, LilvNode* value)
+append_port_value(LilvState*  state,
+                  const char* port_symbol,
+                  const void* value,
+                  uint32_t    size,
+                  uint32_t    type)
 {
 	if (value) {
 		state->values = (PortValue*)realloc(
 			state->values, (++state->num_values) * sizeof(PortValue));
 		PortValue* pv = &state->values[state->num_values - 1];
 		pv->symbol = lilv_strdup(port_symbol);
-		pv->value  = value;
+		pv->value  = malloc(size);
+		pv->size   = size;
+		pv->type   = type;
+		memcpy(pv->value, value, size);
 		return pv;
 	}
 	return NULL;
@@ -362,8 +371,10 @@ lilv_state_new_from_instance(const LilvPlugin*          plugin,
 			const LilvPort* const port = plugin->ports[i];
 			if (lilv_port_is_a(plugin, port, lv2_ControlPort)
 			    && lilv_port_is_a(plugin, port, lv2_InputPort)) {
-				const char* sym = lilv_node_as_string(port->symbol);
-				append_port_value(state, sym, get_value(sym, user_data));
+				uint32_t size, type;
+				const char* sym   = lilv_node_as_string(port->symbol);
+				const void* value = get_value(sym, user_data, &size, &type);
+				append_port_value(state, sym, value, size, type);
 			}
 		}
 		lilv_node_free(lv2_ControlPort);
@@ -423,9 +434,9 @@ lilv_state_restore(const LilvState*           state,
 
 	if (set_value) {
 		for (uint32_t i = 0; i < state->num_values; ++i) {
-			set_value(state->values[i].symbol,
-			          state->values[i].value,
-			          user_data);
+			const PortValue* val = &state->values[i];
+			set_value(val->symbol, user_data,
+			          val->value, val->size, val->type);
 		}
 	}
 }
@@ -482,6 +493,13 @@ new_state_from_model(LilvWorld*       world,
 		sord_iter_free(i);
 	}
 
+	Sratom*        sratom = sratom_new(map);
+	SerdChunk      chunk  = { NULL, 0 };
+	LV2_Atom_Forge forge;
+	lv2_atom_forge_init(&forge, map);
+	lv2_atom_forge_set_sink(
+		&forge, sratom_forge_sink, sratom_forge_deref, &chunk);
+
 	// Get port values
 	const SordQuad ppat  = { node, world->uris.lv2_port, NULL, NULL };
 	SordIter*      ports = sord_find(model, ppat);
@@ -498,9 +516,13 @@ new_state_from_model(LilvWorld*       world,
 			            sord_node_get_string(symbol),
 			            sord_node_get_string(node));
 		} else {
+			chunk.len = 0;
+			sratom_read(sratom, &forge, world->world, model, value);
+			LV2_Atom* atom = (LV2_Atom*)chunk.buf;
+
 			append_port_value(state,
 			                  (const char*)sord_node_get_string(symbol),
-			                  lilv_node_new_from_node(world, value));
+			                  LV2_ATOM_BODY(atom), atom->size, atom->type);
 
 			if (label) {
 				lilv_state_set_label(state,
@@ -521,10 +543,6 @@ new_state_from_model(LilvWorld*       world,
 	if (state_node) {
 		const SordQuad spat   = { state_node, NULL, NULL };
 		SordIter*      props  = sord_find(model, spat);
-		Sratom*        sratom = sratom_new(map);
-		SerdChunk      chunk  = { NULL, 0 };
-		LV2_Atom_Forge forge;
-		lv2_atom_forge_init(&forge, map);
 
 		FOREACH_MATCH(props) {
 			const SordNode* p = sord_iter_get_node(props, SORD_PREDICATE);
@@ -563,12 +581,13 @@ new_state_from_model(LilvWorld*       world,
 			}
 		}
 		sord_iter_free(props);
-		sratom_free(sratom);
 	}
 	sord_node_free(world->world, statep);
 #ifdef HAVE_LV2_STATE
 	sord_node_free(world->world, atom_path_node);
 #endif
+
+	sratom_free(sratom);
 
 	qsort(state->props, state->num_props, sizeof(Property), property_cmp);
 	qsort(state->values, state->num_values, sizeof(PortValue), value_cmp);
@@ -632,38 +651,6 @@ lilv_state_new_from_file(LilvWorld*      world,
 	serd_env_free(env);
 	free(uri);
 	return state;
-}
-
-static void
-node_to_serd(const LilvNode* node, SerdNode* value, SerdNode* type)
-{
-	const char* type_uri = NULL;
-	switch (node->type) {
-	case LILV_VALUE_URI:
-		*value = serd_node_from_string(SERD_URI, USTR(node->str_val));
-		break;
-	case LILV_VALUE_BLANK:
-		*value = serd_node_from_string(SERD_BLANK, USTR(node->str_val));
-		break;
-	default:
-		*value = serd_node_from_string(SERD_LITERAL, USTR(node->str_val));
-		switch (node->type) {
-		case LILV_VALUE_BOOL:
-			type_uri = LILV_NS_XSD "boolean";
-			break;
-		case LILV_VALUE_INT:
-			type_uri = LILV_NS_XSD "integer";
-			break;
-		case LILV_VALUE_FLOAT:
-			type_uri = LILV_NS_XSD "decimal";
-			break;
-		default:
-			break;
-		}
-	}
-	*type = (type_uri)
-		? serd_node_from_string(SERD_URI, USTR(type_uri))
-		: SERD_NODE_NULL;
 }
 
 static SerdWriter*
@@ -822,6 +809,8 @@ lilv_state_write(LilvWorld*       world,
 		                            NULL, &subject, &p, &o, NULL, NULL);
 	}
 
+	Sratom* sratom = sratom_new(map);
+
 	// Write port values
 	for (uint32_t i = 0; i < state->num_values; ++i) {
 		PortValue* const value = &state->values[i];
@@ -842,10 +831,8 @@ lilv_state_write(LilvWorld*       world,
 
 		// _:symbol pset:value value
 		p = serd_node_from_string(SERD_URI, USTR(NS_PSET "value"));
-		SerdNode t;
-		node_to_serd(value->value, &o, &t);
-		serd_writer_write_statement(writer, SERD_ANON_CONT, NULL,
-		                            &port, &p, &o, &t, NULL);
+		sratom_write(sratom, unmap, writer, SERD_ANON_CONT, &port, &p,
+		             value->type, value->size, value->value);
 
 		serd_writer_end_anon(writer, &port);
 	}
@@ -858,7 +845,6 @@ lilv_state_write(LilvWorld*       world,
 		serd_writer_write_statement(writer, SERD_ANON_O_BEGIN, NULL,
 		                            &subject, &p, &state_node, NULL, NULL);
 	}
-	Sratom* sratom = sratom_new(map);
 	for (uint32_t i = 0; i < state->num_props; ++i) {
 		Property*   prop = &state->props[i];
 		const char* key  = unmap->unmap(unmap->handle, prop->key);
@@ -1001,7 +987,7 @@ lilv_state_free(LilvState* state)
 			free(state->props[i].value);
 		}
 		for (uint32_t i = 0; i < state->num_values; ++i) {
-			lilv_node_free(state->values[i].value);
+			free(state->values[i].value);
 			free(state->values[i].symbol);
 		}
 		lilv_node_free(state->plugin_uri);
@@ -1032,9 +1018,9 @@ lilv_state_equals(const LilvState* a, const LilvState* b)
 	for (uint32_t i = 0; i < a->num_values; ++i) {
 		PortValue* const av = &a->values[i];
 		PortValue* const bv = &b->values[i];
-		if (strcmp(av->symbol, bv->symbol)) {
-			return false;
-		} else if (!lilv_node_equals(av->value, bv->value)) {
+		if (av->size != bv->size || av->type != bv->type
+		    || strcmp(av->symbol, bv->symbol)
+		    || memcmp(av->value, bv->value, av->size)) {
 			return false;
 		}
 	}

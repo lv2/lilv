@@ -1156,10 +1156,18 @@ lilv_state_new_from_file(LilvWorld*      world,
 
 /**
    Function to get a port value.
-   @return A node the caller (lilv) takes ownership of and must free.
+   @param port_symbol The symbol of the port.
+   @param user_data The user_data passed to lilv_state_new_from_instance().
+   @param size (Output) The size of the returned value.
+   @param type (Output) The URID of the type of the returned value.
+   @return A pointer to the port value.
+
+   This function MUST set @p size and @p type appropriately.
 */
-typedef LilvNode* (*LilvGetPortValueFunc)(const char* port_symbol,
-                                          void*       user_data);
+typedef const void* (*LilvGetPortValueFunc)(const char* port_symbol,
+                                            void*       user_data,
+                                            uint32_t*   size,
+                                            uint32_t*   type);
 
 /**
    Create a new state snapshot from a plugin instance.
@@ -1277,10 +1285,17 @@ lilv_state_set_label(LilvState*  state,
 
 /**
    Function to set a port value.
+   @param port_symbol The symbol of the port.
+   @param user_data The user_data passed to lilv_state_restore().
+   @param size The size of @p value.
+   @param type The URID of the type of @p value.
+   @param value A pointer to the port value.
 */
-typedef void (*LilvSetPortValueFunc)(const char*     port_symbol,
-                                     const LilvNode* value,
-                                     void*           user_data);
+typedef void (*LilvSetPortValueFunc)(const char* port_symbol,
+                                     void*       user_data,
+                                     const void* value,
+                                     uint32_t    size,
+                                     uint32_t    type);
 
 /**
    Restore a plugin instance from a state snapshot.
