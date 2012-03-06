@@ -29,8 +29,6 @@
 
 #define TEST_URI "http://example.org/lilv-test-plugin"
 
-#define NS_ATOM "http://lv2plug.in/ns/ext/atom#"
-
 enum {
 	TEST_INPUT  = 0,
 	TEST_OUTPUT = 1
@@ -109,7 +107,7 @@ instantiate(const LV2_Descriptor*     descriptor,
 		if (!strcmp(features[i]->URI, LV2_URID_URI "#map")) {
 			test->map = (LV2_URID_Map*)features[i]->data;
 			test->uris.atom_Float = test->map->map(
-				test->map->handle, NS_ATOM "Float");
+				test->map->handle, LV2_ATOM__Float);
 		} else if (!strcmp(features[i]->URI, LV2_STATE__makePath)) {
 			make_path = (LV2_State_Make_Path*)features[i]->data;
 		}
@@ -180,7 +178,7 @@ save(LV2_Handle                instance,
 	      map_uri(plugin, "http://example.org/greeting"),
 	      "hello",
 	      strlen("hello") + 1,
-	      map_uri(plugin, NS_ATOM "String"),
+	      map_uri(plugin, LV2_ATOM__String),
 	      LV2_STATE_IS_POD | LV2_STATE_IS_PORTABLE);
 
 	const uint32_t urid = map_uri(plugin, "http://example.org/urivalue");
@@ -188,14 +186,14 @@ save(LV2_Handle                instance,
 	      map_uri(plugin, "http://example.org/uri"),
 	      &urid,
 	      sizeof(uint32_t),
-	      map_uri(plugin, NS_ATOM "URID"),
+	      map_uri(plugin, LV2_ATOM__URID),
 	      LV2_STATE_IS_POD | LV2_STATE_IS_PORTABLE);
 
 	store(callback_data,
 	      map_uri(plugin, "http://example.org/num-runs"),
 	      &plugin->num_runs,
 	      sizeof(plugin->num_runs),
-	      map_uri(plugin, NS_ATOM "Int32"),
+	      map_uri(plugin, LV2_ATOM__Int32),
 	      LV2_STATE_IS_POD | LV2_STATE_IS_PORTABLE);
 
 	const float two = 2.0f;
@@ -203,7 +201,7 @@ save(LV2_Handle                instance,
 	      map_uri(plugin, "http://example.org/two"),
 	      &two,
 	      sizeof(two),
-	      map_uri(plugin, NS_ATOM "Float"),
+	      map_uri(plugin, LV2_ATOM__Float),
 	      LV2_STATE_IS_POD | LV2_STATE_IS_PORTABLE);
 
 	const uint32_t affirmative = 1;
@@ -211,7 +209,7 @@ save(LV2_Handle                instance,
 	      map_uri(plugin, "http://example.org/true"),
 	      &affirmative,
 	      sizeof(affirmative),
-	      map_uri(plugin, NS_ATOM "Bool"),
+	      map_uri(plugin, LV2_ATOM__Bool),
 	      LV2_STATE_IS_POD | LV2_STATE_IS_PORTABLE);
 
 	const uint32_t negative = 0;
@@ -219,7 +217,7 @@ save(LV2_Handle                instance,
 	      map_uri(plugin, "http://example.org/false"),
 	      &negative,
 	      sizeof(negative),
-	      map_uri(plugin, NS_ATOM "Bool"),
+	      map_uri(plugin, LV2_ATOM__Bool),
 	      LV2_STATE_IS_POD | LV2_STATE_IS_PORTABLE);
 
 	const uint8_t blob[] = "I am a blob of arbitrary data.";
