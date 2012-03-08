@@ -464,8 +464,7 @@ new_state_from_model(LilvWorld*       world,
 	state->atom_Path = map->map(map->handle, LV2_ATOM__Path);
 
 	// Get the plugin URI this state applies to
-	const SordQuad upat = {
-		node, world->uris.lv2_appliesTo, NULL, NULL };
+	const SordQuad upat = { node, world->uris.lv2_appliesTo, NULL, NULL };
 	SordIter* i = sord_find(model, upat);
 	if (i) {
 		const SordNode* object = sord_iter_get_node(i, SORD_OBJECT);
@@ -561,17 +560,13 @@ new_state_from_model(LilvWorld*       world,
 #endif
 			Property prop = { NULL, 0, 0, 0, flags };
 
-			prop.key = map->map(map->handle, (const char*)sord_node_get_string(p));
-
-			prop.type = atom->type;
+			prop.key   = map->map(map->handle, (const char*)sord_node_get_string(p));
+			prop.type  = atom->type;
+			prop.size  = atom->size;
+			prop.value = malloc(atom->size);
+			memcpy(prop.value, LV2_ATOM_BODY(atom), atom->size);
 			if (atom->type == forge.Path) {
 				prop.flags = LV2_STATE_IS_PORTABLE;
-				prop.value = lilv_path_join(state->dir, LV2_ATOM_BODY(atom));
-				prop.size = strlen(prop.value) + 1;
-			} else {
-				prop.size  = atom->size;
-				prop.value = malloc(atom->size);
-				memcpy(prop.value, LV2_ATOM_BODY(atom), atom->size);
 			}
 
 			if (prop.value) {
@@ -587,6 +582,7 @@ new_state_from_model(LilvWorld*       world,
 	sord_node_free(world->world, atom_path_node);
 #endif
 
+	free((void*)chunk.buf);
 	sratom_free(sratom);
 
 	qsort(state->props, state->num_props, sizeof(Property), property_cmp);
@@ -627,17 +623,17 @@ lilv_state_new_from_file(LilvWorld*      world,
 		return NULL;
 	}
 
-	uint8_t*    uri    = (uint8_t*)lilv_strjoin("file://", path, NULL);
-	SerdNode    base   = serd_node_from_string(SERD_URI, uri);
-	SerdEnv*    env    = serd_env_new(&base);
-	SordModel*  model  = sord_new(world->world, SORD_SPO, false);
-	SerdReader* reader = sord_new_reader(model, env, SERD_TURTLE, NULL);
+	uint8_t*    abs_path = (uint8_t*)lilv_path_absolute(path);
+	SerdNode    node     = serd_node_new_uri_from_path(abs_path, NULL, NULL);
+	SerdEnv*    env      = serd_env_new(&node);
+	SordModel*  model    = sord_new(world->world, SORD_SPO, false);
+	SerdReader* reader   = sord_new_reader(model, env, SERD_TURTLE, NULL);
 
-	serd_reader_read_file(reader, uri);
+	serd_reader_read_file(reader, node.buf);
 
 	SordNode* subject_node = (subject)
 		? subject->val.uri_val
-		: sord_node_from_serd_node(world->world, env, &base, NULL, NULL);
+		: sord_node_from_serd_node(world->world, env, &node, NULL, NULL);
 
 	char* dirname   = lilv_dirname(path);
 	char* real_path = lilv_realpath(dirname);
@@ -646,10 +642,11 @@ lilv_state_new_from_file(LilvWorld*      world,
 	free(dirname);
 	free(real_path);
 
+	serd_node_free(&node);
+	free(abs_path);
 	serd_reader_free(reader);
 	sord_free(model);
 	serd_env_free(env);
-	free(uri);
 	return state;
 }
 
@@ -687,6 +684,7 @@ lilv_state_new_from_string(LilvWorld*    world,
 
 	LilvState* state = new_state_from_model(world, map, model, s, NULL);
 
+	sord_iter_free(i);
 	serd_reader_free(reader);
 	sord_free(model);
 	serd_env_free(env);
@@ -695,35 +693,32 @@ lilv_state_new_from_string(LilvWorld*    world,
 }
 
 static SerdWriter*
-ttl_writer(SerdSink sink, void* stream, const uint8_t* uri, SerdEnv** new_env)
+ttl_writer(SerdSink sink, void* stream, const SerdNode* base, SerdEnv** new_env)
 {
-	SerdURI  base_uri = SERD_URI_NULL;
-	SerdNode base     = SERD_NODE_NULL;
-	if (uri) {
-		base = serd_node_new_uri_from_string(uri, NULL, &base_uri);
+	SerdURI base_uri = SERD_URI_NULL;
+	if (base) {
+		serd_uri_parse(base->buf, &base_uri);
 	}
-
-	SerdEnv* env = serd_env_new(&base);
+		
+	SerdEnv* env = serd_env_new(base);
 	set_prefixes(env);
 
 	SerdWriter* writer = serd_writer_new(
 		SERD_TURTLE,
-		(SerdStyle)(SERD_STYLE_ABBREVIATED|SERD_STYLE_CURIED),
+		(SerdStyle)(SERD_STYLE_RESOLVED|SERD_STYLE_ABBREVIATED|SERD_STYLE_CURIED),
 		env,
 		&base_uri,
 		sink,
 		stream);
-
-	serd_node_free(&base);
 
 	*new_env = env;
 	return writer;
 }
 
 static SerdWriter*
-ttl_file_writer(FILE* fd, const uint8_t* uri, SerdEnv** env)
+ttl_file_writer(FILE* fd, const SerdNode* node, SerdEnv** env)
 {
-	SerdWriter* writer = ttl_writer(serd_file_sink, fd, uri, env);
+	SerdWriter* writer = ttl_writer(serd_file_sink, fd, node, env);
 
 	fseek(fd, 0, SEEK_END);
 	if (ftell(fd) == 0) {
@@ -739,7 +734,7 @@ static int
 add_state_to_manifest(const LilvNode* plugin_uri,
                       const char*     manifest_path,
                       const char*     state_uri,
-                      const char*     state_file_uri)
+                      const char*     state_path)
 {
 	FILE* fd = fopen((char*)manifest_path, "a");
 	if (!fd) {
@@ -748,29 +743,20 @@ add_state_to_manifest(const LilvNode* plugin_uri,
 		return 4;
 	}
 
-	// Make path relative if it is in the same directory as manifest
-	const char* last_slash = strrchr(state_file_uri, '/');
-	if (last_slash) {
-		const size_t len = last_slash - state_file_uri;
-		if (!strncmp(manifest_path, state_file_uri, len)) {
-			state_file_uri = last_slash + 1;
-		}
-	}
+	SerdNode file     = serd_node_new_uri_from_path(USTR(state_path), 0, 0);
+	SerdNode manifest = serd_node_new_uri_from_path(USTR(manifest_path), 0, 0);
 
 	lilv_flock(fd, true);
 
-	char* const manifest_uri = lilv_strjoin("file://", manifest_path, NULL);
-	SerdEnv*    env          = NULL;
-	SerdWriter* writer       = ttl_file_writer(fd, USTR(manifest_uri), &env);
+	SerdEnv*    env    = NULL;
+	SerdWriter* writer = ttl_file_writer(fd, &manifest, &env);
 
 	if (!state_uri) {
-		state_uri = state_file_uri;
+		state_uri = (const char*)file.buf;
 	}
 
-	SerdNode s    = serd_node_from_string(SERD_URI, USTR(state_uri));
-	SerdNode file = serd_node_from_string(SERD_URI, USTR(state_file_uri));
-
 	// <state> a pset:Preset
+	SerdNode s = serd_node_from_string(SERD_URI, USTR(state_uri));
 	SerdNode p = serd_node_from_string(SERD_URI, USTR(LILV_NS_RDF "type"));
 	SerdNode o = serd_node_from_string(SERD_URI, USTR(NS_PSET "Preset"));
 	serd_writer_write_statement(writer, 0, NULL, &s, &p, &o, NULL, NULL);
@@ -785,9 +771,10 @@ add_state_to_manifest(const LilvNode* plugin_uri,
 		SERD_URI, USTR(lilv_node_as_string(plugin_uri)));
 	serd_writer_write_statement(writer, 0, NULL, &s, &p, &o, NULL, NULL);
 
+	serd_node_free(&file);
+	serd_node_free(&manifest);
 	serd_writer_free(writer);
 	serd_env_free(env);
-	free(manifest_uri);
 
 	lilv_flock(fd, false);
 	fclose(fd);
@@ -885,7 +872,7 @@ lilv_state_write(LilvWorld*       world,
 		Property*   prop = &state->props[i];
 		const char* key  = unmap->unmap(unmap->handle, prop->key);
 
-		p = serd_node_from_string(SERD_URI, (const uint8_t*)key);
+		p = serd_node_from_string(SERD_URI, USTR(key));
 		if (prop->type == state->atom_Path && !dir) {
 			const char* abs_path = lilv_state_rel2abs(state, prop->value);
 			sratom_write(sratom, unmap, writer, SERD_ANON_CONT,
@@ -900,6 +887,7 @@ lilv_state_write(LilvWorld*       world,
 		serd_writer_end_anon(writer, &state_node);
 	}
 
+	sratom_free(sratom);
 	return 0;
 }
 
@@ -983,11 +971,19 @@ lilv_state_save(LilvWorld*       world,
 	lilv_state_make_links(state, abs_dir);
 
 	// Write state to Turtle file
+	SerdNode    file   = serd_node_new_uri_from_path(USTR(path), NULL, NULL);
 	SerdEnv*    env    = NULL;
-	SerdWriter* writer = ttl_file_writer(fd, USTR(path), &env);
+	SerdWriter* writer = ttl_file_writer(fd, &file, &env);
+
+	SerdNode node = SERD_NODE_NULL;
+	if (!uri) {
+		node = serd_node_new_uri_from_path(USTR(path), NULL, NULL);
+		uri  = (const char*)node.buf;
+	}
 
 	int ret = lilv_state_write(world, map, unmap, state, writer, uri, dir);
 
+	serd_node_free(&file);
 	serd_writer_free(writer);
 	serd_env_free(env);
 	fclose(fd);
@@ -996,6 +992,7 @@ lilv_state_save(LilvWorld*       world,
 		add_state_to_manifest(state->plugin_uri, manifest, uri, path);
 	}
 
+	serd_node_free(&node);
 	free(abs_dir);
 	free(manifest);
 	free(path);
@@ -1041,6 +1038,8 @@ lilv_state_free(LilvState* state)
 		free(state->label);
 		free(state->dir);
 		free(state->file_dir);
+		free(state->copy_dir);
+		free(state->link_dir);
 		free(state);
 	}
 }

@@ -15,6 +15,7 @@
 */
 
 #include <assert.h>
+#include <ctype.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -146,8 +147,16 @@ start_object(Sratom*         sratom,
 	}
 }
 
+static bool
+path_is_absolute(const char* path)
+{
+	return (path[0] == '/'
+	        || (isalpha(path[0]) && path[1] == ':'
+	            && (path[2] == '/' || path[2] == '\\')));
+}
+
 SRATOM_API
-void
+int
 sratom_write(Sratom*         sratom,
              LV2_URID_Unmap* unmap,
              SerdWriter*     writer,
@@ -168,7 +177,7 @@ sratom_write(Sratom*         sratom,
 	SerdNode          language    = SERD_NODE_NULL;
 	bool              new_node    = false;
 	if (type_urid == 0 && size == 0) {
-		object = serd_node_from_string(SERD_BLANK, USTR("null"));
+		object = serd_node_from_string(SERD_URI, USTR(NS_RDF "nil"));
 	} else if (type_urid == sratom->forge.String) {
 		object = serd_node_from_string(SERD_LITERAL, (const uint8_t*)body);
 	} else if (type_urid == sratom->forge.Literal) {
@@ -195,8 +204,25 @@ sratom_write(Sratom*         sratom,
 		object = serd_node_from_string(SERD_URI, str);
 	} else if (type_urid == sratom->forge.Path) {
 		const uint8_t* str = USTR(body);
-		object   = serd_node_from_string(SERD_LITERAL, str);
-		datatype = serd_node_from_string(SERD_URI, USTR(LV2_ATOM__Path));
+		if (path_is_absolute((const char*)str)) {
+			new_node = true;
+			object   = serd_node_new_uri_from_path(str, NULL, NULL);
+		} else {
+			SerdEnv*        env      = serd_writer_get_env(writer);
+			SerdURI         base_uri = SERD_URI_NULL;
+			const SerdNode* base     = serd_env_get_base_uri(env, &base_uri);
+			if (strncmp((const char*)base->buf, "file://", 7)) {
+				fprintf(stderr, "warning: Relative path but base is not a file URI.\n");
+				fprintf(stderr, "warning: Writing ambiguous atom:Path literal.\n");
+				object   = serd_node_from_string(SERD_LITERAL, str);
+				datatype = serd_node_from_string(SERD_URI, USTR(LV2_ATOM__Path));
+			} else {
+				new_node = true;
+				SerdNode rel = serd_node_new_uri_from_path(str, NULL, NULL);
+				object = serd_node_new_uri_from_node(&rel, &base_uri, NULL);
+				serd_node_free(&rel);
+			}
+		}
 	} else if (type_urid == sratom->forge.URI) {
 		const uint8_t* str = USTR(body);
 		object = serd_node_from_string(SERD_URI, str);
@@ -331,21 +357,25 @@ sratom_write(Sratom*         sratom,
 	if (new_node) {
 		serd_node_free(&object);
 	}
+
+	return 0;
 }
 
 SRATOM_API
 char*
 sratom_to_turtle(Sratom*         sratom,
                  LV2_URID_Unmap* unmap,
+                 const char*     base_uri,
                  const SerdNode* subject,
                  const SerdNode* predicate,
                  uint32_t        type,
                  uint32_t        size,
                  const void*     body)
 {
-	SerdURI   base_uri = SERD_URI_NULL;
-	SerdEnv*  env      = serd_env_new(NULL);
-	SerdChunk str      = { NULL, 0 };
+	SerdURI   buri = SERD_URI_NULL;
+	SerdNode  base = serd_node_new_uri_from_string(USTR(base_uri), NULL, &buri);
+	SerdEnv*  env  = serd_env_new(&base);
+	SerdChunk str  = { NULL, 0 };
 
 	serd_env_set_prefix_from_strings(env, USTR("midi"), NS_MIDI);
 	serd_env_set_prefix_from_strings(env, USTR("atom"),
@@ -358,7 +388,7 @@ sratom_to_turtle(Sratom*         sratom,
 	SerdWriter* writer = serd_writer_new(
 		SERD_TURTLE,
 		SERD_STYLE_ABBREVIATED|SERD_STYLE_RESOLVED|SERD_STYLE_CURIED,
-		env, &base_uri, serd_chunk_sink, &str);
+		env, &buri, serd_chunk_sink, &str);
 
 	// Write @prefix directives
 	serd_env_foreach(env,
@@ -485,10 +515,14 @@ read_node(Sratom*         sratom,
 			lv2_atom_forge_string(forge, (const uint8_t*)str, len);
 		}
 	} else if (sord_node_get_type(node) == SORD_URI) {
-		if (serd_uri_string_has_scheme((const uint8_t*)str)) {
-			lv2_atom_forge_urid(forge, map->map(map->handle, str));
+		if (!strcmp(str, (const char*)NS_RDF "nil")) {
+			lv2_atom_forge_atom(forge, 0, 0);
+		} else if (!strncmp(str, "file://", 7)) {
+			uint8_t* path = serd_file_uri_parse((const uint8_t*)str, NULL);
+			lv2_atom_forge_path(forge, path, strlen((const char*)path));
+			free(path);
 		} else {
-			lv2_atom_forge_uri(forge, (const uint8_t*)str, len);
+			lv2_atom_forge_urid(forge, map->map(map->handle, str));
 		}
 	} else {
 		const SordNode* type  = get_object(model, node, sratom->nodes.rdf_type);
@@ -613,16 +647,17 @@ sratom_forge_deref(LV2_Atom_Forge_Sink_Handle handle, LV2_Atom_Forge_Ref ref)
 SRATOM_API
 LV2_Atom*
 sratom_from_turtle(Sratom*         sratom,
+                   const char*     base_uri,
                    const SerdNode* subject,
                    const SerdNode* predicate,
                    const char*     str)
 {
-	SerdChunk   out           = { NULL, 0 };
-	SerdNode    base_uri_node = SERD_NODE_NULL;
-	SordWorld*  world         = sord_world_new();
-	SordModel*  model         = sord_new(world, SORD_SPO, false);
-	SerdEnv*    env           = serd_env_new(&base_uri_node);
-	SerdReader* reader        = sord_new_reader(model, env, SERD_TURTLE, NULL);
+	SerdChunk   out    = { NULL, 0 };
+	SerdNode    base   = serd_node_new_uri_from_string(USTR(base_uri), NULL, NULL);
+	SordWorld*  world  = sord_world_new();
+	SordModel*  model  = sord_new(world, SORD_SPO, false);
+	SerdEnv*    env    = serd_env_new(&base);
+	SerdReader* reader = sord_new_reader(model, env, SERD_TURTLE, NULL);
 
 	if (!serd_reader_read_string(reader, (const uint8_t*)str)) {
 		SordNode* s = sord_node_from_serd_node(world, env, subject, 0, 0);

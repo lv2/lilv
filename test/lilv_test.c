@@ -617,6 +617,7 @@ test_plugin(void)
 			"http://lv2plug.in/ns/lv2core#latency");
 	LilvPort* latency_port = lilv_plugin_get_port_by_parameter(
 		plug, out_class, lv2_latency);
+	lilv_node_free(lv2_latency);
 
 	TEST_ASSERT(latency_port);
 	TEST_ASSERT(lilv_port_get_index(plug, latency_port) == 2);
@@ -1126,6 +1127,7 @@ map_uri(LV2_URID_Map_Handle handle,
 		}
 	}
 
+	assert(serd_uri_string_has_scheme((const uint8_t*)uri));
 	uris = (char**)realloc(uris, ++n_uris * sizeof(char*));
 	uris[n_uris - 1] = lilv_strdup(uri);
 	return n_uris;
@@ -1141,7 +1143,7 @@ unmap_uri(LV2_URID_Map_Handle handle,
 	return NULL;
 }
 
-static const char* temp_dir = NULL;
+static char* temp_dir = NULL;
 
 char*
 lilv_make_path(LV2_State_Make_Path_Handle handle,
@@ -1153,11 +1155,15 @@ lilv_make_path(LV2_State_Make_Path_Handle handle,
 int
 test_state(void)
 {
+	uint8_t*   abs_bundle = (uint8_t*)lilv_path_absolute(LILV_TEST_BUNDLE);
+	SerdNode   bundle     = serd_node_new_uri_from_path(abs_bundle, 0, 0);
 	LilvWorld* world      = lilv_world_new();
-	LilvNode*  bundle_uri = lilv_new_uri(world, LILV_TEST_BUNDLE);
+	LilvNode*  bundle_uri = lilv_new_uri(world, (const char*)bundle.buf);
 	LilvNode*  plugin_uri = lilv_new_uri(world,
 	                                     "http://example.org/lilv-test-plugin");
 	lilv_world_load_bundle(world, bundle_uri);
+	free(abs_bundle);
+	serd_node_free(&bundle);
 
 	const LilvPlugins* plugins = lilv_world_get_all_plugins(world);
 	const LilvPlugin*  plugin  = lilv_plugins_get_by_uri(plugins, plugin_uri);
@@ -1187,9 +1193,9 @@ test_state(void)
 	temp_dir = lilv_realpath("temp");
 
 	const char* file_dir = NULL;
-	const char* copy_dir = NULL;
-	const char* link_dir = NULL;
-	const char* save_dir = NULL;
+	char*       copy_dir = NULL;
+	char*       link_dir = NULL;
+	char*       save_dir = NULL;
 
 	// Get instance state state
 	LilvState* state = lilv_state_new_from_instance(
@@ -1215,6 +1221,7 @@ test_state(void)
 
 	// Ensure they are equal
 	TEST_ASSERT(lilv_state_equals(state, from_str));
+	free(state1_str);
 
 	const LilvNode* state_plugin_uri = lilv_state_get_plugin_uri(state);
 	TEST_ASSERT(lilv_node_equals(state_plugin_uri, plugin_uri));
@@ -1248,35 +1255,41 @@ test_state(void)
 
 	// Save state to a directory
 	int ret = lilv_state_save(world, &map, &unmap, state, NULL,
-	                          "./state.lv2", "state.ttl");
+	                          "state.lv2", "state.ttl");
 	TEST_ASSERT(!ret);
 
 	// Load state from directory
 	LilvState* state5 = lilv_state_new_from_file(world, &map, NULL,
-	                                             "./state.lv2/state.ttl");
+	                                             "state.lv2/state.ttl");
 
 	TEST_ASSERT(lilv_state_equals(state, state5));  // Round trip accuracy
 
 	// Save state with URI to a directory
 	const char* state_uri = "http://example.org/state";
 	ret = lilv_state_save(world, &map, &unmap, state, state_uri,
-	                      "./state6.lv2", "state6.ttl");
+	                      "state6.lv2", "state6.ttl");
 	TEST_ASSERT(!ret);
 
 	// Load default bundle into world and load state from it
-	LilvNode* test_state_bundle = lilv_new_uri(world, "./state6.lv2/");
+	uint8_t*  state6_path       = (uint8_t*)lilv_path_absolute("state6.lv2/");
+	SerdNode  state6_uri        = serd_node_new_uri_from_path(state6_path, 0, 0);
+	LilvNode* test_state_bundle = lilv_new_uri(world, (const char*)state6_uri.buf);
 	LilvNode* test_state_node   = lilv_new_uri(world, state_uri);
 	lilv_world_load_bundle(world, test_state_bundle);
 	lilv_world_load_resource(world, test_state_node);
+	serd_node_free(&state6_uri);
+	free(state6_path);
 
 	LilvState* state6 = lilv_state_new_from_world(world, &map, test_state_node);
 	TEST_ASSERT(lilv_state_equals(state, state6));  // Round trip accuracy
+	lilv_node_free(test_state_bundle);
+	lilv_node_free(test_state_node);
 
 	unsetenv("LV2_STATE_BUNDLE");
 
 	// Make directories and test files support
 	mkdir("temp", 0700);
-	file_dir = temp_dir = lilv_realpath("temp");
+	file_dir = temp_dir;
 	mkdir("files", 0700);
 	copy_dir = lilv_realpath("files");
 	mkdir("links", 0700);
@@ -1342,12 +1355,12 @@ test_state(void)
 
 	// Save state to a (different) directory again
 	ret = lilv_state_save(world, &map, &unmap, fstate, NULL,
-	                      "./fstate6.lv2", "fstate6.ttl");
+	                      "fstate6.lv2", "fstate6.ttl");
 	TEST_ASSERT(!ret);
 
 	// Reload it and ensure it's identical to the other loaded version
 	LilvState* fstate6 = lilv_state_new_from_file(world, &map, NULL,
-	                                              "./fstate6.lv2/fstate6.ttl");
+	                                              "fstate6.lv2/fstate6.ttl");
 	TEST_ASSERT(lilv_state_equals(fstate4, fstate6));
 
 	// Run, changing rec file (without changing size)
@@ -1362,12 +1375,12 @@ test_state(void)
 
 	// Save the changed state to a (different) directory again
 	ret = lilv_state_save(world, &map, &unmap, fstate7, NULL,
-	                      "./fstate7.lv2", "fstate7.ttl");
+	                      "fstate7.lv2", "fstate7.ttl");
 	TEST_ASSERT(!ret);
 
 	// Reload it and ensure it's changed
 	LilvState* fstate72 = lilv_state_new_from_file(world, &map, NULL,
-	                                              "./fstate7.lv2/fstate7.ttl");
+	                                              "fstate7.lv2/fstate7.ttl");
 	TEST_ASSERT(lilv_state_equals(fstate72, fstate7));
 	TEST_ASSERT(!lilv_state_equals(fstate6, fstate72));
 
@@ -1402,6 +1415,9 @@ test_state(void)
 	lilv_node_free(plugin_uri);
 	lilv_node_free(bundle_uri);
 	lilv_world_free(world);
+	free(link_dir);
+	free(copy_dir);
+	free(temp_dir);
 
 	cleanup_uris();
 	return 1;

@@ -77,9 +77,10 @@ sratom_free(Sratom* sratom);
 /**
    Write an Atom to RDF.
    The resulting serialised atom is written to @p writer.
+   @return 0 on success, or a non-zero error code otherwise.
 */
 SRATOM_API
-void
+int
 sratom_write(Sratom*         sratom,
              LV2_URID_Unmap* unmap,
              SerdWriter*     writer,
@@ -110,6 +111,7 @@ SRATOM_API
 char*
 sratom_to_turtle(Sratom*         sratom,
                  LV2_URID_Unmap* unmap,
+                 const char*     base_uri,
                  const SerdNode* subject,
                  const SerdNode* predicate,
                  uint32_t        type,
@@ -123,6 +125,7 @@ sratom_to_turtle(Sratom*         sratom,
 SRATOM_API
 LV2_Atom*
 sratom_from_turtle(Sratom*         sratom,
+                   const char*     base_uri,
                    const SerdNode* subject,
                    const SerdNode* predicate,
                    const char*     str);
