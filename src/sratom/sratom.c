@@ -206,7 +206,7 @@ sratom_write(Sratom*         sratom,
 		const uint8_t* str = USTR(body);
 		if (path_is_absolute((const char*)str)) {
 			new_node = true;
-			object   = serd_node_new_uri_from_path(str, NULL, NULL);
+			object   = serd_node_new_file_uri(str, NULL, NULL);
 		} else {
 			SerdEnv*        env      = serd_writer_get_env(writer);
 			SerdURI         base_uri = SERD_URI_NULL;
@@ -218,7 +218,7 @@ sratom_write(Sratom*         sratom,
 				datatype = serd_node_from_string(SERD_URI, USTR(LV2_ATOM__Path));
 			} else {
 				new_node = true;
-				SerdNode rel = serd_node_new_uri_from_path(str, NULL, NULL);
+				SerdNode rel = serd_node_new_file_uri(str, NULL, NULL);
 				object = serd_node_new_uri_from_node(&rel, &base_uri, NULL);
 				serd_node_free(&rel);
 			}

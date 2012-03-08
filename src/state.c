@@ -624,7 +624,7 @@ lilv_state_new_from_file(LilvWorld*      world,
 	}
 
 	uint8_t*    abs_path = (uint8_t*)lilv_path_absolute(path);
-	SerdNode    node     = serd_node_new_uri_from_path(abs_path, NULL, NULL);
+	SerdNode    node     = serd_node_new_file_uri(abs_path, NULL, NULL);
 	SerdEnv*    env      = serd_env_new(&node);
 	SordModel*  model    = sord_new(world->world, SORD_SPO, false);
 	SerdReader* reader   = sord_new_reader(model, env, SERD_TURTLE, NULL);
@@ -743,13 +743,12 @@ add_state_to_manifest(const LilvNode* plugin_uri,
 		return 4;
 	}
 
-	SerdNode file     = serd_node_new_uri_from_path(USTR(state_path), 0, 0);
-	SerdNode manifest = serd_node_new_uri_from_path(USTR(manifest_path), 0, 0);
-
 	lilv_flock(fd, true);
 
-	SerdEnv*    env    = NULL;
-	SerdWriter* writer = ttl_file_writer(fd, &manifest, &env);
+	SerdNode    file     = serd_node_new_file_uri(USTR(state_path), 0, 0);
+	SerdNode    manifest = serd_node_new_file_uri(USTR(manifest_path), 0, 0);
+	SerdEnv*    env      = NULL;
+	SerdWriter* writer   = ttl_file_writer(fd, &manifest, &env);
 
 	if (!state_uri) {
 		state_uri = (const char*)file.buf;
@@ -965,36 +964,28 @@ lilv_state_save(LilvWorld*       world,
 		((LilvState*)state)->dir = lilv_strdup(abs_dir);
 	}
 
-	char* const manifest = lilv_path_join(abs_dir, "manifest.ttl");
-
 	// Create symlinks to files if necessary
 	lilv_state_make_links(state, abs_dir);
 
 	// Write state to Turtle file
-	SerdNode    file   = serd_node_new_uri_from_path(USTR(path), NULL, NULL);
+	SerdNode    file   = serd_node_new_file_uri(USTR(path), NULL, NULL);
 	SerdEnv*    env    = NULL;
 	SerdWriter* writer = ttl_file_writer(fd, &file, &env);
 
-	SerdNode node = SERD_NODE_NULL;
-	if (!uri) {
-		node = serd_node_new_uri_from_path(USTR(path), NULL, NULL);
-		uri  = (const char*)node.buf;
-	}
-
-	int ret = lilv_state_write(world, map, unmap, state, writer, uri, dir);
+	SerdNode node = uri ? serd_node_from_string(SERD_URI, USTR(uri)) : file;
+	int ret       = lilv_state_write(
+		world, map, unmap, state, writer, (const char*)node.buf, dir);
 
 	serd_node_free(&file);
 	serd_writer_free(writer);
 	serd_env_free(env);
 	fclose(fd);
 
-	if (manifest) {
-		add_state_to_manifest(state->plugin_uri, manifest, uri, path);
-	}
+	char* const manifest = lilv_path_join(abs_dir, "manifest.ttl");
+	add_state_to_manifest(state->plugin_uri, manifest, uri, path);
 
-	serd_node_free(&node);
-	free(abs_dir);
 	free(manifest);
+	free(abs_dir);
 	free(path);
 	return ret;
 }
