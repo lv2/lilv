@@ -539,6 +539,17 @@ lilv_mkdir_p(const char* dir_path)
 	return 0;
 }
 
+static off_t
+lilv_file_size(const char* path)
+{
+	struct stat buf;
+	if (stat(path, &buf)) {
+		LILV_ERRORF("stat(%s) (%s)\n", path, strerror(errno));
+		return 0;
+	}
+	return buf.st_size;
+}
+
 bool
 lilv_file_equals(const char* a_path, const char* b_path)
 {
@@ -546,46 +557,39 @@ lilv_file_equals(const char* a_path, const char* b_path)
 		return true;  // Paths match
 	}
 
+	bool        match  = false;
+	FILE*       a_file = NULL;
+	FILE*       b_file = NULL;
 	char* const a_real = lilv_realpath(a_path);
 	char* const b_real = lilv_realpath(b_path);
 	if (!a_real || !b_real) {
-		return false;  // Missing file matches nothing
-	}
-		
-	if (!strcmp(a_real, b_real)) {
-		return true;  // Real paths match
-	}
-
-	off_t a_size;
-	off_t b_size;
-	lilv_size_mtime(a_path, &a_size, NULL);
-	lilv_size_mtime(b_path, &b_size, NULL);
-	if (a_size != b_size) {
-		return false;  // Sizes differ
-	}
-
-	FILE* a_file = fopen(a_real, "rb");
-	if (!a_file) {
-		return false;  // Missing file matches nothing
-	}
-
-	FILE* b_file = fopen(b_real, "rb");
-	if (!b_file) {
-		fclose(a_file);
-		return false;  // Missing file matches nothing
-	}
-
-	bool match = true;
-
-	// TODO: Improve performance by reading chunks
-	while (!feof(a_file) && !feof(b_file)) {
-		if (fgetc(a_file) != fgetc(b_file)) {
-			match = false;
-			break;
+		match = false;  // Missing file matches nothing
+	} else if (!strcmp(a_real, b_real)) {
+		match = true;  // Real paths match
+	} else if (lilv_file_size(a_path) != lilv_file_size(b_path)) {
+		match = false;  // Sizes differ
+	} else if (!(a_file = fopen(a_real, "rb"))) {
+		match = false;  // Missing file matches nothing
+	} else if (!(b_file = fopen(b_real, "rb"))) {
+		match = false;  // Missing file matches nothing
+	} else {
+		match = true;
+		// TODO: Improve performance by reading chunks
+		while (!feof(a_file) && !feof(b_file)) {
+			if (fgetc(a_file) != fgetc(b_file)) {
+				match = false;
+				break;
+			}
 		}
 	}
 
-	fclose(a_file);
-	fclose(b_file);
+	if (a_file) {
+		fclose(a_file);
+	}
+	if (b_file) {
+		fclose(b_file);
+	}
+	free(a_real);
+	free(b_real);
 	return match;
 }
