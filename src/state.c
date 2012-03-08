@@ -696,7 +696,7 @@ static SerdWriter*
 ttl_writer(SerdSink sink, void* stream, const SerdNode* base, SerdEnv** new_env)
 {
 	SerdURI base_uri = SERD_URI_NULL;
-	if (base) {
+	if (base && base->buf) {
 		serd_uri_parse(base->buf, &base_uri);
 	}
 		
@@ -996,11 +996,13 @@ lilv_state_to_string(LilvWorld*       world,
                      LV2_URID_Map*    map,
                      LV2_URID_Unmap*  unmap,
                      const LilvState* state,
-                     const char*      uri)
+                     const char*      uri,
+                     const char*      base_uri)
 {
 	SerdChunk   chunk  = { NULL, 0 };
 	SerdEnv*    env    = NULL;
-	SerdWriter* writer = ttl_writer(serd_chunk_sink, &chunk, NULL, &env);
+	SerdNode    base   = serd_node_from_string(SERD_URI, USTR(base_uri));
+	SerdWriter* writer = ttl_writer(serd_chunk_sink, &chunk, &base, &env);
 
 	lilv_state_write(world, map, unmap, state, writer, uri, NULL);
 

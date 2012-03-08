@@ -1372,7 +1372,8 @@ lilv_state_to_string(LilvWorld*       world,
                      LV2_URID_Map*    map,
                      LV2_URID_Unmap*  unmap,
                      const LilvState* state,
-                     const char*      uri);
+                     const char*      uri,
+                     const char*      base_uri);
 
 /**
    @}

@@ -1214,7 +1214,7 @@ test_state(void)
 
 	// Save state to a string
 	char* state1_str = lilv_state_to_string(
-		world, &map, &unmap, state, "http://example.org/state1");
+		world, &map, &unmap, state, "http://example.org/state1", NULL);
 
 	// Restore from string
 	LilvState* from_str = lilv_state_new_from_string(world, &map, state1_str);
