@@ -277,6 +277,7 @@ save(LV2_Handle                instance,
 			      map_uri(plugin, LV2_ATOM__Path),
 			      LV2_STATE_IS_PORTABLE);
 			free(apath);
+			free(spath);
 		}
 	}
 }
@@ -316,12 +317,12 @@ restore(LV2_Handle                  instance,
 		&size, &type, &valflags);
 
 	if (apath) {
-		char* path = map_path->absolute_path(map_path->handle, apath);
-		FILE* f    = fopen(path, "r");
-		char  str[8];
-		fread(str, 1, sizeof(str), f);
+		char*  path   = map_path->absolute_path(map_path->handle, apath);
+		FILE*  f      = fopen(path, "r");
+		char   str[8];
+		size_t n_read = fread(str, 1, sizeof(str), f);
 		fclose(f);
-		if (strcmp(str, "Hello\n")) {
+		if (strncmp(str, "Hello\n", n_read)) {
 			fprintf(stderr, "error: Restored bad file contents `%s' != `Hello'\n",
 			        str);
 		}
@@ -340,6 +341,7 @@ restore(LV2_Handle                  instance,
 		} else {
 			fclose(sfile);
 		}
+		free(spath);
 	} else {
 		fprintf(stderr, "error: Failed to restore save file.\n");
 	}
