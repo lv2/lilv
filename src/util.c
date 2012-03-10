@@ -406,7 +406,8 @@ lilv_realpath(const char* path)
 	GetFullPathName(path, MAX_PATH, out, NULL);
 	return out;
 #else
-	return realpath(path, NULL);
+	char* real_path = realpath(path, NULL);
+	return real_path ? real_path : lilv_strdup(path);
 #endif
 }
 
