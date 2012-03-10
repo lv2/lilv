@@ -1156,7 +1156,7 @@ int
 test_state(void)
 {
 	uint8_t*   abs_bundle = (uint8_t*)lilv_path_absolute(LILV_TEST_BUNDLE);
-	SerdNode   bundle     = serd_node_new_file_uri(abs_bundle, 0, 0);
+	SerdNode   bundle     = serd_node_new_file_uri(abs_bundle, 0, 0, true);
 	LilvWorld* world      = lilv_world_new();
 	LilvNode*  bundle_uri = lilv_new_uri(world, (const char*)bundle.buf);
 	LilvNode*  plugin_uri = lilv_new_uri(world,
@@ -1272,7 +1272,7 @@ test_state(void)
 
 	// Load default bundle into world and load state from it
 	uint8_t*  state6_path       = (uint8_t*)lilv_path_absolute("state6.lv2/");
-	SerdNode  state6_uri        = serd_node_new_file_uri(state6_path, 0, 0);
+	SerdNode  state6_uri        = serd_node_new_file_uri(state6_path, 0, 0, true);
 	LilvNode* test_state_bundle = lilv_new_uri(world, (const char*)state6_uri.buf);
 	LilvNode* test_state_node   = lilv_new_uri(world, state_uri);
 	lilv_world_load_bundle(world, test_state_bundle);
