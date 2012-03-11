@@ -23,7 +23,7 @@
 	doap:name "Lilv Test" ;
 	doap:license <http://opensource.org/licenses/isc> ;
 	lv2:requiredFeature <http://lv2plug.in/ns/ext/urid#Mapper> ;
-	lv2:optionalFeature lv2:hardRtCapable ;
+	lv2:optionalFeature lv2:hardRTCapable ;
 	lv2:extensionData <http://lv2plug.in/ns/ext/state#Interface> ;
 	lv2:port [
 		a lv2:InputPort ,
