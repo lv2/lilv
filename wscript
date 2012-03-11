@@ -81,10 +81,12 @@ def configure(conf):
                       atleast_version='0.11.0', mandatory=True)
     autowaf.check_pkg(conf, 'sord-0', uselib_store='SORD',
                       atleast_version='0.6.0', mandatory=True)
-    autowaf.check_pkg(conf, 'lv2-lv2plug.in-ns-ext-urid',
-                      uselib_store='LV2_URID', mandatory=True)
+    autowaf.check_pkg(conf, 'lv2-lv2plug.in-ns-ext-atom',
+                      uselib_store='LV2_ATOM', mandatory=False)
     autowaf.check_pkg(conf, 'lv2-lv2plug.in-ns-ext-state',
                       uselib_store='LV2_STATE', mandatory=False)
+    autowaf.check_pkg(conf, 'lv2-lv2plug.in-ns-ext-urid',
+                      uselib_store='LV2_URID', mandatory=False)
 
     defines = ['_POSIX_C_SOURCE', '_BSD_SOURCE']
     if Options.platform == 'darwin':
@@ -170,9 +172,14 @@ def build(bld):
     bld.install_files(includedir, bld.path.ant_glob('lilv/*.hpp'))
 
     # Pkgconfig file
-    pkg_deps = 'serd-0 sord-0 lv2-lv2plug.in-ns-ext-urid'
-    if bld.is_defined('HAVE_LV2_STATE'):
-        pkg_deps += ' lv2-lv2plug.in-ns-ext-state'
+    pkg_deps = '''
+lv2-lv2plug.in-ns-ext-atom
+lv2-lv2plug.in-ns-ext-state
+lv2-lv2plug.in-ns-ext-urid
+lv2core
+serd-0
+sord-0
+'''
     autowaf.build_pc(bld, 'LILV', LILV_VERSION, LILV_MAJOR_VERSION, [],
                      {'LILV_MAJOR_VERSION' : LILV_MAJOR_VERSION,
                       'LILV_PKG_DEPS'      : pkg_deps})
