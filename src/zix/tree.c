@@ -440,6 +440,164 @@ zix_tree_insert(ZixTree* t, void* e, ZixTreeIter** ti)
 
 ZIX_API
 ZixStatus
+zix_tree_remove(ZixTree* t, ZixTreeIter* ti)
+{
+	ZixTreeNode* const n          = ti;
+	ZixTreeNode**      pp         = NULL;  // parent pointer
+	ZixTreeNode*       to_balance = n->parent;  // lowest node to balance
+	int8_t             d_balance  = 0;  // delta(balance) for n->parent
+
+	DEBUG_PRINTF("*** REMOVE %ld\n", (intptr_t)n->data);
+
+	if ((n == t->root) && !n->left && !n->right) {
+		t->root = NULL;
+		if (t->destroy) {
+			t->destroy(n->data);
+		}
+		free(n);
+		--t->size;
+		assert(t->size == 0);
+		return ZIX_STATUS_SUCCESS;
+	}
+
+	// Set pp to the parent pointer to n, if applicable
+	if (n->parent) {
+		assert(n->parent->left == n || n->parent->right == n);
+		if (n->parent->left == n) {  // n is left child
+			pp        = &n->parent->left;
+			d_balance = 1;
+		} else {  // n is right child
+			assert(n->parent->right == n);
+			pp        = &n->parent->right;
+			d_balance = -1;
+		}
+	}
+
+	assert(!pp || *pp == n);
+
+	int height_change = 0;
+	if (!n->left && !n->right) {
+		// n is a leaf, just remove it
+		if (pp) {
+			*pp           = NULL;
+			to_balance    = n->parent;
+			height_change = (!n->parent->left && !n->parent->right) ? -1 : 0;
+		}
+	} else if (!n->left) {
+		// Replace n with right (only) child
+		if (pp) {
+			*pp        = n->right;
+			to_balance = n->parent;
+		} else {
+			t->root = n->right;
+		}
+		n->right->parent = n->parent;
+		height_change    = -1;
+	} else if (!n->right) {
+		// Replace n with left (only) child
+		if (pp) {
+			*pp        = n->left;
+			to_balance = n->parent;
+		} else {
+			t->root = n->left;
+		}
+		n->left->parent = n->parent;
+		height_change   = -1;
+	} else {
+		// Replace n with in-order successor (leftmost child of right subtree)
+		ZixTreeNode* replace = n->right;
+		while (replace->left) {
+			assert(replace->left->parent == replace);
+			replace = replace->left;
+		}
+
+		// Remove replace from parent (replace_p)
+		if (replace->parent->left == replace) {
+			height_change = replace->parent->right ? 0 : -1;
+			d_balance     = 1;
+			to_balance    = replace->parent;
+			replace->parent->left = replace->right;
+		} else {
+			assert(replace->parent == n);
+			height_change = replace->parent->left ? 0 : -1;
+			d_balance     = -1;
+			to_balance    = replace->parent;
+			replace->parent->right = replace->right;
+		}
+
+		if (to_balance == n) {
+			to_balance = replace;
+		}
+
+		if (replace->right) {
+			replace->right->parent = replace->parent;
+		}
+
+		replace->balance = n->balance;
+
+		// Swap node to delete with replace
+		if (pp) {
+			*pp = replace;
+		} else {
+			assert(t->root == n);
+			t->root = replace;
+		}
+		replace->parent = n->parent;
+		replace->left   = n->left;
+		n->left->parent = replace;
+		replace->right  = n->right;
+		if (n->right) {
+			n->right->parent = replace;
+		}
+
+		assert(!replace->parent
+		       || replace->parent->left == replace
+		       || replace->parent->right == replace);
+	}
+
+	// Rebalance starting at to_balance upwards.
+	for (ZixTreeNode* i = to_balance; i; i = i->parent) {
+		i->balance += d_balance;
+		if (d_balance == 0 || i->balance == -1 || i->balance == 1) {
+			break;
+		}
+
+		assert(i != n);
+		i = zix_tree_rebalance(t, i, &height_change);
+		if (i->balance == 0) {
+			height_change = -1;
+		}
+
+		if (i->parent) {
+			if (i == i->parent->left) {
+				d_balance = height_change * -1;
+			} else {
+				assert(i == i->parent->right);
+				d_balance = height_change;
+			}
+		}
+	}
+
+	DUMP(t);
+
+	if (t->destroy) {
+		t->destroy(n->data);
+	}
+	free(n);
+
+	--t->size;
+
+#ifdef ZIX_TREE_VERIFY
+	if (!verify(t, t->root)) {
+		return ZIX_STATUS_ERROR;
+	}
+#endif
+
+	return ZIX_STATUS_SUCCESS;
+}
+
+ZIX_API
+ZixStatus
 zix_tree_find(const ZixTree* t, const void* e, ZixTreeIter** ti)
 {
 	ZixTreeNode* n = t->root;

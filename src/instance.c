@@ -1,5 +1,5 @@
 /*
-  Copyright 2007-2011 David Robillard <http://drobilla.net>
+  Copyright 2007-2012 David Robillard <http://drobilla.net>
 
   Permission to use, copy, modify, and/or distribute this software for any
   purpose with or without fee is hereby granted, provided that the above
@@ -37,82 +37,63 @@ lilv_plugin_instantiate(const LilvPlugin*        plugin,
 		local_features[0] = NULL;
 	}
 
-	const LilvNode* const lib_uri_node = lilv_plugin_get_library_uri(plugin);
-	const char* const     lib_uri      = lilv_node_as_uri(lib_uri_node);
-	const char* const     lib_path     = lilv_uri_to_path(lib_uri);
+	const LilvNode* const lib_uri    = lilv_plugin_get_library_uri(plugin);
+	const LilvNode* const bundle_uri = lilv_plugin_get_bundle_uri(plugin);
 
-	if (!lib_path)
-		return NULL;
+	const char* bundle_path = lilv_uri_to_path(
+		lilv_node_as_uri(lilv_plugin_get_bundle_uri(plugin)));
 
-	dlerror();
-	void* lib = dlopen(lib_path, RTLD_NOW);
+	LilvLib* lib = lilv_lib_open(plugin->world, lib_uri, bundle_path, features);
 	if (!lib) {
-		LILV_ERRORF("Failed to open library %s (%s)\n", lib_path, dlerror());
 		return NULL;
 	}
 
-	LV2_Descriptor_Function df = (LV2_Descriptor_Function)
-		lilv_dlfunc(lib, "lv2_descriptor");
-
-	if (!df) {
-		LILV_ERRORF("No `lv2_descriptor' in %s\n", lib_path);
-		dlclose(lib);
+	// Parse bundle URI to use as base URI
+	const char* bundle_uri_str = lilv_node_as_uri(bundle_uri);
+	SerdURI     base_uri;
+	if (serd_uri_parse((const uint8_t*)bundle_uri_str, &base_uri)) {
+		lilv_lib_close(lib);
 		return NULL;
-	} else {
-		// Search for plugin by URI
+	}
 
-		const char* bundle_path = lilv_uri_to_path(
-			lilv_node_as_uri(lilv_plugin_get_bundle_uri(plugin)));
+	// Search for plugin by URI
+	for (uint32_t i = 0; true; ++i) {
+		const LV2_Descriptor* ld = lilv_lib_get_plugin(lib, i);
+		if (!ld) {
+			LILV_ERRORF("No plugin <%s> in <%s>\n",
+			            lilv_node_as_uri(lilv_plugin_get_uri(plugin)),
+			            lilv_node_as_uri(lib_uri));
+			lilv_lib_close(lib);
+			break;  // return NULL
+		}
 
-		for (uint32_t i = 0; true; ++i) {
-			const LV2_Descriptor* ld = df(i);
-			if (!ld) {
-				LILV_ERRORF("No plugin <%s> in %s\n",
-				            lilv_node_as_uri(lilv_plugin_get_uri(plugin)),
-				            lib_path);
-				dlclose(lib);
-				break;  // return NULL
-			}
+		// Resolve library plugin URI against base URI
+		SerdURI  abs_uri;
+		SerdNode abs_uri_node = serd_node_new_uri_from_string(
+			(const uint8_t*)ld->URI, &base_uri, &abs_uri);
+		if (!abs_uri_node.buf) {
+			LILV_ERRORF("Failed to parse plugin URI `%s'\n", ld->URI);
+			lilv_lib_close(lib);
+			break;
+		}
 
-			// Parse bundle URI to use as base URI
-			const LilvNode* bundle_uri     = lilv_plugin_get_bundle_uri(plugin);
-			const char*     bundle_uri_str = lilv_node_as_uri(bundle_uri);
-			SerdURI         base_uri;
-			if (serd_uri_parse((const uint8_t*)bundle_uri_str, &base_uri)) {
-				dlclose(lib);
-				break;
-			}
-
-			// Resolve library plugin URI against base URI
-			SerdURI  abs_uri;
-			SerdNode abs_uri_node = serd_node_new_uri_from_string(
-				(const uint8_t*)ld->URI, &base_uri, &abs_uri);
-			if (!abs_uri_node.buf) {
-				LILV_ERRORF("Failed to parse plugin URI `%s'\n", ld->URI);
-				dlclose(lib);
-				break;
-			}
-
-			if (!strcmp((const char*)abs_uri_node.buf,
-			            lilv_node_as_uri(lilv_plugin_get_uri(plugin)))) {
-				// Create LilvInstance to return
-				result = (LilvInstance*)malloc(sizeof(LilvInstance));
-				result->lv2_descriptor = ld;
-				result->lv2_handle = ld->instantiate(
-					ld, sample_rate, (char*)bundle_path,
-					(features) ? features : local_features);
-				result->pimpl = lib;
-				serd_node_free(&abs_uri_node);
-				break;
-			} else {
-				serd_node_free(&abs_uri_node);
-			}
+		if (!strcmp((const char*)abs_uri_node.buf,
+		            lilv_node_as_uri(lilv_plugin_get_uri(plugin)))) {
+			// Create LilvInstance to return
+			result = (LilvInstance*)malloc(sizeof(LilvInstance));
+			result->lv2_descriptor = ld;
+			result->lv2_handle = ld->instantiate(
+				ld, sample_rate, (char*)bundle_path,
+				(features) ? features : local_features);
+			result->pimpl = lib;
+			serd_node_free(&abs_uri_node);
+			break;
+		} else {
+			serd_node_free(&abs_uri_node);
 		}
 	}
 
 	if (result) {
-		assert(lilv_plugin_get_num_ports(plugin) > 0);
-
 		// Failed to instantiate
 		if (result->lv2_handle == NULL) {
 			free(result);
@@ -138,7 +119,7 @@ lilv_instance_free(LilvInstance* instance)
 
 	instance->lv2_descriptor->cleanup(instance->lv2_handle);
 	instance->lv2_descriptor = NULL;
-	dlclose(instance->pimpl);
+	lilv_lib_close((LilvLib*)instance->pimpl);
 	instance->pimpl = NULL;
 	free(instance);
 }

@@ -77,6 +77,8 @@ def configure(conf):
     conf.env['BASH_COMPLETION'] = not Options.options.no_bash_completion
 
     autowaf.check_pkg(conf, 'lv2core', uselib_store='LV2CORE', mandatory=True)
+    autowaf.check_pkg(conf, 'lv2core', uselib_store='NEW_LV2CORE',
+                      atleast_version='6.7', mandatory=False)
     autowaf.check_pkg(conf, 'serd-0', uselib_store='SERD',
                       atleast_version='0.11.0', mandatory=True)
     autowaf.check_pkg(conf, 'sord-0', uselib_store='SORD',
@@ -87,6 +89,9 @@ def configure(conf):
                       uselib_store='LV2_STATE', mandatory=False)
     autowaf.check_pkg(conf, 'lv2-lv2plug.in-ns-ext-urid',
                       uselib_store='LV2_URID', mandatory=False)
+
+    if conf.is_defined('HAVE_NEW_LV2CORE'):
+        autowaf.define(conf, 'LILV_NEW_LV2', 1)
 
     defines = ['_POSIX_C_SOURCE', '_BSD_SOURCE']
     if Options.platform == 'darwin':
@@ -159,6 +164,8 @@ def configure(conf):
                         bool(conf.env['LILV_DYN_MANIFEST']))
     autowaf.display_msg(conf, "State/Preset support",
                         conf.is_defined('HAVE_LV2_STATE'))
+    autowaf.display_msg(conf, "New LV2 discovery API support",
+                        bool(conf.env['LILV_NEW_LV2']))
     autowaf.display_msg(conf, "Python bindings",
                         conf.is_defined('LILV_PYTHON'))
 
@@ -187,6 +194,7 @@ sord-0
     lib_source = '''
         src/collections.c
         src/instance.c
+        src/lib.c
         src/node.c
         src/plugin.c
         src/pluginclass.c

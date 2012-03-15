@@ -96,6 +96,17 @@ typedef struct {
 } LilvDynManifest;
 #endif
 
+typedef struct {
+	LilvWorld*                world;
+	LilvNode*                 uri;
+	void*                     lib;
+	LV2_Descriptor_Function   lv2_descriptor;
+#ifdef LILV_NEW_LV2
+	const LV2_Lib_Descriptor* desc;
+#endif
+	uint32_t                  refs;
+} LilvLib;
+
 struct LilvPluginImpl {
 	LilvWorld*             world;
 	LilvNode*              plugin_uri;
@@ -119,6 +130,11 @@ struct LilvPluginClassImpl {
 	LilvNode*  label;
 };
 
+struct LilvInstancePimpl {
+	LilvWorld* world;
+	LilvLib*   lib;
+};
+	
 typedef struct {
 	bool dyn_manifest;
 	bool filter_language;
@@ -134,6 +150,7 @@ struct LilvWorldImpl {
 	LilvSpec*          specs;
 	LilvPlugins*       plugins;
 	LilvNodes*         loaded_files;
+	ZixTree*           libs;
 	struct {
 		SordNode* dc_replaces;
 		SordNode* doap_name;
@@ -244,6 +261,15 @@ LilvPluginClass* lilv_plugin_class_new(LilvWorld*      world,
                                        const char*     label);
 
 void lilv_plugin_class_free(LilvPluginClass* plugin_class);
+
+LilvLib*
+lilv_lib_open(LilvWorld*               world,
+              const LilvNode*          uri,
+              const char*              bundle_path,
+              const LV2_Feature*const* features);
+
+const LV2_Descriptor* lilv_lib_get_plugin(LilvLib* lib, uint32_t index);
+void                  lilv_lib_close(LilvLib* lib);
 
 LilvNodes*         lilv_nodes_new(void);
 LilvPlugins*       lilv_plugins_new(void);
