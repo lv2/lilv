@@ -24,7 +24,6 @@
 
 #include "sratom/sratom.h"
 
-#define NS_ATOM (const uint8_t*)"http://lv2plug.in/ns/ext/atom#"
 #define NS_MIDI (const uint8_t*)"http://lv2plug.in/ns/ext/midi#"
 #define NS_RDF  (const uint8_t*)"http://www.w3.org/1999/02/22-rdf-syntax-ns#"
 #define NS_XSD  (const uint8_t*)"http://www.w3.org/2001/XMLSchema#"
@@ -67,8 +66,7 @@ sratom_new(LV2_URID_Map* map)
 {
 	Sratom* sratom = (Sratom*)malloc(sizeof(Sratom));
 	sratom->map            = map;
-	sratom->atom_Event     = map->map(map->handle,
-	                                  (const char*)NS_ATOM "Event");
+	sratom->atom_Event     = map->map(map->handle, LV2_ATOM__Event);
 	sratom->midi_MidiEvent = map->map(map->handle,
 	                                  (const char*)NS_MIDI "MidiEvent");
 	sratom->next_id        = 0;
@@ -226,11 +224,11 @@ sratom_write(Sratom*         sratom,
 	} else if (type_urid == sratom->forge.URI) {
 		const uint8_t* str = USTR(body);
 		object = serd_node_from_string(SERD_URI, str);
-	} else if (type_urid == sratom->forge.Int32) {
+	} else if (type_urid == sratom->forge.Int) {
 		new_node = true;
 		object   = serd_node_new_integer(*(int32_t*)body);
 		datatype = serd_node_from_string(SERD_URI, NS_XSD "int");
-	} else if (type_urid == sratom->forge.Int64) {
+	} else if (type_urid == sratom->forge.Long) {
 		new_node = true;
 		object   = serd_node_new_integer(*(int64_t*)body);
 		datatype = serd_node_from_string(SERD_URI, NS_XSD "long");
@@ -440,9 +438,9 @@ read_list_value(Sratom*         sratom,
 static uint32_t
 atom_size(Sratom* sratom, uint32_t type_urid)
 {
-	if (type_urid == sratom->forge.Int32) {
+	if (type_urid == sratom->forge.Int) {
 		return sizeof(int32_t);
-	} else if (type_urid == sratom->forge.Int64) {
+	} else if (type_urid == sratom->forge.Long) {
 		return sizeof(int64_t);
 	} else if (type_urid == sratom->forge.Float) {
 		return sizeof(float);
@@ -484,8 +482,8 @@ read_node(Sratom*         sratom,
 				lv2_atom_forge_double(forge, serd_strtod(str, &endptr));
 			} else if (!strcmp(type_uri, (char*)NS_XSD "boolean")) {
 				lv2_atom_forge_bool(forge, !strcmp(str, "true"));
-			} else if (!strcmp(type_uri, (char*)NS_ATOM "Path")) {
-				lv2_atom_forge_path(forge, (const uint8_t*)str, len);
+			} else if (!strcmp(type_uri, LV2_ATOM__Path)) {
+				lv2_atom_forge_path(forge, str, len);
 			} else if (!strcmp(type_uri, (char*)NS_MIDI "MidiEvent")) {
 				lv2_atom_forge_atom(forge, len / 2, sratom->midi_MidiEvent);
 				for (const char* s = str; s < str + len; s += 2) {
@@ -498,7 +496,7 @@ read_node(Sratom*         sratom,
 				lv2_atom_forge_pad(forge, len / 2);
 			} else {
 				lv2_atom_forge_literal(
-					forge, (const uint8_t*)str, len,
+					forge, str, len,
 					sratom->map->map(sratom->map->handle, type_uri),
 					0);
 			}
@@ -508,18 +506,18 @@ read_node(Sratom*         sratom,
 			char*        lang_uri = calloc(lang_len + 1, 1);
 			snprintf(lang_uri, lang_len + 1, "%s%s", prefix, language);
 			lv2_atom_forge_literal(
-				forge, (const uint8_t*)str, len, 0,
+				forge, str, len, 0,
 				sratom->map->map(sratom->map->handle, lang_uri));
 			free(lang_uri);
 		} else {
-			lv2_atom_forge_string(forge, (const uint8_t*)str, len);
+			lv2_atom_forge_string(forge, str, len);
 		}
 	} else if (sord_node_get_type(node) == SORD_URI) {
 		if (!strcmp(str, (const char*)NS_RDF "nil")) {
 			lv2_atom_forge_atom(forge, 0, 0);
 		} else if (!strncmp(str, "file://", 7)) {
 			uint8_t* path = serd_file_uri_parse((const uint8_t*)str, NULL);
-			lv2_atom_forge_path(forge, path, strlen((const char*)path));
+			lv2_atom_forge_path(forge, (const char*)path, strlen((const char*)path));
 			free(path);
 		} else {
 			lv2_atom_forge_urid(forge, map->map(map->handle, str));
@@ -603,8 +601,8 @@ sratom_read(Sratom*         sratom,
             SordModel*      model,
             const SordNode* node)
 {
-	sratom->nodes.atom_childType   = sord_new_uri(world, NS_ATOM "childType");
-	sratom->nodes.atom_frameTime   = sord_new_uri(world, NS_ATOM "frameTime");
+	sratom->nodes.atom_childType   = sord_new_uri(world, USTR(LV2_ATOM__childType));
+	sratom->nodes.atom_frameTime   = sord_new_uri(world, USTR(LV2_ATOM__frameTime));
 	sratom->nodes.rdf_first        = sord_new_uri(world, NS_RDF "first");
 	sratom->nodes.rdf_rest         = sord_new_uri(world, NS_RDF "rest");
 	sratom->nodes.rdf_type         = sord_new_uri(world, NS_RDF "type");
