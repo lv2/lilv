@@ -101,7 +101,7 @@ lilv_lib_close(LilvLib* lib)
 		dlclose(lib->lib);
 		
 		ZixTreeIter* i = NULL;
-		if (!zix_tree_find(lib->world->libs, lib, &i)) {
+		if (lib->world->libs && !zix_tree_find(lib->world->libs, lib, &i)) {
 			zix_tree_remove(lib->world->libs, i);
 		}
 
