@@ -84,7 +84,7 @@ def configure(conf):
     autowaf.check_pkg(conf, 'sord-0', uselib_store='SORD',
                       atleast_version='0.6.0', mandatory=True)
     autowaf.check_pkg(conf, 'sratom-0', uselib_store='SRATOM',
-                      atleast_version='0.1.0', mandatory=True)
+                      atleast_version='0.2.0', mandatory=True)
     autowaf.check_pkg(conf, 'lv2-lv2plug.in-ns-ext-atom',
                       uselib_store='LV2_ATOM', mandatory=False)
     autowaf.check_pkg(conf, 'lv2-lv2plug.in-ns-ext-state',
