@@ -191,7 +191,7 @@ save(LV2_Handle                instance,
 	      map_uri(plugin, "http://example.org/num-runs"),
 	      &plugin->num_runs,
 	      sizeof(plugin->num_runs),
-	      map_uri(plugin, LV2_ATOM__Int32),
+	      map_uri(plugin, LV2_ATOM__Int),
 	      LV2_STATE_IS_POD | LV2_STATE_IS_PORTABLE);
 
 	const float two = 2.0f;
