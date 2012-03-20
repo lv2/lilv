@@ -188,6 +188,7 @@ lv2-lv2plug.in-ns-ext-urid
 lv2core
 serd-0
 sord-0
+sratom-0
 '''
     autowaf.build_pc(bld, 'LILV', LILV_VERSION, LILV_MAJOR_VERSION, [],
                      {'LILV_MAJOR_VERSION' : LILV_MAJOR_VERSION,
