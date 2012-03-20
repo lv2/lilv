@@ -794,6 +794,10 @@ lilv_state_write(LilvWorld*       world,
 	}
 
 	Sratom* sratom = sratom_new(map);
+	sratom_set_sink(sratom, uri,
+	                (SerdStatementSink)serd_writer_write_statement,
+	                (SerdEndSink)serd_writer_end_anon,
+	                writer, false);
 
 	// Write port values
 	for (uint32_t i = 0; i < state->num_values; ++i) {
@@ -815,7 +819,7 @@ lilv_state_write(LilvWorld*       world,
 
 		// _:symbol pset:value value
 		p = serd_node_from_string(SERD_URI, USTR(NS_PSET "value"));
-		sratom_write(sratom, unmap, writer, SERD_ANON_CONT, &port, &p,
+		sratom_write(sratom, unmap, SERD_ANON_CONT, &port, &p,
 		             value->type, value->size, value->value);
 
 		serd_writer_end_anon(writer, &port);
@@ -836,11 +840,11 @@ lilv_state_write(LilvWorld*       world,
 		p = serd_node_from_string(SERD_URI, USTR(key));
 		if (prop->type == state->atom_Path && !dir) {
 			const char* abs_path = lilv_state_rel2abs(state, prop->value);
-			sratom_write(sratom, unmap, writer, SERD_ANON_CONT,
+			sratom_write(sratom, unmap, SERD_ANON_CONT,
 			             &state_node, &p, prop->type,
 			             strlen(abs_path) + 1, abs_path);
 		} else {
-			sratom_write(sratom, unmap, writer, SERD_ANON_CONT,
+			sratom_write(sratom, unmap, SERD_ANON_CONT,
 			             &state_node, &p, prop->type, prop->size, prop->value);
 		}
 	}

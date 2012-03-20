@@ -83,6 +83,8 @@ def configure(conf):
                       atleast_version='0.11.0', mandatory=True)
     autowaf.check_pkg(conf, 'sord-0', uselib_store='SORD',
                       atleast_version='0.6.0', mandatory=True)
+    autowaf.check_pkg(conf, 'sratom-0', uselib_store='SRATOM',
+                      atleast_version='0.1.0', mandatory=True)
     autowaf.check_pkg(conf, 'lv2-lv2plug.in-ns-ext-atom',
                       uselib_store='LV2_ATOM', mandatory=False)
     autowaf.check_pkg(conf, 'lv2-lv2plug.in-ns-ext-state',
@@ -201,7 +203,6 @@ sord-0
         src/port.c
         src/query.c
         src/scalepoint.c
-        src/sratom/sratom.c
         src/state.c
         src/ui.c
         src/util.c
@@ -232,7 +233,7 @@ sord-0
               cflags          = libflags + [ '-DLILV_SHARED',
                                              '-DLILV_INTERNAL' ],
               lib             = lib)
-    autowaf.use_lib(bld, obj, 'SORD LV2CORE LV2_STATE LV2_URID')
+    autowaf.use_lib(bld, obj, 'SORD SRATOM LV2CORE LV2_STATE LV2_URID')
 
     # Static library
     if bld.env['BUILD_STATIC']:
@@ -246,7 +247,7 @@ sord-0
                   install_path    = '${LIBDIR}',
                   defines         = defines,
                   cflags          = [ '-DLILV_INTERNAL' ])
-        autowaf.use_lib(bld, obj, 'SORD LV2CORE LV2_STATE LV2_URID')
+        autowaf.use_lib(bld, obj, 'SORD SRATOM LV2CORE LV2_STATE LV2_URID')
 
     if bld.env['BUILD_TESTS']:
         test_libs   = lib
@@ -292,7 +293,7 @@ sord-0
                   defines      = defines,
                   cflags       = test_cflags + ['-DLILV_INTERNAL'],
                   lib          = test_libs)
-        autowaf.use_lib(bld, obj, 'SORD LV2CORE LV2_STATE LV2_URID')
+        autowaf.use_lib(bld, obj, 'SORD SRATOM LV2CORE LV2_STATE LV2_URID')
 
         # Unit test program
         bpath = os.path.abspath(os.path.join(out, 'test', 'test_plugin.lv2'))
@@ -307,7 +308,7 @@ sord-0
                   install_path = None,
                   defines      = defines + ['LILV_TEST_BUNDLE=\"%s/\"' % bpath],
                   cflags       = test_cflags)
-        autowaf.use_lib(bld, obj, 'SORD LV2CORE LV2_STATE LV2_URID')
+        autowaf.use_lib(bld, obj, 'SORD SRATOM LV2CORE LV2_STATE LV2_URID')
 
     # Utilities
     if bld.env['BUILD_UTILS']:
