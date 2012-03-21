@@ -775,7 +775,7 @@ lilv_world_load_resource(LilvWorld*      world,
 		const uint8_t*  str       = sord_node_get_string(file);
 		LilvNode*       file_node = lilv_node_new_from_node(world, file);
 		ZixTreeIter*    iter;
-		if (zix_tree_find((ZixTree*)world->loaded_files, file, &iter)) {
+		if (zix_tree_find((ZixTree*)world->loaded_files, file_node, &iter)) {
 			if (sord_node_get_type(file) == SORD_URI) {
 				const SerdNode* base   = sord_node_to_serd_node(file);
 				SerdEnv*        env    = serd_env_new(base);
