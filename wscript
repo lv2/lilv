@@ -76,24 +76,16 @@ def configure(conf):
     conf.env['BUILD_STATIC']    = Options.options.static
     conf.env['BASH_COMPLETION'] = not Options.options.no_bash_completion
 
-    autowaf.check_pkg(conf, 'lv2core', uselib_store='LV2CORE', mandatory=True)
-    autowaf.check_pkg(conf, 'lv2core', uselib_store='NEW_LV2CORE',
-                      atleast_version='6.7', mandatory=False)
+    autowaf.check_pkg(conf, 'lv2', uselib_store='LV2',
+                      atleast_version='0.1.0', mandatory=True)
     autowaf.check_pkg(conf, 'serd-0', uselib_store='SERD',
                       atleast_version='0.11.0', mandatory=True)
     autowaf.check_pkg(conf, 'sord-0', uselib_store='SORD',
                       atleast_version='0.6.0', mandatory=True)
     autowaf.check_pkg(conf, 'sratom-0', uselib_store='SRATOM',
                       atleast_version='0.2.0', mandatory=True)
-    autowaf.check_pkg(conf, 'lv2-lv2plug.in-ns-ext-atom',
-                      uselib_store='LV2_ATOM', mandatory=False)
-    autowaf.check_pkg(conf, 'lv2-lv2plug.in-ns-ext-state',
-                      uselib_store='LV2_STATE', mandatory=False)
-    autowaf.check_pkg(conf, 'lv2-lv2plug.in-ns-ext-urid',
-                      uselib_store='LV2_URID', mandatory=False)
 
-    if conf.is_defined('HAVE_NEW_LV2CORE'):
-        autowaf.define(conf, 'LILV_NEW_LV2', 1)
+    autowaf.define(conf, 'LILV_NEW_LV2', 1)  # New LV2 discovery API
 
     defines = ['_POSIX_C_SOURCE', '_BSD_SOURCE']
     if Options.platform == 'darwin':
@@ -164,10 +156,6 @@ def configure(conf):
                         bool(conf.env['BUILD_TESTS']))
     autowaf.display_msg(conf, "Dynamic manifest support",
                         bool(conf.env['LILV_DYN_MANIFEST']))
-    autowaf.display_msg(conf, "State/Preset support",
-                        conf.is_defined('HAVE_LV2_STATE'))
-    autowaf.display_msg(conf, "New LV2 discovery API support",
-                        bool(conf.env['LILV_NEW_LV2']))
     autowaf.display_msg(conf, "Python bindings",
                         conf.is_defined('LILV_PYTHON'))
 
@@ -183,7 +171,7 @@ def build(bld):
     # Pkgconfig file
     autowaf.build_pc(bld, 'LILV', LILV_VERSION, LILV_MAJOR_VERSION, [],
                      {'LILV_MAJOR_VERSION' : LILV_MAJOR_VERSION,
-                      'LILV_PKG_DEPS'      : 'lv2-lv2plug.in-ns-ext-atom lv2-lv2plug.in-ns-ext-state lv2-lv2plug.in-ns-ext-urid lv2core serd-0 sord-0 sratom-0'})
+                      'LILV_PKG_DEPS'      : 'lv2 serd-0 sord-0 sratom-0'})
 
     lib_source = '''
         src/collections.c
@@ -225,7 +213,7 @@ def build(bld):
               cflags          = libflags + [ '-DLILV_SHARED',
                                              '-DLILV_INTERNAL' ],
               lib             = lib)
-    autowaf.use_lib(bld, obj, 'SORD SRATOM LV2CORE LV2_STATE LV2_URID')
+    autowaf.use_lib(bld, obj, 'SORD SRATOM LV2')
 
     # Static library
     if bld.env['BUILD_STATIC']:
@@ -239,7 +227,7 @@ def build(bld):
                   install_path    = '${LIBDIR}',
                   defines         = defines,
                   cflags          = [ '-DLILV_INTERNAL' ])
-        autowaf.use_lib(bld, obj, 'SORD SRATOM LV2CORE LV2_STATE LV2_URID')
+        autowaf.use_lib(bld, obj, 'SORD SRATOM LV2')
 
     if bld.env['BUILD_TESTS']:
         test_libs   = lib
@@ -265,7 +253,7 @@ def build(bld):
                   defines      = defines,
                   cflags       = test_cflags,
                   lib          = test_libs,
-                  uselib       = 'LV2CORE LV2_STATE LV2_URID')
+                  uselib       = 'LV2')
 
         # Test plugin data files
         for i in [ 'manifest.ttl.in', 'test_plugin.ttl.in' ]:
@@ -285,7 +273,7 @@ def build(bld):
                   defines      = defines,
                   cflags       = test_cflags + ['-DLILV_INTERNAL'],
                   lib          = test_libs)
-        autowaf.use_lib(bld, obj, 'SORD SRATOM LV2CORE LV2_STATE LV2_URID')
+        autowaf.use_lib(bld, obj, 'SORD SRATOM LV2')
 
         # Unit test program
         bpath = os.path.abspath(os.path.join(out, 'test', 'test_plugin.lv2'))
@@ -294,13 +282,13 @@ def build(bld):
                   source       = 'test/lilv_test.c',
                   includes     = ['.', './src'],
                   use          = 'liblilv_profiled',
-                  uselib       = 'SORD LV2CORE',
+                  uselib       = 'SORD LV2',
                   lib          = test_libs,
                   target       = 'test/lilv_test',
                   install_path = None,
                   defines      = defines + ['LILV_TEST_BUNDLE=\"%s/\"' % bpath],
                   cflags       = test_cflags)
-        autowaf.use_lib(bld, obj, 'SORD SRATOM LV2CORE LV2_STATE LV2_URID')
+        autowaf.use_lib(bld, obj, 'SORD SRATOM LV2')
 
     # Utilities
     if bld.env['BUILD_UTILS']:
