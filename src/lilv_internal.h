@@ -153,25 +153,26 @@ struct LilvWorldImpl {
 	ZixTree*           libs;
 	struct {
 		SordNode* dc_replaces;
-		SordNode* doap_name;
 		SordNode* dman_DynManifest;
+		SordNode* doap_name;
+		SordNode* lv2_Plugin;
+		SordNode* lv2_Specification;
 		SordNode* lv2_appliesTo;
 		SordNode* lv2_binary;
 		SordNode* lv2_default;
+		SordNode* lv2_designation;
 		SordNode* lv2_extensionData;
 		SordNode* lv2_index;
 		SordNode* lv2_maximum;
 		SordNode* lv2_minimum;
 		SordNode* lv2_name;
 		SordNode* lv2_optionalFeature;
-		SordNode* lv2_Plugin;
 		SordNode* lv2_port;
 		SordNode* lv2_portProperty;
 		SordNode* lv2_reportsLatency;
 		SordNode* lv2_requiredFeature;
-		SordNode* lv2_Specification;
 		SordNode* lv2_symbol;
-		SordNode* lv2_isParameter;
+		SordNode* null_uri;
 		SordNode* pset_value;
 		SordNode* rdf_a;
 		SordNode* rdf_value;
@@ -184,7 +185,6 @@ struct LilvWorldImpl {
 		SordNode* xsd_decimal;
 		SordNode* xsd_double;
 		SordNode* xsd_integer;
-		SordNode* null_uri;
 	} uris;
 	LilvOptions opt;
 };

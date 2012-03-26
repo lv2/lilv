@@ -899,16 +899,19 @@ lilv_plugin_get_port_by_symbol(const LilvPlugin* plugin,
                                const LilvNode*   symbol);
 
 /**
-   Get a port on @c plugin by the parameter it represents.
-   If found, the port with matching @a port_class and @a parameter is be
-   returned, otherwise NULL is returned.  The @a port_class can be used to
-   distinguish the input and output ports for a parameter.
+   Get a port on @c plugin by its lv2:designation.
+
+   The designation of a port describes the meaning, assignment, allocation or
+   role of the port, e.g. "left channel" or "gain".  If found, the port with
+   matching @a port_class and @a designation is be returned, otherwise NULL is
+   returned.  The @a port_class can be used to distinguish the input and output
+   ports for a particular designation.
 */
 LILV_API
 LilvPort*
-lilv_plugin_get_port_by_parameter(const LilvPlugin* plugin,
-                                  const LilvNode*   port_class,
-                                  const LilvNode*   parameter);
+lilv_plugin_get_port_by_designation(const LilvPlugin* plugin,
+                                    const LilvNode*   port_class,
+                                    const LilvNode*   designation);
 
 /**
    Get the full name of the plugin's author.

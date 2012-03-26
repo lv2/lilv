@@ -53,25 +53,25 @@ lilv_world_new(void)
 #define NEW_URI(uri) sord_new_uri(world->world, (const uint8_t*)uri)
 
 	world->uris.dc_replaces         = NEW_URI(NS_DCTERMS   "replaces");
-	world->uris.doap_name           = NEW_URI(LILV_NS_DOAP "name");
 	world->uris.dman_DynManifest    = NEW_URI(NS_DYNMAN    "DynManifest");
+	world->uris.doap_name           = NEW_URI(LILV_NS_DOAP "name");
+	world->uris.lv2_Plugin          = NEW_URI(LILV_NS_LV2  "Plugin");
+	world->uris.lv2_Specification   = NEW_URI(LILV_NS_LV2  "Specification");
 	world->uris.lv2_appliesTo       = NEW_URI(LILV_NS_LV2  "appliesTo");
 	world->uris.lv2_binary          = NEW_URI(LILV_NS_LV2  "binary");
 	world->uris.lv2_default         = NEW_URI(LILV_NS_LV2  "default");
+	world->uris.lv2_designation     = NEW_URI(LILV_NS_LV2  "designation");
 	world->uris.lv2_extensionData   = NEW_URI(LILV_NS_LV2  "extensionData");
 	world->uris.lv2_index           = NEW_URI(LILV_NS_LV2  "index");
 	world->uris.lv2_maximum         = NEW_URI(LILV_NS_LV2  "maximum");
 	world->uris.lv2_minimum         = NEW_URI(LILV_NS_LV2  "minimum");
 	world->uris.lv2_name            = NEW_URI(LILV_NS_LV2  "name");
 	world->uris.lv2_optionalFeature = NEW_URI(LILV_NS_LV2  "optionalFeature");
-	world->uris.lv2_Plugin          = NEW_URI(LILV_NS_LV2  "Plugin");
 	world->uris.lv2_port            = NEW_URI(LILV_NS_LV2  "port");
 	world->uris.lv2_portProperty    = NEW_URI(LILV_NS_LV2  "portProperty");
 	world->uris.lv2_reportsLatency  = NEW_URI(LILV_NS_LV2  "reportsLatency");
 	world->uris.lv2_requiredFeature = NEW_URI(LILV_NS_LV2  "requiredFeature");
-	world->uris.lv2_Specification   = NEW_URI(LILV_NS_LV2  "Specification");
 	world->uris.lv2_symbol          = NEW_URI(LILV_NS_LV2  "symbol");
-	world->uris.lv2_isParameter     = NEW_URI(LILV_NS_LV2  "isParameter");
 	world->uris.pset_value          = NEW_URI(NS_PSET      "value");
 	world->uris.rdf_a               = NEW_URI(LILV_NS_RDF  "type");
 	world->uris.rdf_value           = NEW_URI(LILV_NS_RDF  "value");
