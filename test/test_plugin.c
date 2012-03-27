@@ -124,7 +124,7 @@ instantiate(const LV2_Descriptor*     descriptor,
 		}
 		fprintf(test->rec_file, "instantiate\n");
 	}
-		
+
 	return (LV2_Handle)test;
 }
 
@@ -310,7 +310,7 @@ restore(LV2_Handle                  instance,
 	if (!map_path) {
 		return;
 	}
-	
+
 	char* apath = (char*)retrieve(
 		callback_data,
 		map_uri(plugin, "http://example.org/extfile"),

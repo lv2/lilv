@@ -295,14 +295,14 @@ print_plugin(LilvWorld*        world,
 	if (data)
 		printf("\n");
 	lilv_nodes_free(data);
-		
+
 	/* Presets */
 
 	LilvNodes* presets = lilv_plugin_get_related(p, preset_class);
 	if (presets)
 		printf("\tPresets: \n");
 	LILV_FOREACH(nodes, i, presets) {
-		const LilvNode* preset = lilv_nodes_get(presets, i); 
+		const LilvNode* preset = lilv_nodes_get(presets, i);
 		lilv_world_load_resource(world, preset);
 		LilvNodes* titles = lilv_world_find_nodes(
 			world, preset, label_pred, NULL);

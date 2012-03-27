@@ -661,7 +661,7 @@ ttl_writer(SerdSink sink, void* stream, const SerdNode* base, SerdEnv** new_env)
 	if (base && base->buf) {
 		serd_uri_parse(base->buf, &base_uri);
 	}
-		
+
 	SerdEnv* env = serd_env_new(base);
 	set_prefixes(env);
 

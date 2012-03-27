@@ -1183,7 +1183,7 @@ typedef const void* (*LilvGetPortValueFunc)(const char* port_symbol,
 
 /**
    Create a new state snapshot from a plugin instance.
-   
+
    @param plugin The plugin this state applies to.
 
    @param instance An instance of @c plugin.
@@ -1226,7 +1226,7 @@ typedef const void* (*LilvGetPortValueFunc)(const char* port_symbol,
    may simply use the same directory for all of them (or pass NULL to not
    support files at all).  The multiple parameters are necessary to support
    saving an instances state many times while avoiding any duplication of data.
-   
+
    If supported (via state:makePath passed to LV2_Descriptor::instantiate()),
    @c file_dir should be the directory where any files created by the plugin
    (not during save time, e.g. during instantiation) are stored.  These files

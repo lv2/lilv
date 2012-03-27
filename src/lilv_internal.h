@@ -134,7 +134,7 @@ struct LilvInstancePimpl {
 	LilvWorld* world;
 	LilvLib*   lib;
 };
-	
+
 typedef struct {
 	bool dyn_manifest;
 	bool filter_language;
