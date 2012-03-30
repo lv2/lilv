@@ -545,7 +545,7 @@ test_plugin(void)
 			"  a lv2:ControlPort ; a lv2:OutputPort ; "
 			"  lv2:index 2 ; lv2:symbol \"latency\" ; lv2:name \"Latency\" ; "
 			"  lv2:portProperty lv2:reportsLatency ; "
-			"  lv2:isParameter lv2:latency "
+			"  lv2:designation lv2:latency "
 			"] . \n"
 			":thing doap:name \"Something else\" .\n"))
 		return 0;
