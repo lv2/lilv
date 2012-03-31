@@ -364,7 +364,7 @@ lilv_state_new_from_instance(const LilvPlugin*          plugin,
 	// Store properties
 	const LV2_Descriptor*      desc  = instance->lv2_descriptor;
 	const LV2_State_Interface* iface = (desc->extension_data)
-		? (LV2_State_Interface*)desc->extension_data(LV2_STATE__Interface)
+		? (LV2_State_Interface*)desc->extension_data(LV2_STATE__interface)
 		: NULL;
 
 	if (iface) {
@@ -396,7 +396,7 @@ lilv_state_restore(const LilvState*           state,
 
 	const LV2_Descriptor*      desc  = instance->lv2_descriptor;
 	const LV2_State_Interface* iface = (desc->extension_data)
-		? (LV2_State_Interface*)desc->extension_data(LV2_STATE__Interface)
+		? (LV2_State_Interface*)desc->extension_data(LV2_STATE__interface)
 		: NULL;
 
 	if (iface) {
