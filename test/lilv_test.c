@@ -28,7 +28,7 @@
 #include <string.h>
 #include <sys/stat.h>
 
-#ifdef _MSC_VER
+#ifdef _WIN32
 #    include <direct.h>
 #    define mkdir(path, flags) _mkdir(path)
 #    define setenv(n, v, r) SetEnvironmentVariable((n), (v))

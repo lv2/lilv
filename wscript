@@ -193,8 +193,9 @@ def build(bld):
     lib      = ['dl']
     libflags = ['-fvisibility=hidden']
     defines  = []
+    if sys.platform == 'win32':
+        lib = []
     if bld.env['MSVC_COMPILER']:
-        lib      = []
         libflags = []
         defines  = ['snprintf=_snprintf']
     elif sys.platform.find('bsd') > 0:

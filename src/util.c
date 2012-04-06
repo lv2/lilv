@@ -28,7 +28,9 @@
 #include <stdlib.h>
 #include <string.h>
 
-#ifdef _MSC_VER
+#ifdef _WIN32
+#    define _WIN32_WINNT 0x0600  /* for CreateSymbolicLink */
+#    include <windows.h>
 #    include <direct.h>
 #    include <io.h>
 #    define F_OK 0
@@ -345,7 +347,6 @@ lilv_size_mtime(const char* path, off_t* size, time_t* time)
 	struct stat buf;
 	if (stat(path, &buf)) {
 		LILV_ERRORF("stat(%s) (%s)\n", path, strerror(errno));
-		*size = *time = 0;
 	}
 
 	if (size) {
@@ -370,8 +371,8 @@ update_latest(const char* path, const char* name, void* data)
 	char*   entry_path = lilv_path_join(path, name);
 	unsigned num;
 	if (sscanf(entry_path, latest->pattern, &num) == 1) {
-		off_t  entry_size;
-		time_t entry_time;
+		off_t  entry_size = 0;
+		time_t entry_time = 0;
 		lilv_size_mtime(entry_path, &entry_size, &entry_time);
 		if (entry_size == latest->orig_size && entry_time >= latest->time) {
 			free(latest->latest);
