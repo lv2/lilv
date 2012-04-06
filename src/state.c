@@ -159,7 +159,7 @@ store_callback(LV2_State_Handle handle,
 	prop->type  = type;
 	prop->flags = flags;
 
-	return 0;
+	return LV2_STATE_SUCCESS;
 }
 
 static const void*
@@ -839,7 +839,8 @@ lilv_state_write(LilvWorld*       world,
 
 		p = serd_node_from_string(SERD_URI, USTR(key));
 		if (prop->type == state->atom_Path && !dir) {
-			const char* abs_path = lilv_state_rel2abs(state, prop->value);
+			const char* path     = (const char*)prop->value;
+			const char* abs_path = lilv_state_rel2abs(state, path);
 			sratom_write(sratom, unmap, SERD_ANON_CONT,
 			             &state_node, &p, prop->type,
 			             strlen(abs_path) + 1, abs_path);
@@ -1071,6 +1072,6 @@ void
 lilv_state_set_label(LilvState* state, const char* label)
 {
 	const size_t len = strlen(label);
-	state->label = realloc(state->label, len + 1);
+	state->label = (char*)realloc(state->label, len + 1);
 	memcpy(state->label, label, len + 1);
 }
