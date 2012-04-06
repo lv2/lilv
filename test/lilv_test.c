@@ -615,7 +615,7 @@ test_plugin(void)
 
 	LilvNode* lv2_latency = lilv_new_uri(world,
 			"http://lv2plug.in/ns/lv2core#latency");
-	LilvPort* latency_port = lilv_plugin_get_port_by_parameter(
+	LilvPort* latency_port = lilv_plugin_get_port_by_designation(
 		plug, out_class, lv2_latency);
 	lilv_node_free(lv2_latency);
 

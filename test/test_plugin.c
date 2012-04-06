@@ -153,7 +153,7 @@ map_uri(Test* plugin, const char* uri)
 	return plugin->map->map(plugin->map->handle, uri);
 }
 
-static void
+static LV2_State_Status
 save(LV2_Handle                instance,
      LV2_State_Store_Function  store,
      void*                     callback_data,
@@ -280,9 +280,11 @@ save(LV2_Handle                instance,
 			free(spath);
 		}
 	}
+
+	return LV2_STATE_SUCCESS;
 }
 
-static void
+static LV2_State_Status
 restore(LV2_Handle                  instance,
         LV2_State_Retrieve_Function retrieve,
         void*                       callback_data,
@@ -308,7 +310,7 @@ restore(LV2_Handle                  instance,
 		&size, &type, &valflags);
 
 	if (!map_path) {
-		return;
+		return LV2_STATE_ERR_NO_FEATURE;
 	}
 
 	char* apath = (char*)retrieve(
@@ -345,13 +347,15 @@ restore(LV2_Handle                  instance,
 	} else {
 		fprintf(stderr, "error: Failed to restore save file.\n");
 	}
+
+	return LV2_STATE_SUCCESS;
 }
 
 const void*
 extension_data(const char* uri)
 {
 	static const LV2_State_Interface state = { save, restore };
-	if (!strcmp(uri, LV2_STATE__Interface)) {
+	if (!strcmp(uri, LV2_STATE__interface)) {
 		return &state;
 	}
 	return NULL;
