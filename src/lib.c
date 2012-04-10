@@ -105,6 +105,7 @@ lilv_lib_close(LilvLib* lib)
 			zix_tree_remove(lib->world->libs, i);
 		}
 
+		lilv_node_free(lib->uri);
 		free(lib);
 	}
 }
