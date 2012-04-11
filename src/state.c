@@ -797,7 +797,10 @@ lilv_state_write(LilvWorld*       world,
 	sratom_set_sink(sratom, uri,
 	                (SerdStatementSink)serd_writer_write_statement,
 	                (SerdEndSink)serd_writer_end_anon,
-	                writer, false);
+	                writer);
+
+	// Write port values as pretty numbers
+	sratom_set_pretty_numbers(sratom, true);
 
 	// Write port values
 	for (uint32_t i = 0; i < state->num_values; ++i) {
@@ -824,6 +827,9 @@ lilv_state_write(LilvWorld*       world,
 
 		serd_writer_end_anon(writer, &port);
 	}
+
+	// Write property values with precise types
+	sratom_set_pretty_numbers(sratom, false);
 
 	// Write properties
 	const SerdNode state_node = serd_node_from_string(SERD_BLANK,
