@@ -173,18 +173,6 @@ lilv_world_set_option(LilvWorld*      world,
 	LILV_WARNF("Unrecognized or invalid option `%s'\n", option);
 }
 
-static SordIter*
-lilv_world_find_statements(const LilvWorld* world,
-                           SordModel*       model,
-                           const SordNode*  subject,
-                           const SordNode*  predicate,
-                           const SordNode*  object,
-                           const SordNode*  graph)
-{
-	SordQuad pat = { subject, predicate, object, graph };
-	return sord_find(model, pat);
-}
-
 LILV_API
 LilvNodes*
 lilv_world_find_nodes(LilvWorld*      world,
@@ -227,8 +215,7 @@ lilv_world_query_internal(LilvWorld*      world,
                           const SordNode* predicate,
                           const SordNode* object)
 {
-	return lilv_world_find_statements(world, world->model,
-	                                  subject, predicate, object, NULL);
+	return sord_search(world->model, subject, predicate, object, NULL);
 }
 
 LilvNodes*
@@ -302,8 +289,8 @@ lilv_world_add_spec(LilvWorld*      world,
 	spec->data_uris = lilv_nodes_new();
 
 	// Add all plugin data files (rdfs:seeAlso)
-	SordIter* files = lilv_world_find_statements(
-		world, world->model,
+	SordIter* files = sord_search(
+		world->model,
 		specification_node,
 		world->uris.rdfs_seeAlso,
 		NULL,
@@ -359,8 +346,8 @@ lilv_world_add_plugin(LilvWorld*       world,
 #endif
 
 	// Add all plugin data files (rdfs:seeAlso)
-	SordIter* files = lilv_world_find_statements(
-		world, world->model,
+	SordIter* files = sord_search(
+		world->model,
 		plugin_node,
 		world->uris.rdfs_seeAlso,
 		NULL,
@@ -391,8 +378,8 @@ lilv_world_load_dyn_manifest(LilvWorld* world,
 	LV2_Dyn_Manifest_Handle handle = NULL;
 
 	// ?dman a dynman:DynManifest
-	SordIter* dmanifests = lilv_world_find_statements(
-		world, world->model,
+	SordIter* dmanifests = sord_search(
+		world->model,
 		NULL,
 		world->uris.rdf_a,
 		world->uris.dman_DynManifest,
@@ -401,8 +388,8 @@ lilv_world_load_dyn_manifest(LilvWorld* world,
 		const SordNode* dmanifest = sord_iter_get_node(dmanifests, SORD_SUBJECT);
 
 		// ?dman lv2:binary ?binary
-		SordIter* binaries  = lilv_world_find_statements(
-			world, world->model,
+		SordIter* binaries = sord_search(
+			world->model,
 			dmanifest,
 			world->uris.lv2_binary,
 			NULL,
@@ -480,8 +467,8 @@ lilv_world_load_dyn_manifest(LilvWorld* world,
 		fclose(fd);
 
 		// ?plugin a lv2:Plugin
-		SordIter* plug_results = lilv_world_find_statements(
-			world, world->model,
+		SordIter* plug_results = sord_search(
+			world->model,
 			NULL,
 			world->uris.rdf_a,
 			world->uris.lv2_Plugin,
@@ -528,8 +515,8 @@ lilv_world_load_bundle(LilvWorld* world, LilvNode* bundle_uri)
 	}
 
 	// ?plugin a lv2:Plugin
-	SordIter* plug_results = lilv_world_find_statements(
-		world, world->model,
+	SordIter* plug_results = sord_search(
+		world->model,
 		NULL,
 		world->uris.rdf_a,
 		world->uris.lv2_Plugin,
@@ -544,8 +531,8 @@ lilv_world_load_bundle(LilvWorld* world, LilvNode* bundle_uri)
 	lilv_world_load_dyn_manifest(world, bundle_node, manifest_uri);
 
 	// ?specification a lv2:Specification
-	SordIter* spec_results = lilv_world_find_statements(
-		world, world->model,
+	SordIter* spec_results = sord_search(
+		world->model,
 		NULL,
 		world->uris.rdf_a,
 		world->uris.lv2_Specification,
@@ -661,8 +648,8 @@ lilv_world_load_plugin_classes(LilvWorld* world)
 	   a menu), they won't be seen anyway...
 	*/
 
-	SordIter* classes = lilv_world_find_statements(
-		world, world->model,
+	SordIter* classes = sord_search(
+		world->model,
 		NULL,
 		world->uris.rdf_a,
 		world->uris.rdfs_Class,
@@ -671,8 +658,8 @@ lilv_world_load_plugin_classes(LilvWorld* world)
 		const SordNode* class_node = sord_iter_get_node(classes, SORD_SUBJECT);
 
 		// Get parents (superclasses)
-		SordIter* parents = lilv_world_find_statements(
-			world, world->model,
+		SordIter* parents = sord_search(
+			world->model,
 			class_node,
 			world->uris.rdfs_subClassOf,
 			NULL,
@@ -692,8 +679,8 @@ lilv_world_load_plugin_classes(LilvWorld* world)
 		}
 
 		// Get labels
-		SordIter* labels = lilv_world_find_statements(
-			world, world->model,
+		SordIter* labels = sord_search(
+			world->model,
 			class_node,
 			world->uris.rdfs_label,
 			NULL,
@@ -735,8 +722,8 @@ lilv_world_load_all(LilvWorld* world)
 			(ZixTree*)world->plugins, p);
 
 		// ?new dc:replaces plugin
-		SordIter* replacement = lilv_world_find_statements(
-			world, world->model,
+		SordIter* replacement = sord_search(
+			world->model,
 			NULL,
 			world->uris.dc_replaces,
 			lilv_node_as_node(lilv_plugin_get_uri(plugin)),
@@ -766,10 +753,10 @@ lilv_world_load_resource(LilvWorld*      world,
 	}
 
 	int       n_read = 0;
-	SordIter* files  = lilv_world_find_statements(world, world->model,
-	                                              resource->val.uri_val,
-	                                              world->uris.rdfs_seeAlso,
-	                                              NULL, NULL);
+	SordIter* files  = sord_search(world->model,
+	                               resource->val.uri_val,
+	                               world->uris.rdfs_seeAlso,
+	                               NULL, NULL);
 	FOREACH_MATCH(files) {
 		const SordNode* file      = sord_iter_get_node(files, SORD_OBJECT);
 		const uint8_t*  str       = sord_node_get_string(file);
