@@ -77,7 +77,7 @@ def configure(conf):
     conf.env['BASH_COMPLETION'] = not Options.options.no_bash_completion
 
     autowaf.check_pkg(conf, 'lv2', uselib_store='LV2',
-                      atleast_version='0.1.0', mandatory=True)
+                      atleast_version='0.5.0', mandatory=True)
     autowaf.check_pkg(conf, 'serd-0', uselib_store='SERD',
                       atleast_version='0.11.0', mandatory=True)
     autowaf.check_pkg(conf, 'sord-0', uselib_store='SORD',

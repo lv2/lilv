@@ -20,15 +20,12 @@
 
 #include "lv2/lv2plug.in/ns/ext/atom/atom.h"
 #include "lv2/lv2plug.in/ns/ext/atom/forge.h"
+#include "lv2/lv2plug.in/ns/ext/presets/presets.h"
 #include "lv2/lv2plug.in/ns/ext/state/state.h"
 
 #include "lilv_config.h"
 #include "lilv_internal.h"
 #include "sratom/sratom.h"
-
-#define NS_ATOM  "http://lv2plug.in/ns/ext/atom#"
-#define NS_PSET  "http://lv2plug.in/ns/ext/presets#"
-#define NS_STATE "http://lv2plug.in/ns/ext/state#"
 
 #define USTR(s) ((const uint8_t*)(s))
 
@@ -609,13 +606,14 @@ lilv_state_new_from_file(LilvWorld*      world,
 static void
 set_prefixes(SerdEnv* env)
 {
-	serd_env_set_prefix_from_strings(env, USTR("atom"),  USTR(NS_ATOM));
-	serd_env_set_prefix_from_strings(env, USTR("lv2"),   USTR(LILV_NS_LV2));
-	serd_env_set_prefix_from_strings(env, USTR("pset"),  USTR(NS_PSET));
-	serd_env_set_prefix_from_strings(env, USTR("rdf"),   USTR(LILV_NS_RDF));
-	serd_env_set_prefix_from_strings(env, USTR("rdfs"),  USTR(LILV_NS_RDFS));
-	serd_env_set_prefix_from_strings(env, USTR("state"), USTR(NS_STATE));
-	serd_env_set_prefix_from_strings(env, USTR("xsd"),   USTR(LILV_NS_XSD));
+#define SET_PSET(e, p, u) serd_env_set_prefix_from_strings(e, p, u)
+	SET_PSET(env, USTR("atom"),  USTR(LV2_ATOM_PREFIX));
+	SET_PSET(env, USTR("lv2"),   USTR(LV2_CORE_PREFIX));
+	SET_PSET(env, USTR("pset"),  USTR(LV2_PRESETS_PREFIX));
+	SET_PSET(env, USTR("rdf"),   USTR(LILV_NS_RDF));
+	SET_PSET(env, USTR("rdfs"),  USTR(LILV_NS_RDFS));
+	SET_PSET(env, USTR("state"), USTR(LV2_STATE_PREFIX));
+	SET_PSET(env, USTR("xsd"),   USTR(LILV_NS_XSD));
 }
 
 LILV_API
@@ -633,7 +631,7 @@ lilv_state_new_from_string(LilvWorld*    world,
 	serd_reader_read_string(reader, USTR(str));
 
 	const SordNode* p = sord_new_uri(world->world, USTR(LILV_NS_RDF "type"));
-	const SordNode* o = sord_new_uri(world->world, USTR(NS_PSET "Preset"));
+	const SordNode* o = sord_new_uri(world->world, USTR(LV2_PRESETS__Preset));
 	SordIter* const i = sord_search(model, NULL, p, o, NULL);
 	const SordNode* s = sord_iter_get_node(i, SORD_SUBJECT);
 
@@ -712,7 +710,7 @@ add_state_to_manifest(const LilvNode* plugin_uri,
 	// <state> a pset:Preset
 	SerdNode s = serd_node_from_string(SERD_URI, USTR(state_uri));
 	SerdNode p = serd_node_from_string(SERD_URI, USTR(LILV_NS_RDF "type"));
-	SerdNode o = serd_node_from_string(SERD_URI, USTR(NS_PSET "Preset"));
+	SerdNode o = serd_node_from_string(SERD_URI, USTR(LV2_PRESETS__Preset));
 	serd_writer_write_statement(writer, 0, NULL, &s, &p, &o, NULL, NULL);
 
 	// <state> rdfs:seeAlso <file>
@@ -720,7 +718,7 @@ add_state_to_manifest(const LilvNode* plugin_uri,
 	serd_writer_write_statement(writer, 0, NULL, &s, &p, &file, NULL, NULL);
 
 	// <state> lv2:appliesTo <plugin>
-	p = serd_node_from_string(SERD_URI, USTR(LILV_NS_LV2 "appliesTo"));
+	p = serd_node_from_string(SERD_URI, USTR(LV2_CORE__appliesTo));
 	o = serd_node_from_string(
 		SERD_URI, USTR(lilv_node_as_string(plugin_uri)));
 	serd_writer_write_statement(writer, 0, NULL, &s, &p, &o, NULL, NULL);
@@ -768,7 +766,7 @@ lilv_state_write(LilvWorld*       world,
 
 	// <subject> a pset:Preset
 	SerdNode p = serd_node_from_string(SERD_URI, USTR(LILV_NS_RDF "type"));
-	SerdNode o = serd_node_from_string(SERD_URI, USTR(NS_PSET "Preset"));
+	SerdNode o = serd_node_from_string(SERD_URI, USTR(LV2_PRESETS__Preset));
 	serd_writer_write_statement(writer, 0, NULL,
 	                            &subject, &p, &o, NULL, NULL);
 
@@ -806,18 +804,18 @@ lilv_state_write(LilvWorld*       world,
 			SERD_BLANK, USTR(value->symbol));
 
 		// <> lv2:port _:symbol
-		p = serd_node_from_string(SERD_URI, USTR(LILV_NS_LV2 "port"));
+		p = serd_node_from_string(SERD_URI, USTR(LV2_CORE__port));
 		serd_writer_write_statement(writer, SERD_ANON_O_BEGIN,
 		                            NULL, &subject, &p, &port, NULL, NULL);
 
 		// _:symbol lv2:symbol "symbol"
-		p = serd_node_from_string(SERD_URI, USTR(LILV_NS_LV2 "symbol"));
+		p = serd_node_from_string(SERD_URI, USTR(LV2_CORE__symbol));
 		o = serd_node_from_string(SERD_LITERAL, USTR(value->symbol));
 		serd_writer_write_statement(writer, SERD_ANON_CONT,
 		                            NULL, &port, &p, &o, NULL, NULL);
 
 		// _:symbol pset:value value
-		p = serd_node_from_string(SERD_URI, USTR(NS_PSET "value"));
+		p = serd_node_from_string(SERD_URI, USTR(LV2_PRESETS__value));
 		sratom_write(sratom, unmap, SERD_ANON_CONT, &port, &p,
 		             value->type, value->size, value->value);
 

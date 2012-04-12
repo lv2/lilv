@@ -24,7 +24,8 @@
 #include "lilv_config.h"
 #include "lilv_internal.h"
 
-#define NS_UI   (const uint8_t*)"http://lv2plug.in/ns/extensions/ui#"
+#include "lv2/lv2plug.in/ns/extensions/ui/ui.h"
+
 #define NS_DOAP (const uint8_t*)"http://usefulinc.com/ns/doap#"
 #define NS_FOAF (const uint8_t*)"http://xmlns.com/foaf/0.1/"
 
@@ -423,7 +424,7 @@ lilv_plugin_verify(const LilvPlugin* plugin)
 	}
 
 	lilv_nodes_free(results);
-	LilvNode* lv2_port = lilv_new_uri(plugin->world, LILV_NS_LV2 "port");
+	LilvNode* lv2_port = lilv_new_uri(plugin->world, LV2_CORE__port);
 	results = lilv_plugin_get_value(plugin, lv2_port);
 	lilv_node_free(lv2_port);
 	if (!results) {
@@ -839,8 +840,10 @@ lilv_plugin_get_uis(const LilvPlugin* p)
 {
 	lilv_plugin_load_if_necessary(p);
 
-	SordNode* ui_ui_node     = sord_new_uri(p->world->world, NS_UI "ui");
-	SordNode* ui_binary_node = sord_new_uri(p->world->world, NS_UI "binary");
+	SordNode* ui_ui_node = sord_new_uri(p->world->world,
+	                                    (const uint8_t*)LV2_UI__ui);
+	SordNode* ui_binary_node = sord_new_uri(p->world->world,
+	                                        (const uint8_t*)LV2_UI__binary);
 
 	LilvUIs*  result = lilv_uis_new();
 	SordIter* uis    = lilv_world_query_internal(

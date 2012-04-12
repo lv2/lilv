@@ -20,6 +20,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "lv2/lv2plug.in/ns/ext/event/event.h"
+
 #include "lilv_internal.h"
 
 LilvPort*
@@ -84,13 +86,11 @@ lilv_port_supports_event(const LilvPlugin* p,
                          const LilvPort*   port,
                          const LilvNode*   event)
 {
-#define NS_EV (const uint8_t*)"http://lv2plug.in/ns/ext/event#"
-
 	assert(event);
 	SordIter* results = lilv_world_query_internal(
 		p->world,
 		port->node,
-		sord_new_uri(p->world->world, NS_EV "supportsEvent"),
+		sord_new_uri(p->world->world, (const uint8_t*)LV2_EVENT__supportsEvent),
 		lilv_node_as_node(event));
 
 	const bool ret = !sord_iter_end(results);
@@ -219,7 +219,7 @@ lilv_port_get_scale_points(const LilvPlugin* p,
 	SordIter* points = lilv_world_query_internal(
 		p->world,
 		port->node,
-		sord_new_uri(p->world->world, (const uint8_t*)LILV_NS_LV2 "scalePoint"),
+		sord_new_uri(p->world->world, (const uint8_t*)LV2_CORE__scalePoint),
 		NULL);
 
 	LilvScalePoints* ret = NULL;

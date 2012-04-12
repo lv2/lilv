@@ -20,6 +20,10 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "lv2/lv2plug.in/ns/ext/port-groups/port-groups.h"
+#include "lv2/lv2plug.in/ns/ext/presets/presets.h"
+#include "lv2/lv2plug.in/ns/ext/event/event.h"
+
 #include "lilv/lilv.h"
 
 #include "lilv_config.h"
@@ -387,18 +391,14 @@ main(int argc, char** argv)
 	LilvWorld* world = lilv_world_new();
 	lilv_world_load_all(world);
 
-#define NS_PG   "http://lv2plug.in/ns/ext/port-groups#"
-#define NS_PSET "http://lv2plug.in/ns/ext/presets#"
-#define NS_EV   "http://lv2plug.in/ns/ext/event#"
-
-	applies_to_pred     = lilv_new_uri(world, LILV_NS_LV2 "appliesTo");
+	applies_to_pred     = lilv_new_uri(world, LV2_CORE__appliesTo);
 	control_class       = lilv_new_uri(world, LILV_URI_CONTROL_PORT);
 	event_class         = lilv_new_uri(world, LILV_URI_EVENT_PORT);
-	group_pred          = lilv_new_uri(world, NS_PG "group");
+	group_pred          = lilv_new_uri(world, LV2_PORT_GROUPS__group);
 	label_pred          = lilv_new_uri(world, LILV_NS_RDFS "label");
-	preset_class        = lilv_new_uri(world, NS_PSET "Preset");
-	designation_pred    = lilv_new_uri(world, LILV_NS_LV2 "designation");
-	supports_event_pred = lilv_new_uri(world, NS_EV "supportsEvent");
+	preset_class        = lilv_new_uri(world, LV2_PRESETS__Preset);
+	designation_pred    = lilv_new_uri(world, LV2_CORE__designation);
+	supports_event_pred = lilv_new_uri(world, LV2_EVENT__supportsEvent);
 
 	const LilvPlugins* plugins = lilv_world_get_all_plugins(world);
 	LilvNode*          uri     = lilv_new_uri(world, plugin_uri);

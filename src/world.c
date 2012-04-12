@@ -19,6 +19,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "lv2/lv2plug.in/ns/ext/presets/presets.h"
+
 #include "lilv_internal.h"
 
 LILV_API
@@ -48,31 +50,30 @@ lilv_world_new(void)
 
 #define NS_DCTERMS "http://purl.org/dc/terms/"
 #define NS_DYNMAN  "http://lv2plug.in/ns/ext/dynmanifest#"
-#define NS_PSET    "http://lv2plug.in/ns/ext/presets#"
 
 #define NEW_URI(uri) sord_new_uri(world->world, (const uint8_t*)uri)
 
 	world->uris.dc_replaces         = NEW_URI(NS_DCTERMS   "replaces");
 	world->uris.dman_DynManifest    = NEW_URI(NS_DYNMAN    "DynManifest");
 	world->uris.doap_name           = NEW_URI(LILV_NS_DOAP "name");
-	world->uris.lv2_Plugin          = NEW_URI(LILV_NS_LV2  "Plugin");
-	world->uris.lv2_Specification   = NEW_URI(LILV_NS_LV2  "Specification");
-	world->uris.lv2_appliesTo       = NEW_URI(LILV_NS_LV2  "appliesTo");
-	world->uris.lv2_binary          = NEW_URI(LILV_NS_LV2  "binary");
-	world->uris.lv2_default         = NEW_URI(LILV_NS_LV2  "default");
-	world->uris.lv2_designation     = NEW_URI(LILV_NS_LV2  "designation");
-	world->uris.lv2_extensionData   = NEW_URI(LILV_NS_LV2  "extensionData");
-	world->uris.lv2_index           = NEW_URI(LILV_NS_LV2  "index");
-	world->uris.lv2_maximum         = NEW_URI(LILV_NS_LV2  "maximum");
-	world->uris.lv2_minimum         = NEW_URI(LILV_NS_LV2  "minimum");
-	world->uris.lv2_name            = NEW_URI(LILV_NS_LV2  "name");
-	world->uris.lv2_optionalFeature = NEW_URI(LILV_NS_LV2  "optionalFeature");
-	world->uris.lv2_port            = NEW_URI(LILV_NS_LV2  "port");
-	world->uris.lv2_portProperty    = NEW_URI(LILV_NS_LV2  "portProperty");
-	world->uris.lv2_reportsLatency  = NEW_URI(LILV_NS_LV2  "reportsLatency");
-	world->uris.lv2_requiredFeature = NEW_URI(LILV_NS_LV2  "requiredFeature");
-	world->uris.lv2_symbol          = NEW_URI(LILV_NS_LV2  "symbol");
-	world->uris.pset_value          = NEW_URI(NS_PSET      "value");
+	world->uris.lv2_Plugin          = NEW_URI(LV2_CORE__Plugin);
+	world->uris.lv2_Specification   = NEW_URI(LV2_CORE__Specification);
+	world->uris.lv2_appliesTo       = NEW_URI(LV2_CORE__appliesTo);
+	world->uris.lv2_binary          = NEW_URI(LV2_CORE__binary);
+	world->uris.lv2_default         = NEW_URI(LV2_CORE__default);
+	world->uris.lv2_designation     = NEW_URI(LV2_CORE__designation);
+	world->uris.lv2_extensionData   = NEW_URI(LV2_CORE__extensionData);
+	world->uris.lv2_index           = NEW_URI(LV2_CORE__index);
+	world->uris.lv2_maximum         = NEW_URI(LV2_CORE__maximum);
+	world->uris.lv2_minimum         = NEW_URI(LV2_CORE__minimum);
+	world->uris.lv2_name            = NEW_URI(LV2_CORE__name);
+	world->uris.lv2_optionalFeature = NEW_URI(LV2_CORE__optionalFeature);
+	world->uris.lv2_port            = NEW_URI(LV2_CORE__port);
+	world->uris.lv2_portProperty    = NEW_URI(LV2_CORE__portProperty);
+	world->uris.lv2_reportsLatency  = NEW_URI(LV2_CORE__reportsLatency);
+	world->uris.lv2_requiredFeature = NEW_URI(LV2_CORE__requiredFeature);
+	world->uris.lv2_symbol          = NEW_URI(LV2_CORE__symbol);
+	world->uris.pset_value          = NEW_URI(LV2_PRESETS__value);
 	world->uris.rdf_a               = NEW_URI(LILV_NS_RDF  "type");
 	world->uris.rdf_value           = NEW_URI(LILV_NS_RDF  "value");
 	world->uris.rdfs_Class          = NEW_URI(LILV_NS_RDFS "Class");
