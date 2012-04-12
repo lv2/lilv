@@ -218,22 +218,22 @@ abstract_path(LV2_State_Map_Path_Handle handle,
 		PathMap* pm = (PathMap*)zix_tree_get(iter);
 		free(real_path);
 		return lilv_strdup(pm->rel);
-	} else if (lilv_path_is_child(absolute_path, state->dir)) {
+	} else if (lilv_path_is_child(real_path, state->dir)) {
 		// File in state directory (loaded, or created by plugin during save
-		path = lilv_path_relative_to(absolute_path, state->dir);
-	} else if (lilv_path_is_child(absolute_path, state->file_dir)) {
+		path = lilv_path_relative_to(real_path, state->dir);
+	} else if (lilv_path_is_child(real_path, state->file_dir)) {
 		// File created by plugin earlier
-		path = lilv_path_relative_to(absolute_path, state->file_dir);
+		path = lilv_path_relative_to(real_path, state->file_dir);
 		if (state->copy_dir) {
 			if (!lilv_path_exists(state->copy_dir, NULL)) {
 				lilv_mkdir_p(state->copy_dir);
 			}
 			char* cpath = lilv_path_join(state->copy_dir, path);
-			char* copy  = lilv_get_latest_copy(absolute_path, cpath);
+			char* copy  = lilv_get_latest_copy(real_path, cpath);
 			if (!copy || !lilv_file_equals(real_path, copy)) {
 				// No recent enough copy, make a new one
 				copy = lilv_find_free_path(cpath, lilv_path_exists, NULL);
-				lilv_copy_file(absolute_path, copy);
+				lilv_copy_file(real_path, copy);
 			}
 			free(real_path);
 			free(cpath);
@@ -786,8 +786,11 @@ lilv_state_write(LilvWorld*       world,
 		                            NULL, &subject, &p, &o, NULL, NULL);
 	}
 
+	SerdEnv*        env  = serd_writer_get_env(writer);
+	const SerdNode* base = serd_env_get_base_uri(env, NULL);
+
 	Sratom* sratom = sratom_new(map);
-	sratom_set_sink(sratom, uri,
+	sratom_set_sink(sratom, (const char*)base->buf,
 	                (SerdStatementSink)serd_writer_write_statement,
 	                (SerdEndSink)serd_writer_end_anon,
 	                writer);
