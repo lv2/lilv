@@ -166,8 +166,10 @@ lilv_plugin_load(LilvPlugin* p)
 			get_data_func(p->dynmanifest->handle, fd,
 			              lilv_node_as_string(p->plugin_uri));
 			rewind(fd);
-			serd_reader_read_file_handle(reader, fd,
-			                             (const uint8_t*)"(dyn-manifest)");
+			serd_reader_add_blank_prefix(
+				reader, lilv_world_blank_node_prefix(p->world));
+			serd_reader_read_file_handle(
+				reader, fd, (const uint8_t*)"(dyn-manifest)");
 			fclose(fd);
 		}
 	}

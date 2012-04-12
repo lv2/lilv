@@ -458,6 +458,8 @@ lilv_world_load_dyn_manifest(LilvWorld* world,
 		SerdEnv*        env    = serd_env_new(base);
 		SerdReader*     reader = sord_new_reader(
 			world->model, env, SERD_TURTLE, sord_node_copy(dmanifest));
+		serd_reader_add_blank_prefix(reader,
+		                             lilv_world_blank_node_prefix(p->world));
 		serd_reader_read_file_handle(reader, fd,
 		                             (const uint8_t*)"(dyn-manifest)");
 		serd_reader_free(reader);
@@ -768,6 +770,8 @@ lilv_world_load_resource(LilvWorld*      world,
 				SerdEnv*        env    = serd_env_new(base);
 				SerdReader*     reader = sord_new_reader(
 					world->model, env, SERD_TURTLE, (SordNode*)file);
+				serd_reader_add_blank_prefix(
+					reader, lilv_world_blank_node_prefix(world));
 				if (!serd_reader_read_file(reader, str)) {
 					++n_read;
 					zix_tree_insert(
