@@ -345,7 +345,7 @@ void
 print_usage(void)
 {
 	printf(
-		"Usage: lv2info [OPTIONS] PLUGIN_URI\n"
+		"Usage: lv2info [OPTION]... PLUGIN_URI\n"
 		"Print information about an installed LV2 plugin.\n\n"
 		"  -p FILE      Write Turtle description of plugin to FILE\n"
 		"  -m FILE      Add record of plugin to manifest FILE\n"

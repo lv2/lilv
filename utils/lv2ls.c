@@ -50,7 +50,7 @@ print_version(void)
 void
 print_usage(void)
 {
-	printf("Usage: lv2ls [OPTIONS]\n");
+	printf("Usage: lv2ls [OPTION]...\n");
 	printf("List all installed LV2 plugins.\n");
 	printf("\n");
 	printf("  -n, --names    Show names instead of URIs\n");
