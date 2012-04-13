@@ -113,18 +113,17 @@ print_port(const LilvPlugin* p,
 	lilv_node_free(name);
 
 	LilvNodes* groups = lilv_port_get_value(p, port, group_pred);
-	if (lilv_nodes_size(groups) > 0)
+	if (lilv_nodes_size(groups) > 0) {
 		printf("\t\tGroup:       %s\n",
-		       lilv_node_as_string(
-			       lilv_nodes_get(groups, lilv_nodes_begin(groups))));
+		       lilv_node_as_string(lilv_nodes_get_first(groups)));
+	}
 	lilv_nodes_free(groups);
 
 	LilvNodes* designations = lilv_port_get_value(p, port, designation_pred);
-	if (lilv_nodes_size(designations) > 0)
+	if (lilv_nodes_size(designations) > 0) {
 		printf("\t\tDesignation: %s\n",
-		       lilv_node_as_string(
-			       lilv_nodes_get(designations,
-			                      lilv_nodes_begin(designations))));
+		       lilv_node_as_string(lilv_nodes_get_first(designations)));
+	}
 	lilv_nodes_free(designations);
 
 	if (lilv_port_is_a(p, port, control_class)) {
