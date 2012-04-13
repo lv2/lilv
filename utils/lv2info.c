@@ -42,17 +42,6 @@ LilvNode* designation_pred    = NULL;
 LilvNode* supports_event_pred = NULL;
 
 void
-print_group(const LilvPlugin* p,
-            const LilvNode*   group,
-            LilvNode*         type,
-            LilvNode*         symbol)
-{
-	printf("\n\tGroup %s:\n", lilv_node_as_string(group));
-	printf("\t\tType: %s\n", lilv_node_as_string(type));
-	printf("\t\tSymbol: %s\n", lilv_node_as_string(symbol));
-}
-
-void
 print_port(const LilvPlugin* p,
            uint32_t          index,
            float*            mins,
