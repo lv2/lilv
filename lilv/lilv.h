@@ -914,6 +914,16 @@ lilv_plugin_get_port_by_designation(const LilvPlugin* plugin,
                                     const LilvNode*   designation);
 
 /**
+   Get the project the plugin is a part of.
+
+   More information about the project can be read via lilv_world_find_nodes(),
+   typically using properties from DOAP (e.g. doap:name).
+*/
+LILV_API
+LilvNode*
+lilv_plugin_get_project(const LilvPlugin* plugin);
+
+/**
    Get the full name of the plugin's author.
    Returns NULL if author name is not present.
    Returned value must be freed by caller.

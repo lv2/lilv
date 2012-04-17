@@ -762,6 +762,33 @@ lilv_plugin_get_port_by_symbol(const LilvPlugin* p,
 	return NULL;
 }
 
+LILV_API
+LilvNode*
+lilv_plugin_get_project(const LilvPlugin* p)
+{
+	lilv_plugin_load_if_necessary(p);
+
+	SordNode* lv2_project = sord_new_uri(p->world->world,
+	                                     (const uint8_t*)LV2_CORE__project);
+
+	SordIter* projects = lilv_world_query_internal(
+		p->world,
+		p->plugin_uri->val.uri_val,
+		lv2_project,
+		NULL);
+
+	sord_node_free(p->world->world, lv2_project);
+
+	if (sord_iter_end(projects)) {
+		return NULL;
+	}
+
+	const SordNode* project = sord_iter_get_node(projects, SORD_OBJECT);
+
+	sord_iter_free(projects);
+	return lilv_node_new_from_node(p->world, project);
+}
+
 static const SordNode*
 lilv_plugin_get_author(const LilvPlugin* p)
 {
@@ -777,6 +804,19 @@ lilv_plugin_get_author(const LilvPlugin* p)
 		NULL);
 
 	sord_node_free(p->world->world, doap_maintainer);
+
+	if (sord_iter_end(maintainers)) {
+		LilvNode* project = lilv_plugin_get_project(p);
+		if (!project) {
+			return NULL;
+		}
+
+		maintainers = lilv_world_query_internal(
+			p->world,
+			project->val.uri_val,
+			doap_maintainer,
+			NULL);
+	}
 
 	if (sord_iter_end(maintainers)) {
 		return NULL;

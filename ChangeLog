@@ -24,6 +24,8 @@ lilv (UNRELEASED) unstable; urgency=low
   * Remove use of wordexp.
   * Add lilv_plugin_get_port_by_designation() and lilv_port_get_index() as an
     improved generic alternative to lilv_plugin_get_latency_port_index().
+  * Add lilv_plugin_get_project() and get author information from project if
+    it is not given directly on the plugin.
 
  -- David Robillard <d@drobilla.net>  (UNRELEASED)
 
