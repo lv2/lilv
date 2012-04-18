@@ -1,4 +1,4 @@
-lilv (UNRELEASED) unstable; urgency=low
+lilv (0.14.0) stable;
 
   * Add lilv_plugin_get_extension_data
   * Use path variables in pkgconfig files
@@ -27,9 +27,9 @@ lilv (UNRELEASED) unstable; urgency=low
   * Add lilv_plugin_get_project() and get author information from project if
     it is not given directly on the plugin.
 
- -- David Robillard <d@drobilla.net>  (UNRELEASED)
+ -- David Robillard <d@drobilla.net>  Tue, 17 Apr 2012 18:46:50 -0400
 
-lilv (0.5.0) unstable; urgency=low
+lilv (0.5.0) stable;
 
   * Remove glib dependency
   * Add lv2core as a pkg-config dependency (for lv2.h header include)
@@ -38,9 +38,9 @@ lilv (0.5.0) unstable; urgency=low
     lilv_plugin_get_port_ranges_float
   * Add ability to build static library
 
-  -- David Robillard <d@drobilla.net>  Thu, 29 Sep 2011 00:00:00 -0400
+ -- David Robillard <d@drobilla.net>  Thu, 29 Sep 2011 00:00:00 -0400
 
-lilv (0.4.4) unstable; urgency=low
+lilv (0.4.4) stable;
 
   * Fix building python bindings
   * Make free methods tolerate being called on NULL
@@ -48,16 +48,16 @@ lilv (0.4.4) unstable; urgency=low
   * Fix parsing extra plugin data files in other bundles
   * Fix lilv_ui_is_supported when Lilv is built independently
 
-  -- David Robillard <d@drobilla.net>  Sat, 11 Jun 2011 11:20:11 -0400
+ -- David Robillard <d@drobilla.net>  Sat, 11 Jun 2011 11:20:11 -0400
 
-lilv (0.4.2) unstable; urgency=low
+lilv (0.4.2) stable;
 
   * Fix compilation issues on some systems
   * Fix build system Python 3 compatibility
 
  -- David Robillard <d@drobilla.net>  Wed, 25 May 2011 19:00:00 -0400
 
-lilv (0.4.0) unstable; urgency=low
+lilv (0.4.0) stable;
 
   * Initial version (forked from SLV2)
 
