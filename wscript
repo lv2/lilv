@@ -346,9 +346,9 @@ def fix_docs(ctx):
         os.chdir(build_dir(ctx, 'doc/html'))
         os.system("sed -i 's/LILV_API //' group__lilv.html")
         os.system("sed -i 's/LILV_DEPRECATED //' group__lilv.html")
+        os.system("sed -i 's/href=\"doc\/style.css\"/href=\"style.css\"/' group__lilv.html")
         os.remove('index.html')
-        os.symlink('group__lilv.html',
-                   'index.html')
+        os.symlink('group__lilv.html', 'index.html')
         os.chdir(top)
         os.chdir(build_dir(ctx, 'doc/man/man3'))
         os.system("sed -i 's/LILV_API //' lilv.3")
