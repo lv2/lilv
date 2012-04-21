@@ -8,7 +8,7 @@ import waflib.Options as Options
 import waflib.Logs as Logs
 
 # Version of this package (even if built as a child)
-LILV_VERSION       = '0.14.0'
+LILV_VERSION       = '0.14.2'
 LILV_MAJOR_VERSION = '0'
 
 # Library version (UNIX style major, minor, micro)
@@ -77,11 +77,11 @@ def configure(conf):
     conf.env['BASH_COMPLETION'] = not Options.options.no_bash_completion
 
     autowaf.check_pkg(conf, 'lv2', uselib_store='LV2',
-                      atleast_version='0.5.0', mandatory=True)
+                      atleast_version='1.0.0', mandatory=True)
     autowaf.check_pkg(conf, 'serd-0', uselib_store='SERD',
-                      atleast_version='0.11.0', mandatory=True)
+                      atleast_version='0.14.0', mandatory=True)
     autowaf.check_pkg(conf, 'sord-0', uselib_store='SORD',
-                      atleast_version='0.7.0', mandatory=True)
+                      atleast_version='0.8.0', mandatory=True)
     autowaf.check_pkg(conf, 'sratom-0', uselib_store='SRATOM',
                       atleast_version='0.2.0', mandatory=True)
 
@@ -346,9 +346,9 @@ def fix_docs(ctx):
         os.chdir(build_dir(ctx, 'doc/html'))
         os.system("sed -i 's/LILV_API //' group__lilv.html")
         os.system("sed -i 's/LILV_DEPRECATED //' group__lilv.html")
+        os.system("sed -i 's/href=\"doc\/style.css\"/href=\"style.css\"/' group__lilv.html")
         os.remove('index.html')
-        os.symlink('group__lilv.html',
-                   'index.html')
+        os.symlink('group__lilv.html', 'index.html')
         os.chdir(top)
         os.chdir(build_dir(ctx, 'doc/man/man3'))
         os.system("sed -i 's/LILV_API //' lilv.3")
