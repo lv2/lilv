@@ -27,7 +27,7 @@ lilv (0.14.0) stable;
   * Add lilv_plugin_get_project() and get author information from project if
     it is not given directly on the plugin.
 
- -- David Robillard <d@drobilla.net>  Tue, 17 Apr 2012 18:46:50 -0400
+ -- David Robillard <d@drobilla.net>  Wed, 18 Apr 2012 20:06:28 -0400
 
 lilv (0.5.0) stable;
 
