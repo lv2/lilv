@@ -19,6 +19,12 @@
 
 #include "lilv/lilv.h"
 
+#if __GNUC__ > 3 || (__GNUC__ == 3 && __GNUC_MINOR__ >= 1)
+#    define LILV_DEPRECATED __attribute__((__deprecated__))
+#else
+#    define LILV_DEPRECATED
+#endif
+
 namespace Lilv {
 
 static inline const char*
@@ -215,9 +221,26 @@ struct Plugins {
 };
 
 struct Instance {
+	inline Instance(LilvInstance* instance) : me(instance) {}
+
+	LILV_DEPRECATED
 	inline Instance(Plugin plugin, double sample_rate) {
-		// TODO: features
 		me = lilv_plugin_instantiate(plugin, sample_rate, NULL);
+	}
+	
+	LILV_DEPRECATED inline Instance(Plugin              plugin,
+	                                double              sample_rate,
+	                                LV2_Feature* const* features) {
+		me = lilv_plugin_instantiate(plugin, sample_rate, features);
+	}
+
+	static inline Instance* create(Plugin              plugin,
+	                               double              sample_rate,
+	                               LV2_Feature* const* features) {
+		LilvInstance* me = lilv_plugin_instantiate(
+			plugin, sample_rate, features);
+
+		return me ? new Instance(me) : NULL;
 	}
 
 	LILV_WRAP_CONVERSION(LilvInstance);
@@ -230,10 +253,16 @@ struct Instance {
 	LILV_WRAP1_VOID(instance, run, unsigned, sample_count);
 	LILV_WRAP0_VOID(instance, deactivate);
 
-	// TODO: get_extension_data
+	inline const void* get_extension_data(const char* uri) {
+		return lilv_instance_get_extension_data(me, uri);
+	}
 
 	inline const LV2_Descriptor* get_descriptor() {
 		return lilv_instance_get_descriptor(me);
+	}
+
+	inline LV2_Handle get_handle() {
+		return lilv_instance_get_handle(me);
 	}
 
 	LilvInstance* me;
