@@ -3,6 +3,7 @@ lilv (9999) unstable;
   * Fix Lilv::Instance API to handle features and failed instantiations
   * Deprecate old flawed Lilv::Instance constructors
   * Add Lilv::Instance::get_handle() and Lilv::Instance::get_extension_data()
+  * Fix documentation for ui_type parameter of lilv_ui_is_supported()
 
  -- David Robillard <d@drobilla.net>
 

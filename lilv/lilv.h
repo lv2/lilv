@@ -1664,7 +1664,7 @@ typedef unsigned (*LilvUISupportedFunc)(const char* container_type_uri,
    @param supported_func User provided supported predicate.
    @param container_type The widget type to host the UI within.
    @param ui_type (Output) If non-NULL, set to the native type of the UI
-   which the caller must free with lilv_node_free.
+   which is owned by @c ui and must not be freed by the caller.
    @return The embedding quality level returned by @c supported_func.
 */
 LILV_API
