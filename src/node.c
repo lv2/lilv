@@ -60,11 +60,10 @@ lilv_node_new(LilvWorld* world, LilvNodeType type, const char* str)
 	switch (type) {
 	case LILV_VALUE_URI:
 		val->val.uri_val = sord_new_uri(world->world, (const uint8_t*)str);
-		val->str_val = (char*)sord_node_get_string(val->val.uri_val);
 		break;
 	case LILV_VALUE_BLANK:
 		val->val.uri_val = sord_new_blank(world->world, (const uint8_t*)str);
-		val->str_val = (char*)sord_node_get_string(val->val.uri_val);
+		break;
 	case LILV_VALUE_STRING:
 	case LILV_VALUE_INT:
 	case LILV_VALUE_FLOAT:
@@ -72,6 +71,17 @@ lilv_node_new(LilvWorld* world, LilvNodeType type, const char* str)
 	case LILV_VALUE_BLOB:
 		val->str_val = lilv_strdup(str);
 		break;
+	}
+
+	switch (type) {
+	case LILV_VALUE_URI:
+	case LILV_VALUE_BLANK:
+		if (!val->val.uri_val) {
+			free(val);
+			return NULL;
+		}
+		val->str_val = (char*)sord_node_get_string(val->val.uri_val);
+	default: break;
 	}
 
 	return val;

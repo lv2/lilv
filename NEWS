@@ -4,6 +4,7 @@ lilv (9999) unstable;
   * Deprecate old flawed Lilv::Instance constructors
   * Add Lilv::Instance::get_handle() and Lilv::Instance::get_extension_data()
   * Fix documentation for ui_type parameter of lilv_ui_is_supported()
+  * Fix crash when lv2info is run with an invalid URI argument
 
  -- David Robillard <d@drobilla.net>
 

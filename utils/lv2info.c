@@ -379,6 +379,13 @@ main(int argc, char** argv)
 	LilvWorld* world = lilv_world_new();
 	lilv_world_load_all(world);
 
+	LilvNode* uri = lilv_new_uri(world, plugin_uri);
+	if (!uri) {
+		fprintf(stderr, "Invalid plugin URI\n");
+		lilv_world_free(world);
+		return 1;
+	}
+
 	applies_to_pred     = lilv_new_uri(world, LV2_CORE__appliesTo);
 	control_class       = lilv_new_uri(world, LILV_URI_CONTROL_PORT);
 	event_class         = lilv_new_uri(world, LILV_URI_EVENT_PORT);
@@ -389,7 +396,6 @@ main(int argc, char** argv)
 	supports_event_pred = lilv_new_uri(world, LV2_EVENT__supportsEvent);
 
 	const LilvPlugins* plugins = lilv_world_get_all_plugins(world);
-	LilvNode*          uri     = lilv_new_uri(world, plugin_uri);
 	const LilvPlugin*  p       = lilv_plugins_get_by_uri(plugins, uri);
 
 	if (p && plugin_file) {
