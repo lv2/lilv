@@ -306,6 +306,19 @@ absolute_dir(const char* path)
 	return base;
 }
 
+static const char*
+state_strerror(LV2_State_Status st)
+{
+	switch (st) {
+	case LV2_STATE_SUCCESS:         return "Completed successfully";
+	case LV2_STATE_ERR_UNKNOWN:     return "Unknown error";
+	case LV2_STATE_ERR_BAD_TYPE:    return "Unsupported type";
+	case LV2_STATE_ERR_BAD_FLAGS:   return "Unsupported flags";
+	case LV2_STATE_ERR_NO_FEATURE:  return "Missing features";
+	case LV2_STATE_ERR_NO_PROPERTY: return "Missing property";
+	}
+}
+
 LILV_API
 LilvState*
 lilv_state_new_from_instance(const LilvPlugin*          plugin,
@@ -365,8 +378,14 @@ lilv_state_new_from_instance(const LilvPlugin*          plugin,
 		: NULL;
 
 	if (iface) {
-		iface->save(instance->lv2_handle, store_callback,
-		            state, flags, features);
+		LV2_State_Status st = iface->save(
+			instance->lv2_handle, store_callback, state, flags, features);
+		if (st) {
+			LILV_ERRORF("Error saving plugin state: %s\n", state_strerror(st));
+			free(state->props);
+			state->props     = NULL;
+			state->num_props = 0;
+		}
 	}
 
 	qsort(state->props, state->num_props, sizeof(Property), property_cmp);

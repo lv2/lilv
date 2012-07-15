@@ -5,6 +5,7 @@ lilv (9999) unstable;
   * Add Lilv::Instance::get_handle() and Lilv::Instance::get_extension_data()
   * Fix documentation for ui_type parameter of lilv_ui_is_supported()
   * Fix crash when lv2info is run with an invalid URI argument
+  * Gracefully handle failure to save plugin state and print error message
 
  -- David Robillard <d@drobilla.net>
 
