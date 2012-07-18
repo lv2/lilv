@@ -227,7 +227,7 @@ struct Instance {
 	inline Instance(Plugin plugin, double sample_rate) {
 		me = lilv_plugin_instantiate(plugin, sample_rate, NULL);
 	}
-	
+
 	LILV_DEPRECATED inline Instance(Plugin              plugin,
 	                                double              sample_rate,
 	                                LV2_Feature* const* features) {
