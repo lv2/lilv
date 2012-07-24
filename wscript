@@ -62,7 +62,6 @@ def configure(conf):
         except:
             pass
 
-    conf.line_just = 51
     autowaf.configure(conf)
     autowaf.display_header('Lilv Configuration')
 
