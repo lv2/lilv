@@ -311,11 +311,11 @@ state_strerror(LV2_State_Status st)
 {
 	switch (st) {
 	case LV2_STATE_SUCCESS:         return "Completed successfully";
-	case LV2_STATE_ERR_UNKNOWN:     return "Unknown error";
 	case LV2_STATE_ERR_BAD_TYPE:    return "Unsupported type";
 	case LV2_STATE_ERR_BAD_FLAGS:   return "Unsupported flags";
 	case LV2_STATE_ERR_NO_FEATURE:  return "Missing features";
 	case LV2_STATE_ERR_NO_PROPERTY: return "Missing property";
+	default:                        return "Unknown error";
 	}
 }
 
