@@ -267,6 +267,10 @@ struct LilvHeader*
 lilv_collection_get_by_uri(const ZixTree*  const_seq,
                            const LilvNode* uri)
 {
+	if (!lilv_node_is_uri(uri)) {
+		return NULL;
+	}
+
 	ZixTree*          seq = (ZixTree*)const_seq;
 	struct LilvHeader key = { NULL, (LilvNode*)uri };
 
