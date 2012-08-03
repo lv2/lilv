@@ -35,6 +35,7 @@ extern "C" {
 #        define __func__ __FUNCTION__
 #        define INFINITY DBL_MAX + DBL_MAX
 #        define NAN INFINITY - INFINITY
+#        define snprintf _snprintf
 #    endif
 static inline char* dlerror(void) { return "Unknown error"; }
 #else
