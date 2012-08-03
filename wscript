@@ -208,9 +208,8 @@ def build(bld):
               target          = 'lilv-%s' % LILV_MAJOR_VERSION,
               vnum            = LILV_LIB_VERSION,
               install_path    = '${LIBDIR}',
-              defines         = defines,
-              cflags          = libflags + [ '-DLILV_SHARED',
-                                             '-DLILV_INTERNAL' ],
+              defines         = ['LILV_SHARED', 'LILV_INTERNAL'],
+              cflags          = libflags,
               lib             = lib)
     autowaf.use_lib(bld, obj, 'SORD SRATOM LV2')
 
@@ -224,8 +223,7 @@ def build(bld):
                   target          = 'lilv-%s' % LILV_MAJOR_VERSION,
                   vnum            = LILV_LIB_VERSION,
                   install_path    = '${LIBDIR}',
-                  defines         = defines,
-                  cflags          = [ '-DLILV_INTERNAL' ])
+                  defines         = defines + ['LILV_INTERNAL'])
         autowaf.use_lib(bld, obj, 'SORD SRATOM LV2')
 
     if bld.env['BUILD_TESTS']:
@@ -269,8 +267,8 @@ def build(bld):
                   name         = 'liblilv_profiled',
                   target       = 'lilv_profiled',
                   install_path = None,
-                  defines      = defines,
-                  cflags       = test_cflags + ['-DLILV_INTERNAL'],
+                  defines      = defines + ['LILV_INTERNAL'],
+                  cflags       = test_cflags,
                   lib          = test_libs)
         autowaf.use_lib(bld, obj, 'SORD SRATOM LV2')
 
