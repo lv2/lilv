@@ -30,23 +30,22 @@ def options(opt):
     opt.load('compiler_cxx')
     opt.load('python')
     autowaf.set_options(opt)
-    opt.add_option('--no-utils', action='store_true', default=False, dest='no_utils',
-                   help="Do not build command line utilities")
-    opt.add_option('--bindings', action='store_true', default=False, dest='bindings',
-                   help="Build python bindings")
-    opt.add_option('--dyn-manifest', action='store_true', default=False,
-                   dest='dyn_manifest',
-                   help="Build support for dynamic manifests")
-    opt.add_option('--test', action='store_true', default=False, dest='build_tests',
-                   help="Build unit tests")
-    opt.add_option('--no-bash-completion', action='store_true', default=False,
+    opt.add_option('--no-utils', action='store_true', dest='no_utils',
+                   help='Do not build command line utilities')
+    opt.add_option('--bindings', action='store_true', dest='bindings',
+                   help='Build python bindings')
+    opt.add_option('--dyn-manifest', action='store_true', dest='dyn_manifest',
+                   help='Build support for dynamic manifests')
+    opt.add_option('--test', action='store_true', dest='build_tests',
+                   help='Build unit tests')
+    opt.add_option('--no-bash-completion', action='store_true',
                    dest='no_bash_completion',
-                   help="Don't install bash completion script in CONFIGDIR")
+                   help='Do not install bash completion script in CONFIGDIR')
+    opt.add_option('--static', action='store_true', dest='static',
+                   help='Build static library')
     opt.add_option('--default-lv2-path', type='string', default='',
                    dest='default_lv2_path',
-                   help="Default LV2 path to use if $LV2_PATH is unset (globs and ~ supported)")
-    opt.add_option('--static', action='store_true', default=False, dest='static',
-                   help="Build static library")
+                   help='Default LV2 path to use if LV2_PATH is unset')
 
 def configure(conf):
     conf.load('compiler_c')
@@ -64,15 +63,15 @@ def configure(conf):
     autowaf.configure(conf)
     autowaf.display_header('Lilv Configuration')
 
-    if conf.env['MSVC_COMPILER']:
+    if conf.env.MSVC_COMPILER:
         conf.env.append_unique('CFLAGS', ['-TP', '-MD'])
     else:
         conf.env.append_unique('CFLAGS', '-std=c99')
 
-    conf.env['BUILD_TESTS']     = Options.options.build_tests
-    conf.env['BUILD_UTILS']     = not Options.options.no_utils
-    conf.env['BUILD_STATIC']    = Options.options.static
-    conf.env['BASH_COMPLETION'] = not Options.options.no_bash_completion
+    conf.env.BUILD_TESTS     = Options.options.build_tests
+    conf.env.BUILD_UTILS     = not Options.options.no_utils
+    conf.env.BUILD_STATIC    = Options.options.static
+    conf.env.BASH_COMPLETION = not Options.options.no_bash_completion
 
     autowaf.check_pkg(conf, 'lv2', uselib_store='LV2',
                       atleast_version='1.0.0', mandatory=True)
@@ -90,7 +89,7 @@ def configure(conf):
         defines += ['_DARWIN_C_SOURCE']
 
     # Check for gcov library (for test coverage)
-    if conf.env['BUILD_TESTS']:
+    if conf.env.BUILD_TESTS:
         conf.check_cc(lib='gcov',
                       define_name='HAVE_GCOV',
                       mandatory=False)
@@ -136,25 +135,25 @@ def configure(conf):
             lv2_path = lilv_path_sep.join(['%APPDATA%\\\\LV2',
                                            '%COMMONPROGRAMFILES%\\\\LV2'])
         else:
-            libdirname = os.path.basename(conf.env['LIBDIR'])
+            libdirname = os.path.basename(conf.env.LIBDIR)
             lv2_path = lilv_path_sep.join(['~/.lv2',
                                            '/usr/%s/lv2' % libdirname,
                                            '/usr/local/%s/lv2' % libdirname])
     autowaf.define(conf, 'LILV_DEFAULT_LV2_PATH', lv2_path)
 
-    conf.env['LIB_LILV'] = ['lilv-%s' % LILV_MAJOR_VERSION]
+    conf.env.LIB_LILV = ['lilv-%s' % LILV_MAJOR_VERSION]
 
     conf.write_config_header('lilv_config.h', remove=False)
 
-    autowaf.display_msg(conf, "Default LV2_PATH",
-                        conf.env['LILV_DEFAULT_LV2_PATH'])
-    autowaf.display_msg(conf, "Utilities",
-                        bool(conf.env['BUILD_UTILS']))
-    autowaf.display_msg(conf, "Unit tests",
-                        bool(conf.env['BUILD_TESTS']))
-    autowaf.display_msg(conf, "Dynamic manifest support",
-                        bool(conf.env['LILV_DYN_MANIFEST']))
-    autowaf.display_msg(conf, "Python bindings",
+    autowaf.display_msg(conf, 'Default LV2_PATH',
+                        conf.env.LILV_DEFAULT_LV2_PATH)
+    autowaf.display_msg(conf, 'Utilities',
+                        bool(conf.env.BUILD_UTILS))
+    autowaf.display_msg(conf, 'Unit tests',
+                        bool(conf.env.BUILD_TESTS))
+    autowaf.display_msg(conf, 'Dynamic manifest support',
+                        bool(conf.env.LILV_DYN_MANIFEST))
+    autowaf.display_msg(conf, 'Python bindings',
                         conf.is_defined('LILV_PYTHON'))
 
     conf.undefine('LILV_DEFAULT_LV2_PATH')  # Cmd line errors with VC++
@@ -193,7 +192,7 @@ def build(bld):
     defines  = []
     if sys.platform == 'win32':
         lib = []
-    if bld.env['MSVC_COMPILER']:
+    if bld.env.MSVC_COMPILER:
         libflags = []
         defines  = ['snprintf=_snprintf']
     elif sys.platform.find('bsd') > 0:
@@ -214,7 +213,7 @@ def build(bld):
     autowaf.use_lib(bld, obj, 'SORD SRATOM LV2')
 
     # Static library
-    if bld.env['BUILD_STATIC']:
+    if bld.env.BUILD_STATIC:
         obj = bld(features        = 'c cstlib',
                   export_includes = ['.'],
                   source          = lib_source,
@@ -226,7 +225,7 @@ def build(bld):
                   defines         = defines + ['LILV_INTERNAL'])
         autowaf.use_lib(bld, obj, 'SORD SRATOM LV2')
 
-    if bld.env['BUILD_TESTS']:
+    if bld.env.BUILD_TESTS:
         test_libs   = lib
         test_cflags = ['']
         if bld.is_defined('HAVE_GCOV'):
@@ -235,10 +234,10 @@ def build(bld):
 
         # Test plugin library
         penv          = bld.env.derive()
-        shlib_pattern = penv['cshlib_PATTERN']
+        shlib_pattern = penv.cshlib_PATTERN
         if shlib_pattern.startswith('lib'):
             shlib_pattern = shlib_pattern[3:]
-        penv['cshlib_PATTERN']   = shlib_pattern
+        penv.cshlib_PATTERN   = shlib_pattern
         shlib_ext = shlib_pattern[shlib_pattern.rfind('.'):]
 
         obj = bld(features     = 'c cshlib',
@@ -288,7 +287,7 @@ def build(bld):
         autowaf.use_lib(bld, obj, 'SORD SRATOM LV2')
 
     # Utilities
-    if bld.env['BUILD_UTILS']:
+    if bld.env.BUILD_UTILS:
         utils = '''
             utils/lv2info
             utils/lv2ls
@@ -310,7 +309,7 @@ def build(bld):
     bld.install_files('${MANDIR}/man1', bld.path.ant_glob('doc/*.1'))
 
     # Bash completion
-    if bld.env['BASH_COMPLETION']:
+    if bld.env.BASH_COMPLETION:
         bld.install_as(
             '${SYSCONFDIR}/bash_completion.d/lilv', 'utils/lilv.bash_completion')
 
@@ -327,7 +326,7 @@ def build(bld):
         bld.install_files('${PYTHONDIR}', 'bindings/lilv.py')
 
     bld.add_post_fun(autowaf.run_ldconfig)
-    if bld.env['DOCS']:
+    if bld.env.DOCS:
         bld.add_post_fun(fix_docs)
 
 def fix_docs(ctx):
@@ -335,7 +334,7 @@ def fix_docs(ctx):
         autowaf.make_simple_dox(APPNAME)
 
 def upload_docs(ctx):
-    os.system("rsync -ravz --delete -e ssh build/doc/html/ drobilla@drobilla.net:~/drobilla.net/docs/lilv/")
+    os.system('rsync -ravz --delete -e ssh build/doc/html/ drobilla@drobilla.net:~/drobilla.net/docs/lilv/')
 
 def test(ctx):
     autowaf.pre_test(ctx, APPNAME)
