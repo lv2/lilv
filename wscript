@@ -61,12 +61,8 @@ def configure(conf):
             pass
 
     autowaf.configure(conf)
+    autowaf.set_c99_mode(conf)
     autowaf.display_header('Lilv Configuration')
-
-    if conf.env.MSVC_COMPILER:
-        conf.env.append_unique('CFLAGS', ['-TP', '-MD'])
-    else:
-        conf.env.append_unique('CFLAGS', '-std=c99')
 
     conf.env.BUILD_TESTS     = Options.options.build_tests
     conf.env.BUILD_UTILS     = not Options.options.no_utils
