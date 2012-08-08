@@ -43,6 +43,10 @@ def options(opt):
                    help='Do not install bash completion script in CONFIGDIR')
     opt.add_option('--static', action='store_true', dest='static',
                    help='Build static library')
+    opt.add_option('--no-shared', action='store_true', dest='no_shared',
+                   help='Do not build shared library')
+    opt.add_option('--static-progs', action='store_true', dest='static_progs',
+                   help='Build programs as static binaries')
     opt.add_option('--default-lv2-path', type='string', default='',
                    dest='default_lv2_path',
                    help='Default LV2 path to use if LV2_PATH is unset')
@@ -64,10 +68,16 @@ def configure(conf):
     autowaf.set_c99_mode(conf)
     autowaf.display_header('Lilv Configuration')
 
+    conf.env.BASH_COMPLETION = not Options.options.no_bash_completion
     conf.env.BUILD_TESTS     = Options.options.build_tests
     conf.env.BUILD_UTILS     = not Options.options.no_utils
-    conf.env.BUILD_STATIC    = Options.options.static
-    conf.env.BASH_COMPLETION = not Options.options.no_bash_completion
+    conf.env.BUILD_SHARED    = not Options.options.no_shared
+    conf.env.STATIC_PROGS    = Options.options.static_progs
+    conf.env.BUILD_STATIC    = (Options.options.static or
+                                Options.options.static_progs)
+
+    if not conf.env.BUILD_SHARED and not conf.env.BUILD_STATIC:
+        conf.fatal('Neither a shared nor a static build requested')
 
     autowaf.check_pkg(conf, 'lv2', uselib_store='LV2',
                       atleast_version='1.0.0', mandatory=True)
@@ -195,18 +205,19 @@ def build(bld):
         lib = []
 
     # Shared Library
-    obj = bld(features        = 'c cshlib',
-              export_includes = ['.'],
-              source          = lib_source,
-              includes        = ['.', './src'],
-              name            = 'liblilv',
-              target          = 'lilv-%s' % LILV_MAJOR_VERSION,
-              vnum            = LILV_LIB_VERSION,
-              install_path    = '${LIBDIR}',
-              defines         = ['LILV_SHARED', 'LILV_INTERNAL'],
-              cflags          = libflags,
-              lib             = lib)
-    autowaf.use_lib(bld, obj, 'SORD SRATOM LV2')
+    if bld.env.BUILD_SHARED:
+        obj = bld(features        = 'c cshlib',
+                  export_includes = ['.'],
+                  source          = lib_source,
+                  includes        = ['.', './src'],
+                  name            = 'liblilv',
+                  target          = 'lilv-%s' % LILV_MAJOR_VERSION,
+                  vnum            = LILV_LIB_VERSION,
+                  install_path    = '${LIBDIR}',
+                  defines         = ['LILV_SHARED', 'LILV_INTERNAL'],
+                  cflags          = libflags,
+                  lib             = lib)
+        autowaf.use_lib(bld, obj, 'SORD SRATOM LV2')
 
     # Static library
     if bld.env.BUILD_STATIC:
@@ -297,6 +308,11 @@ def build(bld):
                       target       = i,
                       defines      = defines,
                       install_path = '${BINDIR}')
+            if not bld.env.BUILD_SHARED or bld.env.STATIC_PROGS:
+                obj.use = 'liblilv_static'
+            if bld.env.STATIC_PROGS:
+                obj.env.SHLIB_MARKER = obj.env.STLIB_MARKER
+                obj.linkflags        = ['-static', '-Wl,--start-group']
 
     # Documentation
     autowaf.build_dox(bld, 'LILV', LILV_VERSION, top, out)
