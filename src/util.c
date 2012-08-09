@@ -49,6 +49,10 @@
 #    include <sys/file.h>
 #endif
 
+#ifndef PAGE_SIZE
+#   define PAGE_SIZE 4096
+#endif
+
 char*
 lilv_strjoin(const char* first, ...)
 {
@@ -274,9 +278,8 @@ lilv_copy_file(const char* src, const char* dst)
 		return 2;
 	}
 
-	static const size_t PAGE_SIZE = 4096;
-	char*               page      = (char*)malloc(PAGE_SIZE);
-	size_t              n_read    = 0;
+	char*  page   = (char*)malloc(PAGE_SIZE);
+	size_t n_read = 0;
 	while ((n_read = fread(page, 1, PAGE_SIZE, in)) > 0) {
 		if (fwrite(page, 1, n_read, out) != n_read) {
 			LILV_ERRORF("write to %s failed (%s)\n", dst, strerror(errno));
