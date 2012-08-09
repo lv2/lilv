@@ -64,7 +64,7 @@ static LilvWorld* world;
 int test_count  = 0;
 int error_count = 0;
 
-void
+static void
 delete_bundle(void)
 {
 	unlink(content_name);
@@ -72,7 +72,7 @@ delete_bundle(void)
 	remove(bundle_dir_name);
 }
 
-void
+static void
 init_tests(void)
 {
 	strncpy(bundle_dir_name, getenv("HOME"), 900);
@@ -86,7 +86,7 @@ init_tests(void)
 	delete_bundle();
 }
 
-void
+static void
 fatal_error(const char *err, const char *arg)
 {
 	/* TODO: possibly change to vfprintf later */
@@ -96,7 +96,7 @@ fatal_error(const char *err, const char *arg)
 	exit(1);
 }
 
-void
+static void
 write_file(const char *name, const char *content)
 {
 	FILE* f = fopen(name, "w");
@@ -106,14 +106,14 @@ write_file(const char *name, const char *content)
 	fclose(f);
 }
 
-int
+static int
 init_world(void)
 {
 	world = lilv_world_new();
 	return world != NULL;
 }
 
-int
+static int
 load_all_bundles(void)
 {
 	if (!init_world())
@@ -122,7 +122,7 @@ load_all_bundles(void)
 	return 1;
 }
 
-void
+static void
 create_bundle(char *manifest, char *content)
 {
 	if (mkdir(bundle_dir_name, 0700) && errno != EEXIST)
@@ -131,14 +131,14 @@ create_bundle(char *manifest, char *content)
 	write_file(content_name, content);
 }
 
-int
+static int
 start_bundle(char *manifest, char *content)
 {
 	create_bundle(manifest, content);
 	return load_all_bundles();
 }
 
-void
+static void
 unload_bundle(void)
 {
 	if (world)
@@ -146,7 +146,7 @@ unload_bundle(void)
 	world = NULL;
 }
 
-void
+static void
 cleanup(void)
 {
 	delete_bundle();
@@ -190,7 +190,7 @@ static LilvNode* plugin2_uri_value;
 
 /*****************************************************************************/
 
-void
+static void
 init_uris(void)
 {
 	plugin_uri_value = lilv_new_uri(world, uris_plugin);
@@ -199,7 +199,7 @@ init_uris(void)
 	TEST_ASSERT(plugin2_uri_value);
 }
 
-void
+static void
 cleanup_uris(void)
 {
 	lilv_node_free(plugin2_uri_value);
@@ -210,7 +210,7 @@ cleanup_uris(void)
 
 /*****************************************************************************/
 
-int
+static int
 test_utils(void)
 {
 	TEST_ASSERT(!strcmp(lilv_uri_to_path("file:///tmp/blah"), "/tmp/blah"));
@@ -221,7 +221,7 @@ test_utils(void)
 
 /*****************************************************************************/
 
-int
+static int
 test_value(void)
 {
 	if (!start_bundle(MANIFEST_PREFIXES
@@ -349,7 +349,7 @@ discovery_verify_plugin(const LilvPlugin* plugin)
 	}
 }
 
-int
+static int
 test_discovery(void)
 {
 	if (!start_bundle(MANIFEST_PREFIXES
@@ -392,7 +392,7 @@ test_discovery(void)
 
 /*****************************************************************************/
 
-int
+static int
 test_lv2_path(void)
 {
 #ifndef _WIN32
@@ -400,7 +400,7 @@ test_lv2_path(void)
 
 	setenv("LV2_PATH", "~/.lv2:/usr/local/lib/lv2:/usr/lib/lv2", 1);
 
-	LilvWorld* world = lilv_world_new();
+	world = lilv_world_new();
 	lilv_world_load_all(world);
 
 	const LilvPlugins* plugins = lilv_world_get_all_plugins(world);
@@ -414,6 +414,7 @@ test_lv2_path(void)
 	plugins = lilv_world_get_all_plugins(world);
 	TEST_ASSERT(lilv_plugins_size(plugins) == n_plugins);
 	lilv_world_free(world);
+	world = NULL;
 
 	if (orig_lv2_path) {
 		setenv("LV2_PATH", orig_lv2_path, 1);
@@ -427,7 +428,7 @@ test_lv2_path(void)
 
 /*****************************************************************************/
 
-int
+static int
 test_verify(void)
 {
 	if (!start_bundle(MANIFEST_PREFIXES
@@ -451,7 +452,7 @@ test_verify(void)
 
 /*****************************************************************************/
 
-int
+static int
 test_no_verify(void)
 {
 	if (!start_bundle(MANIFEST_PREFIXES
@@ -471,7 +472,7 @@ test_no_verify(void)
 
 /*****************************************************************************/
 
-int
+static int
 test_classes(void)
 {
 	if (!start_bundle(MANIFEST_PREFIXES
@@ -515,7 +516,7 @@ test_classes(void)
 
 /*****************************************************************************/
 
-int
+static int
 test_plugin(void)
 {
 	if (!start_bundle(MANIFEST_PREFIXES
@@ -730,7 +731,7 @@ test_plugin(void)
 
 /*****************************************************************************/
 
-int
+static int
 test_port(void)
 {
 	if (!start_bundle(MANIFEST_PREFIXES
@@ -965,7 +966,7 @@ ui_supported(const char* container_type_uri,
 	return !strcmp(container_type_uri, ui_type_uri);
 }
 
-int
+static int
 test_ui(void)
 {
 	if (!start_bundle(MANIFEST_PREFIXES
@@ -1075,7 +1076,7 @@ uint32_t atom_Float = 0;
 float    in         = 1.0;
 float    out        = 42.0;
 
-const void*
+static const void*
 get_port_value(const char* port_symbol,
                void*       user_data,
                uint32_t*   size,
@@ -1097,7 +1098,7 @@ get_port_value(const char* port_symbol,
 	}
 }
 
-void
+static void
 set_port_value(const char*     port_symbol,
                void*           user_data,
                const void*     value,
@@ -1117,7 +1118,7 @@ set_port_value(const char*     port_symbol,
 char** uris   = NULL;
 size_t n_uris = 0;
 
-LV2_URID
+static LV2_URID
 map_uri(LV2_URID_Map_Handle handle,
         const char*         uri)
 {
@@ -1133,7 +1134,7 @@ map_uri(LV2_URID_Map_Handle handle,
 	return n_uris;
 }
 
-const char*
+static const char*
 unmap_uri(LV2_URID_Map_Handle handle,
           LV2_URID            urid)
 {
@@ -1145,19 +1146,20 @@ unmap_uri(LV2_URID_Map_Handle handle,
 
 static char* temp_dir = NULL;
 
-char*
+static char*
 lilv_make_path(LV2_State_Make_Path_Handle handle,
                const char*                path)
 {
 	return lilv_path_join(temp_dir, path);
 }
 
-int
+static int
 test_state(void)
 {
+	init_world();
+
 	uint8_t*   abs_bundle = (uint8_t*)lilv_path_absolute(LILV_TEST_BUNDLE);
 	SerdNode   bundle     = serd_node_new_file_uri(abs_bundle, 0, 0, true);
-	LilvWorld* world      = lilv_world_new();
 	LilvNode*  bundle_uri = lilv_new_uri(world, (const char*)bundle.buf);
 	LilvNode*  plugin_uri = lilv_new_uri(world,
 	                                     "http://example.org/lilv-test-plugin");
@@ -1414,7 +1416,6 @@ test_state(void)
 
 	lilv_node_free(plugin_uri);
 	lilv_node_free(bundle_uri);
-	lilv_world_free(world);
 	free(link_dir);
 	free(copy_dir);
 	free(temp_dir);
@@ -1425,7 +1426,7 @@ test_state(void)
 
 /*****************************************************************************/
 
-int
+static int
 test_bad_port_symbol(void)
 {
 	if (!start_bundle(MANIFEST_PREFIXES
@@ -1456,7 +1457,7 @@ test_bad_port_symbol(void)
 
 /*****************************************************************************/
 
-int
+static int
 test_bad_port_index(void)
 {
 	if (!start_bundle(MANIFEST_PREFIXES
@@ -1487,7 +1488,7 @@ test_bad_port_index(void)
 
 /*****************************************************************************/
 
-int
+static int
 test_string(void)
 {
 	char* s = NULL;
@@ -1547,7 +1548,7 @@ static struct TestCase tests[] = {
 	{ NULL, NULL }
 };
 
-void
+static void
 run_tests(void)
 {
 	int i;

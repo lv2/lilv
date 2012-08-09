@@ -20,23 +20,6 @@
 
 #include "lilv_config.h"
 
-void
-print_version(void)
-{
-	printf("lilv_bench (lilv) " LILV_VERSION "\n");
-	printf("Copyright 2011-2011 David Robillard <http://drobilla.net>\n");
-	printf("License: <http://www.opensource.org/licenses/isc-license>\n");
-	printf("This is free software: you are free to change and redistribute it.\n");
-	printf("There is NO WARRANTY, to the extent permitted by law.\n");
-}
-
-void
-print_usage(void)
-{
-	printf("Usage: lilv_bench\n");
-	printf("Load all discovered LV2 plugins.\n");
-}
-
 int
 main(int argc, char** argv)
 {

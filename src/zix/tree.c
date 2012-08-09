@@ -107,7 +107,7 @@ zix_tree_free(ZixTree* t)
 }
 
 size_t
-zix_tree_size(ZixTree* t)
+zix_tree_size(const ZixTree* t)
 {
 	return t->size;
 }

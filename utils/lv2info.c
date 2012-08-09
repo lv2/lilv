@@ -41,7 +41,7 @@ LilvNode* preset_class        = NULL;
 LilvNode* designation_pred    = NULL;
 LilvNode* supports_event_pred = NULL;
 
-void
+static void
 print_port(const LilvPlugin* p,
            uint32_t          index,
            float*            mins,
@@ -87,10 +87,10 @@ print_port(const LilvPlugin* p,
 	if (points)
 		printf("\n\t\tScale Points:\n");
 	LILV_FOREACH(scale_points, i, points) {
-		const LilvScalePoint* p = lilv_scale_points_get(points, i);
+		const LilvScalePoint* point = lilv_scale_points_get(points, i);
 		printf("\t\t\t%s = \"%s\"\n",
-				lilv_node_as_string(lilv_scale_point_get_value(p)),
-				lilv_node_as_string(lilv_scale_point_get_label(p)));
+				lilv_node_as_string(lilv_scale_point_get_value(point)),
+				lilv_node_as_string(lilv_scale_point_get_label(point)));
 	}
 	lilv_scale_points_free(points);
 
@@ -140,7 +140,7 @@ print_port(const LilvPlugin* p,
 	lilv_nodes_free(properties);
 }
 
-void
+static void
 print_plugin(LilvWorld*        world,
              const LilvPlugin* p)
 {
@@ -204,9 +204,9 @@ print_plugin(LilvWorld*        world,
 			const char* binary = lilv_node_as_uri(lilv_ui_get_binary_uri(ui));
 
 			const LilvNodes* types = lilv_ui_get_classes(ui);
-			LILV_FOREACH(nodes, i, types) {
+			LILV_FOREACH(nodes, t, types) {
 				printf("\t\t\tClass:  %s\n",
-				       lilv_node_as_uri(lilv_nodes_get(types, i)));
+				       lilv_node_as_uri(lilv_nodes_get(types, t)));
 			}
 
 			if (binary)
@@ -318,7 +318,7 @@ print_plugin(LilvWorld*        world,
 	free(defaults);
 }
 
-void
+static void
 print_version(void)
 {
 	printf(
@@ -329,7 +329,7 @@ print_version(void)
 		"There is NO WARRANTY, to the extent permitted by law.\n");
 }
 
-void
+static void
 print_usage(void)
 {
 	printf(

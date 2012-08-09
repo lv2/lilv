@@ -83,7 +83,7 @@ lilv_plugin_instantiate(const LilvPlugin*        plugin,
 			result = (LilvInstance*)malloc(sizeof(LilvInstance));
 			result->lv2_descriptor = ld;
 			result->lv2_handle = ld->instantiate(
-				ld, sample_rate, (char*)bundle_path,
+				ld, sample_rate, bundle_path,
 				(features) ? features : local_features);
 			result->pimpl = lib;
 			serd_node_free(&abs_uri_node);

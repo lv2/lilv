@@ -1016,16 +1016,16 @@ lilv_plugin_write_description(LilvWorld*        world,
 	maybe_write_prefixes(writer, env, plugin_file);
 
 	// Write plugin description
-	SordIter* iter = lilv_world_query_internal(
+	SordIter* plug_iter = lilv_world_query_internal(
 		world, subject->val.uri_val, NULL, NULL);
-	sord_write_iter(iter, writer);
+	sord_write_iter(plug_iter, writer);
 
 	// Write port descriptions
 	for (uint32_t i = 0; i < num_ports; ++i) {
 		const LilvPort* port = plugin->ports[i];
-		SordIter* iter = lilv_world_query_internal(
+		SordIter* port_iter = lilv_world_query_internal(
 			world, port->node, NULL, NULL);
-		sord_write_iter(iter, writer);
+		sord_write_iter(port_iter, writer);
 	}
 
 	serd_writer_free(writer);

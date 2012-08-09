@@ -21,7 +21,7 @@
 
 #include "lilv_config.h"
 
-void
+static void
 list_plugins(const LilvPlugins* list, bool show_names)
 {
 	LILV_FOREACH(plugins, i, list) {
@@ -36,7 +36,7 @@ list_plugins(const LilvPlugins* list, bool show_names)
 	}
 }
 
-void
+static void
 print_version(void)
 {
 	printf(
@@ -47,7 +47,7 @@ print_version(void)
 		"There is NO WARRANTY, to the extent permitted by law.\n");
 }
 
-void
+static void
 print_usage(void)
 {
 	printf("Usage: lv2ls [OPTION]...\n");

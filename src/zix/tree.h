@@ -61,7 +61,7 @@ zix_tree_free(ZixTree* t);
    Return the number of elements in @a t.
 */
 size_t
-zix_tree_size(ZixTree* t);
+zix_tree_size(const ZixTree* t);
 
 /**
    Insert the element @a e into @a t and point @a ti at the new element.

@@ -702,12 +702,10 @@ lilv_world_load_plugin_classes(LilvWorld* world)
 		const uint8_t*  label      = sord_node_get_string(label_node);
 		sord_iter_free(labels);
 
-		LilvPluginClasses* classes = world->plugin_classes;
-		LilvPluginClass*   pclass  = lilv_plugin_class_new(
+		LilvPluginClass* pclass = lilv_plugin_class_new(
 			world, parent_node, class_node, (const char*)label);
-
 		if (pclass) {
-			zix_tree_insert((ZixTree*)classes, pclass, NULL);
+			zix_tree_insert(world->plugin_classes, pclass, NULL);
 		}
 	}
 	sord_iter_free(classes);

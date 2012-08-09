@@ -351,7 +351,7 @@ restore(LV2_Handle                  instance,
 	return LV2_STATE_SUCCESS;
 }
 
-const void*
+static const void*
 extension_data(const char* uri)
 {
 	static const LV2_State_Interface state = { save, restore };

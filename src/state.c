@@ -200,16 +200,16 @@ make_path(LV2_State_Make_Path_Handle handle, const char* path)
 
 static char*
 abstract_path(LV2_State_Map_Path_Handle handle,
-              const char*               absolute_path)
+              const char*               abs_path)
 {
 	LilvState*    state     = (LilvState*)handle;
 	char*         path      = NULL;
-	char*         real_path = lilv_realpath(absolute_path);
+	char*         real_path = lilv_realpath(abs_path);
 	const PathMap key       = { (char*)real_path, NULL };
 	ZixTreeIter*  iter      = NULL;
 
-	if (absolute_path[0] == '\0') {
-		return lilv_strdup(absolute_path);
+	if (abs_path[0] == '\0') {
+		return lilv_strdup(abs_path);
 	} else if (!zix_tree_find(state->abs2rel, &key, &iter)) {
 		// Already mapped path in a previous call
 		PathMap* pm = (PathMap*)zix_tree_get(iter);
@@ -259,26 +259,26 @@ abstract_path(LV2_State_Map_Path_Handle handle,
 
 static char*
 absolute_path(LV2_State_Map_Path_Handle handle,
-              const char*               abstract_path)
+              const char*               state_path)
 {
 	LilvState* state = (LilvState*)handle;
 	char*      path  = NULL;
-	if (lilv_path_is_absolute(abstract_path)) {
+	if (lilv_path_is_absolute(state_path)) {
 		// Absolute path, return identical path
-		path = lilv_strdup(abstract_path);
+		path = lilv_strdup(state_path);
 	} else if (state->dir) {
 		// Relative path inside state directory
-		path = lilv_path_join(state->dir, abstract_path);
+		path = lilv_path_join(state->dir, state_path);
 	} else {
 		// State has not been saved, unmap
-		path = lilv_strdup(lilv_state_rel2abs(state, abstract_path));
+		path = lilv_strdup(lilv_state_rel2abs(state, state_path));
 	}
 
 	return path;
 }
 
 /** Return a new features array which is @c feature added to @c features. */
-const LV2_Feature**
+static const LV2_Feature**
 add_features(const LV2_Feature *const * features,
              const LV2_Feature* map, const LV2_Feature* make)
 {

@@ -46,7 +46,7 @@ lilv_lang_matches(const char* a, const char* b)
 	return LILV_LANG_MATCH_NONE;
 }
 
-LilvNodes*
+static LilvNodes*
 lilv_nodes_from_stream_objects_i18n(LilvWorld*    world,
                                     SordIter*     stream,
                                     SordQuadIndex field)

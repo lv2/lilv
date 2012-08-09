@@ -138,7 +138,7 @@ lilv_get_lang(void)
 }
 
 /** Append suffix to dst, update dst_len, and return the realloc'd result. */
-char*
+static char*
 strappend(char* dst, size_t* dst_len, const char* suffix, size_t suffix_len)
 {
 	dst = (char*)realloc(dst, *dst_len + suffix_len + 1);
@@ -148,7 +148,7 @@ strappend(char* dst, size_t* dst_len, const char* suffix, size_t suffix_len)
 }
 
 /** Append the value of the environment variable var to dst. */
-char*
+static char*
 append_var(char* dst, size_t* dst_len, const char* var)
 {
 	// Get value from environment

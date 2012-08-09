@@ -25,8 +25,8 @@ lilv_ptr_cmp(const void* a, const void* b, void* user_data)
 int
 lilv_resource_node_cmp(const void* a, const void* b, void* user_data)
 {
-	const SordNode* an = ((LilvNode*)a)->val.uri_val;
-	const SordNode* bn = ((LilvNode*)b)->val.uri_val;
+	const SordNode* an = ((const LilvNode*)a)->val.uri_val;
+	const SordNode* bn = ((const LilvNode*)b)->val.uri_val;
 	return (intptr_t)an - (intptr_t)bn;
 }
 
@@ -48,7 +48,7 @@ lilv_collection_free(LilvCollection* coll)
 unsigned
 lilv_collection_size(const LilvCollection* coll)
 {
-	return (coll ? zix_tree_size((ZixTree*)coll) : 0);
+	return (coll ? zix_tree_size((const ZixTree*)coll) : 0);
 }
 
 LilvIter*
@@ -104,14 +104,15 @@ const LilvPluginClass*
 lilv_plugin_classes_get_by_uri(const LilvPluginClasses* coll,
                                const LilvNode*          uri)
 {
-	return (LilvPluginClass*)lilv_collection_get_by_uri((ZixTree*)coll, uri);
+	return (LilvPluginClass*)lilv_collection_get_by_uri(
+		(const ZixTree*)coll, uri);
 }
 
 LILV_API
 const LilvUI*
 lilv_uis_get_by_uri(const LilvUIs* coll, const LilvNode* uri)
 {
-	return (LilvUI*)lilv_collection_get_by_uri((ZixTree*)coll, uri);
+	return (LilvUI*)lilv_collection_get_by_uri((const ZixTree*)coll, uri);
 }
 
 /* Plugins */
@@ -126,7 +127,7 @@ LILV_API
 const LilvPlugin*
 lilv_plugins_get_by_uri(const LilvPlugins* list, const LilvNode* uri)
 {
-	return (LilvPlugin*)lilv_collection_get_by_uri((ZixTree*)list, uri);
+	return (LilvPlugin*)lilv_collection_get_by_uri((const ZixTree*)list, uri);
 }
 
 /* Nodes */
