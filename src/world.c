@@ -705,7 +705,7 @@ lilv_world_load_plugin_classes(LilvWorld* world)
 		LilvPluginClass* pclass = lilv_plugin_class_new(
 			world, parent_node, class_node, (const char*)label);
 		if (pclass) {
-			zix_tree_insert(world->plugin_classes, pclass, NULL);
+			zix_tree_insert((ZixTree*)world->plugin_classes, pclass, NULL);
 		}
 	}
 	sord_iter_free(classes);

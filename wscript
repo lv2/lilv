@@ -311,7 +311,8 @@ def build(bld):
             if not bld.env.BUILD_SHARED or bld.env.STATIC_PROGS:
                 obj.use = 'liblilv_static'
             if bld.env.STATIC_PROGS:
-                obj.lib              = ['m']
+                if not bld.env.MSVC_COMPILER:
+                    obj.lib              = ['m']
                 obj.env.SHLIB_MARKER = obj.env.STLIB_MARKER
                 obj.linkflags        = ['-static', '-Wl,--start-group']
 
