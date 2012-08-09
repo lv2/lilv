@@ -36,8 +36,13 @@
 #    else
 #        define ZIX_API ZIX_LIB_IMPORT
 #    endif
+#    define ZIX_PRIVATE static
+#elif defined(ZIX_INLINE)
+#    define ZIX_API     static inline
+#    define ZIX_PRIVATE static inline
 #else
 #    define ZIX_API
+#    define ZIX_PRIVATE static
 #endif
 /** @endcond */
 
@@ -53,6 +58,8 @@ typedef enum {
 	ZIX_STATUS_NO_MEM,
 	ZIX_STATUS_NOT_FOUND,
 	ZIX_STATUS_EXISTS,
+	ZIX_STATUS_BAD_ARG,
+	ZIX_STATUS_BAD_PERMS,
 } ZixStatus;
 
 /**

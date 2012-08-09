@@ -66,8 +66,7 @@ struct ZixTreeNodeImpl {
 #    define DEBUG_PRINTF(fmt, ...)
 #endif
 
-ZIX_API
-ZixTree*
+ZIX_API ZixTree*
 zix_tree_new(bool           allow_duplicates,
              ZixComparator  cmp,
              void*          cmp_data,
@@ -83,7 +82,7 @@ zix_tree_new(bool           allow_duplicates,
 	return t;
 }
 
-static void
+ZIX_PRIVATE void
 zix_tree_free_rec(ZixTree* t, ZixTreeNode* n)
 {
 	if (n) {
@@ -96,8 +95,7 @@ zix_tree_free_rec(ZixTree* t, ZixTreeNode* n)
 	}
 }
 
-ZIX_API
-void
+ZIX_API void
 zix_tree_free(ZixTree* t)
 {
 	if (t) {
@@ -106,13 +104,13 @@ zix_tree_free(ZixTree* t)
 	}
 }
 
-size_t
+ZIX_API size_t
 zix_tree_size(const ZixTree* t)
 {
 	return t->size;
 }
 
-static void
+ZIX_PRIVATE void
 rotate(ZixTreeNode* p, ZixTreeNode* q)
 {
 	assert(q->parent == p);
@@ -156,7 +154,7 @@ rotate(ZixTreeNode* p, ZixTreeNode* q)
  *     / \        / \
  *    B   C      A   B
  */
-static ZixTreeNode*
+ZIX_PRIVATE ZixTreeNode*
 rotate_left(ZixTreeNode* p, int* height_change)
 {
 	ZixTreeNode* const q = p->right;
@@ -189,7 +187,7 @@ rotate_left(ZixTreeNode* p, int* height_change)
  *  A   B          B   C
  *
  */
-static ZixTreeNode*
+ZIX_PRIVATE ZixTreeNode*
 rotate_right(ZixTreeNode* p, int* height_change)
 {
 	ZixTreeNode* const q = p->left;
@@ -224,7 +222,7 @@ rotate_right(ZixTreeNode* p, int* height_change)
  *    B   C
  *
  */
-static ZixTreeNode*
+ZIX_PRIVATE ZixTreeNode*
 rotate_left_right(ZixTreeNode* p, int* height_change)
 {
 	ZixTreeNode* const q = p->left;
@@ -268,7 +266,7 @@ rotate_left_right(ZixTreeNode* p, int* height_change)
  *  B   C
  *
  */
-static ZixTreeNode*
+ZIX_PRIVATE ZixTreeNode*
 rotate_right_left(ZixTreeNode* p, int* height_change)
 {
 	ZixTreeNode* const q = p->right;
@@ -301,7 +299,7 @@ rotate_right_left(ZixTreeNode* p, int* height_change)
 	return r;
 }
 
-static ZixTreeNode*
+ZIX_PRIVATE ZixTreeNode*
 zix_tree_rebalance(ZixTree* t, ZixTreeNode* node, int* height_change)
 {
 #ifdef ZIX_TREE_HYPER_VERIFY
@@ -338,8 +336,7 @@ zix_tree_rebalance(ZixTree* t, ZixTreeNode* node, int* height_change)
 	return replacement;
 }
 
-ZIX_API
-ZixStatus
+ZIX_API ZixStatus
 zix_tree_insert(ZixTree* t, void* e, ZixTreeIter** ti)
 {
 	DEBUG_PRINTF("**** INSERT %ld\n", (intptr_t)e);
@@ -438,8 +435,7 @@ zix_tree_insert(ZixTree* t, void* e, ZixTreeIter** ti)
 	return ZIX_STATUS_SUCCESS;
 }
 
-ZIX_API
-ZixStatus
+ZIX_API ZixStatus
 zix_tree_remove(ZixTree* t, ZixTreeIter* ti)
 {
 	ZixTreeNode* const n          = ti;
@@ -596,8 +592,7 @@ zix_tree_remove(ZixTree* t, ZixTreeIter* ti)
 	return ZIX_STATUS_SUCCESS;
 }
 
-ZIX_API
-ZixStatus
+ZIX_API ZixStatus
 zix_tree_find(const ZixTree* t, const void* e, ZixTreeIter** ti)
 {
 	ZixTreeNode* n = t->root;
@@ -616,15 +611,13 @@ zix_tree_find(const ZixTree* t, const void* e, ZixTreeIter** ti)
 	return (n) ? ZIX_STATUS_SUCCESS : ZIX_STATUS_NOT_FOUND;
 }
 
-ZIX_API
-void*
+ZIX_API void*
 zix_tree_get(ZixTreeIter* ti)
 {
 	return ti ? ti->data : NULL;
 }
 
-ZIX_API
-ZixTreeIter*
+ZIX_API ZixTreeIter*
 zix_tree_begin(ZixTree* t)
 {
 	if (!t->root) {
@@ -638,22 +631,45 @@ zix_tree_begin(ZixTree* t)
 	return n;
 }
 
-ZIX_API
-ZixTreeIter*
+ZIX_API ZixTreeIter*
 zix_tree_end(ZixTree* t)
 {
 	return NULL;
 }
 
-ZIX_API
-bool
+ZIX_API ZixTreeIter*
+zix_tree_rbegin(ZixTree* t)
+{
+	if (!t->root) {
+		return NULL;
+	}
+
+	ZixTreeNode* n = t->root;
+	while (n->right) {
+		n = n->right;
+	}
+	return n;
+}
+
+ZIX_API ZixTreeIter*
+zix_tree_rend(ZixTree* t)
+{
+	return NULL;
+}
+
+ZIX_API bool
 zix_tree_iter_is_end(ZixTreeIter* i)
 {
 	return !i;
 }
 
-ZIX_API
-ZixTreeIter*
+ZIX_API bool
+zix_tree_iter_is_rend(ZixTreeIter* i)
+{
+	return !i;
+}
+
+ZIX_API ZixTreeIter*
 zix_tree_iter_next(ZixTreeIter* i)
 {
 	if (!i) {
@@ -667,6 +683,29 @@ zix_tree_iter_next(ZixTreeIter* i)
 		}
 	} else {
 		while (i->parent && i->parent->right == i) {  // i is a right child
+			i = i->parent;
+		}
+
+		i = i->parent;
+	}
+
+	return i;
+}
+
+ZIX_API ZixTreeIter*
+zix_tree_iter_prev(ZixTreeIter* i)
+{
+	if (!i) {
+		return NULL;
+	}
+
+	if (i->left) {
+		i = i->left;
+		while (i->right) {
+			i = i->right;
+		}
+	} else {
+		while (i->parent && i->parent->left == i) {  // i is a left child
 			i = i->parent;
 		}
 

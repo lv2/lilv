@@ -45,7 +45,7 @@ typedef struct ZixTreeNodeImpl ZixTreeIter;
 /**
    Create a new (empty) tree.
 */
-ZixTree*
+ZIX_API ZixTree*
 zix_tree_new(bool           allow_duplicates,
              ZixComparator  cmp,
              void*          cmp_data,
@@ -54,86 +54,86 @@ zix_tree_new(bool           allow_duplicates,
 /**
    Free @a t.
 */
-void
+ZIX_API void
 zix_tree_free(ZixTree* t);
 
 /**
    Return the number of elements in @a t.
 */
-size_t
+ZIX_API size_t
 zix_tree_size(const ZixTree* t);
 
 /**
    Insert the element @a e into @a t and point @a ti at the new element.
 */
-ZixStatus
+ZIX_API ZixStatus
 zix_tree_insert(ZixTree* t, void* e, ZixTreeIter** ti);
 
 /**
    Remove the item pointed at by @a ti from @a t.
 */
-ZixStatus
+ZIX_API ZixStatus
 zix_tree_remove(ZixTree* t, ZixTreeIter* ti);
 
 /**
    Set @a ti to an element equal to @a e in @a t.
    If no such item exists, @a ti is set to NULL.
 */
-ZixStatus
+ZIX_API ZixStatus
 zix_tree_find(const ZixTree* t, const void* e, ZixTreeIter** ti);
 
 /**
    Return the data associated with the given tree item.
 */
-void*
+ZIX_API void*
 zix_tree_get(ZixTreeIter* ti);
 
 /**
    Return an iterator to the first (smallest) element in @a t.
 */
-ZixTreeIter*
+ZIX_API ZixTreeIter*
 zix_tree_begin(ZixTree* t);
 
 /**
    Return an iterator the the element one past the last element in @a t.
 */
-ZixTreeIter*
+ZIX_API ZixTreeIter*
 zix_tree_end(ZixTree* t);
 
 /**
    Return true iff @a i is an iterator to the end of its tree.
 */
-bool
+ZIX_API bool
 zix_tree_iter_is_end(ZixTreeIter* i);
 
 /**
    Return an iterator to the last (largest) element in @a t.
 */
-ZixTreeIter*
+ZIX_API ZixTreeIter*
 zix_tree_rbegin(ZixTree* t);
 
 /**
    Return an iterator the the element one before the first element in @a t.
 */
-ZixTreeIter*
+ZIX_API ZixTreeIter*
 zix_tree_rend(ZixTree* t);
 
 /**
    Return true iff @a i is an iterator to the reverse end of its tree.
 */
-bool
+ZIX_API bool
 zix_tree_iter_is_rend(ZixTreeIter* i);
 
 /**
    Return an iterator that points to the element one past @a i.
 */
-ZixTreeIter*
+ZIX_API ZixTreeIter*
 zix_tree_iter_next(ZixTreeIter* i);
 
 /**
    Return an iterator that points to the element one before @a i.
 */
-ZixTreeIter*
+ZIX_API ZixTreeIter*
 zix_tree_iter_prev(ZixTreeIter* i);
 
 /**
