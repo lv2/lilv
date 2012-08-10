@@ -23,25 +23,24 @@
 static void
 lilv_node_set_numerics_from_string(LilvNode* val, size_t len)
 {
-	char* endptr;
+	const char* str = (const char*)sord_node_get_string(val->node);
+	char*       endptr;
 
 	switch (val->type) {
 	case LILV_VALUE_URI:
 	case LILV_VALUE_BLANK:
 	case LILV_VALUE_STRING:
+	case LILV_VALUE_BLOB:
 		break;
 	case LILV_VALUE_INT:
-		val->val.int_val = strtol(val->str_val, &endptr, 10);
+		val->val.int_val = strtol(str, &endptr, 10);
 		break;
 	case LILV_VALUE_FLOAT:
-		val->val.float_val = serd_strtod(val->str_val, &endptr);
+		val->val.float_val = serd_strtod(str, &endptr);
 		break;
 	case LILV_VALUE_BOOL:
-		val->val.bool_val = (!strcmp(val->str_val, "true"));
+		val->val.bool_val = !strcmp(str, "true");
 		break;
-	case LILV_VALUE_BLOB:
-		val->val.blob_val.buf = serd_base64_decode(
-			(const uint8_t*)val->str_val, len, &val->val.blob_val.size);
 	}
 }
 
@@ -57,31 +56,33 @@ lilv_node_new(LilvWorld* world, LilvNodeType type, const char* str)
 	val->world = world;
 	val->type  = type;
 
+	const uint8_t* ustr = (const uint8_t*)str;
 	switch (type) {
 	case LILV_VALUE_URI:
-		val->val.uri_val = sord_new_uri(world->world, (const uint8_t*)str);
+		val->node = sord_new_uri(world->world, ustr);
 		break;
 	case LILV_VALUE_BLANK:
-		val->val.uri_val = sord_new_blank(world->world, (const uint8_t*)str);
+		val->node = sord_new_blank(world->world, ustr);
 		break;
 	case LILV_VALUE_STRING:
-	case LILV_VALUE_INT:
-	case LILV_VALUE_FLOAT:
-	case LILV_VALUE_BOOL:
-	case LILV_VALUE_BLOB:
-		val->str_val = lilv_strdup(str);
+		val->node = sord_new_literal(world->world, NULL, ustr, NULL);
 		break;
-	}
-
-	switch (type) {
-	case LILV_VALUE_URI:
-	case LILV_VALUE_BLANK:
-		if (!val->val.uri_val) {
-			free(val);
-			return NULL;
-		}
-		val->str_val = (char*)sord_node_get_string(val->val.uri_val);
-	default: break;
+	case LILV_VALUE_INT:
+		val->node = sord_new_literal(
+			world->world, world->uris.xsd_integer, ustr, NULL);
+		break;
+	case LILV_VALUE_FLOAT:
+		val->node = sord_new_literal(
+			world->world, world->uris.xsd_decimal, ustr, NULL);
+		break;
+	case LILV_VALUE_BOOL:
+		val->node = sord_new_literal(
+			world->world, world->uris.xsd_boolean, ustr, NULL);
+		break;
+	case LILV_VALUE_BLOB:
+		val->node = sord_new_literal(
+			world->world, world->uris.xsd_base64Binary, ustr, NULL);
+		break;
 	}
 
 	return val;
@@ -98,18 +99,16 @@ lilv_node_new_from_node(LilvWorld* world, const SordNode* node)
 
 	switch (sord_node_get_type(node)) {
 	case SORD_URI:
-		result              = (LilvNode*)malloc(sizeof(LilvNode));
-		result->world       = (LilvWorld*)world;
-		result->type        = LILV_VALUE_URI;
-		result->val.uri_val = sord_node_copy(node);
-		result->str_val     = (char*)sord_node_get_string(result->val.uri_val);
+		result        = (LilvNode*)malloc(sizeof(LilvNode));
+		result->world = (LilvWorld*)world;
+		result->type  = LILV_VALUE_URI;
+		result->node  = sord_node_copy(node);
 		break;
 	case SORD_BLANK:
-		result              = (LilvNode*)malloc(sizeof(LilvNode));
-		result->world       = (LilvWorld*)world;
-		result->type        = LILV_VALUE_BLANK;
-		result->val.uri_val = sord_node_copy(node);
-		result->str_val     = (char*)sord_node_get_string(result->val.uri_val);
+		result        = (LilvNode*)malloc(sizeof(LilvNode));
+		result->world = (LilvWorld*)world;
+		result->type  = LILV_VALUE_BLANK;
+		result->node  = sord_node_copy(node);
 		break;
 	case SORD_LITERAL:
 		datatype_uri = sord_node_get_datatype(node);
@@ -189,24 +188,15 @@ LILV_API
 LilvNode*
 lilv_node_duplicate(const LilvNode* val)
 {
-	if (val == NULL)
+	if (!val) {
 		return NULL;
+	}
 
 	LilvNode* result = (LilvNode*)malloc(sizeof(LilvNode));
 	result->world = val->world;
-	result->type = val->type;
-
-	switch (val->type) {
-	case LILV_VALUE_URI:
-	case LILV_VALUE_BLANK:
-		result->val.uri_val = sord_node_copy(val->val.uri_val);
-		result->str_val = (char*)sord_node_get_string(result->val.uri_val);
-		break;
-	default:
-		result->str_val = lilv_strdup(val->str_val);
-		result->val = val->val;
-	}
-
+	result->node  = sord_node_copy(val->node);
+	result->val   = val->val;
+	result->type  = val->type;
 	return result;
 }
 
@@ -215,14 +205,7 @@ void
 lilv_node_free(LilvNode* val)
 {
 	if (val) {
-		switch (val->type) {
-		case LILV_VALUE_URI:
-		case LILV_VALUE_BLANK:
-			sord_node_free(val->world->world, val->val.uri_val);
-			break;
-		default:
-			free(val->str_val);
-		}
+		sord_node_free(val->world->world, val->node);
 		free(val);
 	}
 }
@@ -240,20 +223,16 @@ lilv_node_equals(const LilvNode* value, const LilvNode* other)
 
 	switch (value->type) {
 	case LILV_VALUE_URI:
-		return sord_node_equals(value->val.uri_val, other->val.uri_val);
 	case LILV_VALUE_BLANK:
 	case LILV_VALUE_STRING:
-		return !strcmp(value->str_val, other->str_val);
+	case LILV_VALUE_BLOB:
+		return sord_node_equals(value->node, other->node);
 	case LILV_VALUE_INT:
 		return (value->val.int_val == other->val.int_val);
 	case LILV_VALUE_FLOAT:
 		return (value->val.float_val == other->val.float_val);
 	case LILV_VALUE_BOOL:
 		return (value->val.bool_val == other->val.bool_val);
-	case LILV_VALUE_BLOB:
-		return (value->val.blob_val.size == other->val.blob_val.size)
-			&& !memcmp(value->val.blob_val.buf, other->val.blob_val.buf,
-			           value->val.blob_val.size);
 	}
 
 	return false; /* shouldn't get here */
@@ -263,32 +242,33 @@ LILV_API
 char*
 lilv_node_get_turtle_token(const LilvNode* value)
 {
-	size_t   len    = 0;
-	char*    result = NULL;
-	SerdNode node;
+	const char* str    = (const char*)sord_node_get_string(value->node);
+	size_t      len    = 0;
+	char*       result = NULL;
+	SerdNode    node;
 
 	switch (value->type) {
 	case LILV_VALUE_URI:
-		len = strlen(value->str_val) + 3;
+		len    = strlen(str) + 3;
 		result = (char*)calloc(len, 1);
-		snprintf(result, len, "<%s>", value->str_val);
+		snprintf(result, len, "<%s>", str);
 		break;
 	case LILV_VALUE_BLANK:
-		len = strlen(value->str_val) + 3;
+		len    = strlen(str) + 3;
 		result = (char*)calloc(len, 1);
-		snprintf(result, len, "_:%s", value->str_val);
+		snprintf(result, len, "_:%s", str);
 		break;
 	case LILV_VALUE_STRING:
 	case LILV_VALUE_BOOL:
 	case LILV_VALUE_BLOB:
-		result = lilv_strdup(value->str_val);
+		result = lilv_strdup(str);
 		break;
 	case LILV_VALUE_INT:
 		node   = serd_node_new_integer(value->val.int_val);
 		result = (char*)node.buf;
 		break;
 	case LILV_VALUE_FLOAT:
-		node = serd_node_new_decimal(value->val.float_val, 8);
+		node   = serd_node_new_decimal(value->val.float_val, 8);
 		result = (char*)node.buf;
 		break;
 	}
@@ -308,14 +288,14 @@ const char*
 lilv_node_as_uri(const LilvNode* value)
 {
 	assert(lilv_node_is_uri(value));
-	return value->str_val;
+	return (const char*)sord_node_get_string(value->node);
 }
 
 const SordNode*
 lilv_node_as_node(const LilvNode* value)
 {
 	assert(lilv_node_is_uri(value));
-	return value->val.uri_val;
+	return value->node;
 }
 
 LILV_API
@@ -330,7 +310,7 @@ const char*
 lilv_node_as_blank(const LilvNode* value)
 {
 	assert(lilv_node_is_blank(value));
-	return value->str_val;
+	return (const char*)sord_node_get_string(value->node);
 }
 
 LILV_API
@@ -361,7 +341,7 @@ LILV_API
 const char*
 lilv_node_as_string(const LilvNode* value)
 {
-	return value ? value->str_val : NULL;
+	return value ? (const char*)sord_node_get_string(value->node) : NULL;
 }
 
 LILV_API

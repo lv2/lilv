@@ -182,11 +182,13 @@ lilv_world_find_nodes(LilvWorld*      world,
                       const LilvNode* object)
 {
 	if (subject && !lilv_node_is_uri(subject) && !lilv_node_is_blank(subject)) {
-		LILV_ERRORF("Subject `%s' is not a resource\n", subject->str_val);
+		LILV_ERRORF("Subject `%s' is not a resource\n",
+		            sord_node_get_string(subject->node));
 		return NULL;
 	}
 	if (!lilv_node_is_uri(predicate)) {
-		LILV_ERRORF("Predicate `%s' is not a URI\n", predicate->str_val);
+		LILV_ERRORF("Predicate `%s' is not a URI\n",
+		            sord_node_get_string(predicate->node));
 		return NULL;
 	}
 	if (!subject && !object) {
@@ -195,15 +197,15 @@ lilv_world_find_nodes(LilvWorld*      world,
 	}
 
 	SordNode* const subject_node = subject
-		? sord_node_copy(subject->val.uri_val)
+		? sord_node_copy(subject->node)
 		: NULL;
 
 	SordNode* const object_node = object
-		? sord_node_copy(object->val.uri_val)
+		? sord_node_copy(object->node)
 		: NULL;
 
 	LilvNodes* ret = lilv_world_query_values_internal(
-		world, subject_node, predicate->val.uri_val, object_node);
+		world, subject_node, predicate->node, object_node);
 
 	sord_node_free(world->world, subject_node);
 	sord_node_free(world->world, object_node);
@@ -498,11 +500,12 @@ void
 lilv_world_load_bundle(LilvWorld* world, LilvNode* bundle_uri)
 {
 	if (!lilv_node_is_uri(bundle_uri)) {
-		LILV_ERRORF("Bundle URI `%s' is not a URI\n", bundle_uri->str_val);
+		LILV_ERRORF("Bundle URI `%s' is not a URI\n",
+		            sord_node_get_string(bundle_uri->node));
 		return;
 	}
 
-	SordNode* bundle_node = bundle_uri->val.uri_val;
+	SordNode* bundle_node = bundle_uri->node;
 
 	SerdNode manifest_uri = lilv_new_uri_relative_to_base(
 		(const uint8_t*)"manifest.ttl",
@@ -633,7 +636,7 @@ lilv_world_load_specifications(LilvWorld* world)
 		LILV_FOREACH(nodes, f, spec->data_uris) {
 			LilvNode* file = (LilvNode*)lilv_collection_get(spec->data_uris, f);
 
-			const SerdNode* node   = sord_node_to_serd_node(file->val.uri_val);
+			const SerdNode* node   = sord_node_to_serd_node(file->node);
 			SerdEnv*        env    = serd_env_new(node);
 			SerdReader*     reader = sord_new_reader(world->model, env,
 			                                         SERD_TURTLE, NULL);
@@ -753,13 +756,14 @@ lilv_world_load_resource(LilvWorld*      world,
                          const LilvNode* resource)
 {
 	if (!lilv_node_is_uri(resource) && !lilv_node_is_blank(resource)) {
-		LILV_ERRORF("Node `%s' is not a resource\n", resource->str_val);
+		LILV_ERRORF("Node `%s' is not a resource\n",
+		            sord_node_get_string(resource->node));
 		return -1;
 	}
 
 	int       n_read = 0;
 	SordIter* files  = sord_search(world->model,
-	                               resource->val.uri_val,
+	                               resource->node,
 	                               world->uris.rdfs_seeAlso,
 	                               NULL, NULL);
 	FOREACH_MATCH(files) {

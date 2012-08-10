@@ -201,19 +201,14 @@ typedef enum {
 } LilvNodeType;
 
 struct LilvNodeImpl {
-	LilvWorld*    world;
-	char*         str_val;  ///< always present
+	LilvWorld*   world;
+	SordNode*    node;
+	LilvNodeType type;
 	union {
-		int       int_val;
-		float     float_val;
-		bool      bool_val;
-		SordNode* uri_val;
-		struct {
-			void*  buf;
-			size_t size;
-		} blob_val;
+		int   int_val;
+		float float_val;
+		bool  bool_val;
 	} val;
-	LilvNodeType  type;
 };
 
 struct LilvScalePointImpl {

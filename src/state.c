@@ -576,7 +576,7 @@ lilv_state_new_from_world(LilvWorld*      world,
 	}
 
 	LilvState* state = new_state_from_model(
-		world, map, world->model, node->val.uri_val, NULL);
+		world, map, world->model, node->node, NULL);
 
 	return state;
 }
@@ -604,7 +604,7 @@ lilv_state_new_from_file(LilvWorld*      world,
 	serd_reader_read_file(reader, node.buf);
 
 	SordNode* subject_node = (subject)
-		? subject->val.uri_val
+		? subject->node
 		: sord_node_from_serd_node(world->world, env, &node, NULL, NULL);
 
 	char* dirname   = lilv_dirname(path);
@@ -779,7 +779,7 @@ lilv_state_write(LilvWorld*       world,
 		SERD_CURIE, USTR("lv2:appliesTo"));
 
 	const SerdNode* plugin_uri = sord_node_to_serd_node(
-		state->plugin_uri->val.uri_val);
+		state->plugin_uri->node);
 
 	SerdNode subject = serd_node_from_string(SERD_URI, USTR(uri ? uri : ""));
 
