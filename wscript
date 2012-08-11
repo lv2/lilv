@@ -112,6 +112,14 @@ def configure(conf):
                   define_name='HAVE_FILENO',
                   mandatory=False)
 
+    conf.check_cc(function_name='clock_gettime',
+                  header_name=['sys/time.h','time.h'],
+                  defines=['_POSIX_C_SOURCE=199309L'],
+                  define_name='HAVE_CLOCK_GETTIME',
+                  uselib_store='CLOCK_GETTIME',
+                  lib=['rt'],
+                  mandatory=False)
+
     autowaf.define(conf, 'LILV_VERSION', LILV_VERSION)
     if Options.options.dyn_manifest:
         autowaf.define(conf, 'LILV_DYN_MANIFEST', 1)
@@ -164,6 +172,23 @@ def configure(conf):
 
     conf.undefine('LILV_DEFAULT_LV2_PATH')  # Cmd line errors with VC++
     print('')
+
+def build_util(bld, name, defines):
+    obj = bld(features     = 'c cprogram',
+              source       = name + '.c',
+              includes     = ['.', './src', './utils'],
+              use          = 'liblilv',
+              target       = name,
+              defines      = defines,
+              install_path = '${BINDIR}')
+    if not bld.env.BUILD_SHARED or bld.env.STATIC_PROGS:
+        obj.use = 'liblilv_static'
+    if bld.env.STATIC_PROGS:
+        if not bld.env.MSVC_COMPILER:
+            obj.lib = ['m']
+            obj.env.SHLIB_MARKER = obj.env.STLIB_MARKER
+            obj.linkflags        = ['-static', '-Wl,--start-group']
+    return obj
 
 def build(bld):
     # C/C++ Headers
@@ -296,25 +321,18 @@ def build(bld):
     # Utilities
     if bld.env.BUILD_UTILS:
         utils = '''
+            utils/lilv-bench
             utils/lv2info
             utils/lv2ls
-            utils/lilv-bench
         '''
         for i in utils.split():
-            obj = bld(features     = 'c cprogram',
-                      source       = i + '.c',
-                      includes     = ['.', './src', './utils'],
-                      use          = 'liblilv',
-                      target       = i,
-                      defines      = defines,
-                      install_path = '${BINDIR}')
-            if not bld.env.BUILD_SHARED or bld.env.STATIC_PROGS:
-                obj.use = 'liblilv_static'
-            if bld.env.STATIC_PROGS:
-                if not bld.env.MSVC_COMPILER:
-                    obj.lib              = ['m']
-                obj.env.SHLIB_MARKER = obj.env.STLIB_MARKER
-                obj.linkflags        = ['-static', '-Wl,--start-group']
+            build_util(bld, i, defines)
+
+    # lv2bench (less portable than other utilities)
+    if bld.is_defined('HAVE_CLOCK_GETTIME'):
+        obj = build_util(bld, 'utils/lv2bench', defines)
+        if not bld.env.MSVC_COMPILER:
+            obj.lib = ['rt']
 
     # Documentation
     autowaf.build_dox(bld, 'LILV', LILV_VERSION, top, out)
