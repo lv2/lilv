@@ -26,14 +26,14 @@
 #include "bench.h"
 #include "uri_table.h"
 
-#define BLOCK_LENGTH 512
-
 static LilvNode* lv2_AudioPort   = NULL;
 static LilvNode* lv2_CVPort      = NULL;
 static LilvNode* lv2_ControlPort = NULL;
 static LilvNode* lv2_InputPort   = NULL;
 static LilvNode* lv2_OutputPort  = NULL;
 static LilvNode* urid_map        = NULL;
+
+static bool full_output = false;
 
 static void
 print_version(void)
@@ -49,18 +49,26 @@ print_version(void)
 static void
 print_usage(void)
 {
-	printf("Usage: lv2bench\n");
-	printf("Benchmark all installed and supported LV2 plugins.\n");
+	printf("lv2bench - Benchmark all installed and supported LV2 plugins.\n");
+	printf("Usage: lv2bench [OPTIONS]\n");
+	printf("\n");
+	printf("  -b BLOCK_SIZE  Specify block size, in audio frames.\n");
+	printf("  -f, --full     Full plottable output.\n");
+	printf("  -h, --help     Display this help and exit.\n");
+	printf("  -n FRAMES      Total number of audio frames to process\n");
+	printf("  --version      Display version information and exit\n");
 }
 
 static double
-bench(const LilvPlugin* p, uint32_t sample_count)
+bench(const LilvPlugin* p, uint32_t sample_count, uint32_t block_size)
 {
-	float in[BLOCK_LENGTH];
-	float out[BLOCK_LENGTH];
-
-	memset(in, 0, sizeof(in));
-	memset(out, 0, sizeof(out));
+	float* const buf = (float*)calloc(block_size * 2, sizeof(float));
+	float* const in  = buf;
+	float* const out = buf + block_size; 
+	if (!buf) {
+		fprintf(stderr, "Out of memory\n");
+		return 0.0;
+	}
 
 	URITable uri_table;
 	uri_table_init(&uri_table);
@@ -71,21 +79,23 @@ bench(const LilvPlugin* p, uint32_t sample_count)
 	LV2_Feature        unmap_feature = { LV2_URID_UNMAP_URI, &unmap };
 	const LV2_Feature* features[]    = { &map_feature, &unmap_feature, NULL };
 
-	const char* uri = lilv_node_as_string(lilv_plugin_get_uri(p));
-	LilvNodes* required = lilv_plugin_get_required_features(p);
+	const char* uri      = lilv_node_as_string(lilv_plugin_get_uri(p));
+	LilvNodes*  required = lilv_plugin_get_required_features(p);
 	LILV_FOREACH(nodes, i, required) {
 		const LilvNode* feature = lilv_nodes_get(required, i);
 		if (!lilv_node_equals(feature, urid_map)) {
 			fprintf(stderr, "<%s> requires feature <%s>, skipping\n",
 			        uri, lilv_node_as_uri(feature));
+			free(buf);
 			return 0.0;
 		}
 	}
-	
+
 	LilvInstance* instance = lilv_plugin_instantiate(p, 48000.0, features);
 	if (!instance) {
 		fprintf(stderr, "Failed to instantiate <%s>\n",
 		        lilv_node_as_uri(lilv_plugin_get_uri(p)));
+		free(buf);
 		return 0.0;
 	}
 
@@ -108,12 +118,16 @@ bench(const LilvPlugin* p, uint32_t sample_count)
 				fprintf(stderr, "<%s> port %d neither input nor output, skipping\n",
 				        uri, index);
 				lilv_instance_free(instance);
+				free(buf);
+				free(controls);
 				return 0.0;
 			}
 		} else {
 			fprintf(stderr, "<%s> port %d has unknown type, skipping\n",
 			        uri, index);
 			lilv_instance_free(instance);
+			free(buf);
+			free(controls);
 			return 0.0;
 		}
 	}
@@ -121,8 +135,8 @@ bench(const LilvPlugin* p, uint32_t sample_count)
 	lilv_instance_activate(instance);
 
 	struct timespec ts = bench_start();
-	for (uint32_t i = 0; i < (sample_count / BLOCK_LENGTH); ++i) {
-		lilv_instance_run(instance, BLOCK_LENGTH);
+	for (uint32_t i = 0; i < (sample_count / block_size); ++i) {
+		lilv_instance_run(instance, block_size);
 	}
 	const double elapsed = bench_end(&ts);
 
@@ -131,13 +145,22 @@ bench(const LilvPlugin* p, uint32_t sample_count)
 
 	uri_table_destroy(&uri_table);
 
+	if (full_output) {
+		printf("%d %d ", block_size, sample_count);
+	}
 	printf("%lf %s\n", elapsed, uri);
+
+	free(buf);
+	free(controls);
 	return elapsed;
 }
 
 int
 main(int argc, char** argv)
 {
+	uint32_t block_size   = 512;
+	uint32_t sample_count = (1 << 19);
+
 	for (int i = 1; i < argc; ++i) {
 		if (!strcmp(argv[i], "--version")) {
 			print_version();
@@ -145,6 +168,12 @@ main(int argc, char** argv)
 		} else if (!strcmp(argv[i], "--help")) {
 			print_usage();
 			return 0;
+		} else if (!strcmp(argv[i], "-f")) {
+			full_output = true;
+		} else if (!strcmp(argv[i], "-n") && (i + 1 < argc)) {
+			sample_count = atoi(argv[++i]);
+		} else if (!strcmp(argv[i], "-b") && (i + 1 < argc)) {
+			block_size = atoi(argv[++i]);
 		} else {
 			print_usage();
 			return 1;
@@ -161,9 +190,13 @@ main(int argc, char** argv)
 	lv2_OutputPort  = lilv_new_uri(world, LV2_CORE__OutputPort);
 	urid_map        = lilv_new_uri(world, LV2_URID__map);
 
+	if (full_output) {
+		printf("# Block Samples Time Plugin\n");
+	}
+
 	const LilvPlugins* plugins = lilv_world_get_all_plugins(world);
 	LILV_FOREACH(plugins, i, plugins) {
-		bench(lilv_plugins_get(plugins, i), 1 << 19);
+		bench(lilv_plugins_get(plugins, i), sample_count, block_size);
 	}
 
 	lilv_node_free(urid_map);
