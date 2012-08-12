@@ -21,11 +21,14 @@
 #include <string.h>
 
 #include "lilv/lilv.h"
+#include "lv2/lv2plug.in/ns/ext/atom/atom.h"
 
 #include "lilv_config.h"
 #include "bench.h"
 #include "uri_table.h"
 
+static LilvNode* atom_AtomPort   = NULL;
+static LilvNode* atom_Sequence   = NULL;
 static LilvNode* lv2_AudioPort   = NULL;
 static LilvNode* lv2_CVPort      = NULL;
 static LilvNode* lv2_ControlPort = NULL;
@@ -62,14 +65,6 @@ print_usage(void)
 static double
 bench(const LilvPlugin* p, uint32_t sample_count, uint32_t block_size)
 {
-	float* const buf = (float*)calloc(block_size * 2, sizeof(float));
-	float* const in  = buf;
-	float* const out = buf + block_size; 
-	if (!buf) {
-		fprintf(stderr, "Out of memory\n");
-		return 0.0;
-	}
-
 	URITable uri_table;
 	uri_table_init(&uri_table);
 
@@ -78,6 +73,19 @@ bench(const LilvPlugin* p, uint32_t sample_count, uint32_t block_size)
 	LV2_URID_Unmap     unmap         = { &uri_table, uri_table_unmap };
 	LV2_Feature        unmap_feature = { LV2_URID_UNMAP_URI, &unmap };
 	const LV2_Feature* features[]    = { &map_feature, &unmap_feature, NULL };
+
+	float* const buf = (float*)calloc(block_size * 2, sizeof(float));
+	float* const in  = buf;
+	float* const out = buf + block_size;
+	if (!buf) {
+		fprintf(stderr, "Out of memory\n");
+		return 0.0;
+	}
+
+	LV2_Atom_Sequence seq = {
+		{ sizeof(LV2_Atom_Sequence_Body),
+		  uri_table_map(&uri_table, LV2_ATOM__Sequence) },
+		{ 0, 0 } };
 
 	const char* uri      = lilv_node_as_string(lilv_plugin_get_uri(p));
 	LilvNodes*  required = lilv_plugin_get_required_features(p);
@@ -122,6 +130,8 @@ bench(const LilvPlugin* p, uint32_t sample_count, uint32_t block_size)
 				free(controls);
 				return 0.0;
 			}
+		} else if (lilv_port_is_a(p, port, atom_AtomPort)) {
+			lilv_instance_connect_port(instance, index, &seq);
 		} else {
 			fprintf(stderr, "<%s> port %d has unknown type, skipping\n",
 			        uri, index);
@@ -183,6 +193,8 @@ main(int argc, char** argv)
 	LilvWorld* world = lilv_world_new();
 	lilv_world_load_all(world);
 
+	atom_AtomPort   = lilv_new_uri(world, LV2_ATOM__AtomPort);
+	atom_Sequence   = lilv_new_uri(world, LV2_ATOM__Sequence);
 	lv2_AudioPort   = lilv_new_uri(world, LV2_CORE__AudioPort);
 	lv2_CVPort      = lilv_new_uri(world, LV2_CORE__CVPort);
 	lv2_ControlPort = lilv_new_uri(world, LV2_CORE__ControlPort);
@@ -205,6 +217,8 @@ main(int argc, char** argv)
 	lilv_node_free(lv2_ControlPort);
 	lilv_node_free(lv2_CVPort);
 	lilv_node_free(lv2_AudioPort);
+	lilv_node_free(atom_Sequence);
+	lilv_node_free(atom_AtomPort);
 
 	lilv_world_free(world);
 
