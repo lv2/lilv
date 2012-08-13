@@ -87,7 +87,7 @@ init_tests(void)
 }
 
 static void
-fatal_error(const char *err, const char *arg)
+fatal_error(const char* err, const char* arg)
 {
 	/* TODO: possibly change to vfprintf later */
 	fprintf(stderr, err, arg);
@@ -97,7 +97,7 @@ fatal_error(const char *err, const char *arg)
 }
 
 static void
-write_file(const char *name, const char *content)
+write_file(const char* name, const char* content)
 {
 	FILE* f = fopen(name, "w");
 	size_t len = strlen(content);
@@ -123,7 +123,7 @@ load_all_bundles(void)
 }
 
 static void
-create_bundle(char *manifest, char *content)
+create_bundle(const char* manifest, const char* content)
 {
 	if (mkdir(bundle_dir_name, 0700) && errno != EEXIST)
 		fatal_error("Cannot create directory %s\n", bundle_dir_name);
@@ -132,7 +132,7 @@ create_bundle(char *manifest, char *content)
 }
 
 static int
-start_bundle(char *manifest, char *content)
+start_bundle(const char* manifest, const char* content)
 {
 	create_bundle(manifest, content);
 	return load_all_bundles();
@@ -166,7 +166,7 @@ cleanup(void)
 typedef int (*TestFunc)(void);
 
 struct TestCase {
-	const char *title;
+	const char* title;
 	TestFunc func;
 };
 
@@ -184,7 +184,7 @@ struct TestCase {
 #define PLUGIN_NAME(name) "doap:name \"" name "\""
 #define LICENSE_GPL "doap:license <http://usefulinc.com/doap/licenses/gpl>"
 
-static char *uris_plugin = "http://example.org/plug";
+static const char* uris_plugin = "http://example.org/plug";
 static LilvNode* plugin_uri_value;
 static LilvNode* plugin2_uri_value;
 
@@ -1566,7 +1566,7 @@ run_tests(void)
 }
 
 int
-main(int argc, char *argv[])
+main(int argc, char* argv[])
 {
 	if (argc != 1) {
 		printf("Syntax: %s\n", argv[0]);
