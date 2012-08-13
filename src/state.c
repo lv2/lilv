@@ -385,10 +385,11 @@ lilv_state_new_from_instance(const LilvPlugin*          plugin,
 			free(state->props);
 			state->props     = NULL;
 			state->num_props = 0;
+		} else {
+			qsort(state->props, state->num_props, sizeof(Property), property_cmp);
 		}
 	}
 
-	qsort(state->props, state->num_props, sizeof(Property), property_cmp);
 	qsort(state->values, state->num_values, sizeof(PortValue), value_cmp);
 
 	free(sfeatures);
