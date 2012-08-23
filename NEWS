@@ -8,6 +8,7 @@ lilv (9999) unstable;
   * Gracefully handle failure to save plugin state and print error message
   * Reduce memory usage (per node)
   * Add lv2bench utility
+  * Do not require a C++ compiler to build
 
  -- David Robillard <d@drobilla.net>
 

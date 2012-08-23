@@ -53,12 +53,12 @@ def options(opt):
 
 def configure(conf):
     conf.load('compiler_c')
-    conf.load('compiler_cxx')
-    conf.load('python')
 
     if Options.options.bindings:
         try:
-            conf.load('swig python')
+            conf.load('swig')
+            conf.load('python')
+            conf.load('compiler_cxx')
             conf.check_python_headers()
             autowaf.define(conf, 'LILV_PYTHON', 1);
         except:
