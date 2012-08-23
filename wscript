@@ -7,7 +7,7 @@ from waflib.extras import autowaf as autowaf
 import waflib.Options as Options
 
 # Version of this package (even if built as a child)
-LILV_VERSION       = '0.14.2'
+LILV_VERSION       = '0.14.4'
 LILV_MAJOR_VERSION = '0'
 
 # Library version (UNIX style major, minor, micro)
