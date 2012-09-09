@@ -1,3 +1,9 @@
+lilv (0.14.5) unstable;
+
+  * Disable timestamps in HTML documentation for reproducible build
+
+ -- David Robillard <d@drobilla.net>  Sun, 09 Sep 2012 03:19:01 -0400
+
 lilv (0.14.4) stable;
 
   * Deprecate old flawed Lilv::Instance constructors
