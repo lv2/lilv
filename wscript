@@ -1,29 +1,23 @@
 #!/usr/bin/env python
 import os
-import sys
 import subprocess
-
-from waflib.extras import autowaf as autowaf
+import sys
+import waflib.Logs as Logs
 import waflib.Options as Options
+import waflib.extras.autowaf as autowaf
 
-# Version of this package (even if built as a child)
-LILV_VERSION       = '0.14.5'
-LILV_MAJOR_VERSION = '0'
-
-# Library version (UNIX style major, minor, micro)
+# Library and package version (UNIX style major, minor, micro)
 # major increment <=> incompatible changes
 # minor increment <=> compatible changes (additions)
 # micro increment <=> no interface changes
-# Lilv uses the same version number for both library and package
-LILV_LIB_VERSION = LILV_VERSION
+LILV_VERSION       = '0.14.5'
+LILV_MAJOR_VERSION = '0'
 
-# Variables for 'waf dist'
-APPNAME = 'lilv'
-VERSION = LILV_VERSION
-
-# Mandatory variables
-top = '.'
-out = 'build'
+# Mandatory waf variables
+APPNAME = 'lilv'        # Package name for waf dist
+VERSION = LILV_VERSION  # Package version for waf dist
+top     = '.'           # Source directory
+out     = 'build'       # Build directory
 
 def options(opt):
     opt.load('compiler_c')
@@ -155,8 +149,7 @@ def configure(conf):
                                            '/usr/local/%s/lv2' % libdirname])
     autowaf.define(conf, 'LILV_DEFAULT_LV2_PATH', lv2_path)
 
-    conf.env.LIB_LILV = ['lilv-%s' % LILV_MAJOR_VERSION]
-
+    autowaf.set_lib_env(conf, 'lilv', LILV_VERSION)
     conf.write_config_header('lilv_config.h', remove=False)
 
     autowaf.display_msg(conf, 'Default LV2_PATH',
@@ -237,7 +230,7 @@ def build(bld):
                   includes        = ['.', './src'],
                   name            = 'liblilv',
                   target          = 'lilv-%s' % LILV_MAJOR_VERSION,
-                  vnum            = LILV_LIB_VERSION,
+                  vnum            = LILV_VERSION,
                   install_path    = '${LIBDIR}',
                   defines         = ['LILV_SHARED', 'LILV_INTERNAL'],
                   cflags          = libflags,
@@ -252,7 +245,7 @@ def build(bld):
                   includes        = ['.', './src'],
                   name            = 'liblilv_static',
                   target          = 'lilv-%s' % LILV_MAJOR_VERSION,
-                  vnum            = LILV_LIB_VERSION,
+                  vnum            = LILV_VERSION,
                   install_path    = '${LIBDIR}',
                   defines         = defines + ['LILV_INTERNAL'])
         autowaf.use_lib(bld, obj, 'SORD SRATOM LV2')
