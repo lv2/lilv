@@ -2,7 +2,6 @@
 import os
 import subprocess
 import sys
-import waflib.Logs as Logs
 import waflib.Options as Options
 import waflib.extras.autowaf as autowaf
 
