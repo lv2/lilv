@@ -1037,13 +1037,16 @@ lilv_port_has_property(const LilvPlugin* p,
                        const LilvNode*   property_uri);
 
 /**
-   Return whether a port is an event port and supports a certain event type.
+   Return whether a port supports a certain event type.
+
+   More precisely, this returns true iff the port has an atom:supports or an
+   ev:supportsEvent property with @p event_type as the value.
 */
 LILV_API
 bool
 lilv_port_supports_event(const LilvPlugin* p,
                          const LilvPort*   port,
-                         const LilvNode*   event_uri);
+                         const LilvNode*   event_type);
 
 /**
    Get the index of a port.

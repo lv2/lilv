@@ -170,6 +170,7 @@ struct TestCase {
 	TestFunc func;
 };
 
+#define PREFIX_ATOM "@prefix atom: <http://lv2plug.in/ns/ext/atom#> . \n"
 #define PREFIX_LINE "@prefix : <http://example.org/> .\n"
 #define PREFIX_LV2 "@prefix lv2: <http://lv2plug.in/ns/lv2core#> .\n"
 #define PREFIX_LV2EV "@prefix lv2ev: <http://lv2plug.in/ns/ext/event#> . \n"
@@ -180,7 +181,7 @@ struct TestCase {
 #define PREFIX_DOAP "@prefix doap: <http://usefulinc.com/ns/doap#> .\n"
 
 #define MANIFEST_PREFIXES PREFIX_LINE PREFIX_LV2 PREFIX_RDFS
-#define BUNDLE_PREFIXES PREFIX_LINE PREFIX_LV2 PREFIX_RDF PREFIX_RDFS PREFIX_FOAF PREFIX_DOAP
+#define BUNDLE_PREFIXES PREFIX_ATOM PREFIX_LINE PREFIX_LV2 PREFIX_RDF PREFIX_RDFS PREFIX_FOAF PREFIX_DOAP
 #define PLUGIN_NAME(name) "doap:name \"" name "\""
 #define LICENSE_GPL "doap:license <http://usefulinc.com/doap/licenses/gpl>"
 
@@ -756,7 +757,8 @@ test_port(void)
 			"  a lv2:EventPort ; a lv2:InputPort ; "
 			"  lv2:index 1 ; lv2:symbol \"event_in\" ; "
 			"  lv2:name \"Event Input\" ; "
-     		"  lv2ev:supportsEvent <http://example.org/event> "
+     		"  lv2ev:supportsEvent <http://example.org/event> ;"
+     		"  atom:supports <http://example.org/atomEvent> "
 			"] ."))
 		return 0;
 
@@ -906,8 +908,10 @@ test_port(void)
 
 	LilvNode* event_type = lilv_new_uri(world, "http://example.org/event");
 	LilvNode* event_type_2 = lilv_new_uri(world, "http://example.org/otherEvent");
+	LilvNode* atom_event = lilv_new_uri(world, "http://example.org/atomEvent");
 	TEST_ASSERT(lilv_port_supports_event(plug, ep, event_type));
 	TEST_ASSERT(!lilv_port_supports_event(plug, ep, event_type_2));
+	TEST_ASSERT(lilv_port_supports_event(plug, ep, atom_event));
 
 	LilvNode* name_p = lilv_new_uri(world, "http://lv2plug.in/ns/lv2core#name");
 	LilvNodes* names = lilv_port_get_value(plug, p, name_p);
@@ -941,6 +945,7 @@ test_port(void)
 	lilv_node_free(toggled_prop);
 	lilv_node_free(event_type);
 	lilv_node_free(event_type_2);
+	lilv_node_free(atom_event);
 
 	lilv_node_free(min);
 	lilv_node_free(max);

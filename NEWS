@@ -1,9 +1,10 @@
 lilv (0.14.5) unstable;
 
-  * Disable timestamps in HTML documentation for reproducible build
+  * Support atom:supports in lilv_port_supports_event().
   * Correctly depend on serd at build time (fix compilation in odd cases)
+  * Disable timestamps in HTML documentation for reproducible build
 
- -- David Robillard <d@drobilla.net>  Thu, 22 Nov 2012 21:35:53 -0500
+ -- David Robillard <d@drobilla.net>  Thu, 22 Nov 2012 21:47:57 -0500
 
 lilv (0.14.4) stable;
 

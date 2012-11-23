@@ -20,6 +20,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "lv2/lv2plug.in/ns/ext/atom/atom.h"
 #include "lv2/lv2plug.in/ns/ext/event/event.h"
 
 #include "lilv_internal.h"
@@ -81,11 +82,19 @@ lilv_port_supports_event(const LilvPlugin* p,
                          const LilvPort*   port,
                          const LilvNode*   event)
 {
-	return lilv_world_ask_internal(
-		p->world,
-		port->node,
-		sord_new_uri(p->world->world, (const uint8_t*)LV2_EVENT__supportsEvent),
-		lilv_node_as_node(event));
+	const uint8_t* predicates[] = { (const uint8_t*)LV2_EVENT__supportsEvent,
+	                                (const uint8_t*)LV2_ATOM__supports,
+	                                NULL };
+
+	for (const uint8_t** pred = predicates; *pred; ++pred) {
+		if (lilv_world_ask_internal(p->world,
+		                            port->node,
+		                            sord_new_uri(p->world->world, *pred),
+		                            lilv_node_as_node(event))) {
+			return true;
+		}
+	}
+	return false;
 }
 
 static LilvNodes*
