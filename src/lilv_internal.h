@@ -317,10 +317,10 @@ lilv_world_ask_internal(LilvWorld*      world,
                         const SordNode* object);
 
 LilvNodes*
-lilv_world_query_values_internal(LilvWorld*      world,
-                                 const SordNode* subject,
-                                 const SordNode* predicate,
-                                 const SordNode* object);
+lilv_world_find_nodes_internal(LilvWorld*      world,
+                               const SordNode* subject,
+                               const SordNode* predicate,
+                               const SordNode* object);
 
 #define FOREACH_MATCH(iter) \
 	for (; !sord_iter_end(iter); sord_iter_next(iter))

@@ -194,7 +194,7 @@ lilv_world_find_nodes(LilvWorld*      world,
 		return NULL;
 	}
 	
-	return lilv_world_query_values_internal(
+	return lilv_world_find_nodes_internal(
 		world,
 		subject ? subject->node : NULL,
 		predicate->node,
@@ -220,10 +220,10 @@ lilv_world_ask_internal(LilvWorld*      world,
 }
 
 LilvNodes*
-lilv_world_query_values_internal(LilvWorld*      world,
-                                 const SordNode* subject,
-                                 const SordNode* predicate,
-                                 const SordNode* object)
+lilv_world_find_nodes_internal(LilvWorld*      world,
+                               const SordNode* subject,
+                               const SordNode* predicate,
+                               const SordNode* object)
 {
 	return lilv_nodes_from_stream_objects(
 		world,

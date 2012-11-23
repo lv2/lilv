@@ -102,7 +102,7 @@ lilv_port_get_value_by_node(const LilvPlugin* p,
                             const LilvPort*   port,
                             const SordNode*   predicate)
 {
-	return lilv_world_query_values_internal(
+	return lilv_world_find_nodes_internal(
 		p->world,
 		port->node,
 		predicate,

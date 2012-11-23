@@ -405,7 +405,7 @@ lilv_plugin_get_value_internal(const LilvPlugin* p,
                                const SordNode*   predicate)
 {
 	lilv_plugin_load_if_necessary(p);
-	return lilv_world_query_values_internal(
+	return lilv_world_find_nodes_internal(
 		p->world, p->plugin_uri->node, predicate, NULL);
 }
 
@@ -709,20 +709,20 @@ LILV_API
 LilvNodes*
 lilv_plugin_get_optional_features(const LilvPlugin* p)
 {
-	return lilv_world_query_values_internal(p->world,
-	                                        p->plugin_uri->node,
-	                                        p->world->uris.lv2_optionalFeature,
-	                                        NULL);
+	return lilv_world_find_nodes_internal(p->world,
+	                                      p->plugin_uri->node,
+	                                      p->world->uris.lv2_optionalFeature,
+	                                      NULL);
 }
 
 LILV_API
 LilvNodes*
 lilv_plugin_get_required_features(const LilvPlugin* p)
 {
-	return lilv_world_query_values_internal(p->world,
-	                                        p->plugin_uri->node,
-	                                        p->world->uris.lv2_requiredFeature,
-	                                        NULL);
+	return lilv_world_find_nodes_internal(p->world,
+	                                      p->plugin_uri->node,
+	                                      p->world->uris.lv2_requiredFeature,
+	                                      NULL);
 }
 
 LILV_API
@@ -948,7 +948,7 @@ LilvNodes*
 lilv_plugin_get_related(const LilvPlugin* plugin, const LilvNode* type)
 {
 	LilvWorld* const world   = plugin->world;
-	LilvNodes* const related = lilv_world_query_values_internal(
+	LilvNodes* const related = lilv_world_find_nodes_internal(
 		world,
 		NULL,
 		world->uris.lv2_appliesTo,
