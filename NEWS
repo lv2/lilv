@@ -1,5 +1,6 @@
 lilv (0.15.0) unstable;
 
+  * Add lilv_world_ask() for simply checking if a statement exists.
   * Add lilv_nodes_merge().
   * Support atom:supports in lilv_port_supports_event().
   * Add va_list variant of lilv_plugin_get_num_ports_of_class().

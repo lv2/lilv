@@ -650,6 +650,23 @@ lilv_world_find_nodes(LilvWorld*      world,
                       const LilvNode* object);
 
 /**
+   Return true iff a statement matching a certain pattern exists.
+
+   This is useful for checking if particular statement exists without having to
+   bother with collections and memory management.
+
+   @param subject Subject of statement, or NULL for anything.
+   @param predicate Predicate (key) of statement, or NULL for anything.
+   @param object Object (value) of statement, or NULL for anything.
+*/
+LILV_API
+bool
+lilv_world_ask(LilvWorld*      world,
+               const LilvNode* subject,
+               const LilvNode* predicate,
+               const LilvNode* object);
+
+/**
    @}
    @name Plugin
    @{

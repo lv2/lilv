@@ -562,6 +562,14 @@ test_plugin(void)
 	TEST_ASSERT(!strcmp(lilv_node_as_string(klass_uri),
 			"http://lv2plug.in/ns/lv2core#CompressorPlugin"));
 
+	LilvNode* rdf_type = lilv_new_uri(
+		world, "http://www.w3.org/1999/02/22-rdf-syntax-ns#type");
+	TEST_ASSERT(lilv_world_ask(world,
+	                           lilv_plugin_get_uri(plug),
+	                           rdf_type,
+	                           klass_uri));
+	lilv_node_free(rdf_type);
+
 	const LilvNode* plug_bundle_uri = lilv_plugin_get_bundle_uri(plug);
 	TEST_ASSERT(!strcmp(lilv_node_as_string(plug_bundle_uri), bundle_dir_uri));
 
