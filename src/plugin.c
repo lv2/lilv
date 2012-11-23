@@ -680,13 +680,17 @@ bool
 lilv_plugin_has_feature(const LilvPlugin* p,
                         const LilvNode*   feature)
 {
-	LilvNodes* features = lilv_plugin_get_supported_features(p);
+	const SordNode* predicates[] = { p->world->uris.lv2_requiredFeature,
+	                                 p->world->uris.lv2_optionalFeature,
+	                                 NULL };
 
-	const bool ret = (features && feature
-	                  && lilv_nodes_contains(features, feature));
-
-	lilv_nodes_free(features);
-	return ret;
+	for (const SordNode** pred = predicates; *pred; ++pred) {
+		if (lilv_world_ask_internal(
+			    p->world, p->plugin_uri->node, *pred, feature->node)) {
+			return true;
+		}
+	}
+	return false;
 }
 
 LILV_API
@@ -695,20 +699,9 @@ lilv_plugin_get_supported_features(const LilvPlugin* p)
 {
 	LilvNodes* optional = lilv_plugin_get_optional_features(p);
 	LilvNodes* required = lilv_plugin_get_required_features(p);
-	LilvNodes* result   = lilv_nodes_new();
-
-	LILV_FOREACH(nodes, i, optional)
-		zix_tree_insert((ZixTree*)result,
-		                lilv_node_duplicate(lilv_nodes_get(optional, i)),
-		                NULL);
-	LILV_FOREACH(nodes, i, required)
-		zix_tree_insert((ZixTree*)result,
-		                lilv_node_duplicate(lilv_nodes_get(required, i)),
-		                NULL);
-
+	LilvNodes* result   = lilv_nodes_merge(optional, required);
 	lilv_nodes_free(optional);
 	lilv_nodes_free(required);
-
 	return result;
 }
 
@@ -716,16 +709,20 @@ LILV_API
 LilvNodes*
 lilv_plugin_get_optional_features(const LilvPlugin* p)
 {
-	return lilv_plugin_get_value_internal(
-		p, p->world->uris.lv2_optionalFeature);
+	return lilv_world_query_values_internal(p->world,
+	                                        p->plugin_uri->node,
+	                                        p->world->uris.lv2_optionalFeature,
+	                                        NULL);
 }
 
 LILV_API
 LilvNodes*
 lilv_plugin_get_required_features(const LilvPlugin* p)
 {
-	return lilv_plugin_get_value_internal(
-		p, p->world->uris.lv2_requiredFeature);
+	return lilv_world_query_values_internal(p->world,
+	                                        p->plugin_uri->node,
+	                                        p->world->uris.lv2_requiredFeature,
+	                                        NULL);
 }
 
 LILV_API

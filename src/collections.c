@@ -143,6 +143,25 @@ lilv_nodes_contains(const LilvNodes* list, const LilvNode* value)
 	return false;
 }
 
+LILV_API
+LilvNodes*
+lilv_nodes_merge(const LilvNodes* a, const LilvNodes* b)
+{
+	LilvNodes* result = lilv_nodes_new();
+
+	LILV_FOREACH(nodes, i, a)
+		zix_tree_insert((ZixTree*)result,
+		                lilv_node_duplicate(lilv_nodes_get(a, i)),
+		                NULL);
+
+	LILV_FOREACH(nodes, i, b)
+		zix_tree_insert((ZixTree*)result,
+		                lilv_node_duplicate(lilv_nodes_get(b, i)),
+		                NULL);
+
+	return result;
+}
+
 /* Iterator */
 
 #define LILV_COLLECTION_IMPL(prefix, CT, ET) \

@@ -185,31 +185,20 @@ lilv_world_find_nodes(LilvWorld*      world,
 		LILV_ERRORF("Subject `%s' is not a resource\n",
 		            sord_node_get_string(subject->node));
 		return NULL;
-	}
-	if (!lilv_node_is_uri(predicate)) {
+	} else if (!lilv_node_is_uri(predicate)) {
 		LILV_ERRORF("Predicate `%s' is not a URI\n",
 		            sord_node_get_string(predicate->node));
 		return NULL;
-	}
-	if (!subject && !object) {
+	} else if (!subject && !object) {
 		LILV_ERROR("Both subject and object are NULL\n");
 		return NULL;
 	}
-
-	SordNode* const subject_node = subject
-		? sord_node_copy(subject->node)
-		: NULL;
-
-	SordNode* const object_node = object
-		? sord_node_copy(object->node)
-		: NULL;
-
-	LilvNodes* ret = lilv_world_query_values_internal(
-		world, subject_node, predicate->node, object_node);
-
-	sord_node_free(world->world, subject_node);
-	sord_node_free(world->world, object_node);
-	return ret;
+	
+	return lilv_world_query_values_internal(
+		world,
+		subject ? subject->node : NULL,
+		predicate->node,
+		object ? object->node : NULL);
 }
 
 SordIter*

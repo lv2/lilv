@@ -465,6 +465,13 @@ LILV_API
 bool
 lilv_nodes_contains(const LilvNodes* values, const LilvNode* value);
 
+/**
+   Return a new LilvNodes that contains all nodes from both @p a and @p b.
+*/
+LILV_API
+LilvNodes*
+lilv_nodes_merge(const LilvNodes* a, const LilvNodes* b);
+
 /* Plugins */
 
 LILV_API
