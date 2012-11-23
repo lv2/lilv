@@ -206,10 +206,15 @@ struct Plugin {
 			me, min_values, max_values, def_values);
 	}
 
-	inline unsigned get_num_ports_of_class(LilvNode* class_1,
-	                                       LilvNode* class_2) {
-		// TODO: varargs
-		return lilv_plugin_get_num_ports_of_class(me, class_1, class_2, NULL);
+	inline unsigned get_num_ports_of_class(LilvNode* class_1, ...) {
+		va_list args;
+		va_start(args, class_1);
+
+		const uint32_t count = lilv_plugin_get_num_ports_of_class_va(
+			me, class_1, args);
+
+		va_end(args);
+		return count;
 	}
 
 	const LilvPlugin* me;

@@ -1,8 +1,10 @@
-lilv (0.14.5) unstable;
+lilv (0.15.0) unstable;
 
   * Support atom:supports in lilv_port_supports_event().
+  * Add va_list variant of lilv_plugin_get_num_ports_of_class().
   * Correctly depend on serd at build time (fix compilation in odd cases)
   * Disable timestamps in HTML documentation for reproducible build
+  * lilvmm.hpp: Support varargs for Plugin::get_num_ports_of_class()
 
  -- David Robillard <d@drobilla.net>  Thu, 22 Nov 2012 21:47:57 -0500
 

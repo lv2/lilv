@@ -528,37 +528,57 @@ lilv_plugin_get_port_ranges_float(const LilvPlugin* p,
 
 LILV_API
 uint32_t
-lilv_plugin_get_num_ports_of_class(const LilvPlugin* p,
-                                   const LilvNode*   class_1, ...)
+lilv_plugin_get_num_ports_of_class_va(const LilvPlugin* p,
+                                      const LilvNode*   class_1,
+                                      va_list           args)
 {
 	lilv_plugin_load_ports_if_necessary(p);
 
-	uint32_t ret = 0;
-	va_list  args;
+	uint32_t count = 0;
 
-	for (unsigned i = 0; i < p->num_ports; ++i) {
-		LilvPort* port = p->ports[i];
-		if (!port || !lilv_port_is_a(p, port, class_1))
-			continue;
-
-		va_start(args, class_1);
-
-		bool matches = true;
-		for (LilvNode* class_i = NULL; (class_i = va_arg(args, LilvNode*)); ) {
-			if (!lilv_port_is_a(p, port, class_i)) {
-				va_end(args);
-				matches = false;
-				break;
-			}
-		}
-
-		if (matches)
-			++ret;
-
-		va_end(args);
+	// Build array of classes from args so we can walk it several times
+	size_t           n_classes = 0;
+	const LilvNode** classes   = NULL;
+	for (LilvNode* class_i = NULL; (class_i = va_arg(args, LilvNode*)); ) {
+		classes = (const LilvNode**)realloc(
+			classes, ++n_classes * sizeof(LilvNode*));
+		classes[n_classes - 1] = class_i;
 	}
 
-	return ret;
+	// Check each port against every type
+	for (unsigned i = 0; i < p->num_ports; ++i) {
+		LilvPort* port = p->ports[i];
+		if (port && lilv_port_is_a(p, port, class_1)) {
+			bool matches = true;
+			for (size_t j = 0; j < n_classes; ++j) {
+				if (!lilv_port_is_a(p, port, classes[j])) {
+					matches = false;
+					break;
+				}
+			}
+
+			if (matches) {
+				++count;
+			}
+		}
+	}
+
+	free(classes);
+	return count;
+}
+
+LILV_API
+uint32_t
+lilv_plugin_get_num_ports_of_class(const LilvPlugin* p,
+                                   const LilvNode*   class_1, ...)
+{
+	va_list args;
+	va_start(args, class_1);
+
+	uint32_t count = lilv_plugin_get_num_ports_of_class_va(p, class_1, args);
+
+	va_end(args);
+	return count;
 }
 
 LILV_API

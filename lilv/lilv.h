@@ -21,6 +21,7 @@
 #ifndef LILV_LILV_H
 #define LILV_LILV_H
 
+#include <stdarg.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -857,6 +858,19 @@ LILV_API
 uint32_t
 lilv_plugin_get_num_ports_of_class(const LilvPlugin* p,
                                    const LilvNode*   class_1, ...);
+
+#ifndef SWIG
+/**
+   Variant of lilv_plugin_get_num_ports_of_class() that takes a va_list.
+
+   This function calls va_arg() on @p args but does not call va_end().
+*/
+LILV_API
+uint32_t
+lilv_plugin_get_num_ports_of_class_va(const LilvPlugin* p,
+                                      const LilvNode*   class_1,
+                                      va_list           args);
+#endif
 
 /**
    Return whether or not the plugin introduces (and reports) latency.
