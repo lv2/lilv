@@ -68,16 +68,11 @@ lilv_port_has_property(const LilvPlugin* p,
                        const LilvPort*   port,
                        const LilvNode*   property)
 {
-	assert(property);
-	SordIter* results = lilv_world_query_internal(
+	return lilv_world_ask_internal(
 		p->world,
 		port->node,
 		p->world->uris.lv2_portProperty,
 		lilv_node_as_node(property));
-
-	const bool ret = !sord_iter_end(results);
-	sord_iter_free(results);
-	return ret;
 }
 
 LILV_API
@@ -86,16 +81,11 @@ lilv_port_supports_event(const LilvPlugin* p,
                          const LilvPort*   port,
                          const LilvNode*   event)
 {
-	assert(event);
-	SordIter* results = lilv_world_query_internal(
+	return lilv_world_ask_internal(
 		p->world,
 		port->node,
 		sord_new_uri(p->world->world, (const uint8_t*)LV2_EVENT__supportsEvent),
 		lilv_node_as_node(event));
-
-	const bool ret = !sord_iter_end(results);
-	sord_iter_free(results);
-	return ret;
 }
 
 static LilvNodes*
@@ -103,15 +93,11 @@ lilv_port_get_value_by_node(const LilvPlugin* p,
                             const LilvPort*   port,
                             const SordNode*   predicate)
 {
-	assert(sord_node_get_type(predicate) == SORD_URI);
-
-	SordIter* results = lilv_world_query_internal(
+	return lilv_world_query_values_internal(
 		p->world,
 		port->node,
 		predicate,
 		NULL);
-
-	return lilv_nodes_from_stream_objects(p->world, results, SORD_OBJECT);
 }
 
 LILV_API

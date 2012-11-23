@@ -310,6 +310,12 @@ lilv_world_query_internal(LilvWorld*      world,
                           const SordNode* predicate,
                           const SordNode* object);
 
+bool
+lilv_world_ask_internal(LilvWorld*      world,
+                        const SordNode* subject,
+                        const SordNode* predicate,
+                        const SordNode* object);
+
 LilvNodes*
 lilv_world_query_values_internal(LilvWorld*      world,
                                  const SordNode* subject,

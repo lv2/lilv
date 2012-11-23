@@ -719,18 +719,11 @@ lilv_plugin_has_extension_data(const LilvPlugin* p,
 		return false;
 	}
 
-	SordIter* iter = lilv_world_query_internal(
+	return lilv_world_ask_internal(
 		p->world,
 		p->plugin_uri->node,
 		p->world->uris.lv2_extensionData,
 		uri->node);
-
-	if (iter) {
-		sord_iter_free(iter);
-		return true;
-	} else {
-		return false;
-	}
 }
 
 LILV_API
@@ -951,14 +944,12 @@ lilv_plugin_get_related(const LilvPlugin* plugin, const LilvNode* type)
 	LilvNodes* matches = lilv_nodes_new();
 	LILV_FOREACH(nodes, i, related) {
 		LilvNode* node  = (LilvNode*)lilv_collection_get((ZixTree*)related, i);
-		SordIter* titer = lilv_world_query_internal(
-			world, node->node, world->uris.rdf_a, type->node);
-		if (!sord_iter_end(titer)) {
+		if (lilv_world_ask_internal(
+			    world, node->node, world->uris.rdf_a, type->node)) {
 			zix_tree_insert((ZixTree*)matches,
 			                lilv_node_new_from_node(world, node->node),
 			                NULL);
 		}
-		sord_iter_free(titer);
 	}
 
 	lilv_nodes_free(related);

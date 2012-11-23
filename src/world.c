@@ -221,6 +221,15 @@ lilv_world_query_internal(LilvWorld*      world,
 	return sord_search(world->model, subject, predicate, object, NULL);
 }
 
+bool
+lilv_world_ask_internal(LilvWorld*      world,
+                        const SordNode* subject,
+                        const SordNode* predicate,
+                        const SordNode* object)
+{
+	return sord_ask(world->model, subject, predicate, object, NULL);
+}
+
 LilvNodes*
 lilv_world_query_values_internal(LilvWorld*      world,
                                  const SordNode* subject,
