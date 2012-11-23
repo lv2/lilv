@@ -234,7 +234,7 @@ def build(bld):
                   defines         = ['LILV_SHARED', 'LILV_INTERNAL'],
                   cflags          = libflags,
                   lib             = lib)
-        autowaf.use_lib(bld, obj, 'SORD SRATOM LV2')
+        autowaf.use_lib(bld, obj, 'SERD SORD SRATOM LV2')
 
     # Static library
     if bld.env.BUILD_STATIC:
@@ -247,7 +247,7 @@ def build(bld):
                   vnum            = LILV_VERSION,
                   install_path    = '${LIBDIR}',
                   defines         = defines + ['LILV_INTERNAL'])
-        autowaf.use_lib(bld, obj, 'SORD SRATOM LV2')
+        autowaf.use_lib(bld, obj, 'SERD SORD SRATOM LV2')
 
     if bld.env.BUILD_TESTS:
         test_libs   = lib
@@ -293,7 +293,7 @@ def build(bld):
                   defines      = defines + ['LILV_INTERNAL'],
                   cflags       = test_cflags,
                   lib          = test_libs)
-        autowaf.use_lib(bld, obj, 'SORD SRATOM LV2')
+        autowaf.use_lib(bld, obj, 'SERD SORD SRATOM LV2')
 
         # Unit test program
         bpath = os.path.abspath(os.path.join(out, 'test', 'test_plugin.lv2'))
@@ -302,13 +302,12 @@ def build(bld):
                   source       = 'test/lilv_test.c',
                   includes     = ['.', './src'],
                   use          = 'liblilv_profiled',
-                  uselib       = 'SORD LV2',
                   lib          = test_libs,
                   target       = 'test/lilv_test',
                   install_path = None,
                   defines      = defines + ['LILV_TEST_BUNDLE=\"%s/\"' % bpath],
                   cflags       = test_cflags)
-        autowaf.use_lib(bld, obj, 'SORD SRATOM LV2')
+        autowaf.use_lib(bld, obj, 'SERD SORD SRATOM LV2')
 
     # Utilities
     if bld.env.BUILD_UTILS:

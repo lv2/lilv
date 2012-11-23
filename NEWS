@@ -1,6 +1,7 @@
 lilv (0.14.5) unstable;
 
   * Disable timestamps in HTML documentation for reproducible build
+  * Correctly depend on serd at build time (fix compilation in odd cases)
 
  -- David Robillard <d@drobilla.net>  Sun, 09 Sep 2012 03:19:01 -0400
 
