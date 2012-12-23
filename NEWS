@@ -7,8 +7,9 @@ lilv (0.15.0) unstable;
   * Correctly depend on serd at build time (fix compilation in odd cases)
   * Disable timestamps in HTML documentation for reproducible build
   * lilvmm.hpp: Support varargs for Plugin::get_num_ports_of_class()
+  * Update to waf 1.7.8 and autowaf r90 (install docs to versioned directory)
 
- -- David Robillard <d@drobilla.net>  Thu, 22 Nov 2012 21:47:57 -0500
+ -- David Robillard <d@drobilla.net>  Sat, 22 Dec 2012 20:16:12 -0500
 
 lilv (0.14.4) stable;
 
