@@ -2,6 +2,7 @@ lilv (0.15.0) unstable;
 
   * Add lilv_world_ask() for simply checking if a statement exists.
   * Add lilv_nodes_merge().
+  * Make lilv_plugin_get_port_by_designation() return a const pointer.
   * Support atom:supports in lilv_port_supports_event().
   * Add va_list variant of lilv_plugin_get_num_ports_of_class().
   * Correctly depend on serd at build time (fix compilation in odd cases)
@@ -9,7 +10,7 @@ lilv (0.15.0) unstable;
   * lilvmm.hpp: Support varargs for Plugin::get_num_ports_of_class()
   * Update to waf 1.7.8 and autowaf r90 (install docs to versioned directory)
 
- -- David Robillard <d@drobilla.net>  Sat, 22 Dec 2012 20:16:12 -0500
+ -- David Robillard <d@drobilla.net>  Wed, 09 Jan 2013 21:16:23 -0500
 
 lilv (0.14.4) stable;
 

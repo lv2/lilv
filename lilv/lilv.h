@@ -946,7 +946,7 @@ lilv_plugin_get_port_by_symbol(const LilvPlugin* plugin,
    ports for a particular designation.
 */
 LILV_API
-LilvPort*
+const LilvPort*
 lilv_plugin_get_port_by_designation(const LilvPlugin* plugin,
                                     const LilvNode*   port_class,
                                     const LilvNode*   designation);

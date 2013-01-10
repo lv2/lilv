@@ -612,7 +612,7 @@ lilv_plugin_has_latency(const LilvPlugin* p)
 	return ret;
 }
 
-static LilvPort*
+static const LilvPort*
 lilv_plugin_get_port_by_property(const LilvPlugin* plugin,
                                  const LilvNode*   port_property)
 {
@@ -637,7 +637,7 @@ lilv_plugin_get_port_by_property(const LilvPlugin* plugin,
 }
 
 LILV_API
-LilvPort*
+const LilvPort*
 lilv_plugin_get_port_by_designation(const LilvPlugin* plugin,
                                     const LilvNode*   port_class,
                                     const LilvNode*   designation)
@@ -668,10 +668,10 @@ LILV_API
 uint32_t
 lilv_plugin_get_latency_port_index(const LilvPlugin* p)
 {
-	LilvNode* property = lilv_node_new_from_node(
+	LilvNode* prop = lilv_node_new_from_node(
 		p->world, p->world->uris.lv2_reportsLatency);
-	LilvPort* latency_port = lilv_plugin_get_port_by_property(p, property);
-	lilv_node_free(property);
+	const LilvPort* latency_port = lilv_plugin_get_port_by_property(p, prop);
+	lilv_node_free(prop);
 	return latency_port ? latency_port->index : UINT32_MAX;
 }
 
