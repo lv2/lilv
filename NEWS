@@ -1,10 +1,11 @@
 lilv (0.15.0) unstable;
 
-  * Add lilv_world_ask() for simply checking if a statement exists.
-  * Add lilv_nodes_merge().
-  * Make lilv_plugin_get_port_by_designation() return a const pointer.
-  * Support atom:supports in lilv_port_supports_event().
-  * Add va_list variant of lilv_plugin_get_num_ports_of_class().
+  * Add lilv_world_ask() for simply checking if a statement exists
+  * Add lilv_nodes_merge()
+  * Make lilv_plugin_get_port_by_designation() return a const pointer
+  * Support atom:supports in lilv_port_supports_event()
+  * Add va_list variant of lilv_plugin_get_num_ports_of_class()
+  * Fix several plugin functions that failed to load data if called first
   * Correctly depend on serd at build time (fix compilation in odd cases)
   * Disable timestamps in HTML documentation for reproducible build
   * lilvmm.hpp: Support varargs for Plugin::get_num_ports_of_class()

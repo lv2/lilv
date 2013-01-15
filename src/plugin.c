@@ -680,6 +680,7 @@ bool
 lilv_plugin_has_feature(const LilvPlugin* p,
                         const LilvNode*   feature)
 {
+	lilv_plugin_load_if_necessary(p);
 	const SordNode* predicates[] = { p->world->uris.lv2_requiredFeature,
 	                                 p->world->uris.lv2_optionalFeature,
 	                                 NULL };
@@ -709,6 +710,7 @@ LILV_API
 LilvNodes*
 lilv_plugin_get_optional_features(const LilvPlugin* p)
 {
+	lilv_plugin_load_if_necessary(p);
 	return lilv_world_find_nodes_internal(p->world,
 	                                      p->plugin_uri->node,
 	                                      p->world->uris.lv2_optionalFeature,
@@ -719,6 +721,7 @@ LILV_API
 LilvNodes*
 lilv_plugin_get_required_features(const LilvPlugin* p)
 {
+	lilv_plugin_load_if_necessary(p);
 	return lilv_world_find_nodes_internal(p->world,
 	                                      p->plugin_uri->node,
 	                                      p->world->uris.lv2_requiredFeature,
@@ -736,6 +739,7 @@ lilv_plugin_has_extension_data(const LilvPlugin* p,
 		return false;
 	}
 
+	lilv_plugin_load_if_necessary(p);
 	return lilv_world_ask_internal(
 		p->world,
 		p->plugin_uri->node,
@@ -947,6 +951,8 @@ LILV_API
 LilvNodes*
 lilv_plugin_get_related(const LilvPlugin* plugin, const LilvNode* type)
 {
+	lilv_plugin_load_if_necessary(plugin);
+
 	LilvWorld* const world   = plugin->world;
 	LilvNodes* const related = lilv_world_find_nodes_internal(
 		world,
