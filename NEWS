@@ -3,6 +3,8 @@ lilv (0.15.0) unstable;
   * Add lilv_world_ask() for simply checking if a statement exists
   * Add lilv_nodes_merge()
   * Make lilv_plugin_get_port_by_designation() return a const pointer
+  * Make state loading functions fall back to lv2:default for port values,
+    so a plugin description can be loaded as default state.
   * Support atom:supports in lilv_port_supports_event()
   * Add va_list variant of lilv_plugin_get_num_ports_of_class()
   * Fix several plugin functions that failed to load data if called first
@@ -12,7 +14,7 @@ lilv (0.15.0) unstable;
   * lilvmm.hpp: Add several missing methods
   * Update to waf 1.7.8 and autowaf r90 (install docs to versioned directory)
 
- -- David Robillard <d@drobilla.net>  Sun, 13 Jan 2013 19:32:49 -0500
+ -- David Robillard <d@drobilla.net>  Sat, 26 Jan 2013 16:17:52 -0500
 
 lilv (0.14.4) stable;
 

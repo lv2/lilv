@@ -494,6 +494,9 @@ new_state_from_model(LilvWorld*       world,
 		const SordNode* label  = get1(model, port, world->uris.rdfs_label);
 		const SordNode* symbol = get1(model, port, world->uris.lv2_symbol);
 		const SordNode* value  = get1(model, port, world->uris.pset_value);
+		if (!value) {
+			value = get1(model, port, world->uris.lv2_default);
+		}
 		if (!symbol) {
 			LILV_ERRORF("State `%s' port missing symbol.\n",
 			            sord_node_get_string(node));
