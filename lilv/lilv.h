@@ -1179,6 +1179,8 @@ lilv_port_get_scale_points(const LilvPlugin* plugin,
 
 /**
    Load a state snapshot from @c world's RDF model.
+   This function can be used to load the default state of a plugin by passing
+   the plugin URI as the @p subject parameter.
    @param subject The subject of the state description (e.g. a preset URI).
    @return A new LilvState which must be freed with lilv_state_free().
 */
