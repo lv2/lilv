@@ -463,6 +463,12 @@ new_state_from_model(LilvWorld*       world,
 			state->dir = lilv_strdup((const char*)sord_node_get_string(graph));
 		}
 		sord_iter_free(i);
+	} else if (sord_search(model,
+	                       node,
+	                       world->uris.rdf_a,
+	                       world->uris.lv2_Plugin, 0)) {
+		// Loading plugin description as state (default state)
+		state->plugin_uri = lilv_node_new_from_node(world, node);
 	} else {
 		LILV_ERRORF("State %s missing lv2:appliesTo property\n",
 		            sord_node_get_string(node));
@@ -500,11 +506,7 @@ new_state_from_model(LilvWorld*       world,
 		if (!symbol) {
 			LILV_ERRORF("State `%s' port missing symbol.\n",
 			            sord_node_get_string(node));
-		} else if (!value) {
-			LILV_ERRORF("State `%s' port `%s' missing value.\n",
-			            sord_node_get_string(symbol),
-			            sord_node_get_string(node));
-		} else {
+		} else if (value) {
 			chunk.len = 0;
 			sratom_read(sratom, &forge, world->world, model, value);
 			LV2_Atom* atom = (LV2_Atom*)chunk.buf;
