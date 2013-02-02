@@ -1420,6 +1420,11 @@ lilv_state_save(LilvWorld*                 world,
 
 /**
    Save state to a string.  This function does not use the filesystem.
+
+   @param uri URI for the state description (mandatory).
+   @param base_uri Base URI for serialisation.  Unless you know what you are
+   doing, pass NULL for this, otherwise the state may not be restorable via
+   lilv_state_new_from_string().
 */
 LILV_API
 char*

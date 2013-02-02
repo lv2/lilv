@@ -1227,6 +1227,15 @@ test_state(void)
 	// Ensure they are equal
 	TEST_ASSERT(lilv_state_equals(state, state2));
 
+	// Check that we can't save a state with no URI
+	char* bad_state_str = lilv_state_to_string(
+		world, &map, &unmap, state, NULL, NULL);
+	TEST_ASSERT(!bad_state_str);
+
+	// Check that we can't restore the NULL string (and it doesn't crash)
+	LilvState* bad_state = lilv_state_new_from_string(world, &map, NULL);
+	TEST_ASSERT(!bad_state);
+	
 	// Save state to a string
 	char* state1_str = lilv_state_to_string(
 		world, &map, &unmap, state, "http://example.org/state1", NULL);

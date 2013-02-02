@@ -647,6 +647,10 @@ lilv_state_new_from_string(LilvWorld*    world,
                            LV2_URID_Map* map,
                            const char*   str)
 {
+	if (!str) {
+		return NULL;
+	}
+
 	SerdNode    base   = SERD_NODE_NULL;
 	SerdEnv*    env    = serd_env_new(&base);
 	SordModel*  model  = sord_new(world->world, SORD_SPO|SORD_OPS, false);
@@ -989,6 +993,11 @@ lilv_state_to_string(LilvWorld*       world,
                      const char*      uri,
                      const char*      base_uri)
 {
+	if (!uri) {
+		LILV_ERROR("Attempt to serialise state with no URI\n");
+		return NULL;
+	}
+
 	SerdChunk   chunk  = { NULL, 0 };
 	SerdEnv*    env    = NULL;
 	SerdNode    base   = serd_node_from_string(SERD_URI, USTR(base_uri));
