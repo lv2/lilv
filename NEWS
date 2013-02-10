@@ -1,6 +1,7 @@
-lilv (0.15.0) unstable;
+lilv (0.15.1) unstable;
 
-  * Add lilv_world_ask() for simply checking if a statement exists
+  * Add lilv_world_ask() for easily checking if a statement exists
+  * Add lilv_world_get() and lilv_port_get() for easily getting one value
   * Add lilv_nodes_merge()
   * Make lilv_plugin_get_port_by_designation() return a const pointer
   * Require a URI for lilv_state_to_string() and fail gracefully otherwise
@@ -17,7 +18,7 @@ lilv (0.15.0) unstable;
   * lilvmm.hpp: Add several missing methods
   * Update to waf 1.7.8 and autowaf r90 (install docs to versioned directory)
 
- -- David Robillard <d@drobilla.net>  Sat, 02 Feb 2013 15:10:18 -0500
+ -- David Robillard <d@drobilla.net>  Sun, 10 Feb 2013 01:10:12 -0500
 
 lilv (0.14.4) stable;
 

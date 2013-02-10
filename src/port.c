@@ -127,6 +127,21 @@ lilv_port_get_value(const LilvPlugin* p,
 }
 
 LILV_API
+LilvNode*
+lilv_port_get(const LilvPlugin* p,
+              const LilvPort*   port,
+              const LilvNode*   predicate)
+{
+	LilvNodes* values = lilv_port_get_value(p, port, predicate);
+
+	LilvNode* value = lilv_node_duplicate(
+		values ? lilv_nodes_get_first(values) : NULL);
+
+	lilv_nodes_free(values);
+	return value;
+}
+
+LILV_API
 uint32_t
 lilv_port_get_index(const LilvPlugin* p,
                     const LilvPort*   port)

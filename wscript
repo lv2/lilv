@@ -9,7 +9,7 @@ import waflib.extras.autowaf as autowaf
 # major increment <=> incompatible changes
 # minor increment <=> compatible changes (additions)
 # micro increment <=> no interface changes
-LILV_VERSION       = '0.15.0'
+LILV_VERSION       = '0.15.1'
 LILV_MAJOR_VERSION = '0'
 
 # Mandatory waf variables

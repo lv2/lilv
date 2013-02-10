@@ -711,6 +711,8 @@ test_plugin(void)
 	TEST_ASSERT(thing_name);
 	TEST_ASSERT(lilv_node_is_string(thing_name));
 	TEST_ASSERT(!strcmp(lilv_node_as_string(thing_name), "Something else"));
+	LilvNode* thing_name2 = lilv_world_get(world, thing_uri, name_p, NULL);
+	TEST_ASSERT(lilv_node_equals(thing_name, thing_name2));
 
 	LilvUIs* uis = lilv_plugin_get_uis(plug);
 	TEST_ASSERT(lilv_uis_size(uis) == 0);
@@ -729,6 +731,7 @@ test_plugin(void)
 
 	lilv_nodes_free(thing_names);
 	lilv_node_free(thing_uri);
+	lilv_node_free(thing_name2);
 	lilv_node_free(name_p);
 	lilv_node_free(control_class);
 	lilv_node_free(audio_class);
@@ -849,6 +852,9 @@ test_port(void)
 	LilvNodes* comments     = lilv_port_get_value(plug, p, rdfs_comment);
 	TEST_ASSERT(!strcmp(lilv_node_as_string(lilv_nodes_get_first(comments)),
 	                    "comment"));
+	LilvNode* comment = lilv_port_get(plug, p, rdfs_comment);
+	TEST_ASSERT(!strcmp(lilv_node_as_string(comment), "comment"));
+	lilv_node_free(comment);
 	lilv_nodes_free(comments);
 
 	setenv("LANG", "fr", 1);

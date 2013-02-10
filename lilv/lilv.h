@@ -650,6 +650,21 @@ lilv_world_find_nodes(LilvWorld*      world,
                       const LilvNode* object);
 
 /**
+   Find a single node that matches a pattern.
+   Exactly one of @p subject, @p predicate, @p object must be NULL.
+   This function is equivalent to
+   lilv_nodes_get_first(lilv_world_find_nodes(...)) but simplifies the common
+   case of only wanting a single value.
+   @return the first matching node, or NULL if no matches are found.
+*/
+LILV_API
+LilvNode*
+lilv_world_get(LilvWorld*      world,
+               const LilvNode* subject,
+               const LilvNode* predicate,
+               const LilvNode* object);
+
+/**
    Return true iff a statement matching a certain pattern exists.
 
    This is useful for checking if particular statement exists without having to
@@ -1056,6 +1071,19 @@ LilvNodes*
 lilv_port_get_value(const LilvPlugin* plugin,
                     const LilvPort*   port,
                     const LilvNode*   predicate);
+
+/**
+   Get a single property value of a port.
+
+   This is equivalent to lilv_nodes_get_first(lilv_port_get_value(...)) but is
+   simpler to use in the common case of only caring about one value.  The
+   caller is responsible for freeing the returned node.
+*/
+LILV_API
+LilvNode*
+lilv_port_get(const LilvPlugin* plugin,
+              const LilvPort*   port,
+              const LilvNode*   predicate);
 
 /**
    Return the LV2 port properties of a port.

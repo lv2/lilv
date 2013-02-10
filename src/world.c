@@ -201,6 +201,22 @@ lilv_world_find_nodes(LilvWorld*      world,
 		object ? object->node : NULL);
 }
 
+LILV_API
+LilvNode*
+lilv_world_get(LilvWorld*      world,
+               const LilvNode* subject,
+               const LilvNode* predicate,
+               const LilvNode* object)
+{
+	return lilv_node_new_from_node(
+		world,
+		sord_get(world->model,
+		         subject ? subject->node : NULL,
+		         predicate ? predicate->node : NULL,
+		         object ? object->node : NULL,
+		         NULL));
+}
+
 SordIter*
 lilv_world_query_internal(LilvWorld*      world,
                           const SordNode* subject,

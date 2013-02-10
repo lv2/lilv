@@ -92,6 +92,10 @@ lilv_node_new(LilvWorld* world, LilvNodeType type, const char* str)
 LilvNode*
 lilv_node_new_from_node(LilvWorld* world, const SordNode* node)
 {
+	if (!node) {
+		return NULL;
+	}
+
 	LilvNode*    result       = NULL;
 	SordNode*    datatype_uri = NULL;
 	LilvNodeType type         = LILV_VALUE_STRING;
