@@ -208,13 +208,14 @@ lilv_world_get(LilvWorld*      world,
                const LilvNode* predicate,
                const LilvNode* object)
 {
-	return lilv_node_new_from_node(
-		world,
-		sord_get(world->model,
-		         subject ? subject->node : NULL,
-		         predicate ? predicate->node : NULL,
-		         object ? object->node : NULL,
-		         NULL));
+	SordNode* snode = sord_get(world->model,
+	                           subject   ? subject->node   : NULL,
+	                           predicate ? predicate->node : NULL,
+	                           object    ? object->node    : NULL,
+	                           NULL);
+	LilvNode* lnode = lilv_node_new_from_node(world, snode);
+	sord_node_free(world->world, snode);
+	return lnode;
 }
 
 SordIter*

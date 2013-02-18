@@ -659,14 +659,13 @@ lilv_state_new_from_string(LilvWorld*    world,
 	set_prefixes(env);
 	serd_reader_read_string(reader, USTR(str));
 
-	const SordNode* p = sord_new_uri(world->world, USTR(LILV_NS_RDF "type"));
-	const SordNode* o = sord_new_uri(world->world, USTR(LV2_PRESETS__Preset));
-	SordIter* const i = sord_search(model, NULL, p, o, NULL);
-	const SordNode* s = sord_iter_get_node(i, SORD_SUBJECT);
+	SordNode* o = sord_new_uri(world->world, USTR(LV2_PRESETS__Preset));
+	SordNode* s = sord_get(model, NULL, world->uris.rdf_a, o, NULL);
 
 	LilvState* state = new_state_from_model(world, map, model, s, NULL);
 
-	sord_iter_free(i);
+	sord_node_free(world->world, s);
+	sord_node_free(world->world, o);
 	serd_reader_free(reader);
 	sord_free(model);
 	serd_env_free(env);
