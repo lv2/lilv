@@ -432,15 +432,6 @@ lilv_state_restore(const LilvState*           state,
 	}
 }
 
-static SordNode*
-get1(SordModel* model, const SordNode* s, const SordNode* p)
-{
-	SordIter* const i    = sord_search(model, s, p, 0, 0);
-	SordNode* const node = i ? sord_node_copy(sord_iter_get_node(i, SORD_OBJECT)) : NULL;
-	sord_iter_free(i);
-	return node;
-}
-
 static LilvState*
 new_state_from_model(LilvWorld*       world,
                      LV2_URID_Map*    map,
@@ -463,10 +454,10 @@ new_state_from_model(LilvWorld*       world,
 			state->dir = lilv_strdup((const char*)sord_node_get_string(graph));
 		}
 		sord_iter_free(i);
-	} else if (sord_search(model,
-	                       node,
-	                       world->uris.rdf_a,
-	                       world->uris.lv2_Plugin, 0)) {
+	} else if (sord_ask(model,
+	                    node,
+	                    world->uris.rdf_a,
+	                    world->uris.lv2_Plugin, 0)) {
 		// Loading plugin description as state (default state)
 		state->plugin_uri = lilv_node_new_from_node(world, node);
 	} else {
@@ -496,12 +487,13 @@ new_state_from_model(LilvWorld*       world,
 	// Get port values
 	SordIter* ports = sord_search(model, node, world->uris.lv2_port, 0, 0);
 	FOREACH_MATCH(ports) {
-		const SordNode* port   = sord_iter_get_node(ports, SORD_OBJECT);
-		const SordNode* label  = get1(model, port, world->uris.rdfs_label);
-		const SordNode* symbol = get1(model, port, world->uris.lv2_symbol);
-		const SordNode* value  = get1(model, port, world->uris.pset_value);
+		const SordNode* port = sord_iter_get_node(ports, SORD_OBJECT);
+
+		SordNode* label  = sord_get(model, port, world->uris.rdfs_label, 0, 0);
+		SordNode* symbol = sord_get(model, port, world->uris.lv2_symbol, 0, 0);
+		SordNode* value  = sord_get(model, port, world->uris.pset_value, 0, 0);
 		if (!value) {
-			value = get1(model, port, world->uris.lv2_default);
+			value = sord_get(model, port, world->uris.lv2_default, 0, 0);
 		}
 		if (!symbol) {
 			LILV_ERRORF("State `%s' port missing symbol.\n",
@@ -520,12 +512,15 @@ new_state_from_model(LilvWorld*       world,
 				                     (const char*)sord_node_get_string(label));
 			}
 		}
+		sord_node_free(world->world, value);
+		sord_node_free(world->world, symbol);
+		sord_node_free(world->world, label);
 	}
 	sord_iter_free(ports);
 
 	// Get properties
-	SordNode* statep = sord_new_uri(world->world, USTR(LV2_STATE__state));
-	const SordNode* state_node = get1(model, node, statep);
+	SordNode* statep     = sord_new_uri(world->world, USTR(LV2_STATE__state));
+	SordNode* state_node = sord_get(model, node, statep, NULL, NULL);
 	if (state_node) {
 		SordIter* props = sord_search(model, state_node, 0, 0, 0);
 		FOREACH_MATCH(props) {
@@ -558,6 +553,7 @@ new_state_from_model(LilvWorld*       world,
 		}
 		sord_iter_free(props);
 	}
+	sord_node_free(world->world, state_node);
 	sord_node_free(world->world, statep);
 
 	free((void*)chunk.buf);

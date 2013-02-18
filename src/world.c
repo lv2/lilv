@@ -693,49 +693,28 @@ lilv_world_load_plugin_classes(LilvWorld* world)
 	FOREACH_MATCH(classes) {
 		const SordNode* class_node = sord_iter_get_node(classes, SORD_SUBJECT);
 
-		// Get parents (superclasses)
-		SordIter* parents = sord_search(
-			world->model,
-			class_node,
-			world->uris.rdfs_subClassOf,
-			NULL,
-			NULL);
-
-		if (sord_iter_end(parents)) {
-			sord_iter_free(parents);
+		SordNode* parent = sord_get(
+			world->model, class_node, world->uris.rdfs_subClassOf, NULL, NULL);
+		if (!parent || sord_node_get_type(parent) != SORD_URI) {
 			continue;
 		}
 
-		const SordNode* parent_node = sord_iter_get_node(parents, SORD_OBJECT);
-		sord_iter_free(parents);
-
-		if (!sord_node_get_type(parent_node) == SORD_URI) {
-			// Class parent is not a resource, ignore (e.g. owl restriction)
+		SordNode* label = sord_get(
+			world->model, class_node, world->uris.rdfs_label, NULL, NULL);
+		if (!label) {
+			sord_node_free(world->world, parent);
 			continue;
 		}
-
-		// Get labels
-		SordIter* labels = sord_search(
-			world->model,
-			class_node,
-			world->uris.rdfs_label,
-			NULL,
-			NULL);
-
-		if (sord_iter_end(labels)) {
-			sord_iter_free(labels);
-			continue;
-		}
-
-		const SordNode* label_node = sord_iter_get_node(labels, SORD_OBJECT);
-		const uint8_t*  label      = sord_node_get_string(label_node);
-		sord_iter_free(labels);
 
 		LilvPluginClass* pclass = lilv_plugin_class_new(
-			world, parent_node, class_node, (const char*)label);
+			world, parent, class_node,
+			(const char*)sord_node_get_string(label));
 		if (pclass) {
 			zix_tree_insert((ZixTree*)world->plugin_classes, pclass, NULL);
 		}
+
+		sord_node_free(world->world, label);
+		sord_node_free(world->world, parent);
 	}
 	sord_iter_free(classes);
 }
@@ -756,19 +735,14 @@ lilv_world_load_all(LilvWorld* world)
 			(ZixTree*)world->plugins, p);
 
 		// ?new dc:replaces plugin
-		SordIter* replacement = sord_search(
-			world->model,
-			NULL,
-			world->uris.dc_replaces,
-			lilv_node_as_node(lilv_plugin_get_uri(plugin)),
-			NULL);
-		if (!sord_iter_end(replacement)) {
-			/* TODO: Check if replacement is actually a known plugin,
-			   though this is expensive...
-			*/
+		if (sord_ask(world->model,
+		             NULL,
+		             world->uris.dc_replaces,
+		             lilv_node_as_node(lilv_plugin_get_uri(plugin)),
+		             NULL)) {
+			// TODO: Check if replacement is a known plugin? (expensive)
 			((LilvPlugin*)plugin)->replaced = true;
 		}
-		sord_iter_free(replacement);
 	}
 
 	// Query out things to cache
