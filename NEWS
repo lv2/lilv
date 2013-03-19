@@ -1,3 +1,9 @@
+lilv (0.16.1) unstable;
+
+  * lilvmm.hpp: Add wrappers for UI API
+
+ -- David Robillard <d@drobilla.net>  Tue, 19 Mar 2013 00:01:12 -0400
+
 lilv (0.16.0) stable;
 
   * Add lilv_world_ask() for easily checking if a statement exists
