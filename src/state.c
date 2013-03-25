@@ -411,8 +411,8 @@ lilv_state_restore(const LilvState*           state,
 
 	const LV2_Feature** sfeatures = add_features(features, &map_feature, NULL);
 
-	const LV2_Descriptor*      desc  = instance->lv2_descriptor;
-	const LV2_State_Interface* iface = (desc->extension_data)
+	const LV2_Descriptor*      desc  = instance ? instance->lv2_descriptor : NULL;
+	const LV2_State_Interface* iface = (desc && desc->extension_data)
 		? (LV2_State_Interface*)desc->extension_data(LV2_STATE__interface)
 		: NULL;
 

@@ -1393,21 +1393,21 @@ typedef void (*LilvSetPortValueFunc)(const char* port_symbol,
 /**
    Restore a plugin instance from a state snapshot.
    @param state The state to restore, which must apply to the correct plugin.
-   @param instance An instance of the plugin @c state applies to.
+   @param instance An instance of the plugin @c state applies to, or NULL.
    @param set_value A function to set a port value (may be NULL).
    @param flags Bitwise OR of LV2_State_Flags values.
    @param features Features to pass LV2_State_Interface.restore().
 
-   This will set all the properties of @c instance to the values stored in @c
-   state.  If @c set_value is provided, it will be called (with the given @c
-   user_data) to restore each port value, otherwise the host must restore the
-   port values itself (using lilv_state_get_port_value) in order to completely
-   restore @c state.
+   This will set all the properties of @c instance, if given, to the values
+   stored in @c state.  If @c set_value is provided, it will be called (with
+   the given @c user_data) to restore each port value, otherwise the host must
+   restore the port values itself (using lilv_state_get_port_value) in order to
+   completely restore @c state.
 
-   If the state has properties, this function is in the "instantiation"
-   threading class, i.e. it MUST NOT be called simultaneously with any function
-   on the same plugin instance.  If the state has no properties, only port
-   values are set via @c set_value.
+   If the state has properties and @c instance is given, this function is in
+   the "instantiation" threading class, i.e. it MUST NOT be called
+   simultaneously with any function on the same plugin instance.  If the state
+   has no properties, only port values are set via @c set_value.
 
    See <a href="http://lv2plug.in/ns/ext/state/state.h">state.h</a> from the
    LV2 State extension for details on the @c flags and @c features parameters.
