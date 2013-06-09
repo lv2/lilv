@@ -9,7 +9,7 @@ import numpy
 
 # Read command line arguments
 if len(sys.argv) != 4:
-    print 'USAGE: lv2_apply.py PLUGIN_URI INPUT_WAV OUTPUT_WAV'
+    print('USAGE: lv2_apply.py PLUGIN_URI INPUT_WAV OUTPUT_WAV')
     sys.exit(1)
 
 # Initialise Lilv
@@ -24,7 +24,7 @@ wav_out_path = sys.argv[3]
 # Find plugin
 plugin = world.get_all_plugins().get_by_uri(plugin_uri)
 if not plugin:
-    print "Unknown plugin `%s'\n" % plugin_uri
+    print("Unknown plugin `%s'\n" % plugin_uri)
     sys.exit(1)
 
 lv2_InputPort  = world.new_uri(lilv.LILV_URI_INPUT_PORT)
@@ -34,23 +34,23 @@ lv2_AudioPort  = world.new_uri(lilv.LILV_URI_AUDIO_PORT)
 n_audio_in  = plugin.get_num_ports_of_class(lv2_InputPort,  lv2_AudioPort)
 n_audio_out = plugin.get_num_ports_of_class(lv2_OutputPort, lv2_AudioPort)
 if n_audio_out == 0:
-    print "Plugin has no audio outputs\n"
+    print("Plugin has no audio outputs\n")
     sys.exit(1)
 
 # Open input file
 wav_in = wave.open(wav_in_path, 'r')
 if not wav_in:
-    print "Failed to open input `%s'\n" % wav_in_path
+    print("Failed to open input `%s'\n" % wav_in_path)
     sys.exit(1)
 if wav_in.getnchannels() != n_audio_in:
-    print "Input has %d channels, but plugin has %d audio inputs\n" % (
-        wav_in.getnchannels(), n_audio_in)
+    print("Input has %d channels, but plugin has %d audio inputs\n" % (
+        wav_in.getnchannels(), n_audio_in))
     sys.exit(1)
 
 # Open output file
 wav_out = wave.open(wav_out_path, 'w')
 if not wav_out:
-    print "Failed to open output `%s'\n" % wav_out_path
+    print("Failed to open output `%s'\n" % wav_out_path)
     sys.exit(1)
 
 # Set output file to same format as input (except possibly nchannels)
@@ -91,6 +91,7 @@ in_buf = read_float(wav_in, nframes)
 # TODO: buffer marshaling
 #instance.connect_port(3, in_buf)
 
-print '%s => %s => %s @ %d Hz' % (wav_in_path, plugin.get_name(), wav_out_path, rate)
+print('%s => %s => %s @ %d Hz'
+      % (wav_in_path, plugin.get_name(), wav_out_path, rate))
 
 instance.connect_port(3, in_buf)
