@@ -64,6 +64,7 @@ lilv_world_new(void)
 	world->uris.lv2_designation     = NEW_URI(LV2_CORE__designation);
 	world->uris.lv2_extensionData   = NEW_URI(LV2_CORE__extensionData);
 	world->uris.lv2_index           = NEW_URI(LV2_CORE__index);
+	world->uris.lv2_latency         = NEW_URI(LV2_CORE__latency);
 	world->uris.lv2_maximum         = NEW_URI(LV2_CORE__maximum);
 	world->uris.lv2_minimum         = NEW_URI(LV2_CORE__minimum);
 	world->uris.lv2_name            = NEW_URI(LV2_CORE__name);

@@ -594,15 +594,21 @@ lilv_plugin_has_latency(const LilvPlugin* p)
 
 	bool ret = false;
 	FOREACH_MATCH(ports) {
-		const SordNode* port            = sord_iter_get_node(ports, SORD_OBJECT);
-		SordIter*       reports_latency = lilv_world_query_internal(
+		const SordNode* port = sord_iter_get_node(ports, SORD_OBJECT);
+		SordIter*       prop = lilv_world_query_internal(
 			p->world,
 			port,
 			p->world->uris.lv2_portProperty,
 			p->world->uris.lv2_reportsLatency);
-		const bool end = sord_iter_end(reports_latency);
-		sord_iter_free(reports_latency);
-		if (!end) {
+		SordIter*       des   = lilv_world_query_internal(
+			p->world,
+			port,
+			p->world->uris.lv2_designation,
+			p->world->uris.lv2_latency);
+		const bool latent = !sord_iter_end(prop) || !sord_iter_end(des);
+		sord_iter_free(prop);
+		sord_iter_free(des);
+		if (latent) {
 			ret = true;
 			break;
 		}

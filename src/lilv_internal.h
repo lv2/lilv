@@ -164,6 +164,7 @@ struct LilvWorldImpl {
 		SordNode* lv2_designation;
 		SordNode* lv2_extensionData;
 		SordNode* lv2_index;
+		SordNode* lv2_latency;
 		SordNode* lv2_maximum;
 		SordNode* lv2_minimum;
 		SordNode* lv2_name;
