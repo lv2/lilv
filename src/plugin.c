@@ -659,7 +659,7 @@ lilv_plugin_get_port_by_designation(const LilvPlugin* plugin,
 			designation->node);
 
 		const bool found = !sord_iter_end(iter) &&
-			lilv_port_is_a(plugin, port, port_class);
+			(!port_class || lilv_port_is_a(plugin, port, port_class));
 		sord_iter_free(iter);
 
 		if (found) {
@@ -676,9 +676,19 @@ lilv_plugin_get_latency_port_index(const LilvPlugin* p)
 {
 	LilvNode* prop = lilv_node_new_from_node(
 		p->world, p->world->uris.lv2_reportsLatency);
-	const LilvPort* latency_port = lilv_plugin_get_port_by_property(p, prop);
+	LilvNode* des = lilv_node_new_from_node(
+		p->world, p->world->uris.lv2_latency);
+	const LilvPort* prop_port = lilv_plugin_get_port_by_property(p, prop);
+	const LilvPort* des_port = lilv_plugin_get_port_by_property(p, des);
 	lilv_node_free(prop);
-	return latency_port ? latency_port->index : UINT32_MAX;
+	lilv_node_free(des);
+	if (prop_port) {
+		return prop_port->index;
+	} else if (des_port) {
+		return des_port->index;
+	} else {
+		return UINT32_MAX;
+	}
 }
 
 LILV_API

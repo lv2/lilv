@@ -958,7 +958,8 @@ lilv_plugin_get_port_by_symbol(const LilvPlugin* plugin,
    role of the port, e.g. "left channel" or "gain".  If found, the port with
    matching @a port_class and @a designation is be returned, otherwise NULL is
    returned.  The @a port_class can be used to distinguish the input and output
-   ports for a particular designation.
+   ports for a particular designation.  If @a port_class is NULL, any port
+   with the given designation will be returned.
 */
 LILV_API
 const LilvPort*

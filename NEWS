@@ -4,9 +4,10 @@ lilv (0.16.1) unstable;
     for restoring port values via a callback only
   * Fix unlikely memory leak in lilv_plugin_instantiate()
   * Support denoting latency ports with lv2:designation lv2:latency
+  * Allow passing NULL port_class to lilv_plugin_get_port_by_designation.
   * lilvmm.hpp: Add wrappers for UI API
 
- -- David Robillard <d@drobilla.net>  Sun, 25 Aug 2013 11:15:19 -0400
+ -- David Robillard <d@drobilla.net>  Sun, 25 Aug 2013 11:38:16 -0400
 
 lilv (0.16.0) stable;
 
