@@ -118,9 +118,9 @@ print_port(const LilvPlugin* p,
 	if (lilv_port_is_a(p, port, control_class)) {
 		if (!isnan(mins[index]))
 			printf("\t\tMinimum:     %f\n", mins[index]);
-		if (!isnan(mins[index]))
+		if (!isnan(maxes[index]))
 			printf("\t\tMaximum:     %f\n", maxes[index]);
-		if (!isnan(mins[index]))
+		if (!isnan(defaults[index]))
 			printf("\t\tDefault:     %f\n", defaults[index]);
 	}
 

@@ -6,9 +6,11 @@ lilv (0.16.1) unstable;
   * Support denoting latency ports with lv2:designation lv2:latency
   * Allow passing NULL port_class to lilv_plugin_get_port_by_designation
   * Call GetProcAddress with correct calling convention on Windows
+  * lv2info: Don't display invalid control maxes and defaults
+    (patch from Robin Gareus)
   * lilvmm.hpp: Add wrappers for UI API
 
- -- David Robillard <d@drobilla.net>  Wed, 30 Oct 2013 10:42:51 -0400
+ -- David Robillard <d@drobilla.net>  Thu, 31 Oct 2013 22:48:23 -0400
 
 lilv (0.16.0) stable;
 
