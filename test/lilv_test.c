@@ -770,6 +770,14 @@ test_port(void)
 			"  lv2:name \"Event Input\" ; "
      		"  lv2ev:supportsEvent <http://example.org/event> ;"
      		"  atom:supports <http://example.org/atomEvent> "
+			"] , [\n"
+			"  a lv2:AudioPort ; a lv2:InputPort ; "
+			"  lv2:index 2 ; lv2:symbol \"audio_in\" ; "
+			"  lv2:name \"Audio Input\" ; "
+			"] , [\n"
+			"  a lv2:AudioPort ; a lv2:OutputPort ; "
+			"  lv2:index 3 ; lv2:symbol \"audio_out\" ; "
+			"  lv2:name \"Audio Output\" ; "
 			"] ."))
 		return 0;
 
@@ -797,9 +805,11 @@ test_port(void)
 			"http://lv2plug.in/ns/lv2core#ControlPort");
 	LilvNode* in_class = lilv_new_uri(world,
 			"http://lv2plug.in/ns/lv2core#InputPort");
+	LilvNode* out_class = lilv_new_uri(world,
+			"http://lv2plug.in/ns/lv2core#OutputPort");
 
 	TEST_ASSERT(lilv_nodes_size(lilv_port_get_classes(plug, p)) == 2);
-	TEST_ASSERT(lilv_plugin_get_num_ports(plug) == 2);
+	TEST_ASSERT(lilv_plugin_get_num_ports(plug) == 4);
 	TEST_ASSERT(lilv_port_is_a(plug, p, control_class));
 	TEST_ASSERT(lilv_port_is_a(plug, p, in_class));
 	TEST_ASSERT(!lilv_port_is_a(plug, p, audio_class));
@@ -952,6 +962,25 @@ test_port(void)
 	TEST_ASSERT(lilv_nodes_size(names) == 1);
 	TEST_ASSERT(!strcmp(lilv_node_as_string(lilv_nodes_get_first(names)),
 	                    "Event Input"));
+
+	const LilvPort* ap_in = lilv_plugin_get_port_by_index(plug, 2);
+
+	TEST_ASSERT(lilv_port_is_a(plug, ap_in, in_class));
+	TEST_ASSERT(!lilv_port_is_a(plug, ap_in, out_class));
+	TEST_ASSERT(lilv_port_is_a(plug, ap_in, audio_class));
+	TEST_ASSERT(!lilv_port_is_a(plug, ap_in, control_class));
+
+	const LilvPort* ap_out = lilv_plugin_get_port_by_index(plug, 3);
+
+	TEST_ASSERT(lilv_port_is_a(plug, ap_out, out_class));
+	TEST_ASSERT(!lilv_port_is_a(plug, ap_out, in_class));
+	TEST_ASSERT(lilv_port_is_a(plug, ap_out, audio_class));
+	TEST_ASSERT(!lilv_port_is_a(plug, ap_out, control_class));
+
+	TEST_ASSERT(lilv_plugin_get_num_ports_of_class(plug, control_class, in_class , NULL) == 1);
+	TEST_ASSERT(lilv_plugin_get_num_ports_of_class(plug, audio_class  , in_class , NULL) == 1);
+	TEST_ASSERT(lilv_plugin_get_num_ports_of_class(plug, audio_class  , out_class, NULL) == 1);
+
 	lilv_nodes_free(names);
 	lilv_node_free(name_p);
 

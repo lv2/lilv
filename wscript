@@ -4,6 +4,8 @@ import subprocess
 import sys
 import waflib.Options as Options
 import waflib.extras.autowaf as autowaf
+import waflib.Build as Build
+import waflib.Logs as Logs
 
 # Library and package version (UNIX style major, minor, micro)
 # major increment <=> incompatible changes
@@ -55,7 +57,7 @@ def configure(conf):
             conf.check_python_headers()
             autowaf.define(conf, 'LILV_PYTHON', 1);
         except:
-            pass
+            Logs.warn('Failed to configure Python (%s)\n' % sys.exc_info()[1])
 
     autowaf.configure(conf)
     autowaf.set_c99_mode(conf)
@@ -309,6 +311,36 @@ def build(bld):
                   cflags       = test_cflags)
         autowaf.use_lib(bld, obj, 'SERD SORD SRATOM LV2')
 
+        if bld.is_defined('LILV_PYTHON'):
+            # Copy Python unittest files
+            for i in [ 'test_api.py', 'test_api_mm.py' ]:
+                bld(features     = 'subst',
+                    is_copy      = True,
+                    source       = 'bindings/test/python/' + i,
+                    target       = 'bindings/' + i,
+                    install_path = None)
+
+            # Build bindings test plugin
+            obj = bld(features     = 'c cshlib',
+                      env          = penv,
+                      source       = 'bindings/test/bindings_test_plugin.c',
+                      name         = 'bindings_test_plugin',
+                      target       = 'bindings/bindings_test_plugin.lv2/bindings_test_plugin',
+                      install_path = None,
+                      defines      = defines,
+                      cflags       = test_cflags,
+                      lib          = test_libs,
+                      uselib       = 'LV2')
+
+            # Bindings test plugin data files
+            for i in [ 'manifest.ttl.in', 'bindings_test_plugin.ttl.in' ]:
+                bld(features     = 'subst',
+                    source       = 'bindings/test/' + i,
+                    target       = 'bindings/bindings_test_plugin.lv2/' + i.replace('.in', ''),
+                    install_path = None,
+                    SHLIB_EXT    = shlib_ext)
+
+
     # Utilities
     if bld.env.BUILD_UTILS:
         utils = '''
@@ -359,8 +391,17 @@ def fix_docs(ctx):
 def upload_docs(ctx):
     os.system('rsync -ravz --delete -e ssh build/doc/html/ drobilla@drobilla.net:~/drobilla.net/docs/lilv/')
 
-def test(ctx):
+# Inherit from build context so we can get the config data
+class TestContext(Build.BuildContext):
+    cmd = 'test'
+    fun = 'test_function'
+
+def test_function(ctx):
+    assert ctx.env.BUILD_TESTS, "You have run waf configure without the --test flag. No tests were run."
     autowaf.pre_test(ctx, APPNAME)
+    if ctx.is_defined('LILV_PYTHON'):
+        os.environ['LD_LIBRARY_PATH'] = os.getcwd()
+        autowaf.run_tests(ctx, 'Python ' + APPNAME, ['python -m unittest discover bindings/'])
     os.environ['PATH'] = 'test' + os.pathsep + os.getenv('PATH')
     autowaf.run_tests(ctx, APPNAME, ['lilv_test'], dirs=['./src','./test'])
     autowaf.post_test(ctx, APPNAME)
