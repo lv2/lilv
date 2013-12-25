@@ -352,7 +352,7 @@ def build(bld):
             build_util(bld, i, defines)
 
     # lv2bench (less portable than other utilities)
-    if bld.is_defined('HAVE_CLOCK_GETTIME'):
+    if bld.is_defined('HAVE_CLOCK_GETTIME') and not bld.env.STATIC_PROGS:
         obj = build_util(bld, 'utils/lv2bench', defines)
         if not bld.env.MSVC_COMPILER:
             obj.lib = ['rt']
