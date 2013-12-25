@@ -394,9 +394,9 @@ def upload_docs(ctx):
 # Inherit from build context so we can get the config data
 class TestContext(Build.BuildContext):
     cmd = 'test'
-    fun = 'test_function'
+    fun = 'test'
 
-def test_function(ctx):
+def test(ctx):
     assert ctx.env.BUILD_TESTS, "You have run waf configure without the --test flag. No tests were run."
     autowaf.pre_test(ctx, APPNAME)
     if ctx.is_defined('LILV_PYTHON'):
