@@ -298,8 +298,9 @@ def build(bld):
         autowaf.use_lib(bld, obj, 'SERD SORD SRATOM LV2')
 
         # Unit test program
-        bpath = os.path.abspath(os.path.join(out, 'test', 'test_plugin.lv2'))
-        bpath = bpath.replace('\\', '/')
+        blddir = autowaf.build_dir(APPNAME, 'test')
+        bpath  = os.path.abspath(os.path.join(blddir, 'test_plugin.lv2'))
+        bpath  = bpath.replace('\\', '/')
         obj = bld(features     = 'c cprogram',
                   source       = 'test/lilv_test.c',
                   includes     = ['.', './src'],
