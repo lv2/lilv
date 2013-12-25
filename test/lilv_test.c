@@ -1154,9 +1154,9 @@ set_port_value(const char*     port_symbol,
                uint32_t        type)
 {
 	if (!strcmp(port_symbol, "input")) {
-		in = *(float*)value;
+		in = *(const float*)value;
 	} else if (!strcmp(port_symbol, "output")) {
-		out = *(float*)value;
+		out = *(const float*)value;
 	} else {
 		fprintf(stderr, "error: set_port_value for nonexistent port `%s'\n",
 		        port_symbol);
