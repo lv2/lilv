@@ -142,6 +142,28 @@ lilv_plugin_load(LilvPlugin* p)
 	SerdReader* reader = sord_new_reader(p->world->model, env, SERD_TURTLE,
 	                                     bundle_uri_node);
 
+	SordIter* prototypes = sord_search(p->world->model,
+	                                   p->plugin_uri->node,
+	                                   p->world->uris.lv2_prototype,
+	                                   NULL, NULL);
+	FOREACH_MATCH(prototypes) {
+		const SordNode* t         = sord_iter_get_node(prototypes, SORD_OBJECT);
+		LilvNode*       prototype = lilv_node_new_from_node(p->world, t);
+
+		lilv_world_load_resource(p->world, prototype);
+
+		SordIter* statements = sord_search(
+			p->world->model, prototype->node, NULL, NULL, NULL);
+		FOREACH_MATCH(statements) {
+			SordQuad quad;
+			sord_iter_get(statements, quad);
+			quad[0] = p->plugin_uri->node;
+			sord_add(p->world->model, quad);
+		}
+
+		lilv_node_free(prototype);
+	}
+
 	// Parse all the plugin's data files into RDF model
 	LILV_FOREACH(nodes, i, p->data_uris) {
 		const LilvNode* data_uri_val  = lilv_nodes_get(p->data_uris, i);

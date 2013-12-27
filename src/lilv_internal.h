@@ -173,6 +173,7 @@ struct LilvWorldImpl {
 		SordNode* lv2_reportsLatency;
 		SordNode* lv2_requiredFeature;
 		SordNode* lv2_symbol;
+		SordNode* lv2_prototype;
 		SordNode* null_uri;
 		SordNode* pset_value;
 		SordNode* rdf_a;
