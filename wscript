@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import os
+import shutil
 import subprocess
 import sys
 import waflib.Options as Options
@@ -406,6 +407,7 @@ def test(ctx):
     os.environ['PATH'] = 'test' + os.pathsep + os.getenv('PATH')
     autowaf.run_tests(ctx, APPNAME, ['lilv_test'], dirs=['./src','./test'])
     autowaf.post_test(ctx, APPNAME)
+    shutil.rmtree('state')
 
 def lint(ctx):
     subprocess.call('cpplint.py --filter=+whitespace/comments,-whitespace/tab,-whitespace/braces,-whitespace/labels,-build/header_guard,-readability/casting,-readability/todo,-build/include,-runtime/sizeof src/* lilv/*', shell=True)

@@ -7,11 +7,12 @@ lilv (0.16.1) unstable;
   * Allow passing NULL port_class to lilv_plugin_get_port_by_designation
   * Call GetProcAddress with correct calling convention on Windows
   * Add support for running plugins from Python by Kaspar Emanuel
+  * Clean up after test suite so multiple runs are successful
   * lv2info: Don't display invalid control maxes and defaults
     (patch from Robin Gareus)
   * lilvmm.hpp: Add wrappers for UI API
 
- -- David Robillard <d@drobilla.net>  Thu, 19 Dec 2013 12:48:38 -0500
+ -- David Robillard <d@drobilla.net>  Mon, 30 Dec 2013 12:13:25 -0500
 
 lilv (0.16.0) stable;
 
