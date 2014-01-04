@@ -649,7 +649,7 @@ lilv_plugin_get_port_by_property(const LilvPlugin* plugin,
 		LilvPort* port = plugin->ports[i];
 		SordIter* iter = lilv_world_query_internal(
 			plugin->world,
-			port->node,
+			port->node->node,
 			plugin->world->uris.lv2_portProperty,
 			port_property->node);
 
@@ -676,7 +676,7 @@ lilv_plugin_get_port_by_designation(const LilvPlugin* plugin,
 		LilvPort* port = plugin->ports[i];
 		SordIter* iter = lilv_world_query_internal(
 			world,
-			port->node,
+			port->node->node,
 			world->uris.lv2_designation,
 			designation->node);
 
@@ -1078,7 +1078,7 @@ lilv_plugin_write_description(LilvWorld*        world,
 	for (uint32_t i = 0; i < num_ports; ++i) {
 		const LilvPort* port = plugin->ports[i];
 		SordIter* port_iter = lilv_world_query_internal(
-			world, port->node, NULL, NULL);
+			world, port->node->node, NULL, NULL);
 		sord_write_iter(port_iter, writer);
 	}
 
