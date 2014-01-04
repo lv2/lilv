@@ -1,4 +1,4 @@
-lilv (0.16.1) unstable;
+lilv (0.18.0) stable;
 
   * Allow lilv_state_restore() to be used without passing an instance,
     for restoring port values via a callback only
@@ -13,7 +13,7 @@ lilv (0.16.1) unstable;
     (patch from Robin Gareus)
   * lilvmm.hpp: Add wrappers for UI API
 
- -- David Robillard <d@drobilla.net>  Fri, 03 Jan 2014 23:16:58 -0500
+ -- David Robillard <d@drobilla.net>  Sat, 04 Jan 2014 16:06:42 -0500
 
 lilv (0.16.0) stable;
 
