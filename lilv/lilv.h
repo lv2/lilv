@@ -1065,6 +1065,18 @@ lilv_plugin_get_related(const LilvPlugin* plugin, const LilvNode* type);
 */
 
 /**
+   Get the RDF node of @a port.
+
+   Ports nodes may be may be URIs or blank nodes.
+
+   @return A shared node which must not be modified or freed.
+*/
+LILV_API
+const LilvNode*
+lilv_port_get_node(const LilvPlugin* plugin,
+                   const LilvPort*   port);
+
+/**
    Port analog of lilv_plugin_get_value.
 */
 LILV_API

@@ -64,7 +64,7 @@ typedef struct LilvSpecImpl LilvSpec;
 typedef void LilvCollection;
 
 struct LilvPortImpl {
-	SordNode*  node;     ///< RDF node
+	LilvNode*  node;     ///< RDF node
 	uint32_t   index;    ///< lv2:index
 	LilvNode*  symbol;   ///< lv2:symbol
 	LilvNodes* classes;  ///< rdf:type
