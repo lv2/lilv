@@ -275,7 +275,10 @@ LilvPluginClasses* lilv_plugin_classes_new(void);
 LilvUIs*           lilv_uis_new(void);
 
 const uint8_t* lilv_world_blank_node_prefix(LilvWorld* world);
-void           lilv_world_load_file(LilvWorld* world, const char* file_uri);
+
+SerdStatus lilv_world_load_file(LilvWorld*      world,
+                                SerdReader*     reader,
+                                const LilvNode* uri);
 
 LilvUI* lilv_ui_new(LilvWorld* world,
                     LilvNode* uri,

@@ -533,18 +533,18 @@ lilv_world_load_bundle(LilvWorld* world, LilvNode* bundle_uri)
 		return;
 	}
 
-	SordNode* bundle_node = bundle_uri->node;
-
-	SerdNode manifest_uri = lilv_new_uri_relative_to_base(
+	SordNode* bundle_node  = bundle_uri->node;
+	SerdNode  manifest_uri = lilv_new_uri_relative_to_base(
 		(const uint8_t*)"manifest.ttl",
 		(const uint8_t*)sord_node_get_string(bundle_node));
 
-	SerdEnv*    env    = serd_env_new(&manifest_uri);
-	SerdReader* reader = sord_new_reader(world->model, env, SERD_TURTLE,
-	                                     bundle_node);
-	serd_reader_add_blank_prefix(reader, lilv_world_blank_node_prefix(world));
+	LilvNode*   manifest = lilv_new_uri(world, (const char*)manifest_uri.buf);
+	SerdEnv*    env      = serd_env_new(&manifest_uri);
+	SerdReader* reader   = sord_new_reader(
+		world->model, env, SERD_TURTLE, bundle_node);
 
-	SerdStatus st = serd_reader_read_file(reader, manifest_uri.buf);
+	SerdStatus st = lilv_world_load_file(world, reader, manifest);
+	lilv_node_free(manifest);
 	serd_reader_free(reader);
 	serd_env_free(env);
 	if (st) {
@@ -752,6 +752,28 @@ lilv_world_load_all(LilvWorld* world)
 	lilv_world_load_plugin_classes(world);
 }
 
+SerdStatus
+lilv_world_load_file(LilvWorld* world, SerdReader* reader, const LilvNode* uri)
+{
+	ZixTreeIter* iter;
+	if (!zix_tree_find((ZixTree*)world->loaded_files, uri, &iter)) {
+		return SERD_FAILURE;  // File has already been loaded
+	}
+
+	serd_reader_add_blank_prefix(reader, lilv_world_blank_node_prefix(world));
+	const uint8_t* uri_str = sord_node_get_string(uri->node);
+	SerdStatus     st      = serd_reader_read_file(reader, uri_str);
+	if (st) {
+		LILV_ERRORF("Error loading file `%s'\n", lilv_node_as_string(uri));
+		return st;
+	}
+		
+	zix_tree_insert((ZixTree*)world->loaded_files,
+	                lilv_node_duplicate(uri),
+	                NULL);
+	return SERD_SUCCESS;
+}
+
 LILV_API
 int
 lilv_world_load_resource(LilvWorld*      world,
@@ -769,33 +791,25 @@ lilv_world_load_resource(LilvWorld*      world,
 	                               world->uris.rdfs_seeAlso,
 	                               NULL, NULL);
 	FOREACH_MATCH(files) {
-		const SordNode* file      = sord_iter_get_node(files, SORD_OBJECT);
-		const uint8_t*  str       = sord_node_get_string(file);
-		LilvNode*       file_node = lilv_node_new_from_node(world, file);
-		ZixTreeIter*    iter;
-		if (zix_tree_find((ZixTree*)world->loaded_files, file_node, &iter)) {
-			if (sord_node_get_type(file) == SORD_URI) {
-				const SerdNode* base   = sord_node_to_serd_node(file);
-				SerdEnv*        env    = serd_env_new(base);
-				SerdReader*     reader = sord_new_reader(
-					world->model, env, SERD_TURTLE, (SordNode*)file);
-				serd_reader_add_blank_prefix(
-					reader, lilv_world_blank_node_prefix(world));
-				if (!serd_reader_read_file(reader, str)) {
-					++n_read;
-					zix_tree_insert(
-						(ZixTree*)world->loaded_files, file_node, NULL);
-					file_node = NULL;  // prevent deletion...
-				} else {
-					LILV_ERRORF("Error loading resource `%s'\n", str);
-				}
-				serd_reader_free(reader);
-				serd_env_free(env);
-			} else {
-				LILV_ERRORF("rdfs:seeAlso node `%s' is not a URI\n", str);
-			}
+		const SordNode* file = sord_iter_get_node(files, SORD_OBJECT);
+		const uint8_t*  str  = sord_node_get_string(file);
+		if (sord_node_get_type(file) != SORD_URI) {
+			LILV_ERRORF("rdfs:seeAlso node `%s' is not a URI\n", str);
+			continue;
 		}
-		lilv_node_free(file_node);  // ...here
+
+		LilvNode*   file_node = lilv_node_new_from_node(world, file);
+		SerdEnv*    env       = serd_env_new(sord_node_to_serd_node(file));
+		SerdReader* reader    = sord_new_reader(
+			world->model, env, SERD_TURTLE, (SordNode*)file);
+
+		if (!lilv_world_load_file(world, reader, file_node)) {
+			++n_read;
+		}
+
+		lilv_node_free(file_node);
+		serd_reader_free(reader);
+		serd_env_free(env);
 	}
 	sord_iter_free(files);
 

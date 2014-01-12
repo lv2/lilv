@@ -1,3 +1,10 @@
+lilv (0.18.1) unstable;
+
+  * Don't load files multiple times if they are listed as rdfs:seeAlso for
+    several plugins
+
+ -- David Robillard <d@drobilla.net>  Sat, 11 Jan 2014 20:11:32 -0500
+
 lilv (0.18.0) stable;
 
   * Allow lilv_state_restore() to be used without passing an instance,
