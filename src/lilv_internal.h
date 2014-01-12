@@ -280,10 +280,13 @@ SerdStatus lilv_world_load_file(LilvWorld*      world,
                                 SerdReader*     reader,
                                 const LilvNode* uri);
 
+SerdStatus
+lilv_world_load_graph(LilvWorld* world, SordNode* graph, const uint8_t* uri);
+
 LilvUI* lilv_ui_new(LilvWorld* world,
-                    LilvNode* uri,
-                    LilvNode* type_uri,
-                    LilvNode* binary_uri);
+                    LilvNode*  uri,
+                    LilvNode*  type_uri,
+                    LilvNode*  binary_uri);
 
 void lilv_ui_free(LilvUI* ui);
 
