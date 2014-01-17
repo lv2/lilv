@@ -2,8 +2,9 @@ lilv (0.18.1) unstable;
 
   * Don't load files multiple times if they are listed as rdfs:seeAlso for
     several plugins
+  * Fix minor memory leak in test suite
 
- -- David Robillard <d@drobilla.net>  Sat, 11 Jan 2014 20:11:32 -0500
+ -- David Robillard <d@drobilla.net>  Fri, 17 Jan 2014 18:11:25 -0500
 
 lilv (0.18.0) stable;
 

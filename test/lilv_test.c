@@ -1000,6 +1000,7 @@ test_port(void)
 	lilv_scale_points_free(points);
 	lilv_node_free(control_class);
 	lilv_node_free(audio_class);
+	lilv_node_free(out_class);
 	lilv_node_free(in_class);
 	cleanup_uris();
 	return 1;
