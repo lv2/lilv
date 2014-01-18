@@ -99,6 +99,7 @@ typedef struct {
 typedef struct {
 	LilvWorld*                world;
 	LilvNode*                 uri;
+	char*                     bundle_path;
 	void*                     lib;
 	LV2_Descriptor_Function   lv2_descriptor;
 #ifdef LILV_NEW_LV2
@@ -298,6 +299,7 @@ LilvNode*       lilv_node_new_from_node(LilvWorld*      world,
 const SordNode* lilv_node_as_node(const LilvNode* value);
 
 int lilv_header_compare_by_uri(const void* a, const void* b, void* user_data);
+int lilv_lib_compare(const void* a, const void* b, void* user_data);
 
 int
 lilv_ptr_cmp(const void* a, const void* b, void* user_data);

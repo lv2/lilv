@@ -3,8 +3,10 @@ lilv (0.18.1) unstable;
   * Don't load files multiple times if they are listed as rdfs:seeAlso for
     several plugins
   * Fix minor memory leak in test suite
+  * Call lv2_lib_descriptor separately for different bundle paths
+    (fix loading several dynamic plugins like Ingen at once)
 
- -- David Robillard <d@drobilla.net>  Fri, 17 Jan 2014 18:11:25 -0500
+ -- David Robillard <d@drobilla.net>  Fri, 17 Jan 2014 20:34:10 -0500
 
 lilv (0.18.0) stable;
 

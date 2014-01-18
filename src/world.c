@@ -44,8 +44,7 @@ lilv_world_new(void)
 		false, lilv_resource_node_cmp, NULL, (ZixDestroyFunc)lilv_node_free);
 
 #ifdef LILV_NEW_LV2
-	world->libs = zix_tree_new(
-		false, lilv_header_compare_by_uri, NULL, NULL);
+	world->libs = zix_tree_new(false, lilv_lib_compare, NULL, NULL);
 #endif
 
 #define NS_DCTERMS "http://purl.org/dc/terms/"
@@ -290,6 +289,23 @@ lilv_header_compare_by_uri(const void* a, const void* b, void* user_data)
 	const struct LilvHeader* const header_b = (const struct LilvHeader*)b;
 	return strcmp(lilv_node_as_uri(header_a->uri),
 	              lilv_node_as_uri(header_b->uri));
+}
+
+/**
+   Comparator for libraries (world->libs).
+
+   Libraries do have a LilvHeader, but we must also compare the bundle to
+   handle the case where the same library is loaded with different bundles, and
+   consequently different contents (mainly plugins).
+ */
+int
+lilv_lib_compare(const void* a, const void* b, void* user_data)
+{
+	const LilvLib* const lib_a = (const LilvLib*)a;
+	const LilvLib* const lib_b = (const LilvLib*)b;
+	int cmp = strcmp(lilv_node_as_uri(lib_a->uri),
+	                 lilv_node_as_uri(lib_b->uri));
+	return cmp ? cmp : strcmp(lib_a->bundle_path, lib_b->bundle_path);
 }
 
 /** Get an element of a collection of any object with an LilvHeader by URI. */
