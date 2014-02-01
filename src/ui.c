@@ -85,7 +85,7 @@ lilv_ui_is_supported(const LilvUI*       ui,
 	LILV_FOREACH(nodes, c, classes) {
 		const LilvNode* type = lilv_nodes_get(classes, c);
 		const unsigned  q    = supported_func(lilv_node_as_uri(container_type),
-		                                       lilv_node_as_uri(type));
+		                                      lilv_node_as_uri(type));
 		if (q) {
 			if (ui_type) {
 				*ui_type = type;
