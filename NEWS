@@ -5,8 +5,9 @@ lilv (0.18.1) unstable;
   * Fix minor memory leak in test suite
   * Call lv2_lib_descriptor separately for different bundle paths
     (fix loading several dynamic plugins like Ingen at once)
+  * Tolerate calling lilv_node_as_uri or lilv_node_as_blank on NULL
 
- -- David Robillard <d@drobilla.net>  Fri, 17 Jan 2014 20:34:10 -0500
+ -- David Robillard <d@drobilla.net>  Sat, 26 Apr 2014 20:29:27 -0400
 
 lilv (0.18.0) stable;
 

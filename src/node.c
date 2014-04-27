@@ -296,8 +296,8 @@ LILV_API
 const char*
 lilv_node_as_uri(const LilvNode* value)
 {
-	assert(lilv_node_is_uri(value));
-	return (const char*)sord_node_get_string(value->node);
+	assert(!value || lilv_node_is_uri(value));
+	return value ? (const char*)sord_node_get_string(value->node) : NULL;
 }
 
 const SordNode*
@@ -318,8 +318,8 @@ LILV_API
 const char*
 lilv_node_as_blank(const LilvNode* value)
 {
-	assert(lilv_node_is_blank(value));
-	return (const char*)sord_node_get_string(value->node);
+	assert(!value || lilv_node_is_blank(value));
+	return value ? (const char*)sord_node_get_string(value->node) : NULL;
 }
 
 LILV_API
