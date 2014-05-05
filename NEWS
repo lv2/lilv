@@ -1,4 +1,4 @@
-lilv (0.18.1) unstable;
+lilv (0.19.0) unstable;
 
   * Don't load files multiple times if they are listed as rdfs:seeAlso for
     several plugins
@@ -6,8 +6,11 @@ lilv (0.18.1) unstable;
   * Call lv2_lib_descriptor separately for different bundle paths
     (fix loading several dynamic plugins like Ingen at once)
   * Tolerate calling lilv_node_as_uri or lilv_node_as_blank on NULL
+  * Add convenient lilv_new_file_uri for creating file URIs.
+  * Fix use of lv2info -m and -p options to write plugin data
+    (useful for porting plugins bridges with NASPRO).
 
- -- David Robillard <d@drobilla.net>  Sat, 26 Apr 2014 20:29:27 -0400
+ -- David Robillard <d@drobilla.net>  Mon, 05 May 2014 17:00:36 +0200
 
 lilv (0.18.0) stable;
 

@@ -259,6 +259,16 @@ test_value(void)
 	TEST_ASSERT(lilv_node_as_int(ival) == 42);
 	TEST_ASSERT(fabs(lilv_node_as_float(fval) - 1.6180) < FLT_EPSILON);
 
+	LilvNode* loc_abs  = lilv_new_file_uri(world, NULL, "/foo/bar");
+	LilvNode* loc_rel  = lilv_new_file_uri(world, NULL, "foo");
+	LilvNode* host_abs = lilv_new_file_uri(world, "host", "/foo/bar");
+	LilvNode* host_rel = lilv_new_file_uri(world, "host", "foo");
+
+	TEST_ASSERT(!strcmp(lilv_node_as_uri(loc_abs), "file:///foo/bar"));
+	TEST_ASSERT(!strncmp(lilv_node_as_uri(loc_rel), "file:///", 8));
+	TEST_ASSERT(!strcmp(lilv_node_as_uri(host_abs), "file://host/foo/bar"));
+	TEST_ASSERT(!strncmp(lilv_node_as_uri(host_rel), "file://host/", 12));
+
 	char* tok = lilv_node_get_turtle_token(uval);
 	TEST_ASSERT(!strcmp(tok, "<http://example.org>"));
 	free(tok);

@@ -119,6 +119,19 @@ LilvNode*
 lilv_new_uri(LilvWorld* world, const char* uri);
 
 /**
+   Create a new file URI value.
+   @param host Host name, or NULL.
+   @param path Path on host.
+   @return A new node that must be freed by caller.
+
+   Relative paths are resolved against the current working directory.  Note
+   that this may yield unexpected results if @p host is another machine.
+*/
+LILV_API
+LilvNode*
+lilv_new_file_uri(LilvWorld* world, const char* host, const char* path);
+
+/**
    Create a new string value (with no language).
    Returned value must be freed by caller with lilv_node_free.
 */

@@ -1,5 +1,5 @@
 /*
-  Copyright 2007-2011 David Robillard <http://drobilla.net>
+  Copyright 2007-2014 David Robillard <http://drobilla.net>
 
   Permission to use, copy, modify, and/or distribute this software for any
   purpose with or without fee is hereby granted, provided that the above
@@ -399,17 +399,25 @@ main(int argc, char** argv)
 	const LilvPlugin*  p       = lilv_plugins_get_by_uri(plugins, uri);
 
 	if (p && plugin_file) {
-		LilvNode* base = lilv_new_uri(world, plugin_file);
+		LilvNode* base = lilv_new_file_uri(world, NULL, plugin_file);
 
 		FILE* plugin_fd = fopen(plugin_file, "a");
-		lilv_plugin_write_description(world, p, base, plugin_fd);
-		fclose(plugin_fd);
+		if (plugin_fd) {
+			lilv_plugin_write_description(world, p, base, plugin_fd);
+			fclose(plugin_fd);
+		} else {
+			fprintf(stderr, "error: Failed to open %s\n", plugin_file);
+		}
 
 		if (manifest_file) {
 			FILE* manifest_fd = fopen(manifest_file, "a");
-			lilv_plugin_write_manifest_entry(
-				world, p, base, manifest_fd, plugin_file);
-			fclose(manifest_fd);
+			if (manifest_fd) {
+				lilv_plugin_write_manifest_entry(
+					world, p, base, manifest_fd, plugin_file);
+				fclose(manifest_fd);
+			} else {
+				fprintf(stderr, "error: Failed to open %s\n", manifest_file);
+			}
 		}
 		lilv_node_free(base);
 	} else if (p) {

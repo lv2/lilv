@@ -156,6 +156,20 @@ lilv_new_uri(LilvWorld* world, const char* uri)
 
 LILV_API
 LilvNode*
+lilv_new_file_uri(LilvWorld* world, const char* host, const char* path)
+{
+	char*    abs_path = lilv_path_absolute(path);
+	SerdNode s        = serd_node_new_file_uri(
+		(const uint8_t*)abs_path, (const uint8_t*)host, NULL, true);
+
+	LilvNode* ret = lilv_node_new(world, LILV_VALUE_URI, (const char*)s.buf);
+	serd_node_free(&s);
+	free(abs_path);
+	return ret;
+}
+
+LILV_API
+LilvNode*
 lilv_new_string(LilvWorld* world, const char* str)
 {
 	return lilv_node_new(world, LILV_VALUE_STRING, str);
