@@ -416,17 +416,14 @@ lilv_world_add_plugin(LilvWorld*       world,
 }
 
 SerdStatus
-lilv_world_load_graph(LilvWorld* world, SordNode* graph, const uint8_t* uri)
+lilv_world_load_graph(LilvWorld* world, SordNode* graph, const LilvNode* uri)
 {
-	SerdNode    base   = serd_node_from_string(SERD_URI, uri);
-	SerdEnv*    env    = serd_env_new(&base);
-	SerdReader* reader = sord_new_reader(world->model, env, SERD_TURTLE, graph);
+	const SerdNode* base   = sord_node_to_serd_node(uri->node);
+	SerdEnv*        env    = serd_env_new(base);
+	SerdReader*     reader = sord_new_reader(
+		world->model, env, SERD_TURTLE, graph);
 
-	serd_reader_add_blank_prefix(reader, lilv_world_blank_node_prefix(world));
-	SerdStatus st = serd_reader_read_file(reader, uri);
-	if (st > SERD_FAILURE) {
-		LILV_ERRORF("Error loading file `%s'\n", uri);
-	}
+	const SerdStatus st = lilv_world_load_file(world, reader, uri);
 
 	serd_env_free(env);
 	serd_reader_free(reader);
@@ -571,9 +568,12 @@ lilv_world_load_bundle(LilvWorld* world, LilvNode* bundle_uri)
 	SerdNode  manifest_uri = lilv_new_uri_relative_to_base(
 		(const uint8_t*)"manifest.ttl",
 		(const uint8_t*)sord_node_get_string(bundle_node));
+	LilvNode* manifest = lilv_new_uri(world, (const char*)manifest_uri.buf);
 
 	// Read manifest into model with graph = bundle_node
-	if (lilv_world_load_graph(world, bundle_node, manifest_uri.buf) > SERD_FAILURE) {
+	SerdStatus st = lilv_world_load_graph(world, bundle_node, manifest);
+	lilv_node_free(manifest);
+	if (st > SERD_FAILURE) {
 		LILV_ERRORF("Error reading %s\n", manifest_uri.buf);
 		return;
 	}
@@ -689,8 +689,7 @@ lilv_world_load_specifications(LilvWorld* world)
 	for (LilvSpec* spec = world->specs; spec; spec = spec->next) {
 		LILV_FOREACH(nodes, f, spec->data_uris) {
 			LilvNode* file = (LilvNode*)lilv_collection_get(spec->data_uris, f);
-
-			lilv_world_load_graph(world, NULL, (const uint8_t*)lilv_node_as_string(file));
+			lilv_world_load_graph(world, NULL, file);
 		}
 	}
 }
@@ -809,13 +808,15 @@ lilv_world_load_resource(LilvWorld*      world,
 	                               world->uris.rdfs_seeAlso,
 	                               NULL, NULL);
 	FOREACH_MATCH(files) {
-		const SordNode* file     = sord_iter_get_node(files, SORD_OBJECT);
-		const uint8_t*  file_str = sord_node_get_string(file);
+		const SordNode* file      = sord_iter_get_node(files, SORD_OBJECT);
+		const uint8_t*  file_str  = sord_node_get_string(file);
+		LilvNode*       file_node = lilv_node_new_from_node(world, file);
 		if (sord_node_get_type(file) != SORD_URI) {
 			LILV_ERRORF("rdfs:seeAlso node `%s' is not a URI\n", file_str);
-		} else if (!lilv_world_load_graph(world, (SordNode*)file, file_str)) {
+		} else if (!lilv_world_load_graph(world, (SordNode*)file, file_node)) {
 			++n_read;
 		}
+		lilv_node_free(file_node);
 	}
 	sord_iter_free(files);
 

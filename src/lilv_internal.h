@@ -282,7 +282,9 @@ SerdStatus lilv_world_load_file(LilvWorld*      world,
                                 const LilvNode* uri);
 
 SerdStatus
-lilv_world_load_graph(LilvWorld* world, SordNode* graph, const uint8_t* uri);
+lilv_world_load_graph(LilvWorld*      world,
+                      SordNode*       graph,
+                      const LilvNode* uri);
 
 LilvUI* lilv_ui_new(LilvWorld* world,
                     LilvNode*  uri,
