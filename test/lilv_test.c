@@ -269,6 +269,11 @@ test_value(void)
 	TEST_ASSERT(!strcmp(lilv_node_as_uri(host_abs), "file://host/foo/bar"));
 	TEST_ASSERT(!strncmp(lilv_node_as_uri(host_rel), "file://host/", 12));
 
+	lilv_node_free(host_rel);
+	lilv_node_free(host_abs);
+	lilv_node_free(loc_rel);
+	lilv_node_free(loc_abs);
+
 	char* tok = lilv_node_get_turtle_token(uval);
 	TEST_ASSERT(!strcmp(tok, "<http://example.org>"));
 	free(tok);
