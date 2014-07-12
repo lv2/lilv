@@ -2,15 +2,18 @@ lilv (0.19.0) unstable;
 
   * Don't load files multiple times if they are listed as rdfs:seeAlso for
     several plugins
-  * Fix minor memory leak in test suite
   * Call lv2_lib_descriptor separately for different bundle paths
     (fix loading several dynamic plugins like Ingen at once)
   * Tolerate calling lilv_node_as_uri or lilv_node_as_blank on NULL
-  * Add convenient lilv_new_file_uri for creating file URIs.
+  * Add convenient lilv_new_file_uri for creating file URIs
   * Fix use of lv2info -m and -p options to write plugin data
-    (useful for porting plugins bridges with NASPRO).
+    (useful for porting plugins bridges with NASPRO)
+  * Fix issues with lilv_plugin_get_author_name and friends
+    (thanks Filipe Coelho)
+  * Fix several minor memory leaks
+  * Improve test coverage
 
- -- David Robillard <d@drobilla.net>  Mon, 05 May 2014 17:00:36 +0200
+ -- David Robillard <d@drobilla.net>  Sat, 12 Jul 2014 15:45:00 -0400
 
 lilv (0.18.0) stable;
 
