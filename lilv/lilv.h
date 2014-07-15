@@ -608,6 +608,18 @@ lilv_world_load_bundle(LilvWorld* world,
                        LilvNode*  bundle_uri);
 
 /**
+   Unload a specific bundle.
+
+   This unloads statements loaded by lilv_world_load_bundle().  Note that this
+   is not necessarily all information loaded from the bundle.  If any resources
+   have been separately loaded with liv_world_load_resource(), they must be
+   separately unloaded with lilv_world_unload_resource().
+*/
+LILV_API
+int
+lilv_world_unload_bundle(LilvWorld* world, LilvNode* bundle_uri);
+
+/**
    Load all the data associated with the given @c resource.
    @param resource Must be a subject (i.e. a URI or a blank node).
    @return The number of files parsed, or -1 on error
@@ -619,6 +631,18 @@ LILV_API
 int
 lilv_world_load_resource(LilvWorld*      world,
                          const LilvNode* resource);
+
+/**
+   Unload all the data associated with the given @c resource.
+   @param resource Must be a subject (i.e. a URI or a blank node).
+
+   This unloads all data loaded by a previous call to
+   lilv_world_load_resource() with the given @c resource.
+*/
+LILV_API
+int
+lilv_world_unload_resource(LilvWorld*      world,
+                           const LilvNode* resource);
 
 /**
    Get the parent of all other plugin classes, lv2:Plugin.
@@ -1236,7 +1260,7 @@ lilv_port_get_scale_points(const LilvPlugin* plugin,
    This function can be used to load the default state of a plugin by passing
    the plugin URI as the @p subject parameter.
    @param subject The subject of the state description (e.g. a preset URI).
-   @return A new LilvState which must be freed with lilv_state_free().
+   @return A new LilvState which must be freed with lilv_state_free(), or NULL.
 */
 LILV_API
 LilvState*

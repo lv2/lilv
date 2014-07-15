@@ -1,5 +1,5 @@
 /*
-  Copyright 2007-2012 David Robillard <http://drobilla.net>
+  Copyright 2007-2014 David Robillard <http://drobilla.net>
 
   Permission to use, copy, modify, and/or distribute this software for any
   purpose with or without fee is hereby granted, provided that the above
@@ -439,6 +439,12 @@ new_state_from_model(LilvWorld*       world,
                      const SordNode*  node,
                      const char*      dir)
 {
+	// Check that we know at least something about this state subject
+	if (!sord_ask(model, node, 0, 0, 0)) {
+		return NULL;
+	}
+
+	// Allocate state
 	LilvState* const state = (LilvState*)malloc(sizeof(LilvState));
 	memset(state, '\0', sizeof(LilvState));
 	state->dir       = lilv_strdup(dir);

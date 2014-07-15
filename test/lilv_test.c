@@ -969,10 +969,9 @@ test_prototype(void)
 {
 	if (!start_bundle(MANIFEST_PREFIXES
 			":prot a lv2:PluginBase ; rdfs:seeAlso <plugin.ttl> .\n"
-			":plug a lv2:Plugin ; lv2:binary <foo" SHLIB_EXT "> ; lv2:prototype :prot .\n",
+			":plug a lv2:Plugin ; lv2:binary <inst" SHLIB_EXT "> ; lv2:prototype :prot .\n",
 			BUNDLE_PREFIXES
 			":prot a lv2:Plugin ; a lv2:CompressorPlugin ; "
-			PLUGIN_NAME("Test plugin with project") " ; "
 			LICENSE_GPL " ; "
 			"lv2:project [ "
 			"  doap:name \"Fake project\" ;"
@@ -999,9 +998,14 @@ test_prototype(void)
 	const LilvPlugin*  plug    = lilv_plugins_get_by_uri(plugins, plugin_uri_value);
 	TEST_ASSERT(plug);
 
+	// Test non-inherited property
 	LilvNode* name = lilv_plugin_get_name(plug);
 	TEST_ASSERT(!strcmp(lilv_node_as_string(name), "Instance"));
 	lilv_node_free(name);
+
+	// Test inherited property
+	const LilvNode* binary = lilv_plugin_get_library_uri(plug);
+	TEST_ASSERT(strstr(lilv_node_as_string(binary), "inst" SHLIB_EXT));
 
 	cleanup_uris();
 	return 1;
@@ -1608,6 +1612,14 @@ test_state(void)
 
 	LilvState* state6 = lilv_state_new_from_world(world, &map, test_state_node);
 	TEST_ASSERT(lilv_state_equals(state, state6));  // Round trip accuracy
+
+	lilv_world_unload_resource(world, test_state_node);
+	lilv_world_unload_bundle(world, test_state_bundle);
+
+	LilvState* state6_2 = lilv_state_new_from_world(world, &map, test_state_node);
+	TEST_ASSERT(!state6_2);  // No longer present
+	lilv_state_free(state6_2);
+
 	lilv_node_free(test_state_bundle);
 	lilv_node_free(test_state_node);
 
