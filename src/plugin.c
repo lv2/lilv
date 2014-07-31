@@ -207,12 +207,11 @@ lilv_plugin_load(LilvPlugin* p)
 static bool
 is_symbol(const char* str)
 {
-	const size_t len = strlen(str);
-	for (size_t i = 0; i < len; ++i) {
-		if (!((str[i] >= 'a' && str[i] <= 'z')
-		      || (str[i] >= 'A' && str[i] <= 'Z')
-		      || (i > 0 && str[i] >= '0' && str[i] <= '9')
-		      || str[i] == '_')) {
+	for (const char* s = str; *s; ++s) {
+		if (!((*s >= 'a' && *s <= 'z') ||
+		      (*s >= 'A' && *s <= 'Z') ||
+		      (s > str && *s >= '0' && *s <= '9') ||
+		      *s == '_')) {
 			return false;
 		}
 	}
@@ -325,45 +324,37 @@ lilv_plugin_load_if_necessary(const LilvPlugin* p)
 		lilv_plugin_load((LilvPlugin*)p);
 }
 
-LILV_API
-const LilvNode*
+LILV_API const LilvNode*
 lilv_plugin_get_uri(const LilvPlugin* p)
 {
-	assert(p);
-	assert(p->plugin_uri);
 	return p->plugin_uri;
 }
 
-LILV_API
-const LilvNode*
+LILV_API const LilvNode*
 lilv_plugin_get_bundle_uri(const LilvPlugin* p)
 {
-	assert(p);
-	assert(p->bundle_uri);
 	return p->bundle_uri;
 }
 
-LILV_API
-const LilvNode*
+LILV_API const LilvNode*
 lilv_plugin_get_library_uri(const LilvPlugin* const_p)
 {
 	LilvPlugin* p = (LilvPlugin*)const_p;
 	lilv_plugin_load_if_necessary(p);
 	if (!p->binary_uri) {
 		// <plugin> lv2:binary ?binary
-		SordIter* results = lilv_world_query_internal(
-			p->world,
-			p->plugin_uri->node,
-			p->world->uris.lv2_binary,
-			NULL);
-		FOREACH_MATCH(results) {
-			const SordNode* binary_node = sord_iter_get_node(results, SORD_OBJECT);
+		SordIter* i = lilv_world_query_internal(p->world,
+		                                        p->plugin_uri->node,
+		                                        p->world->uris.lv2_binary,
+		                                        NULL);
+		FOREACH_MATCH(i) {
+			const SordNode* binary_node = sord_iter_get_node(i, SORD_OBJECT);
 			if (sord_node_get_type(binary_node) == SORD_URI) {
 				p->binary_uri = lilv_node_new_from_node(p->world, binary_node);
 				break;
 			}
 		}
-		sord_iter_free(results);
+		sord_iter_free(i);
 	}
 	if (!p->binary_uri) {
 		LILV_WARNF("Plugin <%s> has no lv2:binary\n",
@@ -372,26 +363,23 @@ lilv_plugin_get_library_uri(const LilvPlugin* const_p)
 	return p->binary_uri;
 }
 
-LILV_API
-const LilvNodes*
+LILV_API const LilvNodes*
 lilv_plugin_get_data_uris(const LilvPlugin* p)
 {
 	return p->data_uris;
 }
 
-LILV_API
-const LilvPluginClass*
+LILV_API const LilvPluginClass*
 lilv_plugin_get_class(const LilvPlugin* const_p)
 {
 	LilvPlugin* p = (LilvPlugin*)const_p;
 	lilv_plugin_load_if_necessary(p);
 	if (!p->plugin_class) {
 		// <plugin> a ?class
-		SordIter* results = lilv_world_query_internal(
-			p->world,
-			p->plugin_uri->node,
-			p->world->uris.rdf_a,
-			NULL);
+		SordIter* results = lilv_world_query_internal(p->world,
+		                                              p->plugin_uri->node,
+		                                              p->world->uris.rdf_a,
+		                                              NULL);
 		FOREACH_MATCH(results) {
 			const SordNode* class_node = sord_iter_get_node(results, SORD_OBJECT);
 			if (sord_node_get_type(class_node) != SORD_URI) {
@@ -429,8 +417,7 @@ lilv_plugin_get_value_internal(const LilvPlugin* p,
 		p->world, p->plugin_uri->node, predicate, NULL);
 }
 
-LILV_API
-bool
+LILV_API bool
 lilv_plugin_verify(const LilvPlugin* plugin)
 {
 	LilvNode*  rdf_type = lilv_new_uri(plugin->world, LILV_NS_RDF "type");
@@ -459,8 +446,7 @@ lilv_plugin_verify(const LilvPlugin* plugin)
 	return true;
 }
 
-LILV_API
-LilvNode*
+LILV_API LilvNode*
 lilv_plugin_get_name(const LilvPlugin* plugin)
 {
 	LilvNodes* results = lilv_plugin_get_value_internal(
@@ -481,8 +467,7 @@ lilv_plugin_get_name(const LilvPlugin* plugin)
 	return ret;
 }
 
-LILV_API
-LilvNodes*
+LILV_API LilvNodes*
 lilv_plugin_get_value(const LilvPlugin* p,
                       const LilvNode*   predicate)
 {
@@ -490,16 +475,14 @@ lilv_plugin_get_value(const LilvPlugin* p,
 	return lilv_world_find_nodes(p->world, p->plugin_uri, predicate, NULL);
 }
 
-LILV_API
-uint32_t
+LILV_API uint32_t
 lilv_plugin_get_num_ports(const LilvPlugin* p)
 {
 	lilv_plugin_load_ports_if_necessary(p);
 	return p->num_ports;
 }
 
-LILV_API
-void
+LILV_API void
 lilv_plugin_get_port_ranges_float(const LilvPlugin* p,
                                   float*            min_values,
                                   float*            max_values,
@@ -546,8 +529,7 @@ lilv_plugin_get_port_ranges_float(const LilvPlugin* p,
 	}
 }
 
-LILV_API
-uint32_t
+LILV_API uint32_t
 lilv_plugin_get_num_ports_of_class_va(const LilvPlugin* p,
                                       const LilvNode*   class_1,
                                       va_list           args)
@@ -559,10 +541,10 @@ lilv_plugin_get_num_ports_of_class_va(const LilvPlugin* p,
 	// Build array of classes from args so we can walk it several times
 	size_t           n_classes = 0;
 	const LilvNode** classes   = NULL;
-	for (LilvNode* class_i = NULL; (class_i = va_arg(args, LilvNode*)); ) {
+	for (LilvNode* c = NULL; (c = va_arg(args, LilvNode*)); ) {
 		classes = (const LilvNode**)realloc(
 			classes, ++n_classes * sizeof(LilvNode*));
-		classes[n_classes - 1] = class_i;
+		classes[n_classes - 1] = c;
 	}
 
 	// Check each port against every type
@@ -587,8 +569,7 @@ lilv_plugin_get_num_ports_of_class_va(const LilvPlugin* p,
 	return count;
 }
 
-LILV_API
-uint32_t
+LILV_API uint32_t
 lilv_plugin_get_num_ports_of_class(const LilvPlugin* p,
                                    const LilvNode*   class_1, ...)
 {
@@ -601,8 +582,7 @@ lilv_plugin_get_num_ports_of_class(const LilvPlugin* p,
 	return count;
 }
 
-LILV_API
-bool
+LILV_API bool
 lilv_plugin_has_latency(const LilvPlugin* p)
 {
 	lilv_plugin_load_if_necessary(p);
@@ -620,7 +600,7 @@ lilv_plugin_has_latency(const LilvPlugin* p)
 			port,
 			p->world->uris.lv2_portProperty,
 			p->world->uris.lv2_reportsLatency);
-		SordIter*       des   = lilv_world_query_internal(
+		SordIter* des = lilv_world_query_internal(
 			p->world,
 			port,
 			p->world->uris.lv2_designation,
@@ -640,7 +620,7 @@ lilv_plugin_has_latency(const LilvPlugin* p)
 
 static const LilvPort*
 lilv_plugin_get_port_by_property(const LilvPlugin* plugin,
-                                 const LilvNode*   port_property)
+                                 const SordNode*   port_property)
 {
 	lilv_plugin_load_ports_if_necessary(plugin);
 	for (uint32_t i = 0; i < plugin->num_ports; ++i) {
@@ -649,7 +629,7 @@ lilv_plugin_get_port_by_property(const LilvPlugin* plugin,
 			plugin->world,
 			port->node->node,
 			plugin->world->uris.lv2_portProperty,
-			port_property->node);
+			port_property);
 
 		const bool found = !sord_iter_end(iter);
 		sord_iter_free(iter);
@@ -662,8 +642,7 @@ lilv_plugin_get_port_by_property(const LilvPlugin* plugin,
 	return NULL;
 }
 
-LILV_API
-const LilvPort*
+LILV_API const LilvPort*
 lilv_plugin_get_port_by_designation(const LilvPlugin* plugin,
                                     const LilvNode*   port_class,
                                     const LilvNode*   designation)
@@ -690,18 +669,13 @@ lilv_plugin_get_port_by_designation(const LilvPlugin* plugin,
 	return NULL;
 }
 
-LILV_API
-uint32_t
+LILV_API uint32_t
 lilv_plugin_get_latency_port_index(const LilvPlugin* p)
 {
-	LilvNode* prop = lilv_node_new_from_node(
-		p->world, p->world->uris.lv2_reportsLatency);
-	LilvNode* des = lilv_node_new_from_node(
-		p->world, p->world->uris.lv2_latency);
-	const LilvPort* prop_port = lilv_plugin_get_port_by_property(p, prop);
-	const LilvPort* des_port = lilv_plugin_get_port_by_property(p, des);
-	lilv_node_free(prop);
-	lilv_node_free(des);
+	const LilvPort* prop_port = lilv_plugin_get_port_by_property(
+		p, p->world->uris.lv2_reportsLatency);
+	const LilvPort* des_port = lilv_plugin_get_port_by_property(
+		p, p->world->uris.lv2_latency);
 	if (prop_port) {
 		return prop_port->index;
 	} else if (des_port) {
@@ -711,8 +685,7 @@ lilv_plugin_get_latency_port_index(const LilvPlugin* p)
 	}
 }
 
-LILV_API
-bool
+LILV_API bool
 lilv_plugin_has_feature(const LilvPlugin* p,
                         const LilvNode*   feature)
 {
@@ -730,8 +703,7 @@ lilv_plugin_has_feature(const LilvPlugin* p,
 	return false;
 }
 
-LILV_API
-LilvNodes*
+LILV_API LilvNodes*
 lilv_plugin_get_supported_features(const LilvPlugin* p)
 {
 	LilvNodes* optional = lilv_plugin_get_optional_features(p);
@@ -742,8 +714,7 @@ lilv_plugin_get_supported_features(const LilvPlugin* p)
 	return result;
 }
 
-LILV_API
-LilvNodes*
+LILV_API LilvNodes*
 lilv_plugin_get_optional_features(const LilvPlugin* p)
 {
 	lilv_plugin_load_if_necessary(p);
@@ -753,8 +724,7 @@ lilv_plugin_get_optional_features(const LilvPlugin* p)
 	                                      NULL);
 }
 
-LILV_API
-LilvNodes*
+LILV_API LilvNodes*
 lilv_plugin_get_required_features(const LilvPlugin* p)
 {
 	lilv_plugin_load_if_necessary(p);
@@ -764,8 +734,7 @@ lilv_plugin_get_required_features(const LilvPlugin* p)
 	                                      NULL);
 }
 
-LILV_API
-bool
+LILV_API bool
 lilv_plugin_has_extension_data(const LilvPlugin* p,
                                const LilvNode*   uri)
 {
@@ -783,15 +752,13 @@ lilv_plugin_has_extension_data(const LilvPlugin* p,
 		uri->node);
 }
 
-LILV_API
-LilvNodes*
+LILV_API LilvNodes*
 lilv_plugin_get_extension_data(const LilvPlugin* p)
 {
 	return lilv_plugin_get_value_internal(p, p->world->uris.lv2_extensionData);
 }
 
-LILV_API
-const LilvPort*
+LILV_API const LilvPort*
 lilv_plugin_get_port_by_index(const LilvPlugin* p,
                               uint32_t          index)
 {
@@ -802,8 +769,7 @@ lilv_plugin_get_port_by_index(const LilvPlugin* p,
 		return NULL;
 }
 
-LILV_API
-const LilvPort*
+LILV_API const LilvPort*
 lilv_plugin_get_port_by_symbol(const LilvPlugin* p,
                                const LilvNode*   symbol)
 {
@@ -817,8 +783,7 @@ lilv_plugin_get_port_by_symbol(const LilvPlugin* p,
 	return NULL;
 }
 
-LILV_API
-LilvNode*
+LILV_API LilvNode*
 lilv_plugin_get_project(const LilvPlugin* p)
 {
 	lilv_plugin_load_if_necessary(p);
@@ -826,11 +791,10 @@ lilv_plugin_get_project(const LilvPlugin* p)
 	SordNode* lv2_project = sord_new_uri(p->world->world,
 	                                     (const uint8_t*)LV2_CORE__project);
 
-	SordIter* projects = lilv_world_query_internal(
-		p->world,
-		p->plugin_uri->node,
-		lv2_project,
-		NULL);
+	SordIter* projects = lilv_world_query_internal(p->world,
+	                                               p->plugin_uri->node,
+	                                               lv2_project,
+	                                               NULL);
 
 	sord_node_free(p->world->world, lv2_project);
 
@@ -890,8 +854,7 @@ lilv_plugin_get_author(const LilvPlugin* p)
 	return author;
 }
 
-LILV_API
-LilvNode*
+LILV_API LilvNode*
 lilv_plugin_get_author_name(const LilvPlugin* plugin)
 {
 	const SordNode* author = lilv_plugin_get_author(plugin);
@@ -905,8 +868,7 @@ lilv_plugin_get_author_name(const LilvPlugin* plugin)
 	return NULL;
 }
 
-LILV_API
-LilvNode*
+LILV_API LilvNode*
 lilv_plugin_get_author_email(const LilvPlugin* plugin)
 {
 	const SordNode* author = lilv_plugin_get_author(plugin);
@@ -920,8 +882,7 @@ lilv_plugin_get_author_email(const LilvPlugin* plugin)
 	return NULL;
 }
 
-LILV_API
-LilvNode*
+LILV_API LilvNode*
 lilv_plugin_get_author_homepage(const LilvPlugin* plugin)
 {
 	const SordNode* author = lilv_plugin_get_author(plugin);
@@ -935,15 +896,13 @@ lilv_plugin_get_author_homepage(const LilvPlugin* plugin)
 	return NULL;
 }
 
-LILV_API
-bool
+LILV_API bool
 lilv_plugin_is_replaced(const LilvPlugin* plugin)
 {
 	return plugin->replaced;
 }
 
-LILV_API
-LilvUIs*
+LILV_API LilvUIs*
 lilv_plugin_get_uis(const LilvPlugin* p)
 {
 	lilv_plugin_load_if_necessary(p);
@@ -954,11 +913,10 @@ lilv_plugin_get_uis(const LilvPlugin* p)
 	                                        (const uint8_t*)LV2_UI__binary);
 
 	LilvUIs*  result = lilv_uis_new();
-	SordIter* uis    = lilv_world_query_internal(
-		p->world,
-		p->plugin_uri->node,
-		ui_ui_node,
-		NULL);
+	SordIter* uis    = lilv_world_query_internal(p->world,
+	                                             p->plugin_uri->node,
+	                                             ui_ui_node,
+	                                             NULL);
 
 	FOREACH_MATCH(uis) {
 		const SordNode* ui = sord_iter_get_node(uis, SORD_OBJECT);
@@ -996,8 +954,7 @@ lilv_plugin_get_uis(const LilvPlugin* p)
 	}
 }
 
-LILV_API
-LilvNodes*
+LILV_API LilvNodes*
 lilv_plugin_get_related(const LilvPlugin* plugin, const LilvNode* type)
 {
 	lilv_plugin_load_if_necessary(plugin);
@@ -1057,8 +1014,7 @@ maybe_write_prefixes(SerdWriter* writer, SerdEnv* env, FILE* file)
 	}
 }
 
-LILV_API
-void
+LILV_API void
 lilv_plugin_write_description(LilvWorld*        world,
                               const LilvPlugin* plugin,
                               const LilvNode*   base_uri,
@@ -1097,8 +1053,7 @@ lilv_plugin_write_description(LilvWorld*        world,
 	serd_env_free(env);
 }
 
-LILV_API
-void
+LILV_API void
 lilv_plugin_write_manifest_entry(LilvWorld*        world,
                                  const LilvPlugin* plugin,
                                  const LilvNode*   base_uri,

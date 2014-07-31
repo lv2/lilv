@@ -21,8 +21,7 @@
 
 #include "lilv_internal.h"
 
-LILV_API
-LilvInstance*
+LILV_API LilvInstance*
 lilv_plugin_instantiate(const LilvPlugin*        plugin,
                         double                   sample_rate,
                         const LV2_Feature*const* features)
@@ -110,8 +109,7 @@ lilv_plugin_instantiate(const LilvPlugin*        plugin,
 	return result;
 }
 
-LILV_API
-void
+LILV_API void
 lilv_instance_free(LilvInstance* instance)
 {
 	if (!instance)

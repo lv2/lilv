@@ -54,10 +54,7 @@ lilv_collection_size(const LilvCollection* coll)
 LilvIter*
 lilv_collection_begin(const LilvCollection* collection)
 {
-	if (collection) {
-		return (LilvIter*)zix_tree_begin((ZixTree*)collection);
-	}
-	return NULL;
+	return collection ? (LilvIter*)zix_tree_begin((ZixTree*)collection) : NULL;
 }
 
 void*
@@ -99,8 +96,7 @@ lilv_plugin_classes_new(void)
 
 /* URI based accessors (for collections of things with URIs) */
 
-LILV_API
-const LilvPluginClass*
+LILV_API const LilvPluginClass*
 lilv_plugin_classes_get_by_uri(const LilvPluginClasses* coll,
                                const LilvNode*          uri)
 {
@@ -108,8 +104,7 @@ lilv_plugin_classes_get_by_uri(const LilvPluginClasses* coll,
 		(const ZixTree*)coll, uri);
 }
 
-LILV_API
-const LilvUI*
+LILV_API const LilvUI*
 lilv_uis_get_by_uri(const LilvUIs* coll, const LilvNode* uri)
 {
 	return (LilvUI*)lilv_collection_get_by_uri((const ZixTree*)coll, uri);
@@ -123,8 +118,7 @@ lilv_plugins_new(void)
 	return lilv_collection_new(lilv_header_compare_by_uri, NULL);
 }
 
-LILV_API
-const LilvPlugin*
+LILV_API const LilvPlugin*
 lilv_plugins_get_by_uri(const LilvPlugins* list, const LilvNode* uri)
 {
 	return (LilvPlugin*)lilv_collection_get_by_uri((const ZixTree*)list, uri);
@@ -132,8 +126,7 @@ lilv_plugins_get_by_uri(const LilvPlugins* list, const LilvNode* uri)
 
 /* Nodes */
 
-LILV_API
-bool
+LILV_API bool
 lilv_nodes_contains(const LilvNodes* list, const LilvNode* value)
 {
 	LILV_FOREACH(nodes, i, list)
@@ -143,8 +136,7 @@ lilv_nodes_contains(const LilvNodes* list, const LilvNode* value)
 	return false;
 }
 
-LILV_API
-LilvNodes*
+LILV_API LilvNodes*
 lilv_nodes_merge(const LilvNodes* a, const LilvNodes* b)
 {
 	LilvNodes* result = lilv_nodes_new();
@@ -201,32 +193,27 @@ LILV_COLLECTION_IMPL(lilv_uis, LilvUIs, LilvUI)
 LILV_COLLECTION_IMPL(lilv_nodes, LilvNodes, LilvNode)
 LILV_COLLECTION_IMPL(lilv_plugins, LilvPlugins, LilvPlugin)
 
-LILV_API
-void
+LILV_API void
 lilv_plugin_classes_free(LilvPluginClasses* collection) {
 	lilv_collection_free(collection);
 }
 
-LILV_API
-void
+LILV_API void
 lilv_scale_points_free(LilvScalePoints* collection) {
 	lilv_collection_free(collection);
 }
 
-LILV_API
-void
+LILV_API void
 lilv_uis_free(LilvUIs* collection) {
 	lilv_collection_free(collection);
 }
 
-LILV_API
-void
+LILV_API void
 lilv_nodes_free(LilvNodes* collection) {
 	lilv_collection_free(collection);
 }
 
-LILV_API
-LilvNode*
+LILV_API LilvNode*
 lilv_nodes_get_first(const LilvNodes* collection) {
 	return (LilvNode*)lilv_collection_get(collection,
 	                                      lilv_collection_begin(collection));

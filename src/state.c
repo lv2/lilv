@@ -319,8 +319,7 @@ state_strerror(LV2_State_Status st)
 	}
 }
 
-LILV_API
-LilvState*
+LILV_API LilvState*
 lilv_state_new_from_instance(const LilvPlugin*          plugin,
                              LilvInstance*              instance,
                              LV2_URID_Map*              map,
@@ -396,8 +395,7 @@ lilv_state_new_from_instance(const LilvPlugin*          plugin,
 	return state;
 }
 
-LILV_API
-void
+LILV_API void
 lilv_state_restore(const LilvState*           state,
                    LilvInstance*              instance,
                    LilvSetPortValueFunc       set_value,
@@ -572,8 +570,7 @@ new_state_from_model(LilvWorld*       world,
 	return state;
 }
 
-LILV_API
-LilvState*
+LILV_API LilvState*
 lilv_state_new_from_world(LilvWorld*      world,
                           LV2_URID_Map*   map,
                           const LilvNode* node)
@@ -590,8 +587,7 @@ lilv_state_new_from_world(LilvWorld*      world,
 	return state;
 }
 
-LILV_API
-LilvState*
+LILV_API LilvState*
 lilv_state_new_from_file(LilvWorld*      world,
                          LV2_URID_Map*   map,
                          const LilvNode* subject,
@@ -644,8 +640,7 @@ set_prefixes(SerdEnv* env)
 	SET_PSET(env, USTR("xsd"),   USTR(LILV_NS_XSD));
 }
 
-LILV_API
-LilvState*
+LILV_API LilvState*
 lilv_state_new_from_string(LilvWorld*    world,
                            LV2_URID_Map* map,
                            const char*   str)
@@ -930,8 +925,7 @@ lilv_state_make_links(const LilvState* state, const char* dir)
 	}
 }
 
-LILV_API
-int
+LILV_API int
 lilv_state_save(LilvWorld*       world,
                 LV2_URID_Map*    map,
                 LV2_URID_Unmap*  unmap,
@@ -986,8 +980,7 @@ lilv_state_save(LilvWorld*       world,
 	return ret;
 }
 
-LILV_API
-char*
+LILV_API char*
 lilv_state_to_string(LilvWorld*       world,
                      LV2_URID_Map*    map,
                      LV2_URID_Unmap*  unmap,
@@ -1012,8 +1005,7 @@ lilv_state_to_string(LilvWorld*       world,
 	return (char*)serd_chunk_sink_finish(&chunk);
 }
 
-LILV_API
-void
+LILV_API void
 lilv_state_free(LilvState* state)
 {
 	if (state) {
@@ -1038,8 +1030,7 @@ lilv_state_free(LilvState* state)
 	}
 }
 
-LILV_API
-bool
+LILV_API bool
 lilv_state_equals(const LilvState* a, const LilvState* b)
 {
 	if (!lilv_node_equals(a->plugin_uri, b->plugin_uri)
@@ -1082,29 +1073,25 @@ lilv_state_equals(const LilvState* a, const LilvState* b)
 	return true;
 }
 
-LILV_API
-unsigned
+LILV_API unsigned
 lilv_state_get_num_properties(const LilvState* state)
 {
 	return state->num_props;
 }
 
-LILV_API
-const LilvNode*
+LILV_API const LilvNode*
 lilv_state_get_plugin_uri(const LilvState* state)
 {
 	return state->plugin_uri;
 }
 
-LILV_API
-const char*
+LILV_API const char*
 lilv_state_get_label(const LilvState* state)
 {
 	return state->label;
 }
 
-LILV_API
-void
+LILV_API void
 lilv_state_set_label(LilvState* state, const char* label)
 {
 	const size_t len = strlen(label);

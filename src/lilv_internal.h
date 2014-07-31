@@ -29,11 +29,11 @@ extern "C" {
 #ifdef _WIN32
 #    include <windows.h>
 #    define dlopen(path, flags) LoadLibrary(path)
-#    define dlclose(lib) FreeLibrary((HMODULE)lib)
+#    define dlclose(lib)        FreeLibrary((HMODULE)lib)
 #    ifdef _MSC_VER
 #        define __func__ __FUNCTION__
 #        define INFINITY DBL_MAX + DBL_MAX
-#        define NAN INFINITY - INFINITY
+#        define NAN      INFINITY - INFINITY
 #        define snprintf _snprintf
 #    endif
 static inline char* dlerror(void) { return "Unknown error"; }
@@ -293,21 +293,14 @@ LilvUI* lilv_ui_new(LilvWorld* world,
 
 void lilv_ui_free(LilvUI* ui);
 
-LilvNode*       lilv_node_new(LilvWorld*   world,
-                              LilvNodeType type,
-                              const char*  val);
-LilvNode*       lilv_node_new_from_node(LilvWorld*      world,
-                                        const SordNode* node);
-const SordNode* lilv_node_as_node(const LilvNode* value);
+LilvNode* lilv_node_new(LilvWorld* world, LilvNodeType type, const char* val);
+LilvNode* lilv_node_new_from_node(LilvWorld* world, const SordNode* node);
 
 int lilv_header_compare_by_uri(const void* a, const void* b, void* user_data);
 int lilv_lib_compare(const void* a, const void* b, void* user_data);
 
-int
-lilv_ptr_cmp(const void* a, const void* b, void* user_data);
-
-int
-lilv_resource_node_cmp(const void* a, const void* b, void* user_data);
+int lilv_ptr_cmp(const void* a, const void* b, void* user_data);
+int lilv_resource_node_cmp(const void* a, const void* b, void* user_data);
 
 struct LilvHeader*
 lilv_collection_get_by_uri(const ZixTree* seq, const LilvNode* uri);
