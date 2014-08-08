@@ -32,7 +32,7 @@
 #define NS_DOAP (const uint8_t*)"http://usefulinc.com/ns/doap#"
 #define NS_FOAF (const uint8_t*)"http://xmlns.com/foaf/0.1/"
 
-/** Ownership of @a uri is taken */
+/** Ownership of `uri` is taken */
 LilvPlugin*
 lilv_plugin_new(LilvWorld* world, LilvNode* uri, LilvNode* bundle_uri)
 {

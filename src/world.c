@@ -661,7 +661,7 @@ load_dir_entry(const char* dir, const char* name, void* data)
 	free(uri);
 }
 
-/** Load all bundles in the directory at @a dir_path. */
+/** Load all bundles in the directory at `dir_path`. */
 static void
 lilv_world_load_directory(LilvWorld* world, const char* dir_path)
 {
@@ -683,7 +683,7 @@ first_path_sep(const char* path)
 	return NULL;
 }
 
-/** Load all bundles found in @a lv2_path.
+/** Load all bundles found in `lv2_path`.
  * @param lv2_path A colon-delimited list of directories.  These directories
  * should contain LV2 bundle directories (ie the search path is a list of
  * parent directories of bundles, not a list of bundle directories).

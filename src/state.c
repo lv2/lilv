@@ -277,7 +277,7 @@ absolute_path(LV2_State_Map_Path_Handle handle,
 	return path;
 }
 
-/** Return a new features array which is @c feature added to @c features. */
+/** Return a new features array which is `feature` added to `features`. */
 static const LV2_Feature**
 add_features(const LV2_Feature *const * features,
              const LV2_Feature* map, const LV2_Feature* make)

@@ -44,7 +44,7 @@ lilv_node_set_numerics_from_string(LilvNode* val, size_t len)
 	}
 }
 
-/** Note that if @a type is numeric or boolean, the returned value is corrupt
+/** Note that if `type` is numeric or boolean, the returned value is corrupt
  * until lilv_node_set_numerics_from_string is called.  It is not
  * automatically called from here to avoid overhead and imprecision when the
  * exact string value is known.
@@ -93,7 +93,7 @@ lilv_node_new(LilvWorld* world, LilvNodeType type, const char* str)
 	return val;
 }
 
-/** Create a new LilvNode from @a node, or return NULL if impossible */
+/** Create a new LilvNode from `node`, or return NULL if impossible */
 LilvNode*
 lilv_node_new_from_node(LilvWorld* world, const SordNode* node)
 {

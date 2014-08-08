@@ -165,7 +165,7 @@ append_var(char* dst, size_t* dst_len, const char* var)
 	}
 }
 
-/** Expand variables (e.g. POSIX ~ or $FOO, Windows %FOO%) in @a path. */
+/** Expand variables (e.g. POSIX ~ or $FOO, Windows %FOO%) in `path`. */
 char*
 lilv_expand(const char* path)
 {
@@ -392,7 +392,7 @@ update_latest(const char* path, const char* name, void* data)
 	}
 }
 
-/** Return the latest copy of the file at @c path that is newer. */
+/** Return the latest copy of the file at `path` that is newer. */
 char*
 lilv_get_latest_copy(const char* path, const char* copy_path)
 {
