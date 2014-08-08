@@ -1,4 +1,4 @@
-lilv (0.19.2) unstable;
+lilv (0.20.0) stable;
 
   * Don't load files multiple times if they are listed as rdfs:seeAlso for
     several plugins
@@ -15,8 +15,9 @@ lilv (0.19.2) unstable;
   * Add lilv_world_unload_bundle() and lilv_world_unload_resource()
   * Fix several minor memory leaks
   * Improve test coverage
+  * Upgrade to waf 1.7.16
 
- -- David Robillard <d@drobilla.net>  Tue, 15 Jul 2014 15:14:36 -0400
+ -- David Robillard <d@drobilla.net>  Fri, 08 Aug 2014 18:21:32 -0400
 
 lilv (0.18.0) stable;
 
