@@ -124,7 +124,7 @@ lilv_new_uri(LilvWorld* world, const char* uri);
    @return A new node that must be freed by caller.
 
    Relative paths are resolved against the current working directory.  Note
-   that this may yield unexpected results if @p host is another machine.
+   that this may yield unexpected results if `host` is another machine.
 */
 LILV_API LilvNode*
 lilv_new_file_uri(LilvWorld* world, const char* host, const char* path);
@@ -428,7 +428,7 @@ LILV_API bool
 lilv_nodes_contains(const LilvNodes* values, const LilvNode* value);
 
 /**
-   Return a new LilvNodes that contains all nodes from both @p a and @p b.
+   Return a new LilvNodes that contains all nodes from both `a` and `b`.
 */
 LILV_API LilvNodes*
 lilv_nodes_merge(const LilvNodes* a, const LilvNodes* b);
@@ -620,7 +620,7 @@ lilv_world_find_nodes(LilvWorld*      world,
 
 /**
    Find a single node that matches a pattern.
-   Exactly one of @p subject, @p predicate, @p object must be NULL.
+   Exactly one of `subject`, `predicate`, `object` must be NULL.
    This function is equivalent to
    lilv_nodes_get_first(lilv_world_find_nodes(...)) but simplifies the common
    case of only wanting a single value.
@@ -853,7 +853,7 @@ lilv_plugin_get_num_ports_of_class(const LilvPlugin* p,
 /**
    Variant of lilv_plugin_get_num_ports_of_class() that takes a va_list.
 
-   This function calls va_arg() on @p args but does not call va_end().
+   This function calls va_arg() on `args` but does not call va_end().
 */
 LILV_API uint32_t
 lilv_plugin_get_num_ports_of_class_va(const LilvPlugin* p,
@@ -1051,7 +1051,7 @@ lilv_port_has_property(const LilvPlugin* p,
    Return whether a port supports a certain event type.
 
    More precisely, this returns true iff the port has an atom:supports or an
-   ev:supportsEvent property with @p event_type as the value.
+   ev:supportsEvent property with `event_type` as the value.
 */
 LILV_API bool
 lilv_port_supports_event(const LilvPlugin* p,
@@ -1145,7 +1145,7 @@ lilv_port_get_scale_points(const LilvPlugin* plugin,
 /**
    Load a state snapshot from @c world's RDF model.
    This function can be used to load the default state of a plugin by passing
-   the plugin URI as the @p subject parameter.
+   the plugin URI as the `subject` parameter.
    @param world The world.
    @param map URID mapper.
    @param subject The subject of the state description (e.g. a preset URI).
@@ -1193,7 +1193,7 @@ lilv_state_new_from_string(LilvWorld*    world,
    @param type (Output) The URID of the type of the returned value.
    @return A pointer to the port value.
 
-   This function MUST set @p size and @p type appropriately.
+   This function MUST set `size` and `type` appropriately.
 */
 typedef const void* (*LilvGetPortValueFunc)(const char* port_symbol,
                                             void*       user_data,
@@ -1317,8 +1317,8 @@ lilv_state_set_label(LilvState*  state,
    Function to set a port value.
    @param port_symbol The symbol of the port.
    @param user_data The user_data passed to lilv_state_restore().
-   @param size The size of @p value.
-   @param type The URID of the type of @p value.
+   @param size The size of `value`.
+   @param type The URID of the type of `value`.
    @param value A pointer to the port value.
 */
 typedef void (*LilvSetPortValueFunc)(const char* port_symbol,
