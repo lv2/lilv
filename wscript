@@ -176,6 +176,7 @@ def build_util(bld, name, defines):
               target       = name,
               defines      = defines,
               install_path = '${BINDIR}')
+    autowaf.use_lib(bld, obj, 'SERD SORD SRATOM LV2')
     if not bld.env.BUILD_SHARED or bld.env.STATIC_PROGS:
         obj.use = 'liblilv_static'
     if bld.env.STATIC_PROGS:
