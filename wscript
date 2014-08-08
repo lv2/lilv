@@ -392,7 +392,11 @@ def fix_docs(ctx):
         autowaf.make_simple_dox(APPNAME)
 
 def upload_docs(ctx):
+    import glob
     os.system('rsync -ravz --delete -e ssh build/doc/html/ drobilla@drobilla.net:~/drobilla.net/docs/lilv/')
+    for page in glob.glob('doc/*.[1-8]'):
+        os.system('soelim %s | pre-grohtml troff -man -wall -Thtml | post-grohtml > build/%s.html' % (page, page))
+        os.system('rsync -avz --delete -e ssh build/%s.html drobilla@drobilla.net:~/drobilla.net/man/' % page)
 
 # Inherit from build context so we can get the config data
 class TestContext(Build.BuildContext):
