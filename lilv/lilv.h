@@ -111,13 +111,14 @@ lilv_uri_to_path(const char* uri);
 
 /**
    Create a new URI value.
-   Returned value must be freed by caller with lilv_node_free.
+   Returned value must be freed by caller with lilv_node_free().
 */
 LILV_API LilvNode*
 lilv_new_uri(LilvWorld* world, const char* uri);
 
 /**
    Create a new file URI value.
+   @param world The world.
    @param host Host name, or NULL.
    @param path Path on host.
    @return A new node that must be freed by caller.
@@ -130,28 +131,28 @@ lilv_new_file_uri(LilvWorld* world, const char* host, const char* path);
 
 /**
    Create a new string value (with no language).
-   Returned value must be freed by caller with lilv_node_free.
+   Returned value must be freed by caller with lilv_node_free()().
 */
 LILV_API LilvNode*
 lilv_new_string(LilvWorld* world, const char* str);
 
 /**
    Create a new integer value.
-   Returned value must be freed by caller with lilv_node_free.
+   Returned value must be freed by caller with lilv_node_free().
 */
 LILV_API LilvNode*
 lilv_new_int(LilvWorld* world, int val);
 
 /**
    Create a new floating point value.
-   Returned value must be freed by caller with lilv_node_free.
+   Returned value must be freed by caller with lilv_node_free().
 */
 LILV_API LilvNode*
 lilv_new_float(LilvWorld* world, float val);
 
 /**
    Create a new boolean value.
-   Returned value must be freed by caller with lilv_node_free.
+   Returned value must be freed by caller with lilv_node_free().
 */
 LILV_API LilvNode*
 lilv_new_bool(LilvWorld* world, bool val);
@@ -556,6 +557,7 @@ lilv_world_unload_bundle(LilvWorld* world, LilvNode* bundle_uri);
 
 /**
    Load all the data associated with the given @c resource.
+   @param world The world.
    @param resource Must be a subject (i.e. a URI or a blank node).
    @return The number of files parsed, or -1 on error
 
@@ -568,6 +570,7 @@ lilv_world_load_resource(LilvWorld*      world,
 
 /**
    Unload all the data associated with the given @c resource.
+   @param world The world.
    @param resource Must be a subject (i.e. a URI or a blank node).
 
    This unloads all data loaded by a previous call to
@@ -635,6 +638,7 @@ lilv_world_get(LilvWorld*      world,
    This is useful for checking if particular statement exists without having to
    bother with collections and memory management.
 
+   @param world The world.
    @param subject Subject of statement, or NULL for anything.
    @param predicate Predicate (key) of statement, or NULL for anything.
    @param object Object (value) of statement, or NULL for anything.
@@ -741,7 +745,7 @@ lilv_plugin_get_class(const LilvPlugin* plugin);
 
    May return NULL if the property was not found, or if object(s) is not
    sensibly represented as a LilvNodes (e.g. blank nodes).
-   Return value must be freed by caller with lilv_nodes_free.
+   Return value must be freed by caller with lilv_nodes_free().
 */
 LILV_API LilvNodes*
 lilv_plugin_get_value(const LilvPlugin* p,
@@ -764,7 +768,7 @@ lilv_plugin_has_feature(const LilvPlugin* p,
    probably shouldn't be used by normal hosts.  Using lilv_plugin_get_optional_features
    and lilv_plugin_get_required_features separately is best in most cases.
 
-   Returned value must be freed by caller with lilv_nodes_free.
+   Returned value must be freed by caller with lilv_nodes_free().
 */
 LILV_API LilvNodes*
 lilv_plugin_get_supported_features(const LilvPlugin* p);
@@ -778,7 +782,7 @@ lilv_plugin_get_supported_features(const LilvPlugin* p);
    (along with data, if necessary, as defined by the feature specification)
    or plugin instantiation will fail.
 
-   Return value must be freed by caller with lilv_nodes_free.
+   Return value must be freed by caller with lilv_nodes_free().
 */
 LILV_API LilvNodes*
 lilv_plugin_get_required_features(const LilvPlugin* p);
@@ -789,7 +793,7 @@ lilv_plugin_get_required_features(const LilvPlugin* p);
    MUST operate (at least somewhat) if they are instantiated without being
    passed optional features.
 
-   Return value must be freed by caller with lilv_nodes_free.
+   Return value must be freed by caller with lilv_nodes_free().
 */
 LILV_API LilvNodes*
 lilv_plugin_get_optional_features(const LilvPlugin* p);
@@ -859,8 +863,8 @@ lilv_plugin_get_num_ports_of_class_va(const LilvPlugin* p,
 
 /**
    Return whether or not the plugin introduces (and reports) latency.
-   The index of the latency port can be found with lilv_plugin_get_latency_port
-   ONLY if this function returns true.
+   The index of the latency port can be found with
+   lilv_plugin_get_latency_port() ONLY if this function returns true.
 */
 LILV_API bool
 lilv_plugin_has_latency(const LilvPlugin* p);
@@ -965,7 +969,7 @@ lilv_plugin_write_description(LilvWorld*        world,
 /**
    Write a manifest entry for @c plugin to @c manifest_file.
 
-   This function is intended for use with lilv_plugin_write_description to
+   This function is intended for use with lilv_plugin_write_description() to
    write a complete description of a plugin to a bundle.
 */
 LILV_API void
@@ -1126,7 +1130,7 @@ lilv_port_get_range(const LilvPlugin* plugin,
    This returns a collection of 'interesting' named values of a port
    (e.g. appropriate entries for a UI selector associated with this port).
    Returned value may be NULL if @a port has no scale points, otherwise it
-   must be freed by caller with lilv_scale_points_free.
+   must be freed by caller with lilv_scale_points_free().
 */
 LILV_API LilvScalePoints*
 lilv_port_get_scale_points(const LilvPlugin* plugin,
@@ -1142,6 +1146,8 @@ lilv_port_get_scale_points(const LilvPlugin* plugin,
    Load a state snapshot from @c world's RDF model.
    This function can be used to load the default state of a plugin by passing
    the plugin URI as the @p subject parameter.
+   @param world The world.
+   @param map URID mapper.
    @param subject The subject of the state description (e.g. a preset URI).
    @return A new LilvState which must be freed with lilv_state_free(), or NULL.
 */
@@ -1152,6 +1158,8 @@ lilv_state_new_from_world(LilvWorld*      world,
 
 /**
    Load a state snapshot from a file.
+   @param world The world.
+   @param map URID mapper.
    @param subject The subject of the state description (e.g. a preset URI).
    @param path The path of the file containing the state description.
    @return A new LilvState which must be freed with lilv_state_free().
@@ -1199,6 +1207,8 @@ typedef const void* (*LilvGetPortValueFunc)(const char* port_symbol,
 
    @param instance An instance of @c plugin.
 
+   @param map The map to use for mapping URIs in state.
+
    @param file_dir Directory of files created by the plugin earlier (or NULL).
    This is for hosts that support file creation at any time with state
    state:makePath.  These files will be copied as necessary to @c copy_dir and
@@ -1213,6 +1223,10 @@ typedef const void* (*LilvGetPortValueFunc)(const char* port_symbol,
    @param save_dir Directory of files created by plugin during save (or NULL).
    If the state will be saved, this should be the bundle directory later passed
    to lilv_state_save.
+
+   @param get_value Function to get port values.
+
+   @param user_data User data to pass to `get_value`.
 
    @param link_dir Directory of links to external files (or NULL).  A link will
    be made in this directory to any external files referred to in plugin state.
@@ -1318,6 +1332,7 @@ typedef void (*LilvSetPortValueFunc)(const char* port_symbol,
    @param state The state to restore, which must apply to the correct plugin.
    @param instance An instance of the plugin @c state applies to, or NULL.
    @param set_value A function to set a port value (may be NULL).
+   @param user_data User data to pass to `set_value`.
    @param flags Bitwise OR of LV2_State_Flags values.
    @param features Features to pass LV2_State_Interface.restore().
 
@@ -1345,6 +1360,8 @@ lilv_state_restore(const LilvState*           state,
 
 /**
    Save state to a file.
+   @param world The world.
+   @param map URID mapper.
    @param unmap URID unmapper.
    @param state State to save.
    @param uri URI of state, may be NULL.
@@ -1370,6 +1387,10 @@ lilv_state_save(LilvWorld*                 world,
 /**
    Save state to a string.  This function does not use the filesystem.
 
+   @param world The world.
+   @param map URID mapper.
+   @param unmap URID unmapper.
+   @param state The state to serialize.
    @param uri URI for the state description (mandatory).
    @param base_uri Base URI for serialisation.  Unless you know what you are
    doing, pass NULL for this, otherwise the state may not be restorable via
@@ -1433,7 +1454,7 @@ lilv_plugin_class_get_label(const LilvPluginClass* plugin_class);
 
 /**
    Get the subclasses of this plugin class.
-   Returned value must be freed by caller with lilv_plugin_classes_free.
+   Returned value must be freed by caller with lilv_plugin_classes_free().
 */
 LILV_API LilvPluginClasses*
 lilv_plugin_class_get_children(const LilvPluginClass* plugin_class);
@@ -1445,7 +1466,7 @@ lilv_plugin_class_get_children(const LilvPluginClass* plugin_class);
 */
 
 /**
-   @cond 0
+   @cond LILV_DOCUMENT_INSTANCE_IMPL
 */
 
 /* Instance of a plugin.
@@ -1469,7 +1490,7 @@ struct LilvInstanceImpl {
    Instantiate a plugin.
    The returned value is a lightweight handle for an LV2 plugin instance,
    it does not refer to @a plugin, or any other Lilv state.  The caller must
-   eventually free it with lilv_instance_free.
+   eventually free it with lilv_instance_free().
    @a features is a NULL-terminated array of features the host supports.
    NULL may be passed if the host supports no additional features.
    @return NULL if instantiation failed.
