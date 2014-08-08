@@ -92,10 +92,10 @@ lilv_strdup(const char* str)
 		return NULL;
 	}
 
-	const size_t len = strlen(str);
-	char*        dup = (char*)malloc(len + 1);
-	memcpy(dup, str, len + 1);
-	return dup;
+	const size_t len  = strlen(str);
+	char*        copy = (char*)malloc(len + 1);
+	memcpy(copy, str, len + 1);
+	return copy;
 }
 
 const char*
