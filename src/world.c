@@ -452,14 +452,16 @@ lilv_world_load_dyn_manifest(LilvWorld*      world,
 	typedef void* LV2_Dyn_Manifest_Handle;
 	LV2_Dyn_Manifest_Handle handle = NULL;
 
-	// ?dman a dynman:DynManifest
-	SordIter* dmanifests = sord_search(world->model,
-	                                   NULL,
-	                                   world->uris.rdf_a,
-	                                   world->uris.dman_DynManifest,
-	                                   bundle_node);
-	FOREACH_MATCH(dmanifests) {
-		const SordNode* dmanifest = sord_iter_get_node(dmanifests, SORD_SUBJECT);
+	// ?dman a dynman:DynManifest bundle_node
+	SordModel* model = lilv_world_filter_model(world,
+	                                           world->model,
+	                                           NULL,
+	                                           world->uris.rdf_a,
+	                                           world->uris.dman_DynManifest,
+	                                           bundle_node);
+	SordIter* iter = sord_begin(model);
+	for (; !sord_iter_end(iter); sord_iter_next(iter)) {
+		const SordNode* dmanifest = sord_iter_get_node(iter, SORD_SUBJECT);
 
 		// ?dman lv2:binary ?binary
 		SordIter* binaries = sord_search(world->model,
@@ -521,12 +523,14 @@ lilv_world_load_dyn_manifest(LilvWorld*      world,
 		desc->handle = handle;
 		desc->refs   = 0;
 
+		sord_iter_free(binaries);
+
 		// Generate data file
 		FILE* fd = tmpfile();
 		get_subjects_func(handle, fd);
 		rewind(fd);
 
-		// Parse generated data file
+		// Parse generated data file into temporary model
 		// FIXME
 		const SerdNode* base   = sord_node_to_serd_node(dmanifest);
 		SerdEnv*        env    = serd_env_new(base);
@@ -543,21 +547,22 @@ lilv_world_load_dyn_manifest(LilvWorld*      world,
 		fclose(fd);
 
 		// ?plugin a lv2:Plugin
-		SordIter* plug_results = sord_search(
-			world->model,
-			NULL,
-			world->uris.rdf_a,
-			world->uris.lv2_Plugin,
-			dmanifest);
-		FOREACH_MATCH(plug_results) {
-			const SordNode* plug = sord_iter_get_node(plug_results, SORD_SUBJECT);
+		SordModel* plugins = lilv_world_filter_model(world,
+		                                             world->model,
+		                                             NULL,
+		                                             world->uris.rdf_a,
+		                                             world->uris.lv2_Plugin,
+		                                             dmanifest);
+		SordIter* p = sord_begin(plugins);
+		FOREACH_MATCH(p) {
+			const SordNode* plug = sord_iter_get_node(p, SORD_SUBJECT);
 			lilv_world_add_plugin(world, plug, manifest, desc, bundle_node);
 		}
-		sord_iter_free(plug_results);
-
-		sord_iter_free(binaries);
+		sord_iter_free(p);
+		sord_free(plugins);
 	}
-	sord_iter_free(dmanifests);
+	sord_iter_free(iter);
+	sord_free(model);
 #endif  // LILV_DYN_MANIFEST
 }
 
