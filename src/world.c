@@ -487,9 +487,11 @@ lilv_world_load_dyn_manifest(LilvWorld*      world,
 		}
 
 		// Open library
+		dlerror();
 		void* lib = dlopen(lib_path, RTLD_LAZY);
 		if (!lib) {
-			LILV_ERRORF("Failed to open dynmanifest library `%s'\n", lib_path);
+			LILV_ERRORF("Failed to open dynmanifest library `%s' (%s)\n",
+			            lib_path, dlerror());
 			sord_iter_free(binaries);
 			continue;
 		}
