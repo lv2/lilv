@@ -87,7 +87,7 @@ def configure(conf):
     autowaf.define(conf, 'LILV_NEW_LV2', 1)  # New LV2 discovery API
 
     defines = ['_POSIX_C_SOURCE', '_BSD_SOURCE']
-    if Options.platform == 'darwin':
+    if conf.env.DEST_OS == 'darwin':
         defines += ['_DARWIN_C_SOURCE']
 
     # Check for gcov library (for test coverage)
@@ -122,7 +122,7 @@ def configure(conf):
 
     lilv_path_sep = ':'
     lilv_dir_sep  = '/'
-    if sys.platform == 'win32':
+    if conf.env.DEST_OS == 'win32':
         lilv_path_sep = ';'
         lilv_dir_sep = '\\\\'
 
@@ -132,16 +132,16 @@ def configure(conf):
     # Set default LV2 path
     lv2_path = Options.options.default_lv2_path
     if lv2_path == '':
-        if Options.platform == 'darwin':
+        if conf.env.DEST_OS == 'darwin':
             lv2_path = lilv_path_sep.join(['~/Library/Audio/Plug-Ins/LV2',
                                            '~/.lv2',
                                            '/usr/local/lib/lv2',
                                            '/usr/lib/lv2',
                                            '/Library/Audio/Plug-Ins/LV2'])
-        elif Options.platform == 'haiku':
+        elif conf.env.DEST_OS == 'haiku':
             lv2_path = lilv_path_sep.join(['~/.lv2',
                                            '/boot/common/add-ons/lv2'])
-        elif Options.platform == 'win32':
+        elif conf.env.DEST_OS == 'win32':
             lv2_path = lilv_path_sep.join(['%APPDATA%\\\\LV2',
                                            '%COMMONPROGRAMFILES%\\\\LV2'])
         else:
@@ -192,11 +192,6 @@ def build(bld):
     bld.install_files(includedir, bld.path.ant_glob('lilv/*.h'))
     bld.install_files(includedir, bld.path.ant_glob('lilv/*.hpp'))
 
-    # Pkgconfig file
-    autowaf.build_pc(bld, 'LILV', LILV_VERSION, LILV_MAJOR_VERSION, [],
-                     {'LILV_MAJOR_VERSION' : LILV_MAJOR_VERSION,
-                      'LILV_PKG_DEPS'      : 'lv2 serd-0 sord-0 sratom-0'})
-
     lib_source = '''
         src/collections.c
         src/instance.c
@@ -217,13 +212,19 @@ def build(bld):
     lib      = ['dl']
     libflags = ['-fvisibility=hidden']
     defines  = []
-    if sys.platform == 'win32':
+    if bld.env.DEST_OS == 'win32':
         lib = []
     if bld.env.MSVC_COMPILER:
         libflags = []
         defines  = ['snprintf=_snprintf']
-    elif sys.platform.find('bsd') > 0:
+    elif bld.env.DEST_OS.find('bsd') > 0:
         lib = []
+
+    # Pkgconfig file
+    autowaf.build_pc(bld, 'LILV', LILV_VERSION, LILV_MAJOR_VERSION, [],
+                     {'LILV_MAJOR_VERSION' : LILV_MAJOR_VERSION,
+                      'LILV_PKG_DEPS'      : 'lv2 serd-0 sord-0 sratom-0',
+                      'LILV_PKG_LIBS'      : ' -l'.join([''] + lib)})
 
     # Shared Library
     if bld.env.BUILD_SHARED:
