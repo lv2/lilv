@@ -403,6 +403,11 @@ lilv_state_restore(const LilvState*           state,
                    uint32_t                   flags,
                    const LV2_Feature *const * features)
 {
+	if (!state) {
+		LILV_ERROR("lilv_state_restore() called on NULL state\n");
+		return;
+	}
+		
 	LV2_State_Map_Path map_path = {
 		(LilvState*)state, abstract_path, absolute_path };
 	LV2_Feature map_feature = { LV2_STATE__mapPath, &map_path };
@@ -581,10 +586,7 @@ lilv_state_new_from_world(LilvWorld*      world,
 		return NULL;
 	}
 
-	LilvState* state = new_state_from_model(
-		world, map, world->model, node->node, NULL);
-
-	return state;
+	return new_state_from_model(world, map, world->model, node->node, NULL);
 }
 
 LILV_API LilvState*

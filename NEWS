@@ -1,9 +1,10 @@
 lilv (0.20.1) unstable;
 
+  * Tolerate passing NULL to lilv_state_restore()
   * Configure based on compiler target OS for cross-compilation
-  * Minor documentation improvements.
+  * Minor documentation improvements
 
- -- David Robillard <d@drobilla.net>  Sat, 04 Oct 2014 23:06:19 -0400
+ -- David Robillard <d@drobilla.net>  Sat, 04 Oct 2014 23:27:33 -0400
 
 lilv (0.20.0) stable;
 
