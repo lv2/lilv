@@ -68,13 +68,15 @@ lilv_strjoin(const char* first, ...)
 		if (s == NULL)
 			break;
 
-		const size_t this_len = strlen(s);
-		if (!(result = (char*)realloc(result, len + this_len + 1))) {
+		const size_t this_len   = strlen(s);
+		char*        new_result = (char*)realloc(result, len + this_len + 1);
+		if (!new_result) {
 			free(result);
 			LILV_ERROR("realloc() failed\n");
 			return NULL;
 		}
 
+		result = new_result;
 		memcpy(result + len, s, this_len);
 		len += this_len;
 	}

@@ -51,7 +51,7 @@ lilv_plugin_instantiate(const LilvPlugin*        plugin,
 
 	const LV2_Feature** local_features = NULL;
 	if (features == NULL) {
-		local_features = (const LV2_Feature**)malloc(sizeof(LV2_Feature));
+		local_features = (const LV2_Feature**)malloc(sizeof(LV2_Feature*));
 		local_features[0] = NULL;
 	}
 
