@@ -652,7 +652,7 @@ lilv_world_unload_file(LilvWorld* world, LilvNode* file)
 {
 	ZixTreeIter* iter;
 	if (!zix_tree_find((ZixTree*)world->loaded_files, file, &iter)) {
-		zix_tree_remove(world->loaded_files, iter);
+		zix_tree_remove((ZixTree*)world->loaded_files, iter);
 		return 0;
 	}
 	return 1;

@@ -3,9 +3,10 @@ lilv (0.20.1) unstable;
   * Tolerate passing NULL to lilv_state_restore()
   * Fix a few minor/unlikely memory errors
   * Configure based on compiler target OS for cross-compilation
+  * Windows fixes (thanks John Emmas)
   * Minor documentation improvements
 
- -- David Robillard <d@drobilla.net>  Mon, 17 Nov 2014 01:43:02 -0500
+ -- David Robillard <d@drobilla.net>  Fri, 21 Nov 2014 20:31:50 -0500
 
 lilv (0.20.0) stable;
 

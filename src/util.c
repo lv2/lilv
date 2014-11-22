@@ -35,6 +35,17 @@
 #    include <io.h>
 #    define F_OK 0
 #    define mkdir(path, flags) _mkdir(path)
+#    if (defined(_MSC_VER) && (_MSC_VER < 1500))
+/** Implement 'CreateSymbolicLink()' for MSVC 8 or earlier */
+BOOLEAN WINAPI
+CreateSymbolicLink(LPCTSTR linkpath, LPCTSTR targetpath, DWORD flags)
+{
+	typedef BOOLEAN (WINAPI* PFUNC)(LPCTSTR, LPCTSTR, DWORD);
+
+	PFUNC pfn = (PFUNC)GetProcAddress(GetModuleHandle(TEXT("kernel32.dll")), "CreateSymbolicLinkA");
+	return pfn ? pfn(linkpath, targetpath, flags) : 0;
+}
+#    endif /* _MSC_VER < 1500 */
 #else
 #    include <dirent.h>
 #    include <unistd.h>
@@ -429,6 +440,9 @@ lilv_symlink(const char* oldpath, const char* newpath)
 	if (strcmp(oldpath, newpath)) {
 #ifdef _WIN32
 		ret = !CreateSymbolicLink(newpath, oldpath, 0);
+		if (ret) {
+			ret = !CreateHardLink(newpath, oldpath, 0);
+		}
 #else
 		ret = symlink(oldpath, newpath);
 #endif

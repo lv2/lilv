@@ -693,7 +693,7 @@ lilv_plugin_get_latency_port_index(const LilvPlugin* p)
 	} else if (des_port) {
 		return des_port->index;
 	} else {
-		return UINT32_MAX;
+		return (uint32_t)-1;
 	}
 }
 
