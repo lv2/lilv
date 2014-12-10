@@ -677,13 +677,13 @@ load_dir_entry(const char* dir, const char* name, void* data)
 	if (!strcmp(name, ".") || !strcmp(name, ".."))
 		return;
 
-	const char* scheme  = (dir[0] == '/') ? "file://" : "file:///";
-	char*       uri     = lilv_strjoin(scheme, dir, "/", name, "/", NULL);
-	LilvNode*   uri_val = lilv_new_uri(world, uri);
+	char*     path = lilv_strjoin(dir, "/", name, "/", NULL);
+	SerdNode  suri = serd_node_new_file_uri((const uint8_t*)path, 0, 0, true);
+	LilvNode* node = lilv_new_uri(world, (const char*)suri.buf);
 
-	lilv_world_load_bundle(world, uri_val);
-	lilv_node_free(uri_val);
-	free(uri);
+	lilv_world_load_bundle(world, node);
+	lilv_node_free(node);
+	serd_node_free(&suri);
 }
 
 /** Load all bundles in the directory at `dir_path`. */
