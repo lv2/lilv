@@ -102,9 +102,7 @@ typedef struct {
 	char*                     bundle_path;
 	void*                     lib;
 	LV2_Descriptor_Function   lv2_descriptor;
-#ifdef LILV_NEW_LV2
 	const LV2_Lib_Descriptor* desc;
-#endif
 	uint32_t                  refs;
 } LilvLib;
 

@@ -42,9 +42,7 @@ lilv_world_new(void)
 	world->loaded_files   = zix_tree_new(
 		false, lilv_resource_node_cmp, NULL, (ZixDestroyFunc)lilv_node_free);
 
-#ifdef LILV_NEW_LV2
 	world->libs = zix_tree_new(false, lilv_lib_compare, NULL, NULL);
-#endif
 
 #define NS_DCTERMS "http://purl.org/dc/terms/"
 #define NS_DYNMAN  "http://lv2plug.in/ns/ext/dynmanifest#"
@@ -136,10 +134,8 @@ lilv_world_free(LilvWorld* world)
 	zix_tree_free((ZixTree*)world->loaded_files);
 	world->loaded_files = NULL;
 
-#ifdef LILV_NEW_LV2
 	zix_tree_free((ZixTree*)world->libs);
 	world->libs = NULL;
-#endif
 
 	zix_tree_free((ZixTree*)world->plugin_classes);
 	world->plugin_classes = NULL;

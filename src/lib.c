@@ -48,7 +48,6 @@ lilv_lib_open(LilvWorld*               world,
 	LV2_Descriptor_Function df = (LV2_Descriptor_Function)
 		lilv_dlfunc(lib, "lv2_descriptor");
 
-#ifdef LILV_NEW_LV2
 	LV2_Lib_Descriptor_Function ldf = (LV2_Lib_Descriptor_Function)
 		lilv_dlfunc(lib, "lv2_lib_descriptor");
 
@@ -59,9 +58,7 @@ lilv_lib_open(LilvWorld*               world,
 			LILV_ERRORF("Call to `lv2_lib_descriptor' in %s failed\n", lib_path);
 			return NULL;
 		}
-	} else
-#endif
-	if (!df) {
+	} else if (!df) {
 		LILV_ERRORF("No `lv2_descriptor' or `lv2_lib_descriptor' in %s\n",
 		            lib_path);
 		dlclose(lib);
@@ -74,9 +71,7 @@ lilv_lib_open(LilvWorld*               world,
 	llib->bundle_path    = lilv_strdup(bundle_path);
 	llib->lib            = lib;
 	llib->lv2_descriptor = df;
-#ifdef LILV_NEW_LV2
 	llib->desc           = desc;
-#endif
 	llib->refs           = 1;
 
 	zix_tree_insert(world->libs, llib, NULL);
@@ -89,11 +84,9 @@ lilv_lib_get_plugin(LilvLib* lib, uint32_t index)
 	if (lib->lv2_descriptor) {
 		return lib->lv2_descriptor(index);
 	}
-#ifdef LILV_NEW_LV2
 	if (lib->desc) {
 		return lib->desc->get_plugin(lib->desc->handle, index);
 	}
-#endif
 	return NULL;
 }
 

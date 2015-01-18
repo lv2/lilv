@@ -84,8 +84,6 @@ def configure(conf):
     autowaf.check_pkg(conf, 'sratom-0', uselib_store='SRATOM',
                       atleast_version='0.4.0', mandatory=True)
 
-    autowaf.define(conf, 'LILV_NEW_LV2', 1)  # New LV2 discovery API
-
     defines = ['_POSIX_C_SOURCE', '_BSD_SOURCE']
     if conf.env.DEST_OS == 'darwin':
         defines += ['_DARWIN_C_SOURCE']
