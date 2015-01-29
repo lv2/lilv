@@ -680,6 +680,7 @@ load_dir_entry(const char* dir, const char* name, void* data)
 	lilv_world_load_bundle(world, node);
 	lilv_node_free(node);
 	serd_node_free(&suri);
+	free(path);
 }
 
 /** Load all bundles in the directory at `dir_path`. */
