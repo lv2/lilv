@@ -33,11 +33,12 @@ lilv_plugin_instantiate(const LilvPlugin*        plugin,
 	const LilvNode* const lib_uri    = lilv_plugin_get_library_uri(plugin);
 	const LilvNode* const bundle_uri = lilv_plugin_get_bundle_uri(plugin);
 
-	const char* bundle_path = lilv_uri_to_path(
-		lilv_node_as_uri(lilv_plugin_get_bundle_uri(plugin)));
+	char* const bundle_path = lilv_file_uri_parse(
+		lilv_node_as_uri(lilv_plugin_get_bundle_uri(plugin)), NULL);
 
 	LilvLib* lib = lilv_lib_open(plugin->world, lib_uri, bundle_path, features);
 	if (!lib) {
+		free(bundle_path);
 		return NULL;
 	}
 
@@ -46,6 +47,7 @@ lilv_plugin_instantiate(const LilvPlugin*        plugin,
 	SerdURI     base_uri;
 	if (serd_uri_parse((const uint8_t*)bundle_uri_str, &base_uri)) {
 		lilv_lib_close(lib);
+		free(bundle_path);
 		return NULL;
 	}
 
@@ -93,6 +95,7 @@ lilv_plugin_instantiate(const LilvPlugin*        plugin,
 	}
 
 	free(local_features);
+	free(bundle_path);
 
 	if (result) {
 		// Failed to instantiate

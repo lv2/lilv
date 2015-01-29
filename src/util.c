@@ -118,6 +118,12 @@ lilv_uri_to_path(const char* uri)
 	return (const char*)serd_uri_to_path((const uint8_t*)uri);
 }
 
+char*
+lilv_file_uri_parse(const char* uri, char** hostname)
+{
+	return (char*)serd_file_uri_parse((const uint8_t*)uri, (uint8_t**)hostname);
+}
+
 /** Return the current LANG converted to Turtle (i.e. RFC3066) style.
  * For example, if LANG is set to "en_CA.utf-8", this returns "en-ca".
  */

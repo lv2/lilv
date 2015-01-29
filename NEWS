@@ -1,13 +1,14 @@
-lilv (0.20.1) unstable;
+lilv (0.21.1) unstable;
 
   * Fix loading files with spaces in their path
+  * Add lilv_file_uri_parse() for correct URI to path conversion
   * Tolerate passing NULL to lilv_state_restore()
   * Fix a few minor/unlikely memory errors
   * Configure based on compiler target OS for cross-compilation
   * Windows fixes (thanks John Emmas)
   * Minor documentation improvements
 
- -- David Robillard <d@drobilla.net>  Wed, 10 Dec 2014 14:32:08 -0500
+ -- David Robillard <d@drobilla.net>  Thu, 29 Jan 2015 17:40:17 -0500
 
 lilv (0.20.0) stable;
 

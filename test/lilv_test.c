@@ -215,17 +215,6 @@ cleanup_uris(void)
 /*****************************************************************************/
 
 static int
-test_utils(void)
-{
-	TEST_ASSERT(!strcmp(lilv_uri_to_path("file:///tmp/blah"), "/tmp/blah"));
-	TEST_ASSERT(!lilv_uri_to_path("file:/example.org/blah"));
-	TEST_ASSERT(!lilv_uri_to_path("http://example.org/blah"));
-	return 1;
-}
-
-/*****************************************************************************/
-
-static int
 test_value(void)
 {
 	if (!start_bundle(MANIFEST_PREFIXES
@@ -1867,7 +1856,6 @@ test_string(void)
 
 /* add tests here */
 static struct TestCase tests[] = {
-	TEST_CASE(utils),
 	TEST_CASE(value),
 	TEST_CASE(verify),
 	TEST_CASE(no_verify),

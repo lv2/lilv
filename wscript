@@ -12,7 +12,7 @@ import waflib.Logs as Logs
 # major increment <=> incompatible changes
 # minor increment <=> compatible changes (additions)
 # micro increment <=> no interface changes
-LILV_VERSION       = '0.20.1'
+LILV_VERSION       = '0.21.1'
 LILV_MAJOR_VERSION = '0'
 
 # Mandatory waf variables

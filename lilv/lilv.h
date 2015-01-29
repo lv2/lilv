@@ -45,6 +45,11 @@
 #else
 #    define LILV_API
 #endif
+#if __GNUC__ > 3 || (__GNUC__ == 3 && __GNUC_MINOR__ >= 1)
+#    define LILV_DEPRECATED __attribute__((__deprecated__))
+#else
+#    define LILV_DEPRECATED
+#endif
 
 #ifdef __cplusplus
 extern "C" {
@@ -104,10 +109,23 @@ typedef void LilvNodes;          /**< set<Node>. */
    Convert a file URI string to a local path string.
    For example, "file://foo/bar/baz.ttl" returns "/foo/bar/baz.ttl".
    Return value is shared and must not be deleted by caller.
+   This function does not handle escaping correctly and should not be used for
+   general file URIs.  Use lilv_file_uri_parse() instead.
    @return `uri` converted to a path, or NULL on failure (URI is not local).
 */
-LILV_API const char*
+LILV_API LILV_DEPRECATED const char*
 lilv_uri_to_path(const char* uri);
+
+/**
+   Convert a file URI string to a local path string.
+   For example, "file://foo/bar%20one/baz.ttl" returns "/foo/bar one/baz.ttl".
+   Return value must be freed by caller.
+   @param uri The file URI to parse.
+   @param hostname If non-NULL, set to the hostname in the URI, if any.
+   @return `uri` converted to a path, or NULL on failure (URI is not local).
+*/
+LILV_API char*
+lilv_file_uri_parse(const char* uri, char** hostname);
 
 /**
    Create a new URI value.
