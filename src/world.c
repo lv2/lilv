@@ -731,7 +731,7 @@ lilv_world_load_path(LilvWorld*  world,
 	}
 }
 
-static void
+void
 lilv_world_load_specifications(LilvWorld* world)
 {
 	for (LilvSpec* spec = world->specs; spec; spec = spec->next) {
@@ -742,7 +742,7 @@ lilv_world_load_specifications(LilvWorld* world)
 	}
 }
 
-static void
+void
 lilv_world_load_plugin_classes(LilvWorld* world)
 {
 	/* FIXME: This loads all classes, not just lv2:Plugin subclasses.

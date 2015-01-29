@@ -563,6 +563,26 @@ lilv_world_load_bundle(LilvWorld* world,
                        LilvNode*  bundle_uri);
 
 /**
+   Load all specifications from currently loaded bundles.
+
+   This is for hosts that explicitly load specific bundles, its use is not
+   necessary when using lilv_world_load_all().  This function parses the
+   specifications and adds them to the model.
+*/
+LILV_API void
+lilv_world_load_specifications(LilvWorld* world);
+
+/**
+   Load all plugin classes from currently loaded specifications.
+
+   Must be called after lilv_world_load_specifications().  This is for hosts
+   that explicitly load specific bundles, its use is not necessary when using
+   lilv_world_load_all().
+*/
+LILV_API void
+lilv_world_load_plugin_classes(LilvWorld* world);
+
+/**
    Unload a specific bundle.
 
    This unloads statements loaded by lilv_world_load_bundle().  Note that this
