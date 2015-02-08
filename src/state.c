@@ -216,7 +216,7 @@ abstract_path(LV2_State_Map_Path_Handle handle,
 		free(real_path);
 		return lilv_strdup(pm->rel);
 	} else if (lilv_path_is_child(real_path, state->dir)) {
-		// File in state directory (loaded, or created by plugin during save
+		// File in state directory (loaded, or created by plugin during save)
 		path = lilv_path_relative_to(real_path, state->dir);
 	} else if (lilv_path_is_child(real_path, state->file_dir)) {
 		// File created by plugin earlier
@@ -238,13 +238,16 @@ abstract_path(LV2_State_Map_Path_Handle handle,
 			// Refer to the latest copy in plugin state
 			real_path = copy;
 		}
-	} else {
-		// New path outside state directory
+	} else if (state->link_dir) {
+		// New path outside state directory, make a link
 		const char* slash = strrchr(real_path, '/');
 		const char* name  = slash ? (slash + 1) : real_path;
 
 		// Find a free name in the (virtual) state directory
 		path = lilv_find_free_path(name, lilv_state_has_path, state);
+	} else {
+		// No link directory, preserve absolute path
+		path = lilv_strdup(abs_path);
 	}
 
 	// Add record to path mapping

@@ -1263,7 +1263,9 @@ typedef const void* (*LilvGetPortValueFunc)(const char* port_symbol,
    If the state will be saved, this should be the bundle directory later passed
    to lilv_state_save().
 
-   @param get_value Function to get port values.
+   @param get_value Function to get port values (or NULL).  If NULL, the
+   returned state will not represent port values.  This should only be NULL in
+   hosts that save and restore port values via some other mechanism.
 
    @param user_data User data to pass to `get_value`.
 

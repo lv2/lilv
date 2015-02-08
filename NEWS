@@ -5,12 +5,13 @@ lilv (0.21.1) unstable;
   * Expose lilv_world_load_specifications() and
     lilv_world_load_plugin_classes()
   * Tolerate passing NULL to lilv_state_restore()
+  * Preserve absolute paths in state if no link directory is given
   * Fix a few minor/unlikely memory errors
   * Configure based on compiler target OS for cross-compilation
   * Windows fixes (thanks John Emmas)
   * Minor documentation improvements
 
- -- David Robillard <d@drobilla.net>  Thu, 29 Jan 2015 17:55:31 -0500
+ -- David Robillard <d@drobilla.net>  Sun, 08 Feb 2015 00:21:46 -0500
 
 lilv (0.20.0) stable;
 
