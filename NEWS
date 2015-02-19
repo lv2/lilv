@@ -2,6 +2,7 @@ lilv (0.21.1) unstable;
 
   * Fix loading files with spaces in their path
   * Add lilv_file_uri_parse() for correct URI to path conversion
+  * Add lilv_state_emit_port_values() for special port value handling
   * Expose lilv_world_load_specifications() and
     lilv_world_load_plugin_classes()
   * Tolerate passing NULL to lilv_state_restore()
@@ -11,7 +12,7 @@ lilv (0.21.1) unstable;
   * Windows fixes (thanks John Emmas)
   * Minor documentation improvements
 
- -- David Robillard <d@drobilla.net>  Sun, 08 Feb 2015 00:21:46 -0500
+ -- David Robillard <d@drobilla.net>  Thu, 19 Feb 2015 02:35:18 -0500
 
 lilv (0.20.0) stable;
 

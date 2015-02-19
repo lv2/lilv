@@ -1369,6 +1369,22 @@ typedef void (*LilvSetPortValueFunc)(const char* port_symbol,
                                      uint32_t    type);
 
 /**
+   Enumerate the port values in a state snapshot.
+   @param state The state to retrieve port values from.
+   @param set_value A function to receive port values.
+   @param user_data User data to pass to `set_value`.
+
+   This function is a subset of lilv_state_restore() that only fires the
+   `set_value` callback and does not directly affect a plugin instance.  This
+   is useful in hosts that need to retrieve the port values in a state snapshot
+   for special handling.
+*/
+LILV_API void
+lilv_state_emit_port_values(const LilvState*     state,
+                            LilvSetPortValueFunc set_value,
+                            void*                user_data);
+
+/**
    Restore a plugin instance from a state snapshot.
    @param state The state to restore, which must apply to the correct plugin.
    @param instance An instance of the plugin `state` applies to, or NULL.

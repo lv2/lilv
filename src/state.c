@@ -399,6 +399,17 @@ lilv_state_new_from_instance(const LilvPlugin*          plugin,
 }
 
 LILV_API void
+lilv_state_emit_port_values(const LilvState*     state,
+                            LilvSetPortValueFunc set_value,
+                            void*                user_data)
+{
+	for (uint32_t i = 0; i < state->num_values; ++i) {
+		const PortValue* val = &state->values[i];
+		set_value(val->symbol, user_data, val->value, val->size, val->type);
+	}
+}
+
+LILV_API void
 lilv_state_restore(const LilvState*           state,
                    LilvInstance*              instance,
                    LilvSetPortValueFunc       set_value,
@@ -410,7 +421,7 @@ lilv_state_restore(const LilvState*           state,
 		LILV_ERROR("lilv_state_restore() called on NULL state\n");
 		return;
 	}
-		
+
 	LV2_State_Map_Path map_path = {
 		(LilvState*)state, abstract_path, absolute_path };
 	LV2_Feature map_feature = { LV2_STATE__mapPath, &map_path };
@@ -430,11 +441,7 @@ lilv_state_restore(const LilvState*           state,
 	free(sfeatures);
 
 	if (set_value) {
-		for (uint32_t i = 0; i < state->num_values; ++i) {
-			const PortValue* val = &state->values[i];
-			set_value(val->symbol, user_data,
-			          val->value, val->size, val->type);
-		}
+		lilv_state_emit_port_values(state, set_value, user_data);
 	}
 }
 
