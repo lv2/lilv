@@ -564,7 +564,7 @@ lilv_world_load_dyn_manifest(LilvWorld*      world,
 #endif  // LILV_DYN_MANIFEST
 }
 
-static LilvNode*
+LilvNode*
 lilv_world_get_manifest_uri(LilvWorld* world, LilvNode* bundle_uri)
 {
 	SerdNode manifest_uri = lilv_new_uri_relative_to_base(
@@ -628,8 +628,7 @@ static int
 lilv_world_drop_graph(LilvWorld* world, LilvNode* graph)
 {
 	SordIter* i = sord_search(world->model, NULL, NULL, NULL, graph->node);
-	while (!sord_iter_end(i) &&
-	       sord_node_equals(sord_iter_get_node(i, SORD_GRAPH), graph->node)) {
+	while (!sord_iter_end(i)) {
 		const SerdStatus st = sord_erase(world->model, i);
 		if (st) {
 			LILV_ERRORF("Error removing statement from <%s> (%s)\n",
@@ -657,6 +656,10 @@ lilv_world_unload_file(LilvWorld* world, LilvNode* file)
 LILV_API int
 lilv_world_unload_bundle(LilvWorld* world, LilvNode* bundle_uri)
 {
+	if (!bundle_uri) {
+		return 0;
+	}
+
 	// Remove loaded_files entry for manifest.ttl
 	LilvNode* manifest = lilv_world_get_manifest_uri(world, bundle_uri);
 	lilv_world_unload_file(world, manifest);

@@ -245,6 +245,7 @@ test_value(void)
 	TEST_ASSERT(lilv_node_is_literal(sval));
 	TEST_ASSERT(lilv_node_is_literal(ival));
 	TEST_ASSERT(lilv_node_is_literal(fval));
+	TEST_ASSERT(!lilv_node_get_path(fval, NULL));
 
 	TEST_ASSERT(!strcmp(lilv_node_as_uri(uval), "http://example.org"));
 	TEST_ASSERT(!strcmp(lilv_node_as_string(sval), "Foo"));
@@ -1523,6 +1524,12 @@ test_state(void)
 	// Ensure they are equal
 	TEST_ASSERT(lilv_state_equals(state, state2));
 
+	// Check that we can't delete unsaved state
+	TEST_ASSERT(lilv_state_delete(world, state));
+
+	// Check that state has no URI
+	TEST_ASSERT(!lilv_state_get_uri(state));
+
 	// Check that we can't save a state with no URI
 	char* bad_state_str = lilv_state_to_string(
 		world, &map, &unmap, state, NULL, NULL);
@@ -1602,6 +1609,11 @@ test_state(void)
 
 	LilvState* state6 = lilv_state_new_from_world(world, &map, test_state_node);
 	TEST_ASSERT(lilv_state_equals(state, state6));  // Round trip accuracy
+
+	// Check that loaded state has correct URI
+	TEST_ASSERT(lilv_state_get_uri(state6));
+	TEST_ASSERT(!strcmp(lilv_node_as_string(lilv_state_get_uri(state6)),
+	                    state_uri));
 
 	lilv_world_unload_resource(world, test_state_node);
 	lilv_world_unload_bundle(world, test_state_bundle);
@@ -1711,6 +1723,9 @@ test_state(void)
 	                                              "state/fstate7.lv2/fstate7.ttl");
 	TEST_ASSERT(lilv_state_equals(fstate72, fstate7));
 	TEST_ASSERT(!lilv_state_equals(fstate6, fstate72));
+
+	// Delete saved state
+	lilv_state_delete(world, fstate7);
 
 	lilv_instance_deactivate(instance);
 	lilv_instance_free(instance);

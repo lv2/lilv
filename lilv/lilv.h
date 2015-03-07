@@ -259,6 +259,14 @@ LILV_API const char*
 lilv_node_as_string(const LilvNode* value);
 
 /**
+   Return the path of a file URI node.
+   Returns NULL if `value` is not a file URI.
+   Returned value must be freed by caller.
+*/
+LILV_API char*
+lilv_node_get_path(const LilvNode* value, char** hostname);
+
+/**
    Return whether this value is a decimal literal.
 */
 LILV_API bool
@@ -1342,6 +1350,14 @@ LILV_API const LilvNode*
 lilv_state_get_plugin_uri(const LilvState* state);
 
 /**
+   Get the URI of `state`.
+
+   This may return NULL if the state has not been saved and has no URI.
+*/
+LILV_API const LilvNode*
+lilv_state_get_uri(const LilvState* state);
+
+/**
    Get the label of `state`.
 */
 LILV_API const char*
@@ -1460,6 +1476,24 @@ lilv_state_to_string(LilvWorld*       world,
                      const LilvState* state,
                      const char*      uri,
                      const char*      base_uri);
+
+/**
+   Unload a state from the world and delete all associated files.
+   @param world The world.
+   @param state State to remove from the system.
+
+   This function DELETES FILES/DIRECTORIES FROM THE FILESYSTEM!  It is intended
+   for removing user-saved presets, but can delete any state the user has
+   permission to delete, including presets shipped with plugins.
+
+   The rdfs:seeAlso file for the state will be removed.  The entry in the
+   bundle's manifest.ttl is removed, and if this results in an empty manifest,
+   then the manifest file is removed.  If this results in an empty bundle, then
+   the bundle directory is removed as well.
+*/
+LILV_API int
+lilv_state_delete(LilvWorld*       world,
+                  const LilvState* state);
 
 /**
    @}

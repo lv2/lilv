@@ -30,6 +30,8 @@ extern "C" {
 #    include <windows.h>
 #    define dlopen(path, flags) LoadLibrary(path)
 #    define dlclose(lib)        FreeLibrary((HMODULE)lib)
+#    define unlink(path)        _unlink(path)
+#    define rmdir(path)         _rmdir(path)
 #    ifdef _MSC_VER
 #        define __func__ __FUNCTION__
 #        define INFINITY DBL_MAX + DBL_MAX
@@ -39,6 +41,7 @@ extern "C" {
 static inline char* dlerror(void) { return "Unknown error"; }
 #else
 #    include <dlfcn.h>
+#    include <unistd.h>
 #endif
 
 #include "serd/serd.h"
@@ -272,6 +275,8 @@ LilvPlugins*       lilv_plugins_new(void);
 LilvScalePoints*   lilv_scale_points_new(void);
 LilvPluginClasses* lilv_plugin_classes_new(void);
 LilvUIs*           lilv_uis_new(void);
+
+LilvNode* lilv_world_get_manifest_uri(LilvWorld* world, LilvNode* bundle_uri);
 
 const uint8_t* lilv_world_blank_node_prefix(LilvWorld* world);
 
