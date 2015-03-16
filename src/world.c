@@ -46,6 +46,7 @@ lilv_world_new(void)
 
 #define NS_DCTERMS "http://purl.org/dc/terms/"
 #define NS_DYNMAN  "http://lv2plug.in/ns/ext/dynmanifest#"
+#define NS_OWL     "http://www.w3.org/2002/07/owl#"
 
 #define NEW_URI(uri) sord_new_uri(world->world, (const uint8_t*)uri)
 
@@ -71,6 +72,7 @@ lilv_world_new(void)
 	world->uris.lv2_requiredFeature = NEW_URI(LV2_CORE__requiredFeature);
 	world->uris.lv2_symbol          = NEW_URI(LV2_CORE__symbol);
 	world->uris.lv2_prototype       = NEW_URI(LV2_CORE__prototype);
+	world->uris.owl_Ontology        = NEW_URI(NS_OWL "Ontology");
 	world->uris.pset_value          = NEW_URI(LV2_PRESETS__value);
 	world->uris.rdf_a               = NEW_URI(LILV_NS_RDF  "type");
 	world->uris.rdf_value           = NEW_URI(LILV_NS_RDF  "value");
@@ -186,7 +188,7 @@ lilv_world_find_nodes(LilvWorld*      world,
 		LILV_ERROR("Both subject and object are NULL\n");
 		return NULL;
 	}
-	
+
 	return lilv_world_find_nodes_internal(world,
 	                                      subject ? subject->node : NULL,
 	                                      predicate->node,
@@ -594,7 +596,7 @@ lilv_world_load_bundle(LilvWorld* world, LilvNode* bundle_uri)
 		lilv_node_free(manifest);
 		return;
 	}
-		
+
 	// ?plugin a lv2:Plugin
 	SordIter* plug_results = sord_search(world->model,
 	                                     NULL,
@@ -609,17 +611,20 @@ lilv_world_load_bundle(LilvWorld* world, LilvNode* bundle_uri)
 
 	lilv_world_load_dyn_manifest(world, bundle_node, manifest);
 
-	// ?specification a lv2:Specification
-	SordIter* spec_results = sord_search(world->model,
-	                                     NULL,
-	                                     world->uris.rdf_a,
-	                                     world->uris.lv2_Specification,
-	                                     bundle_node);
-	FOREACH_MATCH(spec_results) {
-		const SordNode* spec = sord_iter_get_node(spec_results, SORD_SUBJECT);
-		lilv_world_add_spec(world, spec, bundle_node);
+	// ?spec a lv2:Specification
+	// ?spec a owl:Ontology
+	const SordNode* spec_preds[] = { world->uris.lv2_Specification,
+	                                 world->uris.owl_Ontology,
+	                                 NULL };
+	for (const SordNode** p = spec_preds; *p; ++p) {
+		SordIter* i = sord_search(
+			world->model, NULL, world->uris.rdf_a, *p, bundle_node);
+		FOREACH_MATCH(i) {
+			const SordNode* spec = sord_iter_get_node(i, SORD_SUBJECT);
+			lilv_world_add_spec(world, spec, bundle_node);
+		}
+		sord_iter_free(i);
 	}
-	sord_iter_free(spec_results);
 
 	lilv_node_free(manifest);
 }
@@ -833,7 +838,7 @@ lilv_world_load_file(LilvWorld* world, SerdReader* reader, const LilvNode* uri)
 		LILV_ERRORF("Error loading file `%s'\n", lilv_node_as_string(uri));
 		return st;
 	}
-		
+
 	zix_tree_insert((ZixTree*)world->loaded_files,
 	                lilv_node_duplicate(uri),
 	                NULL);

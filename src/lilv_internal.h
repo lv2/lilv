@@ -176,7 +176,7 @@ struct LilvWorldImpl {
 		SordNode* lv2_requiredFeature;
 		SordNode* lv2_symbol;
 		SordNode* lv2_prototype;
-		SordNode* null_uri;
+		SordNode* owl_Ontology;
 		SordNode* pset_value;
 		SordNode* rdf_a;
 		SordNode* rdf_value;
@@ -189,6 +189,7 @@ struct LilvWorldImpl {
 		SordNode* xsd_decimal;
 		SordNode* xsd_double;
 		SordNode* xsd_integer;
+		SordNode* null_uri;
 	} uris;
 	LilvOptions opt;
 };

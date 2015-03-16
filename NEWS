@@ -7,6 +7,7 @@ lilv (0.21.3) unstable;
   * Add lilv_state_get_uri()
   * Add lilv_state_delete() for deleting user saved presets
   * Fix creation of duplicate manifest entries when saving state
+  * Load discovered owl ontologies as specifications
   * Expose lilv_world_load_specifications() and
     lilv_world_load_plugin_classes()
   * Tolerate passing NULL to lilv_state_restore()
@@ -16,7 +17,7 @@ lilv (0.21.3) unstable;
   * Windows fixes (thanks John Emmas)
   * Minor documentation improvements
 
- -- David Robillard <d@drobilla.net>  Sat, 07 Mar 2015 03:31:04 -0500
+ -- David Robillard <d@drobilla.net>  Mon, 16 Mar 2015 00:06:31 -0400
 
 lilv (0.20.0) stable;
 
