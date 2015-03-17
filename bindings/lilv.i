@@ -34,11 +34,11 @@ namespace Lilv {
 				self.iter    = plugins.begin()
 	                
 			def next(self):
-				self.iter = self.plugins.next(self.iter)
-				if not self.plugins.is_end(self.iter):
-					return self.plugins.get(self.iter)
-				else:
+				if self.plugins.is_end(self.iter):
 					raise StopIteration
+				plugin = self.plugins.get(self.iter)
+				self.iter = self.plugins.next(self.iter)
+				return plugin
 
 		return Iterator(self)
 
