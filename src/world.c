@@ -235,8 +235,11 @@ lilv_world_ask(LilvWorld*      world,
                const LilvNode* predicate,
                const LilvNode* object)
 {
-	return sord_ask(
-		world->model, subject->node, predicate->node, object->node, NULL);
+	return sord_ask(world->model,
+	                subject   ? subject->node   : NULL,
+	                predicate ? predicate->node : NULL,
+	                object    ? object->node    : NULL,
+	                NULL);
 }
 
 SordModel*
