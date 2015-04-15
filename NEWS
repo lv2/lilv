@@ -8,6 +8,7 @@ lilv (0.21.3) unstable;
   * Add lilv_state_delete() for deleting user saved presets
   * Fix lilv_world_ask() to work with wildcards
   * Fix creation of duplicate manifest entries when saving state
+  * Fix bindings for Python 3
   * Load discovered owl ontologies as specifications
   * Expose lilv_world_load_specifications() and
     lilv_world_load_plugin_classes()

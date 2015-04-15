@@ -32,8 +32,8 @@ namespace Lilv {
 			def __init__(self, plugins):
 				self.plugins = plugins
 				self.iter    = plugins.begin()
-	                
-			def next(self):
+
+			def __next__(self):
 				if self.plugins.is_end(self.iter):
 					raise StopIteration
 				plugin = self.plugins.get(self.iter)
