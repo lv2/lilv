@@ -755,7 +755,7 @@ remove_manifest_entry(SordWorld* world, SordModel* model, const char* subject)
 	sord_iter_free(i);
 	sord_node_free(world, s);
 }
-	
+
 static int
 add_state_to_manifest(LilvWorld*      lworld,
                       const LilvNode* plugin_uri,
@@ -1150,7 +1150,7 @@ lilv_state_delete(LilvWorld*       world,
 	free(manifest_path);
 	lilv_node_free(manifest);
 	lilv_node_free(bundle);
-	
+
 	return 0;
 }
 

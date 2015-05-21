@@ -124,4 +124,3 @@ lilv_instance_free(LilvInstance* instance)
 	instance->pimpl = NULL;
 	free(instance);
 }
-
