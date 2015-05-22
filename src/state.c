@@ -1100,7 +1100,7 @@ lilv_state_delete(LilvWorld*       world,
 	SordModel* model         = sord_new(world->world, SORD_SPO, false);
 
 	{
-		// Read manifest into model
+		// Read manifest into temporary local model
 		SerdEnv*    env = serd_env_new(sord_node_to_serd_node(manifest->node));
 		SerdReader* ttl = sord_new_reader(model, env, SERD_TURTLE, NULL);
 		serd_reader_read_file(ttl, USTR(manifest_path));
