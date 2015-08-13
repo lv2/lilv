@@ -16,10 +16,11 @@ lilv (0.21.3) unstable;
   * Preserve absolute paths in state if no link directory is given
   * Fix a few minor/unlikely memory errors
   * Configure based on compiler target OS for cross-compilation
+  * Fix lilv_realpath() on pre-POSIX-2008 systems
   * Windows fixes (thanks John Emmas)
   * Minor documentation improvements
 
- -- David Robillard <d@drobilla.net>  Mon, 16 Mar 2015 03:24:05 -0400
+ -- David Robillard <d@drobilla.net>  Thu, 13 Aug 2015 19:55:27 -0400
 
 lilv (0.20.0) stable;
 

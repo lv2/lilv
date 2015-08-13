@@ -14,8 +14,8 @@
   OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 */
 
-#define _POSIX_C_SOURCE 1  /* for fileno */
-#define _BSD_SOURCE     1  /* for realpath, symlink */
+#define _POSIX_C_SOURCE 200809L  /* for fileno */
+#define _BSD_SOURCE     1        /* for realpath, symlink */
 
 #ifdef __APPLE__
 #    define _DARWIN_C_SOURCE 1  /* for flock */
@@ -430,13 +430,23 @@ lilv_get_latest_copy(const char* path, const char* copy_path)
 char*
 lilv_realpath(const char* path)
 {
-#ifdef _WIN32
+#if defined(_WIN32)
 	char* out = (char*)malloc(MAX_PATH);
 	GetFullPathName(path, MAX_PATH, out, NULL);
 	return out;
-#else
+#elif _POSIX_VERSION >= 200809L
 	char* real_path = realpath(path, NULL);
 	return real_path ? real_path : lilv_strdup(path);
+#else
+	// OSX <= 105, if anyone cares.  I sure don't.
+	char* out       = (char*)malloc(PATH_MAX);
+	char* real_path = realpath(path, out);
+	if (!real_path) {
+		free(out);
+		return lilv_strdup(path);
+	} else {
+		return real_path;
+	}
 #endif
 }
 
