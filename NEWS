@@ -1,4 +1,4 @@
-lilv (0.21.3) unstable;
+lilv (0.21.5) unstable;
 
   * Fix loading files with spaces in their path
   * Add lilv_file_uri_parse() for correct URI to path conversion
@@ -6,6 +6,7 @@ lilv (0.21.3) unstable;
   * Add lilv_state_emit_port_values() for special port value handling
   * Add lilv_state_get_uri()
   * Add lilv_state_delete() for deleting user saved presets
+  * Add lilv_free() for systems picky about such things
   * Fix lilv_world_ask() to work with wildcards
   * Fix creation of duplicate manifest entries when saving state
   * Fix bindings for Python 3
@@ -20,7 +21,7 @@ lilv (0.21.3) unstable;
   * Windows fixes (thanks John Emmas)
   * Minor documentation improvements
 
- -- David Robillard <d@drobilla.net>  Thu, 13 Aug 2015 19:55:27 -0400
+ -- David Robillard <d@drobilla.net>  Thu, 13 Aug 2015 20:30:04 -0400
 
 lilv (0.20.0) stable;
 

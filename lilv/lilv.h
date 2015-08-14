@@ -101,6 +101,16 @@ typedef void LilvNodes;          /**< set<Node>. */
 */
 
 /**
+   Free memory allocated by Lilv.
+
+   This function exists because some systems require memory allocated by a
+   library to be freed by code in the same library.  It is otherwise equivalent
+   to the standard C free() function.
+*/
+LILV_API void
+lilv_free(void* ptr);
+
+/**
    @name Node
    @{
 */
@@ -119,7 +129,7 @@ lilv_uri_to_path(const char* uri);
 /**
    Convert a file URI string to a local path string.
    For example, "file://foo/bar%20one/baz.ttl" returns "/foo/bar one/baz.ttl".
-   Return value must be freed by caller.
+   Return value must be freed by caller with lilv_free().
    @param uri The file URI to parse.
    @param hostname If non-NULL, set to the hostname in the URI, if any.
    @return `uri` converted to a path, or NULL on failure (URI is not local).
@@ -196,7 +206,7 @@ lilv_node_equals(const LilvNode* value, const LilvNode* other);
 
 /**
    Return this value as a Turtle/SPARQL token.
-   Returned value must be freed by caller with free().
+   Returned value must be freed by caller with lilv_free().
    <table>
    <caption>Example Turtle Tokens</caption>
    <tr><th>URI</th><td>&lt;http://example.org/foo &gt;</td></tr>
@@ -261,7 +271,7 @@ lilv_node_as_string(const LilvNode* value);
 /**
    Return the path of a file URI node.
    Returns NULL if `value` is not a file URI.
-   Returned value must be freed by caller.
+   Returned value must be freed by caller with lilv_free().
 */
 LILV_API char*
 lilv_node_get_path(const LilvNode* value, char** hostname);

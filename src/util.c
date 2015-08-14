@@ -65,6 +65,12 @@ CreateSymbolicLink(LPCTSTR linkpath, LPCTSTR targetpath, DWORD flags)
 #   define PAGE_SIZE 4096
 #endif
 
+void
+lilv_free(void* ptr)
+{
+	free(ptr);
+}
+
 char*
 lilv_strjoin(const char* first, ...)
 {

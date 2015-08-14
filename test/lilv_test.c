@@ -269,16 +269,16 @@ test_value(void)
 
 	char* tok = lilv_node_get_turtle_token(uval);
 	TEST_ASSERT(!strcmp(tok, "<http://example.org>"));
-	free(tok);
+	lilv_free(tok);
 	tok = lilv_node_get_turtle_token(sval);
 	TEST_ASSERT(!strcmp(tok, "Foo"));
-	free(tok);
+	lilv_free(tok);
 	tok = lilv_node_get_turtle_token(ival);
 	TEST_ASSERT(!strcmp(tok, "42"));
-	free(tok);
+	lilv_free(tok);
 	tok = lilv_node_get_turtle_token(fval);
 	TEST_ASSERT(!strncmp(tok, "1.6180", 6));
-	free(tok);
+	lilv_free(tok);
 
 	LilvNode* uval_e = lilv_new_uri(world, "http://example.org");
 	LilvNode* sval_e = lilv_new_string(world, "Foo");
@@ -701,7 +701,7 @@ test_plugin(void)
 	char*       blank_tok = lilv_node_get_turtle_token(blank);
 	TEST_ASSERT(!strncmp(blank_tok, "_:", 2));
 	TEST_ASSERT(!strcmp(blank_tok + 2, blank_str));
-	free(blank_tok);
+	lilv_free(blank_tok);
 	lilv_node_free(blank_p);
 	lilv_nodes_free(blanks);
 
