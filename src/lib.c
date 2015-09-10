@@ -42,7 +42,7 @@ lilv_lib_open(LilvWorld*               world,
 	void* lib = dlopen(lib_path, RTLD_NOW);
 	if (!lib) {
 		LILV_ERRORF("Failed to open library %s (%s)\n", lib_path, dlerror());
-		free(lib_path);
+		lilv_free(lib_path);
 		return NULL;
 	}
 
@@ -57,17 +57,17 @@ lilv_lib_open(LilvWorld*               world,
 		desc = ldf(bundle_path, features);
 		if (!desc) {
 			LILV_ERRORF("Call to `lv2_lib_descriptor' in %s failed\n", lib_path);
-			free(lib_path);
+			lilv_free(lib_path);
 			return NULL;
 		}
 	} else if (!df) {
 		LILV_ERRORF("No `lv2_descriptor' or `lv2_lib_descriptor' in %s\n",
 		            lib_path);
 		dlclose(lib);
-		free(lib_path);
+		lilv_free(lib_path);
 		return NULL;
 	}
-	free(lib_path);
+	lilv_free(lib_path);
 
 	LilvLib* llib = (LilvLib*)malloc(sizeof(LilvLib));
 	llib->world          = world;

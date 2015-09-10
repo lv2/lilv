@@ -1117,7 +1117,7 @@ lilv_state_delete(LilvWorld*       world,
 		if (unlink(file_path)) {
 			LILV_ERRORF("Failed to remove %s (%s)\n", file_path, strerror(errno));
 		}
-		free(file_path);
+		lilv_free(file_path);
 	}
 
 	// Remove any existing manifest entries for this state
@@ -1140,14 +1140,14 @@ lilv_state_delete(LilvWorld*       world,
 			LILV_ERRORF("Failed to remove %s (%s)\n",
 			            dir_path, strerror(errno));
 		}
-		free(dir_path);
+		lilv_free(dir_path);
 	} else {
 		// Still something in the manifest, reload bundle
 		lilv_world_load_bundle(world, bundle);
 	}
 
 	sord_free(model);
-	free(manifest_path);
+	lilv_free(manifest_path);
 	lilv_node_free(manifest);
 	lilv_node_free(bundle);
 
