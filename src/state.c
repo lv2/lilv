@@ -1,5 +1,5 @@
 /*
-  Copyright 2007-2014 David Robillard <http://drobilla.net>
+  Copyright 2007-2015 David Robillard <http://drobilla.net>
 
   Permission to use, copy, modify, and/or distribute this software for any
   purpose with or without fee is hereby granted, provided that the above
@@ -231,7 +231,11 @@ abstract_path(LV2_State_Map_Path_Handle handle,
 			if (!copy || !lilv_file_equals(real_path, copy)) {
 				// No recent enough copy, make a new one
 				copy = lilv_find_free_path(cpath, lilv_path_exists, NULL);
-				lilv_copy_file(real_path, copy);
+				const int st = lilv_copy_file(real_path, copy);
+				if (st) {
+					LILV_ERRORF("Error copying state file %s (%s)\n",
+					            copy, strerror(st));
+				}
 			}
 			free(real_path);
 			free(cpath);

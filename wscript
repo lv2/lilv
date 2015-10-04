@@ -21,6 +21,13 @@ VERSION = LILV_VERSION  # Package version for waf dist
 top     = '.'           # Source directory
 out     = 'build'       # Build directory
 
+test_plugins = ['missing_descriptor',
+                'missing_plugin',
+                'missing_name',
+                'missing_port_name',
+                'lib_descriptor',
+                'failed_lib_descriptor']
+
 def options(opt):
     opt.load('compiler_c')
     opt.load('compiler_cxx')
@@ -34,6 +41,8 @@ def options(opt):
                    help='Build support for dynamic manifests')
     opt.add_option('--test', action='store_true', dest='build_tests',
                    help='Build unit tests')
+    opt.add_option('--no-coverage', action='store_true', dest='no_coverage',
+                   help='Do not use gcov for code coverage')
     opt.add_option('--no-bash-completion', action='store_true',
                    dest='no_bash_completion',
                    help='Do not install bash completion script in CONFIGDIR')
@@ -88,11 +97,8 @@ def configure(conf):
     if conf.env.DEST_OS == 'darwin':
         defines += ['_DARWIN_C_SOURCE']
 
-    # Check for gcov library (for test coverage)
-    if conf.env.BUILD_TESTS:
-        conf.check_cc(lib='gcov',
-                      define_name='HAVE_GCOV',
-                      mandatory=False)
+    if conf.env.BUILD_TESTS and not Options.options.no_coverage:
+        conf.check_cc(lib='gcov', define_name='HAVE_GCOV', mandatory=False)
 
     conf.check_cc(function_name='flock',
                   header_name='sys/file.h',
@@ -267,23 +273,39 @@ def build(bld):
         penv.cshlib_PATTERN   = shlib_pattern
         shlib_ext = shlib_pattern[shlib_pattern.rfind('.'):]
 
-        obj = bld(features     = 'c cshlib',
-                  env          = penv,
-                  source       = 'test/test_plugin.c',
-                  name         = 'test_plugin',
-                  target       = 'test/test_plugin.lv2/test_plugin',
-                  install_path = None,
-                  defines      = defines,
-                  cflags       = test_cflags,
-                  lib          = test_libs,
-                  uselib       = 'LV2')
+        for p in ['test'] + test_plugins:
+            obj = bld(features     = 'c cshlib',
+                      env          = penv,
+                      source       = 'test/%s.lv2/%s.c' % (p, p),
+                      name         = p,
+                      target       = 'test/%s.lv2/%s' % (p, p),
+                      install_path = None,
+                      defines      = defines,
+                      cflags       = test_cflags,
+                      lib          = test_libs,
+                      uselib       = 'LV2')
+
+        for p in test_plugins:
+            obj = bld(features     = 'c cprogram',
+                      source       = 'test/%s.lv2/test_%s.c' % (p, p),
+                      target       = 'test/test_%s' % p,
+                      includes     = ['.', './src'],
+                      use          = 'liblilv_profiled',
+                      install_path = None,
+                      defines      = defines,
+                      cflags       = test_cflags,
+                      lib          = test_libs,
+                      uselib       = 'LV2')
+            autowaf.use_lib(bld, obj, 'SERD SORD SRATOM LV2')
 
         # Test plugin data files
-        for i in [ 'manifest.ttl.in', 'test_plugin.ttl.in' ]:
-            bld(features     = 'subst',
-                source       = 'test/' + i,
-                target       = 'test/test_plugin.lv2/' + i.replace('.in', ''),
-                install_path = None,
+        for p in ['test'] + test_plugins:
+            for i in [ 'manifest.ttl.in', p + '.ttl.in' ]:
+                bundle = 'test/%s.lv2/' % p
+                bld(features     = 'subst',
+                    source       = bundle + i,
+                    target       = bundle + i.replace('.in', ''),
+                    install_path = None,
                 SHLIB_EXT    = shlib_ext)
 
         # Static profiled library (for unit test code coverage)
@@ -300,7 +322,7 @@ def build(bld):
 
         # Unit test program
         blddir = autowaf.build_dir(APPNAME, 'test')
-        bpath  = os.path.abspath(os.path.join(blddir, 'test_plugin.lv2'))
+        bpath  = os.path.abspath(os.path.join(blddir, 'test.lv2'))
         bpath  = bpath.replace('\\', '/')
         obj = bld(features     = 'c cprogram',
                   source       = 'test/lilv_test.c',
@@ -410,7 +432,13 @@ def test(ctx):
         os.environ['LD_LIBRARY_PATH'] = os.getcwd()
         autowaf.run_tests(ctx, 'Python ' + APPNAME, ['python -m unittest discover bindings/'])
     os.environ['PATH'] = 'test' + os.pathsep + os.getenv('PATH')
-    autowaf.run_tests(ctx, APPNAME, ['lilv_test'], dirs=['./src','./test'])
+    autowaf.run_test(ctx, APPNAME, 'lilv_test', dirs=['./src','./test'], name='lilv_test', header=True)
+
+    for p in test_plugins:
+        autowaf.run_test(ctx, APPNAME,
+                         'test_' + p + ' ' + ('test/%s.lv2/' % p),
+                         0, dirs=['./src','./test','./test/%s.lv2' % p], name=p, header=True)
+
     autowaf.post_test(ctx, APPNAME)
     try:
         shutil.rmtree('state')

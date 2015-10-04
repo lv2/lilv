@@ -1,5 +1,5 @@
 /*
-  Copyright 2007-2014 David Robillard <http://drobilla.net>
+  Copyright 2007-2015 David Robillard <http://drobilla.net>
 
   Permission to use, copy, modify, and/or distribute this software for any
   purpose with or without fee is hereby granted, provided that the above
@@ -21,7 +21,6 @@
 #    define _DARWIN_C_SOURCE 1  /* for flock */
 #endif
 
-#include <assert.h>
 #include <ctype.h>
 #include <errno.h>
 #include <stdarg.h>
@@ -90,7 +89,6 @@ lilv_strjoin(const char* first, ...)
 		char*        new_result = (char*)realloc(result, len + this_len + 1);
 		if (!new_result) {
 			free(result);
-			LILV_ERROR("realloc() failed\n");
 			return NULL;
 		}
 
@@ -293,36 +291,33 @@ lilv_copy_file(const char* src, const char* dst)
 {
 	FILE* in = fopen(src, "r");
 	if (!in) {
-		LILV_ERRORF("error opening %s (%s)\n", src, strerror(errno));
-		return 1;
+		return errno;
 	}
 
 	FILE* out = fopen(dst, "w");
 	if (!out) {
-		LILV_ERRORF("error opening %s (%s)\n", dst, strerror(errno));
-		fclose(in);
-		return 2;
+		return errno;
 	}
 
 	char*  page   = (char*)malloc(PAGE_SIZE);
 	size_t n_read = 0;
+	int    st     = 0;
 	while ((n_read = fread(page, 1, PAGE_SIZE, in)) > 0) {
 		if (fwrite(page, 1, n_read, out) != n_read) {
-			LILV_ERRORF("write to %s failed (%s)\n", dst, strerror(errno));
+			st = errno;
 			break;
 		}
 	}
 
-	const int ret = ferror(in) || ferror(out);
-	if (ferror(in)) {
-		LILV_ERRORF("read from %s failed (%s)\n", src, strerror(errno));
+	if (!st && (ferror(in) || ferror(out))) {
+		st = EBADFD;
 	}
 
 	free(page);
 	fclose(in);
 	fclose(out);
 
-	return ret;
+	return st;
 }
 
 bool
@@ -381,6 +376,7 @@ lilv_size_mtime(const char* path, off_t* size, time_t* time)
 	struct stat buf;
 	if (stat(path, &buf)) {
 		LILV_ERRORF("stat(%s) (%s)\n", path, strerror(errno));
+		return;
 	}
 
 	if (size) {
@@ -575,10 +571,8 @@ lilv_mkdir_p(const char* dir_path)
 		if (path[i] == LILV_DIR_SEP[0] || path[i] == '\0') {
 			path[i] = '\0';
 			if (mkdir(path, 0755) && errno != EEXIST) {
-				LILV_ERRORF("Failed to create %s (%s)\n",
-				            path, strerror(errno));
 				free(path);
-				return 1;
+				return errno;
 			}
 			path[i] = LILV_DIR_SEP[0];
 		}

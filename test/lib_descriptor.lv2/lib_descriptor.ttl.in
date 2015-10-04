@@ -1,5 +1,5 @@
-# Lilv Test Plugin
-# Copyright 2011 David Robillard <d@drobilla.net>
+# Lilv Test Plugin - Missing descriptor
+# Copyright 2011-2015 David Robillard <d@drobilla.net>
 #
 # Permission to use, copy, modify, and/or distribute this software for any
 # purpose with or without fee is hereby granted, provided that the above
@@ -17,14 +17,15 @@
 @prefix foaf: <http://xmlns.com/foaf/0.1/> .
 @prefix lv2:  <http://lv2plug.in/ns/lv2core#> .
 @prefix ui:   <http://lv2plug.in/ns/extensions/ui#> .
+@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
 
-<http://example.org/lilv-test-plugin>
+<http://example.org/lib-descriptor>
 	a lv2:Plugin ;
-	doap:name "Lilv Test" ;
+	doap:name "Missing descriptor test" ;
 	doap:license <http://opensource.org/licenses/isc> ;
-	lv2:requiredFeature <http://lv2plug.in/ns/ext/urid#Mapper> ;
 	lv2:optionalFeature lv2:hardRTCapable ;
-	lv2:extensionData <http://lv2plug.in/ns/ext/state#Interface> ;
+    <http://example.org/blob> "aGVsbG8sIHdvcmxk"^^xsd:base64Binary ;
+    <http://example.org/junk> "opaque"^^<http://example.org/binary> ;
 	lv2:port [
 		a lv2:InputPort ,
 			lv2:ControlPort ;

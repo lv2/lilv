@@ -1,5 +1,5 @@
 /*
-  Copyright 2007-2014 David Robillard <http://drobilla.net>
+  Copyright 2007-2015 David Robillard <http://drobilla.net>
 
   Permission to use, copy, modify, and/or distribute this software for any
   purpose with or without fee is hereby granted, provided that the above
@@ -14,7 +14,7 @@
   OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 */
 
-#include <assert.h>
+#include <math.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -140,8 +140,6 @@ lilv_node_new_from_node(LilvWorld* world, const SordNode* node)
 			world, type, (const char*)sord_node_get_string_counted(node, &len));
 		lilv_node_set_numerics_from_string(result, len);
 		break;
-	default:
-		assert(false);
 	}
 
 	return result;
@@ -327,6 +325,7 @@ lilv_node_is_literal(const LilvNode* value)
 	case LILV_VALUE_STRING:
 	case LILV_VALUE_INT:
 	case LILV_VALUE_FLOAT:
+	case LILV_VALUE_BLOB:
 		return true;
 	default:
 		return false;
@@ -366,12 +365,12 @@ lilv_node_is_float(const LilvNode* value)
 LILV_API float
 lilv_node_as_float(const LilvNode* value)
 {
-	assert(lilv_node_is_float(value) || lilv_node_is_int(value));
 	if (lilv_node_is_float(value)) {
 		return value->val.float_val;
-	} else {  // lilv_node_is_int(value)
+	} else if (lilv_node_is_int(value)) {
 		return (float)value->val.int_val;
 	}
+	return NAN;
 }
 
 LILV_API bool

@@ -1,5 +1,5 @@
 /*
-  Copyright 2007-2014 David Robillard <http://drobilla.net>
+  Copyright 2007-2015 David Robillard <http://drobilla.net>
   Copyright 2008 Krzysztof Foltman
 
   Permission to use, copy, modify, and/or distribute this software for any
@@ -241,6 +241,7 @@ test_value(void)
 	TEST_ASSERT(lilv_node_is_int(ival));
 	TEST_ASSERT(lilv_node_is_float(fval));
 
+	TEST_ASSERT(!lilv_node_is_literal(NULL));
 	TEST_ASSERT(!lilv_node_is_literal(uval));
 	TEST_ASSERT(lilv_node_is_literal(sval));
 	TEST_ASSERT(lilv_node_is_literal(ival));
@@ -605,6 +606,9 @@ test_plugin(void)
 	TEST_ASSERT(lilv_nodes_contains(data_uris, data_uri_val));
 	lilv_node_free(data_uri_val);
 
+	LilvNode* unknown_uri_val = lilv_new_uri(world, "http://example.org/unknown");
+	TEST_ASSERT(!lilv_nodes_contains(data_uris, unknown_uri_val));
+
 	free(manifest_uri);
 	free(data_uri);
 
@@ -645,6 +649,7 @@ test_plugin(void)
 
 	TEST_ASSERT(latency_port);
 	TEST_ASSERT(lilv_port_get_index(plug, latency_port) == 2);
+	TEST_ASSERT(lilv_node_is_blank(lilv_port_get_node(plug, latency_port)));
 
 	LilvNode* rt_feature = lilv_new_uri(world,
 			"http://lv2plug.in/ns/lv2core#hardRTCapable");
@@ -1060,6 +1065,12 @@ test_port(void)
 	TEST_ASSERT(p3 == NULL);
 	lilv_node_free(nopsym);
 
+	// Try getting an invalid property
+	LilvNode*  num     = lilv_new_int(world, 1);
+	LilvNodes* nothing = lilv_port_get_value(plug, p, num);
+	TEST_ASSERT(!nothing);
+	lilv_node_free(num);
+
 	LilvNode* audio_class = lilv_new_uri(world,
 			"http://lv2plug.in/ns/lv2core#AudioPort");
 	LilvNode* control_class = lilv_new_uri(world,
@@ -1112,6 +1123,12 @@ test_port(void)
 
 	// No language match (choose untranslated value)
 	setenv("LANG", "cn", 1);
+	name = lilv_port_get_name(plug, p);
+	TEST_ASSERT(!strcmp(lilv_node_as_string(name), "store"));
+	lilv_node_free(name);
+
+	// Invalid language
+	setenv("LANG", "1!", 1);
 	name = lilv_port_get_name(plug, p);
 	TEST_ASSERT(!strcmp(lilv_node_as_string(name), "store"));
 	lilv_node_free(name);
@@ -1347,11 +1364,15 @@ test_ui(void)
 	LilvNode* ui_class_uri = lilv_new_uri(world,
 			"http://lv2plug.in/ns/extensions/ui#GtkUI");
 
+	LilvNode* unknown_ui_class_uri = lilv_new_uri(world,
+			"http://example.org/mysteryUI");
+
 	TEST_ASSERT(lilv_node_equals(lilv_nodes_get_first(classes), ui_class_uri));
 	TEST_ASSERT(lilv_ui_is_a(ui0, ui_class_uri));
 
 	const LilvNode* ui_type = NULL;
 	TEST_ASSERT(lilv_ui_is_supported(ui0, ui_supported, ui_class_uri, &ui_type));
+	TEST_ASSERT(!lilv_ui_is_supported(ui0, ui_supported, unknown_ui_class_uri, &ui_type));
 	TEST_ASSERT(lilv_node_equals(ui_type, ui_class_uri));
 
 	const LilvNode* plug_bundle_uri = lilv_plugin_get_bundle_uri(plug);
@@ -1647,6 +1668,15 @@ test_state(void)
 	lilv_instance_connect_port(instance, 1, &out);
 	lilv_instance_run(instance, 1);
 
+	// Test instantiating twice
+	LilvInstance* instance2 = lilv_plugin_instantiate(plugin, 48000.0, ffeatures);
+	if (!instance2) {
+		fatal_error("Failed to create multiple instances of <%s>\n",
+		            lilv_node_as_uri(state_plugin_uri));
+		return 0;
+	}
+	lilv_instance_free(instance2);
+
 	// Get instance state state
 	LilvState* fstate = lilv_state_new_from_instance(
 		plugin, instance, &map,
@@ -1869,6 +1899,32 @@ test_string(void)
 
 /*****************************************************************************/
 
+static int
+test_world(void)
+{
+	if (!init_world()) {
+		return 0;
+	}
+
+	LilvNode* num = lilv_new_int(world, 4);
+	LilvNode* uri = lilv_new_uri(world, "http://example.org/object");
+
+	LilvNodes* matches = lilv_world_find_nodes(world, num, NULL, NULL);
+	TEST_ASSERT(!matches);
+
+	matches = lilv_world_find_nodes(world, NULL, num, NULL);
+	TEST_ASSERT(!matches);
+
+	matches = lilv_world_find_nodes(world, NULL, uri, NULL);
+	TEST_ASSERT(!matches);
+
+	lilv_world_unload_bundle(world, NULL);
+
+	return 1;
+}
+
+/*****************************************************************************/
+
 /* add tests here */
 static struct TestCase tests[] = {
 	TEST_CASE(value),
@@ -1889,6 +1945,7 @@ static struct TestCase tests[] = {
 	TEST_CASE(bad_port_index),
 	TEST_CASE(bad_port_index),
 	TEST_CASE(string),
+	TEST_CASE(world),
 	TEST_CASE(state),
 	{ NULL, NULL }
 };
