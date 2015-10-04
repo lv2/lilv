@@ -48,6 +48,7 @@ CreateSymbolicLink(LPCTSTR linkpath, LPCTSTR targetpath, DWORD flags)
 #    endif /* _MSC_VER < 1500 */
 #else
 #    include <dirent.h>
+#    include <limits.h>
 #    include <unistd.h>
 #endif
 
@@ -310,7 +311,7 @@ lilv_copy_file(const char* src, const char* dst)
 	}
 
 	if (!st && (ferror(in) || ferror(out))) {
-		st = EBADFD;
+		st = EBADF;
 	}
 
 	free(page);
