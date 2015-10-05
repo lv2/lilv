@@ -28,16 +28,21 @@ extern "C" {
 
 #ifdef _WIN32
 #    include <windows.h>
+#    include <direct.h>
 #    define dlopen(path, flags) LoadLibrary(path)
 #    define dlclose(lib)        FreeLibrary((HMODULE)lib)
 #    define unlink(path)        _unlink(path)
 #    define rmdir(path)         _rmdir(path)
 #    ifdef _MSC_VER
 #        define __func__ __FUNCTION__
-#        define INFINITY DBL_MAX + DBL_MAX
-#        define NAN      INFINITY - INFINITY
 #        define snprintf _snprintf
 #    endif
+#ifndef INFINITY
+#    define INFINITY DBL_MAX + DBL_MAX
+#endif
+#ifndef NAN
+#    define NAN INFINITY - INFINITY
+#endif
 static inline char* dlerror(void) { return "Unknown error"; }
 #else
 #    include <dlfcn.h>
