@@ -553,11 +553,18 @@ lilv_dir_for_each(const char* path,
 #else
 	DIR* dir = opendir(path);
 	if (dir) {
-		struct dirent  entry;
-		struct dirent* result;
-		while (!readdir_r(dir, &entry, &result) && result) {
-			f(path, entry.d_name, data);
+		long name_max = pathconf(path, _PC_NAME_MAX);
+		if (name_max == -1) {
+			name_max = 255;   // Limit not defined, or error
 		}
+
+		const size_t   len    = offsetof(struct dirent, d_name) + name_max + 1;
+		struct dirent* entry = (struct dirent*)malloc(len);
+		struct dirent* result;
+		while (!readdir_r(dir, entry, &result) && result) {
+			f(path, entry->d_name, data);
+		}
+		free(entry);
 		closedir(dir);
 	}
 #endif

@@ -18,11 +18,12 @@ lilv (0.21.5) unstable;
   * Fix a few minor/unlikely memory errors
   * Configure based on compiler target OS for cross-compilation
   * Fix lilv_realpath() on pre-POSIX-2008 systems
+  * Fix directory walking on some systems (thanks Matt Fischer)
   * Windows fixes (thanks John Emmas)
   * Minor documentation improvements
   * Upgrade to waf 1.8.14
 
- -- David Robillard <d@drobilla.net>  Fri, 02 Oct 2015 20:55:32 -0400
+ -- David Robillard <d@drobilla.net>  Wed, 07 Oct 2015 14:24:51 -0400
 
 lilv (0.20.0) stable;
 
