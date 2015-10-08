@@ -608,6 +608,7 @@ test_plugin(void)
 
 	LilvNode* unknown_uri_val = lilv_new_uri(world, "http://example.org/unknown");
 	TEST_ASSERT(!lilv_nodes_contains(data_uris, unknown_uri_val));
+	lilv_node_free(unknown_uri_val);
 
 	free(manifest_uri);
 	free(data_uri);
@@ -1389,6 +1390,7 @@ test_ui(void)
 	TEST_ASSERT(lilv_node_equals(expected_uri, ui_binary_uri));
 
 	free(ui_binary_uri_str);
+	lilv_node_free(unknown_ui_class_uri);
 	lilv_node_free(ui_class_uri);
 	lilv_node_free(ui_uri);
 	lilv_node_free(ui2_uri);
@@ -1917,6 +1919,9 @@ test_world(void)
 
 	matches = lilv_world_find_nodes(world, NULL, uri, NULL);
 	TEST_ASSERT(!matches);
+
+	lilv_node_free(uri);
+	lilv_node_free(num);
 
 	lilv_world_unload_bundle(world, NULL);
 
