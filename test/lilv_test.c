@@ -340,6 +340,16 @@ test_value(void)
 
 /*****************************************************************************/
 
+static int
+test_util(void)
+{
+	TEST_ASSERT(!lilv_realpath(NULL));
+
+	return 1;
+}
+
+/*****************************************************************************/
+
 static int discovery_plugin_found = 0;
 
 static void
@@ -1932,6 +1942,7 @@ test_world(void)
 
 /* add tests here */
 static struct TestCase tests[] = {
+	TEST_CASE(util),
 	TEST_CASE(value),
 	TEST_CASE(verify),
 	TEST_CASE(no_verify),
