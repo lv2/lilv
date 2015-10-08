@@ -1,4 +1,4 @@
-lilv (0.21.5) unstable;
+lilv (0.22.0) stable;
 
   * Fix loading files with spaces in their path
   * Add lilv_file_uri_parse() for correct URI to path conversion
@@ -23,7 +23,7 @@ lilv (0.21.5) unstable;
   * Minor documentation improvements
   * Upgrade to waf 1.8.14
 
- -- David Robillard <d@drobilla.net>  Wed, 07 Oct 2015 14:24:51 -0400
+ -- David Robillard <d@drobilla.net>  Thu, 08 Oct 2015 15:39:29 -0400
 
 lilv (0.20.0) stable;
 
