@@ -40,6 +40,10 @@ namespace Lilv {
 				self.iter = self.plugins.next(self.iter)
 				return plugin
 
+			def next(self):
+				"Python 2 iterator protocol"
+				return Iterator.__next__(self)
+
 		return Iterator(self)
 
 	def get_by_uri(self, *args):
