@@ -1,5 +1,5 @@
 /*
-  Copyright 2007-2014 David Robillard <http://drobilla.net>
+  Copyright 2007-2015 David Robillard <http://drobilla.net>
 
   Permission to use, copy, modify, and/or distribute this software for any
   purpose with or without fee is hereby granted, provided that the above
@@ -750,7 +750,7 @@ lilv_plugin_get_uri(const LilvPlugin* plugin);
 
    Typical hosts should not need to use this function.
    Note this always returns a fully qualified URI.  If you want a local
-   filesystem path, use lilv_uri_to_path().
+   filesystem path, use lilv_file_uri_parse().
    @return a shared string which must not be modified or freed.
 */
 LILV_API const LilvNode*
@@ -760,7 +760,7 @@ lilv_plugin_get_bundle_uri(const LilvPlugin* plugin);
    Get the (resolvable) URIs of the RDF data files that define a plugin.
    Typical hosts should not need to use this function.
    Note this always returns fully qualified URIs.  If you want local
-   filesystem paths, use lilv_uri_to_path().
+   filesystem paths, use lilv_file_uri_parse().
    @return a list of complete URLs eg. "file:///foo/ABundle.lv2/aplug.ttl",
    which is shared and must not be modified or freed.
 */
@@ -770,7 +770,7 @@ lilv_plugin_get_data_uris(const LilvPlugin* plugin);
 /**
    Get the (resolvable) URI of the shared library for `plugin`.
    Note this always returns a fully qualified URI.  If you want a local
-   filesystem path, use lilv_uri_to_path().
+   filesystem path, use lilv_file_uri_parse().
    @return a shared string which must not be modified or freed.
 */
 LILV_API const LilvNode*

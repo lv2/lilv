@@ -1,8 +1,10 @@
 lilv (0.22.1) unstable;
 
   * Fix Python bindings
+  * Fix documentation installation
+  * Fix outdated comment references to lilv_uri_to_path()
 
- -- David Robillard <d@drobilla.net>  Fri, 09 Oct 2015 13:01:14 -0400
+ -- David Robillard <d@drobilla.net>  Wed, 28 Oct 2015 14:31:05 -0400
 
 lilv (0.22.0) stable;
 
