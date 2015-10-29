@@ -577,8 +577,8 @@ lilv_world_load_all(LilvWorld* world);
    other things) MUST be identified by URIs (not paths) in save files.
 */
 LILV_API void
-lilv_world_load_bundle(LilvWorld* world,
-                       LilvNode*  bundle_uri);
+lilv_world_load_bundle(LilvWorld*      world,
+                       const LilvNode* bundle_uri);
 
 /**
    Load all specifications from currently loaded bundles.
@@ -609,7 +609,7 @@ lilv_world_load_plugin_classes(LilvWorld* world);
    separately unloaded with lilv_world_unload_resource().
 */
 LILV_API int
-lilv_world_unload_bundle(LilvWorld* world, LilvNode* bundle_uri);
+lilv_world_unload_bundle(LilvWorld* world, const LilvNode* bundle_uri);
 
 /**
    Load all the data associated with the given `resource`.

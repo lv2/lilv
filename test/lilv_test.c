@@ -159,9 +159,9 @@ cleanup(void)
 #define TEST_ASSERT(check) do {\
 	test_count++;\
 	if (!(check)) {\
-		assert(false);\
 		error_count++;\
-		fprintf(stderr, "lilv_test.c:%d: error: %s\n", __LINE__, #check);\
+		fprintf(stderr, "lilv_test.c:%d: error: test `%s' failed\n", __LINE__, #check);\
+		assert(check);\
 	}\
 } while (0)
 
@@ -1940,6 +1940,72 @@ test_world(void)
 
 /*****************************************************************************/
 
+static int
+test_reload_bundle(void)
+{
+	// Create a simple plugin bundle
+	create_bundle(MANIFEST_PREFIXES
+	              ":plug a lv2:Plugin ; lv2:binary <foo" SHLIB_EXT "> ; rdfs:seeAlso <plugin.ttl> .\n",
+	              BUNDLE_PREFIXES
+	              ":plug a lv2:Plugin ; "
+	              PLUGIN_NAME("First name") " .");
+
+	if (!init_world()) {
+		return 0;
+	}
+
+	init_uris();
+	lilv_world_load_specifications(world);
+
+	// Load bundle
+	LilvNode* bundle_uri = lilv_new_uri(world, bundle_dir_uri);
+	lilv_world_load_bundle(world, bundle_uri);
+
+	// Check that plugin is present
+	const LilvPlugins* plugins = lilv_world_get_all_plugins(world);
+	const LilvPlugin*  plug    = lilv_plugins_get_by_uri(plugins, plugin_uri_value);
+	TEST_ASSERT(plug);
+
+	// Check that plugin name is correct
+	LilvNode* name = lilv_plugin_get_name(plug);
+	TEST_ASSERT(!strcmp(lilv_node_as_string(name), "First name"));
+	lilv_node_free(name);
+
+	// Unload bundle from world and delete it
+	lilv_world_unload_bundle(world, bundle_uri);
+	delete_bundle();
+
+	// Create a new version of the same bundle, but with a different name
+	create_bundle(MANIFEST_PREFIXES
+	              ":plug a lv2:Plugin ; lv2:binary <foo" SHLIB_EXT "> ; rdfs:seeAlso <plugin.ttl> .\n",
+	              BUNDLE_PREFIXES
+	              ":plug a lv2:Plugin ; "
+	              PLUGIN_NAME("Second name") " .");
+
+	// Load new bundle
+	lilv_world_load_bundle(world, bundle_uri);
+
+	// TODO: Mechanism to actually remove plugin from world list
+
+	// Check that plugin is present again
+	const LilvPlugin* plug2 = lilv_plugins_get_by_uri(plugins, plugin_uri_value);
+	TEST_ASSERT(plug2);
+
+	// Check that plugin now has new name
+	LilvNode* name2 = lilv_plugin_get_name(plug2);
+	TEST_ASSERT(name2);
+	TEST_ASSERT(!strcmp(lilv_node_as_string(name2), "Second name"));
+	lilv_node_free(name2);
+
+	lilv_node_free(bundle_uri);
+	lilv_world_free(world);
+	world = NULL;
+
+	return 1;
+}
+
+/*****************************************************************************/
+
 /* add tests here */
 static struct TestCase tests[] = {
 	TEST_CASE(util),
@@ -1963,6 +2029,7 @@ static struct TestCase tests[] = {
 	TEST_CASE(string),
 	TEST_CASE(world),
 	TEST_CASE(state),
+	TEST_CASE(reload_bundle),
 	{ NULL, NULL }
 };
 

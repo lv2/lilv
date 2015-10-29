@@ -1,5 +1,5 @@
 /*
-  Copyright 2007-2014 David Robillard <http://drobilla.net>
+  Copyright 2007-2015 David Robillard <http://drobilla.net>
 
   Permission to use, copy, modify, and/or distribute this software for any
   purpose with or without fee is hereby granted, provided that the above
@@ -371,38 +371,51 @@ lilv_world_add_spec(LilvWorld*      world,
 }
 
 static void
-lilv_world_add_plugin(LilvWorld*       world,
-                      const SordNode*  plugin_node,
-                      const LilvNode*  manifest_uri,
-                      void*            dynmanifest,
-                      const SordNode*  bundle_node)
+lilv_world_add_plugin(LilvWorld*      world,
+                      const SordNode* plugin_node,
+                      const LilvNode* manifest_uri,
+                      void*           dynmanifest,
+                      const SordNode* bundle)
 {
-	LilvNode* plugin_uri = lilv_node_new_from_node(world, plugin_node);
+	LilvNode*   plugin_uri = lilv_node_new_from_node(world, plugin_node);
+	LilvPlugin* plugin     = (LilvPlugin*)lilv_plugins_get_by_uri(
+		world->plugins, plugin_uri);
 
-	const LilvPlugin* last = lilv_plugins_get_by_uri(world->plugins,
-	                                                 plugin_uri);
-	if (last) {
-		LILV_ERRORF("Duplicate plugin <%s>\n", lilv_node_as_uri(plugin_uri));
-		LILV_ERRORF("... found in %s\n", lilv_node_as_string(
-			            lilv_plugin_get_bundle_uri(last)));
-		LILV_ERRORF("... and      %s\n", sord_node_get_string(bundle_node));
-		lilv_node_free(plugin_uri);
-		return;
+	if (plugin) {
+		// Existing plugin, if this is different bundle, ignore it
+		// (use the first plug found in LV2_PATH)
+		const LilvNode* last_bundle    = lilv_plugin_get_bundle_uri(plugin);
+		const char*     plugin_uri_str = lilv_node_as_uri(plugin_uri);
+		if (sord_node_equals(bundle, last_bundle->node)) {
+			LILV_WARNF("Reloading plugin <%s>\n", plugin_uri_str);
+			plugin->loaded = false;
+			lilv_node_free(plugin_uri);
+		} else {
+			LILV_ERRORF("Duplicate plugin <%s>\n", plugin_uri_str);
+			LILV_ERRORF("... found in %s\n", lilv_node_as_string(last_bundle));
+			LILV_ERRORF("... and      %s\n", sord_node_get_string(bundle));
+			lilv_node_free(plugin_uri);
+			return;
+		}
+	} else {
+		// Add new plugin to the world
+		plugin = lilv_plugin_new(
+			world, plugin_uri, lilv_node_new_from_node(world, bundle));
+
+		// Add manifest as plugin data file (as if it were rdfs:seeAlso)
+		zix_tree_insert((ZixTree*)plugin->data_uris,
+		                lilv_node_duplicate(manifest_uri),
+		                NULL);
+
+		// Add plugin to world plugin sequence
+		zix_tree_insert((ZixTree*)world->plugins, plugin, NULL);
 	}
 
-	// Create LilvPlugin
-	LilvNode*   bundle_uri = lilv_node_new_from_node(world, bundle_node);
-	LilvPlugin* plugin     = lilv_plugin_new(world, plugin_uri, bundle_uri);
-
-	// Add manifest as plugin data file (as if it were rdfs:seeAlso)
-	zix_tree_insert((ZixTree*)plugin->data_uris,
-	                lilv_node_duplicate(manifest_uri),
-	                NULL);
 
 #ifdef LILV_DYN_MANIFEST
 	// Set dynamic manifest library URI, if applicable
 	if (dynmanifest) {
-		plugin->dynmanifest = (LilvDynManifest*)dynmanifest;
+		plug->dynmanifest = (LilvDynManifest*)dynmanifest;
 		++((LilvDynManifest*)dynmanifest)->refs;
 	}
 #endif
@@ -420,9 +433,6 @@ lilv_world_add_plugin(LilvWorld*       world,
 		                NULL);
 	}
 	sord_iter_free(files);
-
-	// Add plugin to world plugin sequence
-	zix_tree_insert((ZixTree*)world->plugins, plugin, NULL);
 }
 
 SerdStatus
@@ -570,7 +580,7 @@ lilv_world_load_dyn_manifest(LilvWorld*      world,
 }
 
 LilvNode*
-lilv_world_get_manifest_uri(LilvWorld* world, LilvNode* bundle_uri)
+lilv_world_get_manifest_uri(LilvWorld* world, const LilvNode* bundle_uri)
 {
 	SerdNode manifest_uri = lilv_new_uri_relative_to_base(
 		(const uint8_t*)"manifest.ttl",
@@ -581,7 +591,7 @@ lilv_world_get_manifest_uri(LilvWorld* world, LilvNode* bundle_uri)
 }
 
 LILV_API void
-lilv_world_load_bundle(LilvWorld* world, LilvNode* bundle_uri)
+lilv_world_load_bundle(LilvWorld* world, const LilvNode* bundle_uri)
 {
 	if (!lilv_node_is_uri(bundle_uri)) {
 		LILV_ERRORF("Bundle URI `%s' is not a URI\n",
@@ -633,7 +643,7 @@ lilv_world_load_bundle(LilvWorld* world, LilvNode* bundle_uri)
 }
 
 static int
-lilv_world_drop_graph(LilvWorld* world, LilvNode* graph)
+lilv_world_drop_graph(LilvWorld* world, const LilvNode* graph)
 {
 	SordIter* i = sord_search(world->model, NULL, NULL, NULL, graph->node);
 	while (!sord_iter_end(i)) {
@@ -651,7 +661,7 @@ lilv_world_drop_graph(LilvWorld* world, LilvNode* graph)
 
 /** Remove loaded_files entry so file will be reloaded if requested. */
 static int
-lilv_world_unload_file(LilvWorld* world, LilvNode* file)
+lilv_world_unload_file(LilvWorld* world, const LilvNode* file)
 {
 	ZixTreeIter* iter;
 	if (!zix_tree_find((ZixTree*)world->loaded_files, file, &iter)) {
@@ -662,16 +672,31 @@ lilv_world_unload_file(LilvWorld* world, LilvNode* file)
 }
 
 LILV_API int
-lilv_world_unload_bundle(LilvWorld* world, LilvNode* bundle_uri)
+lilv_world_unload_bundle(LilvWorld* world, const LilvNode* bundle_uri)
 {
 	if (!bundle_uri) {
 		return 0;
 	}
 
-	// Remove loaded_files entry for manifest.ttl
-	LilvNode* manifest = lilv_world_get_manifest_uri(world, bundle_uri);
-	lilv_world_unload_file(world, manifest);
-	lilv_node_free(manifest);
+	// Unload any files, including manifest.ttl
+	LilvNodes* files = lilv_nodes_new();
+	LILV_FOREACH(nodes, i, world->loaded_files) {
+		const LilvNode* file = lilv_nodes_get(world->loaded_files, i);
+		if (!strncmp(lilv_node_as_string(file),
+		             lilv_node_as_string(bundle_uri),
+		             strlen(lilv_node_as_string(bundle_uri)))) {
+			zix_tree_insert((ZixTree*)files,
+			                lilv_node_duplicate(file),
+			                NULL);
+		}
+	}
+
+	LILV_FOREACH(nodes, i, files) {
+		const LilvNode* file = lilv_nodes_get(world->plugins, i);
+		lilv_world_unload_file(world, file);
+	}
+
+	lilv_nodes_free(files);
 
 	// Drop everything in bundle graph
 	return lilv_world_drop_graph(world, bundle_uri);

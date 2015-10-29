@@ -1,5 +1,5 @@
 /*
-  Copyright 2007-2014 David Robillard <http://drobilla.net>
+  Copyright 2007-2015 David Robillard <http://drobilla.net>
 
   Permission to use, copy, modify, and/or distribute this software for any
   purpose with or without fee is hereby granted, provided that the above
@@ -282,7 +282,8 @@ LilvScalePoints*   lilv_scale_points_new(void);
 LilvPluginClasses* lilv_plugin_classes_new(void);
 LilvUIs*           lilv_uis_new(void);
 
-LilvNode* lilv_world_get_manifest_uri(LilvWorld* world, LilvNode* bundle_uri);
+LilvNode* lilv_world_get_manifest_uri(LilvWorld*      world,
+                                      const LilvNode* bundle_uri);
 
 const uint8_t* lilv_world_blank_node_prefix(LilvWorld* world);
 
