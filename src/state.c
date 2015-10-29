@@ -62,8 +62,8 @@ struct LilvStateImpl {
 	Property*  props;       ///< State properties
 	PortValue* values;      ///< Port values
 	uint32_t   atom_Path;   ///< atom:Path URID
-	uint32_t   num_props;   ///< Number of state properties
-	uint32_t   num_values;  ///< Number of port values
+	uint32_t   n_props;     ///< Number of state properties
+	uint32_t   n_values;    ///< Number of port values
 };
 
 static int
@@ -108,8 +108,8 @@ append_port_value(LilvState*  state,
 {
 	if (value) {
 		state->values = (PortValue*)realloc(
-			state->values, (++state->num_values) * sizeof(PortValue));
-		PortValue* pv = &state->values[state->num_values - 1];
+			state->values, (++state->n_values) * sizeof(PortValue));
+		PortValue* pv = &state->values[state->n_values - 1];
 		pv->symbol = lilv_strdup(port_symbol);
 		pv->value  = malloc(size);
 		pv->size   = size;
@@ -141,8 +141,8 @@ store_callback(LV2_State_Handle handle,
 {
 	LilvState* const state = (LilvState*)handle;
 	state->props = (Property*)realloc(
-		state->props, (++state->num_props) * sizeof(Property));
-	Property* const prop = &state->props[state->num_props - 1];
+		state->props, (++state->n_props) * sizeof(Property));
+	Property* const prop = &state->props[state->n_props - 1];
 
 	if ((flags & LV2_STATE_IS_POD) || type == state->atom_Path) {
 		prop->value = malloc(size);
@@ -170,7 +170,7 @@ retrieve_callback(LV2_State_Handle handle,
 	const LilvState* const state      = (LilvState*)handle;
 	const Property         search_key = { NULL, 0, key, 0, 0 };
 	const Property* const  prop       = (Property*)bsearch(
-		&search_key, state->props, state->num_props,
+		&search_key, state->props, state->n_props,
 		sizeof(Property), property_cmp);
 
 	if (prop) {
@@ -390,13 +390,13 @@ lilv_state_new_from_instance(const LilvPlugin*          plugin,
 			LILV_ERRORF("Error saving plugin state: %s\n", state_strerror(st));
 			free(state->props);
 			state->props     = NULL;
-			state->num_props = 0;
+			state->n_props = 0;
 		} else {
-			qsort(state->props, state->num_props, sizeof(Property), property_cmp);
+			qsort(state->props, state->n_props, sizeof(Property), property_cmp);
 		}
 	}
 
-	qsort(state->values, state->num_values, sizeof(PortValue), value_cmp);
+	qsort(state->values, state->n_values, sizeof(PortValue), value_cmp);
 
 	free(sfeatures);
 	return state;
@@ -407,7 +407,7 @@ lilv_state_emit_port_values(const LilvState*     state,
                             LilvSetPortValueFunc set_value,
                             void*                user_data)
 {
-	for (uint32_t i = 0; i < state->num_values; ++i) {
+	for (uint32_t i = 0; i < state->n_values; ++i) {
 		const PortValue* val = &state->values[i];
 		set_value(val->symbol, user_data, val->value, val->size, val->type);
 	}
@@ -430,19 +430,22 @@ lilv_state_restore(const LilvState*           state,
 		(LilvState*)state, abstract_path, absolute_path };
 	LV2_Feature map_feature = { LV2_STATE__mapPath, &map_path };
 
-	const LV2_Feature** sfeatures = add_features(features, &map_feature, NULL);
+	if (instance) {
+		const LV2_Descriptor* desc = instance->lv2_descriptor;
+		if (desc->extension_data) {
+			const LV2_State_Interface* iface = (const LV2_State_Interface*)
+				desc->extension_data(LV2_STATE__interface);
 
-	const LV2_Descriptor*      desc  = instance ? instance->lv2_descriptor : NULL;
-	const LV2_State_Interface* iface = (desc && desc->extension_data)
-		? (const LV2_State_Interface*)desc->extension_data(LV2_STATE__interface)
-		: NULL;
+			const LV2_Feature** sfeatures = add_features(
+				features, &map_feature, NULL);
 
-	if (iface) {
-		iface->restore(instance->lv2_handle, retrieve_callback,
-		               (LV2_State_Handle)state, flags, sfeatures);
+			iface->restore(instance->lv2_handle, retrieve_callback,
+			               (LV2_State_Handle)state, flags, sfeatures);
+
+			free(sfeatures);
+		}
 	}
 
-	free(sfeatures);
 
 	if (set_value) {
 		lilv_state_emit_port_values(state, set_value, user_data);
@@ -548,8 +551,9 @@ new_state_from_model(LilvWorld*       world,
 	if (state_node) {
 		SordIter* props = sord_search(model, state_node, 0, 0, 0);
 		FOREACH_MATCH(props) {
-			const SordNode* p = sord_iter_get_node(props, SORD_PREDICATE);
-			const SordNode* o = sord_iter_get_node(props, SORD_OBJECT);
+			const SordNode* p   = sord_iter_get_node(props, SORD_PREDICATE);
+			const SordNode* o   = sord_iter_get_node(props, SORD_OBJECT);
+			const char*     key = (const char*)sord_node_get_string(p);
 
 			chunk.len = 0;
 			lv2_atom_forge_set_sink(
@@ -560,7 +564,7 @@ new_state_from_model(LilvWorld*       world,
 			uint32_t        flags = LV2_STATE_IS_POD|LV2_STATE_IS_PORTABLE;
 			Property        prop  = { NULL, 0, 0, 0, flags };
 
-			prop.key   = map->map(map->handle, (const char*)sord_node_get_string(p));
+			prop.key   = map->map(map->handle, pred);
 			prop.type  = atom->type;
 			prop.size  = atom->size;
 			prop.value = malloc(atom->size);
@@ -571,8 +575,8 @@ new_state_from_model(LilvWorld*       world,
 
 			if (prop.value) {
 				state->props = (Property*)realloc(
-					state->props, (++state->num_props) * sizeof(Property));
-				state->props[state->num_props - 1] = prop;
+					state->props, (++state->n_props) * sizeof(Property));
+				state->props[state->n_props - 1] = prop;
 			}
 		}
 		sord_iter_free(props);
@@ -583,8 +587,8 @@ new_state_from_model(LilvWorld*       world,
 	free((void*)chunk.buf);
 	sratom_free(sratom);
 
-	qsort(state->props, state->num_props, sizeof(Property), property_cmp);
-	qsort(state->values, state->num_values, sizeof(PortValue), value_cmp);
+	qsort(state->props, state->n_props, sizeof(Property), property_cmp);
+	qsort(state->values, state->n_values, sizeof(PortValue), value_cmp);
 
 	return state;
 }
@@ -700,7 +704,9 @@ ttl_writer(SerdSink sink, void* stream, const SerdNode* base, SerdEnv** new_env)
 
 	SerdWriter* writer = serd_writer_new(
 		SERD_TURTLE,
-		(SerdStyle)(SERD_STYLE_RESOLVED|SERD_STYLE_ABBREVIATED|SERD_STYLE_CURIED),
+		(SerdStyle)(SERD_STYLE_RESOLVED |
+		            SERD_STYLE_ABBREVIATED|
+		            SERD_STYLE_CURIED),
 		env,
 		&base_uri,
 		sink,
@@ -906,7 +912,7 @@ lilv_state_write(LilvWorld*       world,
 	sratom_set_pretty_numbers(sratom, true);
 
 	// Write port values
-	for (uint32_t i = 0; i < state->num_values; ++i) {
+	for (uint32_t i = 0; i < state->n_values; ++i) {
 		PortValue* const value = &state->values[i];
 
 		const SerdNode port = serd_node_from_string(
@@ -937,12 +943,12 @@ lilv_state_write(LilvWorld*       world,
 	// Write properties
 	const SerdNode state_node = serd_node_from_string(SERD_BLANK,
 	                                                  USTR("2state"));
-	if (state->num_props > 0) {
+	if (state->n_props > 0) {
 		p = serd_node_from_string(SERD_URI, USTR(LV2_STATE__state));
 		serd_writer_write_statement(writer, SERD_ANON_O_BEGIN, NULL,
 		                            &subject, &p, &state_node, NULL, NULL);
 	}
-	for (uint32_t i = 0; i < state->num_props; ++i) {
+	for (uint32_t i = 0; i < state->n_props; ++i) {
 		Property*   prop = &state->props[i];
 		const char* key  = unmap->unmap(unmap->handle, prop->key);
 
@@ -958,7 +964,7 @@ lilv_state_write(LilvWorld*       world,
 			             &state_node, &p, prop->type, prop->size, prop->value);
 		}
 	}
-	if (state->num_props > 0) {
+	if (state->n_props > 0) {
 		serd_writer_end_anon(writer, &state_node);
 	}
 
@@ -1116,12 +1122,12 @@ lilv_state_delete(LilvWorld*       world,
 		model, state->uri->node, world->uris.rdfs_seeAlso, NULL, NULL);
 	if (file) {
 		// Remove state file
-		char* file_path = lilv_file_uri_parse(
+		char* path = lilv_file_uri_parse(
 			(const char*)sord_node_get_string(file), NULL);
-		if (unlink(file_path)) {
-			LILV_ERRORF("Failed to remove %s (%s)\n", file_path, strerror(errno));
+		if (unlink(path)) {
+			LILV_ERRORF("Failed to remove %s (%s)\n", path, strerror(errno));
 		}
-		lilv_free(file_path);
+		lilv_free(path);
 	}
 
 	// Remove any existing manifest entries for this state
@@ -1162,10 +1168,10 @@ LILV_API void
 lilv_state_free(LilvState* state)
 {
 	if (state) {
-		for (uint32_t i = 0; i < state->num_props; ++i) {
+		for (uint32_t i = 0; i < state->n_props; ++i) {
 			free(state->props[i].value);
 		}
-		for (uint32_t i = 0; i < state->num_values; ++i) {
+		for (uint32_t i = 0; i < state->n_values; ++i) {
 			free(state->values[i].value);
 			free(state->values[i].symbol);
 		}
@@ -1191,12 +1197,12 @@ lilv_state_equals(const LilvState* a, const LilvState* b)
 	    || (a->label && !b->label)
 	    || (b->label && !a->label)
 	    || (a->label && b->label && strcmp(a->label, b->label))
-	    || a->num_props != b->num_props
-	    || a->num_values != b->num_values) {
+	    || a->n_props != b->n_props
+	    || a->n_values != b->n_values) {
 		return false;
 	}
 
-	for (uint32_t i = 0; i < a->num_values; ++i) {
+	for (uint32_t i = 0; i < a->n_values; ++i) {
 		PortValue* const av = &a->values[i];
 		PortValue* const bv = &b->values[i];
 		if (av->size != bv->size || av->type != bv->type
@@ -1206,7 +1212,7 @@ lilv_state_equals(const LilvState* a, const LilvState* b)
 		}
 	}
 
-	for (uint32_t i = 0; i < a->num_props; ++i) {
+	for (uint32_t i = 0; i < a->n_props; ++i) {
 		Property* const ap = &a->props[i];
 		Property* const bp = &b->props[i];
 		if (ap->key != bp->key
@@ -1230,7 +1236,7 @@ lilv_state_equals(const LilvState* a, const LilvState* b)
 LILV_API unsigned
 lilv_state_get_num_properties(const LilvState* state)
 {
-	return state->num_props;
+	return state->n_props;
 }
 
 LILV_API const LilvNode*

@@ -112,7 +112,8 @@ lilv_plugin_get_one(const LilvPlugin* p,
 	SordIter* stream = lilv_world_query_internal(
 		p->world, subject, predicate, NULL);
 	if (!sord_iter_end(stream)) {
-		ret = lilv_node_new_from_node(p->world, sord_iter_get_node(stream, SORD_OBJECT));
+		ret = lilv_node_new_from_node(p->world,
+		                              sord_iter_get_node(stream, SORD_OBJECT));
 	}
 	sord_iter_free(stream);
 	return ret;
@@ -142,13 +143,13 @@ lilv_plugin_load(LilvPlugin* p)
 	SerdReader* reader = sord_new_reader(p->world->model, env, SERD_TURTLE,
 	                                     bundle_uri_node);
 
-	SordModel* prototypes = lilv_world_filter_model(p->world,
-	                                                p->world->model,
-	                                                p->plugin_uri->node,
-	                                                p->world->uris.lv2_prototype,
-	                                                NULL, NULL);
+	SordModel* prots = lilv_world_filter_model(p->world,
+	                                           p->world->model,
+	                                           p->plugin_uri->node,
+	                                           p->world->uris.lv2_prototype,
+	                                           NULL, NULL);
 	SordModel* skel = sord_new(p->world->world, SORD_SPO, false);
-	SordIter*  iter = sord_begin(prototypes);
+	SordIter*  iter = sord_begin(prots);
 	for (; !sord_iter_end(iter); sord_iter_next(iter)) {
 		const SordNode* t         = sord_iter_get_node(iter, SORD_OBJECT);
 		LilvNode*       prototype = lilv_node_new_from_node(p->world, t);
@@ -176,7 +177,7 @@ lilv_plugin_load(LilvPlugin* p)
 	}
 	sord_iter_free(iter);
 	sord_free(skel);
-	sord_free(prototypes);
+	sord_free(prots);
 
 	// Parse all the plugin's data files into RDF model
 	LILV_FOREACH(nodes, i, p->data_uris) {
@@ -388,12 +389,12 @@ lilv_plugin_get_class(const LilvPlugin* const_p)
 	lilv_plugin_load_if_necessary(p);
 	if (!p->plugin_class) {
 		// <plugin> a ?class
-		SordIter* results = lilv_world_query_internal(p->world,
-		                                              p->plugin_uri->node,
-		                                              p->world->uris.rdf_a,
-		                                              NULL);
-		FOREACH_MATCH(results) {
-			const SordNode* class_node = sord_iter_get_node(results, SORD_OBJECT);
+		SordIter* c = lilv_world_query_internal(p->world,
+		                                        p->plugin_uri->node,
+		                                        p->world->uris.rdf_a,
+		                                        NULL);
+		FOREACH_MATCH(c) {
+			const SordNode* class_node = sord_iter_get_node(c, SORD_OBJECT);
 			if (sord_node_get_type(class_node) != SORD_URI) {
 				continue;
 			}
@@ -412,7 +413,7 @@ lilv_plugin_get_class(const LilvPlugin* const_p)
 
 			lilv_node_free(klass);
 		}
-		sord_iter_free(results);
+		sord_iter_free(c);
 
 		if (p->plugin_class == NULL)
 			p->plugin_class = p->world->lv2_plugin_class;
@@ -866,46 +867,36 @@ lilv_plugin_get_author(const LilvPlugin* p)
 	return author;
 }
 
-LILV_API LilvNode*
-lilv_plugin_get_author_name(const LilvPlugin* plugin)
+static LilvNode*
+lilv_plugin_get_author_property(const LilvPlugin* plugin, const char* uri)
 {
 	const SordNode* author = lilv_plugin_get_author(plugin);
 	if (author) {
-		SordWorld* sworld    = plugin->world->world;
-		SordNode*  foaf_name = sord_new_uri(sworld, NS_FOAF "name");
-		LilvNode*  ret       = lilv_plugin_get_one(plugin, author, foaf_name);
-		sord_node_free(sworld, foaf_name);
+		SordWorld* sworld = plugin->world->world;
+		SordNode*  pred   = sord_new_uri(sworld, uri);
+		LilvNode*  ret    = lilv_plugin_get_one(plugin, author, pred);
+		sord_node_free(sworld, pred);
 		return ret;
 	}
 	return NULL;
+}
+
+LILV_API LilvNode*
+lilv_plugin_get_author_name(const LilvPlugin* plugin)
+{
+	return lilv_plugin_get_author_property(plugin, NS_FOAF "name");
 }
 
 LILV_API LilvNode*
 lilv_plugin_get_author_email(const LilvPlugin* plugin)
 {
-	const SordNode* author = lilv_plugin_get_author(plugin);
-	if (author) {
-		SordWorld* sworld    = plugin->world->world;
-		SordNode*  foaf_mbox = sord_new_uri(sworld, NS_FOAF "mbox");
-		LilvNode*  ret       = lilv_plugin_get_one(plugin, author, foaf_mbox);
-		sord_node_free(sworld, foaf_mbox);
-		return ret;
-	}
-	return NULL;
+	return lilv_plugin_get_author_property(plugin, NS_FOAF "mbox");
 }
 
 LILV_API LilvNode*
 lilv_plugin_get_author_homepage(const LilvPlugin* plugin)
 {
-	const SordNode* author = lilv_plugin_get_author(plugin);
-	if (author) {
-		SordWorld* sworld        = plugin->world->world;
-		SordNode*  foaf_homepage = sord_new_uri(sworld, NS_FOAF "homepage");
-		LilvNode*  ret           = lilv_plugin_get_one(plugin, author, foaf_homepage);
-		sord_node_free(sworld, foaf_homepage);
-		return ret;
-	}
-	return NULL;
+	return lilv_plugin_get_author_property(plugin, NS_FOAF "homepage");
 }
 
 LILV_API bool

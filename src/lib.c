@@ -56,7 +56,7 @@ lilv_lib_open(LilvWorld*               world,
 	if (ldf) {
 		desc = ldf(bundle_path, features);
 		if (!desc) {
-			LILV_ERRORF("Call to `lv2_lib_descriptor' in %s failed\n", lib_path);
+			LILV_ERRORF("Call to %s:lv2_lib_descriptor failed\n", lib_path);
 			lilv_free(lib_path);
 			return NULL;
 		}
