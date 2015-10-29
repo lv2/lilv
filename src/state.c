@@ -564,7 +564,7 @@ new_state_from_model(LilvWorld*       world,
 			uint32_t        flags = LV2_STATE_IS_POD|LV2_STATE_IS_PORTABLE;
 			Property        prop  = { NULL, 0, 0, 0, flags };
 
-			prop.key   = map->map(map->handle, pred);
+			prop.key   = map->map(map->handle, key);
 			prop.type  = atom->type;
 			prop.size  = atom->size;
 			prop.value = malloc(atom->size);

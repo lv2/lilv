@@ -868,7 +868,7 @@ lilv_plugin_get_author(const LilvPlugin* p)
 }
 
 static LilvNode*
-lilv_plugin_get_author_property(const LilvPlugin* plugin, const char* uri)
+lilv_plugin_get_author_property(const LilvPlugin* plugin, const uint8_t* uri)
 {
 	const SordNode* author = lilv_plugin_get_author(plugin);
 	if (author) {
