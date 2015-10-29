@@ -436,13 +436,15 @@ lilv_state_restore(const LilvState*           state,
 			const LV2_State_Interface* iface = (const LV2_State_Interface*)
 				desc->extension_data(LV2_STATE__interface);
 
-			const LV2_Feature** sfeatures = add_features(
-				features, &map_feature, NULL);
+			if (iface && iface->restore) {
+				const LV2_Feature** sfeatures = add_features(
+					features, &map_feature, NULL);
 
-			iface->restore(instance->lv2_handle, retrieve_callback,
-			               (LV2_State_Handle)state, flags, sfeatures);
+				iface->restore(instance->lv2_handle, retrieve_callback,
+				               (LV2_State_Handle)state, flags, sfeatures);
 
-			free(sfeatures);
+				free(sfeatures);
+			}
 		}
 	}
 
