@@ -415,7 +415,7 @@ lilv_world_add_plugin(LilvWorld*      world,
 #ifdef LILV_DYN_MANIFEST
 	// Set dynamic manifest library URI, if applicable
 	if (dynmanifest) {
-		plug->dynmanifest = (LilvDynManifest*)dynmanifest;
+		plugin->dynmanifest = (LilvDynManifest*)dynmanifest;
 		++((LilvDynManifest*)dynmanifest)->refs;
 	}
 #endif
@@ -490,7 +490,7 @@ lilv_world_load_dyn_manifest(LilvWorld*      world,
 		// Get binary path
 		const SordNode* binary   = sord_iter_get_node(binaries, SORD_OBJECT);
 		const uint8_t*  lib_uri  = sord_node_get_string(binary);
-		const char*     lib_path = lilv_uri_to_path((const char*)lib_uri);
+		char*           lib_path = lilv_file_uri_parse((const char*)lib_uri, 0);
 		if (!lib_path) {
 			LILV_ERROR("No dynamic manifest library path\n");
 			sord_iter_free(binaries);
@@ -504,6 +504,7 @@ lilv_world_load_dyn_manifest(LilvWorld*      world,
 			LILV_ERRORF("Failed to open dynmanifest library `%s' (%s)\n",
 			            lib_path, dlerror());
 			sord_iter_free(binaries);
+			lilv_free(lib_path);
 			continue;
 		}
 
@@ -515,6 +516,7 @@ lilv_world_load_dyn_manifest(LilvWorld*      world,
 			LILV_ERRORF("No `lv2_dyn_manifest_open' in `%s'\n", lib_path);
 			sord_iter_free(binaries);
 			dlclose(lib);
+			lilv_free(lib_path);
 			continue;
 		}
 
@@ -527,6 +529,7 @@ lilv_world_load_dyn_manifest(LilvWorld*      world,
 			            lib_path);
 			sord_iter_free(binaries);
 			dlclose(lib);
+			lilv_free(lib_path);
 			continue;
 		}
 
@@ -573,6 +576,7 @@ lilv_world_load_dyn_manifest(LilvWorld*      world,
 		}
 		sord_iter_free(p);
 		sord_free(plugins);
+		lilv_free(lib_path);
 	}
 	sord_iter_free(iter);
 	sord_free(model);
