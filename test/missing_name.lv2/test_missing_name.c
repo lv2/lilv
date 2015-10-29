@@ -28,6 +28,7 @@ main(int argc, char** argv)
 	lilv_world_load_bundle(world, bundle_uri);
 	free(abs_bundle);
 	serd_node_free(&bundle);
+	lilv_node_free(bundle_uri);
 
 	LilvNode*          plugin_uri = lilv_new_uri(world, PLUGIN_URI);
 	const LilvPlugins* plugins    = lilv_world_get_all_plugins(world);
@@ -36,7 +37,9 @@ main(int argc, char** argv)
 
 	LilvInstance* instance = lilv_plugin_instantiate(plugin, 48000.0, NULL);
 	TEST_ASSERT(instance);
+	lilv_instance_free(instance);
 
+	lilv_node_free(plugin_uri);
 	lilv_world_free(world);
 
 	return 0;
