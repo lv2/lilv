@@ -383,7 +383,7 @@ lilv_world_add_plugin(LilvWorld*      world,
 
 	if (plugin) {
 		// Existing plugin, if this is different bundle, ignore it
-		// (use the first plug found in LV2_PATH)
+		// (use the first plugin found in LV2_PATH)
 		const LilvNode* last_bundle    = lilv_plugin_get_bundle_uri(plugin);
 		const char*     plugin_uri_str = lilv_node_as_uri(plugin_uri);
 		if (sord_node_equals(bundle, last_bundle->node)) {
