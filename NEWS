@@ -3,11 +3,12 @@ lilv (0.22.1) unstable;
   * Unload contained resources when bundle is unloaded
   * Support re-loading plugins
   * Fix loading dyn-manifest from bundles with spaces in their path
+  * Add LILV_URI_ATOM_PORT and LILV_URI_CV_PORT defines
   * Fix Python bindings
   * Fix documentation installation
   * Fix outdated comment references to lilv_uri_to_path()
 
- -- David Robillard <d@drobilla.net>  Thu, 29 Oct 2015 00:41:34 -0400
+ -- David Robillard <d@drobilla.net>  Thu, 29 Oct 2015 10:32:39 -0400
 
 lilv (0.22.0) stable;
 
