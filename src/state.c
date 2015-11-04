@@ -499,7 +499,7 @@ new_state_from_model(LilvWorld*       world,
 		const SordNode* object = sord_iter_get_node(i, SORD_OBJECT);
 		const SordNode* graph  = sord_iter_get_node(i, SORD_GRAPH);
 		state->label = lilv_strdup((const char*)sord_node_get_string(object));
-		if (!state->dir) {
+		if (!state->dir && graph) {
 			state->dir = lilv_strdup((const char*)sord_node_get_string(graph));
 		}
 		sord_iter_free(i);
