@@ -156,6 +156,7 @@ struct LilvWorldImpl {
 	LilvPluginClasses* plugin_classes;
 	LilvSpec*          specs;
 	LilvPlugins*       plugins;
+	LilvPlugins*       zombies;
 	LilvNodes*         loaded_files;
 	ZixTree*           libs;
 	struct {

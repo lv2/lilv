@@ -1982,14 +1982,16 @@ test_reload_bundle(void)
 	              ":plug a lv2:Plugin ; "
 	              PLUGIN_NAME("Second name") " .");
 
+	// Check that plugin is no longer in the world's plugin list
+	TEST_ASSERT(lilv_plugins_size(plugins) == 0);
+
 	// Load new bundle
 	lilv_world_load_bundle(world, bundle_uri);
 
-	// TODO: Mechanism to actually remove plugin from world list
-
-	// Check that plugin is present again
+	// Check that plugin is present again and is the same LilvPlugin
 	const LilvPlugin* plug2 = lilv_plugins_get_by_uri(plugins, plugin_uri_value);
 	TEST_ASSERT(plug2);
+	TEST_ASSERT(plug2 == plug);
 
 	// Check that plugin now has new name
 	LilvNode* name2 = lilv_plugin_get_name(plug2);
