@@ -35,7 +35,6 @@
 #    include <io.h>
 #    define F_OK 0
 #    define mkdir(path, flags) _mkdir(path)
-#    if (defined(_MSC_VER) && (_MSC_VER < 1500))
 /** Implement 'CreateSymbolicLink()' for MSVC 8 or earlier */
 BOOLEAN WINAPI
 CreateSymbolicLink(LPCTSTR linkpath, LPCTSTR targetpath, DWORD flags)
@@ -46,7 +45,6 @@ CreateSymbolicLink(LPCTSTR linkpath, LPCTSTR targetpath, DWORD flags)
 	                                  "CreateSymbolicLinkA");
 	return pfn ? pfn(linkpath, targetpath, flags) : 0;
 }
-#    endif /* _MSC_VER < 1500 */
 #else
 #    include <dirent.h>
 #    include <limits.h>
