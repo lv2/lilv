@@ -1,6 +1,7 @@
 lilv (0.22.1) unstable;
 
   * Unload contained resources when bundle is unloaded
+  * Do not instantiate plugin when data fails to parse
   * Support re-loading plugins
   * Fix loading dyn-manifest from bundles with spaces in their path
   * Add LILV_URI_ATOM_PORT and LILV_URI_CV_PORT defines

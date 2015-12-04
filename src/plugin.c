@@ -50,6 +50,7 @@ lilv_plugin_new(LilvWorld* world, LilvNode* uri, LilvNode* bundle_uri)
 	plugin->ports        = NULL;
 	plugin->num_ports    = 0;
 	plugin->loaded       = false;
+	plugin->parse_errors = false;
 	plugin->replaced     = false;
 
 	return plugin;
@@ -180,11 +181,21 @@ lilv_plugin_load(LilvPlugin* p)
 	sord_free(prots);
 
 	// Parse all the plugin's data files into RDF model
+	SerdStatus st = SERD_SUCCESS;
 	LILV_FOREACH(nodes, i, p->data_uris) {
 		const LilvNode* data_uri = lilv_nodes_get(p->data_uris, i);
 
 		serd_env_set_base_uri(env, sord_node_to_serd_node(data_uri->node));
-		lilv_world_load_file(p->world, reader, data_uri);
+		st = lilv_world_load_file(p->world, reader, data_uri);
+		if (st > SERD_FAILURE) {
+			break;
+		}
+	}
+
+	if (st > SERD_FAILURE) {
+		p->loaded       = true;
+		p->parse_errors = true;
+		return;
 	}
 
 #ifdef LILV_DYN_MANIFEST
@@ -235,8 +246,8 @@ static void
 lilv_plugin_load_ports_if_necessary(const LilvPlugin* const_p)
 {
 	LilvPlugin* p = (LilvPlugin*)const_p;
-	if (!p->loaded)
-		lilv_plugin_load(p);
+
+	lilv_plugin_load_if_necessary(p);
 
 	if (!p->ports) {
 		p->ports = (LilvPort**)malloc(sizeof(LilvPort*));
@@ -433,6 +444,11 @@ lilv_plugin_get_value_internal(const LilvPlugin* p,
 LILV_API bool
 lilv_plugin_verify(const LilvPlugin* plugin)
 {
+	lilv_plugin_load_if_necessary(plugin);
+	if (plugin->parse_errors) {
+		return false;
+	}
+
 	LilvNode*  rdf_type = lilv_new_uri(plugin->world, LILV_NS_RDF "type");
 	LilvNodes* results  = lilv_plugin_get_value(plugin, rdf_type);
 	lilv_node_free(rdf_type);

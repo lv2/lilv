@@ -26,6 +26,9 @@ lilv_plugin_instantiate(const LilvPlugin*        plugin,
                         const LV2_Feature*const* features)
 {
 	lilv_plugin_load_if_necessary(plugin);
+	if (plugin->parse_errors) {
+		return NULL;
+	}
 
 	LilvInstance* result = NULL;
 

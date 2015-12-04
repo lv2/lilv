@@ -127,6 +127,7 @@ struct LilvPluginImpl {
 	LilvPort**             ports;
 	uint32_t               num_ports;
 	bool                   loaded;
+	bool                   parse_errors;
 	bool                   replaced;
 };
 
