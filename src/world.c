@@ -404,9 +404,9 @@ lilv_world_add_plugin(LilvWorld*      world,
 			plugin->loaded = false;
 			lilv_node_free(plugin_uri);
 		} else {
-			LILV_ERRORF("Duplicate plugin <%s>\n", plugin_uri_str);
-			LILV_ERRORF("... found in %s\n", lilv_node_as_string(last_bundle));
-			LILV_ERRORF("... and      %s\n", sord_node_get_string(bundle));
+			LILV_WARNF("Duplicate plugin <%s>\n", plugin_uri_str);
+			LILV_WARNF("... found in %s\n", lilv_node_as_string(last_bundle));
+			LILV_WARNF("... and      %s (ignoed)\n", sord_node_get_string(bundle));
 			lilv_node_free(plugin_uri);
 			return;
 		}
@@ -707,6 +707,74 @@ lilv_world_load_bundle(LilvWorld* world, const LilvNode* bundle_uri)
 	                                     world->uris.rdf_a,
 	                                     world->uris.lv2_Plugin,
 	                                     bundle_node);
+
+	/* we cannot unload bundles while there's a valid sort iterator
+	 * so loop first to check for duplicates
+	 */
+	LilvNodes* unload_uris = lilv_nodes_new();
+	FOREACH_MATCH(plug_results) {
+		const SordNode* plug = sord_iter_get_node(plug_results, SORD_SUBJECT);
+		LilvNode*    plugin_uri = lilv_node_new_from_node(world, plug);
+		LilvPlugin*  plugin     = (LilvPlugin*)lilv_plugins_get_by_uri(world->plugins, plugin_uri);
+		if (!plugin) {
+				lilv_node_free(plugin_uri);
+				continue;
+		}
+		const LilvNode* last_bundle = lilv_plugin_get_bundle_uri(plugin);
+		if (sord_node_equals(bundle_node, last_bundle->node)) {
+			lilv_node_free(plugin_uri);
+			continue;
+		}
+
+		// compare versions
+		int this_minor, this_micro, this_valid;
+		int last_minor, last_micro, last_valid;
+
+		this_valid = lookup_version (sord_node_get_string(bundle_node), sord_node_get_string(plug), &this_minor, &this_micro);
+		last_valid = lookup_version (sord_node_get_string(last_bundle->node), sord_node_get_string(plug), &last_minor, &last_micro);
+
+		if (0 == this_valid /* only use this one if it has a version */
+				&& (0 != last_valid /* if last one has no version, use this one */
+		        || (this_minor > last_minor) /* or use this if it's newer */
+		        || (this_minor == last_minor && this_micro > last_micro))) {
+			zix_tree_insert((ZixTree*)unload_uris,
+			                lilv_node_duplicate(plugin_uri),
+			                NULL);
+			LILV_WARNF("version <%s> is newer than <%s>\n",
+			           sord_node_get_string(bundle_node),
+			           sord_node_get_string(last_bundle->node));
+		} else {
+			LILV_WARNF("version <%s> is older than <%s>\n",
+			           sord_node_get_string(bundle_node),
+			           sord_node_get_string(last_bundle->node));
+		}
+		lilv_node_free(plugin_uri);
+	}
+
+	sord_iter_free(plug_results);
+
+	/* now unload plugins (if any) */
+	LILV_FOREACH(nodes, i, unload_uris) {
+		const LilvNode* plugin_uri = lilv_nodes_get(world->plugins, i);
+		LilvPlugin*  plugin    = (LilvPlugin*)lilv_plugins_get_by_uri(world->plugins, plugin_uri);
+		const LilvNode* bundle = lilv_plugin_get_bundle_uri(plugin);
+		LILV_WARNF("unloading <%s>\n", lilv_node_as_string(bundle));
+		lilv_world_unload_resource(world, i);
+		lilv_world_unload_bundle(world, bundle);
+		ZixTreeIter* z;
+		if ((z = lilv_collection_find_by_uri(world->zombies, plugin_uri))) {
+			zix_tree_remove(world->zombies, z);
+		}
+	}
+	lilv_nodes_free(unload_uris);
+
+	/* ..and resume */
+	plug_results = sord_search(world->model,
+	                           NULL,
+	                           world->uris.rdf_a,
+	                           world->uris.lv2_Plugin,
+	                           bundle_node);
+
 	FOREACH_MATCH(plug_results) {
 		const SordNode* plug = sord_iter_get_node(plug_results, SORD_SUBJECT);
 		lilv_world_add_plugin(world, plug, manifest, NULL, bundle_node);
