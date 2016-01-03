@@ -614,6 +614,73 @@ lilv_world_get_manifest_uri(LilvWorld* world, const LilvNode* bundle_uri)
 	return manifest;
 }
 
+static int
+lookup_version(const char *bundle_uri_str, const char* plugin_uri_str, int *minor, int *micro)
+{
+	int rv = -1;
+	LilvWorld* smallworld   = lilv_world_new();
+	LilvNode*  bundle_uri   = lilv_new_uri(smallworld, bundle_uri_str);
+	LilvNode*  manifest_uri = lilv_world_get_manifest_uri(smallworld, bundle_uri);
+	LilvNode*  plugin_uri   = lilv_new_uri (smallworld, plugin_uri_str);
+
+	SordNode* minorVersion  = sord_new_uri(smallworld->world, LV2_CORE__minorVersion);
+	SordNode* microVersion  = sord_new_uri(smallworld->world, LV2_CORE__microVersion);
+
+	SordNode* bundle_node = bundle_uri->node;
+	SerdStatus st = lilv_world_load_graph(smallworld, bundle_node, manifest_uri);
+	if (st > SERD_FAILURE) {
+		goto errout;
+	}
+
+	SordIter* plug_results = sord_search(smallworld->model,
+	                                     NULL,
+	                                     smallworld->uris.rdf_a,
+	                                     smallworld->uris.lv2_Plugin,
+	                                     bundle_node);
+	FOREACH_MATCH(plug_results) {
+		const SordNode* plug = sord_iter_get_node(plug_results, SORD_SUBJECT);
+		lilv_world_add_plugin(smallworld, plug, manifest_uri, NULL, bundle_node);
+	}
+	sord_iter_free(plug_results);
+
+	LilvPlugin* plugin = (LilvPlugin*)lilv_plugins_get_by_uri(smallworld->plugins, plugin_uri);
+	lilv_plugin_load_if_necessary(plugin);
+
+	SordIter* vn = lilv_world_query_internal(smallworld,
+	                                         plugin_uri->node,
+	                                         minorVersion,
+	                                         NULL);
+
+	SordIter* vc = lilv_world_query_internal(smallworld,
+	                                         plugin_uri->node,
+	                                         microVersion,
+	                                         NULL);
+
+	if (!sord_iter_end(vn) && !sord_iter_end(vc)) {
+		rv = 0;
+		const SordNode* minor_node = sord_iter_get_node(vn, SORD_OBJECT);
+		const SordNode* micro_node = sord_iter_get_node(vc, SORD_OBJECT);
+		if (minor) {
+			*minor = atoi (sord_node_get_string(minor_node));
+		}
+		if (micro) {
+			*micro = atoi (sord_node_get_string(micro_node));
+		}
+	}
+
+	sord_iter_free(vn);
+	sord_iter_free(vc);
+
+errout:
+	sord_node_free(smallworld->world, minorVersion);
+	sord_node_free(smallworld->world, microVersion);
+	lilv_node_free(plugin_uri);
+	lilv_node_free(manifest_uri);
+	lilv_node_free(bundle_uri);
+	lilv_world_free(smallworld);
+	return rv;
+}
+
 LILV_API void
 lilv_world_load_bundle(LilvWorld* world, const LilvNode* bundle_uri)
 {
