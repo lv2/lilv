@@ -21,7 +21,7 @@
 #include "lilv_internal.h"
 
 static void
-lilv_node_set_numerics_from_string(LilvNode* val, size_t len)
+lilv_node_set_numerics_from_string(LilvNode* val)
 {
 	const char* str = (const char*)sord_node_get_string(val->node);
 	char*       endptr;
@@ -104,7 +104,6 @@ lilv_node_new_from_node(LilvWorld* world, const SordNode* node)
 	LilvNode*    result       = NULL;
 	SordNode*    datatype_uri = NULL;
 	LilvNodeType type         = LILV_VALUE_STRING;
-	size_t       len          = 0;
 
 	switch (sord_node_get_type(node)) {
 	case SORD_URI:
@@ -137,8 +136,8 @@ lilv_node_new_from_node(LilvWorld* world, const SordNode* node)
 				            sord_node_get_string(datatype_uri));
 		}
 		result = lilv_node_new(
-			world, type, (const char*)sord_node_get_string_counted(node, &len));
-		lilv_node_set_numerics_from_string(result, len);
+			world, type, (const char*)sord_node_get_string(node));
+		lilv_node_set_numerics_from_string(result);
 		break;
 	}
 
