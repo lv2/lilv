@@ -174,7 +174,9 @@ struct LilvWorldImpl {
 		SordNode* lv2_index;
 		SordNode* lv2_latency;
 		SordNode* lv2_maximum;
+		SordNode* lv2_microVersion;
 		SordNode* lv2_minimum;
+		SordNode* lv2_minorVersion;
 		SordNode* lv2_name;
 		SordNode* lv2_optionalFeature;
 		SordNode* lv2_port;
@@ -234,6 +236,11 @@ struct LilvUIImpl {
 	LilvNode*  binary_uri;
 	LilvNodes* classes;
 };
+
+typedef struct LilvVersion {
+	int minor;
+	int micro;
+} LilvVersion;
 
 /*
  *
@@ -313,6 +320,19 @@ int lilv_lib_compare(const void* a, const void* b, void* user_data);
 
 int lilv_ptr_cmp(const void* a, const void* b, void* user_data);
 int lilv_resource_node_cmp(const void* a, const void* b, void* user_data);
+
+static inline int
+lilv_version_cmp(const LilvVersion* a, const LilvVersion* b)
+{
+	if (a->minor == b->minor && a->micro == b->micro) {
+		return 0;
+	} else if ((a->minor < b->minor)
+	           || (a->minor == b->minor && a->micro < b->micro)) {
+		return -1;
+	} else {
+		return 1;
+	}
+}
 
 struct LilvHeader*
 lilv_collection_get_by_uri(const ZixTree* seq, const LilvNode* uri);

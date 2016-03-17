@@ -64,7 +64,9 @@ lilv_world_new(void)
 	world->uris.lv2_index           = NEW_URI(LV2_CORE__index);
 	world->uris.lv2_latency         = NEW_URI(LV2_CORE__latency);
 	world->uris.lv2_maximum         = NEW_URI(LV2_CORE__maximum);
+	world->uris.lv2_microVersion    = NEW_URI(LV2_CORE__microVersion);
 	world->uris.lv2_minimum         = NEW_URI(LV2_CORE__minimum);
+	world->uris.lv2_minorVersion    = NEW_URI(LV2_CORE__minorVersion);
 	world->uris.lv2_name            = NEW_URI(LV2_CORE__name);
 	world->uris.lv2_optionalFeature = NEW_URI(LV2_CORE__optionalFeature);
 	world->uris.lv2_port            = NEW_URI(LV2_CORE__port);
@@ -404,9 +406,9 @@ lilv_world_add_plugin(LilvWorld*      world,
 			plugin->loaded = false;
 			lilv_node_free(plugin_uri);
 		} else {
-			LILV_ERRORF("Duplicate plugin <%s>\n", plugin_uri_str);
-			LILV_ERRORF("... found in %s\n", lilv_node_as_string(last_bundle));
-			LILV_ERRORF("... and      %s\n", sord_node_get_string(bundle));
+			LILV_WARNF("Duplicate plugin <%s>\n", plugin_uri_str);
+			LILV_WARNF("... found in %s\n", lilv_node_as_string(last_bundle));
+			LILV_WARNF("... and      %s (ignored)\n", sord_node_get_string(bundle));
 			lilv_node_free(plugin_uri);
 			return;
 		}
@@ -614,6 +616,65 @@ lilv_world_get_manifest_uri(LilvWorld* world, const LilvNode* bundle_uri)
 	return manifest;
 }
 
+static SordModel*
+load_plugin_model(LilvWorld*      world,
+                  const LilvNode* bundle_uri,
+                  const LilvNode* plugin_uri)
+{
+	// Create model and reader for loading into it
+	SordNode*   bundle_node = bundle_uri->node;
+	SordModel*  model       = sord_new(world->world, SORD_SPO|SORD_OPS, false);
+	SerdEnv*    env         = serd_env_new(sord_node_to_serd_node(bundle_node));
+	SerdReader* reader      = sord_new_reader(model, env, SERD_TURTLE, NULL);
+
+	// Load manifest
+	LilvNode* manifest_uri = lilv_world_get_manifest_uri(world, bundle_uri);
+	serd_reader_add_blank_prefix(reader, lilv_world_blank_node_prefix(world));
+	serd_reader_read_file(
+		reader, (const uint8_t*)lilv_node_as_string(manifest_uri));
+
+	// Load any seeAlso files
+	SordModel* files = lilv_world_filter_model(
+		world, model, plugin_uri->node, world->uris.rdfs_seeAlso, NULL, NULL);
+
+	SordIter* f = sord_begin(files);
+	FOREACH_MATCH(f) {
+		const SordNode* file      = sord_iter_get_node(f, SORD_OBJECT);
+		const uint8_t*  file_str  = sord_node_get_string(file);
+		if (sord_node_get_type(file) == SORD_URI) {
+			serd_reader_add_blank_prefix(
+				reader, lilv_world_blank_node_prefix(world));
+			serd_reader_read_file(reader, file_str);
+		}
+	}
+
+	sord_iter_free(f);
+	sord_free(files);
+	serd_reader_free(reader);
+	serd_env_free(env);
+	lilv_node_free(manifest_uri);
+
+	return model;
+}
+
+static LilvVersion
+get_version(LilvWorld* world, SordModel* model, const LilvNode* subject)
+{
+	const SordNode* minor_node = sord_get(
+		model, subject->node, world->uris.lv2_minorVersion, NULL, NULL);
+	const SordNode* micro_node = sord_get(
+		model, subject->node, world->uris.lv2_microVersion, NULL, NULL);
+
+
+	LilvVersion version = { 0, 0 };
+	if (minor_node && micro_node) {
+		version.minor = atoi((const char*)sord_node_get_string(minor_node));
+		version.micro = atoi((const char*)sord_node_get_string(micro_node));
+	}
+
+	return version;
+}
+
 LILV_API void
 lilv_world_load_bundle(LilvWorld* world, const LilvNode* bundle_uri)
 {
@@ -640,6 +701,66 @@ lilv_world_load_bundle(LilvWorld* world, const LilvNode* bundle_uri)
 	                                     world->uris.rdf_a,
 	                                     world->uris.lv2_Plugin,
 	                                     bundle_node);
+
+	// Find any loaded plugins that will be replaced with a newer version
+	LilvNodes* unload_uris = lilv_nodes_new();
+	FOREACH_MATCH(plug_results) {
+		const SordNode* plug = sord_iter_get_node(plug_results, SORD_SUBJECT);
+
+		LilvNode*         plugin_uri  = lilv_node_new_from_node(world, plug);
+		const LilvPlugin* plugin      = lilv_plugins_get_by_uri(world->plugins, plugin_uri);
+		const LilvNode*   last_bundle = plugin ? lilv_plugin_get_bundle_uri(plugin) : NULL;
+		if (!plugin || sord_node_equals(bundle_node, last_bundle->node)) {
+			// No previously loaded version, or it's from the same bundle
+			lilv_node_free(plugin_uri);
+			continue;
+		}
+
+		// Compare versions
+		SordModel*  this_model   = load_plugin_model(world, bundle_uri, plugin_uri);
+		LilvVersion this_version = get_version(world, this_model, plugin_uri);
+		LilvVersion last_version = get_version(world, world->model, plugin_uri);
+		sord_free(this_model);
+		if (lilv_version_cmp(&this_version, &last_version) > 0) {
+			zix_tree_insert((ZixTree*)unload_uris,
+			                lilv_node_duplicate(plugin_uri),
+			                NULL);
+			LILV_WARNF("Version %d.%d of <%s> in <%s> replaces %d.%d in <%s>\n",
+			           this_version.minor, this_version.micro,
+			           sord_node_get_string(plug),
+			           sord_node_get_string(bundle_node),
+			           last_version.minor, last_version.micro,
+			           sord_node_get_string(last_bundle->node));
+		}
+		lilv_node_free(plugin_uri);
+	}
+
+	sord_iter_free(plug_results);
+
+	// Unload any old conflicting plugins
+	LILV_FOREACH(nodes, i, unload_uris) {
+		const LilvNode*   uri    = lilv_nodes_get(world->plugins, i);
+		const LilvPlugin* plugin = lilv_plugins_get_by_uri(world->plugins, uri);
+		const LilvNode*   bundle = lilv_plugin_get_bundle_uri(plugin);
+
+		lilv_world_unload_resource(world, i);
+		lilv_world_unload_bundle(world, bundle);
+
+		ZixTreeIter* z;
+		if ((z = lilv_collection_find_by_uri(world->zombies, uri))) {
+			lilv_plugin_free((LilvPlugin*)zix_tree_get(z));
+			zix_tree_remove(world->zombies, z);
+		}
+	}
+	lilv_nodes_free(unload_uris);
+
+	// Re-search for plugin results now that old plugins are gone
+	plug_results = sord_search(world->model,
+	                           NULL,
+	                           world->uris.rdf_a,
+	                           world->uris.lv2_Plugin,
+	                           bundle_node);
+
 	FOREACH_MATCH(plug_results) {
 		const SordNode* plug = sord_iter_get_node(plug_results, SORD_SUBJECT);
 		lilv_world_add_plugin(world, plug, manifest, NULL, bundle_node);
