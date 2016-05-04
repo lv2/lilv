@@ -190,6 +190,7 @@ struct LilvWorldImpl {
 		SordNode* rdf_a;
 		SordNode* rdf_value;
 		SordNode* rdfs_Class;
+		SordNode* rdfs_comment;
 		SordNode* rdfs_label;
 		SordNode* rdfs_seeAlso;
 		SordNode* rdfs_subClassOf;

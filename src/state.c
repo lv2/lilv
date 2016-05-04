@@ -57,6 +57,7 @@ struct LilvStateImpl {
 	char*      copy_dir;    ///< Directory for snapshots of external files
 	char*      link_dir;    ///< Directory for links to external files
 	char*      label;       ///< State/Preset label
+	char*      comment;     ///< State/Preset comment
 	ZixTree*   abs2rel;     ///< PathMap sorted by abs
 	ZixTree*   rel2abs;     ///< PathMap sorted by rel
 	Property*  props;       ///< State properties
@@ -505,6 +506,18 @@ new_state_from_model(LilvWorld*       world,
 		sord_iter_free(i);
 	}
 
+	// Get the state comment 
+	i = sord_search(model, node, world->uris.rdfs_comment, NULL, NULL);
+	if (i) {
+		const SordNode* object = sord_iter_get_node(i, SORD_OBJECT);
+		const SordNode* graph  = sord_iter_get_node(i, SORD_GRAPH);
+		state->comment = lilv_strdup((const char*)sord_node_get_string(object));
+		if (!state->dir && graph) {
+			state->dir = lilv_strdup((const char*)sord_node_get_string(graph));
+		}
+		sord_iter_free(i);
+	}
+
 	Sratom*        sratom = sratom_new(map);
 	SerdChunk      chunk  = { NULL, 0 };
 	LV2_Atom_Forge forge;
@@ -901,6 +914,14 @@ lilv_state_write(LilvWorld*       world,
 		                            NULL, &subject, &p, &o, NULL, NULL);
 	}
 
+	// <subject> rdfs:comment comment
+	if (state->comment) {
+		p = serd_node_from_string(SERD_URI, USTR(LILV_NS_RDFS "comment"));
+		o = serd_node_from_string(SERD_LITERAL, USTR(state->comment));
+		serd_writer_write_statement(writer, 0,
+		                            NULL, &subject, &p, &o, NULL, NULL);
+	}
+
 	SerdEnv*        env  = serd_writer_get_env(writer);
 	const SerdNode* base = serd_env_get_base_uri(env, NULL);
 
@@ -1184,6 +1205,7 @@ lilv_state_free(LilvState* state)
 		free(state->props);
 		free(state->values);
 		free(state->label);
+		free(state->comment);
 		free(state->dir);
 		free(state->file_dir);
 		free(state->copy_dir);
@@ -1199,6 +1221,9 @@ lilv_state_equals(const LilvState* a, const LilvState* b)
 	    || (a->label && !b->label)
 	    || (b->label && !a->label)
 	    || (a->label && b->label && strcmp(a->label, b->label))
+	    || (a->comment && !b->comment)
+	    || (b->comment && !a->comment)
+	    || (a->comment && b->comment && strcmp(a->comment, b->comment))
 	    || a->n_props != b->n_props
 	    || a->n_values != b->n_values) {
 		return false;
@@ -1265,4 +1290,18 @@ lilv_state_set_label(LilvState* state, const char* label)
 	const size_t len = strlen(label);
 	state->label = (char*)realloc(state->label, len + 1);
 	memcpy(state->label, label, len + 1);
+}
+
+LILV_API const char*
+lilv_state_get_comment(const LilvState* state)
+{
+	return state->comment;
+}
+
+LILV_API void
+lilv_state_set_comment(LilvState* state, const char* comment)
+{
+	const size_t len = strlen(comment);
+	state->comment = (char*)realloc(state->comment, len + 1);
+	memcpy(state->comment, comment, len + 1);
 }

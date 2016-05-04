@@ -1383,6 +1383,19 @@ lilv_state_set_label(LilvState*  state,
                      const char* label);
 
 /**
+   Get the comment of `state`.
+*/
+LILV_API const char*
+lilv_state_get_comment(const LilvState* state);
+
+/**
+   Set the comment of `state`.
+*/
+LILV_API void
+lilv_state_set_comment(LilvState*  state,
+                       const char* comment);
+
+/**
    Function to set a port value.
    @param port_symbol The symbol of the port.
    @param user_data The user_data passed to lilv_state_restore().

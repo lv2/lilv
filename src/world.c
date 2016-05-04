@@ -80,6 +80,7 @@ lilv_world_new(void)
 	world->uris.rdf_a               = NEW_URI(LILV_NS_RDF  "type");
 	world->uris.rdf_value           = NEW_URI(LILV_NS_RDF  "value");
 	world->uris.rdfs_Class          = NEW_URI(LILV_NS_RDFS "Class");
+	world->uris.rdfs_comment        = NEW_URI(LILV_NS_RDFS "comment");
 	world->uris.rdfs_label          = NEW_URI(LILV_NS_RDFS "label");
 	world->uris.rdfs_seeAlso        = NEW_URI(LILV_NS_RDFS "seeAlso");
 	world->uris.rdfs_subClassOf     = NEW_URI(LILV_NS_RDFS "subClassOf");
