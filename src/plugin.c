@@ -941,7 +941,10 @@ lilv_plugin_get_uis(const LilvPlugin* p)
 		const SordNode* ui = sord_iter_get_node(uis, SORD_OBJECT);
 
 		LilvNode* type   = lilv_plugin_get_unique(p, ui, p->world->uris.rdf_a);
-		LilvNode* binary = lilv_plugin_get_unique(p, ui, ui_binary_node);
+		LilvNode* binary = lilv_plugin_get_one(p, ui, p->world->uris.lv2_binary);
+		if (!binary) {
+			binary = lilv_plugin_get_unique(p, ui, ui_binary_node);
+		}
 
 		if (sord_node_get_type(ui) != SORD_URI
 		    || !lilv_node_is_uri(type)
