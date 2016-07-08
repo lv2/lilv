@@ -719,8 +719,10 @@ lilv_world_load_bundle(LilvWorld* world, const LilvNode* bundle_uri)
 		// Compare versions
 		SordModel*  this_model   = load_plugin_model(world, bundle_uri, plugin_uri);
 		LilvVersion this_version = get_version(world, this_model, plugin_uri);
-		LilvVersion last_version = get_version(world, world->model, plugin_uri);
+		SordModel*  last_model   = load_plugin_model(world, last_bundle, plugin_uri);
+		LilvVersion last_version = get_version(world, last_model, plugin_uri);
 		sord_free(this_model);
+		sord_free(last_model);
 		if (lilv_version_cmp(&this_version, &last_version) > 0) {
 			zix_tree_insert((ZixTree*)unload_uris,
 			                lilv_node_duplicate(plugin_uri),
@@ -738,14 +740,19 @@ lilv_world_load_bundle(LilvWorld* world, const LilvNode* bundle_uri)
 	sord_iter_free(plug_results);
 
 	// Unload any old conflicting plugins
+	LilvNodes* unload_bundles = lilv_nodes_new();
 	LILV_FOREACH(nodes, i, unload_uris) {
-		const LilvNode*   uri    = lilv_nodes_get(world->plugins, i);
+		const LilvNode*   uri    = lilv_nodes_get(unload_uris, i);
 		const LilvPlugin* plugin = lilv_plugins_get_by_uri(world->plugins, uri);
 		const LilvNode*   bundle = lilv_plugin_get_bundle_uri(plugin);
 
-		lilv_world_unload_resource(world, i);
-		lilv_world_unload_bundle(world, bundle);
+		// Unload plugin and record bundle for later unloading
+		lilv_world_unload_resource(world, uri);
+		zix_tree_insert((ZixTree*)unload_bundles,
+		                lilv_node_duplicate(bundle),
+		                NULL);
 
+		// Remove plugin from zombies list
 		ZixTreeIter* z;
 		if ((z = lilv_collection_find_by_uri(world->zombies, uri))) {
 			lilv_plugin_free((LilvPlugin*)zix_tree_get(z));
@@ -753,6 +760,13 @@ lilv_world_load_bundle(LilvWorld* world, const LilvNode* bundle_uri)
 		}
 	}
 	lilv_nodes_free(unload_uris);
+
+	// Now unload the associated bundles
+	// This must be done last since several plugins could be in the same bundle
+	LILV_FOREACH(nodes, i, unload_bundles) {
+		lilv_world_unload_bundle(world, lilv_nodes_get(unload_bundles, i));
+	}
+	lilv_nodes_free(unload_bundles);
 
 	// Re-search for plugin results now that old plugins are gone
 	plug_results = sord_search(world->model,
