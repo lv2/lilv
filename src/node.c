@@ -24,7 +24,6 @@ static void
 lilv_node_set_numerics_from_string(LilvNode* val)
 {
 	const char* str = (const char*)sord_node_get_string(val->node);
-	char*       endptr;
 
 	switch (val->type) {
 	case LILV_VALUE_URI:
@@ -33,10 +32,10 @@ lilv_node_set_numerics_from_string(LilvNode* val)
 	case LILV_VALUE_BLOB:
 		break;
 	case LILV_VALUE_INT:
-		val->val.int_val = strtol(str, &endptr, 10);
+		val->val.int_val = strtol(str, NULL, 10);
 		break;
 	case LILV_VALUE_FLOAT:
-		val->val.float_val = serd_strtod(str, &endptr);
+		val->val.float_val = serd_strtod(str, NULL);
 		break;
 	case LILV_VALUE_BOOL:
 		val->val.bool_val = !strcmp(str, "true");
