@@ -403,7 +403,7 @@ def build(bld):
                   use        = 'liblilv')
         autowaf.use_lib(bld, obj, 'LILV')
 
-        bld.install_files('${PYTHONDIR}', 'bindings/lilv.py')
+        bld.install_files('${PYTHONDIR}', bld.path.ant_glob('bindings/lilv.py'))
 
     bld.add_post_fun(autowaf.run_ldconfig)
     if bld.env.DOCS:
@@ -432,12 +432,14 @@ def test(ctx):
         os.environ['LD_LIBRARY_PATH'] = os.getcwd()
         autowaf.run_tests(ctx, 'Python ' + APPNAME, ['python -m unittest discover bindings/'])
     os.environ['PATH'] = 'test' + os.pathsep + os.getenv('PATH')
-    autowaf.run_test(ctx, APPNAME, 'lilv_test', dirs=['./src','./test'], name='lilv_test', header=True)
+
+    Logs.pprint('GREEN', '')
+    autowaf.run_test(ctx, APPNAME, 'lilv_test', dirs=['./src','./test'], name='lilv_test')
 
     for p in test_plugins:
         autowaf.run_test(ctx, APPNAME,
                          'test_' + p + ' ' + ('test/%s.lv2/' % p),
-                         0, dirs=['./src','./test','./test/%s.lv2' % p], name=p, header=True)
+                         0, dirs=['./src','./test','./test/%s.lv2' % p])
 
     autowaf.post_test(ctx, APPNAME)
     try:
