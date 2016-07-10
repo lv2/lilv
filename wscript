@@ -26,7 +26,9 @@ test_plugins = ['missing_descriptor',
                 'missing_name',
                 'missing_port_name',
                 'lib_descriptor',
-                'failed_lib_descriptor']
+                'failed_lib_descriptor',
+                'old_version',
+                'new_version']
 
 def options(opt):
     opt.load('compiler_c')
@@ -286,6 +288,9 @@ def build(bld):
                       uselib       = 'LV2')
 
         for p in test_plugins:
+            if not bld.path.find_node('test/%s.lv2/test_%s.c' % (p, p)):
+                continue
+
             obj = bld(features     = 'c cprogram',
                       source       = 'test/%s.lv2/test_%s.c' % (p, p),
                       target       = 'test/test_%s' % p,
@@ -321,9 +326,10 @@ def build(bld):
         autowaf.use_lib(bld, obj, 'SERD SORD SRATOM LV2')
 
         # Unit test program
-        blddir = autowaf.build_dir(APPNAME, 'test')
-        bpath  = os.path.abspath(os.path.join(blddir, 'test.lv2'))
-        bpath  = bpath.replace('\\', '/')
+        testdir = os.path.abspath(autowaf.build_dir(APPNAME, 'test'))
+        bpath   = os.path.join(testdir, 'test.lv2')
+        bpath   = bpath.replace('\\', '/')
+        testdir = testdir.replace('\\', '/')
         obj = bld(features     = 'c cprogram',
                   source       = 'test/lilv_test.c',
                   includes     = ['.', './src'],
@@ -331,7 +337,8 @@ def build(bld):
                   lib          = test_libs,
                   target       = 'test/lilv_test',
                   install_path = None,
-                  defines      = defines + ['LILV_TEST_BUNDLE=\"%s/\"' % bpath],
+                  defines      = (defines + ['LILV_TEST_BUNDLE=\"%s/\"' % bpath] +
+                                  ['LILV_TEST_DIR=\"%s/\"' % testdir]),
                   cflags       = test_cflags)
         autowaf.use_lib(bld, obj, 'SERD SORD SRATOM LV2')
 
@@ -437,9 +444,10 @@ def test(ctx):
     autowaf.run_test(ctx, APPNAME, 'lilv_test', dirs=['./src','./test'], name='lilv_test')
 
     for p in test_plugins:
-        autowaf.run_test(ctx, APPNAME,
-                         'test_' + p + ' ' + ('test/%s.lv2/' % p),
-                         0, dirs=['./src','./test','./test/%s.lv2' % p])
+        test_prog = 'test_' + p + ' ' + ('test/%s.lv2/' % p)
+        if os.path.exists('test/test_' + p):
+            autowaf.run_test(ctx, APPNAME, test_prog, 0,
+                             dirs=['./src','./test','./test/%s.lv2' % p])
 
     autowaf.post_test(ctx, APPNAME)
     try:

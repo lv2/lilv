@@ -2009,6 +2009,54 @@ test_reload_bundle(void)
 
 /*****************************************************************************/
 
+static int
+test_replace_version(void)
+{
+	if (!init_world()) {
+		return 0;
+	}
+
+	LilvNode* plug_uri         = lilv_new_uri(world, "http://example.org/versioned");
+	LilvNode* lv2_minorVersion = lilv_new_uri(world, LV2_CORE__minorVersion);
+	LilvNode* lv2_microVersion = lilv_new_uri(world, LV2_CORE__microVersion);
+
+	char* old_bundle_path = malloc(strlen(LILV_TEST_DIR) + 32);
+	strcpy(old_bundle_path, LILV_TEST_DIR);
+	strcat(old_bundle_path, "old_version.lv2/");
+
+	// Load plugin from old bundle
+	LilvNode* old_bundle = lilv_new_file_uri(world, NULL, old_bundle_path);
+	lilv_world_load_bundle(world, old_bundle);
+	lilv_world_load_resource(world, plug_uri);
+
+	// Check version
+	const LilvPlugins* plugins  = lilv_world_get_all_plugins(world);
+	const LilvPlugin*  old_plug = lilv_plugins_get_by_uri(plugins, plug_uri);
+	TEST_ASSERT(old_plug);
+	TEST_ASSERT(!strcmp(lilv_node_as_string(lilv_world_get(world, plug_uri, lv2_minorVersion, 0)), "1"));
+	TEST_ASSERT(!strcmp(lilv_node_as_string(lilv_world_get(world, plug_uri, lv2_microVersion, 0)), "0"));
+
+	char* new_bundle_path = malloc(strlen(LILV_TEST_DIR) + 32);
+	strcpy(new_bundle_path, LILV_TEST_DIR);
+	strcat(new_bundle_path, "new_version.lv2/");
+
+	// Load plugin from new bundle
+	LilvNode* new_bundle = lilv_new_file_uri(world, NULL, new_bundle_path);
+	lilv_world_load_bundle(world, new_bundle);
+	lilv_world_load_resource(world, plug_uri);
+
+	// Check that version in the world model has changed
+	plugins = lilv_world_get_all_plugins(world);
+	const LilvPlugin* new_plug = lilv_plugins_get_by_uri(plugins, plug_uri);
+	TEST_ASSERT(new_plug);
+	TEST_ASSERT(!strcmp(lilv_node_as_string(lilv_world_get(world, plug_uri, lv2_minorVersion, 0)), "2"));
+	TEST_ASSERT(!strcmp(lilv_node_as_string(lilv_world_get(world, plug_uri, lv2_microVersion, 0)), "1"));
+
+	return 1;
+}
+
+/*****************************************************************************/
+
 /* add tests here */
 static struct TestCase tests[] = {
 	TEST_CASE(util),
@@ -2033,6 +2081,7 @@ static struct TestCase tests[] = {
 	TEST_CASE(world),
 	TEST_CASE(state),
 	TEST_CASE(reload_bundle),
+	TEST_CASE(replace_version),
 	{ NULL, NULL }
 };
 
