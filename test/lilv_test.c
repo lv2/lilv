@@ -252,6 +252,7 @@ test_value(void)
 	TEST_ASSERT(!strcmp(lilv_node_as_string(sval), "Foo"));
 	TEST_ASSERT(lilv_node_as_int(ival) == 42);
 	TEST_ASSERT(fabs(lilv_node_as_float(fval) - 1.6180) < FLT_EPSILON);
+	TEST_ASSERT(isnan(lilv_node_as_float(sval)));
 
 	LilvNode* loc_abs  = lilv_new_file_uri(world, NULL, "/foo/bar");
 	LilvNode* loc_rel  = lilv_new_file_uri(world, NULL, "foo");
