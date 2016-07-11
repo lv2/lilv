@@ -335,15 +335,12 @@ lilv_lib_compare(const void* a, const void* b, void* user_data)
 static ZixTreeIter*
 lilv_collection_find_by_uri(const ZixTree* seq, const LilvNode* uri)
 {
-	if (!lilv_node_is_uri(uri)) {
-		return NULL;
+	ZixTreeIter* i = NULL;
+	if (lilv_node_is_uri(uri)) {
+		struct LilvHeader key = { NULL, (LilvNode*)uri };
+		zix_tree_find(seq, &key, &i);
 	}
-
-	struct LilvHeader key = { NULL, (LilvNode*)uri };
-	ZixTreeIter*      i   = NULL;
-	const ZixStatus   st  = zix_tree_find(seq, &key, &i);
-
-	return st ? NULL : i;
+	return i;
 }
 
 /** Get an element of a collection of any object with an LilvHeader by URI. */

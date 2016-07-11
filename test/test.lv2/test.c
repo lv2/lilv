@@ -28,8 +28,9 @@
 #define TEST_URI "http://example.org/lilv-test-plugin"
 
 enum {
-	TEST_INPUT  = 0,
-	TEST_OUTPUT = 1
+	TEST_INPUT   = 0,
+	TEST_OUTPUT  = 1,
+	TEST_CONTROL = 2
 };
 
 typedef struct {
@@ -71,6 +72,9 @@ connect_port(LV2_Handle instance,
 		test->input = (float*)data;
 		break;
 	case TEST_OUTPUT:
+		test->output = (float*)data;
+		break;
+	case TEST_CONTROL:
 		test->output = (float*)data;
 		break;
 	default:

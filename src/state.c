@@ -1,5 +1,5 @@
 /*
-  Copyright 2007-2015 David Robillard <http://drobilla.net>
+  Copyright 2007-2016 David Robillard <http://drobilla.net>
 
   Permission to use, copy, modify, and/or distribute this software for any
   purpose with or without fee is hereby granted, provided that the above
@@ -106,18 +106,18 @@ append_port_value(LilvState*  state,
                   uint32_t    size,
                   uint32_t    type)
 {
+	PortValue* pv = NULL;
 	if (value) {
 		state->values = (PortValue*)realloc(
 			state->values, (++state->n_values) * sizeof(PortValue));
-		PortValue* pv = &state->values[state->n_values - 1];
+		pv         = &state->values[state->n_values - 1];
 		pv->symbol = lilv_strdup(port_symbol);
 		pv->value  = malloc(size);
 		pv->size   = size;
 		pv->type   = type;
 		memcpy(pv->value, value, size);
-		return pv;
 	}
-	return NULL;
+	return pv;
 }
 
 static const char*

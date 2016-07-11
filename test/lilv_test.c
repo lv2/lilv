@@ -1,5 +1,5 @@
 /*
-  Copyright 2007-2015 David Robillard <http://drobilla.net>
+  Copyright 2007-2016 David Robillard <http://drobilla.net>
   Copyright 2008 Krzysztof Foltman
 
   Permission to use, copy, modify, and/or distribute this software for any
@@ -1419,6 +1419,7 @@ test_ui(void)
 uint32_t atom_Float = 0;
 float    in         = 1.0;
 float    out        = 42.0;
+float    control    = 1234.0;
 
 static const void*
 get_port_value(const char* port_symbol,
@@ -1434,6 +1435,10 @@ get_port_value(const char* port_symbol,
 		*size = sizeof(float);
 		*type = atom_Float;
 		return &out;
+	} else if (!strcmp(port_symbol, "control")) {
+		*size = sizeof(float);
+		*type = atom_Float;
+		return &control;
 	} else {
 		fprintf(stderr, "error: get_port_value for nonexistent port `%s'\n",
 		        port_symbol);
@@ -1453,6 +1458,8 @@ set_port_value(const char*     port_symbol,
 		in = *(const float*)value;
 	} else if (!strcmp(port_symbol, "output")) {
 		out = *(const float*)value;
+	} else if (!strcmp(port_symbol, "control")) {
+		control = *(const float*)value;
 	} else {
 		fprintf(stderr, "error: set_port_value for nonexistent port `%s'\n",
 		        port_symbol);
@@ -1624,6 +1631,16 @@ test_state(void)
 	                                             "state/state.lv2/state.ttl");
 
 	TEST_ASSERT(lilv_state_equals(state, state5));  // Round trip accuracy
+	TEST_ASSERT(lilv_state_get_num_properties(state) == 8);
+
+	// Attempt to save state to nowhere (error)
+	ret = lilv_state_save(world, &map, &unmap, state, NULL, NULL, NULL);
+	TEST_ASSERT(ret);
+
+	// Save another state to the same directory (update manifest)
+	ret = lilv_state_save(world, &map, &unmap, state, NULL,
+	                      "state/state.lv2", "state2.ttl");
+	TEST_ASSERT(!ret);
 
 	// Save state with URI to a directory
 	const char* state_uri = "http://example.org/state";
@@ -1999,6 +2016,9 @@ test_reload_bundle(void)
 	TEST_ASSERT(name2);
 	TEST_ASSERT(!strcmp(lilv_node_as_string(name2), "Second name"));
 	lilv_node_free(name2);
+
+	// Load new bundle again (noop)
+	lilv_world_load_bundle(world, bundle_uri);
 
 	lilv_node_free(bundle_uri);
 	lilv_world_free(world);
