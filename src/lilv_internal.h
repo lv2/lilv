@@ -1,5 +1,5 @@
 /*
-  Copyright 2007-2015 David Robillard <http://drobilla.net>
+  Copyright 2007-2016 David Robillard <http://drobilla.net>
 
   Permission to use, copy, modify, and/or distribute this software for any
   purpose with or without fee is hereby granted, provided that the above
@@ -257,6 +257,7 @@ void      lilv_port_free(const LilvPlugin* plugin, LilvPort* port);
 LilvPlugin* lilv_plugin_new(LilvWorld* world,
                             LilvNode*  uri,
                             LilvNode*  bundle_uri);
+void        lilv_plugin_clear(LilvPlugin* plugin, LilvNode* bundle_uri);
 void        lilv_plugin_load_if_necessary(const LilvPlugin* p);
 void        lilv_plugin_free(LilvPlugin* plugin);
 LilvNode*   lilv_plugin_get_unique(const LilvPlugin* p,
@@ -427,6 +428,10 @@ static const LV2_Feature* const dman_features = { NULL };
 #define LILV_WARN(str)        fprintf(stderr, "%s(): warning: " str, \
                                       __func__)
 #define LILV_WARNF(fmt, ...)  fprintf(stderr, "%s(): warning: " fmt, \
+                                      __func__, __VA_ARGS__)
+#define LILV_NOTE(str)        fprintf(stderr, "%s(): note: " str, \
+                                      __func__)
+#define LILV_NOTEF(fmt, ...)  fprintf(stderr, "%s(): note: " fmt, \
                                       __func__, __VA_ARGS__)
 
 #ifdef __cplusplus

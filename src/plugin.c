@@ -1,5 +1,5 @@
 /*
-  Copyright 2007-2014 David Robillard <http://drobilla.net>
+  Copyright 2007-2016 David Robillard <http://drobilla.net>
 
   Permission to use, copy, modify, and/or distribute this software for any
   purpose with or without fee is hereby granted, provided that the above
@@ -32,14 +32,9 @@
 #define NS_DOAP (const uint8_t*)"http://usefulinc.com/ns/doap#"
 #define NS_FOAF (const uint8_t*)"http://xmlns.com/foaf/0.1/"
 
-/** Ownership of `uri` is taken */
-LilvPlugin*
-lilv_plugin_new(LilvWorld* world, LilvNode* uri, LilvNode* bundle_uri)
+static void
+lilv_plugin_init(LilvPlugin* plugin, LilvNode* bundle_uri)
 {
-	assert(bundle_uri);
-	LilvPlugin* plugin = (LilvPlugin*)malloc(sizeof(LilvPlugin));
-	plugin->world        = world;
-	plugin->plugin_uri   = uri;
 	plugin->bundle_uri   = bundle_uri;
 	plugin->binary_uri   = NULL;
 #ifdef LILV_DYN_MANIFEST
@@ -52,8 +47,28 @@ lilv_plugin_new(LilvWorld* world, LilvNode* uri, LilvNode* bundle_uri)
 	plugin->loaded       = false;
 	plugin->parse_errors = false;
 	plugin->replaced     = false;
+}
 
+/** Ownership of `uri` and `bundle` is taken */
+LilvPlugin*
+lilv_plugin_new(LilvWorld* world, LilvNode* uri, LilvNode* bundle_uri)
+{
+	LilvPlugin* plugin = (LilvPlugin*)malloc(sizeof(LilvPlugin));
+
+	plugin->world      = world;
+	plugin->plugin_uri = uri;
+
+	lilv_plugin_init(plugin, bundle_uri);
 	return plugin;
+}
+
+void
+lilv_plugin_clear(LilvPlugin* plugin, LilvNode* bundle_uri)
+{
+	lilv_node_free(plugin->bundle_uri);
+	lilv_node_free(plugin->binary_uri);
+	lilv_nodes_free(plugin->data_uris);
+	lilv_plugin_init(plugin, bundle_uri);
 }
 
 static void

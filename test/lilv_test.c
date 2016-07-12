@@ -2039,6 +2039,8 @@ test_replace_version(void)
 	LilvNode* plug_uri         = lilv_new_uri(world, "http://example.org/versioned");
 	LilvNode* lv2_minorVersion = lilv_new_uri(world, LV2_CORE__minorVersion);
 	LilvNode* lv2_microVersion = lilv_new_uri(world, LV2_CORE__microVersion);
+	LilvNode* minor            = NULL;
+	LilvNode* micro            = NULL;
 
 	char* old_bundle_path = malloc(strlen(LILV_TEST_DIR) + 32);
 	strcpy(old_bundle_path, LILV_TEST_DIR);
@@ -2053,8 +2055,12 @@ test_replace_version(void)
 	const LilvPlugins* plugins  = lilv_world_get_all_plugins(world);
 	const LilvPlugin*  old_plug = lilv_plugins_get_by_uri(plugins, plug_uri);
 	TEST_ASSERT(old_plug);
-	TEST_ASSERT(!strcmp(lilv_node_as_string(lilv_world_get(world, plug_uri, lv2_minorVersion, 0)), "1"));
-	TEST_ASSERT(!strcmp(lilv_node_as_string(lilv_world_get(world, plug_uri, lv2_microVersion, 0)), "0"));
+	minor = lilv_world_get(world, plug_uri, lv2_minorVersion, 0);
+	micro = lilv_world_get(world, plug_uri, lv2_microVersion, 0);
+	TEST_ASSERT(!strcmp(lilv_node_as_string(minor), "1"));
+	TEST_ASSERT(!strcmp(lilv_node_as_string(micro), "0"));
+	lilv_node_free(micro);
+	lilv_node_free(minor);
 
 	char* new_bundle_path = malloc(strlen(LILV_TEST_DIR) + 32);
 	strcpy(new_bundle_path, LILV_TEST_DIR);
@@ -2069,9 +2075,36 @@ test_replace_version(void)
 	plugins = lilv_world_get_all_plugins(world);
 	const LilvPlugin* new_plug = lilv_plugins_get_by_uri(plugins, plug_uri);
 	TEST_ASSERT(new_plug);
-	TEST_ASSERT(!strcmp(lilv_node_as_string(lilv_world_get(world, plug_uri, lv2_minorVersion, 0)), "2"));
-	TEST_ASSERT(!strcmp(lilv_node_as_string(lilv_world_get(world, plug_uri, lv2_microVersion, 0)), "1"));
+	TEST_ASSERT(lilv_node_equals(lilv_plugin_get_bundle_uri(new_plug), new_bundle));
+	minor = lilv_world_get(world, plug_uri, lv2_minorVersion, 0);
+	micro = lilv_world_get(world, plug_uri, lv2_microVersion, 0);
+	TEST_ASSERT(!strcmp(lilv_node_as_string(minor), "2"));
+	TEST_ASSERT(!strcmp(lilv_node_as_string(micro), "1"));
+	lilv_node_free(micro);
+	lilv_node_free(minor);
 
+	// Try to load the old version again
+	lilv_world_load_bundle(world, old_bundle);
+	lilv_world_load_resource(world, plug_uri);
+
+	// Check that version in the world model has not changed
+	plugins = lilv_world_get_all_plugins(world);
+	new_plug = lilv_plugins_get_by_uri(plugins, plug_uri);
+	TEST_ASSERT(new_plug);
+	minor = lilv_world_get(world, plug_uri, lv2_minorVersion, 0);
+	micro = lilv_world_get(world, plug_uri, lv2_microVersion, 0);
+	TEST_ASSERT(!strcmp(lilv_node_as_string(minor), "2"));
+	TEST_ASSERT(!strcmp(lilv_node_as_string(micro), "1"));
+	lilv_node_free(micro);
+	lilv_node_free(minor);
+
+	lilv_node_free(new_bundle);
+	lilv_node_free(old_bundle);
+	free(new_bundle_path);
+	free(old_bundle_path);
+	lilv_node_free(plug_uri);
+	lilv_node_free(lv2_minorVersion);
+	lilv_node_free(lv2_microVersion);
 	return 1;
 }
 

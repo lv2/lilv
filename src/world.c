@@ -1,5 +1,5 @@
 /*
-  Copyright 2007-2015 David Robillard <http://drobilla.net>
+  Copyright 2007-2016 David Robillard <http://drobilla.net>
 
   Permission to use, copy, modify, and/or distribute this software for any
   purpose with or without fee is hereby granted, provided that the above
@@ -22,6 +22,9 @@
 #include "lv2/lv2plug.in/ns/ext/presets/presets.h"
 
 #include "lilv_internal.h"
+
+static int
+lilv_world_drop_graph(LilvWorld* world, const SordNode* graph);
 
 LILV_API LilvWorld*
 lilv_world_new(void)
@@ -415,7 +418,7 @@ lilv_world_add_plugin(LilvWorld*      world,
 		zix_tree_remove(world->zombies, z);
 		zix_tree_insert((ZixTree*)world->plugins, plugin, NULL);
 		lilv_node_free(plugin_uri);
-		plugin->loaded = false;
+		lilv_plugin_clear(plugin, lilv_node_new_from_node(world, bundle));
 	} else {
 		// Add new plugin to the world
 		plugin = lilv_plugin_new(
@@ -720,16 +723,30 @@ lilv_world_load_bundle(LilvWorld* world, const LilvNode* bundle_uri)
 		LilvVersion last_version = get_version(world, last_model, plugin_uri);
 		sord_free(this_model);
 		sord_free(last_model);
-		if (lilv_version_cmp(&this_version, &last_version) > 0) {
+		const int cmp = lilv_version_cmp(&this_version, &last_version);
+		if (cmp > 0) {
 			zix_tree_insert((ZixTree*)unload_uris,
 			                lilv_node_duplicate(plugin_uri),
 			                NULL);
-			LILV_WARNF("Version %d.%d of <%s> in <%s> replaces %d.%d in <%s>\n",
-			           this_version.minor, this_version.micro,
-			           sord_node_get_string(plug),
-			           sord_node_get_string(bundle_node),
+			LILV_WARNF("Replacing version %d.%d of <%s> from <%s>\n",
 			           last_version.minor, last_version.micro,
+			           sord_node_get_string(plug),
 			           sord_node_get_string(last_bundle->node));
+			LILV_NOTEF("New version %d.%d found in <%s>\n",
+			           this_version.minor, this_version.micro,
+			           sord_node_get_string(bundle_node));
+		} else if (cmp < 0) {
+			LILV_WARNF("Ignoring bundle <%s>\n",
+			           sord_node_get_string(bundle_node));
+			LILV_NOTEF("Newer version of <%s> loaded from <%s>\n",
+			           sord_node_get_string(plug),
+			           sord_node_get_string(last_bundle->node));
+			lilv_node_free(plugin_uri);
+			sord_iter_free(plug_results);
+			lilv_world_drop_graph(world, bundle_node);
+			lilv_node_free(manifest);
+			lilv_nodes_free(unload_uris);
+			return;
 		}
 		lilv_node_free(plugin_uri);
 	}
@@ -749,12 +766,6 @@ lilv_world_load_bundle(LilvWorld* world, const LilvNode* bundle_uri)
 		                lilv_node_duplicate(bundle),
 		                NULL);
 
-		// Remove plugin from zombies list
-		ZixTreeIter* z;
-		if ((z = lilv_collection_find_by_uri(world->zombies, uri))) {
-			lilv_plugin_free((LilvPlugin*)zix_tree_get(z));
-			zix_tree_remove(world->zombies, z);
-		}
 	}
 	lilv_nodes_free(unload_uris);
 
@@ -799,14 +810,14 @@ lilv_world_load_bundle(LilvWorld* world, const LilvNode* bundle_uri)
 }
 
 static int
-lilv_world_drop_graph(LilvWorld* world, const LilvNode* graph)
+lilv_world_drop_graph(LilvWorld* world, const SordNode* graph)
 {
-	SordIter* i = sord_search(world->model, NULL, NULL, NULL, graph->node);
+	SordIter* i = sord_search(world->model, NULL, NULL, NULL, graph);
 	while (!sord_iter_end(i)) {
 		const SerdStatus st = sord_erase(world->model, i);
 		if (st) {
 			LILV_ERRORF("Error removing statement from <%s> (%s)\n",
-			            lilv_node_as_uri(graph), serd_strerror(st));
+			            sord_node_get_string(graph), serd_strerror(st));
 			return st;
 		}
 	}
@@ -875,7 +886,7 @@ lilv_world_unload_bundle(LilvWorld* world, const LilvNode* bundle_uri)
 	}
 
 	// Drop everything in bundle graph
-	return lilv_world_drop_graph(world, bundle_uri);
+	return lilv_world_drop_graph(world, bundle_uri->node);
 }
 
 static void
@@ -1108,7 +1119,7 @@ lilv_world_unload_resource(LilvWorld*      world,
 		if (sord_node_get_type(file) != SORD_URI) {
 			LILV_ERRORF("rdfs:seeAlso node `%s' is not a URI\n",
 			            sord_node_get_string(file));
-		} else if (!lilv_world_drop_graph(world, file_node)) {
+		} else if (!lilv_world_drop_graph(world, file_node->node)) {
 			lilv_world_unload_file(world, file_node);
 			++n_dropped;
 		}
