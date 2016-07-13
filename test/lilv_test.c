@@ -1911,6 +1911,7 @@ test_string(void)
 	TEST_ASSERT(!strcmp((s = lilv_path_join("/a/", "/b")), "/a/b")); free(s);
 	TEST_ASSERT(!strcmp((s = lilv_path_join("/a/", "b")), "/a/b")); free(s);
 	TEST_ASSERT(!strcmp((s = lilv_path_join("/a", NULL)), "/a/")); free(s);
+	TEST_ASSERT(!strcmp((s = lilv_path_join(NULL, "/b")), "/b")); free(s);
 
 #ifndef _WIN32
 	setenv("LILV_TEST_1", "test", 1);
