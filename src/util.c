@@ -370,26 +370,8 @@ lilv_path_join(const char* a, const char* b)
 	return path;
 }
 
-static void
-lilv_size_mtime(const char* path, off_t* size, time_t* time)
-{
-	struct stat buf;
-	if (stat(path, &buf)) {
-		LILV_ERRORF("stat(%s) (%s)\n", path, strerror(errno));
-		return;
-	}
-
-	if (size) {
-		*size = buf.st_size;
-	}
-	if (time) {
-		*time = buf.st_mtime;
-	}
-}
-
 typedef struct {
 	char*  pattern;
-	off_t  orig_size;
 	time_t time;
 	char*  latest;
 } Latest;
@@ -397,16 +379,18 @@ typedef struct {
 static void
 update_latest(const char* path, const char* name, void* data)
 {
-	Latest* latest     = (Latest*)data;
-	char*   entry_path = lilv_path_join(path, name);
+	Latest*  latest     = (Latest*)data;
+	char*    entry_path = lilv_path_join(path, name);
 	unsigned num;
 	if (sscanf(entry_path, latest->pattern, &num) == 1) {
-		off_t  entry_size = 0;
-		time_t entry_time = 0;
-		lilv_size_mtime(entry_path, &entry_size, &entry_time);
-		if (entry_size == latest->orig_size && entry_time >= latest->time) {
-			free(latest->latest);
-			latest->latest = entry_path;
+		struct stat st;
+		if (!stat(entry_path, &st)) {
+			if (st.st_mtime >= latest->time) {
+				free(latest->latest);
+				latest->latest = entry_path;
+			}
+		} else {
+			LILV_ERRORF("stat(%s) (%s)\n", path, strerror(errno));
 		}
 	}
 	if (entry_path != latest->latest) {
@@ -419,8 +403,14 @@ char*
 lilv_get_latest_copy(const char* path, const char* copy_path)
 {
 	char*  copy_dir = lilv_dirname(copy_path);
-	Latest latest   = { lilv_strjoin(copy_path, "%u", NULL), 0, 0, NULL };
-	lilv_size_mtime(path, &latest.orig_size, &latest.time);
+	Latest latest   = { lilv_strjoin(copy_path, ".%u", NULL), 0, NULL };
+
+	struct stat st;
+	if (!stat(path, &st)) {
+		latest.time = st.st_mtime;
+	} else {
+		LILV_ERRORF("stat(%s) (%s)\n", path, strerror(errno));
+	}
 
 	lilv_dir_for_each(copy_dir, &latest, update_latest);
 
