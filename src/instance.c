@@ -1,5 +1,5 @@
 /*
-  Copyright 2007-2015 David Robillard <http://drobilla.net>
+  Copyright 2007-2016 David Robillard <http://drobilla.net>
 
   Permission to use, copy, modify, and/or distribute this software for any
   purpose with or without fee is hereby granted, provided that the above
@@ -30,25 +30,14 @@ lilv_plugin_instantiate(const LilvPlugin*        plugin,
 		return NULL;
 	}
 
-	LilvInstance* result = NULL;
-
-	const LilvNode* const lib_uri    = lilv_plugin_get_library_uri(plugin);
-	const LilvNode* const bundle_uri = lilv_plugin_get_bundle_uri(plugin);
-
-	char* const bundle_path = lilv_file_uri_parse(
-		lilv_node_as_uri(lilv_plugin_get_bundle_uri(plugin)), NULL);
+	LilvInstance*         result      = NULL;
+	const LilvNode* const lib_uri     = lilv_plugin_get_library_uri(plugin);
+	const LilvNode* const bundle_uri  = lilv_plugin_get_bundle_uri(plugin);
+	char* const           bundle_path = lilv_file_uri_parse(
+		lilv_node_as_uri(bundle_uri), NULL);
 
 	LilvLib* lib = lilv_lib_open(plugin->world, lib_uri, bundle_path, features);
 	if (!lib) {
-		lilv_free(bundle_path);
-		return NULL;
-	}
-
-	// Parse bundle URI to use as base URI
-	const char* bundle_uri_str = lilv_node_as_uri(bundle_uri);
-	SerdURI     base_uri;
-	if (serd_uri_parse((const uint8_t*)bundle_uri_str, &base_uri)) {
-		lilv_lib_close(lib);
 		lilv_free(bundle_path);
 		return NULL;
 	}
@@ -70,18 +59,7 @@ lilv_plugin_instantiate(const LilvPlugin*        plugin,
 			break;  // return NULL
 		}
 
-		// Resolve library plugin URI against base URI
-		SerdURI  abs_uri;
-		SerdNode abs_uri_node = serd_node_new_uri_from_string(
-			(const uint8_t*)ld->URI, &base_uri, &abs_uri);
-		if (!abs_uri_node.buf) {
-			LILV_ERRORF("Failed to parse plugin URI `%s'\n", ld->URI);
-			lilv_lib_close(lib);
-			break;
-		}
-
-		if (!strcmp((const char*)abs_uri_node.buf,
-		            lilv_node_as_uri(lilv_plugin_get_uri(plugin)))) {
+		if (!strcmp(ld->URI, lilv_node_as_uri(lilv_plugin_get_uri(plugin)))) {
 			// Create LilvInstance to return
 			result = (LilvInstance*)malloc(sizeof(LilvInstance));
 			result->lv2_descriptor = ld;
@@ -89,10 +67,7 @@ lilv_plugin_instantiate(const LilvPlugin*        plugin,
 				ld, sample_rate, bundle_path,
 				(features) ? features : local_features);
 			result->pimpl = lib;
-			serd_node_free(&abs_uri_node);
 			break;
-		} else {
-			serd_node_free(&abs_uri_node);
 		}
 	}
 
@@ -100,15 +75,16 @@ lilv_plugin_instantiate(const LilvPlugin*        plugin,
 	lilv_free(bundle_path);
 
 	if (result) {
-		// Failed to instantiate
 		if (result->lv2_handle == NULL) {
+			// Failed to instantiate
 			free(result);
 			return NULL;
 		}
 
 		// "Connect" all ports to NULL (catches bugs)
-		for (uint32_t i = 0; i < lilv_plugin_get_num_ports(plugin); ++i)
+		for (uint32_t i = 0; i < lilv_plugin_get_num_ports(plugin); ++i) {
 			result->lv2_descriptor->connect_port(result->lv2_handle, i, NULL);
+		}
 	}
 
 	return result;

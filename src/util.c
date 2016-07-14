@@ -602,19 +602,16 @@ lilv_file_equals(const char* a_path, const char* b_path)
 	FILE*       b_file = NULL;
 	char* const a_real = lilv_realpath(a_path);
 	char* const b_real = lilv_realpath(b_path);
-	if (!a_real || !b_real) {
-		match = false;  // Missing file matches nothing
-	} else if (!strcmp(a_real, b_real)) {
+	if (!strcmp(a_real, b_real)) {
 		match = true;  // Real paths match
 	} else if (lilv_file_size(a_path) != lilv_file_size(b_path)) {
 		match = false;  // Sizes differ
-	} else if (!(a_file = fopen(a_real, "rb"))) {
-		match = false;  // Missing file matches nothing
-	} else if (!(b_file = fopen(b_real, "rb"))) {
+	} else if (!(a_file = fopen(a_real, "rb")) ||
+	           !(b_file = fopen(b_real, "rb"))) {
 		match = false;  // Missing file matches nothing
 	} else {
-		match = true;
 		// TODO: Improve performance by reading chunks
+		match = true;
 		while (!feof(a_file) && !feof(b_file)) {
 			if (fgetc(a_file) != fgetc(b_file)) {
 				match = false;
