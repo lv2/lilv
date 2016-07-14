@@ -1,6 +1,6 @@
 /*
-  Lilv Test Plugin - Missing name
-  Copyright 2011-2015 David Robillard <d@drobilla.net>
+  Lilv Test Plugin - Missing port
+  Copyright 2011-2016 David Robillard <d@drobilla.net>
 
   Permission to use, copy, modify, and/or distribute this software for any
   purpose with or without fee is hereby granted, provided that the above
@@ -19,7 +19,7 @@
 
 #include "lv2/lv2plug.in/ns/lv2core/lv2.h"
 
-#define PLUGIN_URI "http://example.org/missing-name"
+#define PLUGIN_URI "http://example.org/missing-port"
 
 enum {
 	TEST_INPUT  = 0,

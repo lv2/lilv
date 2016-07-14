@@ -1,6 +1,6 @@
 /*
-  Lilv Test Plugin - Missing plugin
-  Copyright 2011-2015 David Robillard <d@drobilla.net>
+  Lilv Test Plugin - Failed instantiation
+  Copyright 2011-2016 David Robillard <d@drobilla.net>
 
   Permission to use, copy, modify, and/or distribute this software for any
   purpose with or without fee is hereby granted, provided that the above
@@ -19,25 +19,52 @@
 
 #include "lv2/lv2plug.in/ns/lv2core/lv2.h"
 
-#define PLUGIN_URI "http://example.org/missing-plugin"
+#define PLUGIN_URI "http://example.org/failed-instantiation"
+
+enum {
+	TEST_INPUT  = 0,
+	TEST_OUTPUT = 1
+};
+
+typedef struct {
+	float* input;
+	float* output;
+} Test;
+
+static void
+cleanup(LV2_Handle instance)
+{}
+
+static void
+connect_port(LV2_Handle instance, uint32_t port, void* data)
+{}
+
+static LV2_Handle
+instantiate(const LV2_Descriptor*     descriptor,
+            double                    rate,
+            const char*               path,
+            const LV2_Feature* const* features)
+{
+	return NULL;
+}
+
+static void
+run(LV2_Handle instance, uint32_t sample_count)
+{}
 
 static const LV2_Descriptor descriptor = {
-	"http://example.org/not-the-plugin-you-are-looking-for",
-	NULL,
-	NULL,
-	NULL,
-	NULL,
-	NULL,
-	NULL,
-	NULL
+	PLUGIN_URI,
+	instantiate,
+	connect_port,
+	NULL, // activate,
+	run,
+	NULL, // deactivate,
+	cleanup,
+	NULL  // extension_data
 };
 
 LV2_SYMBOL_EXPORT
 const LV2_Descriptor* lv2_descriptor(uint32_t index)
 {
-	if (index == 0) {
-		return &descriptor;
-	}
-
-	return NULL;
+	return (index == 0) ? &descriptor : NULL;
 }

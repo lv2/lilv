@@ -21,14 +21,19 @@ VERSION = LILV_VERSION  # Package version for waf dist
 top     = '.'           # Source directory
 out     = 'build'       # Build directory
 
-test_plugins = ['missing_descriptor',
-                'missing_plugin',
-                'missing_name',
-                'missing_port_name',
-                'lib_descriptor',
-                'failed_lib_descriptor',
-                'old_version',
-                'new_version']
+test_plugins = [
+    'bad_syntax',
+    'failed_instantiation',
+    'failed_lib_descriptor',
+    'lib_descriptor',
+    'missing_descriptor',
+    'missing_name',
+    'missing_plugin',
+    'missing_port',
+    'missing_port_name',
+    'new_version',
+    'old_version'
+]
 
 def options(opt):
     opt.load('compiler_c')

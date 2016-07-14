@@ -16,6 +16,7 @@
 */
 
 #define _POSIX_C_SOURCE 200112L /* for setenv */
+#define _XOPEN_SOURCE   500     /* for mkstemp */
 
 #include <assert.h>
 #include <ctype.h>
@@ -254,6 +255,22 @@ test_value(void)
 	TEST_ASSERT(fabs(lilv_node_as_float(fval) - 1.6180) < FLT_EPSILON);
 	TEST_ASSERT(isnan(lilv_node_as_float(sval)));
 
+#if defined(__clang__)
+#    pragma clang diagnostic push
+#    pragma clang diagnostic ignored "-Wdeprecated-declarations"
+#elif __GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 6)
+#    pragma GCC diagnostic push
+#    pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#endif
+
+	TEST_ASSERT(!strcmp(lilv_uri_to_path("file:///foo"), "/foo"));
+
+#if defined(__clang__)
+#    pragma clang diagnostic pop
+#elif __GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 6)
+#    pragma GCC diagnostic pop
+#endif
+
 	LilvNode* loc_abs  = lilv_new_file_uri(world, NULL, "/foo/bar");
 	LilvNode* loc_rel  = lilv_new_file_uri(world, NULL, "foo");
 	LilvNode* host_abs = lilv_new_file_uri(world, "host", "/foo/bar");
@@ -346,6 +363,29 @@ test_util(void)
 {
 	TEST_ASSERT(!lilv_realpath(NULL));
 
+	char a_path[16];
+	char b_path[16];
+	strcpy(a_path, "copy_a_XXXXXX");
+	strcpy(b_path, "copy_b_XXXXXX");
+	mkstemp(a_path);
+	mkstemp(b_path);
+
+	FILE* fa = fopen(a_path, "w");
+	FILE* fb = fopen(b_path, "w");
+	fprintf(fa, "AA\n");
+	fprintf(fb, "AB\n");
+	fclose(fa);
+	fclose(fb);
+
+	TEST_ASSERT(lilv_copy_file("does/not/exist", "copy"));
+	TEST_ASSERT(lilv_copy_file(a_path, "not/a/dir/copy"));
+	TEST_ASSERT(!lilv_copy_file(a_path, "copy_c"));
+	TEST_ASSERT(!lilv_file_equals(a_path, b_path));
+	TEST_ASSERT(lilv_file_equals(a_path, a_path));
+	TEST_ASSERT(lilv_file_equals(a_path, "copy_c"));
+	TEST_ASSERT(!lilv_file_equals("does/not/exist", b_path));
+	TEST_ASSERT(!lilv_file_equals(a_path, "does/not/exist"));
+	TEST_ASSERT(!lilv_file_equals("does/not/exist", "/does/not/either"));
 	return 1;
 }
 
