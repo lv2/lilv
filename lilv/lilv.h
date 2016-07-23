@@ -1383,6 +1383,23 @@ lilv_state_set_label(LilvState*  state,
                      const char* label);
 
 /**
+   Function to set given metadata of `state`.
+   @param state The state to set the metadata for.
+   @param key The key to store `value` under (URID).
+   @param value Pointer to the value to be stored.
+   @param size The size of `value` in bytes.
+   @param type The type of `value` (URID).
+   @param flags LV2_State_Flags for `value`.
+*/
+LILV_API void
+lilv_state_set_metadata(LilvState*  state,
+                        uint32_t    key,
+                        const void* value,
+                        size_t      size,
+                        uint32_t    type,
+                        uint32_t    flags);
+
+/**
    Function to set a port value.
    @param port_symbol The symbol of the port.
    @param user_data The user_data passed to lilv_state_restore().

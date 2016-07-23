@@ -60,9 +60,11 @@ struct LilvStateImpl {
 	ZixTree*   abs2rel;     ///< PathMap sorted by abs
 	ZixTree*   rel2abs;     ///< PathMap sorted by rel
 	Property*  props;       ///< State properties
+	Property*  metadata;    ///< State metadata
 	PortValue* values;      ///< Port values
 	uint32_t   atom_Path;   ///< atom:Path URID
 	uint32_t   n_props;     ///< Number of state properties
+	uint32_t   n_metadata;  ///< Number of state metadata
 	uint32_t   n_values;    ///< Number of port values
 };
 
@@ -910,6 +912,27 @@ lilv_state_write(LilvWorld*       world,
 	                (SerdEndSink)serd_writer_end_anon,
 	                writer);
 
+	// Write metadata values with precise types
+	sratom_set_pretty_numbers(sratom, false);
+
+	// Write metadata
+	for (uint32_t i = 0; i < state->n_metadata; ++i) {
+		Property*   prop = &state->metadata[i];
+		const char* key  = unmap->unmap(unmap->handle, prop->key);
+
+		p = serd_node_from_string(SERD_URI, USTR(key));
+		if (prop->type == state->atom_Path && !dir) {
+			const char* path     = (const char*)prop->value;
+			const char* abs_path = lilv_state_rel2abs(state, path);
+			sratom_write(sratom, unmap, 0,
+			             &subject, &p, prop->type,
+			             strlen(abs_path) + 1, abs_path);
+		} else {
+			sratom_write(sratom, unmap, 0,
+			             &subject, &p, prop->type, prop->size, prop->value);
+		}
+	}
+
 	// Write port values as pretty numbers
 	sratom_set_pretty_numbers(sratom, true);
 
@@ -1173,6 +1196,9 @@ lilv_state_free(LilvState* state)
 		for (uint32_t i = 0; i < state->n_props; ++i) {
 			free(state->props[i].value);
 		}
+		for (uint32_t i = 0; i < state->n_metadata; ++i) {
+			free(state->metadata[i].value);
+		}
 		for (uint32_t i = 0; i < state->n_values; ++i) {
 			free(state->values[i].value);
 			free(state->values[i].symbol);
@@ -1182,6 +1208,7 @@ lilv_state_free(LilvState* state)
 		zix_tree_free(state->abs2rel);
 		zix_tree_free(state->rel2abs);
 		free(state->props);
+		free(state->metadata);
 		free(state->values);
 		free(state->label);
 		free(state->dir);
@@ -1265,4 +1292,30 @@ lilv_state_set_label(LilvState* state, const char* label)
 	const size_t len = strlen(label);
 	state->label = (char*)realloc(state->label, len + 1);
 	memcpy(state->label, label, len + 1);
+}
+
+LILV_API void
+lilv_state_set_metadata(LilvState*  state,
+                        uint32_t    key,
+                        const void* value,
+                        size_t      size,
+                        uint32_t    type,
+                        uint32_t    flags)
+{
+	state->metadata = (Property*)realloc(
+		state->metadata, (++state->n_metadata) * sizeof(Property));
+	Property* const prop = &state->metadata[state->n_metadata - 1];
+
+	if ((flags & LV2_STATE_IS_POD) || type == state->atom_Path) {
+		prop->value = malloc(size);
+		memcpy(prop->value, value, size);
+	} else {
+		LILV_WARN("Storing non-POD value\n");
+		prop->value = (void*)value;
+	}
+
+	prop->size  = size;
+	prop->key   = key;
+	prop->type  = type;
+	prop->flags = flags;
 }
