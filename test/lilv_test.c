@@ -1661,6 +1661,18 @@ test_state(void)
 		get_port_value, world, 0, NULL);
 	TEST_ASSERT(lilv_state_equals(state2, state4));
 
+	// Set some metadata properties
+	lilv_state_set_metadata(state, map.map(map.handle, LILV_NS_RDFS "comment"),
+	                        "This is a comment",
+	                        strlen("This is a comment") + 1,
+	                        map.map(map.handle, "http://lv2plug.in/ns/ext/atom#Literal"),
+	                        LV2_STATE_IS_POD);
+	lilv_state_set_metadata(state, map.map(map.handle, "http://example.org/metablob"),
+	                        "LIVEBEEF",
+	                        strlen("LIVEBEEF") + 1,
+	                        map.map(map.handle, "http://example.org/MetaBlob"),
+	                        0);
+
 	// Save state to a directory
 	int ret = lilv_state_save(world, &map, &unmap, state, NULL,
 	                          "state/state.lv2", "state.ttl");
