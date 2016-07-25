@@ -39,17 +39,13 @@ def options(opt):
     opt.load('compiler_c')
     opt.load('compiler_cxx')
     opt.load('python')
-    autowaf.set_options(opt)
+    autowaf.set_options(opt, test=True)
     opt.add_option('--no-utils', action='store_true', dest='no_utils',
                    help='Do not build command line utilities')
     opt.add_option('--bindings', action='store_true', dest='bindings',
                    help='Build python bindings')
     opt.add_option('--dyn-manifest', action='store_true', dest='dyn_manifest',
                    help='Build support for dynamic manifests')
-    opt.add_option('--test', action='store_true', dest='build_tests',
-                   help='Build unit tests')
-    opt.add_option('--no-coverage', action='store_true', dest='no_coverage',
-                   help='Do not use gcov for code coverage')
     opt.add_option('--no-bash-completion', action='store_true',
                    dest='no_bash_completion',
                    help='Do not install bash completion script in CONFIGDIR')
@@ -81,7 +77,6 @@ def configure(conf):
     autowaf.display_header('Lilv Configuration')
 
     conf.env.BASH_COMPLETION = not Options.options.no_bash_completion
-    conf.env.BUILD_TESTS     = Options.options.build_tests
     conf.env.BUILD_UTILS     = not Options.options.no_utils
     conf.env.BUILD_SHARED    = not Options.options.no_shared
     conf.env.STATIC_PROGS    = Options.options.static_progs
@@ -103,9 +98,6 @@ def configure(conf):
     defines = ['_POSIX_C_SOURCE', '_BSD_SOURCE']
     if conf.env.DEST_OS == 'darwin':
         defines += ['_DARWIN_C_SOURCE']
-
-    if conf.env.BUILD_TESTS and not Options.options.no_coverage:
-        conf.check_cc(lib='gcov', define_name='HAVE_GCOV', mandatory=False)
 
     conf.check_cc(function_name='flock',
                   header_name='sys/file.h',
@@ -266,11 +258,12 @@ def build(bld):
         autowaf.use_lib(bld, obj, 'SERD SORD SRATOM LV2')
 
     if bld.env.BUILD_TESTS:
-        test_libs   = lib
-        test_cflags = ['']
-        if bld.is_defined('HAVE_GCOV'):
-            test_libs   += ['gcov']
-            test_cflags += ['-fprofile-arcs', '-ftest-coverage']
+        test_libs      = lib
+        test_cflags    = ['']
+        test_linkflags = ['']
+        if not bld.env.NO_COVERAGE:
+            test_cflags    += ['--coverage']
+            test_linkflags += ['--coverage']
 
         # Test plugin library
         penv          = bld.env.derive()
@@ -289,6 +282,7 @@ def build(bld):
                       install_path = None,
                       defines      = defines,
                       cflags       = test_cflags,
+                      linkflags    = test_linkflags,
                       lib          = test_libs,
                       uselib       = 'LV2')
 
@@ -304,6 +298,7 @@ def build(bld):
                       install_path = None,
                       defines      = defines,
                       cflags       = test_cflags,
+                      linkflags    = test_linkflags,
                       lib          = test_libs,
                       uselib       = 'LV2')
             autowaf.use_lib(bld, obj, 'SERD SORD SRATOM LV2')
@@ -327,6 +322,7 @@ def build(bld):
                   install_path = None,
                   defines      = defines + ['LILV_INTERNAL'],
                   cflags       = test_cflags,
+                  linkflags    = test_linkflags,
                   lib          = test_libs)
         autowaf.use_lib(bld, obj, 'SERD SORD SRATOM LV2')
 
@@ -344,7 +340,8 @@ def build(bld):
                   install_path = None,
                   defines      = (defines + ['LILV_TEST_BUNDLE=\"%s/\"' % bpath] +
                                   ['LILV_TEST_DIR=\"%s/\"' % testdir]),
-                  cflags       = test_cflags)
+                  cflags       = test_cflags,
+                  linkflags    = test_linkflags)
         autowaf.use_lib(bld, obj, 'SERD SORD SRATOM LV2')
 
         if bld.is_defined('LILV_PYTHON'):
@@ -365,6 +362,7 @@ def build(bld):
                       install_path = None,
                       defines      = defines,
                       cflags       = test_cflags,
+                      linkflags    = test_linkflags,
                       lib          = test_libs,
                       uselib       = 'LV2')
 
@@ -431,11 +429,6 @@ def upload_docs(ctx):
     for page in glob.glob('doc/*.[1-8]'):
         os.system('soelim %s | pre-grohtml troff -man -wall -Thtml | post-grohtml > build/%s.html' % (page, page))
         os.system('rsync -avz --delete -e ssh build/%s.html drobilla@drobilla.net:~/drobilla.net/man/' % page)
-
-# Inherit from build context so we can get the config data
-class TestContext(Build.BuildContext):
-    cmd = 'test'
-    fun = 'test'
 
 def test(ctx):
     assert ctx.env.BUILD_TESTS, "You have run waf configure without the --test flag. No tests were run."
