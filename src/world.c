@@ -408,10 +408,11 @@ lilv_world_add_plugin(LilvWorld*      world,
 			lilv_node_free(plugin_uri);
 			return;
 		}
-	} else if ((z = lilv_collection_find_by_uri(world->zombies, plugin_uri))) {
+	} else if ((z = lilv_collection_find_by_uri((const ZixTree*)world->zombies,
+	                                            plugin_uri))) {
 		// Plugin bundle has been re-loaded, move from zombies to plugins
-		plugin = zix_tree_get(z);
-		zix_tree_remove(world->zombies, z);
+		plugin = (LilvPlugin*)zix_tree_get(z);
+		zix_tree_remove((ZixTree*)world->zombies, z);
 		zix_tree_insert((ZixTree*)world->plugins, plugin, NULL);
 		lilv_node_free(plugin_uri);
 		lilv_plugin_clear(plugin, lilv_node_new_from_node(world, bundle));
@@ -868,14 +869,14 @@ lilv_world_unload_bundle(LilvWorld* world, const LilvNode* bundle_uri)
 	   will not be in the list returned by lilv_world_get_all_plugins() but can
 	   still be used.
 	*/
-	ZixTreeIter* i = zix_tree_begin(world->plugins);
-	while (i != zix_tree_end(world->plugins)) {
+	ZixTreeIter* i = zix_tree_begin((ZixTree*)world->plugins);
+	while (i != zix_tree_end((ZixTree*)world->plugins)) {
 		LilvPlugin*  p    = (LilvPlugin*)zix_tree_get(i);
 		ZixTreeIter* next = zix_tree_iter_next(i);
 
 		if (lilv_node_equals(lilv_plugin_get_bundle_uri(p), bundle_uri)) {
-			zix_tree_remove(world->plugins, i);
-			zix_tree_insert(world->zombies, p, NULL);
+			zix_tree_remove((ZixTree*)world->plugins, i);
+			zix_tree_insert((ZixTree*)world->zombies, p, NULL);
 		}
 
 		i = next;

@@ -281,21 +281,23 @@ lilv_plugin_load_ports_if_necessary(const LilvPlugin* const_p)
 			LilvNode* symbol = lilv_plugin_get_unique(
 				p, port, p->world->uris.lv2_symbol);
 
-			bool error = false;
 			if (!lilv_node_is_string(symbol) ||
 			    !is_symbol((const char*)sord_node_get_string(symbol->node))) {
 				LILV_ERRORF("Plugin <%s> port symbol `%s' is invalid\n",
 				            lilv_node_as_uri(p->plugin_uri),
 				            lilv_node_as_string(symbol));
-				error = true;
-				goto done;
+				lilv_node_free(symbol);
+				lilv_plugin_free_ports(p);
+				break;
 			}
 
 			if (!lilv_node_is_int(index)) {
 				LILV_ERRORF("Plugin <%s> port index is not an integer\n",
 				            lilv_node_as_uri(p->plugin_uri));
-				error = true;
-				goto done;
+				lilv_node_free(symbol);
+				lilv_node_free(index);
+				lilv_plugin_free_ports(p);
+				break;
 			}
 
 			uint32_t  this_index = lilv_node_as_int(index);
@@ -334,13 +336,8 @@ lilv_plugin_load_ports_if_necessary(const LilvPlugin* const_p)
 			}
 			sord_iter_free(types);
 
-		done:
 			lilv_node_free(symbol);
 			lilv_node_free(index);
-			if (error) {  // Invalid plugin
-				lilv_plugin_free_ports(p);
-				break;
-			}
 		}
 		sord_iter_free(ports);
 
