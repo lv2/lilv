@@ -43,7 +43,7 @@ extern "C" {
 #ifndef NAN
 #    define NAN INFINITY - INFINITY
 #endif
-static inline char* dlerror(void) { return "Unknown error"; }
+static inline const char* dlerror(void) { return "Unknown error"; }
 #else
 #    include <dlfcn.h>
 #    include <unistd.h>
