@@ -95,7 +95,7 @@ def configure(conf):
     autowaf.check_pkg(conf, 'sratom-0', uselib_store='SRATOM',
                       atleast_version='0.4.0', mandatory=True)
 
-    defines = ['_POSIX_C_SOURCE', '_BSD_SOURCE']
+    defines = ['_POSIX_C_SOURCE=200809L', '_BSD_SOURCE']
     if conf.env.DEST_OS == 'darwin':
         defines += ['_DARWIN_C_SOURCE']
 
@@ -113,7 +113,7 @@ def configure(conf):
 
     conf.check_cc(function_name='clock_gettime',
                   header_name=['sys/time.h','time.h'],
-                  defines=['_POSIX_C_SOURCE=199309L'],
+                  defines=['_POSIX_C_SOURCE=200809L'],
                   define_name='HAVE_CLOCK_GETTIME',
                   uselib_store='CLOCK_GETTIME',
                   lib=['rt'],

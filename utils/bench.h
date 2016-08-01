@@ -21,7 +21,7 @@
 #ifndef BENCH_H
 #define BENCH_H
 
-#define _POSIX_C_SOURCE 199309L
+#define _POSIX_C_SOURCE 200809L
 
 #include <time.h>
 #include <sys/time.h>
