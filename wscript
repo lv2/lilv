@@ -119,6 +119,10 @@ def configure(conf):
                   lib=['rt'],
                   mandatory=False)
 
+    conf.check_cc(define_name   = 'HAVE_LIBDL',
+                  lib           = 'dl',
+                  mandatory     = False)
+
     autowaf.define(conf, 'LILV_VERSION', LILV_VERSION)
     if Options.options.dyn_manifest:
         autowaf.define(conf, 'LILV_DYN_MANIFEST', 1)
@@ -212,16 +216,16 @@ def build(bld):
         src/zix/tree.c
     '''.split()
 
-    lib      = ['dl']
+    lib      = []
     libflags = ['-fvisibility=hidden']
     defines  = []
+    if bld.is_defined('HAVE_LIBDL'):
+        lib    += ['dl']
     if bld.env.DEST_OS == 'win32':
         lib = []
     if bld.env.MSVC_COMPILER:
         libflags = []
         defines  = ['snprintf=_snprintf']
-    elif bld.env.DEST_OS.find('bsd') > 0:
-        lib = []
 
     # Pkgconfig file
     autowaf.build_pc(bld, 'LILV', LILV_VERSION, LILV_MAJOR_VERSION, [],
