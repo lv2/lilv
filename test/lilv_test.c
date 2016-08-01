@@ -16,7 +16,7 @@
 */
 
 #define _POSIX_C_SOURCE 200809L /* for setenv */
-#define _XOPEN_SOURCE   500     /* for mkstemp */
+#define _XOPEN_SOURCE   600     /* for mkstemp */
 
 #include <assert.h>
 #include <ctype.h>
