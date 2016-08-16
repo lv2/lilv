@@ -604,8 +604,12 @@ new_state_from_model(LilvWorld*       world,
 	free((void*)chunk.buf);
 	sratom_free(sratom);
 
-	qsort(state->props.props, state->props.n, sizeof(Property), property_cmp);
-	qsort(state->values, state->n_values, sizeof(PortValue), value_cmp);
+	if (state->props.props) {
+		qsort(state->props.props, state->props.n, sizeof(Property), property_cmp);
+	}
+	if (state->values) {
+		qsort(state->values, state->n_values, sizeof(PortValue), value_cmp);
+	}
 
 	return state;
 }
