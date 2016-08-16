@@ -459,3 +459,14 @@ def test(ctx):
 
 def lint(ctx):
     subprocess.call('cpplint.py --filter=+whitespace/comments,-whitespace/tab,-whitespace/braces,-whitespace/labels,-build/header_guard,-readability/casting,-readability/todo,-build/include,-runtime/sizeof src/* lilv/*', shell=True)
+
+def posts(ctx):
+    path = str(ctx.path.abspath())
+    autowaf.news_to_posts(
+        os.path.join(path, 'NEWS'),
+        {'title'        : 'Lilv',
+         'description'  : autowaf.get_blurb(os.path.join(path, 'README')),
+         'dist_pattern' : 'http://download.drobilla.net/lilv-%s.tar.bz2'},
+        { 'Author' : 'drobilla',
+          'Tags'   : 'Hacking, LAD, LV2' },
+        os.path.join(out, 'posts'))
