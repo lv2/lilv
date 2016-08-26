@@ -2095,7 +2095,7 @@ test_replace_version(void)
 	LilvNode* minor            = NULL;
 	LilvNode* micro            = NULL;
 
-	char* old_bundle_path = malloc(strlen(LILV_TEST_DIR) + 32);
+	char* old_bundle_path = (char*)malloc(strlen(LILV_TEST_DIR) + 32);
 	strcpy(old_bundle_path, LILV_TEST_DIR);
 	strcat(old_bundle_path, "old_version.lv2/");
 
@@ -2115,7 +2115,7 @@ test_replace_version(void)
 	lilv_node_free(micro);
 	lilv_node_free(minor);
 
-	char* new_bundle_path = malloc(strlen(LILV_TEST_DIR) + 32);
+	char* new_bundle_path = (char*)malloc(strlen(LILV_TEST_DIR) + 32);
 	strcpy(new_bundle_path, LILV_TEST_DIR);
 	strcat(new_bundle_path, "new_version.lv2/");
 
