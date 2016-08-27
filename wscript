@@ -94,6 +94,8 @@ def configure(conf):
                       atleast_version='0.13.0', mandatory=True)
     autowaf.check_pkg(conf, 'sratom-0', uselib_store='SRATOM',
                       atleast_version='0.4.0', mandatory=True)
+    autowaf.check_pkg(conf, 'sndfile', uselib_store='SNDFILE',
+                      atleast_version='1.0.0', mandatory=False)
 
     defines = ['_POSIX_C_SOURCE=200809L', '_BSD_SOURCE']
     if conf.env.DEST_OS == 'darwin':
@@ -175,7 +177,7 @@ def configure(conf):
     conf.undefine('LILV_DEFAULT_LV2_PATH')  # Cmd line errors with VC++
     print('')
 
-def build_util(bld, name, defines):
+def build_util(bld, name, defines, libs=''):
     obj = bld(features     = 'c cprogram',
               source       = name + '.c',
               includes     = ['.', './src', './utils'],
@@ -183,7 +185,7 @@ def build_util(bld, name, defines):
               target       = name,
               defines      = defines,
               install_path = '${BINDIR}')
-    autowaf.use_lib(bld, obj, 'SERD SORD SRATOM LV2')
+    autowaf.use_lib(bld, obj, 'SERD SORD SRATOM LV2 ' + libs)
     if not bld.env.BUILD_SHARED or bld.env.STATIC_PROGS:
         obj.use = 'liblilv_static'
     if bld.env.STATIC_PROGS:
@@ -388,6 +390,9 @@ def build(bld):
         '''
         for i in utils.split():
             build_util(bld, i, defines)
+
+    if bld.env.HAVE_SNDFILE:
+        obj = build_util(bld, 'utils/lv2apply', defines, 'SNDFILE')
 
     # lv2bench (less portable than other utilities)
     if bld.is_defined('HAVE_CLOCK_GETTIME') and not bld.env.STATIC_PROGS:
