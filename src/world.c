@@ -193,6 +193,9 @@ lilv_world_find_nodes(LilvWorld*      world,
 		LILV_ERRORF("Subject `%s' is not a resource\n",
 		            sord_node_get_string(subject->node));
 		return NULL;
+	} else if (!predicate) {
+		LILV_ERROR("Missing required predicate\n");
+		return NULL;
 	} else if (!lilv_node_is_uri(predicate)) {
 		LILV_ERRORF("Predicate `%s' is not a URI\n",
 		            sord_node_get_string(predicate->node));
