@@ -47,10 +47,14 @@ help:
 	@echo "  doctest    to run all doctests embedded in the documentation (if enabled)"
 
 modules.rst lilv.rst:
+	mkdir -p lilv
+	ln -s -t lilv ../lilv.py
 	sphinx-apidoc -o . lilv
 
 clean:
 	rm -rf $(BUILDDIR)/*
+	rm -f lilv/lilv.py
+	rm -rf lilv
 	rm -f lilv.rst
 	rm -f modules.rst
 

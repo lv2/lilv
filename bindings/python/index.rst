@@ -1,8 +1,9 @@
 Lilv Python Documentation
 =========================
 
+
 .. toctree::
-    :maxdepth: 2
 
-    modules
-
+.. automodule:: lilv
+    :noindex:
+    :members:

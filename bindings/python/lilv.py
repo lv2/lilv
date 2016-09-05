@@ -24,7 +24,7 @@ _lib = CDLL("liblilv-0.so")
 # Set namespaced aliases for all lilv functions
 
 class String(str):
-    """Wrapper for string parameters to pass as raw C UTF-8 strings"""
+    # Wrapper for string parameters to pass as raw C UTF-8 strings
     def from_param(cls, obj):
         return obj.encode('utf-8')
 
@@ -238,6 +238,7 @@ class LV2_URID_Unmap(Structure):
 # Lilv types
 
 class Plugin(Structure):
+    """LV2 Plugin."""
     def __init__(self, world, plugin):
         self.world  = world
         self.plugin = plugin
@@ -520,6 +521,7 @@ class Plugin(Structure):
         return UIs(plugin_get_uis(self.plugin))
 
 class PluginClass(Structure):
+    """Plugin Class (type/category)."""
     def __init__(self, plugin_class):
         self.plugin_class = plugin_class
 
@@ -546,6 +548,7 @@ class PluginClass(Structure):
         return PluginClasses(plugin_class_get_children(self.plugin_class))
 
 class Port(Structure):
+    """Port on a Plugin."""
     @classmethod
     def wrap(cls, plugin, port):
         return Port(plugin, port) if plugin and port else None
@@ -654,6 +657,7 @@ class Port(Structure):
         return ScalePoints(port_get_scale_points(self.plugin.plugin, self.port))
 
 class ScalePoint(Structure):
+    """Scale point (detent)."""
     def __init__(self, point):
         self.point = point
 
@@ -666,6 +670,7 @@ class ScalePoint(Structure):
         return Node.wrap(scale_point_get_value(self.point))
 
 class UI(Structure):
+    """Plugin UI."""
     def __init__(self, ui):
         self.ui = ui
 
@@ -700,6 +705,7 @@ class UI(Structure):
         return Node.wrap(node_duplicate(ui_get_binary_uri(self.ui)))
 
 class Node(Structure):
+    """Data node (URI, string, integer, etc.)."""
     @classmethod
     def wrap(cls, node):
         return Node(node) if node else None
@@ -781,6 +787,7 @@ class Node(Structure):
         return node_is_bool(self.node)
 
 class Iter(Structure):
+    """Collection iterator."""
     def __init__(self, collection, iterator, constructor, iter_get, iter_next, iter_is_end):
         self.collection = collection
         self.iterator = iterator
@@ -790,9 +797,11 @@ class Iter(Structure):
         self.iter_is_end = iter_is_end
 
     def get(self):
+        """Get the current item."""
         return self.constructor(self.iter_get(self.collection, self.iterator))
 
     def next(self):
+        """Move to and return the next item."""
         if self.is_end():
             raise StopIteration
         elem = self.get()
@@ -800,12 +809,13 @@ class Iter(Structure):
         return elem
 
     def is_end(self):
+        """Return true if the end of the collection has been reached."""
         return self.iter_is_end(self.collection, self.iterator)
 
     __next__ = next
 
 class Collection(Structure):
-    """Base class for all lilv collection wrappers."""
+    # Base class for all lilv collection wrappers.
     def __init__(self, collection, iter_begin, constructor, iter_get, iter_next, is_end):
         self.collection = collection
         self.constructor = constructor
@@ -834,6 +844,7 @@ class Collection(Structure):
         return iterator.get()
 
 class Plugins(Collection):
+    """Collection of plugins."""
     def __init__(self, world, collection):
         def constructor(plugin):
             return Plugin(world, plugin)
@@ -857,6 +868,7 @@ class Plugins(Collection):
         return Plugin(self.world, plugin) if plugin else None
 
 class PluginClasses(Collection):
+    """Collection of plugin classes."""
     def __init__(self, collection):
         super(PluginClasses, self).__init__(
             collection, plugin_classes_begin, PluginClass,
@@ -878,6 +890,7 @@ class PluginClasses(Collection):
         return PluginClass(plugin_class) if plugin_class else None
 
 class ScalePoints(Collection):
+    """Collection of scale points."""
     def __init__(self, collection):
         super(ScalePoints, self).__init__(
             collection, scale_points_begin, ScalePoint,
@@ -887,6 +900,7 @@ class ScalePoints(Collection):
         return scale_points_size(self.collection)
 
 class UIs(Collection):
+    """Collection of plugin UIs."""
     def __init__(self, collection):
         super(UIs, self).__init__(collection, uis_begin, UI,
                                   uis_get, uis_next, uis_is_end)
@@ -907,6 +921,7 @@ class UIs(Collection):
         return UI(ui) if ui else None
 
 class Nodes(Collection):
+    """Collection of data nodes."""
     @classmethod
     def constructor(ignore, node):
         return Node(node_duplicate(node))
@@ -925,7 +940,16 @@ class Nodes(Collection):
         return Nodes(nodes_merge(self.collection, b.collection))
 
 class Namespace():
-    """Namespace prefix for easy URI construction."""
+    """Namespace prefix.
+
+    Use attribute syntax to easily create URIs within this namespace, for
+    example:
+
+    .. code-block:: python
+
+       ns = Namespace("http://example.org/")
+       foo = ns.foo # == http://example.org/foo
+    """
     def __init__(self, world, prefix):
         self.world  = world
         self.prefix = prefix
@@ -940,6 +964,7 @@ class Namespace():
         return self.world.new_uri(self.prefix + suffix)
 
 class World(Structure):
+    """Library context."""
     def __init__(self):
         world = self
 
@@ -1135,6 +1160,7 @@ class World(Structure):
         return Node.wrap(_lib.lilv_new_bool(self.world, val))
 
 class Instance(Structure):
+    """Plugin instance."""
     __slots__ = [ 'lv2_descriptor', 'lv2_handle', 'pimpl', 'plugin', 'rate', 'instance' ]
     _fields_  = [
         ('lv2_descriptor', POINTER(LV2_Descriptor)),
@@ -1227,11 +1253,11 @@ class Instance(Structure):
         return self.instance[0].lv2_handle
 
 class State(Structure):
-    """TODO"""
+    """Plugin state (TODO)."""
     pass
 
 class VariadicFunction(object):
-    """Wrapper for calling C variadic functions"""
+    # Wrapper for calling C variadic functions
     def __init__(self, function, restype, argtypes):
         self.function         = function
         self.function.restype = restype
