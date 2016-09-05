@@ -278,12 +278,11 @@ class Plugin(Structure):
 
         This returns the URI of the bundle where the plugin itself was found.  Note
         that the data for a plugin may be spread over many bundles, that is,
-        lilv_plugin_get_data_uris() may return URIs which are not within this
-        bundle.
+        get_data_uris() may return URIs which are not within this bundle.
 
         Typical hosts should not need to use this function.
         Note this always returns a fully qualified URI.  If you want a local
-        filesystem path, use lilv_file_uri_parse().
+        filesystem path, use lilv.file_uri_parse().
         """
         return Node.wrap(node_duplicate(plugin_get_bundle_uri(self.plugin)))
 
@@ -292,7 +291,7 @@ class Plugin(Structure):
 
         Typical hosts should not need to use this function.
         Note this always returns fully qualified URIs.  If you want local
-        filesystem paths, use lilv_file_uri_parse().
+        filesystem paths, use lilv.file_uri_parse().
         """
         return Nodes(plugin_get_data_uris(self.plugin))
 
@@ -300,7 +299,7 @@ class Plugin(Structure):
         """Get the (resolvable) URI of the shared library for `plugin`.
 
         Note this always returns a fully qualified URI.  If you want a local
-        filesystem path, use lilv_file_uri_parse().
+        filesystem path, use lilv.file_uri_parse().
         """
         return Node.wrap(node_duplicate(plugin_get_library_uri(self.plugin)))
 
@@ -345,8 +344,8 @@ class Plugin(Structure):
         A feature is "supported" by a plugin if it is required OR optional.
 
         Since required features have special rules the host must obey, this function
-        probably shouldn't be used by normal hosts.  Using lilv_plugin_get_optional_features()
-        and lilv_plugin_get_required_features() separately is best in most cases.
+        probably shouldn't be used by normal hosts.  Using get_optional_features()
+        and get_required_features() separately is best in most cases.
         """
         return Nodes(plugin_get_supported_features(self.plugin))
 
@@ -378,7 +377,7 @@ class Plugin(Structure):
     def get_extension_data(self):
         """Get a sequence of all extension data provided by a plugin.
 
-        This can be used to find which URIs lilv_instance_get_extension_data()
+        This can be used to find which URIs get_extension_data()
         will return a value for without instantiating the plugin.
         """
         return Nodes(plugin_get_extension_data(self.plugin))
@@ -391,7 +390,7 @@ class Plugin(Structure):
     #     """Get the port ranges (minimum, maximum and default values) for all ports.
 
     #     `min_values`, `max_values` and `def_values` must either point to an array
-    #     of N floats, where N is the value returned by lilv_plugin_get_num_ports()
+    #     of N floats, where N is the value returned by get_num_ports()
     #     for this plugin, or None.  The elements of the array will be set to the
     #     the minimum, maximum and default values of the ports on this plugin,
     #     with array index corresponding to port index.  If a port doesn't have a
@@ -400,7 +399,7 @@ class Plugin(Structure):
 
     #     This is a convenience method for the common case of getting the range of
     #     all float ports on a plugin, and may be significantly faster than
-    #     repeated calls to lilv_port_get_range().
+    #     repeated calls to Port.get_range().
     #     """
     #     plugin_get_port_ranges_float(self.plugin, min_values, max_values, def_values)
 
@@ -414,7 +413,7 @@ class Plugin(Structure):
         """Return whether or not the plugin introduces (and reports) latency.
 
         The index of the latency port can be found with
-        lilv_plugin_get_latency_port() ONLY if this function returns true.
+        get_latency_port() ONLY if this function returns true.
         """
         return plugin_has_latency(self.plugin)
 
@@ -443,7 +442,7 @@ class Plugin(Structure):
     def get_port_by_symbol(self, symbol):
         """Get a port on `plugin` by `symbol`.
 
-        Note this function is slower than lilv_plugin_get_port_by_index(),
+        Note this function is slower than get_port_by_index(),
         especially on plugins with a very large number of ports.
         """
         if type(symbol) == str:
@@ -468,7 +467,7 @@ class Plugin(Structure):
     def get_project(self):
         """Get the project the plugin is a part of.
 
-        More information about the project can be read via lilv_world_find_nodes(),
+        More information about the project can be read via find_nodes(),
         typically using properties from DOAP (e.g. doap:name).
         """
         return Node.wrap(plugin_get_project(self.plugin))
@@ -565,7 +564,7 @@ class Port(Structure):
         return Node.wrap(node_duplicate(port_get_node(self.plugin, self.port)))
 
     def get_value(self, predicate):
-        """Port analog of lilv_plugin_get_value()."""
+        """Port analog of Plugin.get_value()."""
         return Nodes(port_get_value(self.plugin.plugin, self.port, predicate.node))
 
     def get(self, predicate):
@@ -620,7 +619,7 @@ class Port(Structure):
         """Get all the classes of a port.
 
         This can be used to determine if a port is an input, output, audio,
-        control, midi, etc, etc, though it's simpler to use lilv_port_is_a().
+        control, midi, etc, etc, though it's simpler to use is_a().
         The returned list does not include lv2:Port, which is implied.
         Returned value is shared and must not be destroyed by caller.
         """
@@ -705,7 +704,18 @@ class UI(Structure):
         return Node.wrap(node_duplicate(ui_get_binary_uri(self.ui)))
 
 class Node(Structure):
-    """Data node (URI, string, integer, etc.)."""
+    """Data node (URI, string, integer, etc.).
+
+    A Node can be converted to the corresponding Python datatype, and all nodes
+    can be converted to strings, for example::
+
+       >>> world = lilv.World()
+       >>> i = world.new_int(42)
+       >>> print(i)
+       42
+       >>> int(i) * 2
+       84
+    """
     @classmethod
     def wrap(cls, node):
         return Node(node) if node else None
@@ -943,12 +953,12 @@ class Namespace():
     """Namespace prefix.
 
     Use attribute syntax to easily create URIs within this namespace, for
-    example:
+    example::
 
-    .. code-block:: python
-
-       ns = Namespace("http://example.org/")
-       foo = ns.foo # == http://example.org/foo
+       >>> world = lilv.World()
+       >>> ns = Namespace(world, "http://example.org/")
+       >>> print(ns.foo)
+       http://example.org/foo
     """
     def __init__(self, world, prefix):
         self.world  = world
@@ -964,7 +974,14 @@ class Namespace():
         return self.world.new_uri(self.prefix + suffix)
 
 class World(Structure):
-    """Library context."""
+    """Library context.
+
+    Includes a set of namespaces as the instance variable `ns`, so URIs can be constructed like::
+
+        uri = world.ns.lv2.Plugin
+
+    :ivar ns: Common LV2 namespace prefixes: atom, doap, foaf, lilv, lv2, midi, owl, rdf, rdfs, ui, xsd.
+    """
     def __init__(self):
         world = self
 
@@ -1021,7 +1038,7 @@ class World(Structure):
         `bundle_uri` must be a fully qualified URI to the bundle directory,
         with the trailing slash, eg. file:///usr/lib/lv2/foo.lv2/
 
-        Normal hosts should not need this function (use lilv_world_load_all()).
+        Normal hosts should not need this function (use load_all()).
 
         Hosts MUST NOT attach any long-term significance to bundle paths
         (e.g. in save files), since there are no guarantees they will remain
@@ -1034,7 +1051,7 @@ class World(Structure):
         """Load all specifications from currently loaded bundles.
 
         This is for hosts that explicitly load specific bundles, its use is not
-        necessary when using lilv_world_load_all().  This function parses the
+        necessary when using load_all().  This function parses the
         specifications and adds them to the model.
         """
         world_load_specifications(self.world)
@@ -1042,19 +1059,19 @@ class World(Structure):
     def load_plugin_classes(self):
         """Load all plugin classes from currently loaded specifications.
 
-        Must be called after lilv_world_load_specifications().  This is for hosts
+        Must be called after load_specifications().  This is for hosts
         that explicitly load specific bundles, its use is not necessary when using
-        lilv_world_load_all().
+        load_all().
         """
         world_load_plugin_classes(self.world)
 
     def unload_bundle(self, bundle_uri):
         """Unload a specific bundle.
 
-        This unloads statements loaded by lilv_world_load_bundle().  Note that this
+        This unloads statements loaded by load_bundle().  Note that this
         is not necessarily all information loaded from the bundle.  If any resources
-        have been separately loaded with liv_world_load_resource(), they must be
-        separately unloaded with lilv_world_unload_resource().
+        have been separately loaded with load_resource(), they must be
+        separately unloaded with unload_resource().
         """
         return world_unload_bundle(self.world, bundle_uri.node)
 
@@ -1075,7 +1092,7 @@ class World(Structure):
         The resource must be a subject (i.e. a URI or a blank node).
 
         This unloads all data loaded by a previous call to
-        lilv_world_load_resource() with the given `resource`.
+        load_resource() with the given `resource`.
         """
         return world_unload_resource(self.world, _as_uri(resource).node)
 
@@ -1204,8 +1221,8 @@ class Instance(Structure):
         """Activate a plugin instance.
 
            This resets all state information in the plugin, except for port data
-           locations (as set by lilv_instance_connect_port()).  This MUST be called
-           before calling lilv_instance_run().
+           locations (as set by connect_port()).  This MUST be called
+           before calling run().
         """
         if self.get_descriptor().activate:
             self.get_descriptor().activate(self.get_handle())
