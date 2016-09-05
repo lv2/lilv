@@ -142,7 +142,7 @@ lilv_plugin_get_unique(const LilvPlugin* p,
 {
 	LilvNode* ret = lilv_plugin_get_one(p, subject, predicate);
 	if (!ret) {
-		LILV_ERRORF("Multiple values found for (%s %s ...) property\n",
+		LILV_ERRORF("No value found for (%s %s ...) property\n",
 		            sord_node_get_string(subject),
 		            sord_node_get_string(predicate));
 	}
