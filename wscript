@@ -463,5 +463,5 @@ def posts(ctx):
          'description'  : autowaf.get_blurb(os.path.join(path, 'README')),
          'dist_pattern' : 'http://download.drobilla.net/lilv-%s.tar.bz2'},
         { 'Author' : 'drobilla',
-          'Tags'   : 'Hacking, LAD, LV2' },
+          'Tags'   : 'Hacking, LAD, LV2, Lilv' },
         os.path.join(out, 'posts'))
