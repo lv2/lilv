@@ -607,7 +607,7 @@ lilv_world_load_plugin_classes(LilvWorld* world);
 
    This unloads statements loaded by lilv_world_load_bundle().  Note that this
    is not necessarily all information loaded from the bundle.  If any resources
-   have been separately loaded with liv_world_load_resource(), they must be
+   have been separately loaded with lilv_world_load_resource(), they must be
    separately unloaded with lilv_world_unload_resource().
 */
 LILV_API int
