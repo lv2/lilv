@@ -64,7 +64,6 @@ def configure(conf):
 
     if Options.options.bindings:
         try:
-            conf.load('swig')
             conf.load('python')
             conf.load('compiler_cxx')
             conf.check_python_headers()
@@ -352,7 +351,7 @@ def build(bld):
 
         if bld.is_defined('LILV_PYTHON'):
             # Copy Python unittest files
-            for i in [ 'test_api.py', 'test_api_mm.py' ]:
+            for i in [ 'test_api.py' ]:
                 bld(features     = 'subst',
                     is_copy      = True,
                     source       = 'bindings/test/python/' + i,
@@ -413,16 +412,7 @@ def build(bld):
 
     if bld.is_defined('LILV_PYTHON'):
         # Python Wrapper
-        obj = bld(features   = 'cxx cxxshlib pyext',
-                  source     = 'bindings/lilv.i',
-                  target     = 'bindings/_lilv',
-                  includes   = ['..'],
-                  swig_flags = '-c++ -python %s -Wall -I.. -llilv -features autodoc=1' %
-                               ("-py3" if sys.version_info >= (3,0,0) else ""),
-                  use        = 'liblilv')
-        autowaf.use_lib(bld, obj, 'LILV')
-
-        bld.install_files('${PYTHONDIR}', bld.path.ant_glob('bindings/lilv.py'))
+        bld.install_files('${PYTHONDIR}', 'bindings/python/lilv.py')
 
     bld.add_post_fun(autowaf.run_ldconfig)
     if bld.env.DOCS:
@@ -444,7 +434,7 @@ def test(ctx):
     autowaf.pre_test(ctx, APPNAME)
     if ctx.is_defined('LILV_PYTHON'):
         os.environ['LD_LIBRARY_PATH'] = os.getcwd()
-        autowaf.run_tests(ctx, 'Python ' + APPNAME, ['python -m unittest discover bindings/'])
+        autowaf.run_tests(ctx, APPNAME, ['python -m unittest discover bindings/'])
     os.environ['PATH'] = 'test' + os.pathsep + os.getenv('PATH')
 
     Logs.pprint('GREEN', '')

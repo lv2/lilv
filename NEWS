@@ -1,5 +1,6 @@
 lilv (0.22.1) unstable;
 
+  * Add new hand-crafted Pythonic bindings with full test coverage
   * Add lv2apply utility for applying plugins to audio files
   * Add lilv_state_set_metadata() for adding state banks/comments/etc
     (based on patch from Hanspeter Portner)
@@ -14,11 +15,10 @@ lilv (0.22.1) unstable;
   * Fix loading dyn-manifest from bundles with spaces in their path
   * Check lv2:binary predicate for UIs
   * Add LILV_URI_ATOM_PORT and LILV_URI_CV_PORT defines
-  * Fix Python bindings
   * Fix documentation installation
   * Fix outdated comment references to lilv_uri_to_path()
 
- -- David Robillard <d@drobilla.net>  Sun, 04 Sep 2016 15:43:02 -0400
+ -- David Robillard <d@drobilla.net>  Mon, 05 Sep 2016 02:22:39 -0400
 
 lilv (0.22.0) stable;
 
