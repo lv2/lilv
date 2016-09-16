@@ -1,5 +1,5 @@
 /*
-  Copyright 2007-2015 David Robillard <http://drobilla.net>
+  Copyright 2007-2016 David Robillard <http://drobilla.net>
 
   Permission to use, copy, modify, and/or distribute this software for any
   purpose with or without fee is hereby granted, provided that the above
@@ -27,6 +27,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stddef.h>
 
 #ifdef _WIN32
 #ifndef _WIN32_WINNT
@@ -63,7 +64,7 @@ CreateSymbolicLink(LPCTSTR linkpath, LPCTSTR targetpath, DWORD flags)
 #endif
 
 #ifndef PAGE_SIZE
-#   define PAGE_SIZE 4096
+#    define PAGE_SIZE 4096
 #endif
 
 void
