@@ -2,6 +2,7 @@ lilv (0.22.1) unstable;
 
   * Add new hand-crafted Pythonic bindings with full test coverage
   * Add lv2apply utility for applying plugins to audio files
+  * Add lilv_world_get_symbol()
   * Add lilv_state_set_metadata() for adding state banks/comments/etc
     (based on patch from Hanspeter Portner)
   * Fix crash when state contains non-POD properties

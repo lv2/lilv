@@ -1148,3 +1148,51 @@ lilv_world_get_all_plugins(const LilvWorld* world)
 {
 	return world->plugins;
 }
+
+LILV_API LilvNode*
+lilv_world_get_symbol(LilvWorld* world, const LilvNode* subject)
+{
+	// Check for explicitly given symbol
+	SordNode* snode = sord_get(
+		world->model, subject->node, world->uris.lv2_symbol, NULL, NULL);
+
+	if (snode) {
+		LilvNode* ret = lilv_node_new_from_node(world, snode);
+		sord_node_free(world->world, snode);
+		return ret;
+	}
+
+	if (!lilv_node_is_uri(subject)) {
+		return NULL;
+	}
+
+	// Find rightmost segment of URI
+	SerdURI uri;
+	serd_uri_parse((const uint8_t*)lilv_node_as_uri(subject), &uri);
+	const char* str = "_";
+	if (uri.fragment.buf) {
+		str = (const char*)uri.fragment.buf + 1;
+	} else if (uri.query.buf) {
+		str = (const char*)uri.query.buf;
+	} else if (uri.path.buf) {
+		const char* last_slash = strrchr((const char*)uri.path.buf, '/');
+		str = last_slash ? (last_slash + 1) : (const char*)uri.path.buf;
+	}
+
+	// Replace invalid characters
+	const size_t len = strlen(str);
+	char* const  sym = (char*)calloc(1, len);
+	for (size_t i = 0; i < len; ++i) {
+		const char c = str[i];
+		if (!((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') ||
+		      (c == '_') || (i > 0 && c >= '0' && c <= '9'))) {
+			sym[i] = '_';
+		} else {
+			sym[i] = str[i];
+		}
+	}
+
+	LilvNode* ret = lilv_new_string(world, sym);
+	free(sym);
+	return ret;
+}

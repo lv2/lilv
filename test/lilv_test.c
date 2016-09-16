@@ -2163,6 +2163,53 @@ test_replace_version(void)
 
 /*****************************************************************************/
 
+static int
+test_get_symbol(void)
+{
+	if (!start_bundle(
+		    MANIFEST_PREFIXES
+		    ":plug a lv2:Plugin ; lv2:symbol \"plugsym\" ; lv2:binary <foo" SHLIB_EXT "> ; rdfs:seeAlso <plugin.ttl> .\n",
+		    BUNDLE_PREFIXES PREFIX_LV2EV
+		    ":plug a lv2:Plugin ; "
+		    PLUGIN_NAME("Test plugin") " ; "
+		    "lv2:symbol \"plugsym\" .")) {
+		return 0;
+	}
+
+	init_uris();
+
+	LilvNode* plug_sym      = lilv_world_get_symbol(world, plugin_uri_value);
+	LilvNode* path          = lilv_new_uri(world, "http://example.org/foo");
+	LilvNode* path_sym      = lilv_world_get_symbol(world, path);
+	LilvNode* query         = lilv_new_uri(world, "http://example.org/foo?bar=baz");
+	LilvNode* query_sym     = lilv_world_get_symbol(world, query);
+	LilvNode* frag          = lilv_new_uri(world, "http://example.org/foo#bar");
+	LilvNode* frag_sym      = lilv_world_get_symbol(world, frag);
+	LilvNode* queryfrag     = lilv_new_uri(world, "http://example.org/foo?bar=baz#quux");
+	LilvNode* queryfrag_sym = lilv_world_get_symbol(world, queryfrag);
+	LilvNode* nonuri        = lilv_new_int(world, 42);
+
+	TEST_ASSERT(lilv_world_get_symbol(world, nonuri) == NULL);
+	TEST_ASSERT(!strcmp(lilv_node_as_string(plug_sym), "plugsym"));
+	TEST_ASSERT(!strcmp(lilv_node_as_string(path_sym), "foo"));
+	TEST_ASSERT(!strcmp(lilv_node_as_string(query_sym), "bar_baz"));
+	TEST_ASSERT(!strcmp(lilv_node_as_string(frag_sym), "bar"));
+	TEST_ASSERT(!strcmp(lilv_node_as_string(queryfrag_sym), "quux"));
+
+	lilv_node_free(nonuri);
+	lilv_node_free(queryfrag_sym);
+	lilv_node_free(queryfrag);
+	lilv_node_free(frag_sym);
+	lilv_node_free(frag);
+	lilv_node_free(query_sym);
+	lilv_node_free(query);
+	lilv_node_free(plug_sym);
+
+	return 1;
+}
+
+/*****************************************************************************/
+
 /* add tests here */
 static struct TestCase tests[] = {
 	TEST_CASE(util),
@@ -2188,6 +2235,7 @@ static struct TestCase tests[] = {
 	TEST_CASE(state),
 	TEST_CASE(reload_bundle),
 	TEST_CASE(replace_version),
+	TEST_CASE(get_symbol),
 	{ NULL, NULL }
 };
 

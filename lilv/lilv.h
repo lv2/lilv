@@ -708,6 +708,16 @@ lilv_world_ask(LilvWorld*      world,
                const LilvNode* object);
 
 /**
+   Get an LV2 symbol for some subject.
+
+   This will return the lv2:symbol property of the subject if it is given
+   explicitly, and otherwise will attempt to derive a symbol from the URI.
+   @return A string node that is a valid LV2 symbol, or NULL on error.
+*/
+LILV_API LilvNode*
+lilv_world_get_symbol(LilvWorld* world, const LilvNode* subject);
+
+/**
    @}
    @name Plugin
    @{
