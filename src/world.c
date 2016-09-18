@@ -1181,7 +1181,7 @@ lilv_world_get_symbol(LilvWorld* world, const LilvNode* subject)
 
 	// Replace invalid characters
 	const size_t len = strlen(str);
-	char* const  sym = (char*)calloc(1, len);
+	char* const  sym = (char*)calloc(1, len + 1);
 	for (size_t i = 0; i < len; ++i) {
 		const char c = str[i];
 		if (!((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') ||
