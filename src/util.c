@@ -299,6 +299,7 @@ lilv_copy_file(const char* src, const char* dst)
 
 	FILE* out = fopen(dst, "w");
 	if (!out) {
+		fclose(in);
 		return errno;
 	}
 

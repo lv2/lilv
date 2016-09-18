@@ -245,6 +245,7 @@ abstract_path(LV2_State_Map_Path_Handle handle,
 			char* copy  = lilv_get_latest_copy(real_path, cpath);
 			if (!copy || !lilv_file_equals(real_path, copy)) {
 				// No recent enough copy, make a new one
+				free(copy);
 				copy = lilv_find_free_path(cpath, lilv_path_exists, NULL);
 				const int st = lilv_copy_file(real_path, copy);
 				if (st) {
@@ -1204,11 +1205,13 @@ lilv_state_delete(LilvWorld*       world,
 }
 
 static void
-free_property_array(PropertyArray* array)
+free_property_array(LilvState* state, PropertyArray* array)
 {
 	for (uint32_t i = 0; i < array->n; ++i) {
-		if (array->props[i].flags & LV2_STATE_IS_POD) {
-			free(array->props[i].value);
+		Property* prop = &array->props[i];
+		if ((prop->flags & LV2_STATE_IS_POD) ||
+		    prop->type == state->atom_Path) {
+			free(prop->value);
 		}
 	}
 	free(array->props);
@@ -1218,8 +1221,8 @@ LILV_API void
 lilv_state_free(LilvState* state)
 {
 	if (state) {
-		free_property_array(&state->props);
-		free_property_array(&state->metadata);
+		free_property_array(state, &state->props);
+		free_property_array(state, &state->metadata);
 		for (uint32_t i = 0; i < state->n_values; ++i) {
 			free(state->values[i].value);
 			free(state->values[i].symbol);

@@ -210,6 +210,8 @@ lilv_plugin_load(LilvPlugin* p)
 	if (st > SERD_FAILURE) {
 		p->loaded       = true;
 		p->parse_errors = true;
+		serd_reader_free(reader);
+		serd_env_free(env);
 		return;
 	}
 
@@ -287,6 +289,7 @@ lilv_plugin_load_ports_if_necessary(const LilvPlugin* const_p)
 				            lilv_node_as_uri(p->plugin_uri),
 				            lilv_node_as_string(symbol));
 				lilv_node_free(symbol);
+				lilv_node_free(index);
 				lilv_plugin_free_ports(p);
 				break;
 			}

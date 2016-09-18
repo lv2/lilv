@@ -2073,6 +2073,7 @@ test_reload_bundle(void)
 	// Load new bundle again (noop)
 	lilv_world_load_bundle(world, bundle_uri);
 
+	cleanup_uris();
 	lilv_node_free(bundle_uri);
 	lilv_world_free(world);
 	world = NULL;
@@ -2203,7 +2204,10 @@ test_get_symbol(void)
 	lilv_node_free(frag);
 	lilv_node_free(query_sym);
 	lilv_node_free(query);
+	lilv_node_free(path_sym);
+	lilv_node_free(path);
 	lilv_node_free(plug_sym);
+	cleanup_uris();
 
 	return 1;
 }

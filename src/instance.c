@@ -78,6 +78,7 @@ lilv_plugin_instantiate(const LilvPlugin*        plugin,
 		if (result->lv2_handle == NULL) {
 			// Failed to instantiate
 			free(result);
+			lilv_lib_close(lib);
 			return NULL;
 		}
 
