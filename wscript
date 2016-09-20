@@ -12,7 +12,7 @@ import waflib.Logs as Logs
 # major increment <=> incompatible changes
 # minor increment <=> compatible changes (additions)
 # micro increment <=> no interface changes
-LILV_VERSION       = '0.22.1'
+LILV_VERSION       = '0.24.0'
 LILV_MAJOR_VERSION = '0'
 
 # Mandatory waf variables
@@ -86,7 +86,7 @@ def configure(conf):
         conf.fatal('Neither a shared nor a static build requested')
 
     autowaf.check_pkg(conf, 'lv2', uselib_store='LV2',
-                      atleast_version='1.8.0', mandatory=True)
+                      atleast_version='1.14.0', mandatory=True)
     autowaf.check_pkg(conf, 'serd-0', uselib_store='SERD',
                       atleast_version='0.14.0', mandatory=True)
     autowaf.check_pkg(conf, 'sord-0', uselib_store='SORD',

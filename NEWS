@@ -1,4 +1,4 @@
-lilv (0.22.1) unstable;
+lilv (0.24.0) stable;
 
   * Add new hand-crafted Pythonic bindings with full test coverage
   * Add lv2apply utility for applying plugins to audio files
@@ -19,7 +19,7 @@ lilv (0.22.1) unstable;
   * Fix documentation installation
   * Fix outdated comment references to lilv_uri_to_path()
 
- -- David Robillard <d@drobilla.net>  Mon, 05 Sep 2016 02:22:39 -0400
+ -- David Robillard <d@drobilla.net>  Mon, 19 Sep 2016 22:24:57 -0400
 
 lilv (0.22.0) stable;
 
