@@ -247,7 +247,7 @@ save(LV2_Handle                instance,
 		      apath,
 		      strlen(apath) + 1,
 		      map_uri(plugin, LV2_ATOM__Path),
-		      LV2_STATE_IS_PORTABLE);
+		      LV2_STATE_IS_POD);
 
 		free(apath);
 		free(apath2);
@@ -262,7 +262,7 @@ save(LV2_Handle                instance,
 			      apath,
 			      strlen(apath) + 1,
 			      map_uri(plugin, LV2_ATOM__Path),
-			      LV2_STATE_IS_PORTABLE);
+			      LV2_STATE_IS_POD);
 
 			free(apath);
 		}
@@ -279,7 +279,7 @@ save(LV2_Handle                instance,
 			      apath,
 			      strlen(apath) + 1,
 			      map_uri(plugin, LV2_ATOM__Path),
-			      LV2_STATE_IS_PORTABLE);
+			      LV2_STATE_IS_POD);
 			free(apath);
 			free(spath);
 		}
@@ -321,6 +321,11 @@ restore(LV2_Handle                  instance,
 		callback_data,
 		map_uri(plugin, "http://example.org/extfile"),
 		&size, &type, &valflags);
+
+	if (valflags != LV2_STATE_IS_POD) {
+		fprintf(stderr, "error: Restored bad file flags\n");
+		return LV2_STATE_ERR_BAD_FLAGS;
+	}
 
 	if (apath) {
 		char*  path   = map_path->absolute_path(map_path->handle, apath);

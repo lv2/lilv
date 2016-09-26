@@ -588,7 +588,7 @@ new_state_from_model(LilvWorld*       world,
 			prop.value = malloc(atom->size);
 			memcpy(prop.value, LV2_ATOM_BODY_CONST(atom), atom->size);
 			if (atom->type == forge.Path) {
-				prop.flags = LV2_STATE_IS_PORTABLE;
+				prop.flags = LV2_STATE_IS_POD;
 			}
 
 			if (prop.value) {
