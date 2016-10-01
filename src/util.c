@@ -16,6 +16,7 @@
 
 #define _POSIX_C_SOURCE 200809L  /* for fileno */
 #define _BSD_SOURCE     1        /* for realpath, symlink */
+#define _DEFAULT_SOURCE 1        /* for realpath, symlink */
 
 #ifdef __APPLE__
 #    define _DARWIN_C_SOURCE 1  /* for flock */

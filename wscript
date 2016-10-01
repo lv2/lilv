@@ -96,7 +96,7 @@ def configure(conf):
     autowaf.check_pkg(conf, 'sndfile', uselib_store='SNDFILE',
                       atleast_version='1.0.0', mandatory=False)
 
-    defines = ['_POSIX_C_SOURCE=200809L', '_BSD_SOURCE']
+    defines = ['_POSIX_C_SOURCE=200809L', '_BSD_SOURCE', '_DEFAULT_SOURCE']
     if conf.env.DEST_OS == 'darwin':
         defines += ['_DARWIN_C_SOURCE']
 
