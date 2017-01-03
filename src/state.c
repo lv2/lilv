@@ -643,7 +643,7 @@ lilv_state_new_from_file(LilvWorld*      world,
 	}
 
 	uint8_t*    abs_path = (uint8_t*)lilv_path_absolute(path);
-	SerdNode    node     = serd_node_new_file_uri(abs_path, NULL, NULL, 0);
+	SerdNode    node     = serd_node_new_file_uri(abs_path, NULL, NULL, true);
 	SerdEnv*    env      = serd_env_new(&node);
 	SordModel*  model    = sord_new(world->world, SORD_SPO, false);
 	SerdReader* reader   = sord_new_reader(model, env, SERD_TURTLE, NULL);
@@ -796,8 +796,8 @@ add_state_to_manifest(LilvWorld*      lworld,
                       const char*     state_path)
 {
 	SordWorld*  world    = lworld->world;
-	SerdNode    manifest = serd_node_new_file_uri(USTR(manifest_path), 0, 0, 0);
-	SerdNode    file     = serd_node_new_file_uri(USTR(state_path), 0, 0, 0);
+	SerdNode    manifest = serd_node_new_file_uri(USTR(manifest_path), 0, 0, 1);
+	SerdNode    file     = serd_node_new_file_uri(USTR(state_path), 0, 0, 1);
 	SerdEnv*    env      = serd_env_new(&manifest);
 	SordModel*  model    = sord_new(world, SORD_SPO, false);
 
@@ -1081,7 +1081,7 @@ lilv_state_save(LilvWorld*       world,
 	lilv_state_make_links(state, abs_dir);
 
 	// Write state to Turtle file
-	SerdNode    file = serd_node_new_file_uri(USTR(path), NULL, NULL, false);
+	SerdNode    file = serd_node_new_file_uri(USTR(path), NULL, NULL, true);
 	SerdNode    node = uri ? serd_node_from_string(SERD_URI, USTR(uri)) : file;
 	SerdEnv*    env  = NULL;
 	SerdWriter* ttl  = ttl_file_writer(fd, &file, &env);
@@ -1089,7 +1089,7 @@ lilv_state_save(LilvWorld*       world,
 		world, map, unmap, state, ttl, (const char*)node.buf, dir);
 
 	// Set saved dir and uri (FIXME: const violation)
-	SerdNode dir_uri = serd_node_new_file_uri(USTR(abs_dir), NULL, NULL, false);
+	SerdNode dir_uri = serd_node_new_file_uri(USTR(abs_dir), NULL, NULL, true);
 	free(state->dir);
 	lilv_node_free(state->uri);
 	((LilvState*)state)->dir = (char*)dir_uri.buf;
