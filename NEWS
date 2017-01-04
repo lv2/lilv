@@ -1,8 +1,9 @@
-lilv (0.24.1) unstable;
+lilv (0.24.2) stable;
 
+  * Fix saving state to paths that contain URI delimiters (#, ?, etc)
   * Fix comparison of restored states with paths
 
- -- David Robillard <d@drobilla.net>  Mon, 26 Sep 2016 12:51:37 -0400
+ -- David Robillard <d@drobilla.net>  Wed, 04 Jan 2017 11:48:08 -0500
 
 lilv (0.24.0) stable;
 
