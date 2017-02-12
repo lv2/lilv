@@ -1,3 +1,9 @@
+lilv (0.24.3) unstable;
+
+  * Remove use of deprecated readdir_r
+
+ -- David Robillard <d@drobilla.net>  Sun, 12 Feb 2017 17:49:05 +0100
+
 lilv (0.24.2) stable;
 
   * Fix saving state to paths that contain URI delimiters (#, ?, etc)
