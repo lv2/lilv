@@ -212,11 +212,11 @@ lilv_node_equals(const LilvNode* value, const LilvNode* other);
    <table>
    <caption>Example Turtle Tokens</caption>
    <tr><th>URI</th><td>&lt;http://example.org/foo &gt;</td></tr>
-   <tr><th>QName</td><td>doap:name</td></tr>
-   <tr><th>String</td><td>"this is a string"</td></tr>
-   <tr><th>Float</td><td>1.0</td></tr>
-   <tr><th>Integer</td><td>1</td></tr>
-   <tr><th>Boolean</td><td>true</td></tr>
+   <tr><th>QName</th><td>doap:name</td></tr>
+   <tr><th>String</th><td>"this is a string"</td></tr>
+   <tr><th>Float</th><td>1.0</td></tr>
+   <tr><th>Integer</th><td>1</td></tr>
+   <tr><th>Boolean</th><td>true</td></tr>
    </table>
 */
 LILV_API char*
