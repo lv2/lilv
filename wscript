@@ -262,6 +262,16 @@ def build(bld):
                   defines         = defines + ['LILV_INTERNAL'])
         autowaf.use_lib(bld, obj, 'SERD SORD SRATOM LV2')
 
+    # Python bindings
+    if bld.is_defined('LILV_PYTHON'):
+        # Copy Python bindings to build directory
+        bld(features     = 'subst',
+            is_copy      = True,
+            source       = 'bindings/python/lilv.py',
+            target       = 'lilv.py',
+            install_path = '${PYTHONDIR}')
+
+    # Tests
     if bld.env.BUILD_TESTS:
         test_libs      = lib
         test_cflags    = ['']
@@ -350,13 +360,6 @@ def build(bld):
         autowaf.use_lib(bld, obj, 'SERD SORD SRATOM LV2')
 
         if bld.is_defined('LILV_PYTHON'):
-            # Copy Python bindings to build directory
-            bld(features     = 'subst',
-                is_copy      = True,
-                source       = 'bindings/python/lilv.py',
-                target       = 'lilv.py',
-                install_path = '${PYTHONDIR}')
-
             # Copy Python unittest files
             for i in [ 'test_api.py' ]:
                 bld(features     = 'subst',
