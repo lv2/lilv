@@ -1,7 +1,8 @@
 lilv (0.24.3) unstable;
 
   * Remove use of deprecated readdir_r
-  * Install Python bindings when built without tests
+  * Install Python bindings when configured without tests
+    (thanks Clement Skau)
 
  -- David Robillard <d@drobilla.net>  Mon, 20 Feb 2017 19:38:44 +0100
 
