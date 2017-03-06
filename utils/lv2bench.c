@@ -82,10 +82,15 @@ bench(const LilvPlugin* p, uint32_t sample_count, uint32_t block_size)
 		return 0.0;
 	}
 
-	LV2_Atom_Sequence seq = {
+	const size_t atom_capacity = 1024;
+
+	LV2_Atom_Sequence seq_in = {
 		{ sizeof(LV2_Atom_Sequence_Body),
 		  uri_table_map(&uri_table, LV2_ATOM__Sequence) },
 		{ 0, 0 } };
+
+	LV2_Atom_Sequence* seq_out = (LV2_Atom_Sequence*)malloc(
+		sizeof(LV2_Atom_Sequence) + atom_capacity);
 
 	const char* uri      = lilv_node_as_string(lilv_plugin_get_uri(p));
 	LilvNodes*  required = lilv_plugin_get_required_features(p);
@@ -134,7 +139,11 @@ bench(const LilvPlugin* p, uint32_t sample_count, uint32_t block_size)
 				return 0.0;
 			}
 		} else if (lilv_port_is_a(p, port, atom_AtomPort)) {
-			lilv_instance_connect_port(instance, index, &seq);
+			if (lilv_port_is_a(p, port, lv2_InputPort)) {
+				lilv_instance_connect_port(instance, index, &seq_in);
+			} else {
+				lilv_instance_connect_port(instance, index, seq_out);
+			}
 		} else {
 			fprintf(stderr, "<%s> port %d has unknown type, skipping\n",
 			        uri, index);
@@ -150,12 +159,18 @@ bench(const LilvPlugin* p, uint32_t sample_count, uint32_t block_size)
 
 	struct timespec ts = bench_start();
 	for (uint32_t i = 0; i < (sample_count / block_size); ++i) {
+		seq_in.atom.size   = sizeof(LV2_Atom_Sequence_Body);
+		seq_in.atom.type   = uri_table_map(&uri_table, LV2_ATOM__Sequence);
+		seq_out->atom.size = atom_capacity;
+		seq_out->atom.type = uri_table_map(&uri_table, LV2_ATOM__Chunk);
+
 		lilv_instance_run(instance, block_size);
 	}
 	const double elapsed = bench_end(&ts);
 
 	lilv_instance_deactivate(instance);
 	lilv_instance_free(instance);
+	free(seq_out);
 
 	uri_table_destroy(&uri_table);
 

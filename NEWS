@@ -1,11 +1,12 @@
 lilv (0.24.3) unstable;
 
+  * Fix lv2bench for some plugins with sequence ports
   * Gracefully handle plugins with missing binary URIs
   * Remove use of deprecated readdir_r
   * Install Python bindings when configured without tests
     (thanks Clement Skau)
 
- -- David Robillard <d@drobilla.net>  Mon, 06 Mar 2017 18:57:09 +0100
+ -- David Robillard <d@drobilla.net>  Mon, 06 Mar 2017 18:58:42 +0100
 
 lilv (0.24.2) stable;
 
