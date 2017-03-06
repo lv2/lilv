@@ -30,10 +30,14 @@ lilv_plugin_instantiate(const LilvPlugin*        plugin,
 		return NULL;
 	}
 
-	LilvInstance*         result      = NULL;
-	const LilvNode* const lib_uri     = lilv_plugin_get_library_uri(plugin);
-	const LilvNode* const bundle_uri  = lilv_plugin_get_bundle_uri(plugin);
-	char* const           bundle_path = lilv_file_uri_parse(
+	LilvInstance*         result     = NULL;
+	const LilvNode* const lib_uri    = lilv_plugin_get_library_uri(plugin);
+	const LilvNode* const bundle_uri = lilv_plugin_get_bundle_uri(plugin);
+	if (!lib_uri || !bundle_uri) {
+		return NULL;
+	}
+
+	char* const bundle_path = lilv_file_uri_parse(
 		lilv_node_as_uri(bundle_uri), NULL);
 
 	LilvLib* lib = lilv_lib_open(plugin->world, lib_uri, bundle_path, features);
