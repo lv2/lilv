@@ -1,5 +1,5 @@
 /*
-  Copyright 2012 David Robillard <http://drobilla.net>
+  Copyright 2012-2017 David Robillard <http://drobilla.net>
 
   Permission to use, copy, modify, and/or distribute this software for any
   purpose with or without fee is hereby granted, provided that the above
@@ -16,6 +16,7 @@
 
 #define _POSIX_C_SOURCE 200809L
 
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -43,7 +44,7 @@ print_version(void)
 {
 	printf(
 		"lv2bench (lilv) " LILV_VERSION "\n"
-		"Copyright 2012 David Robillard <http://drobilla.net>\n"
+		"Copyright 2012-2017 David Robillard <http://drobilla.net>\n"
 		"License: <http://www.opensource.org/licenses/isc-license>\n"
 		"This is free software: you are free to change and redistribute it.\n"
 		"There is NO WARRANTY, to the extent permitted by law.\n");
@@ -53,7 +54,7 @@ static void
 print_usage(void)
 {
 	printf("lv2bench - Benchmark all installed and supported LV2 plugins.\n");
-	printf("Usage: lv2bench [OPTIONS]\n");
+	printf("Usage: lv2bench [OPTIONS] [PLUGIN_URI]\n");
 	printf("\n");
 	printf("  -b BLOCK_SIZE  Specify block size, in audio frames.\n");
 	printf("  -f, --full     Full plottable output.\n");
@@ -114,14 +115,24 @@ bench(const LilvPlugin* p, uint32_t sample_count, uint32_t block_size)
 		return 0.0;
 	}
 
-	float* controls = (float*)calloc(
-		lilv_plugin_get_num_ports(p), sizeof(float));
-	lilv_plugin_get_port_ranges_float(p, NULL, NULL, controls);
+	const uint32_t n_ports  = lilv_plugin_get_num_ports(p);
+	float* const   mins     = (float*)calloc(n_ports, sizeof(float));
+	float* const   maxes    = (float*)calloc(n_ports, sizeof(float));
+	float* const   controls = (float*)calloc(n_ports, sizeof(float));
+	lilv_plugin_get_port_ranges_float(p, mins, maxes, controls);
 
-	const uint32_t n_ports = lilv_plugin_get_num_ports(p);
 	for (uint32_t index = 0; index < n_ports; ++index) {
 		const LilvPort* port = lilv_plugin_get_port_by_index(p, index);
 		if (lilv_port_is_a(p, port, lv2_ControlPort)) {
+ 			if (isnan(controls[index])) {
+				if (!isnan(mins[index])) {
+					controls[index] = mins[index];
+				} else if (!isnan(maxes[index])) {
+					controls[index] = maxes[index];
+				} else {
+					controls[index] = 0.0;
+				}
+			}
 			lilv_instance_connect_port(instance, index, &controls[index]);
 		} else if (lilv_port_is_a(p, port, lv2_AudioPort) ||
 		           lilv_port_is_a(p, port, lv2_CVPort)) {
@@ -190,24 +201,29 @@ main(int argc, char** argv)
 	uint32_t block_size   = 512;
 	uint32_t sample_count = (1 << 19);
 
-	for (int i = 1; i < argc; ++i) {
-		if (!strcmp(argv[i], "--version")) {
+	int a = 1;
+	for (; a < argc; ++a) {
+		if (!strcmp(argv[a], "--version")) {
 			print_version();
 			return 0;
-		} else if (!strcmp(argv[i], "--help")) {
+		} else if (!strcmp(argv[a], "--help")) {
 			print_usage();
 			return 0;
-		} else if (!strcmp(argv[i], "-f")) {
+		} else if (!strcmp(argv[a], "-f")) {
 			full_output = true;
-		} else if (!strcmp(argv[i], "-n") && (i + 1 < argc)) {
-			sample_count = atoi(argv[++i]);
-		} else if (!strcmp(argv[i], "-b") && (i + 1 < argc)) {
-			block_size = atoi(argv[++i]);
+		} else if (!strcmp(argv[a], "-n") && (a + 1 < argc)) {
+			sample_count = atoi(argv[++a]);
+		} else if (!strcmp(argv[a], "-b") && (a + 1 < argc)) {
+			block_size = atoi(argv[++a]);
+		} else if (argv[a][0] != '-') {
+			break;
 		} else {
 			print_usage();
 			return 1;
 		}
 	}
+
+	const char* const plugin_uri_str = (a < argc ? argv[a++] : NULL);
 
 	LilvWorld* world = lilv_world_new();
 	lilv_world_load_all(world);
@@ -226,8 +242,13 @@ main(int argc, char** argv)
 	}
 
 	const LilvPlugins* plugins = lilv_world_get_all_plugins(world);
-	LILV_FOREACH(plugins, i, plugins) {
-		bench(lilv_plugins_get(plugins, i), sample_count, block_size);
+	if (plugin_uri_str) {
+		LilvNode* uri = lilv_new_uri(world, plugin_uri_str);
+		bench(lilv_plugins_get_by_uri(plugins, uri), sample_count, block_size);
+	} else {
+		LILV_FOREACH(plugins, i, plugins) {
+			bench(lilv_plugins_get(plugins, i), sample_count, block_size);
+		}
 	}
 
 	lilv_node_free(urid_map);
