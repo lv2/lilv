@@ -1,5 +1,6 @@
 lilv (0.24.3) unstable;
 
+  * Don't attempt to load remote or non-Turtle files
   * lv2bench: Improve support for plugins with sequence ports
   * lv2bench: Support running a single plugin given on the command line
   * Gracefully handle plugins with missing binary URIs
@@ -7,7 +8,7 @@ lilv (0.24.3) unstable;
   * Install Python bindings when configured without tests
     (thanks Clement Skau)
 
- -- David Robillard <d@drobilla.net>  Sat, 18 Mar 2017 17:02:35 +0100
+ -- David Robillard <d@drobilla.net>  Thu, 23 Mar 2017 21:37:42 +0100
 
 lilv (0.24.2) stable;
 

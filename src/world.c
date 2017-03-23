@@ -1046,9 +1046,17 @@ lilv_world_load_file(LilvWorld* world, SerdReader* reader, const LilvNode* uri)
 		return SERD_FAILURE;  // File has already been loaded
 	}
 
+	size_t               uri_len;
+	const uint8_t* const uri_str = sord_node_get_string_counted(
+		uri->node, &uri_len);
+	if (strncmp((const char*)uri_str, "file:", 5)) {
+		return SERD_FAILURE;  // Not a local file
+	} else if (strcmp((const char*)uri_str + uri_len - 4, ".ttl")) {
+		return SERD_FAILURE;  // Not a Turtle file
+	}
+
 	serd_reader_add_blank_prefix(reader, lilv_world_blank_node_prefix(world));
-	const SerdStatus st = serd_reader_read_file(
-		reader, sord_node_get_string(uri->node));
+	const SerdStatus st = serd_reader_read_file(reader, uri_str);
 	if (st) {
 		LILV_ERRORF("Error loading file `%s'\n", lilv_node_as_string(uri));
 		return st;
