@@ -35,29 +35,30 @@ test_plugins = [
     'old_version'
 ]
 
-def options(opt):
-    opt.load('compiler_c')
-    opt.load('compiler_cxx')
-    opt.load('python')
-    autowaf.set_options(opt, test=True)
+def options(ctx):
+    ctx.load('compiler_c')
+    ctx.load('compiler_cxx')
+    ctx.load('python')
+    autowaf.set_options(ctx, test=True)
+    opt = ctx.get_option_group('Configuration options')
     opt.add_option('--no-utils', action='store_true', dest='no_utils',
-                   help='Do not build command line utilities')
+                   help='do not build command line utilities')
     opt.add_option('--bindings', action='store_true', dest='bindings',
-                   help='Build python bindings')
+                   help='build python bindings')
     opt.add_option('--dyn-manifest', action='store_true', dest='dyn_manifest',
-                   help='Build support for dynamic manifests')
+                   help='build support for dynamic manifests')
     opt.add_option('--no-bash-completion', action='store_true',
                    dest='no_bash_completion',
-                   help='Do not install bash completion script in CONFIGDIR')
+                   help='do not install bash completion script in CONFIGDIR')
     opt.add_option('--static', action='store_true', dest='static',
-                   help='Build static library')
+                   help='build static library')
     opt.add_option('--no-shared', action='store_true', dest='no_shared',
-                   help='Do not build shared library')
+                   help='do not build shared library')
     opt.add_option('--static-progs', action='store_true', dest='static_progs',
-                   help='Build programs as static binaries')
+                   help='build programs as static binaries')
     opt.add_option('--default-lv2-path', type='string', default='',
                    dest='default_lv2_path',
-                   help='Default LV2 path to use if LV2_PATH is unset')
+                   help='default LV2 path to use if LV2_PATH is unset')
 
 def configure(conf):
     conf.load('compiler_c')
