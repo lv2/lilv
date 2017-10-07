@@ -72,7 +72,6 @@ def configure(conf):
             Logs.warn('Failed to configure Python (%s)\n' % sys.exc_info()[1])
 
     autowaf.configure(conf)
-    autowaf.set_c99_mode(conf)
     autowaf.display_header('Lilv Configuration')
 
     conf.env.BASH_COMPLETION = not Options.options.no_bash_completion
