@@ -1,6 +1,6 @@
 /*
   Lilv Test Plugin
-  Copyright 2011-2015 David Robillard <d@drobilla.net>
+  Copyright 2011-2017 David Robillard <d@drobilla.net>
 
   Permission to use, copy, modify, and/or distribute this software for any
   purpose with or without fee is hereby granted, provided that the above
@@ -15,6 +15,8 @@
   OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 */
 
+#define _POSIX_C_SOURCE 200809L
+
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -26,6 +28,8 @@
 #include "lv2/lv2plug.in/ns/lv2core/lv2.h"
 
 #define TEST_URI "http://example.org/lilv-test-plugin"
+
+#define TMP_TEMPLATE "lilv_testXXXXXX"
 
 enum {
 	TEST_INPUT   = 0,
@@ -40,7 +44,7 @@ typedef struct {
 		LV2_URID atom_Float;
 	} uris;
 
-	char* tmp_file_path;
+	char tmp_file_path[sizeof(TMP_TEMPLATE)];
 	char* rec_file_path;
 	FILE* rec_file;
 
@@ -56,7 +60,6 @@ cleanup(LV2_Handle instance)
 	if (test->rec_file) {
 		fclose(test->rec_file);
 	}
-	free(test->tmp_file_path);
 	free(test->rec_file_path);
 	free(instance);
 }
@@ -88,20 +91,13 @@ instantiate(const LV2_Descriptor*     descriptor,
             const char*               path,
             const LV2_Feature* const* features)
 {
-	Test* test = (Test*)malloc(sizeof(Test));
+	Test* test = (Test*)calloc(1, sizeof(Test));
 	if (!test) {
 		return NULL;
 	}
 
-	test->map           = NULL;
-	test->input         = NULL;
-	test->output        = NULL;
-	test->num_runs      = 0;
-	test->tmp_file_path = (char*)malloc(L_tmpnam);
-	test->rec_file_path = NULL;
-	test->rec_file      = NULL;
-
-	tmpnam(test->tmp_file_path);
+	strcpy(test->tmp_file_path, TMP_TEMPLATE);
+	mkstemp(test->tmp_file_path);
 
 	LV2_State_Make_Path* make_path = NULL;
 
