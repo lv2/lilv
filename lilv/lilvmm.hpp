@@ -27,6 +27,7 @@
 
 namespace Lilv {
 
+LILV_DEPRECATED
 static inline const char*
 uri_to_path(const char* uri) {
 	return lilv_uri_to_path(uri);

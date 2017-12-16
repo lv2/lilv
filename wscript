@@ -62,6 +62,10 @@ def options(ctx):
 
 def configure(conf):
     conf.load('compiler_c')
+    try:
+        conf.load('compiler_cxx')
+    except:
+        pass
 
     if Options.options.bindings:
         try:
@@ -356,6 +360,19 @@ def build(bld):
                   cflags       = test_cflags,
                   linkflags    = test_linkflags)
         autowaf.use_lib(bld, obj, 'SERD SORD SRATOM LV2')
+
+        # C++ API test
+        if 'COMPILER_CXX' in bld.env:
+            obj = bld(features     = 'cxx cxxprogram',
+                      source       = 'test/lilv_cxx_test.cpp',
+                      includes     = ['.', './src'],
+                      use          = 'liblilv_profiled',
+                      lib          = test_libs,
+                      target       = 'test/lilv_cxx_test',
+                      install_path = None,
+                      cxxflags     = test_cflags,
+                      linkflags    = test_linkflags)
+            autowaf.use_lib(bld, obj, 'SERD SORD SRATOM LV2')
 
         if bld.is_defined('LILV_PYTHON'):
             # Copy Python unittest files
