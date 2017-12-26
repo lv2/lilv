@@ -61,23 +61,22 @@ def options(ctx):
                    help='default LV2 path to use if LV2_PATH is unset')
 
 def configure(conf):
-    conf.load('compiler_c')
+    autowaf.display_header('Lilv Configuration')
+    conf.load('compiler_c', cache=True)
     try:
-        conf.load('compiler_cxx')
+        conf.load('compiler_cxx', cache=True)
     except:
         pass
 
     if Options.options.bindings:
         try:
-            conf.load('python')
-            conf.load('compiler_cxx')
+            conf.load('python', cache=True)
             conf.check_python_headers()
             autowaf.define(conf, 'LILV_PYTHON', 1);
         except:
             Logs.warn('Failed to configure Python (%s)\n' % sys.exc_info()[1])
 
-    autowaf.configure(conf)
-    autowaf.display_header('Lilv Configuration')
+    conf.load('autowaf', cache=True)
 
     conf.env.BASH_COMPLETION = not Options.options.no_bash_completion
     conf.env.BUILD_UTILS     = not Options.options.no_utils
@@ -104,29 +103,29 @@ def configure(conf):
     if conf.env.DEST_OS == 'darwin':
         defines += ['_DARWIN_C_SOURCE']
 
-    conf.check_cc(function_name='flock',
-                  header_name='sys/file.h',
-                  defines=defines,
-                  define_name='HAVE_FLOCK',
-                  mandatory=False)
+    autowaf.check_function(conf, 'c', 'flock',
+                           header_name = 'sys/file.h',
+                           defines     = defines,
+                           define_name = 'HAVE_FLOCK',
+                           mandatory   = False)
 
-    conf.check_cc(function_name='fileno',
-                  header_name='stdio.h',
-                  defines=defines,
-                  define_name='HAVE_FILENO',
-                  mandatory=False)
+    autowaf.check_function(conf, 'c', 'fileno',
+                           header_name = 'stdio.h',
+                           defines     = defines,
+                           define_name = 'HAVE_FILENO',
+                           mandatory   = False)
 
-    conf.check_cc(function_name='clock_gettime',
-                  header_name=['sys/time.h','time.h'],
-                  defines=['_POSIX_C_SOURCE=200809L'],
-                  define_name='HAVE_CLOCK_GETTIME',
-                  uselib_store='CLOCK_GETTIME',
-                  lib=['rt'],
-                  mandatory=False)
+    autowaf.check_function(conf, 'c', 'clock_gettime',
+                           header_name  = ['sys/time.h','time.h'],
+                           defines      = ['_POSIX_C_SOURCE=200809L'],
+                           define_name  = 'HAVE_CLOCK_GETTIME',
+                           uselib_store = 'CLOCK_GETTIME',
+                           lib          = ['rt'],
+                           mandatory    = False)
 
-    conf.check_cc(define_name   = 'HAVE_LIBDL',
-                  lib           = 'dl',
-                  mandatory     = False)
+    conf.check_cc(define_name = 'HAVE_LIBDL',
+                  lib         = 'dl',
+                  mandatory   = False)
 
     autowaf.define(conf, 'LILV_VERSION', LILV_VERSION)
     if Options.options.dyn_manifest:
@@ -166,6 +165,7 @@ def configure(conf):
     autowaf.set_lib_env(conf, 'lilv', LILV_VERSION)
     conf.write_config_header('lilv_config.h', remove=False)
 
+    autowaf.display_summary(conf)
     autowaf.display_msg(conf, 'Default LV2_PATH',
                         conf.env.LILV_DEFAULT_LV2_PATH)
     autowaf.display_msg(conf, 'Utilities',
