@@ -121,19 +121,20 @@ lilv_node_new_from_node(LilvWorld* world, const SordNode* node)
 	case SORD_LITERAL:
 		datatype_uri = sord_node_get_datatype(node);
 		if (datatype_uri) {
-			if (sord_node_equals(datatype_uri, world->uris.xsd_boolean))
+			if (sord_node_equals(datatype_uri, world->uris.xsd_boolean)) {
 				type = LILV_VALUE_BOOL;
-			else if (sord_node_equals(datatype_uri, world->uris.xsd_decimal)
-			         || sord_node_equals(datatype_uri, world->uris.xsd_double))
+			} else if (sord_node_equals(datatype_uri, world->uris.xsd_decimal) ||
+			           sord_node_equals(datatype_uri, world->uris.xsd_double)) {
 				type = LILV_VALUE_FLOAT;
-			else if (sord_node_equals(datatype_uri, world->uris.xsd_integer))
+			} else if (sord_node_equals(datatype_uri, world->uris.xsd_integer)) {
 				type = LILV_VALUE_INT;
-			else if (sord_node_equals(datatype_uri,
-			                          world->uris.xsd_base64Binary))
+			} else if (sord_node_equals(datatype_uri,
+			                            world->uris.xsd_base64Binary)) {
 				type = LILV_VALUE_BLOB;
-			else
+			} else {
 				LILV_ERRORF("Unknown datatype `%s'\n",
 				            sord_node_get_string(datatype_uri));
+			}
 		}
 		result = lilv_node_new(
 			world, type, (const char*)sord_node_get_string(node));
@@ -225,12 +226,13 @@ lilv_node_free(LilvNode* val)
 LILV_API bool
 lilv_node_equals(const LilvNode* value, const LilvNode* other)
 {
-	if (value == NULL && other == NULL)
+	if (value == NULL && other == NULL) {
 		return true;
-	else if (value == NULL || other == NULL)
+	} else if (value == NULL || other == NULL) {
 		return false;
-	else if (value->type != other->type)
+	} else if (value->type != other->type) {
 		return false;
+	}
 
 	switch (value->type) {
 	case LILV_VALUE_URI:
@@ -317,8 +319,9 @@ lilv_node_as_blank(const LilvNode* value)
 LILV_API bool
 lilv_node_is_literal(const LilvNode* value)
 {
-	if (!value)
+	if (!value) {
 		return false;
+	}
 
 	switch (value->type) {
 	case LILV_VALUE_STRING:

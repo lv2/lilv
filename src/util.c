@@ -86,8 +86,9 @@ lilv_strjoin(const char* first, ...)
 	va_start(args, first);
 	while (1) {
 		const char* const s = va_arg(args, const char *);
-		if (s == NULL)
+		if (s == NULL) {
 			break;
+		}
 
 		const size_t this_len   = strlen(s);
 		char*        new_result = (char*)realloc(result, len + this_len + 1);

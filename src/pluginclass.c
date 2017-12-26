@@ -79,8 +79,9 @@ lilv_plugin_class_get_children(const LilvPluginClass* plugin_class)
 		const LilvPluginClass* c      = (LilvPluginClass*)zix_tree_get(i);
 		const LilvNode*        parent = lilv_plugin_class_get_parent_uri(c);
 		if (parent && lilv_node_equals(lilv_plugin_class_get_uri(plugin_class),
-		                               parent))
+		                               parent)) {
 			zix_tree_insert((ZixTree*)result, (LilvPluginClass*)c, NULL);
+		}
 	}
 
 	return result;

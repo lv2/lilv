@@ -55,9 +55,11 @@ lilv_port_is_a(const LilvPlugin* plugin,
                const LilvPort*   port,
                const LilvNode*   port_class)
 {
-	LILV_FOREACH(nodes, i, port->classes)
-		if (lilv_node_equals(lilv_nodes_get(port->classes, i), port_class))
+	LILV_FOREACH(nodes, i, port->classes) {
+		if (lilv_node_equals(lilv_nodes_get(port->classes, i), port_class)) {
 			return true;
+		}
+	}
 
 	return false;
 }
@@ -163,14 +165,16 @@ lilv_port_get_name(const LilvPlugin* p,
 	LilvNode* ret = NULL;
 	if (results) {
 		LilvNode* val = lilv_nodes_get_first(results);
-		if (lilv_node_is_string(val))
+		if (lilv_node_is_string(val)) {
 			ret = lilv_node_duplicate(val);
+		}
 		lilv_nodes_free(results);
 	}
 
-	if (!ret)
+	if (!ret) {
 		LILV_WARNF("Plugin <%s> port has no (mandatory) doap:name\n",
 		           lilv_node_as_string(lilv_plugin_get_uri(p)));
+	}
 
 	return ret;
 }
@@ -226,8 +230,9 @@ lilv_port_get_scale_points(const LilvPlugin* p,
 		NULL);
 
 	LilvScalePoints* ret = NULL;
-	if (!sord_iter_end(points))
+	if (!sord_iter_end(points)) {
 		ret = lilv_scale_points_new();
+	}
 
 	FOREACH_MATCH(points) {
 		const SordNode* point = sord_iter_get_node(points, SORD_OBJECT);

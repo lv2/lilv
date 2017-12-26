@@ -41,8 +41,9 @@ lilv_collection_new(ZixComparator cmp, ZixDestroyFunc destructor)
 void
 lilv_collection_free(LilvCollection* coll)
 {
-	if (coll)
+	if (coll) {
 		zix_tree_free((ZixTree*)coll);
+	}
 }
 
 unsigned
@@ -129,9 +130,11 @@ lilv_plugins_get_by_uri(const LilvPlugins* list, const LilvNode* uri)
 LILV_API bool
 lilv_nodes_contains(const LilvNodes* list, const LilvNode* value)
 {
-	LILV_FOREACH(nodes, i, list)
-		if (lilv_node_equals(lilv_nodes_get(list, i), value))
+	LILV_FOREACH(nodes, i, list) {
+		if (lilv_node_equals(lilv_nodes_get(list, i), value)) {
 			return true;
+		}
+	}
 
 	return false;
 }

@@ -103,8 +103,9 @@ write_file(const char* name, const char* content)
 {
 	FILE* f = fopen(name, "w");
 	size_t len = strlen(content);
-	if (fwrite(content, 1, len, f) != len)
+	if (fwrite(content, 1, len, f) != len) {
 		fatal_error("Cannot write file %s\n", name);
+	}
 	fclose(f);
 }
 
@@ -118,8 +119,9 @@ init_world(void)
 static int
 load_all_bundles(void)
 {
-	if (!init_world())
+	if (!init_world()) {
 		return 0;
+	}
 	lilv_world_load_all(world);
 	return 1;
 }
@@ -127,8 +129,9 @@ load_all_bundles(void)
 static void
 create_bundle(const char* manifest, const char* content)
 {
-	if (mkdir(bundle_dir_name, 0700) && errno != EEXIST)
+	if (mkdir(bundle_dir_name, 0700) && errno != EEXIST) {
 		fatal_error("Cannot create directory %s\n", bundle_dir_name);
+	}
 	write_file(manifest_name, manifest);
 	write_file(content_name, content);
 }
@@ -143,8 +146,9 @@ start_bundle(const char* manifest, const char* content)
 static void
 unload_bundle(void)
 {
-	if (world)
+	if (world) {
 		lilv_world_free(world);
+	}
 	world = NULL;
 }
 
@@ -227,8 +231,9 @@ test_value(void)
 			"lv2:port [ "
 			"  a lv2:ControlPort ; a lv2:InputPort ; "
 			"  lv2:index 0 ; lv2:symbol \"foo\" ; lv2:name \"Foo\" ; "
-			"] ."))
+			"] .")) {
 		return 0;
+	}
 
 	init_uris();
 
@@ -420,8 +425,9 @@ test_discovery(void)
 			PLUGIN_NAME("Test plugin") " ; "
 			LICENSE_GPL " ; "
 			"lv2:port [ a lv2:ControlPort ; a lv2:InputPort ;"
-			" lv2:index 0 ; lv2:symbol \"foo\" ; lv2:name \"bar\" ; ] ."))
+			" lv2:index 0 ; lv2:symbol \"foo\" ; lv2:name \"bar\" ; ] .")) {
 		return 0;
+	}
 
 	init_uris();
 
@@ -499,8 +505,9 @@ test_verify(void)
 			PLUGIN_NAME("Test plugin") " ; "
 			LICENSE_GPL " ; "
 			"lv2:port [ a lv2:ControlPort ; a lv2:InputPort ;"
-			" lv2:index 0 ; lv2:symbol \"foo\" ; lv2:name \"bar\" ] ."))
+			" lv2:index 0 ; lv2:symbol \"foo\" ; lv2:name \"bar\" ] .")) {
 		return 0;
+	}
 
 	init_uris();
 	const LilvPlugins* plugins = lilv_world_get_all_plugins(world);
@@ -519,8 +526,9 @@ test_no_verify(void)
 	if (!start_bundle(MANIFEST_PREFIXES
 			":plug a lv2:Plugin ; lv2:binary <foo" SHLIB_EXT "> ; rdfs:seeAlso <plugin.ttl> .\n",
 			BUNDLE_PREFIXES
-			":plug a lv2:Plugin . "))
+			":plug a lv2:Plugin . ")) {
 		return 0;
+	}
 
 	init_uris();
 	const LilvPlugins* plugins = lilv_world_get_all_plugins(world);
@@ -545,8 +553,9 @@ test_classes(void)
 			"lv2:port [ "
 			"  a lv2:ControlPort ; a lv2:InputPort ; "
 			"  lv2:index 0 ; lv2:symbol \"foo\" ; lv2:name \"Foo\" ; "
-			"] ."))
+			"] .")) {
 		return 0;
+	}
 
 	init_uris();
 	const LilvPluginClass*   plugin   = lilv_world_get_plugin_class(world);
@@ -609,8 +618,9 @@ test_plugin(void)
 			"  lv2:portProperty lv2:reportsLatency ; "
 			"  lv2:designation lv2:latency "
 			"] . \n"
-			":thing doap:name \"Something else\" .\n"))
+			":thing doap:name \"Something else\" .\n")) {
 		return 0;
+	}
 
 	init_uris();
 	const LilvPlugins* plugins = lilv_world_get_all_plugins(world);
@@ -842,8 +852,9 @@ test_project(void)
 			"  lv2:portProperty lv2:reportsLatency ; "
 			"  lv2:designation lv2:latency "
 			"] . \n"
-			":thing doap:name \"Something else\" .\n"))
+			":thing doap:name \"Something else\" .\n")) {
 		return 0;
+	}
 
 	init_uris();
 	const LilvPlugins* plugins = lilv_world_get_all_plugins(world);
@@ -891,8 +902,9 @@ test_no_author(void)
 			"  lv2:portProperty lv2:reportsLatency ; "
 			"  lv2:designation lv2:latency "
 			"] . \n"
-			":thing doap:name \"Something else\" .\n"))
+			":thing doap:name \"Something else\" .\n")) {
 		return 0;
+	}
 
 	init_uris();
 	const LilvPlugins* plugins = lilv_world_get_all_plugins(world);
@@ -940,8 +952,9 @@ test_project_no_author(void)
 			"  lv2:portProperty lv2:reportsLatency ; "
 			"  lv2:designation lv2:latency "
 			"] . \n"
-			":thing doap:name \"Something else\" .\n"))
+			":thing doap:name \"Something else\" .\n")) {
 		return 0;
+	}
 
 	init_uris();
 	const LilvPlugins* plugins = lilv_world_get_all_plugins(world);
@@ -991,8 +1004,9 @@ test_preset(void)
 			"] . \n"
 			"<http://example.org/preset> a pset:Preset ;"
 			"  lv2:appliesTo :plug ;"
-	                  "  rdfs:label \"some preset\" .\n"))
+	                  "  rdfs:label \"some preset\" .\n")) {
 		return 0;
+	}
 
 	init_uris();
 	const LilvPlugins* plugins = lilv_world_get_all_plugins(world);
@@ -1038,8 +1052,9 @@ test_prototype(void)
 			"  lv2:portProperty lv2:reportsLatency ; "
 			"  lv2:designation lv2:latency "
 			"] . \n"
-			":plug doap:name \"Instance\" .\n"))
+			":plug doap:name \"Instance\" .\n")) {
 		return 0;
+	}
 
 	init_uris();
 	const LilvPlugins* plugins = lilv_world_get_all_plugins(world);
@@ -1096,8 +1111,9 @@ test_port(void)
 			"  a lv2:AudioPort ; a lv2:OutputPort ; "
 			"  lv2:index 3 ; lv2:symbol \"audio_out\" ; "
 			"  lv2:name \"Audio Output\" ; "
-			"] ."))
+			"] .")) {
 		return 0;
+	}
 
 	init_uris();
 	const LilvPlugins* plugins = lilv_world_get_all_plugins(world);
@@ -1378,8 +1394,9 @@ test_ui(void)
 			"  lv2ui:optionalFeature lv2ui:ext_presets . "
 			":ui2 a lv2ui:GtkUI ; lv2ui:binary <ui2" SHLIB_EXT "> . "
 			":ui3 a lv2ui:GtkUI ; lv2ui:binary <ui3" SHLIB_EXT "> . "
-			":ui4 a lv2ui:GtkUI ; lv2ui:binary <ui4" SHLIB_EXT "> . "))
+			":ui4 a lv2ui:GtkUI ; lv2ui:binary <ui4" SHLIB_EXT "> . ")) {
 		return 0;
+	}
 
 	init_uris();
 	const LilvPlugins* plugins = lilv_world_get_all_plugins(world);
@@ -1893,8 +1910,9 @@ test_bad_port_symbol(void)
 			"  a lv2:ControlPort ; a lv2:InputPort ; "
 			"  lv2:index 0 ; lv2:symbol \"0invalid\" ;"
 			"  lv2:name \"Invalid\" ; "
-			"] ."))
+			"] .")) {
 		return 0;
+	}
 
 	init_uris();
 
@@ -1924,8 +1942,9 @@ test_bad_port_index(void)
 			"  a lv2:ControlPort ; a lv2:InputPort ; "
 			"  lv2:index \"notaninteger\" ; lv2:symbol \"invalid\" ;"
 			"  lv2:name \"Invalid\" ; "
-			"] ."))
+			"] .")) {
 		return 0;
+	}
 
 	init_uris();
 

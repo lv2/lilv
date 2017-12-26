@@ -98,8 +98,9 @@ lilv_plugin_instantiate(const LilvPlugin*        plugin,
 LILV_API void
 lilv_instance_free(LilvInstance* instance)
 {
-	if (!instance)
+	if (!instance) {
 		return;
+	}
 
 	instance->lv2_descriptor->cleanup(instance->lv2_handle);
 	instance->lv2_descriptor = NULL;

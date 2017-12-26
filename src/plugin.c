@@ -359,8 +359,9 @@ lilv_plugin_load_ports_if_necessary(const LilvPlugin* const_p)
 void
 lilv_plugin_load_if_necessary(const LilvPlugin* p)
 {
-	if (!p->loaded)
+	if (!p->loaded) {
 		lilv_plugin_load((LilvPlugin*)p);
+	}
 }
 
 LILV_API const LilvNode*
@@ -441,8 +442,9 @@ lilv_plugin_get_class(const LilvPlugin* const_p)
 		}
 		sord_iter_free(c);
 
-		if (p->plugin_class == NULL)
+		if (p->plugin_class == NULL) {
 			p->plugin_class = p->world->lv2_plugin_class;
+		}
 	}
 	return p->plugin_class;
 }
@@ -499,14 +501,16 @@ lilv_plugin_get_name(const LilvPlugin* plugin)
 	LilvNode* ret = NULL;
 	if (results) {
 		LilvNode* val = lilv_nodes_get_first(results);
-		if (lilv_node_is_string(val))
+		if (lilv_node_is_string(val)) {
 			ret = lilv_node_duplicate(val);
+		}
 		lilv_nodes_free(results);
 	}
 
-	if (!ret)
+	if (!ret) {
 		LILV_WARNF("Plugin <%s> has no (mandatory) doap:name\n",
 		           lilv_node_as_string(lilv_plugin_get_uri(plugin)));
+	}
 
 	return ret;
 }
@@ -807,10 +811,11 @@ lilv_plugin_get_port_by_index(const LilvPlugin* p,
                               uint32_t          index)
 {
 	lilv_plugin_load_ports_if_necessary(p);
-	if (index < p->num_ports)
+	if (index < p->num_ports) {
 		return p->ports[index];
-	else
+	} else {
 		return NULL;
+	}
 }
 
 LILV_API const LilvPort*
@@ -820,8 +825,9 @@ lilv_plugin_get_port_by_symbol(const LilvPlugin* p,
 	lilv_plugin_load_ports_if_necessary(p);
 	for (uint32_t i = 0; i < p->num_ports; ++i) {
 		LilvPort* port = p->ports[i];
-		if (lilv_node_equals(port->symbol, symbol))
+		if (lilv_node_equals(port->symbol, symbol)) {
 			return port;
+		}
 	}
 
 	return NULL;

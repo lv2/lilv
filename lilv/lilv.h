@@ -1678,8 +1678,9 @@ lilv_instance_connect_port(LilvInstance* instance,
 static inline void
 lilv_instance_activate(LilvInstance* instance)
 {
-	if (instance->lv2_descriptor->activate)
+	if (instance->lv2_descriptor->activate) {
 		instance->lv2_descriptor->activate(instance->lv2_handle);
+	}
 }
 
 /**
@@ -1702,8 +1703,9 @@ lilv_instance_run(LilvInstance* instance,
 static inline void
 lilv_instance_deactivate(LilvInstance* instance)
 {
-	if (instance->lv2_descriptor->deactivate)
+	if (instance->lv2_descriptor->deactivate) {
 		instance->lv2_descriptor->deactivate(instance->lv2_handle);
+	}
 }
 
 /**
@@ -1715,10 +1717,11 @@ static inline const void*
 lilv_instance_get_extension_data(const LilvInstance* instance,
                                  const char*         uri)
 {
-	if (instance->lv2_descriptor->extension_data)
+	if (instance->lv2_descriptor->extension_data) {
 		return instance->lv2_descriptor->extension_data(uri);
-	else
+	} else {
 		return NULL;
+	}
 }
 
 /**

@@ -32,12 +32,14 @@ lilv_world_new(void)
 	LilvWorld* world = (LilvWorld*)malloc(sizeof(LilvWorld));
 
 	world->world = sord_world_new();
-	if (!world->world)
+	if (!world->world) {
 		goto fail;
+	}
 
 	world->model = sord_new(world->world, SORD_SPO|SORD_OPS, true);
-	if (!world->model)
+	if (!world->model) {
 		goto fail;
+	}
 
 	world->specs          = NULL;
 	world->plugin_classes = lilv_plugin_classes_new();
@@ -893,8 +895,9 @@ static void
 load_dir_entry(const char* dir, const char* name, void* data)
 {
 	LilvWorld* world = (LilvWorld*)data;
-	if (!strcmp(name, ".") || !strcmp(name, ".."))
+	if (!strcmp(name, ".") || !strcmp(name, "..")) {
 		return;
+	}
 
 	char*     path = lilv_strjoin(dir, "/", name, "/", NULL);
 	SerdNode  suri = serd_node_new_file_uri((const uint8_t*)path, 0, 0, true);
@@ -1012,8 +1015,9 @@ LILV_API void
 lilv_world_load_all(LilvWorld* world)
 {
 	const char* lv2_path = getenv("LV2_PATH");
-	if (!lv2_path)
+	if (!lv2_path) {
 		lv2_path = LILV_DEFAULT_LV2_PATH;
+	}
 
 	// Discover bundles and read all manifest files into model
 	lilv_world_load_path(world, lv2_path);
