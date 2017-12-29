@@ -1033,7 +1033,7 @@ new_lv2_env(const SerdNode* base)
 {
 	SerdEnv* env = serd_env_new(base);
 
-#define USTR(s) ((const uint8_t*)s)
+#define USTR(s) ((const uint8_t*)(s))
 	serd_env_set_prefix_from_strings(env, USTR("doap"), USTR(LILV_NS_DOAP));
 	serd_env_set_prefix_from_strings(env, USTR("foaf"), USTR(LILV_NS_FOAF));
 	serd_env_set_prefix_from_strings(env, USTR("lv2"),  USTR(LILV_NS_LV2));
