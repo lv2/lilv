@@ -93,9 +93,9 @@ lilv_ui_get_classes(const LilvUI* ui)
 }
 
 LILV_API bool
-lilv_ui_is_a(const LilvUI* ui, const LilvNode* ui_class_uri)
+lilv_ui_is_a(const LilvUI* ui, const LilvNode* class_uri)
 {
-	return lilv_nodes_contains(ui->classes, ui_class_uri);
+	return lilv_nodes_contains(ui->classes, class_uri);
 }
 
 LILV_API const LilvNode*

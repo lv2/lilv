@@ -168,21 +168,21 @@ lilv_world_free(LilvWorld* world)
 
 LILV_API void
 lilv_world_set_option(LilvWorld*      world,
-                      const char*     option,
+                      const char*     uri,
                       const LilvNode* value)
 {
-	if (!strcmp(option, LILV_OPTION_DYN_MANIFEST)) {
+	if (!strcmp(uri, LILV_OPTION_DYN_MANIFEST)) {
 		if (lilv_node_is_bool(value)) {
 			world->opt.dyn_manifest = lilv_node_as_bool(value);
 			return;
 		}
-	} else if (!strcmp(option, LILV_OPTION_FILTER_LANG)) {
+	} else if (!strcmp(uri, LILV_OPTION_FILTER_LANG)) {
 		if (lilv_node_is_bool(value)) {
 			world->opt.filter_language = lilv_node_as_bool(value);
 			return;
 		}
 	}
-	LILV_WARNF("Unrecognized or invalid option `%s'\n", option);
+	LILV_WARNF("Unrecognized or invalid option `%s'\n", uri);
 }
 
 LILV_API LilvNodes*

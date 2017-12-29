@@ -258,9 +258,9 @@ LilvPlugin* lilv_plugin_new(LilvWorld* world,
                             LilvNode*  uri,
                             LilvNode*  bundle_uri);
 void        lilv_plugin_clear(LilvPlugin* plugin, LilvNode* bundle_uri);
-void        lilv_plugin_load_if_necessary(const LilvPlugin* p);
+void        lilv_plugin_load_if_necessary(const LilvPlugin* plugin);
 void        lilv_plugin_free(LilvPlugin* plugin);
-LilvNode*   lilv_plugin_get_unique(const LilvPlugin* p,
+LilvNode*   lilv_plugin_get_unique(const LilvPlugin* plugin,
                                    const SordNode*   subject,
                                    const SordNode*   predicate);
 
@@ -271,7 +271,7 @@ void*     lilv_collection_get(const LilvCollection* collection,
                               const LilvIter*       i);
 
 LilvPluginClass* lilv_plugin_class_new(LilvWorld*      world,
-                                       const SordNode* parent_uri,
+                                       const SordNode* parent_node,
                                        const SordNode* uri,
                                        const char*     label);
 
@@ -313,7 +313,7 @@ LilvUI* lilv_ui_new(LilvWorld* world,
 
 void lilv_ui_free(LilvUI* ui);
 
-LilvNode* lilv_node_new(LilvWorld* world, LilvNodeType type, const char* val);
+LilvNode* lilv_node_new(LilvWorld* world, LilvNodeType type, const char* str);
 LilvNode* lilv_node_new_from_node(LilvWorld* world, const SordNode* node);
 
 int lilv_header_compare_by_uri(const void* a, const void* b, void* user_data);
@@ -370,7 +370,7 @@ lilv_world_filter_model(LilvWorld*      world,
 #define FOREACH_MATCH(iter) \
 	for (; !sord_iter_end(iter); sord_iter_next(iter))
 
-LilvNodes* lilv_nodes_from_stream_objects(LilvWorld*    w,
+LilvNodes* lilv_nodes_from_stream_objects(LilvWorld*    world,
                                           SordIter*     stream,
                                           SordQuadIndex field);
 
@@ -389,7 +389,7 @@ bool   lilv_path_is_child(const char* path, const char* dir);
 int    lilv_flock(FILE* file, bool lock);
 char*  lilv_realpath(const char* path);
 int    lilv_symlink(const char* oldpath, const char* newpath);
-int    lilv_mkdir_p(const char* path);
+int    lilv_mkdir_p(const char* dir_path);
 char*  lilv_path_join(const char* a, const char* b);
 bool   lilv_file_equals(const char* a_path, const char* b_path);
 

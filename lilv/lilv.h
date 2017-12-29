@@ -463,7 +463,7 @@ lilv_nodes_get_first(const LilvNodes* collection);
    Return whether `values` contains `value`.
 */
 LILV_API bool
-lilv_nodes_contains(const LilvNodes* values, const LilvNode* value);
+lilv_nodes_contains(const LilvNodes* nodes, const LilvNode* value);
 
 /**
    Return a new LilvNodes that contains all nodes from both `a` and `b`.
@@ -817,7 +817,7 @@ lilv_plugin_get_class(const LilvPlugin* plugin);
    Return value must be freed by caller with lilv_nodes_free().
 */
 LILV_API LilvNodes*
-lilv_plugin_get_value(const LilvPlugin* p,
+lilv_plugin_get_value(const LilvPlugin* plugin,
                       const LilvNode*   predicate);
 
 /**
@@ -826,8 +826,8 @@ lilv_plugin_get_value(const LilvPlugin* p,
    of the plugin.
 */
 LILV_API bool
-lilv_plugin_has_feature(const LilvPlugin* p,
-                        const LilvNode*   feature_uri);
+lilv_plugin_has_feature(const LilvPlugin* plugin,
+                        const LilvNode*   feature);
 
 /**
    Get the LV2 Features supported (required or optionally) by a plugin.
@@ -840,7 +840,7 @@ lilv_plugin_has_feature(const LilvPlugin* p,
    Returned value must be freed by caller with lilv_nodes_free().
 */
 LILV_API LilvNodes*
-lilv_plugin_get_supported_features(const LilvPlugin* p);
+lilv_plugin_get_supported_features(const LilvPlugin* plugin);
 
 /**
    Get the LV2 Features required by a plugin.
@@ -854,7 +854,7 @@ lilv_plugin_get_supported_features(const LilvPlugin* p);
    Return value must be freed by caller with lilv_nodes_free().
 */
 LILV_API LilvNodes*
-lilv_plugin_get_required_features(const LilvPlugin* p);
+lilv_plugin_get_required_features(const LilvPlugin* plugin);
 
 /**
    Get the LV2 Features optionally supported by a plugin.
@@ -865,13 +865,13 @@ lilv_plugin_get_required_features(const LilvPlugin* p);
    Return value must be freed by caller with lilv_nodes_free().
 */
 LILV_API LilvNodes*
-lilv_plugin_get_optional_features(const LilvPlugin* p);
+lilv_plugin_get_optional_features(const LilvPlugin* plugin);
 
 /**
    Return whether or not a plugin provides a specific extension data.
 */
 LILV_API bool
-lilv_plugin_has_extension_data(const LilvPlugin* p,
+lilv_plugin_has_extension_data(const LilvPlugin* plugin,
                                const LilvNode*   uri);
 
 /**
@@ -880,13 +880,13 @@ lilv_plugin_has_extension_data(const LilvPlugin* p,
    will return a value for without instantiating the plugin.
 */
 LILV_API LilvNodes*
-lilv_plugin_get_extension_data(const LilvPlugin* p);
+lilv_plugin_get_extension_data(const LilvPlugin* plugin);
 
 /**
    Get the number of ports on this plugin.
 */
 LILV_API uint32_t
-lilv_plugin_get_num_ports(const LilvPlugin* p);
+lilv_plugin_get_num_ports(const LilvPlugin* plugin);
 
 /**
    Get the port ranges (minimum, maximum and default values) for all ports.
@@ -903,7 +903,7 @@ lilv_plugin_get_num_ports(const LilvPlugin* p);
    repeated calls to lilv_port_get_range().
 */
 LILV_API void
-lilv_plugin_get_port_ranges_float(const LilvPlugin* p,
+lilv_plugin_get_port_ranges_float(const LilvPlugin* plugin,
                                   float*            min_values,
                                   float*            max_values,
                                   float*            def_values);
@@ -915,7 +915,7 @@ lilv_plugin_get_port_ranges_float(const LilvPlugin* p,
    OF THIS FUNCTION WITH NULL OR VERY NASTY THINGS WILL HAPPEN.
 */
 LILV_API uint32_t
-lilv_plugin_get_num_ports_of_class(const LilvPlugin* p,
+lilv_plugin_get_num_ports_of_class(const LilvPlugin* plugin,
                                    const LilvNode*   class_1, ...);
 
 #ifndef SWIG
@@ -925,7 +925,7 @@ lilv_plugin_get_num_ports_of_class(const LilvPlugin* p,
    This function calls va_arg() on `args` but does not call va_end().
 */
 LILV_API uint32_t
-lilv_plugin_get_num_ports_of_class_va(const LilvPlugin* p,
+lilv_plugin_get_num_ports_of_class_va(const LilvPlugin* plugin,
                                       const LilvNode*   class_1,
                                       va_list           args);
 #endif
@@ -936,7 +936,7 @@ lilv_plugin_get_num_ports_of_class_va(const LilvPlugin* p,
    lilv_plugin_get_latency_port() ONLY if this function returns true.
 */
 LILV_API bool
-lilv_plugin_has_latency(const LilvPlugin* p);
+lilv_plugin_has_latency(const LilvPlugin* plugin);
 
 /**
    Return the index of the plugin's latency port.
@@ -948,7 +948,7 @@ lilv_plugin_has_latency(const LilvPlugin* p);
    rate output port that reports the latency for each cycle in frames.
 */
 LILV_API uint32_t
-lilv_plugin_get_latency_port_index(const LilvPlugin* p);
+lilv_plugin_get_latency_port_index(const LilvPlugin* plugin);
 
 /**
    Get a port on `plugin` by `index`.
@@ -1112,9 +1112,9 @@ lilv_port_get_properties(const LilvPlugin* plugin,
    Return whether a port has a certain property.
 */
 LILV_API bool
-lilv_port_has_property(const LilvPlugin* p,
+lilv_port_has_property(const LilvPlugin* plugin,
                        const LilvPort*   port,
-                       const LilvNode*   property_uri);
+                       const LilvNode*   property);
 
 /**
    Return whether a port supports a certain event type.
@@ -1123,7 +1123,7 @@ lilv_port_has_property(const LilvPlugin* p,
    ev:supportsEvent property with `event_type` as the value.
 */
 LILV_API bool
-lilv_port_supports_event(const LilvPlugin* p,
+lilv_port_supports_event(const LilvPlugin* plugin,
                          const LilvPort*   port,
                          const LilvNode*   event_type);
 
@@ -1190,7 +1190,7 @@ lilv_port_is_a(const LilvPlugin* plugin,
 LILV_API void
 lilv_port_get_range(const LilvPlugin* plugin,
                     const LilvPort*   port,
-                    LilvNode**        deflt,
+                    LilvNode**        def,
                     LilvNode**        min,
                     LilvNode**        max);
 
@@ -1217,13 +1217,13 @@ lilv_port_get_scale_points(const LilvPlugin* plugin,
    the plugin URI as the `subject` parameter.
    @param world The world.
    @param map URID mapper.
-   @param subject The subject of the state description (e.g. a preset URI).
+   @param node The subject of the state description (e.g. a preset URI).
    @return A new LilvState which must be freed with lilv_state_free(), or NULL.
 */
 LILV_API LilvState*
 lilv_state_new_from_world(LilvWorld*      world,
                           LV2_URID_Map*   map,
-                          const LilvNode* subject);
+                          const LilvNode* node);
 
 /**
    Load a state snapshot from a file.
