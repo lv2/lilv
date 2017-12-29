@@ -230,9 +230,11 @@ main(int argc, char** argv)
 	const char* plugin_uri = NULL;
 	for (int i = 1; i < argc; ++i) {
 		if (!strcmp(argv[i], "--version")) {
+			free(self.params);
 			print_version();
 			return 0;
 		} else if (!strcmp(argv[i], "--help")) {
+			free(self.params);
 			return print_usage(0);
 		} else if (!strcmp(argv[i], "-i")) {
 			self.in_path = argv[++i];

@@ -54,7 +54,7 @@ lilv_world_new(void)
 #define NS_DYNMAN  "http://lv2plug.in/ns/ext/dynmanifest#"
 #define NS_OWL     "http://www.w3.org/2002/07/owl#"
 
-#define NEW_URI(uri) sord_new_uri(world->world, (const uint8_t*)uri)
+#define NEW_URI(uri) sord_new_uri(world->world, (const uint8_t*)(uri))
 
 	world->uris.dc_replaces         = NEW_URI(NS_DCTERMS   "replaces");
 	world->uris.dman_DynManifest    = NEW_URI(NS_DYNMAN    "DynManifest");
@@ -597,6 +597,9 @@ lilv_world_load_dyn_manifest(LilvWorld*      world,
 		FOREACH_MATCH(p) {
 			const SordNode* plug = sord_iter_get_node(p, SORD_SUBJECT);
 			lilv_world_add_plugin(world, plug, manifest, desc, bundle_node);
+		}
+		if (desc->refs == 0) {
+			free(desc);
 		}
 		sord_iter_free(p);
 		sord_free(plugins);

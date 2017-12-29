@@ -144,6 +144,7 @@ bench(const LilvPlugin* p, uint32_t sample_count, uint32_t block_size)
 				fprintf(stderr, "<%s> port %d neither input nor output, skipping\n",
 				        uri, index);
 				lilv_instance_free(instance);
+				free(seq_out);
 				free(buf);
 				free(controls);
 				uri_table_destroy(&uri_table);
@@ -159,6 +160,7 @@ bench(const LilvPlugin* p, uint32_t sample_count, uint32_t block_size)
 			fprintf(stderr, "<%s> port %d has unknown type, skipping\n",
 			        uri, index);
 			lilv_instance_free(instance);
+			free(seq_out);
 			free(buf);
 			free(controls);
 			uri_table_destroy(&uri_table);
