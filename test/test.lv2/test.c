@@ -96,7 +96,7 @@ instantiate(const LV2_Descriptor*     descriptor,
 		return NULL;
 	}
 
-	strcpy(test->tmp_file_path, TMP_TEMPLATE);
+	strncpy(test->tmp_file_path, TMP_TEMPLATE, sizeof(TMP_TEMPLATE));
 	mkstemp(test->tmp_file_path);
 
 	LV2_State_Make_Path* make_path = NULL;

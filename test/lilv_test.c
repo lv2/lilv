@@ -77,13 +77,13 @@ delete_bundle(void)
 static void
 init_tests(void)
 {
-	strncpy(bundle_dir_name, getenv("HOME"), 900);
-	strcat(bundle_dir_name, "/.lv2");
-	mkdir(bundle_dir_name, 0700);
-	strcat(bundle_dir_name, "/lilv-test.lv2");
-	sprintf(bundle_dir_uri, "file://%s/", bundle_dir_name);
-	sprintf(manifest_name, "%s/manifest.ttl", bundle_dir_name);
-	sprintf(content_name, "%s/plugin.ttl", bundle_dir_name);
+	snprintf(bundle_dir_name, TEST_PATH_MAX, "%s/.lv2/lilv-test.lv2",
+	         getenv("HOME"));
+	lilv_mkdir_p(bundle_dir_name);
+
+	snprintf(bundle_dir_uri, TEST_PATH_MAX, "file://%s/", bundle_dir_name);
+	snprintf(manifest_name, TEST_PATH_MAX, "%s/manifest.ttl", bundle_dir_name);
+	snprintf(content_name, TEST_PATH_MAX, "%s/plugin.ttl", bundle_dir_name);
 
 	delete_bundle();
 }
@@ -166,7 +166,7 @@ cleanup(void)
 	if (!(check)) {\
 		error_count++;\
 		fprintf(stderr, "lilv_test.c:%d: error: test `%s' failed\n", __LINE__, #check);\
-		assert(check);\
+		abort();\
 	}\
 } while (0)
 
@@ -370,8 +370,8 @@ test_util(void)
 
 	char a_path[16];
 	char b_path[16];
-	strcpy(a_path, "copy_a_XXXXXX");
-	strcpy(b_path, "copy_b_XXXXXX");
+	strncpy(a_path, "copy_a_XXXXXX", sizeof(a_path));
+	strncpy(b_path, "copy_b_XXXXXX",  sizeof(b_path));
 	mkstemp(a_path);
 	mkstemp(b_path);
 
@@ -2115,9 +2115,7 @@ test_replace_version(void)
 	LilvNode* minor            = NULL;
 	LilvNode* micro            = NULL;
 
-	char* old_bundle_path = (char*)malloc(strlen(LILV_TEST_DIR) + 32);
-	strcpy(old_bundle_path, LILV_TEST_DIR);
-	strcat(old_bundle_path, "old_version.lv2/");
+	char* old_bundle_path = lilv_strjoin(LILV_TEST_DIR, "old_version.lv2/", 0);
 
 	// Load plugin from old bundle
 	LilvNode* old_bundle = lilv_new_file_uri(world, NULL, old_bundle_path);
@@ -2135,9 +2133,7 @@ test_replace_version(void)
 	lilv_node_free(micro);
 	lilv_node_free(minor);
 
-	char* new_bundle_path = (char*)malloc(strlen(LILV_TEST_DIR) + 32);
-	strcpy(new_bundle_path, LILV_TEST_DIR);
-	strcat(new_bundle_path, "new_version.lv2/");
+	char* new_bundle_path = lilv_strjoin(LILV_TEST_DIR, "new_version.lv2/", 0);
 
 	// Load plugin from new bundle
 	LilvNode* new_bundle = lilv_new_file_uri(world, NULL, new_bundle_path);
