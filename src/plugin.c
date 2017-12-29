@@ -216,7 +216,6 @@ lilv_plugin_load(LilvPlugin* p)
 	}
 
 #ifdef LILV_DYN_MANIFEST
-	typedef void* LV2_Dyn_Manifest_Handle;
 	// Load and parse dynamic manifest data, if this is a library
 	if (p->dynmanifest) {
 		typedef int (*GetDataFunc)(LV2_Dyn_Manifest_Handle handle,

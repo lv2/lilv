@@ -484,7 +484,6 @@ lilv_world_load_dyn_manifest(LilvWorld*      world,
 		return;
 	}
 
-	typedef void* LV2_Dyn_Manifest_Handle;
 	LV2_Dyn_Manifest_Handle handle = NULL;
 
 	// ?dman a dynman:DynManifest bundle_node
