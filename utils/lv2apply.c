@@ -291,7 +291,8 @@ main(int argc, char** argv)
 		return 5;
 	}
 
-	if (in_fmt.channels != (int)self.n_audio_in && in_fmt.channels != 1) {
+	if (self.n_audio_in == 0 ||
+	    (in_fmt.channels != (int)self.n_audio_in && in_fmt.channels != 1)) {
 		return fatal(&self, 6, "Unable to map %d inputs to %d ports\n",
 		             in_fmt.channels, self.n_audio_in);
 	}
