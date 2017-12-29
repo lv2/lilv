@@ -108,13 +108,13 @@ lilv_node_new_from_node(LilvWorld* world, const SordNode* node)
 	switch (sord_node_get_type(node)) {
 	case SORD_URI:
 		result        = (LilvNode*)malloc(sizeof(LilvNode));
-		result->world = (LilvWorld*)world;
+		result->world = world;
 		result->type  = LILV_VALUE_URI;
 		result->node  = sord_node_copy(node);
 		break;
 	case SORD_BLANK:
 		result        = (LilvNode*)malloc(sizeof(LilvNode));
-		result->world = (LilvWorld*)world;
+		result->world = world;
 		result->type  = LILV_VALUE_BLANK;
 		result->node  = sord_node_copy(node);
 		break;

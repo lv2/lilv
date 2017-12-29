@@ -151,7 +151,7 @@ lilv_world_free(LilvWorld* world)
 	zix_tree_free((ZixTree*)world->loaded_files);
 	world->loaded_files = NULL;
 
-	zix_tree_free((ZixTree*)world->libs);
+	zix_tree_free(world->libs);
 	world->libs = NULL;
 
 	zix_tree_free((ZixTree*)world->plugin_classes);
@@ -612,7 +612,7 @@ lilv_world_get_manifest_uri(LilvWorld* world, const LilvNode* bundle_uri)
 {
 	SerdNode manifest_uri = lilv_new_uri_relative_to_base(
 		(const uint8_t*)"manifest.ttl",
-		(const uint8_t*)sord_node_get_string(bundle_uri->node));
+		sord_node_get_string(bundle_uri->node));
 	LilvNode* manifest = lilv_new_uri(world, (const char*)manifest_uri.buf);
 	serd_node_free(&manifest_uri);
 	return manifest;

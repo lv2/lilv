@@ -221,7 +221,7 @@ abstract_path(LV2_State_Map_Path_Handle handle,
 	LilvState*    state     = (LilvState*)handle;
 	char*         path      = NULL;
 	char*         real_path = lilv_realpath(abs_path);
-	const PathMap key       = { (char*)real_path, NULL };
+	const PathMap key       = { real_path, NULL };
 	ZixTreeIter*  iter      = NULL;
 
 	if (abs_path[0] == '\0') {

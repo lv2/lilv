@@ -432,7 +432,7 @@ lilv_plugin_get_class(const LilvPlugin* const_p)
 					p->world->plugin_classes, klass);
 
 				if (pclass) {
-					((LilvPlugin*)p)->plugin_class = pclass;
+					p->plugin_class = pclass;
 					lilv_node_free(klass);
 					break;
 				}
