@@ -77,6 +77,7 @@ def configure(conf):
             Logs.warn('Failed to configure Python (%s)\n' % sys.exc_info()[1])
 
     conf.load('autowaf', cache=True)
+    autowaf.set_c_lang(conf, 'c99')
 
     conf.env.BASH_COMPLETION = not Options.options.no_bash_completion
     conf.env.BUILD_UTILS     = not Options.options.no_utils
