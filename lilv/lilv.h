@@ -1833,6 +1833,53 @@ LILV_API const LilvNode*
 lilv_ui_get_binary_uri(const LilvUI* ui);
 
 /**
+   Return whether a feature is supported by a Plugin UI.
+   This will return true if the feature is an optional or required feature
+   of the UI.
+*/
+LILV_API bool
+lilv_ui_has_feature(const LilvUI* ui,
+		    const LilvNode*   feature);
+
+/**
+   Get the LV2 Features supported (required or optionally) by a Plugin UI.
+   A feature is "supported" by an UI if it is required OR optional.
+
+   Since required features have special rules the host must obey, this function
+   probably shouldn't be used by normal hosts.  Using lilv_ui_get_optional_features()
+   and lilv_ui_get_required_features() separately is best in most cases.
+
+   Returned value must be freed by caller with lilv_nodes_free().
+*/
+LILV_API LilvNodes*
+lilv_ui_get_supported_features(const LilvUI* ui);
+
+/**
+   Get the LV2 Features required by a Plugin UI.
+   If a feature is required by an UI, hosts MUST NOT use the UI if they do not
+   understand (or are unable to support) that feature.
+
+   All values returned here MUST be passed to the UI's instantiate method
+   (along with data, if necessary, as defined by the feature specification)
+   or UI instantiation will fail.
+
+   Return value must be freed by caller with lilv_nodes_free().
+*/
+LILV_API LilvNodes*
+lilv_ui_get_required_features(const LilvUI* ui);
+
+/**
+   Get the LV2 Features optionally supported by a Plugin UI.
+   Hosts MAY ignore optional UI features for whatever reasons.  UIs
+   MUST operate (at least somewhat) if they are instantiated without being
+   passed optional features.
+
+   Return value must be freed by caller with lilv_nodes_free().
+*/
+LILV_API LilvNodes*
+lilv_ui_get_optional_features(const LilvUI* ui);
+
+/**
    @}
    @}
 */
