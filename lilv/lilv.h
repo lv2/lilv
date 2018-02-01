@@ -1839,7 +1839,7 @@ lilv_ui_get_binary_uri(const LilvUI* ui);
 */
 LILV_API bool
 lilv_ui_has_feature(const LilvUI* ui,
-		    const LilvNode*   feature);
+                    const LilvNode*   feature);
 
 /**
    Get the LV2 Features supported (required or optionally) by a Plugin UI.

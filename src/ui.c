@@ -112,7 +112,7 @@ lilv_ui_get_binary_uri(const LilvUI* ui)
 
 LILV_API bool
 lilv_ui_has_feature(const LilvUI* ui,
-                        const LilvNode*   feature)
+                    const LilvNode*   feature)
 {
 	const SordNode* predicates[] = { ui->world->uris.lv2_requiredFeature,
 	                                 ui->world->uris.lv2_optionalFeature,
