@@ -122,16 +122,12 @@ lv2_dep = dependency('lv2',
                      version: '>= 1.18.2',
                      fallback: ['lv2', 'lv2_dep'])
 
-serd_dep = dependency('serd-0',
-                      version: '>= 0.30.9',
+serd_dep = dependency('serd-1',
+                      version: '>= 1.0.0',
                       fallback: ['serd', 'serd_dep'])
 
-sord_dep = dependency('sord-0',
-                      version: '>= 0.16.9',
-                      fallback: ['sord', 'sord_dep'])
-
-sratom_dep = dependency('sratom-0',
-                        version: '>=0.6.9',
+sratom_dep = dependency('sratom-1',
+                        version: '>=1.0.0',
                         fallback: ['sratom', 'sratom_dep'])
 
 # Determine library type and the flags needed to build it
@@ -160,14 +156,14 @@ liblilv = build_target(
   version: meson.project_version(),
   include_directories: include_directories(['include', 'src']),
   c_args: library_args,
-  dependencies: [m_dep, dl_dep, lv2_dep, serd_dep, sord_dep, sratom_dep],
+  dependencies: [m_dep, dl_dep, lv2_dep, serd_dep, sratom_dep],
   gnu_symbol_visibility: 'hidden',
   install: true,
   target_type: library_type)
 
 lilv_dep = declare_dependency(
   include_directories: include_directories(['include']),
-  dependencies: [m_dep, dl_dep, lv2_dep, serd_dep, sord_dep, sratom_dep],
+  dependencies: [m_dep, dl_dep, lv2_dep, serd_dep, sratom_dep],
   link_with: liblilv)
 
 pkg.generate(
@@ -208,7 +204,7 @@ if get_option('tests')
       sources,
       include_directories: include_directories(['include', 'src']),
       c_args: library_args,
-      dependencies: [m_dep, dl_dep, lv2_dep, serd_dep, sord_dep, sratom_dep],
+      dependencies: [m_dep, dl_dep, lv2_dep, serd_dep, sratom_dep],
       gnu_symbol_visibility: 'default')
   else
     liblilv_static = liblilv
@@ -216,7 +212,7 @@ if get_option('tests')
 
   lilv_static_dep = declare_dependency(
     include_directories: include_directories(['include']),
-    dependencies: [m_dep, dl_dep, lv2_dep, serd_dep, sord_dep, sratom_dep],
+    dependencies: [m_dep, dl_dep, lv2_dep, serd_dep, sratom_dep],
     link_with: liblilv_static)
 
   subdir('test')

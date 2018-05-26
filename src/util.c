@@ -27,8 +27,6 @@
 #include <errno.h>
 #include <stdarg.h>
 #include <stdbool.h>
-#include <stddef.h>
-#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -85,12 +83,6 @@ lilv_strdup(const char* str)
   char*        copy = (char*)malloc(len + 1);
   memcpy(copy, str, len + 1);
   return copy;
-}
-
-char*
-lilv_file_uri_parse(const char* uri, char** hostname)
-{
-  return (char*)serd_file_uri_parse((const uint8_t*)uri, (uint8_t**)hostname);
 }
 
 /** Return the current LANG converted to Turtle (i.e. RFC3066) style.

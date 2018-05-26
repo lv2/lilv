@@ -6,8 +6,6 @@
 #include "serd/serd.h"
 
 #include <assert.h>
-#include <stdbool.h>
-#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -25,13 +23,12 @@ main(int argc, char** argv)
   LilvWorld*  world       = lilv_world_new();
 
   // Load test plugin bundle
-  uint8_t*  abs_bundle = (uint8_t*)lilv_path_absolute(bundle_path);
-  SerdNode  bundle     = serd_node_new_file_uri(abs_bundle, 0, 0, true);
-  LilvNode* bundle_uri = lilv_new_uri(world, (const char*)bundle.buf);
-  lilv_world_load_bundle(world, bundle_uri);
+  char* const          abs_bundle      = lilv_path_absolute(bundle_path);
+  const SerdStringView abs_bundle_view = SERD_MEASURE_STRING(abs_bundle);
+  SerdNode* bundle = serd_new_file_uri(abs_bundle_view, SERD_EMPTY_STRING());
+  lilv_world_load_bundle(world, bundle);
   free(abs_bundle);
-  serd_node_free(&bundle);
-  lilv_node_free(bundle_uri);
+  serd_node_free(bundle);
 
   LilvNode*          plugin_uri = lilv_new_uri(world, PLUGIN_URI);
   const LilvPlugins* plugins    = lilv_world_get_all_plugins(world);

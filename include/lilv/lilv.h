@@ -21,6 +21,7 @@
 
 #include "lv2/core/lv2.h"
 #include "lv2/urid/urid.h"
+#include "serd/serd.h"
 
 #include <stdarg.h>
 #include <stdbool.h>
@@ -74,7 +75,7 @@ typedef struct LilvPluginClassImpl LilvPluginClass; /**< Plugin Class. */
 typedef struct LilvPortImpl        LilvPort;        /**< Port. */
 typedef struct LilvScalePointImpl  LilvScalePoint;  /**< Scale Point. */
 typedef struct LilvUIImpl          LilvUI;          /**< Plugin UI. */
-typedef struct LilvNodeImpl        LilvNode;        /**< Typed Value. */
+typedef SerdNode                   LilvNode;        /**< Typed Value. */
 typedef struct LilvWorldImpl       LilvWorld;       /**< Lilv World. */
 typedef struct LilvInstanceImpl    LilvInstance;    /**< Plugin instance. */
 typedef struct LilvStateImpl       LilvState;       /**< Plugin state. */
@@ -101,20 +102,6 @@ lilv_free(void* ptr);
    @defgroup lilv_node Nodes
    @{
 */
-
-/**
-   Convert a file URI string to a local path string.
-
-   For example, "file://foo/bar%20one/baz.ttl" returns "/foo/bar one/baz.ttl".
-   Return value must be freed by caller with lilv_free().
-
-   @param uri The file URI to parse.
-   @param hostname If non-NULL, set to the hostname in the URI, if any.
-   @return `uri` converted to a path, or NULL on failure (URI is not local).
-*/
-LILV_API
-char*
-lilv_file_uri_parse(const char* uri, char** hostname);
 
 /**
    Create a new URI value.
@@ -657,7 +644,7 @@ lilv_world_load_all(LilvWorld* world);
    other things) MUST be identified by URIs (not paths) in save files.
 */
 LILV_API
-void
+void // FIXME
 lilv_world_load_bundle(LilvWorld* world, const LilvNode* bundle_uri);
 
 /**
@@ -668,7 +655,7 @@ lilv_world_load_bundle(LilvWorld* world, const LilvNode* bundle_uri);
    specifications and adds them to the model.
 */
 LILV_API
-void
+void // FIXME
 lilv_world_load_specifications(LilvWorld* world);
 
 /**
@@ -866,7 +853,7 @@ lilv_plugin_get_uri(const LilvPlugin* plugin);
 
    Typical hosts should not need to use this function.
    Note this always returns a fully qualified URI.  If you want a local
-   filesystem path, use lilv_file_uri_parse().
+   filesystem path, use serd_parse_file_uri().
 
    @return A shared string which must not be modified or freed.
 */
@@ -879,7 +866,7 @@ lilv_plugin_get_bundle_uri(const LilvPlugin* plugin);
 
    Typical hosts should not need to use this function.
    Note this always returns fully qualified URIs.  If you want local
-   filesystem paths, use lilv_file_uri_parse().
+   filesystem paths, use serd_parse_file_uri().
 
    @return A list of complete URLs eg. "file:///foo/ABundle.lv2/aplug.ttl",
    which is shared and must not be modified or freed.
@@ -892,7 +879,7 @@ lilv_plugin_get_data_uris(const LilvPlugin* plugin);
    Get the (resolvable) URI of the shared library for `plugin`.
 
    Note this always returns a fully qualified URI.  If you want a local
-   filesystem path, use lilv_file_uri_parse().
+   filesystem path, use serd_parse_file_uri().
 
    @return A shared string which must not be modified or freed.
 */

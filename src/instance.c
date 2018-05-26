@@ -44,7 +44,7 @@ lilv_plugin_instantiate(const LilvPlugin*         plugin,
   }
 
   char* const bundle_path =
-    lilv_file_uri_parse(lilv_node_as_uri(bundle_uri), NULL);
+    serd_parse_file_uri(lilv_node_as_uri(bundle_uri), NULL);
 
   LilvLib* lib = lilv_lib_open(plugin->world, lib_uri, bundle_path, features);
   if (!lib) {

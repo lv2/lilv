@@ -18,7 +18,6 @@
 
 #include "lilv/lilv.h"
 #include "serd/serd.h"
-#include "sord/sord.h"
 #include "zix/tree.h"
 
 #include "lv2/core/lv2.h"
@@ -36,13 +35,18 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define NS_DOAP (const uint8_t*)"http://usefulinc.com/ns/doap#"
-#define NS_FOAF (const uint8_t*)"http://xmlns.com/foaf/0.1/"
+#define NS_DOAP "http://usefulinc.com/ns/doap#"
+#define NS_FOAF "http://xmlns.com/foaf/0.1/"
+#define NS_LV2 "http://lv2plug.in/ns/lv2core#"
+#define NS_OWL "http://www.w3.org/2002/07/owl#"
+#define NS_RDF "http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+#define NS_RDFS "http://www.w3.org/2000/01/rdf-schema#"
+#define NS_XSD "http://www.w3.org/2001/XMLSchema#"
 
 static void
-lilv_plugin_init(LilvPlugin* plugin, LilvNode* bundle_uri)
+lilv_plugin_init(LilvPlugin* plugin, const LilvNode* bundle_uri)
 {
-  plugin->bundle_uri = bundle_uri;
+  plugin->bundle_uri = lilv_node_duplicate(bundle_uri);
   plugin->binary_uri = NULL;
 #ifdef LILV_DYN_MANIFEST
   plugin->dynmanifest = NULL;
@@ -56,21 +60,22 @@ lilv_plugin_init(LilvPlugin* plugin, LilvNode* bundle_uri)
   plugin->replaced     = false;
 }
 
-/** Ownership of `uri` and `bundle` is taken */
 LilvPlugin*
-lilv_plugin_new(LilvWorld* world, LilvNode* uri, LilvNode* bundle_uri)
+lilv_plugin_new(LilvWorld*      world,
+                const LilvNode* uri,
+                const LilvNode* bundle_uri)
 {
   LilvPlugin* plugin = (LilvPlugin*)malloc(sizeof(LilvPlugin));
 
   plugin->world      = world;
-  plugin->plugin_uri = uri;
+  plugin->plugin_uri = lilv_node_duplicate(uri);
 
   lilv_plugin_init(plugin, bundle_uri);
   return plugin;
 }
 
 void
-lilv_plugin_clear(LilvPlugin* plugin, LilvNode* bundle_uri)
+lilv_plugin_clear(LilvPlugin* plugin, const LilvNode* bundle_uri)
 {
   lilv_node_free(plugin->bundle_uri);
   lilv_node_free(plugin->binary_uri);
@@ -119,37 +124,23 @@ lilv_plugin_free(LilvPlugin* plugin)
 
 static LilvNode*
 lilv_plugin_get_one(const LilvPlugin* plugin,
-                    const SordNode*   subject,
-                    const SordNode*   predicate)
+                    const SerdNode*   subject,
+                    const SerdNode*   predicate)
 {
-  /* TODO: This is slower than it could be in some cases, but it's simpler to
-     use the existing i18n code. */
-
-  SordIter* stream =
-    lilv_world_query_internal(plugin->world, subject, predicate, NULL);
-
-  LilvNodes* nodes =
-    lilv_nodes_from_stream_objects(plugin->world, stream, SORD_OBJECT);
-
-  if (nodes) {
-    LilvNode* value = lilv_node_duplicate(lilv_nodes_get_first(nodes));
-    lilv_nodes_free(nodes);
-    return value;
-  }
-
-  return NULL;
+  return serd_node_copy(
+    serd_model_get(plugin->world->model, subject, predicate, NULL, NULL));
 }
 
 LilvNode*
 lilv_plugin_get_unique(const LilvPlugin* plugin,
-                       const SordNode*   subject,
-                       const SordNode*   predicate)
+                       const SerdNode*   subject,
+                       const SerdNode*   predicate)
 {
   LilvNode* ret = lilv_plugin_get_one(plugin, subject, predicate);
   if (!ret) {
     LILV_ERRORF("No value found for (%s %s ...) property\n",
-                sord_node_get_string(subject),
-                sord_node_get_string(predicate));
+                serd_node_string(subject),
+                serd_node_string(predicate));
   }
   return ret;
 }
@@ -157,56 +148,59 @@ lilv_plugin_get_unique(const LilvPlugin* plugin,
 static void
 lilv_plugin_load(LilvPlugin* plugin)
 {
-  SordNode*       bundle_uri_node  = plugin->bundle_uri->node;
-  const SerdNode* bundle_uri_snode = sord_node_to_serd_node(bundle_uri_node);
+  SerdNode* bundle_uri_node = plugin->bundle_uri;
 
-  SerdEnv*    env = serd_env_new(bundle_uri_snode);
-  SerdReader* reader =
-    sord_new_reader(plugin->world->model, env, SERD_TURTLE, bundle_uri_node);
+  SerdEnv*  env      = serd_env_new(serd_node_string_view(bundle_uri_node));
+  SerdSink* inserter = serd_inserter_new(plugin->world->model, bundle_uri_node);
 
-  SordModel* prots = lilv_world_filter_model(plugin->world,
+  SerdReader* reader = serd_reader_new(plugin->world->world,
+                                       SERD_TURTLE,
+                                       0,
+                                       env,
+                                       inserter,
+                                       LILV_READER_STACK_SIZE);
+
+  SerdModel* prots = lilv_world_filter_model(plugin->world,
                                              plugin->world->model,
-                                             plugin->plugin_uri->node,
+                                             plugin->plugin_uri,
                                              plugin->world->uris.lv2_prototype,
                                              NULL,
                                              NULL);
-  SordModel* skel  = sord_new(plugin->world->world, SORD_SPO, false);
-  SordIter*  iter  = sord_begin(prots);
-  for (; !sord_iter_end(iter); sord_iter_next(iter)) {
-    const SordNode* t         = sord_iter_get_node(iter, SORD_OBJECT);
-    LilvNode*       prototype = lilv_node_new_from_node(plugin->world, t);
+  SerdModel* skel  = serd_model_new(plugin->world->world, SERD_INDEX_SPO);
+  SerdIter*  iter  = serd_model_begin(prots);
+  for (; !serd_iter_equals(iter, serd_model_end(prots)); serd_iter_next(iter)) {
+    const SerdStatement* statement = serd_iter_get(iter);
+    const SerdNode*      t         = serd_statement_object(statement);
+    LilvNode*            prototype = serd_node_copy(t);
 
     lilv_world_load_resource(plugin->world, prototype);
 
-    SordIter* statements =
-      sord_search(plugin->world->model, prototype->node, NULL, NULL, NULL);
-    FOREACH_MATCH (statements) {
-      SordQuad quad;
-      sord_iter_get(statements, quad);
-      quad[0] = plugin->plugin_uri->node;
-      sord_add(skel, quad);
+    FOREACH_PAT(s, plugin->world->model, prototype, NULL, NULL, NULL)
+    {
+      serd_model_add(skel,
+                     plugin->plugin_uri,
+                     serd_statement_predicate(s),
+                     serd_statement_object(s),
+                     NULL);
     }
 
-    sord_iter_free(statements);
     lilv_node_free(prototype);
   }
-  sord_iter_free(iter);
+  serd_iter_free(iter);
 
-  for (iter = sord_begin(skel); !sord_iter_end(iter); sord_iter_next(iter)) {
-    SordQuad quad;
-    sord_iter_get(iter, quad);
-    sord_add(plugin->world->model, quad);
-  }
-  sord_iter_free(iter);
-  sord_free(skel);
-  sord_free(prots);
+  SerdRange* all = serd_model_all(skel, SERD_ORDER_SPO);
+  serd_model_add_range(plugin->world->model, all);
+  serd_range_free(all);
+
+  serd_model_free(skel);
+  serd_model_free(prots);
 
   // Parse all the plugin's data files into RDF model
   SerdStatus st = SERD_SUCCESS;
   LILV_FOREACH (nodes, i, plugin->data_uris) {
     const LilvNode* data_uri = lilv_nodes_get(plugin->data_uris, i);
 
-    serd_env_set_base_uri(env, sord_node_to_serd_node(data_uri->node));
+    serd_env_set_base_uri(env, serd_node_string_view(data_uri));
     st = lilv_world_load_file(plugin->world, reader, data_uri);
     if (st > SERD_FAILURE) {
       break;
@@ -217,6 +211,7 @@ lilv_plugin_load(LilvPlugin* plugin)
     plugin->loaded       = true;
     plugin->parse_errors = true;
     serd_reader_free(reader);
+    serd_sink_free(inserter);
     serd_env_free(env);
     return;
   }
@@ -229,8 +224,8 @@ lilv_plugin_load(LilvPlugin* plugin)
     GetDataFunc get_data_func = (GetDataFunc)lilv_dlfunc(
       plugin->dynmanifest->lib, "lv2_dyn_manifest_get_data");
     if (get_data_func) {
-      const SordNode* bundle = plugin->dynmanifest->bundle->node;
-      serd_env_set_base_uri(env, sord_node_to_serd_node(bundle));
+      const SerdNode* bundle = plugin->dynmanifest->bundle;
+      serd_env_set_base_uri(env, bundle);
       FILE* fd = tmpfile();
       get_data_func(plugin->dynmanifest->handle,
                     fd,
@@ -238,13 +233,13 @@ lilv_plugin_load(LilvPlugin* plugin)
       rewind(fd);
       serd_reader_add_blank_prefix(reader,
                                    lilv_world_blank_node_prefix(plugin->world));
-      serd_reader_read_file_handle(
-        reader, fd, (const uint8_t*)"(dyn-manifest)");
+      serd_reader_read_file_handle(reader, fd, "(dyn-manifest)");
       fclose(fd);
     }
   }
 #endif
   serd_reader_free(reader);
+  serd_sink_free(inserter);
   serd_env_free(env);
 
   plugin->loaded = true;
@@ -273,22 +268,21 @@ lilv_plugin_load_ports_if_necessary(const LilvPlugin* const_plugin)
     plugin->ports    = (LilvPort**)malloc(sizeof(LilvPort*));
     plugin->ports[0] = NULL;
 
-    SordIter* ports = lilv_world_query_internal(plugin->world,
-                                                plugin->plugin_uri->node,
-                                                plugin->world->uris.lv2_port,
-                                                NULL);
+    SerdRange* ports = serd_model_range(plugin->world->model,
+                                        plugin->plugin_uri,
+                                        plugin->world->uris.lv2_port,
+                                        NULL,
+                                        NULL);
 
-    FOREACH_MATCH (ports) {
-      const SordNode* port = sord_iter_get_node(ports, SORD_OBJECT);
-
-      LilvNode* index =
+    FOREACH_MATCH (s, ports) {
+      const SerdNode* port = serd_statement_object(s);
+      LilvNode*       index =
         lilv_plugin_get_unique(plugin, port, plugin->world->uris.lv2_index);
-
       LilvNode* symbol =
         lilv_plugin_get_unique(plugin, port, plugin->world->uris.lv2_symbol);
 
       if (!lilv_node_is_string(symbol) ||
-          !is_symbol((const char*)sord_node_get_string(symbol->node))) {
+          !is_symbol(serd_node_string(symbol))) {
         LILV_ERRORF("Plugin <%s> port symbol `%s' is invalid\n",
                     lilv_node_as_uri(plugin->plugin_uri),
                     lilv_node_as_string(symbol));
@@ -322,30 +316,29 @@ lilv_plugin_load_ports_if_necessary(const LilvPlugin* const_plugin)
 
       // Havn't seen this port yet, add it to array
       if (!this_port) {
-        this_port = lilv_port_new(
-          plugin->world, port, this_index, lilv_node_as_string(symbol));
+        this_port =
+          lilv_port_new(port, this_index, lilv_node_as_string(symbol));
         plugin->ports[this_index] = this_port;
       }
 
-      SordIter* types = lilv_world_query_internal(
-        plugin->world, port, plugin->world->uris.rdf_a, NULL);
-      FOREACH_MATCH (types) {
-        const SordNode* type = sord_iter_get_node(types, SORD_OBJECT);
-        if (sord_node_get_type(type) == SORD_URI) {
-          zix_tree_insert((ZixTree*)this_port->classes,
-                          lilv_node_new_from_node(plugin->world, type),
-                          NULL);
+      SerdRange* types = serd_model_range(
+        plugin->world->model, port, plugin->world->uris.rdf_a, NULL, NULL);
+      FOREACH_MATCH (t, types) {
+        const SerdNode* type = serd_statement_object(t);
+        if (serd_node_type(type) == SERD_URI) {
+          zix_tree_insert(
+            (ZixTree*)this_port->classes, serd_node_copy(type), NULL);
         } else {
           LILV_WARNF("Plugin <%s> port type is not a URI\n",
                      lilv_node_as_uri(plugin->plugin_uri));
         }
       }
-      sord_iter_free(types);
+      serd_range_free(types);
 
       lilv_node_free(symbol);
       lilv_node_free(index);
     }
-    sord_iter_free(ports);
+    serd_range_free(ports);
 
     // Check sanity
     for (uint32_t i = 0; i < plugin->num_ports; ++i) {
@@ -387,19 +380,19 @@ lilv_plugin_get_library_uri(const LilvPlugin* plugin)
   lilv_plugin_load_if_necessary((LilvPlugin*)plugin);
   if (!plugin->binary_uri) {
     // <plugin> lv2:binary ?binary
-    SordIter* i = lilv_world_query_internal(plugin->world,
-                                            plugin->plugin_uri->node,
-                                            plugin->world->uris.lv2_binary,
-                                            NULL);
-    FOREACH_MATCH (i) {
-      const SordNode* binary_node = sord_iter_get_node(i, SORD_OBJECT);
-      if (sord_node_get_type(binary_node) == SORD_URI) {
-        ((LilvPlugin*)plugin)->binary_uri =
-          lilv_node_new_from_node(plugin->world, binary_node);
+    SerdRange* i = serd_model_range(plugin->world->model,
+                                    plugin->plugin_uri,
+                                    plugin->world->uris.lv2_binary,
+                                    NULL,
+                                    NULL);
+    FOREACH_MATCH (s, i) {
+      const SerdNode* binary_node = serd_statement_object(s);
+      if (serd_node_type(binary_node) == SERD_URI) {
+        ((LilvPlugin*)plugin)->binary_uri = serd_node_copy(binary_node);
         break;
       }
     }
-    sord_iter_free(i);
+    serd_range_free(i);
   }
   if (!plugin->binary_uri) {
     LILV_WARNF("Plugin <%s> has no lv2:binary\n",
@@ -420,15 +413,18 @@ lilv_plugin_get_class(const LilvPlugin* plugin)
   lilv_plugin_load_if_necessary((LilvPlugin*)plugin);
   if (!plugin->plugin_class) {
     // <plugin> a ?class
-    SordIter* c = lilv_world_query_internal(
-      plugin->world, plugin->plugin_uri->node, plugin->world->uris.rdf_a, NULL);
-    FOREACH_MATCH (c) {
-      const SordNode* class_node = sord_iter_get_node(c, SORD_OBJECT);
-      if (sord_node_get_type(class_node) != SORD_URI) {
+    SerdRange* c = serd_model_range(plugin->world->model,
+                                    plugin->plugin_uri,
+                                    plugin->world->uris.rdf_a,
+                                    NULL,
+                                    NULL);
+    FOREACH_MATCH (s, c) {
+      const SerdNode* class_node = serd_statement_object(s);
+      if (serd_node_type(class_node) != SERD_URI) {
         continue;
       }
 
-      LilvNode* klass = lilv_node_new_from_node(plugin->world, class_node);
+      LilvNode* klass = serd_node_copy(class_node);
       if (!lilv_node_equals(klass, plugin->world->lv2_plugin_class->uri)) {
         const LilvPluginClass* pclass =
           lilv_plugin_classes_get_by_uri(plugin->world->plugin_classes, klass);
@@ -442,7 +438,7 @@ lilv_plugin_get_class(const LilvPlugin* plugin)
 
       lilv_node_free(klass);
     }
-    sord_iter_free(c);
+    serd_range_free(c);
 
     if (plugin->plugin_class == NULL) {
       ((LilvPlugin*)plugin)->plugin_class = plugin->world->lv2_plugin_class;
@@ -453,11 +449,11 @@ lilv_plugin_get_class(const LilvPlugin* plugin)
 
 static LilvNodes*
 lilv_plugin_get_value_internal(const LilvPlugin* plugin,
-                               const SordNode*   predicate)
+                               const SerdNode*   predicate)
 {
   lilv_plugin_load_if_necessary(plugin);
   return lilv_world_find_nodes_internal(
-    plugin->world, plugin->plugin_uri->node, predicate, NULL);
+    plugin->world, plugin->plugin_uri, predicate, NULL);
 }
 
 bool
@@ -468,9 +464,7 @@ lilv_plugin_verify(const LilvPlugin* plugin)
     return false;
   }
 
-  LilvNode*  rdf_type = lilv_new_uri(plugin->world, LILV_NS_RDF "type");
-  LilvNodes* results  = lilv_plugin_get_value(plugin, rdf_type);
-  lilv_node_free(rdf_type);
+  LilvNodes* results = lilv_plugin_get_value(plugin, plugin->world->uris.rdf_a);
   if (!results) {
     return false;
   }
@@ -637,57 +631,47 @@ bool
 lilv_plugin_has_latency(const LilvPlugin* plugin)
 {
   lilv_plugin_load_if_necessary(plugin);
-  SordIter* ports = lilv_world_query_internal(plugin->world,
-                                              plugin->plugin_uri->node,
-                                              plugin->world->uris.lv2_port,
-                                              NULL);
+
+  SerdRange* ports = serd_model_range(plugin->world->model,
+                                      plugin->plugin_uri,
+                                      plugin->world->uris.lv2_port,
+                                      NULL,
+                                      NULL);
 
   bool ret = false;
-  FOREACH_MATCH (ports) {
-    const SordNode* port = sord_iter_get_node(ports, SORD_OBJECT);
-
-    SordIter* prop =
-      lilv_world_query_internal(plugin->world,
-                                port,
-                                plugin->world->uris.lv2_portProperty,
-                                plugin->world->uris.lv2_reportsLatency);
-
-    SordIter* des =
-      lilv_world_query_internal(plugin->world,
-                                port,
-                                plugin->world->uris.lv2_designation,
-                                plugin->world->uris.lv2_latency);
-
-    const bool latent = !sord_iter_end(prop) || !sord_iter_end(des);
-    sord_iter_free(prop);
-    sord_iter_free(des);
-    if (latent) {
+  FOREACH_MATCH (s, ports) {
+    const SerdNode* port = serd_statement_object(s);
+    if (serd_model_ask(plugin->world->model,
+                       port,
+                       plugin->world->uris.lv2_portProperty,
+                       plugin->world->uris.lv2_reportsLatency,
+                       NULL) ||
+        serd_model_ask(plugin->world->model,
+                       port,
+                       plugin->world->uris.lv2_designation,
+                       plugin->world->uris.lv2_latency,
+                       NULL)) {
       ret = true;
       break;
     }
   }
-  sord_iter_free(ports);
+  serd_range_free(ports);
 
   return ret;
 }
 
 static const LilvPort*
 lilv_plugin_get_port_by_property(const LilvPlugin* plugin,
-                                 const SordNode*   port_property)
+                                 const SerdNode*   port_property)
 {
   lilv_plugin_load_ports_if_necessary(plugin);
   for (uint32_t i = 0; i < plugin->num_ports; ++i) {
     LilvPort* port = plugin->ports[i];
-    SordIter* iter =
-      lilv_world_query_internal(plugin->world,
-                                port->node->node,
-                                plugin->world->uris.lv2_portProperty,
-                                port_property);
-
-    const bool found = !sord_iter_end(iter);
-    sord_iter_free(iter);
-
-    if (found) {
+    if (serd_model_ask(plugin->world->model,
+                       port->node,
+                       plugin->world->uris.lv2_portProperty,
+                       port_property,
+                       NULL)) {
       return port;
     }
   }
@@ -703,16 +687,12 @@ lilv_plugin_get_port_by_designation(const LilvPlugin* plugin,
   LilvWorld* world = plugin->world;
   lilv_plugin_load_ports_if_necessary(plugin);
   for (uint32_t i = 0; i < plugin->num_ports; ++i) {
-    LilvPort* port = plugin->ports[i];
-    SordIter* iter = lilv_world_query_internal(
-      world, port->node->node, world->uris.lv2_designation, designation->node);
+    LilvPort*  port            = plugin->ports[i];
+    const bool has_designation = serd_model_ask(
+      world->model, port->node, world->uris.lv2_designation, designation, NULL);
 
-    const bool found =
-      !sord_iter_end(iter) &&
-      (!port_class || lilv_port_is_a(plugin, port, port_class));
-    sord_iter_free(iter);
-
-    if (found) {
+    if (has_designation &&
+        (!port_class || lilv_port_is_a(plugin, port, port_class))) {
       return port;
     }
   }
@@ -749,13 +729,13 @@ bool
 lilv_plugin_has_feature(const LilvPlugin* plugin, const LilvNode* feature)
 {
   lilv_plugin_load_if_necessary(plugin);
-  const SordNode* predicates[] = {plugin->world->uris.lv2_requiredFeature,
+  const SerdNode* predicates[] = {plugin->world->uris.lv2_requiredFeature,
                                   plugin->world->uris.lv2_optionalFeature,
                                   NULL};
 
-  for (const SordNode** pred = predicates; *pred; ++pred) {
-    if (lilv_world_ask_internal(
-          plugin->world, plugin->plugin_uri->node, *pred, feature->node)) {
+  for (const SerdNode** pred = predicates; *pred; ++pred) {
+    if (serd_model_ask(
+          plugin->world->model, plugin->plugin_uri, *pred, feature, NULL)) {
       return true;
     }
   }
@@ -778,7 +758,7 @@ lilv_plugin_get_optional_features(const LilvPlugin* plugin)
 {
   lilv_plugin_load_if_necessary(plugin);
   return lilv_world_find_nodes_internal(plugin->world,
-                                        plugin->plugin_uri->node,
+                                        plugin->plugin_uri,
                                         plugin->world->uris.lv2_optionalFeature,
                                         NULL);
 }
@@ -788,7 +768,7 @@ lilv_plugin_get_required_features(const LilvPlugin* plugin)
 {
   lilv_plugin_load_if_necessary(plugin);
   return lilv_world_find_nodes_internal(plugin->world,
-                                        plugin->plugin_uri->node,
+                                        plugin->plugin_uri,
                                         plugin->world->uris.lv2_requiredFeature,
                                         NULL);
 }
@@ -797,16 +777,16 @@ bool
 lilv_plugin_has_extension_data(const LilvPlugin* plugin, const LilvNode* uri)
 {
   if (!lilv_node_is_uri(uri)) {
-    LILV_ERRORF("Extension data `%s' is not a URI\n",
-                sord_node_get_string(uri->node));
+    LILV_ERRORF("Extension data `%s' is not a URI\n", serd_node_string(uri));
     return false;
   }
 
   lilv_plugin_load_if_necessary(plugin);
-  return lilv_world_ask_internal(plugin->world,
-                                 plugin->plugin_uri->node,
-                                 plugin->world->uris.lv2_extensionData,
-                                 uri->node);
+  return serd_model_ask(plugin->world->model,
+                        plugin->plugin_uri,
+                        plugin->world->uris.lv2_extensionData,
+                        uri,
+                        NULL);
 }
 
 LilvNodes*
@@ -846,73 +826,51 @@ lilv_plugin_get_project(const LilvPlugin* plugin)
 {
   lilv_plugin_load_if_necessary(plugin);
 
-  SordNode* lv2_project =
-    sord_new_uri(plugin->world->world, (const uint8_t*)LV2_CORE__project);
-
-  SordIter* projects = lilv_world_query_internal(
-    plugin->world, plugin->plugin_uri->node, lv2_project, NULL);
-
-  sord_node_free(plugin->world->world, lv2_project);
-
-  if (sord_iter_end(projects)) {
-    sord_iter_free(projects);
-    return NULL;
-  }
-
-  const SordNode* project = sord_iter_get_node(projects, SORD_OBJECT);
-
-  sord_iter_free(projects);
-  return lilv_node_new_from_node(plugin->world, project);
+  return serd_node_copy(serd_model_get(plugin->world->model,
+                                       plugin->plugin_uri,
+                                       plugin->world->uris.lv2_project,
+                                       NULL,
+                                       NULL));
 }
 
-static const SordNode*
+static SerdNode*
 lilv_plugin_get_author(const LilvPlugin* plugin)
 {
   lilv_plugin_load_if_necessary(plugin);
 
-  SordNode* doap_maintainer =
-    sord_new_uri(plugin->world->world, NS_DOAP "maintainer");
+  SerdNode* doap_maintainer =
+    serd_new_uri(SERD_STATIC_STRING(NS_DOAP "maintainer"));
 
-  SordIter* maintainers = lilv_world_query_internal(
-    plugin->world, plugin->plugin_uri->node, doap_maintainer, NULL);
+  const SerdNode* maintainer = serd_model_get(
+    plugin->world->model, plugin->plugin_uri, doap_maintainer, NULL, NULL);
 
-  if (sord_iter_end(maintainers)) {
-    sord_iter_free(maintainers);
-
+  if (!maintainer) {
     LilvNode* project = lilv_plugin_get_project(plugin);
     if (!project) {
-      sord_node_free(plugin->world->world, doap_maintainer);
+      serd_node_free(doap_maintainer);
       return NULL;
     }
 
-    maintainers = lilv_world_query_internal(
-      plugin->world, project->node, doap_maintainer, NULL);
+    maintainer = serd_model_get(
+      plugin->world->model, project, doap_maintainer, NULL, NULL);
 
     lilv_node_free(project);
   }
 
-  sord_node_free(plugin->world->world, doap_maintainer);
+  serd_node_free(doap_maintainer);
 
-  if (sord_iter_end(maintainers)) {
-    sord_iter_free(maintainers);
-    return NULL;
-  }
-
-  const SordNode* author = sord_iter_get_node(maintainers, SORD_OBJECT);
-
-  sord_iter_free(maintainers);
-  return author;
+  return maintainer ? serd_node_copy(maintainer) : NULL;
 }
 
 static LilvNode*
-lilv_plugin_get_author_property(const LilvPlugin* plugin, const uint8_t* uri)
+lilv_plugin_get_author_property(const LilvPlugin* plugin, const char* uri)
 {
-  const SordNode* author = lilv_plugin_get_author(plugin);
+  SerdNode* author = lilv_plugin_get_author(plugin);
   if (author) {
-    SordWorld* sworld = plugin->world->world;
-    SordNode*  pred   = sord_new_uri(sworld, uri);
-    LilvNode*  ret    = lilv_plugin_get_one(plugin, author, pred);
-    sord_node_free(sworld, pred);
+    SerdNode* pred = serd_new_uri(SERD_MEASURE_STRING(uri));
+    LilvNode* ret  = lilv_plugin_get_one(plugin, author, pred);
+    serd_node_free(pred);
+    serd_node_free(author);
     return ret;
   }
   return NULL;
@@ -947,17 +905,15 @@ lilv_plugin_get_uis(const LilvPlugin* plugin)
 {
   lilv_plugin_load_if_necessary(plugin);
 
-  SordNode* ui_ui_node =
-    sord_new_uri(plugin->world->world, (const uint8_t*)LV2_UI__ui);
-  SordNode* ui_binary_node =
-    sord_new_uri(plugin->world->world, (const uint8_t*)LV2_UI__binary);
+  SerdNode* ui_ui_node     = serd_new_uri(SERD_STATIC_STRING(LV2_UI__ui));
+  SerdNode* ui_binary_node = serd_new_uri(SERD_STATIC_STRING(LV2_UI__binary));
 
-  LilvUIs*  result = lilv_uis_new();
-  SordIter* uis    = lilv_world_query_internal(
-    plugin->world, plugin->plugin_uri->node, ui_ui_node, NULL);
+  LilvUIs*   result = lilv_uis_new();
+  SerdRange* uis    = serd_model_range(
+    plugin->world->model, plugin->plugin_uri, ui_ui_node, NULL, NULL);
 
-  FOREACH_MATCH (uis) {
-    const SordNode* ui = sord_iter_get_node(uis, SORD_OBJECT);
+  FOREACH_MATCH (s, uis) {
+    const SerdNode* ui = serd_statement_object(s);
 
     LilvNode* type =
       lilv_plugin_get_unique(plugin, ui, plugin->world->uris.rdf_a);
@@ -967,30 +923,30 @@ lilv_plugin_get_uis(const LilvPlugin* plugin)
       binary = lilv_plugin_get_unique(plugin, ui, ui_binary_node);
     }
 
-    if (sord_node_get_type(ui) != SORD_URI || !lilv_node_is_uri(type) ||
+    if (serd_node_type(ui) != SERD_URI || !lilv_node_is_uri(type) ||
         !lilv_node_is_uri(binary)) {
       lilv_node_free(binary);
       lilv_node_free(type);
-      LILV_ERRORF("Corrupt UI <%s>\n", sord_node_get_string(ui));
+      LILV_ERRORF("Corrupt UI <%s>\n", serd_node_string(ui));
       continue;
     }
 
-    LilvUI* lilv_ui = lilv_ui_new(
-      plugin->world, lilv_node_new_from_node(plugin->world, ui), type, binary);
+    LilvUI* lilv_ui =
+      lilv_ui_new(plugin->world, serd_node_copy(ui), type, binary);
 
     zix_tree_insert((ZixTree*)result, lilv_ui, NULL);
   }
-  sord_iter_free(uis);
+  serd_range_free(uis);
 
-  sord_node_free(plugin->world->world, ui_binary_node);
-  sord_node_free(plugin->world->world, ui_ui_node);
+  serd_node_free(ui_binary_node);
+  serd_node_free(ui_ui_node);
 
   if (lilv_uis_size(result) > 0) {
     return result;
+  } else {
+    lilv_uis_free(result);
+    return NULL;
   }
-
-  lilv_uis_free(result);
-  return NULL;
 }
 
 LilvNodes*
@@ -1000,7 +956,7 @@ lilv_plugin_get_related(const LilvPlugin* plugin, const LilvNode* type)
 
   LilvWorld* const world   = plugin->world;
   LilvNodes* const related = lilv_world_find_nodes_internal(
-    world, NULL, world->uris.lv2_appliesTo, lilv_plugin_get_uri(plugin)->node);
+    world, NULL, world->uris.lv2_appliesTo, lilv_plugin_get_uri(plugin));
 
   if (!type) {
     return related;
@@ -1009,10 +965,8 @@ lilv_plugin_get_related(const LilvPlugin* plugin, const LilvNode* type)
   LilvNodes* matches = lilv_nodes_new();
   LILV_FOREACH (nodes, i, related) {
     LilvNode* node = (LilvNode*)lilv_collection_get((ZixTree*)related, i);
-    if (lilv_world_ask_internal(
-          world, node->node, world->uris.rdf_a, type->node)) {
-      zix_tree_insert(
-        (ZixTree*)matches, lilv_node_new_from_node(world, node->node), NULL);
+    if (serd_model_ask(world->model, node, world->uris.rdf_a, type, NULL)) {
+      zix_tree_insert((ZixTree*)matches, serd_node_copy(node), NULL);
     }
   }
 
@@ -1023,27 +977,32 @@ lilv_plugin_get_related(const LilvPlugin* plugin, const LilvNode* type)
 static SerdEnv*
 new_lv2_env(const SerdNode* base)
 {
-  SerdEnv* env = serd_env_new(base);
+  SerdEnv* env = serd_env_new(serd_node_string_view(base));
 
-#define USTR(s) ((const uint8_t*)(s))
-
-  serd_env_set_prefix_from_strings(env, USTR("doap"), USTR(LILV_NS_DOAP));
-  serd_env_set_prefix_from_strings(env, USTR("foaf"), USTR(LILV_NS_FOAF));
-  serd_env_set_prefix_from_strings(env, USTR("lv2"), USTR(LILV_NS_LV2));
-  serd_env_set_prefix_from_strings(env, USTR("owl"), USTR(LILV_NS_OWL));
-  serd_env_set_prefix_from_strings(env, USTR("rdf"), USTR(LILV_NS_RDF));
-  serd_env_set_prefix_from_strings(env, USTR("rdfs"), USTR(LILV_NS_RDFS));
-  serd_env_set_prefix_from_strings(env, USTR("xsd"), USTR(LILV_NS_XSD));
+  serd_env_set_prefix(
+    env, SERD_STATIC_STRING("doap"), SERD_STATIC_STRING(NS_DOAP));
+  serd_env_set_prefix(
+    env, SERD_STATIC_STRING("foaf"), SERD_STATIC_STRING(NS_FOAF));
+  serd_env_set_prefix(
+    env, SERD_STATIC_STRING("lv2"), SERD_STATIC_STRING(NS_LV2));
+  serd_env_set_prefix(
+    env, SERD_STATIC_STRING("owl"), SERD_STATIC_STRING(NS_OWL));
+  serd_env_set_prefix(
+    env, SERD_STATIC_STRING("rdf"), SERD_STATIC_STRING(NS_RDF));
+  serd_env_set_prefix(
+    env, SERD_STATIC_STRING("rdfs"), SERD_STATIC_STRING(NS_RDFS));
+  serd_env_set_prefix(
+    env, SERD_STATIC_STRING("xsd"), SERD_STATIC_STRING(NS_XSD));
 
   return env;
 }
 
 static void
-maybe_write_prefixes(SerdWriter* writer, SerdEnv* env, FILE* file)
+maybe_write_prefixes(const SerdSink* sink, SerdEnv* env, FILE* file)
 {
   fseek(file, 0, SEEK_END);
   if (ftell(file) == 0) {
-    serd_env_foreach(env, (SerdPrefixSink)serd_writer_set_prefix, writer);
+    serd_env_write_prefixes(env, sink);
   } else {
     fprintf(file, "\n");
   }
@@ -1057,31 +1016,30 @@ lilv_plugin_write_description(LilvWorld*        world,
 {
   const LilvNode* subject   = lilv_plugin_get_uri(plugin);
   const uint32_t  num_ports = lilv_plugin_get_num_ports(plugin);
-  const SerdNode* base      = sord_node_to_serd_node(base_uri->node);
+  const SerdNode* base      = base_uri;
   SerdEnv*        env       = new_lv2_env(base);
 
-  SerdWriter* writer =
-    serd_writer_new(SERD_TURTLE,
-                    (SerdStyle)(SERD_STYLE_ABBREVIATED | SERD_STYLE_CURIED),
-                    env,
-                    NULL,
-                    serd_file_sink,
-                    plugin_file);
+  SerdByteSink* const sink =
+    serd_byte_sink_new_function((SerdWriteFunc)fwrite, plugin_file, 1);
+
+  SerdWriter* writer = serd_writer_new(world->world, SERD_TURTLE, 0, env, sink);
+
+  const SerdSink* iface = serd_writer_sink(writer);
 
   // Write prefixes if this is a new file
-  maybe_write_prefixes(writer, env, plugin_file);
+  maybe_write_prefixes(iface, env, plugin_file);
 
   // Write plugin description
-  SordIter* plug_iter =
-    lilv_world_query_internal(world, subject->node, NULL, NULL);
-  sord_write_iter(plug_iter, writer);
+  SerdRange* plug_range =
+    serd_model_range(world->model, subject, NULL, NULL, NULL);
+  serd_range_serialise(plug_range, iface, 0);
 
   // Write port descriptions
   for (uint32_t i = 0; i < num_ports; ++i) {
     const LilvPort* port = plugin->ports[i];
-    SordIter*       port_iter =
-      lilv_world_query_internal(world, port->node->node, NULL, NULL);
-    sord_write_iter(port_iter, writer);
+    SerdRange*      port_range =
+      serd_model_range(world->model, port->node, NULL, NULL, NULL);
+    serd_range_serialise(port_range, iface, 0);
   }
 
   serd_writer_free(writer);
@@ -1095,45 +1053,37 @@ lilv_plugin_write_manifest_entry(LilvWorld*        world,
                                  FILE*             manifest_file,
                                  const char*       plugin_file_path)
 {
-  (void)world;
-
   const LilvNode* subject = lilv_plugin_get_uri(plugin);
-  const SerdNode* base    = sord_node_to_serd_node(base_uri->node);
+  const SerdNode* base    = base_uri;
   SerdEnv*        env     = new_lv2_env(base);
 
-  SerdWriter* writer =
-    serd_writer_new(SERD_TURTLE,
-                    (SerdStyle)(SERD_STYLE_ABBREVIATED | SERD_STYLE_CURIED),
-                    env,
-                    NULL,
-                    serd_file_sink,
-                    manifest_file);
+  SerdByteSink* const sink =
+    serd_byte_sink_new_function((SerdWriteFunc)fwrite, manifest_file, 1);
+
+  SerdWriter* writer = serd_writer_new(world->world, SERD_TURTLE, 0, env, sink);
+
+  const SerdSink* iface = serd_writer_sink(writer);
 
   // Write prefixes if this is a new file
-  maybe_write_prefixes(writer, env, manifest_file);
+  maybe_write_prefixes(iface, env, manifest_file);
 
   // Write manifest entry
-  serd_writer_write_statement(
-    writer,
-    0,
-    NULL,
-    sord_node_to_serd_node(subject->node),
-    sord_node_to_serd_node(plugin->world->uris.rdf_a),
-    sord_node_to_serd_node(plugin->world->uris.lv2_Plugin),
-    0,
-    0);
+  serd_sink_write(iface,
+                  0,
+                  subject,
+                  plugin->world->uris.rdf_a,
+                  plugin->world->uris.lv2_Plugin,
+                  NULL);
 
-  const SerdNode file_node =
-    serd_node_from_string(SERD_URI, (const uint8_t*)plugin_file_path);
-  serd_writer_write_statement(
-    writer,
-    0,
-    NULL,
-    sord_node_to_serd_node(subject->node),
-    sord_node_to_serd_node(plugin->world->uris.rdfs_seeAlso),
-    &file_node,
-    0,
-    0);
+  const SerdNode* file_node =
+    serd_new_uri(SERD_MEASURE_STRING(plugin_file_path));
+
+  serd_sink_write(serd_writer_sink(writer),
+                  0,
+                  subject,
+                  plugin->world->uris.rdfs_seeAlso,
+                  file_node,
+                  NULL);
 
   serd_writer_free(writer);
   serd_env_free(env);

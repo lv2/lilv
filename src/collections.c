@@ -17,7 +17,7 @@
 #include "lilv_internal.h"
 
 #include "lilv/lilv.h"
-#include "sord/sord.h"
+#include "serd/serd.h"
 #include "zix/common.h"
 #include "zix/tree.h"
 
@@ -38,10 +38,10 @@ lilv_resource_node_cmp(const void* a, const void* b, const void* user_data)
 {
   (void)user_data;
 
-  const SordNode* an = ((const LilvNode*)a)->node;
-  const SordNode* bn = ((const LilvNode*)b)->node;
+  const SerdNode* const an = (const SerdNode*)a;
+  const SerdNode* const bn = (const SerdNode*)b;
 
-  return (intptr_t)an - (intptr_t)bn;
+  return serd_node_compare(an, bn);
 }
 
 /* Generic collection functions */
