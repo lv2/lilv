@@ -1,6 +1,7 @@
 lilv (0.24.3) unstable;
 
   * Don't attempt to load remote or non-Turtle files
+  * lv2apply: Use default values when they are not nan
   * lv2bench: Improve support for plugins with sequence ports
   * lv2bench: Support running a single plugin given on the command line
   * Gracefully handle plugins with missing binary URIs
