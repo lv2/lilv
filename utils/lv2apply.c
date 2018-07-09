@@ -157,7 +157,7 @@ create_ports(LV2Apply* self)
 
 		port->lilv_port = lport;
 		port->index     = i;
-		port->value     = isnan(values[i]) ? values[i] : 0.0f;
+		port->value     = isnan(values[i]) ? 0.0f : values[i];
 		port->optional  = lilv_port_has_property(
 			self->plugin, lport, lv2_connectionOptional);
 
