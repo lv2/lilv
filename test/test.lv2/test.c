@@ -27,6 +27,11 @@
 #include "lv2/lv2plug.in/ns/ext/urid/urid.h"
 #include "lv2/lv2plug.in/ns/lv2core/lv2.h"
 
+#ifdef _WIN32
+#    include <io.h>
+#    define mkstemp(pat) _mktemp(pat)
+#endif
+
 #define TEST_URI "http://example.org/lilv-test-plugin"
 
 #define TMP_TEMPLATE "lilv_testXXXXXX"

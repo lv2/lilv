@@ -31,9 +31,11 @@
 
 #ifdef _WIN32
 #    include <direct.h>
+#    include <io.h>
 #    define mkdir(path, flags) _mkdir(path)
 #    define setenv(n, v, r) SetEnvironmentVariable((n), (v))
 #    define unsetenv(n) SetEnvironmentVariable((n), NULL)
+#    define mkstemp(pat) _mktemp(pat)
 #else
 #    include <dirent.h>
 #    include <unistd.h>

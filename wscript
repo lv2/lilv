@@ -235,7 +235,6 @@ def build(bld):
         lib = []
     if bld.env.MSVC_COMPILER:
         libflags = []
-        defines  = ['snprintf=_snprintf']
 
     # Pkgconfig file
     autowaf.build_pc(bld, 'LILV', LILV_VERSION, LILV_MAJOR_VERSION, [],
@@ -280,6 +279,8 @@ def build(bld):
             install_path = '${PYTHONDIR}')
 
     if bld.env.BUILD_TESTS:
+        import re
+
         test_libs      = lib
         test_cflags    = ['']
         test_linkflags = ['']
@@ -287,17 +288,12 @@ def build(bld):
             test_cflags    += ['--coverage']
             test_linkflags += ['--coverage']
 
-        # Test plugin library
-        penv          = bld.env.derive()
-        shlib_pattern = penv.cshlib_PATTERN
-        if shlib_pattern.startswith('lib'):
-            shlib_pattern = shlib_pattern[3:]
-        penv.cshlib_PATTERN   = shlib_pattern
-        shlib_ext = shlib_pattern[shlib_pattern.rfind('.'):]
+        # Make a pattern for shared objects without the 'lib' prefix
+        module_pattern = re.sub('^lib', '', bld.env.cshlib_PATTERN)
+        shlib_ext = module_pattern[module_pattern.rfind('.'):]
 
         for p in ['test'] + test_plugins:
             obj = bld(features     = 'c cshlib',
-                      env          = penv,
                       source       = 'test/%s.lv2/%s.c' % (p, p),
                       name         = p,
                       target       = 'test/%s.lv2/%s' % (p, p),
@@ -307,6 +303,7 @@ def build(bld):
                       linkflags    = test_linkflags,
                       lib          = test_libs,
                       uselib       = 'LV2')
+            obj.env.cshlib_PATTERN = module_pattern
 
         for p in test_plugins:
             if not bld.path.find_node('test/%s.lv2/test_%s.c' % (p, p)):
@@ -390,7 +387,6 @@ def build(bld):
 
             # Build bindings test plugin
             obj = bld(features     = 'c cshlib',
-                      env          = penv,
                       source       = 'bindings/test/bindings_test_plugin.c',
                       name         = 'bindings_test_plugin',
                       target       = 'bindings/bindings_test_plugin.lv2/bindings_test_plugin',
@@ -400,6 +396,7 @@ def build(bld):
                       linkflags    = test_linkflags,
                       lib          = test_libs,
                       uselib       = 'LV2')
+            obj.env.cshlib_PATTERN = module_pattern
 
             # Bindings test plugin data files
             for i in [ 'manifest.ttl.in', 'bindings_test_plugin.ttl.in' ]:

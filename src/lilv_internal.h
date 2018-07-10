@@ -29,13 +29,16 @@ extern "C" {
 #ifdef _WIN32
 #    include <windows.h>
 #    include <direct.h>
+#    include <stdio.h>
 #    define dlopen(path, flags) LoadLibrary(path)
 #    define dlclose(lib)        FreeLibrary((HMODULE)lib)
 #    define unlink(path)        _unlink(path)
 #    define rmdir(path)         _rmdir(path)
 #    ifdef _MSC_VER
 #        define __func__ __FUNCTION__
-#        define snprintf _snprintf
+#        ifndef snprintf
+#            define snprintf _snprintf
+#        endif
 #    endif
 #ifndef INFINITY
 #    define INFINITY DBL_MAX + DBL_MAX
