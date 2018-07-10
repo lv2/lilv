@@ -428,6 +428,10 @@ lilv_get_latest_copy(const char* path, const char* copy_path)
 char*
 lilv_realpath(const char* path)
 {
+	if (!path) {
+		return NULL;
+	}
+
 #if defined(_WIN32)
 	char* out = (char*)malloc(MAX_PATH);
 	GetFullPathName(path, MAX_PATH, out, NULL);
