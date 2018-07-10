@@ -104,6 +104,10 @@ def configure(conf):
     if conf.env.DEST_OS == 'darwin':
         defines += ['_DARWIN_C_SOURCE']
 
+    rt_lib  = ['rt']
+    if conf.env.DEST_OS == 'darwin' or conf.env.DEST_OS == 'win32':
+        rt_lib = []
+
     autowaf.check_function(conf, 'c', 'flock',
                            header_name = 'sys/file.h',
                            defines     = defines,
@@ -121,7 +125,7 @@ def configure(conf):
                            defines      = ['_POSIX_C_SOURCE=200809L'],
                            define_name  = 'HAVE_CLOCK_GETTIME',
                            uselib_store = 'CLOCK_GETTIME',
-                           lib          = ['rt'],
+                           lib          = rt_lib,
                            mandatory    = False)
 
     conf.check_cc(define_name = 'HAVE_LIBDL',
@@ -422,7 +426,7 @@ def build(bld):
     # lv2bench (less portable than other utilities)
     if bld.is_defined('HAVE_CLOCK_GETTIME') and not bld.env.STATIC_PROGS:
         obj = build_util(bld, 'utils/lv2bench', defines)
-        if not bld.env.MSVC_COMPILER:
+        if not bld.env.MSVC_COMPILER and not bld.env.DEST_OS == 'darwin':
             obj.lib = ['rt']
 
     # Documentation
