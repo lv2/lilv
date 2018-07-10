@@ -1,5 +1,6 @@
 lilv (0.24.3) unstable;
 
+  * Fix saving state when broken links are encountered
   * Don't attempt to load remote or non-Turtle files
   * lv2apply: Use default values when they are not nan
   * lv2bench: Improve support for plugins with sequence ports
@@ -9,7 +10,7 @@ lilv (0.24.3) unstable;
   * Install Python bindings when configured without tests
     (thanks Clement Skau)
 
- -- David Robillard <d@drobilla.net>  Thu, 23 Mar 2017 21:37:42 +0100
+ -- David Robillard <d@drobilla.net>  Tue, 10 Jul 2018 20:14:01 +0200
 
 lilv (0.24.2) stable;
 

@@ -108,6 +108,12 @@ def configure(conf):
     if conf.env.DEST_OS == 'darwin' or conf.env.DEST_OS == 'win32':
         rt_lib = []
 
+    autowaf.check_function(conf, 'c', 'lstat',
+                           header_name = ['sys/stat.h'],
+                           defines     = defines,
+                           define_name = 'HAVE_LSTAT',
+                           mandatory   = False)
+
     autowaf.check_function(conf, 'c', 'flock',
                            header_name = 'sys/file.h',
                            defines     = defines,

@@ -272,7 +272,12 @@ lilv_dirname(const char* path)
 bool
 lilv_path_exists(const char* path, void* ignored)
 {
+#ifdef HAVE_LSTAT
+	struct stat st;
+	return !lstat(path, &st);
+#else
 	return !access(path, F_OK);
+#endif
 }
 
 char*
