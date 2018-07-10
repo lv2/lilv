@@ -1039,6 +1039,10 @@ lilv_state_make_links(const LilvState* state, const char* dir)
 				// Make a link in the link directory to external file
 				char* lpath = lilv_find_free_path(pat, link_exists, pm->abs);
 				if (!lilv_path_exists(lpath, NULL)) {
+				        // Remove the link if it happens to exist but it is dangling.
+					unlink(lpath);
+					
+					// Create the link to external file.
 					lilv_symlink(pm->abs, lpath);
 				}
 
