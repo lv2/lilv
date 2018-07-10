@@ -17,4 +17,5 @@
 
 #include "lv2/lv2plug.in/ns/lv2core/lv2.h"
 
+LV2_SYMBOL_EXPORT
 const char* msg = "this is not the thing you're looking for";
