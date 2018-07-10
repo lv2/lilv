@@ -207,9 +207,7 @@ static char*
 make_path(LV2_State_Make_Path_Handle handle, const char* path)
 {
 	LilvState* state = (LilvState*)handle;
-	if (!lilv_path_exists(state->dir, NULL)) {
-		lilv_mkdir_p(state->dir);
-	}
+	lilv_mkdir_p(state->dir);
 
 	return lilv_path_join(state->dir, path);
 }
@@ -238,17 +236,19 @@ abstract_path(LV2_State_Map_Path_Handle handle,
 		// File created by plugin earlier
 		path = lilv_path_relative_to(real_path, state->file_dir);
 		if (state->copy_dir) {
-			if (!lilv_path_exists(state->copy_dir, NULL)) {
-				lilv_mkdir_p(state->copy_dir);
+			int st = lilv_mkdir_p(state->copy_dir);
+			if (st) {
+				LILV_ERRORF("Error creating directory %s (%s)\n",
+				            state->copy_dir, strerror(st));
 			}
+
 			char* cpath = lilv_path_join(state->copy_dir, path);
 			char* copy  = lilv_get_latest_copy(real_path, cpath);
 			if (!copy || !lilv_file_equals(real_path, copy)) {
 				// No recent enough copy, make a new one
 				free(copy);
 				copy = lilv_find_free_path(cpath, lilv_path_exists, NULL);
-				const int st = lilv_copy_file(real_path, copy);
-				if (st) {
+				if ((st = lilv_copy_file(real_path, copy))) {
 					LILV_ERRORF("Error copying state file %s (%s)\n",
 					            copy, strerror(st));
 				}
