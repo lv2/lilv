@@ -41,7 +41,10 @@
 #    define mkdir(path, flags) _mkdir(path)
 #    if (defined(_MSC_VER) && _MSC_VER <= 1400) || defined(__MINGW64__) || defined(__MINGW32__)
 /** Implement 'CreateSymbolicLink()' for MSVC 8 or earlier */
-extern "C" BOOLEAN WINAPI
+#ifdef __cplusplus
+extern "C"
+#endif
+BOOLEAN WINAPI
 CreateSymbolicLink(LPCTSTR linkpath, LPCTSTR targetpath, DWORD flags)
 {
 	typedef BOOLEAN (WINAPI* PFUNC)(LPCTSTR, LPCTSTR, DWORD);
