@@ -423,14 +423,14 @@ def build(bld):
         for i in utils.split():
             build_util(bld, i, defines)
 
-    if bld.env.HAVE_SNDFILE:
-        obj = build_util(bld, 'utils/lv2apply', defines, 'SNDFILE')
+        if bld.env.HAVE_SNDFILE:
+            obj = build_util(bld, 'utils/lv2apply', defines, 'SNDFILE')
 
-    # lv2bench (less portable than other utilities)
-    if bld.is_defined('HAVE_CLOCK_GETTIME') and not bld.env.STATIC_PROGS:
-        obj = build_util(bld, 'utils/lv2bench', defines)
-        if not bld.env.MSVC_COMPILER and not bld.env.DEST_OS == 'darwin':
-            obj.lib = ['rt']
+        # lv2bench (less portable than other utilities)
+        if bld.is_defined('HAVE_CLOCK_GETTIME') and not bld.env.STATIC_PROGS:
+            obj = build_util(bld, 'utils/lv2bench', defines)
+            if bld.env.DEST_OS != 'win32' and bld.env.DEST_OS != 'darwin':
+                obj.lib = ['rt']
 
     # Documentation
     autowaf.build_dox(bld, 'LILV', LILV_VERSION, top, out)
