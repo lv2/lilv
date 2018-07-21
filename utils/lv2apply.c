@@ -341,12 +341,14 @@ main(int argc, char** argv)
 	   a single frame at a time and avoid having to interleave buffers to
 	   read/write from/to sndfile. */
 
+	lilv_instance_activate(self.instance);
 	while (sread(self.in_file, in_fmt.channels, in_buf, self.n_audio_in)) {
 		lilv_instance_run(self.instance, 1);
 		if (sf_writef_float(self.out_file, out_buf, 1) != 1) {
 			return fatal(&self, 9, "Failed to write to output file\n");
 		}
 	}
+	lilv_instance_deactivate(self.instance);
 
 	return cleanup(0, &self);
 }
