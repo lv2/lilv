@@ -1,4 +1,4 @@
-lilv (0.24.3) unstable;
+lilv (0.24.4) stable;
 
   * Fix saving state when broken links are encountered
   * Don't attempt to load remote or non-Turtle files
@@ -11,7 +11,7 @@ lilv (0.24.3) unstable;
   * Install Python bindings when configured without tests
     (thanks Clement Skau)
 
- -- David Robillard <d@drobilla.net>  Sat, 21 Jul 2018 12:28:43 +0200
+ -- David Robillard <d@drobilla.net>  Sun, 22 Jul 2018 20:42:00 +0200
 
 lilv (0.24.2) stable;
 
