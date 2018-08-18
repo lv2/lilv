@@ -333,6 +333,13 @@ lilv_copy_file(const char* src, const char* dst)
 	return st;
 }
 
+static inline bool
+is_windows_path(const char* path)
+{
+	return (isalpha(path[0]) && (path[1] == ':' || path[1] == '|') &&
+	        (path[2] == '/' || path[2] == '\\'));
+}
+
 bool
 lilv_path_is_absolute(const char* path)
 {
@@ -341,7 +348,7 @@ lilv_path_is_absolute(const char* path)
 	}
 
 #ifdef _WIN32
-	if (isalpha(path[0]) && path[1] == ':' && lilv_is_dir_sep(path[2])) {
+	if (is_windows_path(path)) {
 		return true;
 	}
 #endif
@@ -572,7 +579,15 @@ lilv_mkdir_p(const char* dir_path)
 {
 	char*        path     = lilv_strdup(dir_path);
 	const size_t path_len = strlen(path);
-	for (size_t i = 1; i <= path_len; ++i) {
+	size_t       i        = 1;
+
+#ifdef _WIN32
+	if (is_windows_path(dir_path)) {
+		i = 3;
+	}
+#endif
+
+	for (; i <= path_len; ++i) {
 		if (path[i] == LILV_DIR_SEP[0] || path[i] == '\0') {
 			path[i] = '\0';
 			if (mkdir(path, 0755) && errno != EEXIST) {
