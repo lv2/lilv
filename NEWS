@@ -1,3 +1,9 @@
+lilv (0.24.5) unstable;
+
+  * Fix GCC8 warnings
+
+ -- David Robillard <d@drobilla.net>  Tue, 04 Sep 2018 21:02:19 +0200
+
 lilv (0.24.4) stable;
 
   * Fix saving state when broken links are encountered

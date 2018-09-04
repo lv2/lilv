@@ -58,10 +58,10 @@
 #    define SHLIB_EXT ".so"
 #endif
 
-static char bundle_dir_name[TEST_PATH_MAX];
-static char bundle_dir_uri[TEST_PATH_MAX];
-static char manifest_name[TEST_PATH_MAX];
-static char content_name[TEST_PATH_MAX];
+static char bundle_dir_name[TEST_PATH_MAX + sizeof("/.lv2/lilv-test.lv2")];
+static char bundle_dir_uri[sizeof(bundle_dir_name) + sizeof("file:///")];
+static char manifest_name[sizeof(bundle_dir_name) + sizeof("/manifest.ttl")];
+static char content_name[sizeof(bundle_dir_name) + sizeof("plugin.ttl")];
 
 static LilvWorld* world;
 
@@ -79,13 +79,16 @@ delete_bundle(void)
 static void
 init_tests(void)
 {
-	snprintf(bundle_dir_name, TEST_PATH_MAX, "%s/.lv2/lilv-test.lv2",
+	snprintf(bundle_dir_name, strlen(bundle_dir_name), "%s/.lv2/lilv-test.lv2",
 	         getenv("HOME"));
 	lilv_mkdir_p(bundle_dir_name);
 
-	snprintf(bundle_dir_uri, TEST_PATH_MAX, "file://%s/", bundle_dir_name);
-	snprintf(manifest_name, TEST_PATH_MAX, "%s/manifest.ttl", bundle_dir_name);
-	snprintf(content_name, TEST_PATH_MAX, "%s/plugin.ttl", bundle_dir_name);
+	snprintf(bundle_dir_uri, sizeof(bundle_dir_uri), "file://%s/",
+	         bundle_dir_name);
+	snprintf(manifest_name, sizeof(manifest_name), "%s/manifest.ttl",
+	         bundle_dir_name);
+	snprintf(content_name, sizeof(content_name), "%s/plugin.ttl",
+	         bundle_dir_name);
 
 	delete_bundle();
 }
