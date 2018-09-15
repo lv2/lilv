@@ -79,7 +79,7 @@ delete_bundle(void)
 static void
 init_tests(void)
 {
-	snprintf(bundle_dir_name, strlen(bundle_dir_name), "%s/.lv2/lilv-test.lv2",
+	snprintf(bundle_dir_name, sizeof(bundle_dir_name), "%s/.lv2/lilv-test.lv2",
 	         getenv("HOME"));
 	lilv_mkdir_p(bundle_dir_name);
 
