@@ -94,12 +94,13 @@ init_tests(void)
 }
 
 static void
-fatal_error(const char* err, const char* arg)
+fatal_error(const char* fmt, ...)
 {
-	/* TODO: possibly change to vfprintf later */
-	fprintf(stderr, err, arg);
-	/* IMHO, the bundle should be left in place after an error, for possible investigation */
-	/* delete_bundle(); */
+	va_list args;
+	va_start(args, fmt);
+	fprintf(stderr, "error: ");
+	vfprintf(stderr, fmt, args);
+	va_end(args);
 	exit(1);
 }
 
@@ -109,7 +110,8 @@ write_file(const char* name, const char* content)
 	FILE* f = fopen(name, "w");
 	size_t len = strlen(content);
 	if (fwrite(content, 1, len, f) != len) {
-		fatal_error("Cannot write file %s\n", name);
+		fatal_error("Failed to write to file '%s' (%s)\n",
+		            name, strerror(errno));
 	}
 	fclose(f);
 }
@@ -135,7 +137,8 @@ static void
 create_bundle(const char* manifest, const char* content)
 {
 	if (mkdir(bundle_dir_name, 0700) && errno != EEXIST) {
-		fatal_error("Cannot create directory %s\n", bundle_dir_name);
+		fatal_error("Failed to create directory '%s' (%s)\n",
+		            bundle_dir_name, strerror(errno));
 	}
 	write_file(manifest_name, manifest);
 	write_file(content_name, content);
