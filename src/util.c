@@ -273,7 +273,7 @@ lilv_dirname(const char* path)
 }
 
 bool
-lilv_path_exists(const char* path, void* ignored)
+lilv_path_exists(const char* path, const void* ignored)
 {
 #ifdef HAVE_LSTAT
 	struct stat st;
@@ -285,7 +285,8 @@ lilv_path_exists(const char* path, void* ignored)
 
 char*
 lilv_find_free_path(const char* in_path,
-                    bool (*exists)(const char*, void*), void* user_data)
+                    bool (*exists)(const char*, const void*),
+                    const void* user_data)
 {
 	const size_t in_path_len = strlen(in_path);
 	char*        path        = (char*)malloc(in_path_len + 7);

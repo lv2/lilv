@@ -383,7 +383,7 @@ char*  lilv_get_lang(void);
 char*  lilv_expand(const char* path);
 char*  lilv_dirname(const char* path);
 int    lilv_copy_file(const char* src, const char* dst);
-bool   lilv_path_exists(const char* path, void* ignored);
+bool   lilv_path_exists(const char* path, const void* ignored);
 char*  lilv_path_absolute(const char* path);
 bool   lilv_path_is_absolute(const char* path);
 char*  lilv_get_latest_copy(const char* path, const char* copy_path);
@@ -398,7 +398,8 @@ bool   lilv_file_equals(const char* a_path, const char* b_path);
 
 char*
 lilv_find_free_path(const char* in_path,
-                    bool (*exists)(const char*, void*), void* user_data);
+                    bool (*exists)(const char*, const void*),
+                    const void* user_data);
 
 void
 lilv_dir_for_each(const char* path,

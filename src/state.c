@@ -198,9 +198,9 @@ retrieve_callback(LV2_State_Handle handle,
 }
 
 static bool
-lilv_state_has_path(const char* path, void* state)
+lilv_state_has_path(const char* path, const void* state)
 {
-	return lilv_state_rel2abs((LilvState*)state, path) != path;
+	return lilv_state_rel2abs((const LilvState*)state, path) != path;
 }
 
 static char*
@@ -872,7 +872,7 @@ add_state_to_manifest(LilvWorld*      lworld,
 }
 
 static bool
-link_exists(const char* path, void* data)
+link_exists(const char* path, const void* data)
 {
 	const char* target = (const char*)data;
 	if (!lilv_path_exists(path, NULL)) {
