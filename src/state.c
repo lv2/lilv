@@ -470,6 +470,16 @@ lilv_state_restore(const LilvState*           state,
 	}
 }
 
+static void
+set_state_dir_from_model(LilvState* state, const SordNode* graph)
+{
+	if (!state->dir && graph) {
+		const char* uri = (const char*)sord_node_get_string(graph);
+		state->dir = lilv_file_uri_parse(uri, NULL);
+	}
+	assert(!state->dir || lilv_path_is_absolute(state->dir));
+}
+
 static LilvState*
 new_state_from_model(LilvWorld*       world,
                      LV2_URID_Map*    map,
@@ -494,9 +504,7 @@ new_state_from_model(LilvWorld*       world,
 		const SordNode* object = sord_iter_get_node(i, SORD_OBJECT);
 		const SordNode* graph  = sord_iter_get_node(i, SORD_GRAPH);
 		state->plugin_uri = lilv_node_new_from_node(world, object);
-		if (!state->dir && graph) {
-			state->dir = lilv_strdup((const char*)sord_node_get_string(graph));
-		}
+		set_state_dir_from_model(state, graph);
 		sord_iter_free(i);
 	} else if (sord_ask(model,
 	                    node,
@@ -515,9 +523,7 @@ new_state_from_model(LilvWorld*       world,
 		const SordNode* object = sord_iter_get_node(i, SORD_OBJECT);
 		const SordNode* graph  = sord_iter_get_node(i, SORD_GRAPH);
 		state->label = lilv_strdup((const char*)sord_node_get_string(object));
-		if (!state->dir && graph) {
-			state->dir = lilv_strdup((const char*)sord_node_get_string(graph));
-		}
+		set_state_dir_from_model(state, graph);
 		sord_iter_free(i);
 	}
 
@@ -1095,10 +1101,9 @@ lilv_state_save(LilvWorld*       world,
 		world, map, unmap, state, ttl, (const char*)node.buf, dir);
 
 	// Set saved dir and uri (FIXME: const violation)
-	SerdNode dir_uri = serd_node_new_file_uri(USTR(abs_dir), NULL, NULL, true);
 	free(state->dir);
 	lilv_node_free(state->uri);
-	((LilvState*)state)->dir = (char*)dir_uri.buf;
+	((LilvState*)state)->dir = lilv_strdup(abs_dir);
 	((LilvState*)state)->uri = lilv_new_uri(world, (const char*)node.buf);
 
 	serd_node_free(&file);
@@ -1150,7 +1155,7 @@ lilv_state_delete(LilvWorld*       world,
 		return -1;
 	}
 
-	LilvNode*  bundle        = lilv_new_uri(world, state->dir);
+	LilvNode*  bundle        = lilv_new_file_uri(world, NULL, state->dir);
 	LilvNode*  manifest      = lilv_world_get_manifest_uri(world, bundle);
 	char*      manifest_path = lilv_node_get_path(manifest, NULL);
 	SordModel* model         = sord_new(world->world, SORD_SPO, false);
