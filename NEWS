@@ -2,8 +2,9 @@ lilv (0.24.5) unstable;
 
   * Fix GCC8 warnings
   * Fix creating directories across drives on Windows
+  * Don't print errors when saving state if correct links already exist
 
- -- David Robillard <d@drobilla.net>  Tue, 04 Sep 2018 21:02:19 +0200
+ -- David Robillard <d@drobilla.net>  Sun, 16 Sep 2018 11:04:16 +0200
 
 lilv (0.24.4) stable;
 

@@ -884,6 +884,12 @@ link_exists(const char* path, const void* data)
 	return !matches;
 }
 
+static int
+maybe_symlink(const char* oldpath, const char* newpath)
+{
+  return link_exists(newpath, oldpath) ? 0 : lilv_symlink(oldpath, newpath);
+}
+
 static void
 write_property_array(const LilvState*     state,
                      const PropertyArray* array,
@@ -1026,7 +1032,7 @@ lilv_state_make_links(const LilvState* state, const char* dir)
 		    && strcmp(state->copy_dir, dir)) {
 			// Link directly to snapshot in the copy directory
 			char* target = lilv_path_relative_to(pm->abs, dir);
-			lilv_symlink(target, path);
+			maybe_symlink(target, path);
 			free(target);
 		} else if (!lilv_path_is_child(pm->abs, dir)) {
 			const char* link_dir = state->link_dir ? state->link_dir : dir;
@@ -1034,7 +1040,7 @@ lilv_state_make_links(const LilvState* state, const char* dir)
 			if (!strcmp(dir, link_dir)) {
 				// Link directory is save directory, make link at exact path
 				remove(pat);
-				lilv_symlink(pm->abs, pat);
+				maybe_symlink(pm->abs, pat);
 			} else {
 				// Make a link in the link directory to external file
 				char* lpath = lilv_find_free_path(pat, link_exists, pm->abs);
@@ -1044,7 +1050,7 @@ lilv_state_make_links(const LilvState* state, const char* dir)
 
 				// Make a link in the save directory to the external link
 				char* target = lilv_path_relative_to(lpath, dir);
-				lilv_symlink(target, path);
+				maybe_symlink(target, path);
 				free(target);
 				free(lpath);
 			}
