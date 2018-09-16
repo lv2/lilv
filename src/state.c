@@ -1146,6 +1146,14 @@ lilv_state_to_string(LilvWorld*       world,
 	return (char*)serd_chunk_sink_finish(&chunk);
 }
 
+static void
+try_unlink(const char* path)
+{
+	if (unlink(path)) {
+		LILV_ERRORF("Failed to remove %s (%s)\n", path, strerror(errno));
+	}
+}
+
 LILV_API int
 lilv_state_delete(LilvWorld*       world,
                   const LilvState* state)
@@ -1175,9 +1183,7 @@ lilv_state_delete(LilvWorld*       world,
 		// Remove state file
 		char* path = lilv_file_uri_parse(
 			(const char*)sord_node_get_string(file), NULL);
-		if (unlink(path)) {
-			LILV_ERRORF("Failed to remove %s (%s)\n", path, strerror(errno));
-		}
+		try_unlink(path);
 		lilv_free(path);
 	}
 
@@ -1192,16 +1198,22 @@ lilv_state_delete(LilvWorld*       world,
 
 	if (sord_num_quads(model) == 0) {
 		// Manifest is empty, attempt to remove bundle entirely
-		if (unlink(manifest_path)) {
-			LILV_ERRORF("Failed to remove %s (%s)\n",
-			            manifest_path, strerror(errno));
+		try_unlink(manifest_path);
+
+		// Remove all known files from state bundle
+		for (ZixTreeIter* i = zix_tree_begin(state->abs2rel);
+		     i != zix_tree_end(state->abs2rel);
+		     i = zix_tree_iter_next(i)) {
+			const PathMap* pm   = (const PathMap*)zix_tree_get(i);
+			char*          path = lilv_path_join(state->dir, pm->rel);
+			try_unlink(path);
+			free(path);
 		}
-		char* dir_path = lilv_file_uri_parse(state->dir, NULL);
-		if (rmdir(dir_path)) {
-			LILV_ERRORF("Failed to remove %s (%s)\n",
-			            dir_path, strerror(errno));
+
+		if (rmdir(state->dir)) {
+			LILV_ERRORF("Failed to remove directory %s (%s)\n",
+			            state->dir, strerror(errno));
 		}
-		lilv_free(dir_path);
 	} else {
 		// Still something in the manifest, reload bundle
 		lilv_world_load_bundle(world, bundle);
