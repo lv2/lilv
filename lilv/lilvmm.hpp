@@ -158,6 +158,10 @@ struct UI {
 	           const LilvNode*,     container_type,
 	           const LilvNode**,    ui_type);*/
 	LILV_WRAP1(bool, ui, is_a, const LilvNode*, class_uri);
+	LILV_WRAP1(bool, ui, has_feature, Node, feature_uri);
+	LILV_WRAP0(Nodes, ui, get_supported_features);
+	LILV_WRAP0(Nodes, ui, get_required_features);
+	LILV_WRAP0(Nodes, ui, get_optional_features);
 
 	const LilvUI* me;
 };

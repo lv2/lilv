@@ -109,3 +109,49 @@ lilv_ui_get_binary_uri(const LilvUI* ui)
 {
 	return ui->binary_uri;
 }
+
+LILV_API bool
+lilv_ui_has_feature(const LilvUI* ui,
+                    const LilvNode*   feature)
+{
+	const SordNode* predicates[] = { ui->world->uris.lv2_requiredFeature,
+	                                 ui->world->uris.lv2_optionalFeature,
+	                                 NULL };
+
+	for (const SordNode** pred = predicates; *pred; ++pred) {
+		if (lilv_world_ask_internal(
+			    ui->world, ui->uri->node, *pred, feature->node)) {
+			return true;
+		}
+	}
+	return false;
+}
+
+LILV_API LilvNodes*
+lilv_ui_get_supported_features(const LilvUI* ui)
+{
+	LilvNodes* optional = lilv_ui_get_optional_features(ui);
+	LilvNodes* required = lilv_ui_get_required_features(ui);
+	LilvNodes* result   = lilv_nodes_merge(optional, required);
+	lilv_nodes_free(optional);
+	lilv_nodes_free(required);
+	return result;
+}
+
+LILV_API LilvNodes*
+lilv_ui_get_optional_features(const LilvUI* ui)
+{
+	return lilv_world_find_nodes_internal(ui->world,
+	                                      ui->uri->node,
+	                                      ui->world->uris.lv2_optionalFeature,
+	                                      NULL);
+}
+
+LILV_API LilvNodes*
+lilv_ui_get_required_features(const LilvUI* ui)
+{
+	return lilv_world_find_nodes_internal(ui->world,
+	                                      ui->uri->node,
+	                                      ui->world->uris.lv2_requiredFeature,
+	                                      NULL);
+}
