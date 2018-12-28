@@ -1,5 +1,5 @@
 project('lilv', ['c'],
-        version: '0.24.13',
+        version: '1.0.0',
         license: 'ISC',
         meson_version: '>= 0.49.2',
         default_options: [
