@@ -58,7 +58,7 @@ struct LilvStateImpl {
 	LilvNode*     plugin_uri;   ///< Plugin URI
 	LilvNode*     uri;          ///< State/preset URI
 	char*         dir;          ///< Save directory (if saved)
-	char*         file_dir;     ///< Directory for files created by plugin
+	char*         scratch_dir;  ///< Directory for files created by plugin
 	char*         copy_dir;     ///< Directory for snapshots of external files
 	char*         link_dir;     ///< Directory for links to external files
 	char*         label;        ///< State/Preset label
@@ -232,9 +232,9 @@ abstract_path(LV2_State_Map_Path_Handle handle,
 	} else if (lilv_path_is_child(real_path, state->dir)) {
 		// File in state directory (loaded, or created by plugin during save)
 		path = lilv_path_relative_to(real_path, state->dir);
-	} else if (lilv_path_is_child(real_path, state->file_dir)) {
+	} else if (lilv_path_is_child(real_path, state->scratch_dir)) {
 		// File created by plugin earlier
-		path = lilv_path_relative_to(real_path, state->file_dir);
+		path = lilv_path_relative_to(real_path, state->scratch_dir);
 		if (state->copy_dir) {
 			int st = lilv_mkdir_p(state->copy_dir);
 			if (st) {
@@ -347,7 +347,7 @@ LILV_API LilvState*
 lilv_state_new_from_instance(const LilvPlugin*          plugin,
                              LilvInstance*              instance,
                              LV2_URID_Map*              map,
-                             const char*                file_dir,
+                             const char*                scratch_dir,
                              const char*                copy_dir,
                              const char*                link_dir,
                              const char*                save_dir,
@@ -359,14 +359,14 @@ lilv_state_new_from_instance(const LilvPlugin*          plugin,
 	const LV2_Feature** sfeatures = NULL;
 	LilvWorld* const    world     = plugin->world;
 	LilvState* const    state     = (LilvState*)calloc(1, sizeof(LilvState));
-	state->plugin_uri = lilv_node_duplicate(lilv_plugin_get_uri(plugin));
-	state->abs2rel    = zix_tree_new(false, abs_cmp, NULL, path_rel_free);
-	state->rel2abs    = zix_tree_new(false, rel_cmp, NULL, NULL);
-	state->file_dir   = file_dir ? absolute_dir(file_dir) : NULL;
-	state->copy_dir   = copy_dir ? absolute_dir(copy_dir) : NULL;
-	state->link_dir   = link_dir ? absolute_dir(link_dir) : NULL;
-	state->dir        = save_dir ? absolute_dir(save_dir) : NULL;
-	state->atom_Path  = map->map(map->handle, LV2_ATOM__Path);
+	state->plugin_uri  = lilv_node_duplicate(lilv_plugin_get_uri(plugin));
+	state->abs2rel     = zix_tree_new(false, abs_cmp, NULL, path_rel_free);
+	state->rel2abs     = zix_tree_new(false, rel_cmp, NULL, NULL);
+	state->scratch_dir = scratch_dir ? absolute_dir(scratch_dir) : NULL;
+	state->copy_dir    = copy_dir ? absolute_dir(copy_dir) : NULL;
+	state->link_dir    = link_dir ? absolute_dir(link_dir) : NULL;
+	state->dir         = save_dir ? absolute_dir(save_dir) : NULL;
+	state->atom_Path   = map->map(map->handle, LV2_ATOM__Path);
 
 	LV2_State_Map_Path  pmap          = { state, abstract_path, absolute_path };
 	LV2_Feature         pmap_feature  = { LV2_STATE__mapPath, &pmap };
@@ -1257,7 +1257,7 @@ lilv_state_free(LilvState* state)
 		free(state->values);
 		free(state->label);
 		free(state->dir);
-		free(state->file_dir);
+		free(state->scratch_dir);
 		free(state->copy_dir);
 		free(state->link_dir);
 		free(state);

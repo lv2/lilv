@@ -1278,28 +1278,31 @@ typedef const void* (*LilvGetPortValueFunc)(const char* port_symbol,
 
    @param map The map to use for mapping URIs in state.
 
-   @param file_dir Directory of files created by the plugin earlier (or NULL).
-   This is for hosts that support file creation at any time with state
+   @param scratch_dir Directory of files created by the plugin earlier, or
+   NULL.  This is for hosts that support file creation at any time with state
    state:makePath.  These files will be copied as necessary to `copy_dir` and
    not be referred to directly in state (a temporary directory is appropriate).
 
-   @param copy_dir Directory of copies of files in `file_dir` (or NULL).  This
-   directory will have the same structure as `file_dir` but with possibly
-   modified file names to distinguish different revisions.  If you only care
-   about saving one state snapshot, it can be the same as `save_dir`.  Plugin
-   state will refer to files in this directory.
+   @param copy_dir Directory of copies of files in `scratch_dir`, or NULL.
+   This directory will have the same structure as `scratch_dir` but with
+   possibly modified file names to distinguish revisions.  This allows the
+   saved state to contain the exact contents of the scratch file at save time,
+   so that the state is not ruined if the file is later modified (for example,
+   by the plugin continuing to record).  This can be the same as `save_dir` to
+   create a copy in the state bundle, but can also be a separate directory
+   which allows multiple state snapshots to share a single copy if the file has
+   not changed.
 
-   @param link_dir Directory of links to external files (or NULL).  A link will
+   @param link_dir Directory of links to external files, or NULL.  A link will
    be made in this directory to any external files referred to in plugin state.
    In turn, links will be created in the save directory to these links (e.g.
    save_dir/file => link_dir/file => /foo/bar/file).  This allows many state
-   snapshots to share a single link to an external file, so archival
-   (e.g. with tar -h) will not create several copies of the file.  If this is
-   not required, it can be the same as save_dir.
+   snapshots to share a single link to an external file, so archival (e.g. with
+   tar -h) will not create several copies of the file.  If this is not
+   required, it can be the same as `save_dir`.
 
    @param save_dir Directory of files created by plugin during save (or NULL).
-   If the state will be saved, this should be the bundle directory later passed
-   to lilv_state_save().
+   This is typically the bundle directory later passed to lilv_state_save().
 
    @param get_value Function to get port values (or NULL).  If NULL, the
    returned state will not represent port values.  This should only be NULL in
@@ -1324,12 +1327,12 @@ typedef const void* (*LilvGetPortValueFunc)(const char* port_symbol,
    saving an instances state many times while avoiding any duplication of data.
 
    If supported (via state:makePath passed to LV2_Descriptor::instantiate()),
-   `file_dir` should be the directory where any files created by the plugin
+   `scratch_dir` should be the directory where any files created by the plugin
    (not during save time, e.g. during instantiation) are stored.  These files
-   will be copied to preserve their state at this time.plugin-created files are stored.
-   Lilv will assume any files within this directory (recursively) are created
-   by the plugin and all other files are immutable.  Note that this function
-   does not save the state, use lilv_state_save() for that.
+   will be copied to preserve their state at this time.plugin-created files are
+   stored.  Lilv will assume any files within this directory (recursively) are
+   created by the plugin and all other files are immutable.  Note that this
+   function does not save the state, use lilv_state_save() for that.
 
    See <a href="http://lv2plug.in/ns/ext/state/state.h">state.h</a> from the
    LV2 State extension for details on the `flags` and `features` parameters.
@@ -1338,7 +1341,7 @@ LILV_API LilvState*
 lilv_state_new_from_instance(const LilvPlugin*          plugin,
                              LilvInstance*              instance,
                              LV2_URID_Map*              map,
-                             const char*                file_dir,
+                             const char*                scratch_dir,
                              const char*                copy_dir,
                              const char*                link_dir,
                              const char*                save_dir,

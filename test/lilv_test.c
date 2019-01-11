@@ -1610,21 +1610,21 @@ test_state(void)
 
 	temp_dir = lilv_realpath("temp");
 
-	const char* file_dir = NULL;
-	char*       copy_dir = NULL;
-	char*       link_dir = NULL;
-	char*       save_dir = NULL;
+	const char* scratch_dir = NULL;
+	char*       copy_dir    = NULL;
+	char*       link_dir    = NULL;
+	char*       save_dir    = NULL;
 
 	// Get instance state state
 	LilvState* state = lilv_state_new_from_instance(
 		plugin, instance, &map,
-		file_dir, copy_dir, link_dir, save_dir,
+		scratch_dir, copy_dir, link_dir, save_dir,
 		get_port_value, world, 0, NULL);
 
 	// Get another instance state
 	LilvState* state2 = lilv_state_new_from_instance(
 		plugin, instance, &map,
-		file_dir, copy_dir, link_dir, save_dir,
+		scratch_dir, copy_dir, link_dir, save_dir,
 		get_port_value, world, 0, NULL);
 
 	// Ensure they are equal
@@ -1672,7 +1672,7 @@ test_state(void)
 	lilv_instance_run(instance, 1);
 	LilvState* state3 = lilv_state_new_from_instance(
 		plugin, instance, &map,
-		file_dir, copy_dir, link_dir, save_dir,
+		scratch_dir, copy_dir, link_dir, save_dir,
 		get_port_value, world, 0, NULL);
 	TEST_ASSERT(!lilv_state_equals(state2, state3));  // num_runs changed
 
@@ -1682,7 +1682,7 @@ test_state(void)
 	// Take a new snapshot and ensure it matches the set state
 	LilvState* state4 = lilv_state_new_from_instance(
 		plugin, instance, &map,
-		file_dir, copy_dir, link_dir, save_dir,
+		scratch_dir, copy_dir, link_dir, save_dir,
 		get_port_value, world, 0, NULL);
 	TEST_ASSERT(lilv_state_equals(state2, state4));
 
@@ -1757,7 +1757,7 @@ test_state(void)
 
 	// Make directories and test files support
 	mkdir("temp", 0700);
-	file_dir = temp_dir;
+	scratch_dir = temp_dir;
 	mkdir("files", 0700);
 	copy_dir = lilv_realpath("files");
 	mkdir("links", 0700);
@@ -1787,13 +1787,13 @@ test_state(void)
 	// Get instance state state
 	LilvState* fstate = lilv_state_new_from_instance(
 		plugin, instance, &map,
-		file_dir, copy_dir, link_dir, "state/fstate.lv2",
+		scratch_dir, copy_dir, link_dir, "state/fstate.lv2",
 		get_port_value, world, 0, ffeatures);
 
 	// Get another instance state
 	LilvState* fstate2 = lilv_state_new_from_instance(
 		plugin, instance, &map,
-		file_dir, copy_dir, link_dir, "state/fstate2.lv2",
+		scratch_dir, copy_dir, link_dir, "state/fstate2.lv2",
 		get_port_value, world, 0, ffeatures);
 
 	// Should be identical
@@ -1805,7 +1805,7 @@ test_state(void)
 	// Get yet another instance state
 	LilvState* fstate3 = lilv_state_new_from_instance(
 		plugin, instance, &map,
-		file_dir, copy_dir, link_dir, "state/fstate3.lv2",
+		scratch_dir, copy_dir, link_dir, "state/fstate3.lv2",
 		get_port_value, world, 0, ffeatures);
 
 	// Should be different
@@ -1827,7 +1827,7 @@ test_state(void)
 	// Take a new snapshot and ensure it matches
 	LilvState* fstate5 = lilv_state_new_from_instance(
 		plugin, instance, &map,
-		file_dir, copy_dir, link_dir, "state/fstate5.lv2",
+		scratch_dir, copy_dir, link_dir, "state/fstate5.lv2",
 		get_port_value, world, 0, ffeatures);
 	TEST_ASSERT(lilv_state_equals(fstate3, fstate5));
 
@@ -1847,7 +1847,7 @@ test_state(void)
 	// Take a new snapshot
 	LilvState* fstate7 = lilv_state_new_from_instance(
 		plugin, instance, &map,
-		file_dir, copy_dir, link_dir, "state/fstate7.lv2",
+		scratch_dir, copy_dir, link_dir, "state/fstate7.lv2",
 		get_port_value, world, 0, ffeatures);
 	TEST_ASSERT(!lilv_state_equals(fstate6, fstate7));
 
