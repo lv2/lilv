@@ -1804,7 +1804,8 @@ test_state(void)
 
 	// Get yet another instance state
 	LilvState* fstate3 = lilv_state_new_from_instance(
-		plugin, instance, &map, file_dir, copy_dir, link_dir, "state/fstate3.lv2",
+		plugin, instance, &map,
+		file_dir, copy_dir, link_dir, "state/fstate3.lv2",
 		get_port_value, world, 0, ffeatures);
 
 	// Should be different
@@ -1816,8 +1817,8 @@ test_state(void)
 	TEST_ASSERT(!ret);
 
 	// Load state from directory
-	LilvState* fstate4 = lilv_state_new_from_file(world, &map, NULL,
-	                                              "state/fstate.lv2/fstate.ttl");
+	LilvState* fstate4 = lilv_state_new_from_file(
+		world, &map, NULL, "state/fstate.lv2/fstate.ttl");
 	TEST_ASSERT(lilv_state_equals(fstate, fstate4));  // Round trip accuracy
 
 	// Restore instance state to loaded state
@@ -1836,8 +1837,8 @@ test_state(void)
 	TEST_ASSERT(!ret);
 
 	// Reload it and ensure it's identical to the other loaded version
-	LilvState* fstate6 = lilv_state_new_from_file(world, &map, NULL,
-	                                              "state/fstate6.lv2/fstate6.ttl");
+	LilvState* fstate6 = lilv_state_new_from_file(
+		world, &map, NULL, "state/fstate6.lv2/fstate6.ttl");
 	TEST_ASSERT(lilv_state_equals(fstate4, fstate6));
 
 	// Run, changing rec file (without changing size)
@@ -1856,8 +1857,8 @@ test_state(void)
 	TEST_ASSERT(!ret);
 
 	// Reload it and ensure it's changed
-	LilvState* fstate72 = lilv_state_new_from_file(world, &map, NULL,
-	                                              "state/fstate7.lv2/fstate7.ttl");
+	LilvState* fstate72 = lilv_state_new_from_file(
+		world, &map, NULL, "state/fstate7.lv2/fstate7.ttl");
 	TEST_ASSERT(lilv_state_equals(fstate72, fstate7));
 	TEST_ASSERT(!lilv_state_equals(fstate6, fstate72));
 
