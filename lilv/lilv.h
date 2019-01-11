@@ -1289,6 +1289,14 @@ typedef const void* (*LilvGetPortValueFunc)(const char* port_symbol,
    about saving one state snapshot, it can be the same as `save_dir`.  Plugin
    state will refer to files in this directory.
 
+   @param link_dir Directory of links to external files (or NULL).  A link will
+   be made in this directory to any external files referred to in plugin state.
+   In turn, links will be created in the save directory to these links (e.g.
+   save_dir/file => link_dir/file => /foo/bar/file).  This allows many state
+   snapshots to share a single link to an external file, so archival
+   (e.g. with tar -h) will not create several copies of the file.  If this is
+   not required, it can be the same as save_dir.
+
    @param save_dir Directory of files created by plugin during save (or NULL).
    If the state will be saved, this should be the bundle directory later passed
    to lilv_state_save().
@@ -1298,14 +1306,6 @@ typedef const void* (*LilvGetPortValueFunc)(const char* port_symbol,
    hosts that save and restore port values via some other mechanism.
 
    @param user_data User data to pass to `get_value`.
-
-   @param link_dir Directory of links to external files (or NULL).  A link will
-   be made in this directory to any external files referred to in plugin state.
-   In turn, links will be created in the save directory to these links (e.g.
-   save_dir/file => link_dir/file => /foo/bar/file).  This allows many state
-   snapshots to share a single link to an external file, so archival
-   (e.g. with tar -h) will not create several copies of the file.  If this is
-   not required, it can be the same as save_dir.
 
    @param flags Bitwise OR of LV2_State_Flags values.
 
