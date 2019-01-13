@@ -16,6 +16,14 @@
 
 #include "lilv_internal.h"
 
+#include "lilv/lilv.h"
+#include "lv2/lv2plug.in/ns/lv2core/lv2.h"
+#include "zix/tree.h"
+
+#include <dlfcn.h>
+#include <stdint.h>
+#include <stdlib.h>
+
 LilvLib*
 lilv_lib_open(LilvWorld*               world,
               const LilvNode*          uri,

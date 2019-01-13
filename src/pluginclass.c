@@ -14,10 +14,14 @@
   OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 */
 
-#include <stdlib.h>
-#include <string.h>
-
 #include "lilv_internal.h"
+
+#include "lilv/lilv.h"
+#include "sord/sord.h"
+#include "zix/tree.h"
+
+#include <stdbool.h>
+#include <stdlib.h>
 
 LilvPluginClass*
 lilv_plugin_class_new(LilvWorld*      world,

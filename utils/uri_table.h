@@ -23,6 +23,9 @@
 #ifndef URI_TABLE_H
 #define URI_TABLE_H
 
+#include <stdlib.h>
+#include <string.h>
+
 typedef struct {
 	char** uris;
 	size_t n_uris;

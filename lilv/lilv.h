@@ -21,13 +21,14 @@
 #ifndef LILV_LILV_H
 #define LILV_LILV_H
 
+#include "lv2/lv2plug.in/ns/ext/urid/urid.h"
+#include "lv2/lv2plug.in/ns/lv2core/lv2.h"
+
 #include <stdarg.h>
+#include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
-
-#include "lv2/lv2plug.in/ns/lv2core/lv2.h"
-#include "lv2/lv2plug.in/ns/ext/urid/urid.h"
 
 #ifdef LILV_SHARED
 #    ifdef _WIN32
@@ -53,8 +54,6 @@
 
 #ifdef __cplusplus
 extern "C" {
-#else
-#   include <stdbool.h>
 #endif
 
 #define LILV_NS_DOAP "http://usefulinc.com/ns/doap#"

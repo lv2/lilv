@@ -22,13 +22,11 @@
 #    define _DARWIN_C_SOURCE 1  /* for flock */
 #endif
 
-#include <ctype.h>
-#include <errno.h>
-#include <stdarg.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <stddef.h>
+#include "lilv_config.h"
+#include "lilv_internal.h"
+
+#include "lilv/lilv.h"
+#include "serd/serd.h"
 
 #ifdef _WIN32
 #ifndef _WIN32_WINNT
@@ -56,18 +54,25 @@ CreateSymbolicLink(LPCTSTR linkpath, LPCTSTR targetpath, DWORD flags)
 #    endif
 #else
 #    include <dirent.h>
-#    include <limits.h>
 #    include <unistd.h>
+#endif
+
+#if defined(HAVE_FLOCK) && defined(HAVE_FILENO)
+#    include <sys/file.h>
 #endif
 
 #include <sys/stat.h>
 #include <sys/types.h>
 
-#include "lilv_internal.h"
-
-#if defined(HAVE_FLOCK) && defined(HAVE_FILENO)
-#    include <sys/file.h>
-#endif
+#include <ctype.h>
+#include <errno.h>
+#include <stdarg.h>
+#include <stdbool.h>
+#include <stddef.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 #ifndef PAGE_SIZE
 #    define PAGE_SIZE 4096

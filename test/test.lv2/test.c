@@ -17,11 +17,6 @@
 
 #define _POSIX_C_SOURCE 200809L
 
-#include <assert.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
 #include "lv2/lv2plug.in/ns/ext/atom/atom.h"
 #include "lv2/lv2plug.in/ns/ext/state/state.h"
 #include "lv2/lv2plug.in/ns/ext/urid/urid.h"
@@ -31,6 +26,11 @@
 #    include <io.h>
 #    define mkstemp(pat) _mktemp(pat)
 #endif
+
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 #define TEST_URI "http://example.org/lilv-test-plugin"
 

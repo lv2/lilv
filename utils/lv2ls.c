@@ -14,12 +14,13 @@
   OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 */
 
-#include <stdio.h>
-#include <string.h>
+#include "lilv_config.h"
 
 #include "lilv/lilv.h"
 
-#include "lilv_config.h"
+#include <stdbool.h>
+#include <stdio.h>
+#include <string.h>
 
 static void
 list_plugins(const LilvPlugins* list, bool show_names)

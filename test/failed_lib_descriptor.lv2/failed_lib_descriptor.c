@@ -15,9 +15,9 @@
   OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 */
 
-#include <stdlib.h>
-
 #include "lv2/lv2plug.in/ns/lv2core/lv2.h"
+
+#include <stdlib.h>
 
 #define PLUGIN_URI "http://example.org/failed-lib-descriptor"
 

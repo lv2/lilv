@@ -14,15 +14,18 @@
   OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 */
 
-#include <assert.h>
+#include "lilv/lilv.h"
+
+#include "lv2/lv2plug.in/ns/lv2core/lv2.h"
+
 #include <math.h>
 #include <sndfile.h>
 #include <stdarg.h>
+#include <stdbool.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
-#include "lilv/lilv.h"
 
 /** Control port value set from the command line */
 typedef struct Param {

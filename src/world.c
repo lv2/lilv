@@ -14,14 +14,29 @@
   OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 */
 
-#include <assert.h>
-#include <errno.h>
-#include <stdlib.h>
-#include <string.h>
+#include "lilv_config.h"
+#include "lilv_internal.h"
+
+#include "lilv/lilv.h"
+#include "serd/serd.h"
+#include "sord/sord.h"
+#include "zix/common.h"
+#include "zix/tree.h"
 
 #include "lv2/lv2plug.in/ns/ext/presets/presets.h"
+#include "lv2/lv2plug.in/ns/lv2core/lv2.h"
 
-#include "lilv_internal.h"
+#ifdef LILV_DYN_MANIFEST
+#    include "lv2/lv2plug.in/ns/ext/dynmanifest/dynmanifest.h"
+#    include <dlfcn.h>
+#endif
+
+#include <assert.h>
+#include <stdbool.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdint.h>
+#include <stdio.h>
 
 static int
 lilv_world_drop_graph(LilvWorld* world, const SordNode* graph);

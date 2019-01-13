@@ -14,11 +14,16 @@
   OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 */
 
+#include "lilv_internal.h"
+
+#include "lv2/lv2plug.in/ns/lv2core/lv2.h"
+#include "lilv/lilv.h"
+
+#include <stdbool.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
-#include "lilv_internal.h"
 
 LILV_API LilvInstance*
 lilv_plugin_instantiate(const LilvPlugin*        plugin,

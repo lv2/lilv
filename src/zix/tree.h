@@ -17,9 +17,10 @@
 #ifndef ZIX_TREE_H
 #define ZIX_TREE_H
 
-#include <stddef.h>
-
 #include "zix/common.h"
+
+#include <stdbool.h>
+#include <stddef.h>
 
 #ifdef __cplusplus
 extern "C" {

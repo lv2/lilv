@@ -14,18 +14,29 @@
   OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 */
 
-#include <errno.h>
-#include <stdio.h>
-#include <string.h>
+#include "lilv_internal.h"
+
+#include "lilv/lilv.h"
+#include "serd/serd.h"
+#include "sord/sord.h"
+#include "sratom/sratom.h"
+#include "zix/tree.h"
 
 #include "lv2/lv2plug.in/ns/ext/atom/atom.h"
 #include "lv2/lv2plug.in/ns/ext/atom/forge.h"
 #include "lv2/lv2plug.in/ns/ext/presets/presets.h"
 #include "lv2/lv2plug.in/ns/ext/state/state.h"
+#include "lv2/lv2plug.in/ns/ext/urid/urid.h"
+#include "lv2/lv2plug.in/ns/lv2core/lv2.h"
 
-#include "lilv_config.h"
-#include "lilv_internal.h"
-#include "sratom/sratom.h"
+#include <assert.h>
+#include <errno.h>
+#include <stdbool.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
 
 #define USTR(s) ((const uint8_t*)(s))
 

@@ -21,10 +21,17 @@
 extern "C" {
 #endif
 
+#include "lilv_config.h"
+
+#include "lilv/lilv.h"
+#include "serd/serd.h"
+#include "sord/sord.h"
+#include "zix/tree.h"
+
+#include <float.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <stdlib.h>
-#include <float.h>
 
 #ifdef _WIN32
 #    include <windows.h>
@@ -51,14 +58,6 @@ static inline const char* dlerror(void) { return "Unknown error"; }
 #    include <dlfcn.h>
 #    include <unistd.h>
 #endif
-
-#include "serd/serd.h"
-#include "sord/sord.h"
-
-#include "zix/tree.h"
-
-#include "lilv_config.h"
-#include "lilv/lilv.h"
 
 #ifdef LILV_DYN_MANIFEST
 #    include "lv2/lv2plug.in/ns/ext/dynmanifest/dynmanifest.h"

@@ -16,17 +16,22 @@
 
 #define _POSIX_C_SOURCE 200809L
 
+#include "lilv/lilv.h"
+#include "lv2/lv2plug.in/ns/ext/atom/atom.h"
+#include "lv2/lv2plug.in/ns/ext/urid/urid.h"
+#include "lv2/lv2plug.in/ns/lv2core/lv2.h"
+
+#include "bench.h"
+#include "lilv_config.h"
+#include "uri_table.h"
+
 #include <math.h>
+#include <stdbool.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
-#include "lilv/lilv.h"
-#include "lv2/lv2plug.in/ns/ext/atom/atom.h"
-
-#include "lilv_config.h"
-#include "bench.h"
-#include "uri_table.h"
+#include <time.h>
 
 static LilvNode* atom_AtomPort   = NULL;
 static LilvNode* atom_Sequence   = NULL;

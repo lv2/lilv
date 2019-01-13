@@ -14,11 +14,14 @@
   OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 */
 
-#include <limits.h>
+#include "lilv_internal.h"
+
+#include "lilv/lilv.h"
+#include "sord/sord.h"
+#include "zix/tree.h"
+
 #include <stdlib.h>
 #include <string.h>
-
-#include "lilv_internal.h"
 
 typedef enum {
 	LILV_LANG_MATCH_NONE,     ///< Language does not match at all

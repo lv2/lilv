@@ -1,5 +1,12 @@
-#include "lilv/lilv.h"
 #include "../src/lilv_internal.h"
+
+#include "serd/serd.h"
+#include "lilv/lilv.h"
+
+#include <stdbool.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 #define PLUGIN_URI "http://example.org/missing-port"
 

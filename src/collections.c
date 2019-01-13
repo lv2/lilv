@@ -16,6 +16,15 @@
 
 #include "lilv_internal.h"
 
+#include "lilv/lilv.h"
+#include "sord/sord.h"
+#include "zix/common.h"
+#include "zix/tree.h"
+
+#include <stdbool.h>
+#include <stddef.h>
+#include <stdint.h>
+
 int
 lilv_ptr_cmp(const void* a, const void* b, void* user_data)
 {

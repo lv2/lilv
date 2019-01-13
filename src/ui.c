@@ -14,11 +14,15 @@
   OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 */
 
+#include "lilv_internal.h"
+
+#include "lilv/lilv.h"
+#include "zix/tree.h"
+
 #include <assert.h>
+#include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
-
-#include "lilv_internal.h"
 
 LilvUI*
 lilv_ui_new(LilvWorld* world,

@@ -16,18 +16,29 @@
 
 #define __STDC_LIMIT_MACROS
 
-#include <assert.h>
+#include "lilv_config.h"
+#include "lilv_internal.h"
+
+#include "lilv/lilv.h"
+#include "serd/serd.h"
+#include "sord/sord.h"
+#include "zix/tree.h"
+
+#include "lv2/lv2plug.in/ns/extensions/ui/ui.h"
+#include "lv2/lv2plug.in/ns/lv2core/lv2.h"
+
+#ifdef LILV_DYN_MANIFEST
+#    include "lv2/lv2plug.in/ns/ext/dynmanifest/dynmanifest.h"
+#    include <dlfcn.h>
+#endif
+
 #include <math.h>
 #include <stdarg.h>
+#include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
-#include "lilv_config.h"
-#include "lilv_internal.h"
-
-#include "lv2/lv2plug.in/ns/extensions/ui/ui.h"
 
 #define NS_DOAP (const uint8_t*)"http://usefulinc.com/ns/doap#"
 #define NS_FOAF (const uint8_t*)"http://xmlns.com/foaf/0.1/"

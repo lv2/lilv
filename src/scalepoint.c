@@ -16,6 +16,10 @@
 
 #include "lilv_internal.h"
 
+#include "lilv/lilv.h"
+
+#include <stdlib.h>
+
 /** Ownership of value and label is taken */
 LilvScalePoint*
 lilv_scale_point_new(LilvNode* value, LilvNode* label)

@@ -18,16 +18,7 @@
 #define _POSIX_C_SOURCE 200809L /* for setenv */
 #define _XOPEN_SOURCE   600     /* for mkstemp */
 
-#include <assert.h>
-#include <ctype.h>
-#include <errno.h>
-#include <float.h>
-#include <limits.h>
-#include <math.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <sys/stat.h>
+#include "../src/lilv_internal.h"
 
 #ifdef _WIN32
 #    include <direct.h>
@@ -37,16 +28,27 @@
 #    define unsetenv(n) SetEnvironmentVariable((n), NULL)
 #    define mkstemp(pat) _mktemp(pat)
 #else
-#    include <dirent.h>
 #    include <unistd.h>
 #endif
 
 #include "lilv/lilv.h"
-#include "../src/lilv_internal.h"
-
 #include "lv2/lv2plug.in/ns/ext/presets/presets.h"
 #include "lv2/lv2plug.in/ns/ext/state/state.h"
 #include "lv2/lv2plug.in/ns/ext/urid/urid.h"
+#include "lv2/lv2plug.in/ns/lv2core/lv2.h"
+#include "serd/serd.h"
+
+#include <assert.h>
+#include <errno.h>
+#include <float.h>
+#include <math.h>
+#include <stdarg.h>
+#include <stdbool.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/stat.h>
 
 #define TEST_PATH_MAX 1024
 
