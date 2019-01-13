@@ -60,6 +60,7 @@ def configure(conf):
     conf.load('compiler_c', cache=True)
     try:
         conf.load('compiler_cxx', cache=True)
+        conf.define('LILV_CXX', True)
     except:
         pass
 
@@ -456,7 +457,9 @@ def test(ctx):
     os.environ['PATH'] = 'test' + os.pathsep + os.getenv('PATH')
 
     Logs.pprint('GREEN', '')
-    autowaf.run_test(ctx, APPNAME, 'lilv_test', dirs=['./src','./test'], name='lilv_test')
+    autowaf.run_test(ctx, APPNAME, 'lilv_test', dirs=['./src','./test'])
+    if ctx.is_defined('LILV_CXX'):
+        autowaf.run_test(ctx, APPNAME, 'lilv_cxx_test', dirs=['./src','./test'])
 
     for p in test_plugins:
         test_prog = 'test_' + p + ' ' + ('test/%s.lv2/' % p)
