@@ -1,5 +1,5 @@
 /*
-  Copyright 2012-2017 David Robillard <http://drobilla.net>
+  Copyright 2012-2019 David Robillard <http://drobilla.net>
 
   Permission to use, copy, modify, and/or distribute this software for any
   purpose with or without fee is hereby granted, provided that the above
@@ -49,7 +49,7 @@ print_version(void)
 {
 	printf(
 		"lv2bench (lilv) " LILV_VERSION "\n"
-		"Copyright 2012-2017 David Robillard <http://drobilla.net>\n"
+		"Copyright 2012-2019 David Robillard <http://drobilla.net>\n"
 		"License: <http://www.opensource.org/licenses/isc-license>\n"
 		"This is free software: you are free to change and redistribute it.\n"
 		"There is NO WARRANTY, to the extent permitted by law.\n");

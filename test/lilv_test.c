@@ -1,5 +1,5 @@
 /*
-  Copyright 2007-2016 David Robillard <http://drobilla.net>
+  Copyright 2007-2019 David Robillard <http://drobilla.net>
   Copyright 2008 Krzysztof Foltman
 
   Permission to use, copy, modify, and/or distribute this software for any

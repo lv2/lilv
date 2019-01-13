@@ -1,5 +1,5 @@
 /*
-  Copyright 2006-2011 David Robillard <d@drobilla.net>
+  Copyright 2006-2019 David Robillard <d@drobilla.net>
   Copyright 2006 Steve Harris <steve@plugin.org.uk>
 
   Permission to use, copy, modify, and/or distribute this software for any
