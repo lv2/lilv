@@ -571,7 +571,7 @@ lilv_world_load_dyn_manifest(LilvWorld*      world,
 			continue;
 		}
 
-		LilvDynManifest* desc = malloc(sizeof(LilvDynManifest));
+		LilvDynManifest* desc = (LilvDynManifest*)malloc(sizeof(LilvDynManifest));
 		desc->bundle = lilv_node_new_from_node(world, bundle_node);
 		desc->lib    = lib;
 		desc->handle = handle;
