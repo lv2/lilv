@@ -49,10 +49,8 @@ typedef struct {
 } Property;
 
 typedef struct {
-	char*    symbol;  ///< Symbol of port
-	void*    value;   ///< Value of port
-	uint32_t size;    ///< Size of value
-	uint32_t type;    ///< Type of value (URID)
+	char*     symbol; ///< Symbol of port
+	LV2_Atom* atom;   ///< Value in port
 } PortValue;
 
 typedef struct {
@@ -126,12 +124,13 @@ append_port_value(LilvState*  state,
 	if (value) {
 		state->values = (PortValue*)realloc(
 			state->values, (++state->n_values) * sizeof(PortValue));
-		pv         = &state->values[state->n_values - 1];
-		pv->symbol = lilv_strdup(port_symbol);
-		pv->value  = malloc(size);
-		pv->size   = size;
-		pv->type   = type;
-		memcpy(pv->value, value, size);
+
+		pv             = &state->values[state->n_values - 1];
+		pv->symbol     = lilv_strdup(port_symbol);
+		pv->atom       = (LV2_Atom*)malloc(sizeof(LV2_Atom) + size);
+		pv->atom->size = size;
+		pv->atom->type = type;
+		memcpy(pv->atom + 1, value, size);
 	}
 	return pv;
 }
@@ -435,8 +434,9 @@ lilv_state_emit_port_values(const LilvState*     state,
                             void*                user_data)
 {
 	for (uint32_t i = 0; i < state->n_values; ++i) {
-		const PortValue* val = &state->values[i];
-		set_value(val->symbol, user_data, val->value, val->size, val->type);
+		const PortValue* value = &state->values[i];
+		const LV2_Atom*  atom  = value->atom;
+		set_value(value->symbol, user_data, atom + 1, atom->size, atom->type);
 	}
 }
 
@@ -1011,7 +1011,7 @@ lilv_state_write(LilvWorld*       world,
 		// _:symbol pset:value value
 		p = serd_node_from_string(SERD_URI, USTR(LV2_PRESETS__value));
 		sratom_write(sratom, unmap, SERD_ANON_CONT, &port, &p,
-		             value->type, value->size, value->value);
+		             value->atom->type, value->atom->size, value->atom + 1);
 
 		serd_writer_end_anon(writer, &port);
 	}
@@ -1258,7 +1258,7 @@ lilv_state_free(LilvState* state)
 		free_property_array(state, &state->props);
 		free_property_array(state, &state->metadata);
 		for (uint32_t i = 0; i < state->n_values; ++i) {
-			free(state->values[i].value);
+			free(state->values[i].atom);
 			free(state->values[i].symbol);
 		}
 		lilv_node_free(state->plugin_uri);
@@ -1290,9 +1290,10 @@ lilv_state_equals(const LilvState* a, const LilvState* b)
 	for (uint32_t i = 0; i < a->n_values; ++i) {
 		PortValue* const av = &a->values[i];
 		PortValue* const bv = &b->values[i];
-		if (av->size != bv->size || av->type != bv->type
-		    || strcmp(av->symbol, bv->symbol)
-		    || memcmp(av->value, bv->value, av->size)) {
+		if (av->atom->size != bv->atom->size ||
+		    av->atom->type != bv->atom->type ||
+		    strcmp(av->symbol, bv->symbol) ||
+		    memcmp(av->atom + 1, bv->atom + 1, av->atom->size)) {
 			return false;
 		}
 	}
