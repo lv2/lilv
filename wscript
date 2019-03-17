@@ -39,9 +39,8 @@ def options(ctx):
     ctx.load('compiler_c')
     ctx.load('compiler_cxx')
     ctx.load('python')
-    autowaf.set_options(ctx, test=True)
-    opt = ctx.get_option_group('Configuration options')
-    autowaf.add_flags(
+    opt = ctx.configuration_options()
+    ctx.add_flags(
         opt,
         {'no-utils':           'do not build command line utilities',
          'bindings':           'build python bindings',
@@ -56,7 +55,6 @@ def options(ctx):
                    help='default LV2 path to use if LV2_PATH is unset')
 
 def configure(conf):
-    autowaf.display_header('Lilv Configuration')
     conf.load('compiler_c', cache=True)
     try:
         conf.load('compiler_cxx', cache=True)
@@ -448,26 +446,19 @@ def upload_docs(ctx):
         os.system('soelim %s | pre-grohtml troff -man -wall -Thtml | post-grohtml > build/%s.html' % (page, page))
         os.system('rsync -avz --delete -e ssh build/%s.html drobilla@drobilla.net:~/drobilla.net/man/' % page)
 
-def test(ctx):
-    assert ctx.env.BUILD_TESTS, "You have run waf configure without the --test flag. No tests were run."
-    autowaf.pre_test(ctx, APPNAME)
-    if ctx.is_defined('LILV_PYTHON'):
-        os.environ['LD_LIBRARY_PATH'] = os.getcwd()
-        autowaf.run_tests(ctx, APPNAME, ['python -m unittest discover bindings/'])
-    os.environ['PATH'] = 'test' + os.pathsep + os.getenv('PATH')
+def test(tst):
+    with tst.group('unit') as check:
+        check(['./test/lilv_test'])
+        if tst.is_defined('LILV_CXX'):
+            check(['./test/lilv_cxx_test'])
+        if tst.is_defined('LILV_PYTHON'):
+            check(['python', '-m', 'unittest', 'discover', 'bindings/'])
 
-    Logs.pprint('GREEN', '')
-    autowaf.run_test(ctx, APPNAME, 'lilv_test', dirs=['./src','./test'])
-    if ctx.is_defined('LILV_CXX'):
-        autowaf.run_test(ctx, APPNAME, 'lilv_cxx_test', dirs=['./src','./test'])
+    with tst.group('plugin') as check:
+        for p in test_plugins:
+            if os.path.exists('./test/test_' + p):
+                check(['./test/test_' + p, 'test/%s.lv2/' % p])
 
-    for p in test_plugins:
-        test_prog = 'test_' + p + ' ' + ('test/%s.lv2/' % p)
-        if os.path.exists('test/test_' + p):
-            autowaf.run_test(ctx, APPNAME, test_prog, 0,
-                             dirs=['./src','./test','./test/%s.lv2' % p])
-
-    autowaf.post_test(ctx, APPNAME)
     try:
         shutil.rmtree('state')
     except:
