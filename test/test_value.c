@@ -73,16 +73,6 @@ main(void)
   assert(isnan(lilv_node_as_float(sval)));
 
 #if defined(__clang__)
-#  pragma clang diagnostic push
-#  pragma clang diagnostic ignored "-Wdeprecated-declarations"
-#elif defined(__GNUC__) && __GNUC__ > 4
-#  pragma GCC diagnostic push
-#  pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-#endif
-
-  assert(!strcmp(lilv_uri_to_path("file:///foo"), "/foo"));
-
-#if defined(__clang__)
 #  pragma clang diagnostic pop
 #elif defined(__GNUC__) && __GNUC__ > 4
 #  pragma GCC diagnostic pop

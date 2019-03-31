@@ -47,13 +47,6 @@ struct UI;
 struct UIs;
 struct World;
 
-LILV_DEPRECATED
-static inline const char*
-uri_to_path(const char* uri)
-{
-  return lilv_uri_to_path(uri);
-}
-
 #if defined(__clang__)
 #  pragma clang diagnostic pop
 #elif defined(__GNUC__) && __GNUC__ > 4

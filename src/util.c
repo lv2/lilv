@@ -87,21 +87,6 @@ lilv_strdup(const char* str)
   return copy;
 }
 
-const char*
-lilv_uri_to_path(const char* uri)
-{
-#if defined(__GNUC__) && __GNUC__ > 4
-#  pragma GCC diagnostic push
-#  pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-#endif
-
-  return (const char*)serd_uri_to_path((const uint8_t*)uri);
-
-#if defined(__GNUC__) && __GNUC__ > 4
-#  pragma GCC diagnostic pop
-#endif
-}
-
 char*
 lilv_file_uri_parse(const char* uri, char** hostname)
 {
