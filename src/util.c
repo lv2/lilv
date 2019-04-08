@@ -459,19 +459,9 @@ lilv_realpath(const char* path)
 	char* out = (char*)malloc(MAX_PATH);
 	GetFullPathName(path, MAX_PATH, out, NULL);
 	return out;
-#elif _POSIX_VERSION >= 200809L
+#else
 	char* real_path = realpath(path, NULL);
 	return real_path ? real_path : lilv_strdup(path);
-#else
-	// OSX <= 10.5, if anyone cares.  I sure don't.
-	char* out       = (char*)malloc(PATH_MAX);
-	char* real_path = realpath(path, out);
-	if (!real_path) {
-		free(out);
-		return lilv_strdup(path);
-	} else {
-		return real_path;
-	}
 #endif
 }
 
