@@ -32,10 +32,10 @@
 #endif
 
 #include "lilv/lilv.h"
-#include "lv2/lv2plug.in/ns/ext/presets/presets.h"
-#include "lv2/lv2plug.in/ns/ext/state/state.h"
-#include "lv2/lv2plug.in/ns/ext/urid/urid.h"
-#include "lv2/lv2plug.in/ns/lv2core/lv2.h"
+#include "lv2/core/lv2.h"
+#include "lv2/presets/presets.h"
+#include "lv2/state/state.h"
+#include "lv2/urid/urid.h"
 #include "serd/serd.h"
 
 #include <assert.h>

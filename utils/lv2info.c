@@ -17,10 +17,10 @@
 #include "lilv_config.h"
 
 #include "lilv/lilv.h"
-#include "lv2/lv2plug.in/ns/ext/event/event.h"
-#include "lv2/lv2plug.in/ns/ext/port-groups/port-groups.h"
-#include "lv2/lv2plug.in/ns/ext/presets/presets.h"
-#include "lv2/lv2plug.in/ns/lv2core/lv2.h"
+#include "lv2/core/lv2.h"
+#include "lv2/event/event.h"
+#include "lv2/port-groups/port-groups.h"
+#include "lv2/presets/presets.h"
 
 #include <math.h>
 #include <stdbool.h>

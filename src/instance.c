@@ -16,8 +16,8 @@
 
 #include "lilv_internal.h"
 
-#include "lv2/lv2plug.in/ns/lv2core/lv2.h"
 #include "lilv/lilv.h"
+#include "lv2/core/lv2.h"
 
 #include <stdbool.h>
 #include <stdint.h>

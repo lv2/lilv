@@ -17,7 +17,7 @@
 #include "lilv_internal.h"
 
 #include "lilv/lilv.h"
-#include "lv2/lv2plug.in/ns/lv2core/lv2.h"
+#include "lv2/core/lv2.h"
 #include "zix/tree.h"
 
 #include <stdint.h>

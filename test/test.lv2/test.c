@@ -17,10 +17,10 @@
 
 #define _POSIX_C_SOURCE 200809L
 
-#include "lv2/lv2plug.in/ns/ext/atom/atom.h"
-#include "lv2/lv2plug.in/ns/ext/state/state.h"
-#include "lv2/lv2plug.in/ns/ext/urid/urid.h"
-#include "lv2/lv2plug.in/ns/lv2core/lv2.h"
+#include "lv2/atom/atom.h"
+#include "lv2/core/lv2.h"
+#include "lv2/state/state.h"
+#include "lv2/urid/urid.h"
 
 #ifdef _WIN32
 #    include <io.h>

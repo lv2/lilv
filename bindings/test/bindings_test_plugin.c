@@ -22,7 +22,7 @@
    replacing `http:/` with `lv2` any header in the specification bundle can be
    included, in this case `lv2.h`.
 */
-#include "lv2/lv2plug.in/ns/lv2core/lv2.h"
+#include "lv2/core/lv2.h"
 
 /** Include standard C headers */
 #include <math.h>

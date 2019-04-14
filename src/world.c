@@ -23,11 +23,11 @@
 #include "zix/common.h"
 #include "zix/tree.h"
 
-#include "lv2/lv2plug.in/ns/ext/presets/presets.h"
-#include "lv2/lv2plug.in/ns/lv2core/lv2.h"
+#include "lv2/core/lv2.h"
+#include "lv2/presets/presets.h"
 
 #ifdef LILV_DYN_MANIFEST
-#    include "lv2/lv2plug.in/ns/ext/dynmanifest/dynmanifest.h"
+#    include "lv2/dynmanifest/dynmanifest.h"
 #    include <dlfcn.h>
 #endif
 
