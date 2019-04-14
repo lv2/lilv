@@ -29,10 +29,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#ifdef _MSC_VER
-#    define isnan _isnan
-#endif
-
 LilvNode* applies_to_pred     = NULL;
 LilvNode* control_class       = NULL;
 LilvNode* event_class         = NULL;
