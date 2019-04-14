@@ -44,7 +44,7 @@ lilv_world_drop_graph(LilvWorld* world, const SordNode* graph);
 LILV_API LilvWorld*
 lilv_world_new(void)
 {
-	LilvWorld* world = (LilvWorld*)malloc(sizeof(LilvWorld));
+	LilvWorld* world = (LilvWorld*)calloc(1, sizeof(LilvWorld));
 
 	world->world = sord_world_new();
 	if (!world->world) {
