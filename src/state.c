@@ -618,7 +618,7 @@ new_state_from_model(LilvWorld*       world,
 	sord_node_free(world->world, state_node);
 	sord_node_free(world->world, statep);
 
-	free((void*)chunk.buf);
+	serd_free((void*)chunk.buf);
 	sratom_free(sratom);
 
 	if (state->props.props) {
@@ -1153,7 +1153,10 @@ lilv_state_to_string(LilvWorld*       world,
 
 	serd_writer_free(writer);
 	serd_env_free(env);
-	return (char*)serd_chunk_sink_finish(&chunk);
+	char* str    = (char*)serd_chunk_sink_finish(&chunk);
+	char* result = lilv_strdup(str);
+	serd_free(str);
+	return result;
 }
 
 static void

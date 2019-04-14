@@ -40,7 +40,8 @@ lilv_lib_open(LilvWorld*               world,
 	}
 
 	const char* const lib_uri  = lilv_node_as_uri(uri);
-	char* const       lib_path = lilv_file_uri_parse(lib_uri, NULL);
+	char* const       lib_path = (char*)serd_file_uri_parse(
+		(const uint8_t*)lib_uri, NULL);
 	if (!lib_path) {
 		return NULL;
 	}
@@ -49,7 +50,7 @@ lilv_lib_open(LilvWorld*               world,
 	void* lib = dlopen(lib_path, RTLD_NOW);
 	if (!lib) {
 		LILV_ERRORF("Failed to open library %s (%s)\n", lib_path, dlerror());
-		lilv_free(lib_path);
+		serd_free(lib_path);
 		return NULL;
 	}
 
@@ -65,17 +66,17 @@ lilv_lib_open(LilvWorld*               world,
 		if (!desc) {
 			LILV_ERRORF("Call to %s:lv2_lib_descriptor failed\n", lib_path);
 			dlclose(lib);
-			lilv_free(lib_path);
+			serd_free(lib_path);
 			return NULL;
 		}
 	} else if (!df) {
 		LILV_ERRORF("No `lv2_descriptor' or `lv2_lib_descriptor' in %s\n",
 		            lib_path);
 		dlclose(lib);
-		lilv_free(lib_path);
+		serd_free(lib_path);
 		return NULL;
 	}
-	lilv_free(lib_path);
+	serd_free(lib_path);
 
 	LilvLib* llib = (LilvLib*)malloc(sizeof(LilvLib));
 	llib->world          = world;

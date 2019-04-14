@@ -283,11 +283,13 @@ lilv_node_get_turtle_token(const LilvNode* value)
 		break;
 	case LILV_VALUE_INT:
 		node   = serd_node_new_integer(value->val.int_val);
-		result = (char*)node.buf;
+		result = lilv_strdup((char*)node.buf);
+		serd_node_free(&node);
 		break;
 	case LILV_VALUE_FLOAT:
 		node   = serd_node_new_decimal(value->val.float_val, 8);
-		result = (char*)node.buf;
+		result = lilv_strdup((char*)node.buf);
+		serd_node_free(&node);
 		break;
 	}
 

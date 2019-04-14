@@ -1640,7 +1640,7 @@ test_state(void)
 
 	// Ensure they are equal
 	TEST_ASSERT(lilv_state_equals(state, from_str));
-	free(state1_str);
+	lilv_free(state1_str);
 
 	const LilvNode* state_plugin_uri = lilv_state_get_plugin_uri(state);
 	TEST_ASSERT(lilv_node_equals(state_plugin_uri, plugin_uri));
@@ -1719,7 +1719,7 @@ test_state(void)
 	lilv_world_load_bundle(world, test_state_bundle);
 	lilv_world_load_resource(world, test_state_node);
 	serd_node_free(&state6_uri);
-	free(state6_path);
+	lilv_free(state6_path);
 
 	LilvState* state6 = lilv_state_new_from_world(world, &map, test_state_node);
 	TEST_ASSERT(lilv_state_equals(state, state6));  // Round trip accuracy
