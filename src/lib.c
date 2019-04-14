@@ -20,7 +20,6 @@
 #include "lv2/lv2plug.in/ns/lv2core/lv2.h"
 #include "zix/tree.h"
 
-#include <dlfcn.h>
 #include <stdint.h>
 #include <stdlib.h>
 
