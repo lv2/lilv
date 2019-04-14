@@ -178,6 +178,7 @@ lilv_world_free(LilvWorld* world)
 	sord_world_free(world->world);
 	world->world = NULL;
 
+	free(world->opt.lv2_path);
 	free(world);
 }
 
@@ -194,6 +195,11 @@ lilv_world_set_option(LilvWorld*      world,
 	} else if (!strcmp(uri, LILV_OPTION_FILTER_LANG)) {
 		if (lilv_node_is_bool(value)) {
 			world->opt.filter_language = lilv_node_as_bool(value);
+			return;
+		}
+	} else if (!strcmp(uri, LILV_OPTION_LV2_PATH)) {
+		if (lilv_node_is_string(value)) {
+			world->opt.lv2_path = lilv_strdup(lilv_node_as_string(value));
 			return;
 		}
 	}
@@ -1031,7 +1037,10 @@ lilv_world_load_plugin_classes(LilvWorld* world)
 LILV_API void
 lilv_world_load_all(LilvWorld* world)
 {
-	const char* lv2_path = getenv("LV2_PATH");
+	const char* lv2_path = world->opt.lv2_path;
+	if (!lv2_path) {
+		lv2_path = getenv("LV2_PATH");
+	}
 	if (!lv2_path) {
 		lv2_path = LILV_DEFAULT_LV2_PATH;
 	}

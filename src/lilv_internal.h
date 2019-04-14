@@ -146,8 +146,9 @@ struct LilvInstancePimpl {
 };
 
 typedef struct {
-	bool dyn_manifest;
-	bool filter_language;
+	bool  dyn_manifest;
+	bool  filter_language;
+	char* lv2_path;
 } LilvOptions;
 
 struct LilvWorldImpl {

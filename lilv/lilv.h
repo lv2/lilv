@@ -530,11 +530,19 @@ lilv_world_new(void);
 #define LILV_OPTION_DYN_MANIFEST "http://drobilla.net/ns/lilv#dyn-manifest"
 
 /**
+   Set application-specific LV2_PATH.  This overrides the LV2_PATH from the
+   environment, so that lilv will only look inside the given path.  This can be
+   used to make self-contained applications.
+*/
+#define LILV_OPTION_LV2_PATH "http://drobilla.net/ns/lilv#lv2-path"
+
+/**
    Set an option option for `world`.
 
    Currently recognized options:
    @ref LILV_OPTION_FILTER_LANG
    @ref LILV_OPTION_DYN_MANIFEST
+   @ref LILV_OPTION_LV2_PATH
 */
 LILV_API void
 lilv_world_set_option(LilvWorld*      world,
