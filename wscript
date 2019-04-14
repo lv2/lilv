@@ -282,6 +282,14 @@ def build(bld):
             test_cflags    += ['--coverage']
             test_linkflags += ['--coverage']
 
+        # Copy skeleton LV2 bundle for tests
+        for name in ('manifest.ttl', 'lv2core.ttl'):
+            bld(features     = 'subst',
+                is_copy      = True,
+                source       = 'test/core.lv2/' + name,
+                target       = 'test_lv2_path/core.lv2/' + name,
+                install_path = None)
+
         # Make a pattern for shared objects without the 'lib' prefix
         module_pattern = re.sub('^lib', '', bld.env.cshlib_PATTERN)
         shlib_ext = module_pattern[module_pattern.rfind('.'):]
