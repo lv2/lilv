@@ -46,7 +46,8 @@
 #else
 #    define LILV_API
 #endif
-#if __GNUC__ > 3 || (__GNUC__ == 3 && __GNUC_MINOR__ >= 1)
+#if defined(__GNUC__) && (__GNUC__ > 3 || \
+                          (__GNUC__ == 3 && __GNUC_MINOR__ >= 1))
 #    define LILV_DEPRECATED __attribute__((__deprecated__))
 #else
 #    define LILV_DEPRECATED

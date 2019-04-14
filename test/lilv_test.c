@@ -87,12 +87,18 @@ init_tests(void)
 	         "%s/test_lv2_path/lilv-test.lv2", build_path);
 	lilv_mkdir_p(test_bundle_path);
 
-	snprintf(test_bundle_uri, sizeof(test_bundle_uri), "file://%s/",
-	         test_bundle_path);
+	SerdNode s = serd_node_new_file_uri(
+		(const uint8_t*)test_bundle_path, NULL, NULL, true);
+
+	snprintf(test_bundle_uri, sizeof(test_bundle_uri), "%s/",
+	         (const char*)s.buf);
 	snprintf(test_manifest_path, sizeof(test_manifest_path), "%s/manifest.ttl",
 	         test_bundle_path);
 	snprintf(test_content_path, sizeof(test_content_path), "%s/plugin.ttl",
 	         test_bundle_path);
+
+	serd_node_free(&s);
+	lilv_free(build_path);
 
 	delete_bundle();
 }
