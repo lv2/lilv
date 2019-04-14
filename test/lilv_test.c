@@ -60,10 +60,10 @@
 #    define SHLIB_EXT ".so"
 #endif
 
-static char bundle_dir_name[TEST_PATH_MAX + sizeof("/.lv2/lilv-test.lv2")];
-static char bundle_dir_uri[sizeof(bundle_dir_name) + sizeof("file:///")];
-static char manifest_name[sizeof(bundle_dir_name) + sizeof("/manifest.ttl")];
-static char content_name[sizeof(bundle_dir_name) + sizeof("plugin.ttl")];
+static char test_bundle_path[TEST_PATH_MAX + sizeof("/.lv2/lilv-test.lv2")];
+static char test_bundle_uri[sizeof(test_bundle_path) + sizeof("file:///")];
+static char test_manifest_path[sizeof(test_bundle_path) + sizeof("/manifest.ttl")];
+static char test_content_path[sizeof(test_bundle_path) + sizeof("plugin.ttl")];
 
 static LilvWorld* world;
 
@@ -73,24 +73,26 @@ int error_count = 0;
 static void
 delete_bundle(void)
 {
-	unlink(content_name);
-	unlink(manifest_name);
-	remove(bundle_dir_name);
+	unlink(test_content_path);
+	unlink(test_manifest_path);
+	remove(test_bundle_path);
 }
 
 static void
 init_tests(void)
 {
-	snprintf(bundle_dir_name, sizeof(bundle_dir_name), "%s/.lv2/lilv-test.lv2",
-	         getenv("HOME"));
-	lilv_mkdir_p(bundle_dir_name);
+	char* build_path = lilv_realpath(".");
 
-	snprintf(bundle_dir_uri, sizeof(bundle_dir_uri), "file://%s/",
-	         bundle_dir_name);
-	snprintf(manifest_name, sizeof(manifest_name), "%s/manifest.ttl",
-	         bundle_dir_name);
-	snprintf(content_name, sizeof(content_name), "%s/plugin.ttl",
-	         bundle_dir_name);
+	snprintf(test_bundle_path, sizeof(test_bundle_path),
+	         "%s/test_lv2_path/lilv-test.lv2", build_path);
+	lilv_mkdir_p(test_bundle_path);
+
+	snprintf(test_bundle_uri, sizeof(test_bundle_uri), "file://%s/",
+	         test_bundle_path);
+	snprintf(test_manifest_path, sizeof(test_manifest_path), "%s/manifest.ttl",
+	         test_bundle_path);
+	snprintf(test_content_path, sizeof(test_content_path), "%s/plugin.ttl",
+	         test_bundle_path);
 
 	delete_bundle();
 }
@@ -122,6 +124,16 @@ static int
 init_world(void)
 {
 	world = lilv_world_new();
+
+	// Set custom LV2_PATH in build directory to only use test data
+	char*     build_path = lilv_realpath(".");
+	char*     lv2_path   = lilv_strjoin(build_path, "/test_lv2_path", NULL);
+	LilvNode* path       = lilv_new_string(world, lv2_path);
+	lilv_world_set_option(world, LILV_OPTION_LV2_PATH, path);
+	free(lv2_path);
+	free(build_path);
+	lilv_node_free(path);
+
 	return world != NULL;
 }
 
@@ -138,12 +150,12 @@ load_all_bundles(void)
 static void
 create_bundle(const char* manifest, const char* content)
 {
-	if (mkdir(bundle_dir_name, 0700) && errno != EEXIST) {
+	if (mkdir(test_bundle_path, 0700) && errno != EEXIST) {
 		fatal_error("Failed to create directory '%s' (%s)\n",
-		            bundle_dir_name, strerror(errno));
+		            test_bundle_path, strerror(errno));
 	}
-	write_file(manifest_name, manifest);
-	write_file(content_name, content);
+	write_file(test_manifest_path, manifest);
+	write_file(test_content_path, content);
 }
 
 static int
@@ -470,42 +482,6 @@ test_discovery(void)
 /*****************************************************************************/
 
 static int
-test_lv2_path(void)
-{
-#ifndef _WIN32
-	char* orig_lv2_path = lilv_strdup(getenv("LV2_PATH"));
-
-	setenv("LV2_PATH", "~/.lv2:/usr/local/lib/lv2:/usr/lib/lv2", 1);
-
-	world = lilv_world_new();
-	lilv_world_load_all(world);
-
-	const LilvPlugins* plugins = lilv_world_get_all_plugins(world);
-	const size_t n_plugins     = lilv_plugins_size(plugins);
-
-	lilv_world_free(world);
-
-	setenv("LV2_PATH", "$HOME/.lv2:/usr/local/lib/lv2:/usr/lib/lv2", 1);
-	world = lilv_world_new();
-	lilv_world_load_all(world);
-	plugins = lilv_world_get_all_plugins(world);
-	TEST_ASSERT(lilv_plugins_size(plugins) == n_plugins);
-	lilv_world_free(world);
-	world = NULL;
-
-	if (orig_lv2_path) {
-		setenv("LV2_PATH", orig_lv2_path, 1);
-	} else {
-		unsetenv("LV2_PATH");
-	}
-	free(orig_lv2_path);
-#endif
-	return 1;
-}
-
-/*****************************************************************************/
-
-static int
 test_verify(void)
 {
 	if (!start_bundle(MANIFEST_PREFIXES
@@ -590,6 +566,8 @@ test_classes(void)
 
 	lilv_plugin_classes_free(children);
 
+	lilv_plugin_class_free(NULL);
+
 	cleanup_uris();
 	return 1;
 }
@@ -654,7 +632,7 @@ test_plugin(void)
 	TEST_ASSERT(!lilv_plugin_get_related(plug, NULL));
 
 	const LilvNode* plug_bundle_uri = lilv_plugin_get_bundle_uri(plug);
-	TEST_ASSERT(!strcmp(lilv_node_as_string(plug_bundle_uri), bundle_dir_uri));
+	TEST_ASSERT(!strcmp(lilv_node_as_string(plug_bundle_uri), test_bundle_uri));
 
 	const LilvNodes* data_uris = lilv_plugin_get_data_uris(plug);
 	TEST_ASSERT(lilv_nodes_size(data_uris) == 2);
@@ -2059,7 +2037,7 @@ test_reload_bundle(void)
 	lilv_world_load_specifications(world);
 
 	// Load bundle
-	LilvNode* bundle_uri = lilv_new_uri(world, bundle_dir_uri);
+	LilvNode* bundle_uri = lilv_new_uri(world, test_bundle_uri);
 	lilv_world_load_bundle(world, bundle_uri);
 
 	// Check that plugin is present
@@ -2247,7 +2225,6 @@ static struct TestCase tests[] = {
 	TEST_CASE(verify),
 	TEST_CASE(no_verify),
 	TEST_CASE(discovery),
-	TEST_CASE(lv2_path),
 	TEST_CASE(classes),
 	TEST_CASE(plugin),
 	TEST_CASE(project),
