@@ -587,13 +587,14 @@ lilv_mkdir_p(const char* dir_path)
 #endif
 
 	for (; i <= path_len; ++i) {
-		if (path[i] == LILV_DIR_SEP[0] || path[i] == '\0') {
+		const char c = path[i];
+		if (c == LILV_DIR_SEP[0] || c == '/' || c == '\0') {
 			path[i] = '\0';
 			if (mkdir(path, 0755) && errno != EEXIST) {
 				free(path);
 				return errno;
 			}
-			path[i] = LILV_DIR_SEP[0];
+			path[i] = c;
 		}
 	}
 
