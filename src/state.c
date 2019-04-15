@@ -1194,10 +1194,10 @@ lilv_state_delete(LilvWorld*       world,
 		model, state->uri->node, world->uris.rdfs_seeAlso, NULL, NULL);
 	if (file) {
 		// Remove state file
-		char* path = lilv_file_uri_parse(
-			(const char*)sord_node_get_string(file), NULL);
+		char* path =
+			(char*)serd_file_uri_parse(sord_node_get_string(file), NULL);
 		try_unlink(path);
-		lilv_free(path);
+		serd_free(path);
 	}
 
 	// Remove any existing manifest entries for this state

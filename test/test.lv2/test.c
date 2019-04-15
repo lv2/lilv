@@ -59,13 +59,23 @@ typedef struct {
 } Test;
 
 static void
+free_path(char* path)
+{
+	/* FIXME: Temporary hack to avoid mismatched malloc/free crashes on
+	   Windows.  The specifications needs a feature for this. */
+#ifndef _WIN32
+	free(path);
+#endif
+}
+
+static void
 cleanup(LV2_Handle instance)
 {
 	Test* test = (Test*)instance;
 	if (test->rec_file) {
 		fclose(test->rec_file);
 	}
-	free(test->rec_file_path);
+	free_path(test->rec_file_path);
 	free(instance);
 }
 
@@ -250,8 +260,8 @@ save(LV2_Handle                instance,
 		      map_uri(plugin, LV2_ATOM__Path),
 		      LV2_STATE_IS_POD);
 
-		free(apath);
-		free(apath2);
+		free_path(apath);
+		free_path(apath2);
 
 		if (plugin->rec_file) {
 			fflush(plugin->rec_file);
@@ -265,7 +275,7 @@ save(LV2_Handle                instance,
 			      map_uri(plugin, LV2_ATOM__Path),
 			      LV2_STATE_IS_POD);
 
-			free(apath);
+			free_path(apath);
 		}
 
 		if (make_path) {
@@ -281,8 +291,8 @@ save(LV2_Handle                instance,
 			      strlen(apath) + 1,
 			      map_uri(plugin, LV2_ATOM__Path),
 			      LV2_STATE_IS_POD);
-			free(apath);
-			free(spath);
+			free_path(apath);
+			free_path(spath);
 		}
 	}
 
@@ -338,7 +348,7 @@ restore(LV2_Handle                  instance,
 			fprintf(stderr, "error: Restored bad file contents `%s' != `Hello'\n",
 			        str);
 		}
-		free(path);
+		free_path(path);
 	}
 
 	apath = (char*)retrieve(
@@ -353,7 +363,7 @@ restore(LV2_Handle                  instance,
 		} else {
 			fclose(sfile);
 		}
-		free(spath);
+		free_path(spath);
 	} else {
 		fprintf(stderr, "error: Failed to restore save file.\n");
 	}

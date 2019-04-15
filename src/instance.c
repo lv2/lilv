@@ -47,7 +47,7 @@ lilv_plugin_instantiate(const LilvPlugin*        plugin,
 
 	LilvLib* lib = lilv_lib_open(plugin->world, lib_uri, bundle_path, features);
 	if (!lib) {
-		lilv_free(bundle_path);
+		serd_free(bundle_path);
 		return NULL;
 	}
 
@@ -81,7 +81,7 @@ lilv_plugin_instantiate(const LilvPlugin*        plugin,
 	}
 
 	free(local_features);
-	lilv_free(bundle_path);
+	serd_free(bundle_path);
 
 	if (result) {
 		if (result->lv2_handle == NULL) {
