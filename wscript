@@ -464,7 +464,8 @@ def test(tst):
 
     with tst.group('plugin') as check:
         for p in test_plugins:
-            if os.path.exists('./test/test_' + p):
+            prog_name = tst.env.cprogram_PATTERN % ('test_' + p)
+            if os.path.exists(os.path.join('test', prog_name)):
                 check(['./test/test_' + p, 'test/%s.lv2/' % p])
 
     try:
