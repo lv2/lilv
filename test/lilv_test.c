@@ -186,6 +186,21 @@ cleanup(void)
 	delete_bundle();
 }
 
+static void
+set_env(const char* name, const char* value)
+{
+#ifdef _WIN32
+	// setenv on Windows does not modify the current process' environment
+	const size_t len = strlen(name) + 1 + strlen(value) + 1;
+	char*        str = (char*)calloc(1, len);
+	snprintf(str, len, "%s=%s", name, value);
+	putenv(str);
+	free(str);
+#else
+	setenv(name, value, 1);
+#endif
+}
+
 /*****************************************************************************/
 
 #define TEST_CASE(name) { #name, test_##name }
@@ -1159,43 +1174,43 @@ test_port(void)
 	lilv_node_free(name);
 
 	// Exact language match
-	setenv("LANG", "fr_FR", 1);
+	set_env("LANG", "de_DE");
 	name = lilv_port_get_name(plug, p);
 	TEST_ASSERT(!strcmp(lilv_node_as_string(name), "Laden"));
 	lilv_node_free(name);
 
 	// Exact language match (with charset suffix)
-	setenv("LANG", "fr_CA.utf8", 1);
+	set_env("LANG", "de_AT.utf8");
 	name = lilv_port_get_name(plug, p);
 	TEST_ASSERT(!strcmp(lilv_node_as_string(name), "Geschaeft"));
 	lilv_node_free(name);
 
 	// Partial language match (choose value translated for different country)
-	setenv("LANG", "fr_BE", 1);
+	set_env("LANG", "de_CH");
 	name = lilv_port_get_name(plug, p);
 	TEST_ASSERT((!strcmp(lilv_node_as_string(name), "Laden"))
 	            ||(!strcmp(lilv_node_as_string(name), "Geschaeft")));
 	lilv_node_free(name);
 
 	// Partial language match (choose country-less language tagged value)
-	setenv("LANG", "es_MX", 1);
+	set_env("LANG", "es_MX");
 	name = lilv_port_get_name(plug, p);
 	TEST_ASSERT(!strcmp(lilv_node_as_string(name), "tienda"));
 	lilv_node_free(name);
 
 	// No language match (choose untranslated value)
-	setenv("LANG", "cn", 1);
+	set_env("LANG", "cn");
 	name = lilv_port_get_name(plug, p);
 	TEST_ASSERT(!strcmp(lilv_node_as_string(name), "store"));
 	lilv_node_free(name);
 
 	// Invalid language
-	setenv("LANG", "1!", 1);
+	set_env("LANG", "1!");
 	name = lilv_port_get_name(plug, p);
 	TEST_ASSERT(!strcmp(lilv_node_as_string(name), "store"));
 	lilv_node_free(name);
 
-	setenv("LANG", "en_CA.utf-8", 1);
+	set_env("LANG", "en_CA.utf-8");
 
 	// Language tagged value with no untranslated values
 	LilvNode*  rdfs_comment = lilv_new_uri(world, LILV_NS_RDFS "comment");
@@ -1207,14 +1222,14 @@ test_port(void)
 	lilv_node_free(comment);
 	lilv_nodes_free(comments);
 
-	setenv("LANG", "fr", 1);
+	set_env("LANG", "fr");
 
 	comments = lilv_port_get_value(plug, p, rdfs_comment);
 	TEST_ASSERT(!strcmp(lilv_node_as_string(lilv_nodes_get_first(comments)),
 	                    "commentaires"));
 	lilv_nodes_free(comments);
 
-	setenv("LANG", "cn", 1);
+	set_env("LANG", "cn");
 
 	comments = lilv_port_get_value(plug, p, rdfs_comment);
 	TEST_ASSERT(!comments);
@@ -1222,7 +1237,7 @@ test_port(void)
 
 	lilv_node_free(rdfs_comment);
 
-	setenv("LANG", "C", 1);  // Reset locale
+	set_env("LANG", "C");  // Reset locale
 
 	LilvScalePoints* points = lilv_port_get_scale_points(plug, p);
 	TEST_ASSERT(lilv_scale_points_size(points) == 2);
@@ -2276,7 +2291,7 @@ main(int argc, char* argv[])
 		printf("Syntax: %s\n", argv[0]);
 		return 0;
 	}
-	setenv("LANG", "C", 1);
+	set_env("LANG", "C");
 	init_tests();
 	run_tests();
 	cleanup();
