@@ -1084,7 +1084,7 @@ test_port(void)
 			"  a lv2:ControlPort ; a lv2:InputPort ; "
 			"  lv2:index 0 ; lv2:symbol \"foo\" ; "
 			"  lv2:name \"store\" ; "
-			"  lv2:name \"dépanneur\"@fr-ca ; lv2:name \"épicerie\"@fr-fr ; "
+			"  lv2:name \"Laden\"@de-de ; lv2:name \"Geschaeft\"@de-at ; "
 			"  lv2:name \"tienda\"@es ; "
 			"  rdfs:comment \"comment\"@en , \"commentaires\"@fr ; "
      		"  lv2:portProperty lv2:integer ; "
@@ -1161,20 +1161,20 @@ test_port(void)
 	// Exact language match
 	setenv("LANG", "fr_FR", 1);
 	name = lilv_port_get_name(plug, p);
-	TEST_ASSERT(!strcmp(lilv_node_as_string(name), "épicerie"));
+	TEST_ASSERT(!strcmp(lilv_node_as_string(name), "Laden"));
 	lilv_node_free(name);
 
 	// Exact language match (with charset suffix)
 	setenv("LANG", "fr_CA.utf8", 1);
 	name = lilv_port_get_name(plug, p);
-	TEST_ASSERT(!strcmp(lilv_node_as_string(name), "dépanneur"));
+	TEST_ASSERT(!strcmp(lilv_node_as_string(name), "Geschaeft"));
 	lilv_node_free(name);
 
 	// Partial language match (choose value translated for different country)
 	setenv("LANG", "fr_BE", 1);
 	name = lilv_port_get_name(plug, p);
-	TEST_ASSERT((!strcmp(lilv_node_as_string(name), "dépanneur"))
-	            ||(!strcmp(lilv_node_as_string(name), "épicerie")));
+	TEST_ASSERT((!strcmp(lilv_node_as_string(name), "Laden"))
+	            ||(!strcmp(lilv_node_as_string(name), "Geschaeft")));
 	lilv_node_free(name);
 
 	// Partial language match (choose country-less language tagged value)
