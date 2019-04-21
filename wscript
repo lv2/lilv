@@ -184,10 +184,10 @@ def build_util(bld, name, defines, libs=''):
               source       = name + '.c',
               includes     = ['.', './src', './utils'],
               use          = 'liblilv',
+              uselib       = 'SERD SORD SRATOM LV2 ' + libs,
               target       = name,
               defines      = defines,
               install_path = '${BINDIR}')
-    autowaf.use_lib(bld, obj, 'SERD SORD SRATOM LV2 ' + libs)
     if not bld.env.BUILD_SHARED or bld.env.STATIC_PROGS:
         obj.use = 'liblilv_static'
     if bld.env.STATIC_PROGS:
@@ -248,8 +248,8 @@ def build(bld):
                   install_path    = '${LIBDIR}',
                   defines         = ['LILV_SHARED', 'LILV_INTERNAL'],
                   cflags          = libflags,
-                  lib             = lib)
-        autowaf.use_lib(bld, obj, 'SERD SORD SRATOM LV2')
+                  lib             = lib,
+                  uselib          = 'SERD SORD SRATOM LV2')
 
     # Static library
     if bld.env.BUILD_STATIC:
@@ -261,8 +261,8 @@ def build(bld):
                   target          = 'lilv-%s' % LILV_MAJOR_VERSION,
                   vnum            = LILV_VERSION,
                   install_path    = '${LIBDIR}',
-                  defines         = defines + ['LILV_INTERNAL'])
-        autowaf.use_lib(bld, obj, 'SERD SORD SRATOM LV2')
+                  defines         = defines + ['LILV_INTERNAL'],
+                  uselib          = 'SERD SORD SRATOM LV2')
 
     # Python bindings
     if bld.is_defined('LILV_PYTHON'):
@@ -287,7 +287,7 @@ def build(bld):
             bld(features     = 'subst',
                 is_copy      = True,
                 source       = 'test/core.lv2/' + name,
-                target       = 'test_lv2_path/core.lv2/' + name,
+                target       = 'test/test_lv2_path/core.lv2/' + name,
                 install_path = None)
 
         # Make a pattern for shared objects without the 'lib' prefix
@@ -321,8 +321,7 @@ def build(bld):
                       cflags       = test_cflags,
                       linkflags    = test_linkflags,
                       lib          = test_libs,
-                      uselib       = 'LV2')
-            autowaf.use_lib(bld, obj, 'SERD SORD SRATOM LV2')
+                      uselib       = 'SERD SORD SRATOM LV2')
 
         # Test plugin data files
         for p in ['test'] + test_plugins:
@@ -344,11 +343,11 @@ def build(bld):
                   defines      = defines + ['LILV_INTERNAL'],
                   cflags       = test_cflags,
                   linkflags    = test_linkflags,
-                  lib          = test_libs)
-        autowaf.use_lib(bld, obj, 'SERD SORD SRATOM LV2')
+                  lib          = test_libs,
+                  uselib       = 'SERD SORD SRATOM LV2')
 
         # Unit test program
-        testdir = os.path.abspath(autowaf.build_dir(APPNAME, 'test'))
+        testdir = bld.path.get_bld().make_node('test').abspath()
         bpath   = os.path.join(testdir, 'test.lv2')
         bpath   = bpath.replace('\\', '/')
         testdir = testdir.replace('\\', '/')
@@ -357,13 +356,13 @@ def build(bld):
                   includes     = ['.', './src'],
                   use          = 'liblilv_profiled',
                   lib          = test_libs,
+                  uselib       = 'SERD SORD SRATOM LV2',
                   target       = 'test/lilv_test',
                   install_path = None,
                   defines      = (defines + ['LILV_TEST_BUNDLE=\"%s/\"' % bpath] +
                                   ['LILV_TEST_DIR=\"%s/\"' % testdir]),
                   cflags       = test_cflags,
                   linkflags    = test_linkflags)
-        autowaf.use_lib(bld, obj, 'SERD SORD SRATOM LV2')
 
         # C++ API test
         if 'COMPILER_CXX' in bld.env:
@@ -372,11 +371,11 @@ def build(bld):
                       includes     = ['.', './src'],
                       use          = 'liblilv_profiled',
                       lib          = test_libs,
+                      uselib       = 'SERD SORD SRATOM LV2',
                       target       = 'test/lilv_cxx_test',
                       install_path = None,
                       cxxflags     = test_cflags,
                       linkflags    = test_linkflags)
-            autowaf.use_lib(bld, obj, 'SERD SORD SRATOM LV2')
 
         if bld.is_defined('LILV_PYTHON'):
             # Copy Python unittest files
@@ -440,12 +439,6 @@ def build(bld):
             '${SYSCONFDIR}/bash_completion.d/lilv', 'utils/lilv.bash_completion')
 
     bld.add_post_fun(autowaf.run_ldconfig)
-    if bld.env.DOCS:
-        bld.add_post_fun(fix_docs)
-
-def fix_docs(ctx):
-    if ctx.cmd == 'build':
-        autowaf.make_simple_dox(APPNAME)
 
 def upload_docs(ctx):
     import glob

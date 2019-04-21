@@ -81,10 +81,10 @@ delete_bundle(void)
 static void
 init_tests(void)
 {
-	char* build_path = lilv_realpath(".");
+	char* test_path = lilv_realpath(LILV_TEST_DIR);
 
 	snprintf(test_bundle_path, sizeof(test_bundle_path),
-	         "%s/test_lv2_path/lilv-test.lv2", build_path);
+	         "%s/test_lv2_path/lilv-test.lv2", test_path);
 	lilv_mkdir_p(test_bundle_path);
 
 	SerdNode s = serd_node_new_file_uri(
@@ -98,7 +98,7 @@ init_tests(void)
 	         test_bundle_path);
 
 	serd_node_free(&s);
-	lilv_free(build_path);
+	lilv_free(test_path);
 
 	delete_bundle();
 }
@@ -132,12 +132,12 @@ init_world(void)
 	world = lilv_world_new();
 
 	// Set custom LV2_PATH in build directory to only use test data
-	char*     build_path = lilv_realpath(".");
-	char*     lv2_path   = lilv_strjoin(build_path, "/test_lv2_path", NULL);
-	LilvNode* path       = lilv_new_string(world, lv2_path);
+	char*     test_path = lilv_realpath(LILV_TEST_DIR);
+	char*     lv2_path  = lilv_strjoin(test_path, "/test_lv2_path", NULL);
+	LilvNode* path      = lilv_new_string(world, lv2_path);
 	lilv_world_set_option(world, LILV_OPTION_LV2_PATH, path);
 	free(lv2_path);
-	free(build_path);
+	free(test_path);
 	lilv_node_free(path);
 
 	return world != NULL;
