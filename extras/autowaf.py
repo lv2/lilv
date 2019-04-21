@@ -7,9 +7,6 @@ import time
 from waflib import Configure, ConfigSet, Build, Context, Logs, Options, Utils
 from waflib.TaskGen import feature, before, after
 
-global g_is_child
-g_is_child = False
-
 NONEMPTY = -10
 
 if sys.platform == 'win32':
@@ -93,6 +90,9 @@ def set_options(opt, debug_by_default=False):
         test_opts.add_option('--wrapper', type='string',
                              dest='test_wrapper',
                              help='command prefix for tests (e.g. valgrind)')
+        test_opts.add_option('--test-filter', type='string',
+                             dest='test_filter',
+                             help='regular expression for tests to run')
 
     # Run options
     run_opts = opt.add_option_group('Run options')
@@ -171,7 +171,8 @@ def define(conf, var_name, value):
 
 def check_pkg(conf, name, **args):
     "Check for a package iff it hasn't been checked for yet"
-    if args['uselib_store'].lower() in conf.env['AUTOWAF_LOCAL_LIBS']:
+    if (args['uselib_store'].lower() in conf.env['AUTOWAF_LOCAL_LIBS'] or
+        args['uselib_store'].lower() in conf.env['AUTOWAF_LOCAL_HEADERS']):
         return
 
     class CheckType:
@@ -450,26 +451,6 @@ def append_property(obj, key, val):
     else:
         setattr(obj, key, val)
 
-def use_lib(bld, obj, libs):
-    abssrcdir = os.path.abspath('.')
-    libs_list = libs.split()
-    for l in libs_list:
-        in_headers = l.lower() in bld.env['AUTOWAF_LOCAL_HEADERS']
-        in_libs    = l.lower() in bld.env['AUTOWAF_LOCAL_LIBS']
-        if in_libs:
-            append_property(obj, 'use', ' lib%s ' % l.lower())
-            append_property(obj, 'framework', bld.env['FRAMEWORK_' + l])
-        if in_headers or in_libs:
-            if bld.env.MSVC_COMPILER:
-                inc_flag = '/I' + os.path.join(abssrcdir, l.lower())
-            else:
-                inc_flag = '-iquote ' + os.path.join(abssrcdir, l.lower())
-            for f in ['CFLAGS', 'CXXFLAGS']:
-                if inc_flag not in bld.env[f]:
-                    bld.env.prepend_value(f, inc_flag)
-        else:
-            append_property(obj, 'uselib', ' ' + l)
-
 @feature('c', 'cxx')
 @before('apply_link')
 def version_lib(self):
@@ -480,21 +461,34 @@ def version_lib(self):
         if [x for x in applicable if x in self.features]:
             self.target = self.target + 'D'
 
-def set_lib_env(conf, name, version):
+def set_lib_env(conf,
+                name,
+                version,
+                has_objects=True,
+                include_path=None,
+                lib_path=None):
     "Set up environment for local library as if found via pkg-config."
     NAME         = name.upper()
     major_ver    = version.split('.')[0]
     pkg_var_name = 'PKG_' + name.replace('-', '_') + '_' + major_ver
     lib_name     = '%s-%s' % (name, major_ver)
-    lib_path     = [str(conf.path.get_bld())]
+
+    if lib_path is None:
+        lib_path = str(conf.path.get_bld())
+
+    if include_path is None:
+        include_path = str(conf.path)
+
     if conf.env.PARDEBUG:
         lib_name += 'D'
-    conf.env[pkg_var_name]       = lib_name
-    conf.env['INCLUDES_' + NAME] = ['${INCLUDEDIR}/%s-%s' % (name, major_ver)]
-    conf.env['LIBPATH_' + NAME]  = lib_path
-    conf.env['LIB_' + NAME]      = [lib_name]
 
-    conf.run_env.append_unique(lib_path_name, lib_path)
+    conf.env[pkg_var_name]       = lib_name
+    conf.env['INCLUDES_' + NAME] = [include_path]
+    conf.env['LIBPATH_' + NAME]  = [lib_path]
+    if has_objects:
+        conf.env['LIB_' + NAME] = [lib_name]
+
+    conf.run_env.append_unique(lib_path_name, [lib_path])
     conf.define(NAME + '_VERSION', version)
 
 def display_msg(conf, msg, status=None, color=None):
@@ -521,14 +515,6 @@ def compile_flags(env, lib):
     return ' '.join(map(lambda x: env['CPPPATH_ST'] % x,
                         env['INCLUDES_' + lib]))
 
-def set_recursive():
-    global g_is_child
-    g_is_child = True
-
-def is_child():
-    global g_is_child
-    return g_is_child
-
 def build_pc(bld, name, version, version_suffix, libs, subst_dict={}):
     """Build a pkg-config file for a library.
 
@@ -539,7 +525,7 @@ def build_pc(bld, name, version, version_suffix, libs, subst_dict={}):
     """
 
     pkg_prefix       = bld.env['PREFIX']
-    if pkg_prefix[-1] == '/':
+    if len(pkg_prefix) > 1 and pkg_prefix[-1] == '/':
         pkg_prefix = pkg_prefix[:-1]
 
     target = name.lower()
@@ -582,13 +568,6 @@ def build_pc(bld, name, version, version_suffix, libs, subst_dict={}):
         subst_dict[i + '_CFLAGS'] = lib_cflags
 
     obj.__dict__.update(subst_dict)
-
-def build_dir(name, subdir):
-    if is_child():
-        return os.path.join('build', name, subdir)
-    else:
-        return os.path.join('build', subdir)
-
 
 def make_simple_dox(name):
     "Clean up messy Doxygen documentation after it is built"
@@ -636,12 +615,8 @@ def build_dox(bld, name, version, srcdir, blddir, outdir='', versioned=True):
     if not bld.env['DOCS']:
         return
 
-    # Doxygen paths in are relative to the doxygen file, not build directory
-    if is_child():
-        src_dir = os.path.join(srcdir, name.lower())
-    else:
-        src_dir = srcdir
-
+    # Doxygen paths in are relative to the doxygen file
+    src_dir = bld.path.srcpath()
     subst_tg = bld(features='subst',
                    source='doc/reference.doxygen.in',
                    target='doc/reference.doxygen',
@@ -807,11 +782,15 @@ def show_diff(from_lines, to_lines, from_filename, to_filename):
     import difflib
     import sys
 
+    same = True
     for line in difflib.unified_diff(
             from_lines, to_lines,
             fromfile=os.path.abspath(from_filename),
             tofile=os.path.abspath(to_filename)):
         sys.stderr.write(line)
+        same = False
+
+    return same
 
 def test_file_equals(patha, pathb):
     import filecmp
@@ -827,9 +806,7 @@ def test_file_equals(patha, pathb):
 
     with io.open(patha, 'rU', encoding='utf-8') as fa:
         with io.open(pathb, 'rU', encoding='utf-8') as fb:
-            show_diff(fa.readlines(), fb.readlines(), patha, pathb)
-
-    return False
+            return show_diff(fa.readlines(), fb.readlines(), patha, pathb)
 
 def bench_time():
     if hasattr(time, 'perf_counter'): # Added in Python 3.3
@@ -864,12 +841,26 @@ class TestScope:
         self.n_total = 0
 
     def run(self, test, **kwargs):
+        if type(test) == list and 'name' not in kwargs:
+            import pipes
+            kwargs['name'] = ' '.join(map(pipes.quote, test))
+
+        if Options.options.test_filter and 'name' in kwargs:
+            import re
+            found = False
+            for scope in self.tst.stack:
+                if re.search(Options.options.test_filter, scope.name):
+                    found = True
+                    break
+
+            if (not found and
+                not re.search(Options.options.test_filter, self.name) and
+                not re.search(Options.options.test_filter, kwargs['name'])):
+                return True
+
         if callable(test):
             output = self._run_callable(test, **kwargs)
         elif type(test) == list:
-            if 'name' not in kwargs:
-                import pipes
-                kwargs['name'] = ' '.join(map(pipes.quote, test))
 
             output = self._run_command(test, **kwargs)
         else:
@@ -888,9 +879,10 @@ class TestScope:
         if 'stderr' in kwargs and kwargs['stderr'] == NONEMPTY:
             # Run with a temp file for stderr and check that it is non-empty
             import tempfile
-            with tempfile.TemporaryFile(mode='w') as stderr:
+            with tempfile.TemporaryFile() as stderr:
                 kwargs['stderr'] = stderr
                 output = self.run(test, **kwargs)
+                stderr.seek(0, 2) # Seek to end
                 return (output if not output else
                         self.run(
                             lambda: stderr.tell() > 0,
@@ -991,7 +983,7 @@ class TestContext(Build.BuildContext):
         Logs.info("Waf: Entering directory `%s'\n", bld_dir)
         os.chdir(str(bld_dir))
 
-        if str(node.parent) == Context.top_dir:
+        if not self.env.NO_COVERAGE and str(node.parent) == Context.top_dir:
             self.clear_coverage()
 
         self.log_good('=' * 10, 'Running %s tests', group_name)
@@ -1026,7 +1018,7 @@ class TestContext(Build.BuildContext):
                 self.gen_coverage()
 
             if os.path.exists('coverage/index.html'):
-                self.log_good('COVERAGE', '<file://%s>',
+                self.log_good('REPORT', '<file://%s>',
                               os.path.abspath('coverage/index.html'))
 
         successes = scope.n_total - scope.n_failed
@@ -1097,6 +1089,19 @@ class TestContext(Build.BuildContext):
                                  '--rc', 'genhtml_branch_coverage=1',
                                  'cov.lcov'],
                                 stdout=log, stderr=log)
+
+            summary = subprocess.check_output(
+                ['lcov', '--summary',
+                 '--rc', 'lcov_branch_coverage=1',
+                 'cov.lcov'],
+                stderr=subprocess.STDOUT).decode('ascii')
+
+            import re
+            lines = re.search('lines\.*: (.*)%.*', summary).group(1)
+            functions = re.search('functions\.*: (.*)%.*', summary).group(1)
+            branches = re.search('branches\.*: (.*)%.*', summary).group(1)
+            self.log_good('COVERAGE', '%s%% lines, %s%% functions, %s%% branches',
+                          lines, functions, branches)
 
         except Exception:
             Logs.warn('Failed to run lcov to generate coverage report')
