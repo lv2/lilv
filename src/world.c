@@ -1010,7 +1010,7 @@ lilv_world_load_plugin_classes(LilvWorld* world)
 
 		SordNode* parent = sord_get(
 			world->model, class_node, world->uris.rdfs_subClassOf, NULL, NULL);
-		if (!parent || sord_node_get_type(parent) != SORD_URI) {
+		if (parent && sord_node_get_type(parent) != SORD_URI) {
 			continue;
 		}
 
