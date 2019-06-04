@@ -43,7 +43,8 @@ enum {
 };
 
 typedef struct {
-	LV2_URID_Map* map;
+	LV2_URID_Map*        map;
+	LV2_State_Free_Path* free_path;
 
 	struct {
 		LV2_URID atom_Float;
@@ -59,23 +60,18 @@ typedef struct {
 } Test;
 
 static void
-free_path(char* path)
-{
-	/* FIXME: Temporary hack to avoid mismatched malloc/free crashes on
-	   Windows.  The specifications needs a feature for this. */
-#ifndef _WIN32
-	free(path);
-#endif
-}
-
-static void
 cleanup(LV2_Handle instance)
 {
 	Test* test = (Test*)instance;
 	if (test->rec_file) {
 		fclose(test->rec_file);
 	}
-	free_path(test->rec_file_path);
+
+	if (test->free_path) {
+		test->free_path->free_path(test->free_path->handle,
+		                           test->rec_file_path);
+	}
+
 	free(instance);
 }
 
@@ -123,6 +119,8 @@ instantiate(const LV2_Descriptor*     descriptor,
 				test->map->handle, LV2_ATOM__Float);
 		} else if (!strcmp(features[i]->URI, LV2_STATE__makePath)) {
 			make_path = (LV2_State_Make_Path*)features[i]->data;
+		} else if (!strcmp(features[i]->URI, LV2_STATE__freePath)) {
+			test->free_path = (LV2_State_Free_Path*)features[i]->data;
 		}
 	}
 
@@ -133,6 +131,12 @@ instantiate(const LV2_Descriptor*     descriptor,
 	}
 
 	if (make_path) {
+		if (!test->free_path) {
+			fprintf(stderr, "Host provided make_path without free_path\n");
+			free(test);
+			return NULL;
+		}
+
 		test->rec_file_path = make_path->path(make_path->handle, "recfile");
 		if (!(test->rec_file = fopen(test->rec_file_path, "w"))) {
 			fprintf(stderr, "ERROR: Failed to open rec file\n");
@@ -179,12 +183,19 @@ save(LV2_Handle                instance,
 
 	LV2_State_Map_Path*  map_path  = NULL;
 	LV2_State_Make_Path* make_path = NULL;
+	LV2_State_Free_Path* free_path = NULL;
 	for (int i = 0; features && features[i]; ++i) {
 		if (!strcmp(features[i]->URI, LV2_STATE__mapPath)) {
 			map_path = (LV2_State_Map_Path*)features[i]->data;
 		} else if (!strcmp(features[i]->URI, LV2_STATE__makePath)) {
 			make_path = (LV2_State_Make_Path*)features[i]->data;
+		} else if (!strcmp(features[i]->URI, LV2_STATE__freePath)) {
+			free_path = (LV2_State_Free_Path*)features[i]->data;
 		}
+	}
+
+	if (!map_path || !free_path) {
+		return LV2_STATE_ERR_NO_FEATURE;
 	}
 
 	store(callback_data,
@@ -281,8 +292,8 @@ save(LV2_Handle                instance,
 		      map_uri(plugin, LV2_ATOM__Path),
 		      LV2_STATE_IS_POD);
 
-		free_path(apath);
-		free_path(apath2);
+		free_path->free_path(free_path->handle, apath);
+		free_path->free_path(free_path->handle, apath2);
 
 		if (plugin->rec_file) {
 			fflush(plugin->rec_file);
@@ -296,7 +307,7 @@ save(LV2_Handle                instance,
 			      map_uri(plugin, LV2_ATOM__Path),
 			      LV2_STATE_IS_POD);
 
-			free_path(apath);
+			free_path->free_path(free_path->handle, apath);
 		}
 
 		if (make_path) {
@@ -312,8 +323,8 @@ save(LV2_Handle                instance,
 			      strlen(apath) + 1,
 			      map_uri(plugin, LV2_ATOM__Path),
 			      LV2_STATE_IS_POD);
-			free_path(apath);
-			free_path(spath);
+			free_path->free_path(free_path->handle, apath);
+			free_path->free_path(free_path->handle, spath);
 		}
 	}
 
@@ -329,10 +340,13 @@ restore(LV2_Handle                  instance,
 {
 	Test* plugin = (Test*)instance;
 
-	LV2_State_Map_Path* map_path = NULL;
+	LV2_State_Map_Path*  map_path  = NULL;
+	LV2_State_Free_Path* free_path = NULL;
 	for (int i = 0; features && features[i]; ++i) {
 		if (!strcmp(features[i]->URI, LV2_STATE__mapPath)) {
 			map_path = (LV2_State_Map_Path*)features[i]->data;
+		} else if (!strcmp(features[i]->URI, LV2_STATE__freePath)) {
+			free_path = (LV2_State_Free_Path*)features[i]->data;
 		}
 	}
 
@@ -345,7 +359,7 @@ restore(LV2_Handle                  instance,
 		map_uri(plugin, "http://example.org/num-runs"),
 		&size, &type, &valflags);
 
-	if (!map_path) {
+	if (!map_path || !free_path) {
 		return LV2_STATE_ERR_NO_FEATURE;
 	}
 
@@ -369,7 +383,7 @@ restore(LV2_Handle                  instance,
 			fprintf(stderr, "error: Restored bad file contents `%s' != `Hello'\n",
 			        str);
 		}
-		free_path(path);
+		free_path->free_path(free_path->handle, path);
 	}
 
 	apath = (char*)retrieve(
@@ -384,7 +398,7 @@ restore(LV2_Handle                  instance,
 		} else {
 			fclose(sfile);
 		}
-		free_path(spath);
+		free_path->free_path(free_path->handle, spath);
 	} else {
 		fprintf(stderr, "error: Failed to restore save file.\n");
 	}

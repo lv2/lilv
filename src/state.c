@@ -327,23 +327,34 @@ absolute_path(LV2_State_Map_Path_Handle handle,
 	return path;
 }
 
-/** Return a new features array which is `feature` added to `features`. */
+/** Return a new features array with built-in features added to `features`. */
 static const LV2_Feature**
-add_features(const LV2_Feature *const * features,
-             const LV2_Feature* map, const LV2_Feature* make)
+add_features(const LV2_Feature* const* features,
+             const LV2_Feature*        map,
+             const LV2_Feature*        make,
+             const LV2_Feature*        free)
 {
 	size_t n_features = 0;
 	for (; features && features[n_features]; ++n_features) {}
 
 	const LV2_Feature** ret = (const LV2_Feature**)calloc(
-		n_features + 3, sizeof(LV2_Feature*));
+		n_features + 4, sizeof(LV2_Feature*));
 
 	if (features) {
 		memcpy(ret, features, n_features * sizeof(LV2_Feature*));
 	}
 
-	ret[n_features]     = map;
-	ret[n_features + 1] = make;
+	size_t i = n_features;
+	if (map) {
+		ret[i++] = map;
+	}
+	if (make) {
+		ret[i++] = make;
+	}
+	if (free) {
+		ret[i++] = free;
+	}
+
 	return ret;
 }
 
@@ -367,6 +378,12 @@ state_strerror(LV2_State_Status st)
 	case LV2_STATE_ERR_NO_PROPERTY: return "Missing property";
 	default:                        return "Unknown error";
 	}
+}
+
+static void
+lilv_free_path(LV2_State_Free_Path_Handle handle, char* path)
+{
+	lilv_free(path);
 }
 
 LILV_API LilvState*
@@ -398,8 +415,11 @@ lilv_state_new_from_instance(const LilvPlugin*          plugin,
 	LV2_Feature         pmap_feature  = { LV2_STATE__mapPath, &pmap };
 	LV2_State_Make_Path pmake         = { state, make_path };
 	LV2_Feature         pmake_feature = { LV2_STATE__makePath, &pmake };
+	LV2_State_Free_Path pfree         = { NULL, lilv_free_path };
+	LV2_Feature         pfree_feature = { LV2_STATE__freePath, &pfree };
 	features = sfeatures = add_features(features, &pmap_feature,
-	                                    save_dir ? &pmake_feature : NULL);
+	                                    save_dir ? &pmake_feature : NULL,
+	                                    &pfree_feature);
 
 	// Store port values
 	if (get_value) {
@@ -473,6 +493,9 @@ lilv_state_restore(const LilvState*           state,
 		(LilvState*)state, abstract_path, absolute_path };
 	LV2_Feature map_feature = { LV2_STATE__mapPath, &map_path };
 
+	LV2_State_Free_Path free_path    = { NULL, lilv_free_path };
+	LV2_Feature         free_feature = { LV2_STATE__freePath, &free_path };
+
 	if (instance) {
 		const LV2_Descriptor* desc = instance->lv2_descriptor;
 		if (desc->extension_data) {
@@ -481,7 +504,7 @@ lilv_state_restore(const LilvState*           state,
 
 			if (iface && iface->restore) {
 				const LV2_Feature** sfeatures = add_features(
-					features, &map_feature, NULL);
+					features, &map_feature, NULL, &free_feature);
 
 				iface->restore(instance->lv2_handle, retrieve_callback,
 				               (LV2_State_Handle)state, flags, sfeatures);

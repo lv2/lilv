@@ -1,3 +1,9 @@
+lilv (0.24.7) unstable;
+
+  * Implement state:freePath feature
+
+ -- David Robillard <d@drobilla.net>  Sun, 08 Dec 2019 12:30:32 +0000
+
 lilv (0.24.6) stable;
 
   * Add more strict error detection when storing plugin state properties

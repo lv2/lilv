@@ -1572,6 +1572,12 @@ lilv_make_path(LV2_State_Make_Path_Handle handle,
 	return lilv_path_join(temp_dir, path);
 }
 
+static void
+lilv_free_path(LV2_State_Free_Path_Handle handle, char* path)
+{
+	lilv_free(path);
+}
+
 static int
 test_state(void)
 {
@@ -1768,7 +1774,11 @@ test_state(void)
 
 	LV2_State_Make_Path make_path         = { NULL, lilv_make_path };
 	LV2_Feature         make_path_feature = { LV2_STATE__makePath, &make_path };
-	const LV2_Feature*  ffeatures[]       = { &make_path_feature, &map_feature, NULL };
+	LV2_State_Free_Path free_path         = { NULL, lilv_free_path };
+	LV2_Feature         free_path_feature = { LV2_STATE__freePath, &free_path };
+	const LV2_Feature*  ffeatures[]       = {
+		&make_path_feature, &map_feature, &free_path_feature, NULL
+	};
 
 	lilv_instance_deactivate(instance);
 	lilv_instance_free(instance);
