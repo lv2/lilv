@@ -192,6 +192,11 @@ store_callback(LV2_State_Handle handle,
                uint32_t         flags)
 {
 	LilvState* const state = (LilvState*)handle;
+
+	if (find_property((const LilvState*)handle, key)) {
+		return LV2_STATE_ERR_UNKNOWN; // TODO: Add status for duplicate keys
+	}
+
 	append_property(state, &state->props, key, value, size, type, flags);
 	return LV2_STATE_SUCCESS;
 }

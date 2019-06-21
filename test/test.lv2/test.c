@@ -202,6 +202,17 @@ save(LV2_Handle                instance,
 	      map_uri(plugin, LV2_ATOM__URID),
 	      LV2_STATE_IS_POD | LV2_STATE_IS_PORTABLE);
 
+	// Try to store second value for the same property (should fail)
+	const uint32_t urid2 = map_uri(plugin, "http://example.org/urivalue2");
+	if (!store(callback_data,
+	           map_uri(plugin, "http://example.org/uri"),
+	           &urid2,
+	           sizeof(uint32_t),
+	           map_uri(plugin, LV2_ATOM__URID),
+	           LV2_STATE_IS_POD | LV2_STATE_IS_PORTABLE)) {
+		return LV2_STATE_ERR_UNKNOWN;
+	}
+
 	store(callback_data,
 	      map_uri(plugin, "http://example.org/num-runs"),
 	      &plugin->num_runs,
