@@ -171,6 +171,18 @@ append_property(LilvState*     state,
 	prop->flags = flags;
 }
 
+static const Property*
+find_property(const LilvState* const state, const uint32_t key)
+{
+	const Property search_key = {NULL, 0, key, 0, 0};
+
+	return (const Property*)bsearch(&search_key,
+	                                state->props.props,
+	                                state->props.n,
+	                                sizeof(Property),
+	                                property_cmp);
+}
+
 static LV2_State_Status
 store_callback(LV2_State_Handle handle,
                uint32_t         key,
@@ -191,11 +203,7 @@ retrieve_callback(LV2_State_Handle handle,
                   uint32_t*        type,
                   uint32_t*        flags)
 {
-	const LilvState* const state      = (LilvState*)handle;
-	const Property         search_key = { NULL, 0, key, 0, 0 };
-	const Property* const  prop       = (Property*)bsearch(
-		&search_key, state->props.props, state->props.n,
-		sizeof(Property), property_cmp);
+	const Property* const prop = find_property((const LilvState*)handle, key);
 
 	if (prop) {
 		*size  = prop->size;
