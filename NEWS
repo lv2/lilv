@@ -6,9 +6,9 @@ lilv (0.24.5) unstable;
   * Fix issues with loading state with saved files from the model
   * Add option to override LV2_PATH in applications
   * Fix unit tests on Windows
-  * Refuse to store duplicate properties when saving plugin state
+  * Add more strict error detection when storing plugin state properties
 
- -- David Robillard <d@drobilla.net>  Fri, 21 Jun 2019 21:00:52 +0200
+ -- David Robillard <d@drobilla.net>  Fri, 21 Jun 2019 21:18:02 +0200
 
 lilv (0.24.4) stable;
 

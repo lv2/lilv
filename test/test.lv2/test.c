@@ -213,6 +213,16 @@ save(LV2_Handle                instance,
 		return LV2_STATE_ERR_UNKNOWN;
 	}
 
+	// Try to store with a null key (should fail)
+	if (!store(callback_data,
+	           0,
+	           &urid2,
+	           sizeof(uint32_t),
+	           map_uri(plugin, LV2_ATOM__URID),
+	           LV2_STATE_IS_POD | LV2_STATE_IS_PORTABLE)) {
+		return LV2_STATE_ERR_UNKNOWN;
+	}
+
 	store(callback_data,
 	      map_uri(plugin, "http://example.org/num-runs"),
 	      &plugin->num_runs,

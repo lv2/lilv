@@ -193,6 +193,10 @@ store_callback(LV2_State_Handle handle,
 {
 	LilvState* const state = (LilvState*)handle;
 
+	if (!key) {
+		return LV2_STATE_ERR_UNKNOWN; // TODO: Add status for bad arguments
+	}
+
 	if (find_property((const LilvState*)handle, key)) {
 		return LV2_STATE_ERR_UNKNOWN; // TODO: Add status for duplicate keys
 	}
