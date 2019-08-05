@@ -619,7 +619,7 @@ lilv_world_load_dyn_manifest(LilvWorld*      world,
 			lilv_world_add_plugin(world, plug, manifest, desc, bundle_node);
 		}
 		if (desc->refs == 0) {
-			free(desc);
+			lilv_dyn_manifest_free(desc);
 		}
 		sord_iter_free(p);
 		sord_free(plugins);

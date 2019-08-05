@@ -423,6 +423,8 @@ lilv_dlfunc(void* handle, const char* symbol)
 
 #ifdef LILV_DYN_MANIFEST
 static const LV2_Feature* const dman_features = { NULL };
+void
+lilv_dyn_manifest_free (LilvDynManifest* dynmanifest);
 #endif
 
 #define LILV_ERROR(str)       fprintf(stderr, "%s(): error: " str, \

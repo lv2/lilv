@@ -100,16 +100,7 @@ lilv_plugin_free(LilvPlugin* plugin)
 {
 #ifdef LILV_DYN_MANIFEST
 	if (plugin->dynmanifest && --plugin->dynmanifest->refs == 0) {
-		typedef int (*CloseFunc)(LV2_Dyn_Manifest_Handle);
-		CloseFunc close_func = (CloseFunc)lilv_dlfunc(plugin->dynmanifest->lib,
-		                                              "lv2_dyn_manifest_close");
-		if (close_func) {
-			close_func(plugin->dynmanifest->handle);
-		}
-
-		dlclose(plugin->dynmanifest->lib);
-		lilv_node_free(plugin->dynmanifest->bundle);
-		free(plugin->dynmanifest);
+		lilv_dyn_manifest_free(plugin->dynmanifest);
 	}
 #endif
 

@@ -250,6 +250,8 @@ def build(bld):
                   cflags          = libflags,
                   lib             = lib,
                   uselib          = 'SERD SORD SRATOM LV2')
+        if bld.env.LILV_DYN_MANIFEST:
+            obj.source.append('src/dynmanifest.c')
 
     # Static library
     if bld.env.BUILD_STATIC:
@@ -263,6 +265,8 @@ def build(bld):
                   install_path    = '${LIBDIR}',
                   defines         = defines + ['LILV_INTERNAL'],
                   uselib          = 'SERD SORD SRATOM LV2')
+        if bld.env.LILV_DYN_MANIFEST:
+            obj.source.append('src/dynmanifest.c')
 
     # Python bindings
     if bld.is_defined('LILV_PYTHON'):
