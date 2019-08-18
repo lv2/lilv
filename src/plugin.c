@@ -731,10 +731,19 @@ lilv_plugin_get_port_by_designation(const LilvPlugin* plugin,
 LILV_API uint32_t
 lilv_plugin_get_latency_port_index(const LilvPlugin* plugin)
 {
+	LilvNode* lv2_OutputPort =
+		lilv_new_uri(plugin->world, LV2_CORE__OutputPort);
+	LilvNode* lv2_latency =
+		lilv_new_uri(plugin->world, LV2_CORE__latency);
+
 	const LilvPort* prop_port = lilv_plugin_get_port_by_property(
 		plugin, plugin->world->uris.lv2_reportsLatency);
-	const LilvPort* des_port = lilv_plugin_get_port_by_property(
-		plugin, plugin->world->uris.lv2_latency);
+	const LilvPort* des_port = lilv_plugin_get_port_by_designation(
+		plugin, lv2_OutputPort, lv2_latency);
+
+	lilv_node_free(lv2_latency);
+	lilv_node_free(lv2_OutputPort);
+
 	if (prop_port) {
 		return prop_port->index;
 	} else if (des_port) {
