@@ -1108,13 +1108,16 @@ class Nodes(Collection):
 class Namespace:
     """Namespace prefix.
 
-    Use attribute syntax to easily create URIs within this namespace, for
-    example::
+    Use attribute syntax or the addition operator to easily create URIs
+    within this namespace, for example::
 
        >>> world = lilv.World()
        >>> ns = Namespace(world, "http://example.org/")
        >>> print(ns.foo)
        http://example.org/foo
+       >>> print(ns + '#bar')
+       http://example.org/#foo
+
     """
 
     def __init__(self, world, prefix):
@@ -1123,6 +1126,9 @@ class Namespace:
 
         self.world = world
         self.prefix = prefix
+
+    def __add__(self, suffix):
+        return self.world.new_uri(self.prefix + suffix)
 
     def __eq__(self, other):
         return str(self) == str(other)
