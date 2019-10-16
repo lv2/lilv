@@ -391,6 +391,9 @@ class QueryTests(unittest.TestCase):
         self.assertEqual(
             self.world.ns.lv2.Plugin, "http://lv2plug.in/ns/lv2core#Plugin"
         )
+        self.assertEqual(
+            self.world.ns.lv2 + "Plugin", "http://lv2plug.in/ns/lv2core#Plugin"
+        )
 
     def testQuery(self):
         self.assertTrue(

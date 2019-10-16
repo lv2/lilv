@@ -1143,6 +1143,9 @@ class Namespace:
         self.world = world
         self.prefix = prefix
 
+    def __add__(self, suffix):
+        return self.world.new_uri(self.prefix + suffix)
+
     def __eq__(self, other):
         return str(self) == str(other)
 
