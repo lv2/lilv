@@ -83,16 +83,11 @@ def configure(conf):
     if not conf.env.BUILD_SHARED and not conf.env.BUILD_STATIC:
         conf.fatal('Neither a shared nor a static build requested')
 
-    autowaf.check_pkg(conf, 'lv2', uselib_store='LV2',
-                      atleast_version='1.16.0', mandatory=True)
-    autowaf.check_pkg(conf, 'serd-0', uselib_store='SERD',
-                      atleast_version='0.30.0', mandatory=True)
-    autowaf.check_pkg(conf, 'sord-0', uselib_store='SORD',
-                      atleast_version='0.14.0', mandatory=True)
-    autowaf.check_pkg(conf, 'sratom-0', uselib_store='SRATOM',
-                      atleast_version='0.4.0', mandatory=True)
-    autowaf.check_pkg(conf, 'sndfile', uselib_store='SNDFILE',
-                      atleast_version='1.0.0', mandatory=False)
+    conf.check_pkg('lv2 >= 1.16.0', uselib_store='LV2')
+    conf.check_pkg('serd-0 >= 0.30.0', uselib_store='SERD')
+    conf.check_pkg('sord-0 >= 0.14.0', uselib_store='SORD')
+    conf.check_pkg('sratom-0 >= 0.4.0', uselib_store='SRATOM')
+    conf.check_pkg('sndfile >= 1.0.0', uselib_store='SNDFILE', mandatory=False)
 
     defines = ['_POSIX_C_SOURCE=200809L', '_BSD_SOURCE', '_DEFAULT_SOURCE']
     if conf.env.DEST_OS == 'darwin':
@@ -102,31 +97,31 @@ def configure(conf):
     if conf.env.DEST_OS == 'darwin' or conf.env.DEST_OS == 'win32':
         rt_lib = []
 
-    autowaf.check_function(conf, 'c', 'lstat',
-                           header_name = ['sys/stat.h'],
-                           defines     = defines,
-                           define_name = 'HAVE_LSTAT',
-                           mandatory   = False)
+    conf.check_function('c', 'lstat',
+                        header_name = ['sys/stat.h'],
+                        defines     = defines,
+                        define_name = 'HAVE_LSTAT',
+                        mandatory   = False)
 
-    autowaf.check_function(conf, 'c', 'flock',
-                           header_name = 'sys/file.h',
-                           defines     = defines,
-                           define_name = 'HAVE_FLOCK',
-                           mandatory   = False)
+    conf.check_function('c', 'flock',
+                        header_name = 'sys/file.h',
+                        defines     = defines,
+                        define_name = 'HAVE_FLOCK',
+                        mandatory   = False)
 
-    autowaf.check_function(conf, 'c', 'fileno',
-                           header_name = 'stdio.h',
-                           defines     = defines,
-                           define_name = 'HAVE_FILENO',
-                           mandatory   = False)
+    conf.check_function('c', 'fileno',
+                        header_name = 'stdio.h',
+                        defines     = defines,
+                        define_name = 'HAVE_FILENO',
+                        mandatory   = False)
 
-    autowaf.check_function(conf, 'c', 'clock_gettime',
-                           header_name  = ['sys/time.h','time.h'],
-                           defines      = ['_POSIX_C_SOURCE=200809L'],
-                           define_name  = 'HAVE_CLOCK_GETTIME',
-                           uselib_store = 'CLOCK_GETTIME',
-                           lib          = rt_lib,
-                           mandatory    = False)
+    conf.check_function('c', 'clock_gettime',
+                        header_name  = ['sys/time.h','time.h'],
+                        defines      = ['_POSIX_C_SOURCE=200809L'],
+                        define_name  = 'HAVE_CLOCK_GETTIME',
+                        uselib_store = 'CLOCK_GETTIME',
+                        lib          = rt_lib,
+                        mandatory    = False)
 
     conf.check_cc(define_name = 'HAVE_LIBDL',
                   lib         = 'dl',
