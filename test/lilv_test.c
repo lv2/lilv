@@ -1482,6 +1482,8 @@ test_ui(void)
 
 /*****************************************************************************/
 
+#ifndef _WIN32
+
 uint32_t atom_Float = 0;
 float    in         = 1.0;
 float    out        = 42.0;
@@ -1570,7 +1572,6 @@ lilv_make_path(LV2_State_Make_Path_Handle handle,
 	return lilv_path_join(temp_dir, path);
 }
 
-#ifndef _WIN32
 static int
 test_state(void)
 {

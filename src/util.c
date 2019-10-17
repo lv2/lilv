@@ -42,7 +42,7 @@
 #ifdef __cplusplus
 extern "C"
 #endif
-BOOLEAN WINAPI
+static BOOLEAN WINAPI
 CreateSymbolicLink(LPCTSTR linkpath, LPCTSTR targetpath, DWORD flags)
 {
 	typedef BOOLEAN (WINAPI* PFUNC)(LPCTSTR, LPCTSTR, DWORD);
@@ -180,6 +180,8 @@ lilv_get_lang(void)
 	return lang;
 }
 
+#ifndef _WIN32
+
 /** Append suffix to dst, update dst_len, and return the realloc'd result. */
 static char*
 strappend(char* dst, size_t* dst_len, const char* suffix, size_t suffix_len)
@@ -203,6 +205,8 @@ append_var(char* dst, size_t* dst_len, const char* var)
 		                 dst_len, var, strlen(var));
 	}
 }
+
+#endif
 
 /** Expand variables (e.g. POSIX ~ or $FOO, Windows %FOO%) in `path`. */
 char*

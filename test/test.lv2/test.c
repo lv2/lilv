@@ -22,7 +22,7 @@
 #include "lv2/state/state.h"
 #include "lv2/urid/urid.h"
 
-#ifdef _WIN32
+#ifdef _MSC_VER
 #    include <io.h>
 #    define mkstemp(pat) _mktemp(pat)
 #endif
