@@ -66,7 +66,7 @@ def configure(conf):
         try:
             conf.load('python', cache=True)
             conf.check_python_headers()
-            autowaf.define(conf, 'LILV_PYTHON', 1);
+            conf.env.LILV_PYTHON = 1
         except:
             Logs.warn('Failed to configure Python (%s)\n' % sys.exc_info()[1])
 
@@ -133,7 +133,7 @@ def configure(conf):
                   mandatory   = False)
 
     if Options.options.dyn_manifest:
-        autowaf.define(conf, 'LILV_DYN_MANIFEST', 1)
+        conf.define('LILV_DYN_MANIFEST', 1)
 
     lilv_path_sep = ':'
     lilv_dir_sep  = '/'
@@ -141,8 +141,8 @@ def configure(conf):
         lilv_path_sep = ';'
         lilv_dir_sep = '\\\\'
 
-    autowaf.define(conf, 'LILV_PATH_SEP', lilv_path_sep)
-    autowaf.define(conf, 'LILV_DIR_SEP',  lilv_dir_sep)
+    conf.define('LILV_PATH_SEP', lilv_path_sep)
+    conf.define('LILV_DIR_SEP',  lilv_dir_sep)
 
     # Set default LV2 path
     lv2_path = Options.options.default_lv2_path
@@ -164,20 +164,18 @@ def configure(conf):
             lv2_path = lilv_path_sep.join(['~/.lv2',
                                            '/usr/%s/lv2' % libdirname,
                                            '/usr/local/%s/lv2' % libdirname])
-    autowaf.define(conf, 'LILV_DEFAULT_LV2_PATH', lv2_path)
+    conf.define('LILV_DEFAULT_LV2_PATH', lv2_path)
 
     autowaf.set_lib_env(conf, 'lilv', LILV_VERSION)
     conf.write_config_header('lilv_config.h', remove=False)
 
     autowaf.display_summary(
         conf,
-        {'Default LV2_PATH':         conf.env.LILV_DEFAULT_LV2_PATH,
+        {'Default LV2_PATH':         lv2_path,
          'Utilities':                bool(conf.env.BUILD_UTILS),
          'Unit tests':               bool(conf.env.BUILD_TESTS),
-         'Dynamic manifest support': bool(conf.env.LILV_DYN_MANIFEST),
-         'Python bindings':          conf.is_defined('LILV_PYTHON')})
-
-    conf.undefine('LILV_DEFAULT_LV2_PATH')  # Cmd line errors with VC++
+         'Dynamic manifest support': conf.is_defined('LILV_DYN_MANIFEST'),
+         'Python bindings':          bool(conf.env.LILV_PYTHON)})
 
 def build_util(bld, name, defines, libs=''):
     obj = bld(features     = 'c cprogram',
@@ -265,7 +263,7 @@ def build(bld):
                   uselib          = 'SERD SORD SRATOM LV2')
 
     # Python bindings
-    if bld.is_defined('LILV_PYTHON'):
+    if bld.env.LILV_PYTHON:
         bld(features     = 'subst',
             is_copy      = True,
             source       = 'bindings/python/lilv.py',
@@ -377,7 +375,7 @@ def build(bld):
                       cxxflags     = test_cflags,
                       linkflags    = test_linkflags)
 
-        if bld.is_defined('LILV_PYTHON'):
+        if bld.env.LILV_PYTHON:
             # Copy Python unittest files
             for i in [ 'test_api.py' ]:
                 bld(features     = 'subst',
@@ -452,7 +450,7 @@ def test(tst):
         check(['./test/lilv_test'])
         if tst.is_defined('LILV_CXX'):
             check(['./test/lilv_cxx_test'])
-        if tst.is_defined('LILV_PYTHON'):
+        if tst.env.LILV_PYTHON:
             check(['python', '-m', 'unittest', 'discover', 'bindings/'])
 
     with tst.group('plugin') as check:
