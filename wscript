@@ -164,6 +164,8 @@ def configure(conf):
     autowaf.set_lib_env(conf, 'lilv', LILV_VERSION)
     conf.write_config_header('lilv_config.h', remove=False)
 
+    conf.undefine('LILV_DEFAULT_LV2_PATH')  # Cmd line errors with VC++
+
     autowaf.display_summary(
         conf,
         {'Default LV2_PATH':         lv2_path,
