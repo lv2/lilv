@@ -417,9 +417,11 @@ def build(bld):
             obj = build_util(bld, 'utils/lv2apply', defines, 'SNDFILE')
 
         # lv2bench (less portable than other utilities)
-        if bld.is_defined('HAVE_CLOCK_GETTIME') and not bld.env.STATIC_PROGS:
+        if (bld.env.DEST_OS != 'win32' and
+            bld.is_defined('HAVE_CLOCK_GETTIME') and
+            not bld.env.STATIC_PROGS):
             obj = build_util(bld, 'utils/lv2bench', defines)
-            if bld.env.DEST_OS != 'win32' and bld.env.DEST_OS != 'darwin':
+            if bld.env.DEST_OS != 'darwin':
                 obj.lib = ['rt']
 
     # Documentation
