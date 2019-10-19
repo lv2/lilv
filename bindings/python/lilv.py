@@ -1,16 +1,12 @@
 """Lilv Python interface"""
 
 __author__     = "David Robillard"
-__copyright__  = "Copyright 2016 David Robillard"
+__copyright__  = "Copyright 2016-2019 David Robillard"
 __license__    = "ISC"
 __version__    = "0.22.1"
 __maintainer__ = "David Robillard"
 __email__      = "d@drobilla.net"
 __status__     = "Production"
-
-import ctypes
-import os
-import sys
 
 from ctypes import Structure, CDLL, POINTER, CFUNCTYPE
 from ctypes import c_bool, c_double, c_float, c_int, c_size_t, c_uint, c_uint32
@@ -34,6 +30,8 @@ def _as_uri(obj):
     if type(obj) in [Plugin, PluginClass, UI]:
         return obj.get_uri()
     else:
+        assert type(obj) == Node
+        assert obj.node
         return obj
 
 free                             = _lib.lilv_free
@@ -239,7 +237,16 @@ class LV2_URID_Unmap(Structure):
 
 class Plugin(Structure):
     """LV2 Plugin."""
+
+    @classmethod
+    def wrap(cls, world, plugin):
+        return Plugin(world, plugin) if world is not None and plugin else None
+
     def __init__(self, world, plugin):
+        assert isinstance(world, World)
+        assert type(plugin) == POINTER(Plugin)
+        assert plugin
+
         self.world  = world
         self.plugin = plugin
 
@@ -437,6 +444,7 @@ class Plugin(Structure):
 
     def get_port_by_index(self, index):
         """Get a port on `plugin` by `index`."""
+        assert type(index) == int
         return Port.wrap(self, plugin_get_port_by_index(self.plugin, index))
 
     def get_port_by_symbol(self, symbol):
@@ -445,8 +453,12 @@ class Plugin(Structure):
         Note this function is slower than get_port_by_index(),
         especially on plugins with a very large number of ports.
         """
+        assert type(symbol) == str or isinstance(symbol, Node)
         if type(symbol) == str:
             symbol = self.world.new_string(symbol)
+
+        assert isinstance(symbol, Node)
+        assert symbol.node is not None
         return Port.wrap(self, plugin_get_port_by_symbol(self.plugin, symbol.node))
 
     def get_port_by_designation(self, port_class, designation):
@@ -522,6 +534,9 @@ class Plugin(Structure):
 class PluginClass(Structure):
     """Plugin Class (type/category)."""
     def __init__(self, plugin_class):
+        assert type(plugin_class) == POINTER(PluginClass)
+        assert plugin_class
+
         self.plugin_class = plugin_class
 
     def __str__(self):
@@ -550,9 +565,16 @@ class Port(Structure):
     """Port on a Plugin."""
     @classmethod
     def wrap(cls, plugin, port):
-        return Port(plugin, port) if plugin and port else None
+        if plugin is not None and port:
+            return Port(plugin, port)
+
+        return None
 
     def __init__(self, plugin, port):
+        assert isinstance(plugin, Plugin)
+        assert type(port) == POINTER(Port)
+        assert port
+
         self.plugin = plugin
         self.port   = port
 
@@ -642,9 +664,7 @@ class Port(Structure):
         pmin = POINTER(Node)()
         pmax = POINTER(Node)()
         port_get_range(self.plugin.plugin, self.port, byref(pdef), byref(pmin), byref(pmax))
-        return (Node(pdef.contents) if pdef else None,
-                Node(pmin.contents) if pmin else None,
-                Node(pmax.contents) if pmax else None)
+        return (Node.wrap(pdef), Node.wrap(pmin), Node.wrap(pmax))
 
     def get_scale_points(self):
         """Get the scale points (enumeration values) of a port.
@@ -658,6 +678,9 @@ class Port(Structure):
 class ScalePoint(Structure):
     """Scale point (detent)."""
     def __init__(self, point):
+        assert type(point) == POINTER(ScalePoint)
+        assert point
+
         self.point = point
 
     def get_label(self):
@@ -671,13 +694,18 @@ class ScalePoint(Structure):
 class UI(Structure):
     """Plugin UI."""
     def __init__(self, ui):
+        assert type(ui) == POINTER(UI)
+        assert ui
         self.ui = ui
 
     def __str__(self):
         return str(self.get_uri())
 
     def __eq__(self, other):
-        return self.get_uri() == _as_uri(other)
+        if type(other) == str or type(other) == Node:
+            return self.get_uri() == other
+
+        return self.get_uri() == other.get_uri()
 
     def get_uri(self):
         """Get the URI of a Plugin UI."""
@@ -718,20 +746,29 @@ class Node(Structure):
     """
     @classmethod
     def wrap(cls, node):
-        return Node(node) if node else None
+        assert (node is None) or (type(node) == POINTER(Node))
+        if node:
+            return Node(node_duplicate(node))
+
+        return None
 
     def __init__(self, node):
+        assert type(node) == POINTER(Node)
+        assert node
         self.node = node
 
     def __del__(self):
-        if hasattr(self, 'node'):
-            node_free(self.node)
+        node_free(self.node)
 
     def __eq__(self, other):
+        if other is None:
+            return False
+
         otype = type(other)
-        if otype in [str, int, float]:
-            return otype(self) == other
-        return node_equals(self.node, other.node)
+        if otype == Node:
+            return node_equals(self.node, other.node)
+
+        return otype(self) == other
 
     def __ne__(self, other):
         return not node_equals(self.node, other.node)
@@ -856,8 +893,11 @@ class Collection(Structure):
 class Plugins(Collection):
     """Collection of plugins."""
     def __init__(self, world, collection):
+        assert type(collection) == POINTER(Plugins)
+        assert collection
+
         def constructor(plugin):
-            return Plugin(world, plugin)
+            return Plugin.wrap(world, plugin)
 
         super(Plugins, self).__init__(collection, plugins_begin, constructor, plugins_get, plugins_next, plugins_is_end)
         self.world = world
@@ -874,12 +914,13 @@ class Plugins(Collection):
         return self.get_by_uri(key)
 
     def get_by_uri(self, uri):
-        plugin = plugins_get_by_uri(self.collection, uri.node)
-        return Plugin(self.world, plugin) if plugin else None
+        return Plugin.wrap(self.world, plugins_get_by_uri(self.collection, uri.node))
 
 class PluginClasses(Collection):
     """Collection of plugin classes."""
     def __init__(self, collection):
+        assert type(collection) == POINTER(PluginClasses)
+        assert collection
         super(PluginClasses, self).__init__(
             collection, plugin_classes_begin, PluginClass,
             plugin_classes_get, plugin_classes_next, plugin_classes_is_end)
@@ -902,6 +943,8 @@ class PluginClasses(Collection):
 class ScalePoints(Collection):
     """Collection of scale points."""
     def __init__(self, collection):
+        assert type(collection) == POINTER(ScalePoints)
+        assert collection
         super(ScalePoints, self).__init__(
             collection, scale_points_begin, ScalePoint,
             scale_points_get, scale_points_next, scale_points_is_end)
@@ -912,6 +955,8 @@ class ScalePoints(Collection):
 class UIs(Collection):
     """Collection of plugin UIs."""
     def __init__(self, collection):
+        assert type(collection) == POINTER(UIs)
+        assert collection
         super(UIs, self).__init__(collection, uis_begin, UI,
                                   uis_get, uis_next, uis_is_end)
 
@@ -937,6 +982,7 @@ class Nodes(Collection):
         return Node(node_duplicate(node))
 
     def __init__(self, collection):
+        assert type(collection) == POINTER(Nodes)
         super(Nodes, self).__init__(collection, nodes_begin, Nodes.constructor,
                                     nodes_get, nodes_next, nodes_is_end)
 
@@ -961,6 +1007,9 @@ class Namespace():
        http://example.org/foo
     """
     def __init__(self, world, prefix):
+        assert isinstance(world, World)
+        assert type(prefix) == str
+
         self.world  = world
         self.prefix = prefix
 
@@ -1084,7 +1133,9 @@ class World(Structure):
         All accessible data files linked to `resource` with rdfs:seeAlso will be
         loaded into the world model.
         """
-        return world_load_resource(self.world, _as_uri(resource).node)
+        uri = _as_uri(resource)
+        ret = world_load_resource(self.world, uri.node)
+        return ret
 
     def unload_resource(self, resource):
         """Unload all the data associated with the given `resource`.
@@ -1094,7 +1145,9 @@ class World(Structure):
         This unloads all data loaded by a previous call to
         load_resource() with the given `resource`.
         """
-        return world_unload_resource(self.world, _as_uri(resource).node)
+        uri = _as_uri(resource)
+        ret = world_unload_resource(self.world, uri.node)
+        return ret
 
     def get_plugin_class(self):
         """Get the parent of all other plugin classes, lv2:Plugin."""
@@ -1195,7 +1248,7 @@ class Instance(Structure):
 
            Returned string is shared and must not be modified or deleted.
         """
-        return self.get_descriptor().URI
+        return self.get_descriptor().URI.decode('utf-8')
 
     def connect_port(self, port_index, data):
         """Connect a port to a data location.
@@ -1251,7 +1304,7 @@ class Instance(Structure):
            extension, though in all cases it is shared and must not be deleted.
         """
         if self.get_descriptor().extension_data:
-            return self.get_descriptor().extension_data(str(uri))
+            return self.get_descriptor().extension_data(str(uri).encode('utf-8'))
 
     def get_descriptor(self):
         """Get the LV2_Descriptor of the plugin instance.

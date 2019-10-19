@@ -110,8 +110,6 @@ class LoadTests(unittest.TestCase):
         self.bundle_uri = self.world.new_uri(location)
         self.world.load_specifications()
         self.world.load_plugin_classes()
-    def tearDown(self):
-        del self.world
     def testLoadUnload(self):
         self.world.load_bundle(self.bundle_uri)
         plugins = self.world.get_all_plugins()
@@ -203,8 +201,8 @@ class PluginTests(unittest.TestCase):
                          list(port.get_classes()))
         self.assertTrue(port.is_a(self.world.ns.lv2.ControlPort))
         self.assertFalse(port.is_a(self.world.ns.lv2.AudioPort))
-        self.assertEquals((0.5, 0.0, 1.0), port.get_range())
-        self.assertEquals(0, len(port.get_properties()))
+        self.assertEqual((0.5, 0.0, 1.0), port.get_range())
+        self.assertEqual(0, len(port.get_properties()))
     def testScalePoints(self):
         port = self.plugin.get_port("input")
         points = port.get_scale_points()
