@@ -1257,7 +1257,9 @@ class World(Structure):
         This unloads all data loaded by a previous call to
         load_resource() with the given `resource`.
         """
-        return c.world_unload_resource(self.world, _as_uri(resource).node)
+        uri = _as_uri(resource)
+        ret = c.world_unload_resource(self.world, uri.node)
+        return ret
 
     def get_plugin_class(self):
         """Get the parent of all other plugin classes, lv2:Plugin."""
