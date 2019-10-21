@@ -405,5 +405,3 @@ class UITests(unittest.TestCase):
         self.assertTrue(uis[0] in uis)
         self.assertTrue(uis[0].get_uri() in uis)
         self.assertEqual([self.world.ns.ui.GtkUI], list(uis[0].get_classes()))
-        for ui in uis:
-            print(ui)
