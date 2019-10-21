@@ -7,8 +7,9 @@ lilv (0.24.5) unstable;
   * Add option to override LV2_PATH in applications
   * Fix unit tests on Windows
   * Add more strict error detection when storing plugin state properties
+  * Fix memory errors and Python 3.4+ compatibility in Python bindings
 
- -- David Robillard <d@drobilla.net>  Fri, 21 Jun 2019 21:18:02 +0200
+ -- David Robillard <d@drobilla.net>  Mon, 21 Oct 2019 17:19:31 +0000
 
 lilv (0.24.4) stable;
 

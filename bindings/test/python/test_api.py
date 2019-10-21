@@ -158,8 +158,6 @@ class PluginTests(unittest.TestCase):
         self.assertEqual(
             self.plugin.get_uri(), self.plugin_uri, "URI equality broken"
         )
-        self.instance = lilv.Instance(self.plugin, 48000, None)
-        self.assertIsNotNone(self.instance)
         self.lv2_InputPort = self.world.new_uri(lilv.LILV_URI_INPUT_PORT)
         self.lv2_OutputPort = self.world.new_uri(lilv.LILV_URI_OUTPUT_PORT)
         self.lv2_AudioPort = self.world.new_uri(lilv.LILV_URI_AUDIO_PORT)
@@ -262,10 +260,10 @@ class PluginTests(unittest.TestCase):
     def testScalePoints(self):
         port = self.plugin.get_port("input")
         points = port.get_scale_points()
-        self.assertEqual(points[0].get_label(), "off")
-        self.assertEqual(points[0].get_value(), 0.0)
-        self.assertEqual(points[1].get_label(), "on")
-        self.assertEqual(points[1].get_value(), 1.0)
+        point_dict = { float(points[0].get_value()): points[0].get_label(),
+                       float(points[1].get_value()): points[1].get_label() }
+
+        self.assertEqual(point_dict, {0.0: "off", 1.0: "on"})
 
     def testPortCount(self):
         self.assertEqual(

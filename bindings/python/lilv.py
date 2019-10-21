@@ -11,7 +11,7 @@ __status__     = "Production"
 from ctypes import Structure, CDLL, POINTER, CFUNCTYPE
 from ctypes import c_bool, c_double, c_float, c_int, c_size_t, c_uint, c_uint32
 from ctypes import c_char, c_char_p, c_void_p
-from ctypes import byref
+from ctypes import byref, cast
 
 # Load lilv library
 
@@ -22,6 +22,7 @@ _lib = CDLL("liblilv-0.so")
 class String(str):
     # Wrapper for string parameters to pass as raw C UTF-8 strings
     def from_param(cls, obj):
+        assert isinstance(obj, str)
         return obj.encode('utf-8')
 
     from_param = classmethod(from_param)
@@ -32,7 +33,7 @@ def _as_uri(obj):
     else:
         assert type(obj) == Node
         assert obj.node
-        return obj
+        return Node(obj.world, node_duplicate(obj.node))
 
 free                             = _lib.lilv_free
 # uri_to_path                      = _lib.lilv_uri_to_path
@@ -278,7 +279,7 @@ class Plugin(Structure):
         is upgraded in an incompatible way (eg if it has different ports), it
         MUST have a different URI than it's predecessor.
         """
-        return Node.wrap(node_duplicate(plugin_get_uri(self.plugin)))
+        return Node.wrap(self.world, node_duplicate(plugin_get_uri(self.plugin)))
 
     def get_bundle_uri(self):
         """Get the (resolvable) URI of the plugin's "main" bundle.
@@ -291,7 +292,7 @@ class Plugin(Structure):
         Note this always returns a fully qualified URI.  If you want a local
         filesystem path, use lilv.file_uri_parse().
         """
-        return Node.wrap(node_duplicate(plugin_get_bundle_uri(self.plugin)))
+        return Node.wrap(self.world, node_duplicate(plugin_get_bundle_uri(self.plugin)))
 
     def get_data_uris(self):
         """Get the (resolvable) URIs of the RDF data files that define a plugin.
@@ -300,7 +301,7 @@ class Plugin(Structure):
         Note this always returns fully qualified URIs.  If you want local
         filesystem paths, use lilv.file_uri_parse().
         """
-        return Nodes(plugin_get_data_uris(self.plugin))
+        return Nodes(self.world, plugin_get_data_uris(self.plugin), False)
 
     def get_library_uri(self):
         """Get the (resolvable) URI of the shared library for `plugin`.
@@ -308,7 +309,7 @@ class Plugin(Structure):
         Note this always returns a fully qualified URI.  If you want a local
         filesystem path, use lilv.file_uri_parse().
         """
-        return Node.wrap(node_duplicate(plugin_get_library_uri(self.plugin)))
+        return Node.wrap(self.world, node_duplicate(plugin_get_library_uri(self.plugin)))
 
     def get_name(self):
         """Get the name of `plugin`.
@@ -317,11 +318,11 @@ class Plugin(Structure):
         translated according to the current locale, this value MUST NOT be used
         as a plugin identifier (use the URI for that).
         """
-        return Node.wrap(plugin_get_name(self.plugin))
+        return Node.wrap(self.world, plugin_get_name(self.plugin))
 
     def get_class(self):
         """Get the class this plugin belongs to (e.g. Filters)."""
-        return PluginClass(plugin_get_class(self.plugin))
+        return PluginClass(self.world, plugin_get_class(self.plugin))
 
     def get_value(self, predicate):
         """Get a value associated with the plugin in a plugin's data files.
@@ -335,7 +336,7 @@ class Plugin(Structure):
         May return None if the property was not found, or if object(s) is not
         sensibly represented as a LilvNodes (e.g. blank nodes).
         """
-        return Nodes(plugin_get_value(self.plugin, predicate.node))
+        return Nodes(self.world, plugin_get_value(self.plugin, predicate.node), True)
 
     def has_feature(self, feature_uri):
         """Return whether a feature is supported by a plugin.
@@ -354,7 +355,7 @@ class Plugin(Structure):
         probably shouldn't be used by normal hosts.  Using get_optional_features()
         and get_required_features() separately is best in most cases.
         """
-        return Nodes(plugin_get_supported_features(self.plugin))
+        return Nodes(self.world, plugin_get_supported_features(self.plugin), True)
 
     def get_required_features(self):
         """Get the LV2 Features required by a plugin.
@@ -366,7 +367,7 @@ class Plugin(Structure):
         (along with data, if necessary, as defined by the feature specification)
         or plugin instantiation will fail.
         """
-        return Nodes(plugin_get_required_features(self.plugin))
+        return Nodes(self.world, plugin_get_required_features(self.plugin), True)
 
     def get_optional_features(self):
         """Get the LV2 Features optionally supported by a plugin.
@@ -375,7 +376,7 @@ class Plugin(Structure):
         MUST operate (at least somewhat) if they are instantiated without being
         passed optional features.
         """
-        return Nodes(plugin_get_optional_features(self.plugin))
+        return Nodes(self.world, plugin_get_optional_features(self.plugin), True)
 
     def has_extension_data(self, uri):
         """Return whether or not a plugin provides a specific extension data."""
@@ -387,7 +388,7 @@ class Plugin(Structure):
         This can be used to find which URIs get_extension_data()
         will return a value for without instantiating the plugin.
         """
-        return Nodes(plugin_get_extension_data(self.plugin))
+        return Nodes(self.world, plugin_get_extension_data(self.plugin), True)
 
     def get_num_ports(self):
         """Get the number of ports on this plugin."""
@@ -412,9 +413,9 @@ class Plugin(Structure):
 
     def get_num_ports_of_class(self, *args):
         """Get the number of ports on this plugin that are members of some class(es)."""
-        args = list(map(lambda x: x.node, args))
-        args += (None,)
-        return plugin_get_num_ports_of_class(self.plugin, *args)
+        return plugin_get_num_ports_of_class(
+            self.plugin,
+            *(list(map(lambda n: n.node, args)) + [None]))
 
     def has_latency(self):
         """Return whether or not the plugin introduces (and reports) latency.
@@ -482,28 +483,28 @@ class Plugin(Structure):
         More information about the project can be read via find_nodes(),
         typically using properties from DOAP (e.g. doap:name).
         """
-        return Node.wrap(plugin_get_project(self.plugin))
+        return Node.wrap(self.world, plugin_get_project(self.plugin))
 
     def get_author_name(self):
         """Get the full name of the plugin's author.
 
         Returns None if author name is not present.
         """
-        return Node.wrap(plugin_get_author_name(self.plugin))
+        return Node.wrap(self.world, plugin_get_author_name(self.plugin))
 
     def get_author_email(self):
         """Get the email address of the plugin's author.
 
         Returns None if author email address is not present.
         """
-        return Node.wrap(plugin_get_author_email(self.plugin))
+        return Node.wrap(self.world, plugin_get_author_email(self.plugin))
 
     def get_author_homepage(self):
         """Get the address of the plugin author's home page.
 
         Returns None if author homepage is not present.
         """
-        return Node.wrap(plugin_get_author_homepage(self.plugin))
+        return Node.wrap(self.world, plugin_get_author_homepage(self.plugin))
 
     def is_replaced(self):
         """Return true iff `plugin` has been replaced by another plugin.
@@ -525,18 +526,20 @@ class Plugin(Structure):
 
         To actually load the data for each returned resource, use world.load_resource().
         """
-        return Nodes(plugin_get_related(self.plugin, resource_type))
+        return Nodes(self.world, plugin_get_related(self.plugin, resource_type), True)
 
     def get_uis(self):
         """Get all UIs for `plugin`."""
-        return UIs(plugin_get_uis(self.plugin))
+        return UIs(self.world, plugin_get_uis(self.plugin))
 
 class PluginClass(Structure):
     """Plugin Class (type/category)."""
-    def __init__(self, plugin_class):
+    def __init__(self, world, plugin_class):
+        assert isinstance(world, World)
         assert type(plugin_class) == POINTER(PluginClass)
         assert plugin_class
 
+        self.world = world
         self.plugin_class = plugin_class
 
     def __str__(self):
@@ -547,19 +550,19 @@ class PluginClass(Structure):
 
            May return None if class has no parent.
         """
-        return Node.wrap(node_duplicate(plugin_class_get_parent_uri(self.plugin_class)))
+        return Node.wrap(self.world, node_duplicate(plugin_class_get_parent_uri(self.plugin_class)))
 
     def get_uri(self):
         """Get the URI of this plugin class."""
-        return Node.wrap(node_duplicate(plugin_class_get_uri(self.plugin_class)))
+        return Node.wrap(self.world, node_duplicate(plugin_class_get_uri(self.plugin_class)))
 
     def get_label(self):
         """Get the label of this plugin class, ie "Oscillators"."""
-        return Node.wrap(node_duplicate(plugin_class_get_label(self.plugin_class)))
+        return Node.wrap(self.world, node_duplicate(plugin_class_get_label(self.plugin_class)))
 
     def get_children(self):
         """Get the subclasses of this plugin class."""
-        return PluginClasses(plugin_class_get_children(self.plugin_class))
+        return PluginClasses(self.world, plugin_class_get_children(self.plugin_class), True)
 
 class Port(Structure):
     """Port on a Plugin."""
@@ -583,11 +586,13 @@ class Port(Structure):
 
         Ports nodes may be may be URIs or blank nodes.
         """
-        return Node.wrap(node_duplicate(port_get_node(self.plugin, self.port)))
+        return Node.wrap(self.plugin.world, node_duplicate(port_get_node(self.plugin, self.port)))
 
     def get_value(self, predicate):
         """Port analog of Plugin.get_value()."""
-        return Nodes(port_get_value(self.plugin.plugin, self.port, predicate.node))
+        return Nodes(self.plugin.world,
+                     port_get_value(self.plugin.plugin, self.port, predicate.node),
+                     True)
 
     def get(self, predicate):
         """Get a single property value of a port.
@@ -596,11 +601,13 @@ class Port(Structure):
         simpler to use in the common case of only caring about one value.  The
         caller is responsible for freeing the returned node.
         """
-        return Node.wrap(port_get(self.plugin.plugin, self.port, predicate.node))
+        return Node.wrap(self.plugin.world, port_get(self.plugin.plugin, self.port, predicate.node))
 
     def get_properties(self):
         """Return the LV2 port properties of a port."""
-        return Nodes(port_get_properties(self.plugin.plugin, self.port))
+        return Nodes(self.plugin.world,
+                     port_get_properties(self.plugin.plugin, self.port),
+                     True)
 
     def has_property(self, property_uri):
         """Return whether a port has a certain property."""
@@ -627,7 +634,8 @@ class Port(Structure):
 
         The 'symbol' is a short string, a valid C identifier.
         """
-        return Node.wrap(node_duplicate(port_get_symbol(self.plugin.plugin, self.port)))
+        return Node.wrap(self.plugin.world,
+                         node_duplicate(port_get_symbol(self.plugin.plugin, self.port)))
 
     def get_name(self):
         """Get the name of a port.
@@ -635,7 +643,7 @@ class Port(Structure):
         This is guaranteed to return the untranslated name (the doap:name in the
         data file without a language tag).
         """
-        return Node.wrap(port_get_name(self.plugin.plugin, self.port))
+        return Node.wrap(self.plugin.world, port_get_name(self.plugin.plugin, self.port))
 
     def get_classes(self):
         """Get all the classes of a port.
@@ -645,7 +653,9 @@ class Port(Structure):
         The returned list does not include lv2:Port, which is implied.
         Returned value is shared and must not be destroyed by caller.
         """
-        return Nodes(port_get_classes(self.plugin.plugin, self.port))
+        return Nodes(self.plugin.world,
+                     port_get_classes(self.plugin.plugin, self.port),
+                     False)
 
     def is_a(self, port_class):
         """Determine if a port is of a given class (input, output, audio, etc).
@@ -664,38 +674,52 @@ class Port(Structure):
         pmin = POINTER(Node)()
         pmax = POINTER(Node)()
         port_get_range(self.plugin.plugin, self.port, byref(pdef), byref(pmin), byref(pmax))
-        return (Node.wrap(pdef), Node.wrap(pmin), Node.wrap(pmax))
+        return (Node.wrap(self.plugin.world, pdef),
+                Node.wrap(self.plugin.world, pmin),
+                Node.wrap(self.plugin.world, pmax))
 
     def get_scale_points(self):
-        """Get the scale points (enumeration values) of a port.
+        """Get a list of the scale points (enumeration values) of a port.
 
         This returns a collection of 'interesting' named values of a port
         (e.g. appropriate entries for a UI selector associated with this port).
-        Returned value may be None if `port` has no scale points.
         """
-        return ScalePoints(port_get_scale_points(self.plugin.plugin, self.port))
+
+        cpoints = port_get_scale_points(self.plugin.plugin, self.port)
+        points = []
+        it = scale_points_begin(cpoints)
+        while not scale_points_is_end(cpoints, it):
+            points += [ScalePoint(self.plugin.world, scale_points_get(cpoints, it))]
+            it = scale_points_next(cpoints, it)
+
+        scale_points_free(cpoints)
+        return points
 
 class ScalePoint(Structure):
     """Scale point (detent)."""
-    def __init__(self, point):
+    def __init__(self, world, point):
+        assert isinstance(world, World)
         assert type(point) == POINTER(ScalePoint)
         assert point
 
-        self.point = point
+        self.label = Node.wrap(world, node_duplicate(scale_point_get_label(point)))
+        self.value = Node.wrap(world, node_duplicate(scale_point_get_value(point)))
 
     def get_label(self):
         """Get the label of this scale point (enumeration value)."""
-        return Node.wrap(scale_point_get_label(self.point))
+        return self.label
 
     def get_value(self):
         """Get the value of this scale point (enumeration value)."""
-        return Node.wrap(scale_point_get_value(self.point))
+        return self.value
 
 class UI(Structure):
     """Plugin UI."""
-    def __init__(self, ui):
+    def __init__(self, world, ui):
+        assert isinstance(world, World)
         assert type(ui) == POINTER(UI)
         assert ui
+        self.world = world
         self.ui = ui
 
     def __str__(self):
@@ -709,7 +733,7 @@ class UI(Structure):
 
     def get_uri(self):
         """Get the URI of a Plugin UI."""
-        return Node.wrap(node_duplicate(ui_get_uri(self.ui)))
+        return Node.wrap(self.world, node_duplicate(ui_get_uri(self.ui)))
 
     def get_classes(self):
         """Get the types (URIs of RDF classes) of a Plugin UI.
@@ -717,7 +741,7 @@ class UI(Structure):
         Note that in most cases is_supported() should be used, which avoids
            the need to use this function (and type specific logic).
         """
-        return Nodes(ui_get_classes(self.ui))
+        return Nodes(self.world, ui_get_classes(self.ui), False)
 
     def is_a(self, class_uri):
         """Check whether a plugin UI has a given type."""
@@ -725,11 +749,11 @@ class UI(Structure):
 
     def get_bundle_uri(self):
         """Get the URI of the UI's bundle."""
-        return Node.wrap(node_duplicate(ui_get_bundle_uri(self.ui)))
+        return Node.wrap(self.world, node_duplicate(ui_get_bundle_uri(self.ui)))
 
     def get_binary_uri(self):
         """Get the URI for the UI's shared library."""
-        return Node.wrap(node_duplicate(ui_get_binary_uri(self.ui)))
+        return Node.wrap(self.world, node_duplicate(ui_get_binary_uri(self.ui)))
 
 class Node(Structure):
     """Data node (URI, string, integer, etc.).
@@ -745,20 +769,29 @@ class Node(Structure):
        84
     """
     @classmethod
-    def wrap(cls, node):
+    def wrap(cls, world, node):
+        assert isinstance(world, World)
         assert (node is None) or (type(node) == POINTER(Node))
         if node:
-            return Node(node_duplicate(node))
+            return Node(world, node)
 
         return None
 
-    def __init__(self, node):
+    def __init__(self, world, node):
         assert type(node) == POINTER(Node)
         assert node
+        self.world = world
         self.node = node
 
     def __del__(self):
-        node_free(self.node)
+        # Note that since Python 3.4, cycles are deleted and the world can be
+        # destroyed before nodes (which contain a pointer to it).  This causes
+        # a crash, so we only free here if the world is still alive.  It does
+        # not seem possible to enforce the right order (it happens even if
+        # everything has a reference to the world), but this normally only
+        # happens on exit anyway so it shouldn't matter much.
+        if self.world.world:
+            node_free(self.node)
 
     def __eq__(self, other):
         if other is None:
@@ -794,7 +827,10 @@ class Node(Structure):
 
     def get_turtle_token(self):
         """Return this value as a Turtle/SPARQL token."""
-        return node_get_turtle_token(self.node).decode('utf-8')
+        c_str = node_get_turtle_token(self.node)
+        string = cast(c_str, c_char_p).value.decode('utf-8')
+        free(c_str)
+        return string
 
     def is_uri(self):
         """Return whether the value is a URI (resource)."""
@@ -819,7 +855,10 @@ class Node(Structure):
         """Return the path of a file URI node.
 
         Returns None if value is not a file URI."""
-        return node_get_path(self.node, hostname).decode('utf-8')
+        c_str = node_get_path(self.node, hostname)
+        string = cast(c_str, c_char_p).value.decode('utf-8')
+        free(c_str)
+        return string
 
     def is_float(self):
         """Return whether this value is a decimal literal."""
@@ -836,6 +875,8 @@ class Node(Structure):
 class Iter(Structure):
     """Collection iterator."""
     def __init__(self, collection, iterator, constructor, iter_get, iter_next, iter_is_end):
+        assert isinstance(collection, Collection)
+
         self.collection = collection
         self.iterator = iterator
         self.constructor = constructor
@@ -845,25 +886,28 @@ class Iter(Structure):
 
     def get(self):
         """Get the current item."""
-        return self.constructor(self.iter_get(self.collection, self.iterator))
+        return self.constructor(self.collection.world,
+                                self.iter_get(self.collection.collection, self.iterator))
 
     def next(self):
         """Move to and return the next item."""
         if self.is_end():
             raise StopIteration
         elem = self.get()
-        self.iterator = self.iter_next(self.collection, self.iterator)
+        self.iterator = self.iter_next(self.collection.collection, self.iterator)
         return elem
 
     def is_end(self):
         """Return true if the end of the collection has been reached."""
-        return self.iter_is_end(self.collection, self.iterator)
+        return self.iter_is_end(self.collection.collection, self.iterator)
 
     __next__ = next
 
 class Collection(Structure):
     # Base class for all lilv collection wrappers.
-    def __init__(self, collection, iter_begin, constructor, iter_get, iter_next, is_end):
+    def __init__(self, world, collection, iter_begin, constructor, iter_get, iter_next, is_end):
+        assert isinstance(world, World)
+        self.world = world
         self.collection = collection
         self.constructor = constructor
         self.iter_begin = iter_begin
@@ -872,17 +916,22 @@ class Collection(Structure):
         self.is_end = is_end
 
     def __iter__(self):
-        return Iter(self.collection, self.iter_begin(self.collection), self.constructor,
+        return Iter(self, self.iter_begin(self.collection), self.constructor,
                     self.iter_get, self.iter_next, self.is_end)
 
     def __getitem__(self, index):
-        if index >= len(self):
-            raise IndexError
         pos = 0
-        for i in self:
+        it = self.iter_begin(self.collection)
+
+        while not self.is_end(self.collection, it):
             if pos == index:
-                return i
-            pos += 1
+                return self.constructor(self.world,
+                                        self.iter_get(self.collection, it))
+
+            it = self.iter_next(self.collection, it)
+            pos = pos + 1
+
+        raise IndexError
 
     def begin(self):
         return self.__iter__()
@@ -896,10 +945,10 @@ class Plugins(Collection):
         assert type(collection) == POINTER(Plugins)
         assert collection
 
-        def constructor(plugin):
+        def constructor(world, plugin):
             return Plugin.wrap(world, plugin)
 
-        super(Plugins, self).__init__(collection, plugins_begin, constructor, plugins_get, plugins_next, plugins_is_end)
+        super(Plugins, self).__init__(world, collection, plugins_begin, constructor, plugins_get, plugins_next, plugins_is_end)
         self.world = world
 
     def __contains__(self, key):
@@ -918,12 +967,18 @@ class Plugins(Collection):
 
 class PluginClasses(Collection):
     """Collection of plugin classes."""
-    def __init__(self, collection):
+    def __init__(self, world, collection, owning=False):
         assert type(collection) == POINTER(PluginClasses)
         assert collection
+
+        self.owning = owning
         super(PluginClasses, self).__init__(
-            collection, plugin_classes_begin, PluginClass,
+            world, collection, plugin_classes_begin, PluginClass,
             plugin_classes_get, plugin_classes_next, plugin_classes_is_end)
+
+    def __del__(self):
+        if self.owning:
+            plugin_classes_free(self.collection)
 
     def __contains__(self, key):
         return bool(self.get_by_uri(_as_uri(key)))
@@ -938,27 +993,23 @@ class PluginClasses(Collection):
 
     def get_by_uri(self, uri):
         plugin_class = plugin_classes_get_by_uri(self.collection, uri.node)
-        return PluginClass(plugin_class) if plugin_class else None
+        return PluginClass(self.world, plugin_class) if plugin_class else None
 
-class ScalePoints(Collection):
+class ScalePoints(Structure):
     """Collection of scale points."""
-    def __init__(self, collection):
-        assert type(collection) == POINTER(ScalePoints)
-        assert collection
-        super(ScalePoints, self).__init__(
-            collection, scale_points_begin, ScalePoint,
-            scale_points_get, scale_points_next, scale_points_is_end)
-
-    def __len__(self):
-        return scale_points_size(self.collection)
+    pass
 
 class UIs(Collection):
     """Collection of plugin UIs."""
-    def __init__(self, collection):
+    def __init__(self, world, collection):
         assert type(collection) == POINTER(UIs)
         assert collection
-        super(UIs, self).__init__(collection, uis_begin, UI,
+        super(UIs, self).__init__(world, collection, uis_begin, UI,
                                   uis_get, uis_next, uis_is_end)
+
+    def __del__(self):
+        if self.world.world:
+            uis_free(self.collection)
 
     def __contains__(self, uri):
         return bool(self.get_by_uri(_as_uri(uri)))
@@ -973,18 +1024,26 @@ class UIs(Collection):
 
     def get_by_uri(self, uri):
         ui = uis_get_by_uri(self.collection, uri.node)
-        return UI(ui) if ui else None
+        return UI(self.world, ui) if ui else None
 
 class Nodes(Collection):
     """Collection of data nodes."""
     @classmethod
-    def constructor(ignore, node):
-        return Node(node_duplicate(node))
+    def constructor(cls, world, node):
+        assert isinstance(world, World)
+        assert type(node) == POINTER(Node)
+        return Node.wrap(world, node_duplicate(node))
 
-    def __init__(self, collection):
+    def __init__(self, world, collection, owning=False):
         assert type(collection) == POINTER(Nodes)
-        super(Nodes, self).__init__(collection, nodes_begin, Nodes.constructor,
+
+        self.owning = owning
+        super(Nodes, self).__init__(world, collection, nodes_begin, Nodes.constructor,
                                     nodes_get, nodes_next, nodes_is_end)
+
+    def __del__(self):
+        if self.owning and self.world.world:
+            nodes_free(self.collection)
 
     def __contains__(self, value):
         return nodes_contains(self.collection, value.node)
@@ -993,7 +1052,7 @@ class Nodes(Collection):
         return nodes_size(self.collection)
 
     def merge(self, b):
-        return Nodes(nodes_merge(self.collection, b.collection))
+        return Nodes(self.world, nodes_merge(self.collection, b.collection), True)
 
 class Namespace():
     """Namespace prefix.
@@ -1022,6 +1081,26 @@ class Namespace():
     def __getattr__(self, suffix):
         return self.world.new_uri(self.prefix + suffix)
 
+class Namespaces():
+    """Set of namespaces.
+
+    Use to easily construct uris, like: ns.lv2.InputPort"""
+
+    def __init__(self, world):
+        assert isinstance(world, World)
+        self.world = world
+        self.atom = Namespace(world, 'http://lv2plug.in/ns/ext/atom#')
+        self.doap = Namespace(world, 'http://usefulinc.com/ns/doap#')
+        self.foaf = Namespace(world, 'http://xmlns.com/foaf/0.1/')
+        self.lilv = Namespace(world, 'http://drobilla.net/ns/lilv#')
+        self.lv2  = Namespace(world, 'http://lv2plug.in/ns/lv2core#')
+        self.midi = Namespace(world, 'http://lv2plug.in/ns/ext/midi#')
+        self.owl  = Namespace(world, 'http://www.w3.org/2002/07/owl#')
+        self.rdf  = Namespace(world, 'http://www.w3.org/1999/02/22-rdf-syntax-ns#')
+        self.rdfs = Namespace(world, 'http://www.w3.org/2000/01/rdf-schema#')
+        self.ui   = Namespace(world, 'http://lv2plug.in/ns/extensions/ui#')
+        self.xsd  = Namespace(world, 'http://www.w3.org/2001/XMLSchema#')
+
 class World(Structure):
     """Library context.
 
@@ -1032,31 +1111,12 @@ class World(Structure):
     :ivar ns: Common LV2 namespace prefixes: atom, doap, foaf, lilv, lv2, midi, owl, rdf, rdfs, ui, xsd.
     """
     def __init__(self):
-        world = self
-
-        # Define Namespaces class locally so available prefixes are documented
-        class Namespaces():
-            """Set of namespaces.
-
-            Use to easily construct uris, like: ns.lv2.InputPort"""
-
-            atom = Namespace(world, 'http://lv2plug.in/ns/ext/atom#')
-            doap = Namespace(world, 'http://usefulinc.com/ns/doap#')
-            foaf = Namespace(world, 'http://xmlns.com/foaf/0.1/')
-            lilv = Namespace(world, 'http://drobilla.net/ns/lilv#')
-            lv2  = Namespace(world, 'http://lv2plug.in/ns/lv2core#')
-            midi = Namespace(world, 'http://lv2plug.in/ns/ext/midi#')
-            owl  = Namespace(world, 'http://www.w3.org/2002/07/owl#')
-            rdf  = Namespace(world, 'http://www.w3.org/1999/02/22-rdf-syntax-ns#')
-            rdfs = Namespace(world, 'http://www.w3.org/2000/01/rdf-schema#')
-            ui   = Namespace(world, 'http://lv2plug.in/ns/extensions/ui#')
-            xsd  = Namespace(world, 'http://www.w3.org/2001/XMLSchema#')
-
         self.world = _lib.lilv_world_new()
-        self.ns    = Namespaces()
+        self.ns    = Namespaces(self)
 
     def __del__(self):
         world_free(self.world)
+        self.world = None
 
     def set_option(self, uri, value):
         """Set a world option.
@@ -1065,7 +1125,7 @@ class World(Structure):
         lilv.OPTION_FILTER_LANG
         lilv.OPTION_DYN_MANIFEST
         """
-        return world_set_option(self, uri, value.node)
+        return world_set_option(self.world, uri, value.node)
 
     def load_all(self):
         """Load all installed LV2 bundles on the system.
@@ -1151,11 +1211,11 @@ class World(Structure):
 
     def get_plugin_class(self):
         """Get the parent of all other plugin classes, lv2:Plugin."""
-        return PluginClass(world_get_plugin_class(self.world))
+        return PluginClass(self, world_get_plugin_class(self.world))
 
     def get_plugin_classes(self):
         """Return a list of all found plugin classes."""
-        return PluginClasses(world_get_plugin_classes(self.world))
+        return PluginClasses(self, world_get_plugin_classes(self.world))
 
     def get_all_plugins(self):
         """Return a list of all found plugins.
@@ -1177,10 +1237,12 @@ class World(Structure):
         Either `subject` or `object` may be None (i.e. a wildcard), but not both.
         Returns all matches for the wildcard field, or None.
         """
-        return Nodes(world_find_nodes(self.world,
+        return Nodes(self,
+                     world_find_nodes(self.world,
                                       subject.node if subject is not None else None,
                                       predicate.node if predicate is not None else None,
-                                      obj.node if obj is not None else None))
+                                      obj.node if obj is not None else None),
+                     True)
 
     def get(self, subject, predicate, obj):
         """Find a single node that matches a pattern.
@@ -1189,7 +1251,8 @@ class World(Structure):
 
         Returns the first matching node, or None if no matches are found.
         """
-        return Node.wrap(world_get(self.world,
+        return Node.wrap(self,
+                         world_get(self.world,
                                    subject.node if subject is not None else None,
                                    predicate.node if predicate is not None else None,
                                    obj.node if obj is not None else None))
@@ -1207,27 +1270,27 @@ class World(Structure):
 
     def new_uri(self, uri):
         """Create a new URI node."""
-        return Node.wrap(_lib.lilv_new_uri(self.world, uri))
+        return Node.wrap(self, _lib.lilv_new_uri(self.world, uri))
 
     def new_file_uri(self, host, path):
         """Create a new file URI node.  The host may be None."""
-        return Node.wrap(_lib.lilv_new_file_uri(self.world, host, path))
+        return Node.wrap(self, _lib.lilv_new_file_uri(self.world, host, path))
 
     def new_string(self, string):
         """Create a new string node."""
-        return Node.wrap(_lib.lilv_new_string(self.world, string))
+        return Node.wrap(self, _lib.lilv_new_string(self.world, string))
 
     def new_int(self, val):
         """Create a new int node."""
-        return Node.wrap(_lib.lilv_new_int(self.world, val))
+        return Node.wrap(self, _lib.lilv_new_int(self.world, val))
 
     def new_float(self, val):
         """Create a new float node."""
-        return Node.wrap(_lib.lilv_new_float(self.world, val))
+        return Node.wrap(self, _lib.lilv_new_float(self.world, val))
 
     def new_bool(self, val):
         """Create a new bool node."""
-        return Node.wrap(_lib.lilv_new_bool(self.world, val))
+        return Node.wrap(self, _lib.lilv_new_bool(self.world, val))
 
 class Instance(Structure):
     """Plugin instance."""
@@ -1239,6 +1302,7 @@ class Instance(Structure):
     ]
 
     def __init__(self, plugin, rate, features=None):
+        assert isinstance(plugin, Plugin)
         self.plugin   = plugin
         self.rate     = rate
         self.instance = plugin_instantiate(plugin.plugin, rate, features)
@@ -1339,7 +1403,7 @@ class VariadicFunction(object):
         for argtype in self.argtypes:
             fixed_args.append(argtype.from_param(args[i]))
             i += 1
-        return self.function(*fixed_args + list(args[i:]))
+        return self.function(*(fixed_args + list(args[i:])))
 
 # Set return and argument types for lilv C functions
 
@@ -1380,7 +1444,7 @@ node_equals.argtypes = [POINTER(Node), POINTER(Node)]
 node_equals.restype  = c_bool
 
 node_get_turtle_token.argtypes = [POINTER(Node)]
-node_get_turtle_token.restype  = c_char_p
+node_get_turtle_token.restype  = POINTER(c_char)
 
 node_is_uri.argtypes = [POINTER(Node)]
 node_is_uri.restype  = c_bool
@@ -1404,7 +1468,7 @@ node_as_string.argtypes = [POINTER(Node)]
 node_as_string.restype  = c_char_p
 
 node_get_path.argtypes = [POINTER(Node), POINTER(POINTER(c_char))]
-node_get_path.restype  = c_char_p
+node_get_path.restype  = POINTER(c_char)
 
 node_is_float.argtypes = [POINTER(Node)]
 node_is_float.restype  = c_bool
