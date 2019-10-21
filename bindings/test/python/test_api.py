@@ -260,8 +260,8 @@ class PluginTests(unittest.TestCase):
         self.assertEqual("input", port.get_symbol())
         self.assertEqual("Input", port.get_name())
         self.assertEqual(
-            [self.world.ns.lv2.ControlPort, self.world.ns.lv2.InputPort],
-            list(port.get_classes()),
+            [str(self.world.ns.lv2.ControlPort), str(self.world.ns.lv2.InputPort)],
+            sorted(list(map(str, port.get_classes()))),
         )
         self.assertTrue(port.is_a(self.world.ns.lv2.ControlPort))
         self.assertFalse(port.is_a(self.world.ns.lv2.AudioPort))
