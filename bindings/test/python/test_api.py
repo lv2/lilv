@@ -141,7 +141,9 @@ class PluginTests(unittest.TestCase):
             lilv.OPTION_FILTER_LANG, self.world.new_bool(True)
         )
         self.bundle_uri = self.world.new_uri(location)
-        self.assertIsNotNone(self.bundle_uri, "Invalid URI: '" + location + "'")
+        self.assertIsNotNone(
+            self.bundle_uri, "Invalid URI: '" + location + "'"
+        )
         self.world.load_bundle(self.bundle_uri)
         self.plugins = self.world.get_all_plugins()
         self.plugin = self.plugins.get(self.plugins.begin())
@@ -164,6 +166,9 @@ class PluginTests(unittest.TestCase):
         self.lv2_ControlPort = self.world.new_uri(lilv.LILV_URI_CONTROL_PORT)
 
     def testGetters(self):
+        self.assertEqual(
+            self.world.get_symbol(self.plugin), "lilv_bindings_test_plugin"
+        )
         self.assertIsNotNone(self.plugin.get_bundle_uri())
         self.assertGreater(len(self.plugin.get_data_uris()), 0)
         self.assertIsNotNone(self.plugin.get_library_uri())
@@ -239,6 +244,7 @@ class PluginTests(unittest.TestCase):
             ),
         )
         port = self.plugin.get_port("input")
+        self.assertEqual(self.world.get_symbol(port), "input")
         self.assertTrue(port.get_node().is_blank())
         self.assertEqual(0, port.get(self.world.ns.lv2.index))
         self.assertEqual(1, len(port.get_value(self.world.ns.lv2.symbol)))
@@ -260,8 +266,10 @@ class PluginTests(unittest.TestCase):
     def testScalePoints(self):
         port = self.plugin.get_port("input")
         points = port.get_scale_points()
-        point_dict = { float(points[0].get_value()): points[0].get_label(),
-                       float(points[1].get_value()): points[1].get_label() }
+        point_dict = {
+            float(points[0].get_value()): points[0].get_label(),
+            float(points[1].get_value()): points[1].get_label(),
+        }
 
         self.assertEqual(point_dict, {0.0: "off", 1.0: "on"})
 
@@ -381,7 +389,9 @@ class UITests(unittest.TestCase):
         self.assertEqual(uis[0], str(ui_uri))
         self.assertEqual(uis[0].get_uri(), ui_uri)
         self.assertEqual(uis[0].get_bundle_uri(), self.bundle_uri)
-        self.assertEqual(uis[0].get_binary_uri(), str(self.bundle_uri) + "TODO")
+        self.assertEqual(
+            uis[0].get_binary_uri(), str(self.bundle_uri) + "TODO"
+        )
         self.assertEqual(uis[uis[0].get_uri()], uis[0])
         self.assertTrue(uis[0].is_a(self.world.ns.ui.GtkUI))
         self.assertTrue(uis[0] in uis)

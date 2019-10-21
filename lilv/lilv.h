@@ -926,7 +926,6 @@ LILV_API uint32_t
 lilv_plugin_get_num_ports_of_class(const LilvPlugin* plugin,
                                    const LilvNode*   class_1, ...);
 
-#ifndef SWIG
 /**
    Variant of lilv_plugin_get_num_ports_of_class() that takes a va_list.
 
@@ -936,7 +935,6 @@ LILV_API uint32_t
 lilv_plugin_get_num_ports_of_class_va(const LilvPlugin* plugin,
                                       const LilvNode*   class_1,
                                       va_list           args);
-#endif
 
 /**
    Return whether or not the plugin introduces (and reports) latency.
