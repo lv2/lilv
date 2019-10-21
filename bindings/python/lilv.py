@@ -1342,11 +1342,13 @@ class World(Structure):
             return subject.get_symbol()
 
         uri = _as_uri(subject)
+        ret = ""
         if uri is not None:
             node = c.world_get_symbol(self.world, uri.node)
-            return c.node_as_string(node).decode("ascii") if node else ""
+            ret = c.node_as_string(node).decode("ascii") if node else ""
+            c.node_free(node)
 
-        return ""
+        return ret
 
     def new_uri(self, uri):
         """Create a new URI node."""
@@ -1399,6 +1401,10 @@ class Instance(Structure):
         self.plugin = plugin
         self.rate = rate
         self.instance = c.plugin_instantiate(plugin.plugin, rate, features)
+
+    def __del__(self):
+        if hasattr(self, "instance"):
+            c.instance_free(self.instance[0])
 
     def get_uri(self):
         """Get the URI of the plugin which `instance` is an instance of.
