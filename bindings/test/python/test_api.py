@@ -63,8 +63,8 @@ class UriTests(unittest.TestCase):
         self.world.load_all()
 
     def testInvalidURI(self):
-        self.plugin_uri = self.world.new_uri("invalid_uri")
-        self.assertIsNone(self.plugin_uri)
+        with self.assertRaises(ValueError):
+            self.plugin_uri = self.world.new_uri("invalid_uri")
 
     def testNonExistentURI(self):
         self.plugin_uri = self.world.new_uri("exist:does_not")
@@ -116,6 +116,8 @@ class PluginClassesTests(unittest.TestCase):
         self.assertGreater(len(classes), 1)
         self.assertIsNotNone(classes[0])
         self.assertIsNotNone(classes[pclass.get_uri()])
+        with self.assertRaises(KeyError):
+            classes["http://example.org/notaclass"].get_uri()
 
 
 class LoadTests(unittest.TestCase):
@@ -151,6 +153,9 @@ class PluginTests(unittest.TestCase):
         self.assertTrue(self.plugin in self.plugins)
         self.assertTrue(self.plugin.get_uri() in self.plugins)
         self.assertEqual(self.plugins[self.plugin.get_uri()], self.plugin)
+        with self.assertRaises(KeyError):
+            self.plugins["http://example.org/notaplugin"].get_uri()
+
         self.assertIsNotNone(
             self.plugin,
             msg="Test plugin not found at location: '" + location + "'",
@@ -386,6 +391,9 @@ class UITests(unittest.TestCase):
         )
         self.assertEqual(1, len(uis))
         self.assertEqual(str(uis[0]), str(ui_uri))
+        with self.assertRaises(KeyError):
+            uis["http://example.org/notaui"].get_uri()
+
         self.assertEqual(uis[0], str(ui_uri))
         self.assertEqual(uis[0].get_uri(), ui_uri)
         self.assertEqual(uis[0].get_bundle_uri(), self.bundle_uri)

@@ -8,8 +8,9 @@ lilv (0.24.5) unstable;
   * Fix unit tests on Windows
   * Add more strict error detection when storing plugin state properties
   * Fix memory errors and Python 3.4+ compatibility in Python bindings
+  * Make Python bindings more Pythonic
 
- -- David Robillard <d@drobilla.net>  Mon, 21 Oct 2019 17:19:31 +0000
+ -- David Robillard <d@drobilla.net>  Mon, 21 Oct 2019 19:50:13 +0000
 
 lilv (0.24.4) stable;
 

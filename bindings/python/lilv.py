@@ -946,9 +946,17 @@ class Plugins(Collection):
     def __getitem__(self, key):
         if type(key) == int:
             return super(Plugins, self).__getitem__(key)
-        return self.get_by_uri(key)
+
+        plugin = self.get_by_uri(key)
+        if plugin is None:
+            raise KeyError
+
+        return plugin
 
     def get_by_uri(self, uri):
+        if type(uri) == str:
+            uri = self.world.new_uri(uri)
+
         return Plugin.wrap(
             self.world, c.plugins_get_by_uri(self.collection, uri.node)
         )
@@ -985,9 +993,17 @@ class PluginClasses(Collection):
     def __getitem__(self, key):
         if type(key) == int:
             return super(PluginClasses, self).__getitem__(key)
-        return self.get_by_uri(key)
+
+        klass = self.get_by_uri(key)
+        if klass is None:
+            raise KeyError
+
+        return klass
 
     def get_by_uri(self, uri):
+        if type(uri) == str:
+            uri = self.world.new_uri(uri)
+
         plugin_class = c.plugin_classes_get_by_uri(self.collection, uri.node)
         return PluginClass(self.world, plugin_class) if plugin_class else None
 
@@ -1027,9 +1043,17 @@ class UIs(Collection):
     def __getitem__(self, key):
         if type(key) == int:
             return super(UIs, self).__getitem__(key)
-        return self.get_by_uri(key)
+
+        ui = self.get_by_uri(key)
+        if ui is None:
+            raise KeyError
+
+        return ui
 
     def get_by_uri(self, uri):
+        if type(uri) == str:
+            uri = self.world.new_uri(uri)
+
         ui = c.uis_get_by_uri(self.collection, uri.node)
         return UI(self.world, ui) if ui else None
 
@@ -1324,7 +1348,11 @@ class World(Structure):
 
     def new_uri(self, uri):
         """Create a new URI node."""
-        return Node.wrap(self, c.new_uri(self.world, uri))
+        c_node = c.new_uri(self.world, uri)
+        if not c_node:
+            raise ValueError("Invalid URI '%s'" % uri)
+
+        return Node.wrap(self, c_node)
 
     def new_file_uri(self, host, path):
         """Create a new file URI node.  The host may be None."""
