@@ -43,7 +43,7 @@ def options(ctx):
     ctx.add_flags(
         opt,
         {'no-utils':           'do not build command line utilities',
-         'bindings':           'build python bindings',
+         'no-bindings':        'do not build python bindings',
          'dyn-manifest':       'build support for dynamic manifests',
          'no-bash-completion': 'do not install bash completion script',
          'static':             'build static library',
@@ -62,10 +62,10 @@ def configure(conf):
     except:
         pass
 
-    if Options.options.bindings:
+    if not Options.options.no_bindings:
         try:
             conf.load('python', cache=True)
-            conf.check_python_headers()
+            conf.check_python_version((2,6,0))
             conf.env.LILV_PYTHON = 1
         except:
             Logs.warn('Failed to configure Python (%s)\n' % sys.exc_info()[1])
