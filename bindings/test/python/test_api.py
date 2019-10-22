@@ -366,7 +366,11 @@ class InstanceTests(unittest.TestCase):
         )
 
     def testRun(self):
-        import numpy
+        try:
+            import numpy
+        except ImportError:
+            sys.stderr.write("warning: Missing numpy, not testing instance\n")
+            return
 
         n_samples = 100
         buf = numpy.zeros(n_samples)
