@@ -8,6 +8,8 @@ __maintainer__ = "David Robillard"
 __email__ = "d@drobilla.net"
 __status__ = "Production"
 
+import sys
+
 from ctypes import Structure, CDLL, POINTER, CFUNCTYPE
 from ctypes import c_bool, c_double, c_float, c_int, c_size_t, c_uint, c_uint32
 from ctypes import c_char, c_char_p, c_void_p
@@ -22,10 +24,10 @@ class _LilvLib:
     """Object that represents the liblilv C library"""
 
     def __init__(self):
-        import sys
-
         if sys.platform == "darwin":
             self.lib = CDLL("liblilv-0.dylib")
+        elif sys.platform == "win32":
+            self.lib = CDLL("lilv-0.dll")
         else:
             self.lib = CDLL("liblilv-0.so")
 
@@ -807,7 +809,8 @@ class Node(Structure):
         Returns None if value is not a file URI."""
         c_str = c.node_get_path(self.node, hostname)
         string = cast(c_str, c_char_p).value.decode("utf-8")
-        c.free(c_str)
+        if sys.platform != 'win32': # TODO: Memory comes from libserd
+            c.free(c_str)
         return string
 
     def is_float(self):

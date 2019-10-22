@@ -14,10 +14,15 @@
 # OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 import lilv
-import unittest
 import os
+import sys
+import unittest
 
-location = "file://" + os.getcwd() + "/bindings/bindings_test_plugin.lv2/"
+from urllib.parse import urljoin
+from urllib.request import pathname2url
+
+path = os.path.abspath("bindings/bindings_test_plugin.lv2/")
+location = urljoin("file:", pathname2url(path) + "/")
 
 
 class NodeTests(unittest.TestCase):
