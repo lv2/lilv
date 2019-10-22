@@ -18,11 +18,18 @@ import os
 import sys
 import unittest
 
-from urllib.parse import urljoin
-from urllib.request import pathname2url
-
 path = os.path.abspath("bindings/bindings_test_plugin.lv2/")
-location = urljoin("file:", pathname2url(path) + "/")
+
+if sys.version_info[0] == 2:
+    import urllib
+    import urlparse
+
+    location = urlparse.urljoin("file:", urllib.pathname2url(path) + "/")
+else:
+    from urllib.parse import urljoin
+    from urllib.request import pathname2url
+
+    location = urljoin("file:", pathname2url(path) + "/")
 
 
 class NodeTests(unittest.TestCase):
@@ -265,7 +272,10 @@ class PluginTests(unittest.TestCase):
         self.assertEqual("input", port.get_symbol())
         self.assertEqual("Input", port.get_name())
         self.assertEqual(
-            [str(self.world.ns.lv2.ControlPort), str(self.world.ns.lv2.InputPort)],
+            [
+                str(self.world.ns.lv2.ControlPort),
+                str(self.world.ns.lv2.InputPort),
+            ],
             sorted(list(map(str, port.get_classes()))),
         )
         self.assertTrue(port.is_a(self.world.ns.lv2.ControlPort))
