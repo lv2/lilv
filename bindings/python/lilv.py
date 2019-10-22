@@ -22,7 +22,12 @@ class _LilvLib:
     """Object that represents the liblilv C library"""
 
     def __init__(self):
-        self.lib = CDLL("liblilv-0.so")
+        import sys
+
+        if sys.platform == "darwin":
+            self.lib = CDLL("liblilv-0.dylib")
+        else:
+            self.lib = CDLL("liblilv-0.so")
 
 
 # Load lilv C library and define library global (which is populated below)
