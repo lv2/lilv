@@ -21,6 +21,11 @@ VERSION = LILV_VERSION  # Package version for waf dist
 top     = '.'           # Source directory
 out     = 'build'       # Build directory
 
+# Release variables
+uri          = 'http://drobilla.net/sw/lilv'
+dist_pattern = 'http://download.drobilla.net/lilv-%d.%d.%d.tar.bz2'
+post_tags    = ['Hacking', 'LAD', 'LV2', 'Lilv']
+
 test_plugins = [
     'bad_syntax',
     'failed_instantiation',
