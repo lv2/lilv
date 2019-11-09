@@ -915,7 +915,7 @@ class Collection(Structure):
             it = self.iter_next(self.collection, it)
             pos = pos + 1
 
-        raise IndexError
+        raise IndexError(index)
 
     def begin(self):
         return self.__iter__()
@@ -957,7 +957,7 @@ class Plugins(Collection):
 
         plugin = self.get_by_uri(key)
         if plugin is None:
-            raise KeyError
+            raise KeyError("Plugin not found: " + str(key))
 
         return plugin
 
@@ -1004,7 +1004,7 @@ class PluginClasses(Collection):
 
         klass = self.get_by_uri(key)
         if klass is None:
-            raise KeyError
+            raise KeyError("Plugin class not found: " + str(key))
 
         return klass
 
@@ -1054,7 +1054,7 @@ class UIs(Collection):
 
         ui = self.get_by_uri(key)
         if ui is None:
-            raise KeyError
+            raise KeyError("Plugin UI not found: " + str(key))
 
         return ui
 
