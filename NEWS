@@ -1,4 +1,4 @@
-lilv (0.24.5) unstable;
+lilv (0.24.6) stable;
 
   * Add more strict error detection when storing plugin state properties
   * Add option to override LV2_PATH in applications
@@ -10,7 +10,7 @@ lilv (0.24.5) unstable;
   * Fix unit tests on Windows
   * Make Python bindings more Pythonic
 
- -- David Robillard <d@drobilla.net>  Mon, 21 Oct 2019 19:50:13 +0000
+ -- David Robillard <d@drobilla.net>  Sun, 10 Nov 2019 21:39:37 +0000
 
 lilv (0.24.4) stable;
 
