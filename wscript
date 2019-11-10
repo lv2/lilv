@@ -442,13 +442,6 @@ def build(bld):
 
     bld.add_post_fun(autowaf.run_ldconfig)
 
-def upload_docs(ctx):
-    import glob
-    os.system('rsync -ravz --delete -e ssh build/doc/html/ drobilla@drobilla.net:~/drobilla.net/docs/lilv/')
-    for page in glob.glob('doc/*.[1-8]'):
-        os.system('soelim %s | pre-grohtml troff -man -wall -Thtml | post-grohtml > build/%s.html' % (page, page))
-        os.system('rsync -avz --delete -e ssh build/%s.html drobilla@drobilla.net:~/drobilla.net/man/' % page)
-
 def test(tst):
     with tst.group('unit') as check:
         check(['./test/lilv_test'])
@@ -482,14 +475,3 @@ def lint(ctx):
            "-readability-else-after-return\" " +
            "$(find .. -name '*.c')")
     subprocess.call(cmd, cwd='build', shell=True)
-
-def posts(ctx):
-    path = str(ctx.path.abspath())
-    autowaf.news_to_posts(
-        os.path.join(path, 'NEWS'),
-        {'title'        : 'Lilv',
-         'description'  : autowaf.get_blurb(os.path.join(path, 'README')),
-         'dist_pattern' : 'http://download.drobilla.net/lilv-%s.tar.bz2'},
-        { 'Author' : 'drobilla',
-          'Tags'   : 'Hacking, LAD, LV2, Lilv' },
-        os.path.join(out, 'posts'))
