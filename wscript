@@ -449,7 +449,7 @@ def test(tst):
             check(['./test/lilv_cxx_test'])
 
     if tst.env.LILV_PYTHON:
-        with tst.group('python', verbosity=2) as check:
+        with tst.group('python') as check:
             check(['python', '-m', 'unittest', 'discover', 'bindings/'])
 
     with tst.group('plugin') as check:
