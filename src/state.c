@@ -1233,7 +1233,7 @@ int
 lilv_state_delete(LilvWorld*       world,
                   const LilvState* state)
 {
-	if (!state->dir || !state->uri) {
+	if (!state->dir) {
 		LILV_ERROR("Attempt to delete unsaved state\n");
 		return -1;
 	}
@@ -1241,9 +1241,10 @@ lilv_state_delete(LilvWorld*       world,
 	LilvNode*  bundle        = lilv_new_file_uri(world, NULL, state->dir);
 	LilvNode*  manifest      = lilv_world_get_manifest_uri(world, bundle);
 	char*      manifest_path = lilv_node_get_path(manifest, NULL);
+	const bool has_manifest  = lilv_path_exists(manifest_path, NULL);
 	SordModel* model         = sord_new(world->world, SORD_SPO, false);
 
-	{
+	if (has_manifest) {
 		// Read manifest into temporary local model
 		SerdEnv*    env = serd_env_new(sord_node_to_serd_node(manifest->node));
 		SerdReader* ttl = sord_new_reader(model, env, SERD_TURTLE, NULL);
@@ -1252,27 +1253,31 @@ lilv_state_delete(LilvWorld*       world,
 		serd_env_free(env);
 	}
 
-	SordNode* file = sord_get(
-		model, state->uri->node, world->uris.rdfs_seeAlso, NULL, NULL);
-	if (file) {
-		// Remove state file
-		const uint8_t* uri  = sord_node_get_string(file);
-		char*          path = (char*)serd_file_uri_parse(uri, NULL);
-		try_unlink(state->dir, path);
-		serd_free(path);
-	}
+	if (state->uri) {
+		SordNode* file = sord_get(
+			model, state->uri->node, world->uris.rdfs_seeAlso, NULL, NULL);
+		if (file) {
+			// Remove state file
+			const uint8_t* uri  = sord_node_get_string(file);
+			char*          path = (char*)serd_file_uri_parse(uri, NULL);
+			try_unlink(state->dir, path);
+			serd_free(path);
+		}
 
-	// Remove any existing manifest entries for this state
-	const char* state_uri_str = lilv_node_as_string(state->uri);
-	remove_manifest_entry(world->world, model, state_uri_str);
-	remove_manifest_entry(world->world, world->model, state_uri_str);
+		// Remove any existing manifest entries for this state
+		const char* state_uri_str = lilv_node_as_string(state->uri);
+		remove_manifest_entry(world->world, model, state_uri_str);
+		remove_manifest_entry(world->world, world->model, state_uri_str);
+	}
 
 	// Drop bundle from model
 	lilv_world_unload_bundle(world, bundle);
 
 	if (sord_num_quads(model) == 0) {
 		// Manifest is empty, attempt to remove bundle entirely
-		try_unlink(state->dir, manifest_path);
+		if (has_manifest) {
+			try_unlink(state->dir, manifest_path);
+		}
 
 		// Remove all known files from state bundle
 		if (state->abs2rel) {
