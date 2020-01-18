@@ -55,7 +55,7 @@ lilv_port_free(const LilvPlugin* plugin, LilvPort* port)
 	}
 }
 
-LILV_API bool
+bool
 lilv_port_is_a(const LilvPlugin* plugin,
                const LilvPort*   port,
                const LilvNode*   port_class)
@@ -69,7 +69,7 @@ lilv_port_is_a(const LilvPlugin* plugin,
 	return false;
 }
 
-LILV_API bool
+bool
 lilv_port_has_property(const LilvPlugin* plugin,
                        const LilvPort*   port,
                        const LilvNode*   property)
@@ -80,7 +80,7 @@ lilv_port_has_property(const LilvPlugin* plugin,
 	                               property->node);
 }
 
-LILV_API bool
+bool
 lilv_port_supports_event(const LilvPlugin* plugin,
                          const LilvPort*   port,
                          const LilvNode*   event_type)
@@ -111,14 +111,14 @@ lilv_port_get_value_by_node(const LilvPlugin* plugin,
 	                                      NULL);
 }
 
-LILV_API const LilvNode*
+const LilvNode*
 lilv_port_get_node(const LilvPlugin* plugin,
                    const LilvPort*   port)
 {
 	return port->node;
 }
 
-LILV_API LilvNodes*
+LilvNodes*
 lilv_port_get_value(const LilvPlugin* plugin,
                     const LilvPort*   port,
                     const LilvNode*   predicate)
@@ -132,7 +132,7 @@ lilv_port_get_value(const LilvPlugin* plugin,
 	return lilv_port_get_value_by_node(plugin, port, predicate->node);
 }
 
-LILV_API LilvNode*
+LilvNode*
 lilv_port_get(const LilvPlugin* plugin,
               const LilvPort*   port,
               const LilvNode*   predicate)
@@ -146,21 +146,21 @@ lilv_port_get(const LilvPlugin* plugin,
 	return value;
 }
 
-LILV_API uint32_t
+uint32_t
 lilv_port_get_index(const LilvPlugin* plugin,
                     const LilvPort*   port)
 {
 	return port->index;
 }
 
-LILV_API const LilvNode*
+const LilvNode*
 lilv_port_get_symbol(const LilvPlugin* plugin,
                      const LilvPort*   port)
 {
 	return port->symbol;
 }
 
-LILV_API LilvNode*
+LilvNode*
 lilv_port_get_name(const LilvPlugin* plugin,
                    const LilvPort*   port)
 {
@@ -184,14 +184,14 @@ lilv_port_get_name(const LilvPlugin* plugin,
 	return ret;
 }
 
-LILV_API const LilvNodes*
+const LilvNodes*
 lilv_port_get_classes(const LilvPlugin* plugin,
                       const LilvPort*   port)
 {
 	return port->classes;
 }
 
-LILV_API void
+void
 lilv_port_get_range(const LilvPlugin* plugin,
                     const LilvPort*   port,
                     LilvNode**        def,
@@ -224,7 +224,7 @@ lilv_port_get_range(const LilvPlugin* plugin,
 	}
 }
 
-LILV_API LilvScalePoints*
+LilvScalePoints*
 lilv_port_get_scale_points(const LilvPlugin* plugin,
                            const LilvPort*   port)
 {
@@ -261,7 +261,7 @@ lilv_port_get_scale_points(const LilvPlugin* plugin,
 	return ret;
 }
 
-LILV_API LilvNodes*
+LilvNodes*
 lilv_port_get_properties(const LilvPlugin* plugin,
                          const LilvPort*   port)
 {

@@ -40,13 +40,13 @@ lilv_scale_point_free(LilvScalePoint* point)
 	}
 }
 
-LILV_API const LilvNode*
+const LilvNode*
 lilv_scale_point_get_value(const LilvScalePoint* point)
 {
 	return point->value;
 }
 
-LILV_API const LilvNode*
+const LilvNode*
 lilv_scale_point_get_label(const LilvScalePoint* point)
 {
 	return point->label;

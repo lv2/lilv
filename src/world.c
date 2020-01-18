@@ -41,7 +41,7 @@
 static int
 lilv_world_drop_graph(LilvWorld* world, const SordNode* graph);
 
-LILV_API LilvWorld*
+LilvWorld*
 lilv_world_new(void)
 {
 	LilvWorld* world = (LilvWorld*)calloc(1, sizeof(LilvWorld));
@@ -125,7 +125,7 @@ fail:
 	return NULL;
 }
 
-LILV_API void
+void
 lilv_world_free(LilvWorld* world)
 {
 	if (!world) {
@@ -182,7 +182,7 @@ lilv_world_free(LilvWorld* world)
 	free(world);
 }
 
-LILV_API void
+void
 lilv_world_set_option(LilvWorld*      world,
                       const char*     uri,
                       const LilvNode* value)
@@ -206,7 +206,7 @@ lilv_world_set_option(LilvWorld*      world,
 	LILV_WARNF("Unrecognized or invalid option `%s'\n", uri);
 }
 
-LILV_API LilvNodes*
+LilvNodes*
 lilv_world_find_nodes(LilvWorld*      world,
                       const LilvNode* subject,
                       const LilvNode* predicate,
@@ -234,7 +234,7 @@ lilv_world_find_nodes(LilvWorld*      world,
 	                                      object ? object->node : NULL);
 }
 
-LILV_API LilvNode*
+LilvNode*
 lilv_world_get(LilvWorld*      world,
                const LilvNode* subject,
                const LilvNode* predicate,
@@ -268,7 +268,7 @@ lilv_world_ask_internal(LilvWorld*      world,
 	return sord_ask(world->model, subject, predicate, object, NULL);
 }
 
-LILV_API bool
+bool
 lilv_world_ask(LilvWorld*      world,
                const LilvNode* subject,
                const LilvNode* predicate,
@@ -700,7 +700,7 @@ get_version(LilvWorld* world, SordModel* model, const LilvNode* subject)
 	return version;
 }
 
-LILV_API void
+void
 lilv_world_load_bundle(LilvWorld* world, const LilvNode* bundle_uri)
 {
 	if (!lilv_node_is_uri(bundle_uri)) {
@@ -863,7 +863,7 @@ lilv_world_unload_file(LilvWorld* world, const LilvNode* file)
 	return 1;
 }
 
-LILV_API int
+int
 lilv_world_unload_bundle(LilvWorld* world, const LilvNode* bundle_uri)
 {
 	if (!bundle_uri) {
@@ -1034,7 +1034,7 @@ lilv_world_load_plugin_classes(LilvWorld* world)
 	sord_iter_free(classes);
 }
 
-LILV_API void
+void
 lilv_world_load_all(LilvWorld* world)
 {
 	const char* lv2_path = world->opt.lv2_path;
@@ -1098,7 +1098,7 @@ lilv_world_load_file(LilvWorld* world, SerdReader* reader, const LilvNode* uri)
 	return SERD_SUCCESS;
 }
 
-LILV_API int
+int
 lilv_world_load_resource(LilvWorld*      world,
                          const LilvNode* resource)
 {
@@ -1133,7 +1133,7 @@ lilv_world_load_resource(LilvWorld*      world,
 	return n_read;
 }
 
-LILV_API int
+int
 lilv_world_unload_resource(LilvWorld*      world,
                            const LilvNode* resource)
 {
@@ -1169,25 +1169,25 @@ lilv_world_unload_resource(LilvWorld*      world,
 	return n_dropped;
 }
 
-LILV_API const LilvPluginClass*
+const LilvPluginClass*
 lilv_world_get_plugin_class(const LilvWorld* world)
 {
 	return world->lv2_plugin_class;
 }
 
-LILV_API const LilvPluginClasses*
+const LilvPluginClasses*
 lilv_world_get_plugin_classes(const LilvWorld* world)
 {
 	return world->plugin_classes;
 }
 
-LILV_API const LilvPlugins*
+const LilvPlugins*
 lilv_world_get_all_plugins(const LilvWorld* world)
 {
 	return world->plugins;
 }
 
-LILV_API LilvNode*
+LilvNode*
 lilv_world_get_symbol(LilvWorld* world, const LilvNode* subject)
 {
 	// Check for explicitly given symbol

@@ -52,25 +52,25 @@ lilv_plugin_class_free(LilvPluginClass* plugin_class)
 	free(plugin_class);
 }
 
-LILV_API const LilvNode*
+const LilvNode*
 lilv_plugin_class_get_parent_uri(const LilvPluginClass* plugin_class)
 {
 	return plugin_class->parent_uri ? plugin_class->parent_uri : NULL;
 }
 
-LILV_API const LilvNode*
+const LilvNode*
 lilv_plugin_class_get_uri(const LilvPluginClass* plugin_class)
 {
 	return plugin_class->uri;
 }
 
-LILV_API const LilvNode*
+const LilvNode*
 lilv_plugin_class_get_label(const LilvPluginClass* plugin_class)
 {
 	return plugin_class->label;
 }
 
-LILV_API LilvPluginClasses*
+LilvPluginClasses*
 lilv_plugin_class_get_children(const LilvPluginClass* plugin_class)
 {
 	// Returned list doesn't own categories

@@ -106,7 +106,7 @@ lilv_plugin_classes_new(void)
 
 /* URI based accessors (for collections of things with URIs) */
 
-LILV_API const LilvPluginClass*
+const LilvPluginClass*
 lilv_plugin_classes_get_by_uri(const LilvPluginClasses* classes,
                                const LilvNode*          uri)
 {
@@ -114,7 +114,7 @@ lilv_plugin_classes_get_by_uri(const LilvPluginClasses* classes,
 		(const ZixTree*)classes, uri);
 }
 
-LILV_API const LilvUI*
+const LilvUI*
 lilv_uis_get_by_uri(const LilvUIs* uis, const LilvNode* uri)
 {
 	return (LilvUI*)lilv_collection_get_by_uri((const ZixTree*)uis, uri);
@@ -128,7 +128,7 @@ lilv_plugins_new(void)
 	return lilv_collection_new(lilv_header_compare_by_uri, NULL);
 }
 
-LILV_API const LilvPlugin*
+const LilvPlugin*
 lilv_plugins_get_by_uri(const LilvPlugins* plugins, const LilvNode* uri)
 {
 	return (LilvPlugin*)lilv_collection_get_by_uri(
@@ -137,7 +137,7 @@ lilv_plugins_get_by_uri(const LilvPlugins* plugins, const LilvNode* uri)
 
 /* Nodes */
 
-LILV_API bool
+bool
 lilv_nodes_contains(const LilvNodes* nodes, const LilvNode* value)
 {
 	LILV_FOREACH(nodes, i, nodes) {
@@ -149,7 +149,7 @@ lilv_nodes_contains(const LilvNodes* nodes, const LilvNode* value)
 	return false;
 }
 
-LILV_API LilvNodes*
+LilvNodes*
 lilv_nodes_merge(const LilvNodes* a, const LilvNodes* b)
 {
 	LilvNodes* result = lilv_nodes_new();
@@ -170,31 +170,31 @@ lilv_nodes_merge(const LilvNodes* a, const LilvNodes* b)
 /* Iterator */
 
 #define LILV_COLLECTION_IMPL(prefix, CT, ET) \
-LILV_API \
+\
 unsigned \
 prefix##_size(const CT* collection) { \
 	return lilv_collection_size(collection); \
 } \
 \
-LILV_API \
+\
 LilvIter* \
 prefix##_begin(const CT* collection) { \
 	return lilv_collection_begin(collection); \
 } \
 \
-LILV_API \
+\
 const ET* \
 prefix##_get(const CT* collection, LilvIter* i) { \
 	return (ET*)lilv_collection_get(collection, i); \
 } \
 \
-LILV_API \
+\
 LilvIter* \
 prefix##_next(const CT* collection, LilvIter* i) { \
 	return zix_tree_iter_next((ZixTreeIter*)i); \
 } \
 \
-LILV_API \
+\
 bool \
 prefix##_is_end(const CT* collection, LilvIter* i) { \
 	return zix_tree_iter_is_end((ZixTreeIter*)i); \
@@ -206,27 +206,27 @@ LILV_COLLECTION_IMPL(lilv_uis, LilvUIs, LilvUI)
 LILV_COLLECTION_IMPL(lilv_nodes, LilvNodes, LilvNode)
 LILV_COLLECTION_IMPL(lilv_plugins, LilvPlugins, LilvPlugin)
 
-LILV_API void
+void
 lilv_plugin_classes_free(LilvPluginClasses* collection) {
 	lilv_collection_free(collection);
 }
 
-LILV_API void
+void
 lilv_scale_points_free(LilvScalePoints* collection) {
 	lilv_collection_free(collection);
 }
 
-LILV_API void
+void
 lilv_uis_free(LilvUIs* collection) {
 	lilv_collection_free(collection);
 }
 
-LILV_API void
+void
 lilv_nodes_free(LilvNodes* collection) {
 	lilv_collection_free(collection);
 }
 
-LILV_API LilvNode*
+LilvNode*
 lilv_nodes_get_first(const LilvNodes* collection) {
 	return (LilvNode*)lilv_collection_get(collection,
 	                                      lilv_collection_begin(collection));

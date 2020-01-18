@@ -62,13 +62,13 @@ lilv_ui_free(LilvUI* ui)
 	free(ui);
 }
 
-LILV_API const LilvNode*
+const LilvNode*
 lilv_ui_get_uri(const LilvUI* ui)
 {
 	return ui->uri;
 }
 
-LILV_API unsigned
+unsigned
 lilv_ui_is_supported(const LilvUI*       ui,
                      LilvUISupportedFunc supported_func,
                      const LilvNode*     container_type,
@@ -90,25 +90,25 @@ lilv_ui_is_supported(const LilvUI*       ui,
 	return 0;
 }
 
-LILV_API const LilvNodes*
+const LilvNodes*
 lilv_ui_get_classes(const LilvUI* ui)
 {
 	return ui->classes;
 }
 
-LILV_API bool
+bool
 lilv_ui_is_a(const LilvUI* ui, const LilvNode* class_uri)
 {
 	return lilv_nodes_contains(ui->classes, class_uri);
 }
 
-LILV_API const LilvNode*
+const LilvNode*
 lilv_ui_get_bundle_uri(const LilvUI* ui)
 {
 	return ui->bundle_uri;
 }
 
-LILV_API const LilvNode*
+const LilvNode*
 lilv_ui_get_binary_uri(const LilvUI* ui)
 {
 	return ui->binary_uri;

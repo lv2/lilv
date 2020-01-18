@@ -151,13 +151,13 @@ lilv_node_new_from_node(LilvWorld* world, const SordNode* node)
 	return result;
 }
 
-LILV_API LilvNode*
+LilvNode*
 lilv_new_uri(LilvWorld* world, const char* uri)
 {
 	return lilv_node_new(world, LILV_VALUE_URI, uri);
 }
 
-LILV_API LilvNode*
+LilvNode*
 lilv_new_file_uri(LilvWorld* world, const char* host, const char* path)
 {
 	char*    abs_path = lilv_path_absolute(path);
@@ -170,13 +170,13 @@ lilv_new_file_uri(LilvWorld* world, const char* host, const char* path)
 	return ret;
 }
 
-LILV_API LilvNode*
+LilvNode*
 lilv_new_string(LilvWorld* world, const char* str)
 {
 	return lilv_node_new(world, LILV_VALUE_STRING, str);
 }
 
-LILV_API LilvNode*
+LilvNode*
 lilv_new_int(LilvWorld* world, int val)
 {
 	char str[32];
@@ -186,7 +186,7 @@ lilv_new_int(LilvWorld* world, int val)
 	return ret;
 }
 
-LILV_API LilvNode*
+LilvNode*
 lilv_new_float(LilvWorld* world, float val)
 {
 	char str[32];
@@ -196,7 +196,7 @@ lilv_new_float(LilvWorld* world, float val)
 	return ret;
 }
 
-LILV_API LilvNode*
+LilvNode*
 lilv_new_bool(LilvWorld* world, bool val)
 {
 	LilvNode* ret = lilv_node_new(world, LILV_VALUE_BOOL,
@@ -205,7 +205,7 @@ lilv_new_bool(LilvWorld* world, bool val)
 	return ret;
 }
 
-LILV_API LilvNode*
+LilvNode*
 lilv_node_duplicate(const LilvNode* val)
 {
 	if (!val) {
@@ -220,7 +220,7 @@ lilv_node_duplicate(const LilvNode* val)
 	return result;
 }
 
-LILV_API void
+void
 lilv_node_free(LilvNode* val)
 {
 	if (val) {
@@ -229,7 +229,7 @@ lilv_node_free(LilvNode* val)
 	}
 }
 
-LILV_API bool
+bool
 lilv_node_equals(const LilvNode* value, const LilvNode* other)
 {
 	if (value == NULL && other == NULL) {
@@ -257,7 +257,7 @@ lilv_node_equals(const LilvNode* value, const LilvNode* other)
 	return false; /* shouldn't get here */
 }
 
-LILV_API char*
+char*
 lilv_node_get_turtle_token(const LilvNode* value)
 {
 	const char* str    = (const char*)sord_node_get_string(value->node);
@@ -296,13 +296,13 @@ lilv_node_get_turtle_token(const LilvNode* value)
 	return result;
 }
 
-LILV_API bool
+bool
 lilv_node_is_uri(const LilvNode* value)
 {
 	return (value && value->type == LILV_VALUE_URI);
 }
 
-LILV_API const char*
+const char*
 lilv_node_as_uri(const LilvNode* value)
 {
 	return (lilv_node_is_uri(value)
@@ -310,13 +310,13 @@ lilv_node_as_uri(const LilvNode* value)
 	        : NULL);
 }
 
-LILV_API bool
+bool
 lilv_node_is_blank(const LilvNode* value)
 {
 	return (value && value->type == LILV_VALUE_BLANK);
 }
 
-LILV_API const char*
+const char*
 lilv_node_as_blank(const LilvNode* value)
 {
 	return (lilv_node_is_blank(value)
@@ -324,7 +324,7 @@ lilv_node_as_blank(const LilvNode* value)
 	        : NULL);
 }
 
-LILV_API bool
+bool
 lilv_node_is_literal(const LilvNode* value)
 {
 	if (!value) {
@@ -342,37 +342,37 @@ lilv_node_is_literal(const LilvNode* value)
 	}
 }
 
-LILV_API bool
+bool
 lilv_node_is_string(const LilvNode* value)
 {
 	return (value && value->type == LILV_VALUE_STRING);
 }
 
-LILV_API const char*
+const char*
 lilv_node_as_string(const LilvNode* value)
 {
 	return value ? (const char*)sord_node_get_string(value->node) : NULL;
 }
 
-LILV_API bool
+bool
 lilv_node_is_int(const LilvNode* value)
 {
 	return (value && value->type == LILV_VALUE_INT);
 }
 
-LILV_API int
+int
 lilv_node_as_int(const LilvNode* value)
 {
 	return lilv_node_is_int(value) ? value->val.int_val : 0;
 }
 
-LILV_API bool
+bool
 lilv_node_is_float(const LilvNode* value)
 {
 	return (value && value->type == LILV_VALUE_FLOAT);
 }
 
-LILV_API float
+float
 lilv_node_as_float(const LilvNode* value)
 {
 	if (lilv_node_is_float(value)) {
@@ -383,19 +383,19 @@ lilv_node_as_float(const LilvNode* value)
 	return NAN;
 }
 
-LILV_API bool
+bool
 lilv_node_is_bool(const LilvNode* value)
 {
 	return (value && value->type == LILV_VALUE_BOOL);
 }
 
-LILV_API bool
+bool
 lilv_node_as_bool(const LilvNode* value)
 {
 	return lilv_node_is_bool(value) ? value->val.bool_val : false;
 }
 
-LILV_API char*
+char*
 lilv_node_get_path(const LilvNode* value, char** hostname)
 {
 	if (lilv_node_is_uri(value)) {

@@ -386,7 +386,7 @@ lilv_free_path(LV2_State_Free_Path_Handle handle, char* path)
 	lilv_free(path);
 }
 
-LILV_API LilvState*
+LilvState*
 lilv_state_new_from_instance(const LilvPlugin*          plugin,
                              LilvInstance*              instance,
                              LV2_URID_Map*              map,
@@ -464,7 +464,7 @@ lilv_state_new_from_instance(const LilvPlugin*          plugin,
 	return state;
 }
 
-LILV_API void
+void
 lilv_state_emit_port_values(const LilvState*     state,
                             LilvSetPortValueFunc set_value,
                             void*                user_data)
@@ -476,7 +476,7 @@ lilv_state_emit_port_values(const LilvState*     state,
 	}
 }
 
-LILV_API void
+void
 lilv_state_restore(const LilvState*           state,
                    LilvInstance*              instance,
                    LilvSetPortValueFunc       set_value,
@@ -671,7 +671,7 @@ new_state_from_model(LilvWorld*       world,
 	return state;
 }
 
-LILV_API LilvState*
+LilvState*
 lilv_state_new_from_world(LilvWorld*      world,
                           LV2_URID_Map*   map,
                           const LilvNode* node)
@@ -685,7 +685,7 @@ lilv_state_new_from_world(LilvWorld*      world,
 	return new_state_from_model(world, map, world->model, node->node, NULL);
 }
 
-LILV_API LilvState*
+LilvState*
 lilv_state_new_from_file(LilvWorld*      world,
                          LV2_URID_Map*   map,
                          const LilvNode* subject,
@@ -738,7 +738,7 @@ set_prefixes(SerdEnv* env)
 	SET_PSET(env, USTR("xsd"),   USTR(LILV_NS_XSD));
 }
 
-LILV_API LilvState*
+LilvState*
 lilv_state_new_from_string(LilvWorld*    world,
                            LV2_URID_Map* map,
                            const char*   str)
@@ -1116,7 +1116,7 @@ lilv_state_make_links(const LilvState* state, const char* dir)
 	}
 }
 
-LILV_API int
+int
 lilv_state_save(LilvWorld*       world,
                 LV2_URID_Map*    map,
                 LV2_URID_Unmap*  unmap,
@@ -1171,7 +1171,7 @@ lilv_state_save(LilvWorld*       world,
 	return ret;
 }
 
-LILV_API char*
+char*
 lilv_state_to_string(LilvWorld*       world,
                      LV2_URID_Map*    map,
                      LV2_URID_Unmap*  unmap,
@@ -1207,7 +1207,7 @@ try_unlink(const char* path)
 	}
 }
 
-LILV_API int
+int
 lilv_state_delete(LilvWorld*       world,
                   const LilvState* state)
 {
@@ -1293,7 +1293,7 @@ free_property_array(LilvState* state, PropertyArray* array)
 	free(array->props);
 }
 
-LILV_API void
+void
 lilv_state_free(LilvState* state)
 {
 	if (state) {
@@ -1317,7 +1317,7 @@ lilv_state_free(LilvState* state)
 	}
 }
 
-LILV_API bool
+bool
 lilv_state_equals(const LilvState* a, const LilvState* b)
 {
 	if (!lilv_node_equals(a->plugin_uri, b->plugin_uri)
@@ -1361,31 +1361,31 @@ lilv_state_equals(const LilvState* a, const LilvState* b)
 	return true;
 }
 
-LILV_API unsigned
+unsigned
 lilv_state_get_num_properties(const LilvState* state)
 {
 	return state->props.n;
 }
 
-LILV_API const LilvNode*
+const LilvNode*
 lilv_state_get_plugin_uri(const LilvState* state)
 {
 	return state->plugin_uri;
 }
 
-LILV_API const LilvNode*
+const LilvNode*
 lilv_state_get_uri(const LilvState* state)
 {
 	return state->uri;
 }
 
-LILV_API const char*
+const char*
 lilv_state_get_label(const LilvState* state)
 {
 	return state->label;
 }
 
-LILV_API void
+void
 lilv_state_set_label(LilvState* state, const char* label)
 {
 	const size_t len = strlen(label);
@@ -1393,7 +1393,7 @@ lilv_state_set_label(LilvState* state, const char* label)
 	memcpy(state->label, label, len + 1);
 }
 
-LILV_API int
+int
 lilv_state_set_metadata(LilvState*  state,
                         uint32_t    key,
                         const void* value,
