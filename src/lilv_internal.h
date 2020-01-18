@@ -382,6 +382,7 @@ char*  lilv_strdup(const char* str);
 char*  lilv_get_lang(void);
 char*  lilv_expand(const char* path);
 char*  lilv_dirname(const char* path);
+char*  lilv_dir_path(const char* path);
 int    lilv_copy_file(const char* src, const char* dst);
 bool   lilv_path_exists(const char* path, const void* ignored);
 char*  lilv_path_absolute(const char* path);

@@ -281,6 +281,25 @@ lilv_dirname(const char* path)
 	}
 }
 
+char*
+lilv_dir_path(const char* path)
+{
+	if (!path) {
+		return NULL;
+	}
+
+	const size_t len = strlen(path);
+
+	if (lilv_is_dir_sep(path[len - 1])) {
+		return lilv_strdup(path);
+	}
+
+	char* dir_path = (char*)calloc(len + 2, 1);
+	memcpy(dir_path, path, len);
+	dir_path[len] = LILV_DIR_SEP[0];
+	return dir_path;
+}
+
 bool
 lilv_path_exists(const char* path, const void* ignored)
 {
