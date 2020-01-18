@@ -1220,10 +1220,12 @@ lilv_state_to_string(LilvWorld*       world,
 }
 
 static void
-try_unlink(const char* path)
+try_unlink(const char* state_dir, const char* path)
 {
-	if (unlink(path)) {
-		LILV_ERRORF("Failed to remove %s (%s)\n", path, strerror(errno));
+	if (!strncmp(state_dir, path, strlen(state_dir))) {
+		if (lilv_path_exists(path, NULL) && unlink(path)) {
+			LILV_ERRORF("Failed to remove %s (%s)\n", path, strerror(errno));
+		}
 	}
 }
 
@@ -1256,7 +1258,7 @@ lilv_state_delete(LilvWorld*       world,
 		// Remove state file
 		char* path =
 			(char*)serd_file_uri_parse(sord_node_get_string(file), NULL);
-		try_unlink(path);
+		try_unlink(state->dir, path);
 		serd_free(path);
 	}
 
@@ -1271,7 +1273,7 @@ lilv_state_delete(LilvWorld*       world,
 
 	if (sord_num_quads(model) == 0) {
 		// Manifest is empty, attempt to remove bundle entirely
-		try_unlink(manifest_path);
+		try_unlink(state->dir, manifest_path);
 
 		// Remove all known files from state bundle
 		for (ZixTreeIter* i = zix_tree_begin(state->abs2rel);
@@ -1279,7 +1281,7 @@ lilv_state_delete(LilvWorld*       world,
 		     i = zix_tree_iter_next(i)) {
 			const PathMap* pm   = (const PathMap*)zix_tree_get(i);
 			char*          path = lilv_path_join(state->dir, pm->rel);
-			try_unlink(path);
+			try_unlink(state->dir, path);
 			free(path);
 		}
 
