@@ -619,7 +619,7 @@ lilv_world_load_dyn_manifest(LilvWorld*      world,
 			lilv_world_add_plugin(world, plug, manifest, desc, bundle_node);
 		}
 		if (desc->refs == 0) {
-			free(desc);
+			lilv_dynmanifest_free(desc);
 		}
 		sord_iter_free(p);
 		sord_free(plugins);
@@ -629,6 +629,23 @@ lilv_world_load_dyn_manifest(LilvWorld*      world,
 	sord_free(model);
 #endif  // LILV_DYN_MANIFEST
 }
+
+#ifdef LILV_DYN_MANIFEST
+void
+lilv_dynmanifest_free(LilvDynManifest* dynmanifest)
+{
+	typedef int (*CloseFunc)(LV2_Dyn_Manifest_Handle);
+	CloseFunc close_func = (CloseFunc)lilv_dlfunc(dynmanifest->lib,
+	                                              "lv2_dyn_manifest_close");
+	if (close_func) {
+		close_func(dynmanifest->handle);
+	}
+
+	dlclose(dynmanifest->lib);
+	lilv_node_free(dynmanifest->bundle);
+	free(dynmanifest);
+}
+#endif  // LILV_DYN_MANIFEST
 
 LilvNode*
 lilv_world_get_manifest_uri(LilvWorld* world, const LilvNode* bundle_uri)
