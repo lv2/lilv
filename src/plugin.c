@@ -135,15 +135,22 @@ lilv_plugin_get_one(const LilvPlugin* plugin,
                     const SordNode*   subject,
                     const SordNode*   predicate)
 {
-	LilvNode* ret    = NULL;
-	SordIter* stream = lilv_world_query_internal(
-		plugin->world, subject, predicate, NULL);
-	if (!sord_iter_end(stream)) {
-		ret = lilv_node_new_from_node(plugin->world,
-		                              sord_iter_get_node(stream, SORD_OBJECT));
+	/* TODO: This is slower than it could be in some cases, but it's simpler to
+	   use the existing i18n code. */
+
+	SordIter* stream =
+		lilv_world_query_internal(plugin->world, subject, predicate, NULL);
+
+	LilvNodes* nodes = lilv_nodes_from_stream_objects(
+		plugin->world, stream, SORD_OBJECT);
+
+	if (nodes) {
+		LilvNode* value = lilv_node_duplicate(lilv_nodes_get_first(nodes));
+		lilv_nodes_free(nodes);
+		return value;
 	}
-	sord_iter_free(stream);
-	return ret;
+
+	return NULL;
 }
 
 LilvNode*
