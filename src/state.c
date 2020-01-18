@@ -850,6 +850,30 @@ remove_manifest_entry(SordWorld* world, SordModel* model, const char* subject)
 }
 
 static int
+write_manifest(LilvWorld*      world,
+               SerdEnv*        env,
+               SordModel*      model,
+               const SerdNode* file_uri)
+{
+	char* const path = (char*)serd_file_uri_parse(file_uri->buf, NULL);
+	FILE* const wfd  = fopen(path, "w");
+	if (!wfd) {
+		LILV_ERRORF("Failed to open %s for writing (%s)\n",
+		            path, strerror(errno));
+
+		serd_free(path);
+		return 1;
+	}
+
+	SerdWriter* writer = ttl_file_writer(wfd, file_uri, &env);
+	sord_write(model, writer, NULL);
+	serd_writer_free(writer);
+	fclose(wfd);
+	serd_free(path);
+	return 0;
+}
+
+static int
 add_state_to_manifest(LilvWorld*      lworld,
                       const LilvNode* plugin_uri,
                       const char*     manifest_path,
@@ -908,16 +932,7 @@ add_state_to_manifest(LilvWorld*      lworld,
 	                                   USTR(lilv_node_as_string(plugin_uri))));
 
 	// Write manifest model to file
-	FILE* wfd = fopen(manifest_path, "w");
-	if (wfd) {
-		SerdWriter* writer = ttl_file_writer(wfd, &manifest, &env);
-		sord_write(model, writer, NULL);
-		serd_writer_free(writer);
-		fclose(wfd);
-	} else {
-		LILV_ERRORF("Failed to open %s for writing (%s)\n",
-		            manifest_path, strerror(errno));
-	}
+	write_manifest(lworld, env, model, &manifest);
 
 	sord_free(model);
 	serd_node_free(&file);
