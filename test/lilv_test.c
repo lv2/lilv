@@ -1806,14 +1806,19 @@ test_state(void)
 		scratch_dir, copy_dir, link_dir, "state/fstate.lv2",
 		get_port_value, world, 0, ffeatures);
 
-	// Get another instance state
-	LilvState* fstate2 = lilv_state_new_from_instance(
-		plugin, instance, &map,
-		scratch_dir, copy_dir, link_dir, "state/fstate2.lv2",
-		get_port_value, world, 0, ffeatures);
+	{
+		// Get another instance state
+		LilvState* fstate2 = lilv_state_new_from_instance(
+			plugin, instance, &map,
+			scratch_dir, copy_dir, link_dir, "state/fstate2.lv2",
+			get_port_value, world, 0, ffeatures);
 
-	// Should be identical
-	TEST_ASSERT(lilv_state_equals(fstate, fstate2));
+		// Check that it is identical
+		TEST_ASSERT(lilv_state_equals(fstate, fstate2));
+
+		lilv_state_delete(world, fstate2);
+		lilv_state_free(fstate2);
+	}
 
 	// Run, writing more to rec file
 	lilv_instance_run(instance, 2);
@@ -1878,8 +1883,28 @@ test_state(void)
 	TEST_ASSERT(lilv_state_equals(fstate72, fstate7));
 	TEST_ASSERT(!lilv_state_equals(fstate6, fstate72));
 
-	// Delete saved state
+	// Delete saved state we still have a state in memory that points to
 	lilv_state_delete(world, fstate7);
+	lilv_state_delete(world, fstate6);
+	lilv_state_delete(world, fstate5);
+	lilv_state_delete(world, fstate3);
+	lilv_state_delete(world, fstate);
+	lilv_state_delete(world, state2);
+	lilv_state_delete(world, state);
+
+	// Delete remaining states on disk we've lost a reference to
+	const char* const old_state_paths[] = {"state/state.lv2/state.ttl",
+	                                       "state/state.lv2/state2.ttl",
+	                                       "state/fstate.lv2/fstate.ttl",
+	                                       NULL};
+
+	for (const char*const* p = old_state_paths; *p; ++p) {
+		const char* path = *p;
+		LilvState*  old_state =
+			lilv_state_new_from_file(world, &map, NULL, path);
+		lilv_state_delete(world, old_state);
+		lilv_state_free(old_state);
+	}
 
 	lilv_instance_deactivate(instance);
 	lilv_instance_free(instance);
@@ -1893,13 +1918,14 @@ test_state(void)
 	lilv_state_free(state4);
 	lilv_state_free(state5);
 	lilv_state_free(fstate);
-	lilv_state_free(fstate2);
 	lilv_state_free(fstate3);
 	lilv_state_free(fstate4);
 	lilv_state_free(fstate5);
 	lilv_state_free(fstate6);
 	lilv_state_free(fstate7);
 	lilv_state_free(fstate72);
+
+	rmdir("state");
 
 	// Free URI map
 	for (size_t i = 0; i < n_uris; ++i) {
