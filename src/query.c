@@ -32,7 +32,9 @@ typedef enum {
 static LilvLangMatch
 lilv_lang_matches(const char* a, const char* b)
 {
-	if (!strcmp(a, b)) {
+	if (!a || !b) {
+		return LILV_LANG_MATCH_NONE;
+	} else if (!strcmp(a, b)) {
 		return LILV_LANG_MATCH_EXACT;
 	}
 
@@ -60,27 +62,25 @@ lilv_nodes_from_stream_objects_i18n(LilvWorld*    world,
 	FOREACH_MATCH(stream) {
 		const SordNode* value = sord_iter_get_node(stream, field);
 		if (sord_node_get_type(value) == SORD_LITERAL) {
-			const char*   lang = sord_node_get_language(value);
-			LilvLangMatch lm   = LILV_LANG_MATCH_NONE;
-			if (lang) {
-				lm = (syslang)
-					? lilv_lang_matches(lang, syslang)
-					: LILV_LANG_MATCH_PARTIAL;
-			} else {
-				nolang = value;
-				if (!syslang) {
-					lm = LILV_LANG_MATCH_EXACT;
-				}
-			}
+			const char* lang = sord_node_get_language(value);
 
-			if (lm == LILV_LANG_MATCH_EXACT) {
-				// Exact language match, add to results
-				zix_tree_insert((ZixTree*)values,
-				                lilv_node_new_from_node(world, value),
-				                NULL);
-			} else if (lm == LILV_LANG_MATCH_PARTIAL) {
-				// Partial language match, save in case we find no exact
-				partial = value;
+			if (!lang) {
+				nolang = value;
+			} else {
+				switch (lilv_lang_matches(lang, syslang)) {
+				case LILV_LANG_MATCH_EXACT:
+					// Exact language match, add to results
+					zix_tree_insert((ZixTree*)values,
+					                lilv_node_new_from_node(world, value),
+					                NULL);
+					break;
+				case LILV_LANG_MATCH_PARTIAL:
+					// Partial language match, save in case we find no exact
+					partial = value;
+					break;
+				case LILV_LANG_MATCH_NONE:
+					break;
+				}
 			}
 		} else {
 			zix_tree_insert((ZixTree*)values,
