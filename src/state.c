@@ -1256,17 +1256,16 @@ lilv_state_delete(LilvWorld*       world,
 		model, state->uri->node, world->uris.rdfs_seeAlso, NULL, NULL);
 	if (file) {
 		// Remove state file
-		char* path =
-			(char*)serd_file_uri_parse(sord_node_get_string(file), NULL);
+		const uint8_t* uri  = sord_node_get_string(file);
+		char*          path = (char*)serd_file_uri_parse(uri, NULL);
 		try_unlink(state->dir, path);
 		serd_free(path);
 	}
 
 	// Remove any existing manifest entries for this state
-	remove_manifest_entry(
-		world->world, model, lilv_node_as_string(state->uri));
-	remove_manifest_entry(
-		world->world, world->model, lilv_node_as_string(state->uri));
+	const char* state_uri_str = lilv_node_as_string(state->uri);
+	remove_manifest_entry(world->world, model, state_uri_str);
+	remove_manifest_entry(world->world, world->model, state_uri_str);
 
 	// Drop bundle from model
 	lilv_world_unload_bundle(world, bundle);
