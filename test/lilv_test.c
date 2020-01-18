@@ -1734,35 +1734,38 @@ test_state(void)
 	                      "state/state6.lv2", "state6.ttl");
 	TEST_ASSERT(!ret);
 
-	// Load default bundle into world and load state from it
-	uint8_t*  state6_path       = (uint8_t*)lilv_path_absolute("state/state6.lv2/");
-	SerdNode  state6_uri        = serd_node_new_file_uri(state6_path, 0, 0, true);
-	LilvNode* test_state_bundle = lilv_new_uri(world, (const char*)state6_uri.buf);
-	LilvNode* test_state_node   = lilv_new_uri(world, state_uri);
-	lilv_world_load_bundle(world, test_state_bundle);
-	lilv_world_load_resource(world, test_state_node);
-	serd_node_free(&state6_uri);
-	lilv_free(state6_path);
+	// Load state bundle into world and verify it matches
+	{
+		uint8_t*  state6_path   = (uint8_t*)lilv_path_absolute("state/state6.lv2/");
+		SerdNode  state6_uri    = serd_node_new_file_uri(state6_path, 0, 0, true);
+		LilvNode* state6_bundle = lilv_new_uri(world, (const char*)state6_uri.buf);
+		LilvNode* state6_node   = lilv_new_uri(world, state_uri);
+		lilv_world_load_bundle(world, state6_bundle);
+		lilv_world_load_resource(world, state6_node);
+		serd_node_free(&state6_uri);
+		lilv_free(state6_path);
 
-	LilvState* state6 = lilv_state_new_from_world(world, &map, test_state_node);
-	TEST_ASSERT(lilv_state_equals(state, state6));  // Round trip accuracy
+		LilvState* state6 = lilv_state_new_from_world(world, &map, state6_node);
+		TEST_ASSERT(lilv_state_equals(state, state6));  // Round trip accuracy
 
-	// Check that loaded state has correct URI
-	TEST_ASSERT(lilv_state_get_uri(state6));
-	TEST_ASSERT(!strcmp(lilv_node_as_string(lilv_state_get_uri(state6)),
-	                    state_uri));
+		// Check that loaded state has correct URI
+		TEST_ASSERT(lilv_state_get_uri(state6));
+		TEST_ASSERT(!strcmp(lilv_node_as_string(lilv_state_get_uri(state6)),
+		                    state_uri));
 
-	lilv_world_unload_resource(world, test_state_node);
-	lilv_world_unload_bundle(world, test_state_bundle);
+		// Unload state from world
+		lilv_world_unload_resource(world, state6_node);
+		lilv_world_unload_bundle(world, state6_bundle);
 
-	LilvState* state6_2 = lilv_state_new_from_world(world, &map, test_state_node);
-	TEST_ASSERT(!state6_2);  // No longer present
-	lilv_state_free(state6_2);
+		// Ensure that it is no longer present
+		TEST_ASSERT(!lilv_state_new_from_world(world, &map, state6_node));
+		lilv_node_free(state6_bundle);
+		lilv_node_free(state6_node);
 
-	lilv_node_free(test_state_bundle);
-	lilv_node_free(test_state_node);
-
-	unsetenv("LV2_STATE_BUNDLE");
+		// Delete state
+		lilv_state_delete(world, state6);
+		lilv_state_free(state6);
+	}
 
 	// Make directories and test files support
 	mkdir("temp", 0700);
@@ -1889,7 +1892,6 @@ test_state(void)
 	lilv_state_free(state3);
 	lilv_state_free(state4);
 	lilv_state_free(state5);
-	lilv_state_free(state6);
 	lilv_state_free(fstate);
 	lilv_state_free(fstate2);
 	lilv_state_free(fstate3);

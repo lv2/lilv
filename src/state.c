@@ -1276,13 +1276,24 @@ lilv_state_delete(LilvWorld*       world,
 		try_unlink(state->dir, manifest_path);
 
 		// Remove all known files from state bundle
-		for (ZixTreeIter* i = zix_tree_begin(state->abs2rel);
-		     i != zix_tree_end(state->abs2rel);
-		     i = zix_tree_iter_next(i)) {
-			const PathMap* pm   = (const PathMap*)zix_tree_get(i);
-			char*          path = lilv_path_join(state->dir, pm->rel);
-			try_unlink(state->dir, path);
-			free(path);
+		if (state->abs2rel) {
+			// State created from instance, get paths from map
+			for (ZixTreeIter* i = zix_tree_begin(state->abs2rel);
+			     i != zix_tree_end(state->abs2rel);
+			     i = zix_tree_iter_next(i)) {
+				const PathMap* pm   = (const PathMap*)zix_tree_get(i);
+				char*          path = lilv_path_join(state->dir, pm->rel);
+				try_unlink(state->dir, path);
+				free(path);
+			}
+		} else {
+			// State loaded from model, get paths from loaded properties
+			for (uint32_t i = 0; i < state->props.n; ++i) {
+				const Property* const p = &state->props.props[i];
+				if (p->type == state->atom_Path) {
+					try_unlink(state->dir, (const char*)p->value);
+				}
+			}
 		}
 
 		if (rmdir(state->dir)) {
