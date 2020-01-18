@@ -1305,8 +1305,13 @@ lilv_state_delete(LilvWorld*       world,
 			            state->dir, strerror(errno));
 		}
 	} else {
-		// Still something in the manifest, reload bundle
+		// Still something in the manifest, update and reload bundle
+		const SerdNode* manifest_node = sord_node_to_serd_node(manifest->node);
+		SerdEnv*        env           = serd_env_new(manifest_node);
+
+		write_manifest(world, env, model, manifest_node);
 		lilv_world_load_bundle(world, bundle);
+		serd_env_free(env);
 	}
 
 	sord_free(model);
