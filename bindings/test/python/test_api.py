@@ -341,14 +341,13 @@ class QueryTests(unittest.TestCase):
                 None, self.world.ns.rdf.type, self.world.ns.lv2.Plugin
             )
         )
-        self.assertLess(
-            0,
-            len(
-                self.world.find_nodes(
-                    None, self.world.ns.rdf.type, self.world.ns.lv2.Plugin
-                )
-            ),
+        plugin_nodes = self.world.find_nodes(
+            None, self.world.ns.rdf.type, self.world.ns.lv2.Plugin
         )
+
+        self.assertLess(0, len(plugin_nodes))
+        self.assertTrue(self.plugins[0] in plugin_nodes)
+
         self.assertEqual(
             self.plugin.get_uri(),
             self.world.get(

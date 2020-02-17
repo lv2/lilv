@@ -1101,6 +1101,9 @@ class Nodes(Collection):
             c.nodes_free(self.collection)
 
     def __contains__(self, value):
+        if type(value) in [Plugin, PluginClass, UI]:
+            value = value.get_uri()
+
         return c.nodes_contains(self.collection, value.node)
 
     def __len__(self):
