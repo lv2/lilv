@@ -1,9 +1,9 @@
 """Lilv Python interface"""
 
 __author__ = "David Robillard"
-__copyright__ = "Copyright 2016-2019 David Robillard"
+__copyright__ = "Copyright 2016-2020 David Robillard"
 __license__ = "ISC"
-__version__ = "0.24.5"
+__version__ = "0.24.7"
 __maintainer__ = "David Robillard"
 __email__ = "d@drobilla.net"
 __status__ = "Production"
@@ -816,7 +816,7 @@ class Node(Structure):
         Returns None if value is not a file URI."""
         c_str = c.node_get_path(self.node, hostname)
         string = cast(c_str, c_char_p).value.decode("utf-8")
-        if sys.platform != 'win32': # TODO: Memory comes from libserd
+        if sys.platform != "win32":  # TODO: Memory comes from libserd
             c.free(c_str)
         return string
 

@@ -1,4 +1,4 @@
-# Copyright 2016-2019 David Robillard <d@drobilla.net>
+# Copyright 2016-2020 David Robillard <d@drobilla.net>
 # Copyright 2013 Kaspar Emanuel <kaspar.emanuel@gmail.com>
 #
 # Permission to use, copy, modify, and/or distribute this software for any
