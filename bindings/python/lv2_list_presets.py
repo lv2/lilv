@@ -21,10 +21,8 @@ def print_presets(uri):
     preset_list = []
     for preset in presets:
         world.load_resource(preset)
-        labels = world.find_nodes(preset, world.ns.rdfs.label, None)
-        label = str(labels[0]) if len(labels) > 0 else ""
-
-        if not label:
+        label = world.get(preset, world.ns.rdfs.label, None)
+        if label is None:
             sys.stderr.write("warning: Preset <%s> has no label\n" % preset)
 
         preset_list.append((str(preset), str(label)))
