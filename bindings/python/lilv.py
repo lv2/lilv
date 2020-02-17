@@ -36,6 +36,13 @@ class _LilvLib:
 c = _LilvLib()
 
 
+def _is_string(obj):
+    if sys.version_info[0] == 3:
+        return isinstance(obj, str)
+    else:
+        return isinstance(obj, basestring)
+
+
 def _as_uri(obj):
     """Utility function for converting some object into a URI node"""
     if type(obj) in [Plugin, PluginClass, UI]:
@@ -336,8 +343,8 @@ class Plugin(Structure):
         Note this function is slower than get_port_by_index(),
         especially on plugins with a very large number of ports.
         """
-        assert type(symbol) == str or isinstance(symbol, Node)
-        if type(symbol) == str:
+        assert _is_string(symbol) or isinstance(symbol, Node)
+        if _is_string(symbol):
             symbol = self.world.new_string(symbol)
 
         assert isinstance(symbol, Node)
@@ -671,7 +678,7 @@ class UI(Structure):
         return str(self.get_uri())
 
     def __eq__(self, other):
-        if type(other) == str or type(other) == Node:
+        if _is_string(other) or type(other) == Node:
             return self.get_uri() == other
 
         return self.get_uri() == other.get_uri()
@@ -1119,7 +1126,7 @@ class Namespace:
 
     def __init__(self, world, prefix):
         assert isinstance(world, World)
-        assert type(prefix) == str
+        assert _is_string(prefix)
 
         self.world = world
         self.prefix = prefix
@@ -1526,7 +1533,7 @@ class VariadicFunction(object):
 class String(str):
     # Wrapper for string parameters to pass as raw C UTF-8 strings
     def from_param(cls, obj):
-        assert isinstance(obj, str)
+        assert _is_string(obj)
         return obj.encode("utf-8")
 
     from_param = classmethod(from_param)
