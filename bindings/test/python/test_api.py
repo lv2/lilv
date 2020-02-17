@@ -125,6 +125,7 @@ class PluginClassesTests(unittest.TestCase):
         self.assertIsNotNone(pclass)
         self.assertTrue(pclass in classes)
         self.assertTrue(pclass.get_uri() in classes)
+        self.assertTrue("http://lv2plug.in/ns/lv2core#Plugin" in classes)
         self.assertGreater(len(classes), 1)
         self.assertIsNotNone(classes[0])
         self.assertIsNotNone(classes[pclass.get_uri()])
@@ -145,7 +146,14 @@ class LoadTests(unittest.TestCase):
         plugin = plugins.get(plugins.begin())
         self.world.load_resource(plugin)
         self.world.unload_resource(plugin)
+        self.world.load_resource(plugin.get_uri())
+        self.world.unload_resource(plugin.get_uri())
+        self.world.load_resource(str(plugin.get_uri()))
+        self.world.unload_resource(str(plugin.get_uri()))
         self.world.unload_bundle(self.bundle_uri)
+        self.world.unload_bundle(str(self.bundle_uri))
+        with self.assertRaises(ValueError):
+            self.world.unload_bundle(4)
 
 
 class PluginTests(unittest.TestCase):
@@ -164,7 +172,9 @@ class PluginTests(unittest.TestCase):
         self.assertTrue(self.plugin.verify())
         self.assertTrue(self.plugin in self.plugins)
         self.assertTrue(self.plugin.get_uri() in self.plugins)
+        self.assertTrue(str(self.plugin.get_uri()) in self.plugins)
         self.assertEqual(self.plugins[self.plugin.get_uri()], self.plugin)
+        self.assertEqual(self.plugins[str(self.plugin.get_uri())], self.plugin)
         with self.assertRaises(KeyError):
             self.plugins["http://example.org/notaplugin"].get_uri()
 
@@ -181,6 +191,9 @@ class PluginTests(unittest.TestCase):
         self.lv2_OutputPort = self.world.new_uri(lilv.LILV_URI_OUTPUT_PORT)
         self.lv2_AudioPort = self.world.new_uri(lilv.LILV_URI_AUDIO_PORT)
         self.lv2_ControlPort = self.world.new_uri(lilv.LILV_URI_CONTROL_PORT)
+        self.params_amplitude = self.world.new_uri(
+            "http://lv2plug.in/ns/ext/parameters#amplitude"
+        )
 
     def testGetters(self):
         self.assertEqual(
@@ -197,6 +210,10 @@ class PluginTests(unittest.TestCase):
         licenses = self.plugin.get_value(self.world.ns.doap.license)
         features = self.plugin.get_value(self.world.ns.lv2.optionalFeature)
         self.assertEqual(len(licenses), 1)
+        self.assertEqual(
+            self.plugin.get_value("http://usefulinc.com/ns/doap#license")[0],
+            licenses[0],
+        )
         self.assertTrue(licenses[0] in licenses)
         with self.assertRaises(IndexError):
             self.assertIsNone(licenses[len(licenses)])
@@ -211,6 +228,11 @@ class PluginTests(unittest.TestCase):
         self.assertTrue(
             self.plugin.has_feature(self.world.ns.lv2.hardRTCapable)
         )
+        self.assertTrue(
+            self.plugin.has_feature(
+                "http://lv2plug.in/ns/lv2core#hardRTCapable"
+            )
+        )
         self.assertEqual(len(self.plugin.get_supported_features()), 1)
         self.assertEqual(len(self.plugin.get_optional_features()), 1)
         self.assertEqual(len(self.plugin.get_required_features()), 0)
@@ -218,6 +240,9 @@ class PluginTests(unittest.TestCase):
             self.plugin.has_extension_data(
                 self.world.new_uri("http://example.org/nope")
             )
+        )
+        self.assertFalse(
+            self.plugin.has_extension_data("http://example.org/nope")
         )
         self.assertEqual(len(self.plugin.get_extension_data()), 0)
         self.assertEqual(len(self.plugin.get_extension_data()), 0)
@@ -246,6 +271,12 @@ class PluginTests(unittest.TestCase):
                 self.lv2_OutputPort, self.params_amplitude
             )
         )
+        self.assertIsNotNone(
+            self.plugin.get_port_by_designation(
+                "http://lv2plug.in/ns/lv2core#OutputPort",
+                "http://lv2plug.in/ns/ext/parameters#amplitude",
+            )
+        )
         self.assertIsNone(self.plugin.get_project())
         self.assertIsNone(self.plugin.get_author_name())
         self.assertIsNone(self.plugin.get_author_email())
@@ -260,6 +291,9 @@ class PluginTests(unittest.TestCase):
             ),
         )
         self.assertEqual(
+            0, len(self.plugin.get_related("http://example.org/Type")),
+        )
+        self.assertEqual(
             1,
             self.plugin.get_num_ports_of_class(
                 self.lv2_InputPort, self.lv2_AudioPort
@@ -269,10 +303,20 @@ class PluginTests(unittest.TestCase):
         self.assertEqual(self.world.get_symbol(port), "input")
         self.assertTrue(port.get_node().is_blank())
         self.assertEqual(0, port.get(self.world.ns.lv2.index))
+        self.assertEqual(0, port.get("http://lv2plug.in/ns/lv2core#index"))
         self.assertEqual(1, len(port.get_value(self.world.ns.lv2.symbol)))
+        self.assertEqual(
+            1, len(port.get_value("http://lv2plug.in/ns/lv2core#symbol"))
+        )
         self.assertEqual(port.get_value(self.world.ns.lv2.symbol)[0], "input")
         self.assertFalse(port.has_property(self.world.ns.lv2.latency))
+        self.assertFalse(
+            port.has_property("http://lv2plug.in/ns/lv2core#latency")
+        )
         self.assertFalse(port.supports_event(self.world.ns.midi.MidiEvent))
+        self.assertFalse(
+            port.supports_event("http://lv2plug.in/ns/ext/midi#MidiEvent")
+        )
         self.assertEqual(0, port.get_index())
         self.assertEqual("input", port.get_symbol())
         self.assertEqual("Input", port.get_name())
@@ -284,6 +328,7 @@ class PluginTests(unittest.TestCase):
             sorted(list(map(str, port.get_classes()))),
         )
         self.assertTrue(port.is_a(self.world.ns.lv2.ControlPort))
+        self.assertTrue(port.is_a("http://lv2plug.in/ns/lv2core#ControlPort"))
         self.assertFalse(port.is_a(self.world.ns.lv2.AudioPort))
         self.assertEqual((0.5, 0.0, 1.0), port.get_range())
         self.assertEqual(0, len(port.get_properties()))
@@ -321,6 +366,13 @@ class PluginTests(unittest.TestCase):
             1,
             self.plugin.get_num_ports_of_class(
                 self.lv2_InputPort, self.lv2_ControlPort
+            ),
+        )
+        self.assertEqual(
+            1,
+            self.plugin.get_num_ports_of_class(
+                "http://lv2plug.in/ns/lv2core#InputPort",
+                "http://lv2plug.in/ns/lv2core#ControlPort",
             ),
         )
 
@@ -365,7 +417,7 @@ class InstanceTests(unittest.TestCase):
     def setUp(self):
         self.world = lilv.World()
         self.bundle_uri = self.world.new_uri(location)
-        self.world.load_bundle(self.bundle_uri)
+        self.world.load_bundle(str(self.bundle_uri))
         self.plugins = self.world.get_all_plugins()
         self.plugin = self.plugins[0]
         self.instance = lilv.Instance(self.plugin, 48000)
@@ -424,7 +476,11 @@ class UITests(unittest.TestCase):
             uis[0].get_binary_uri(), str(self.bundle_uri) + "TODO"
         )
         self.assertEqual(uis[uis[0].get_uri()], uis[0])
+        self.assertEqual(uis[str(ui_uri)], uis[0])
         self.assertTrue(uis[0].is_a(self.world.ns.ui.GtkUI))
+        self.assertTrue(
+            uis[0].is_a("http://lv2plug.in/ns/extensions/ui#GtkUI")
+        )
         self.assertTrue(uis[0] in uis)
         self.assertTrue(uis[0].get_uri() in uis)
         self.assertEqual([self.world.ns.ui.GtkUI], list(uis[0].get_classes()))

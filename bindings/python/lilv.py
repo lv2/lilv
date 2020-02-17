@@ -43,14 +43,22 @@ def _is_string(obj):
         return isinstance(obj, basestring)
 
 
-def _as_uri(obj):
+def _as_uri(world, obj):
     """Utility function for converting some object into a URI node"""
     if type(obj) in [Plugin, PluginClass, UI]:
         return obj.get_uri()
-    else:
-        assert type(obj) == Node
+
+    if _is_string(obj):
+        if len(obj) == 0:
+            raise ValueError("empty string given where URI is required")
+
+        return world.new_uri(obj)
+
+    if type(obj) == Node:
         assert obj.node
         return Node(obj.world, c.node_duplicate(obj.node))
+
+    raise ValueError("%s given where URI is required" % type(obj))
 
 
 # LV2 types
@@ -226,9 +234,8 @@ class Plugin(Structure):
         May return None if the property was not found, or if object(s) is not
         sensibly represented as a LilvNodes (e.g. blank nodes).
         """
-        return Nodes(
-            self.world, c.plugin_get_value(self.plugin, predicate.node), True
-        )
+        p = _as_uri(self.world, predicate)
+        return Nodes(self.world, c.plugin_get_value(self.plugin, p.node), True)
 
     def has_feature(self, feature_uri):
         """Return whether a feature is supported by a plugin.
@@ -236,7 +243,8 @@ class Plugin(Structure):
         This will return true if the feature is an optional or required feature
         of the plugin.
         """
-        return c.plugin_has_feature(self.plugin, feature_uri.node)
+        f = _as_uri(self.world, feature_uri)
+        return c.plugin_has_feature(self.plugin, f.node)
 
     def get_supported_features(self):
         """Get the LV2 Features supported (required or optionally) by a plugin.
@@ -279,7 +287,8 @@ class Plugin(Structure):
 
     def has_extension_data(self, uri):
         """Return whether or not a plugin provides specific extension data."""
-        return c.plugin_has_extension_data(self.plugin, uri.node)
+        u = _as_uri(self.world, uri)
+        return c.plugin_has_extension_data(self.plugin, u.node)
 
     def get_extension_data(self):
         """Get a sequence of all extension data provided by a plugin.
@@ -297,8 +306,10 @@ class Plugin(Structure):
 
     def get_num_ports_of_class(self, *args):
         """Get the number of ports of some class(es) on this plugin."""
+        classes = list(map(lambda n: _as_uri(self.world, n), args))
+        c_nodes = list(map(lambda n: n.node, classes))
         return c.plugin_get_num_ports_of_class(
-            self.plugin, *(list(map(lambda n: n.node, args)) + [None])
+            self.plugin, *(c_nodes + [None])
         )
 
     def has_latency(self):
@@ -363,11 +374,11 @@ class Plugin(Structure):
         input and output ports for a particular designation.  If `port_class`
         is None, any port with the given designation will be returned.
         """
+        pc = _as_uri(self.world, port_class)
+        d = _as_uri(self.world, designation)
         return Port.wrap(
             self,
-            c.plugin_get_port_by_designation(
-                self.plugin, port_class.node, designation.node
-            ),
+            c.plugin_get_port_by_designation(self.plugin, pc.node, d.node),
         )
 
     def get_project(self):
@@ -422,8 +433,9 @@ class Plugin(Structure):
         To actually load the data for each returned resource, use
         world.load_resource().
         """
+        t = _as_uri(self.world, resource_type)
         return Nodes(
-            self.world, c.plugin_get_related(self.plugin, resource_type), True
+            self.world, c.plugin_get_related(self.plugin, t.node), True
         )
 
     def get_uis(self):
@@ -506,9 +518,10 @@ class Port(Structure):
 
     def get_value(self, predicate):
         """Port analog of Plugin.get_value()."""
+        p = _as_uri(self.plugin.world, predicate)
         return Nodes(
             self.plugin.world,
-            c.port_get_value(self.plugin.plugin, self.port, predicate.node),
+            c.port_get_value(self.plugin.plugin, self.port, p.node),
             True,
         )
 
@@ -519,9 +532,10 @@ class Port(Structure):
         but is simpler to use in the common case of only caring about one
         value.  The caller is responsible for freeing the returned node.
         """
+        p = _as_uri(self.plugin.world, predicate)
         return Node.wrap(
             self.plugin.world,
-            c.port_get(self.plugin.plugin, self.port, predicate.node),
+            c.port_get(self.plugin.plugin, self.port, p.node),
         )
 
     def get_properties(self):
@@ -534,9 +548,8 @@ class Port(Structure):
 
     def has_property(self, property_uri):
         """Return whether a port has a certain property."""
-        return c.port_has_property(
-            self.plugin.plugin, self.port, property_uri.node
-        )
+        p = _as_uri(self.plugin.world, property_uri)
+        return c.port_has_property(self.plugin.plugin, self.port, p.node)
 
     def supports_event(self, event_type):
         """Return whether a port supports a certain event type.
@@ -544,9 +557,8 @@ class Port(Structure):
         More precisely, this returns true iff the port has an atom:supports or
         an ev:supportsEvent property with `event_type` as the value.
         """
-        return c.port_supports_event(
-            self.plugin.plugin, self.port, event_type.node
-        )
+        t = _as_uri(self.plugin.world, event_type)
+        return c.port_supports_event(self.plugin.plugin, self.port, t.node)
 
     def get_index(self):
         """Get the index of a port.
@@ -599,7 +611,8 @@ class Port(Structure):
         convenience, but this function is designed so that Lilv is usable with
         any port types without requiring explicit support in Lilv.
         """
-        return c.port_is_a(self.plugin.plugin, self.port, port_class.node)
+        k = _as_uri(self.plugin.world, port_class)
+        return c.port_is_a(self.plugin.plugin, self.port, k.node)
 
     def get_range(self):
         """Return the default, minimum, and maximum values of a port as a tuple.
@@ -697,7 +710,8 @@ class UI(Structure):
 
     def is_a(self, class_uri):
         """Check whether a plugin UI has a given type."""
-        return c.ui_is_a(self.ui, class_uri.node)
+        u = _as_uri(self.world, class_uri)
+        return c.ui_is_a(self.ui, u.node)
 
     def get_bundle_uri(self):
         """Get the URI of the UI's bundle."""
@@ -953,7 +967,7 @@ class Plugins(Collection):
         self.world = world
 
     def __contains__(self, key):
-        return bool(self.get_by_uri(_as_uri(key)))
+        return bool(self.get_by_uri(_as_uri(self.world, key)))
 
     def __len__(self):
         return c.plugins_size(self.collection)
@@ -969,11 +983,9 @@ class Plugins(Collection):
         return plugin
 
     def get_by_uri(self, uri):
-        if type(uri) == str:
-            uri = self.world.new_uri(uri)
-
+        u = _as_uri(self.world, uri)
         return Plugin.wrap(
-            self.world, c.plugins_get_by_uri(self.collection, uri.node)
+            self.world, c.plugins_get_by_uri(self.collection, u.node)
         )
 
 
@@ -1000,7 +1012,7 @@ class PluginClasses(Collection):
             c.plugin_classes_free(self.collection)
 
     def __contains__(self, key):
-        return bool(self.get_by_uri(_as_uri(key)))
+        return bool(self.get_by_uri(_as_uri(self.world, key)))
 
     def __len__(self):
         return c.plugin_classes_size(self.collection)
@@ -1016,10 +1028,9 @@ class PluginClasses(Collection):
         return klass
 
     def get_by_uri(self, uri):
-        if type(uri) == str:
-            uri = self.world.new_uri(uri)
+        u = _as_uri(self.world, uri)
 
-        plugin_class = c.plugin_classes_get_by_uri(self.collection, uri.node)
+        plugin_class = c.plugin_classes_get_by_uri(self.collection, u.node)
         return PluginClass(self.world, plugin_class) if plugin_class else None
 
 
@@ -1050,7 +1061,7 @@ class UIs(Collection):
             c.uis_free(self.collection)
 
     def __contains__(self, uri):
-        return bool(self.get_by_uri(_as_uri(uri)))
+        return bool(self.get_by_uri(_as_uri(self.world, uri)))
 
     def __len__(self):
         return c.uis_size(self.collection)
@@ -1066,10 +1077,8 @@ class UIs(Collection):
         return ui
 
     def get_by_uri(self, uri):
-        if type(uri) == str:
-            uri = self.world.new_uri(uri)
-
-        ui = c.uis_get_by_uri(self.collection, uri.node)
+        u = _as_uri(self.world, uri)
+        ui = c.uis_get_by_uri(self.collection, u.node)
         return UI(self.world, ui) if ui else None
 
 
@@ -1224,7 +1233,8 @@ class World(Structure):
         unchanged between (or even during) program invocations. Plugins (among
         other things) MUST be identified by URIs (not paths) in save files.
         """
-        c.world_load_bundle(self.world, bundle_uri.node)
+        u = _as_uri(self, bundle_uri)
+        c.world_load_bundle(self.world, u.node)
 
     def load_specifications(self):
         """Load all specifications from currently loaded bundles.
@@ -1252,18 +1262,19 @@ class World(Structure):
         have been separately loaded with load_resource(), they must be
         separately unloaded with unload_resource().
         """
-        return c.world_unload_bundle(self.world, bundle_uri.node)
+        u = _as_uri(self, bundle_uri)
+        return c.world_unload_bundle(self.world, u.node)
 
     def load_resource(self, resource):
         """Load all the data associated with the given `resource`.
 
-        The resource must be a subject (i.e. a URI or a blank node).
+        The resource parameter must be a URI.
         Returns the number of files parsed, or -1 on error.
 
         All accessible data files linked to `resource` with rdfs:seeAlso will
         be loaded into the world model.
         """
-        uri = _as_uri(resource)
+        uri = _as_uri(self, resource)
         ret = c.world_load_resource(self.world, uri.node)
         return ret
 
@@ -1275,7 +1286,7 @@ class World(Structure):
         This unloads all data loaded by a previous call to
         load_resource() with the given `resource`.
         """
-        uri = _as_uri(resource)
+        uri = _as_uri(self, resource)
         ret = c.world_unload_resource(self.world, uri.node)
         return ret
 
@@ -1359,7 +1370,7 @@ class World(Structure):
         if isinstance(subject, Port):
             return subject.get_symbol()
 
-        uri = _as_uri(subject)
+        uri = _as_uri(self, subject)
         ret = ""
         if uri is not None:
             node = c.world_get_symbol(self.world, uri.node)
@@ -1372,7 +1383,7 @@ class World(Structure):
         """Create a new URI node."""
         c_node = c.new_uri(self.world, uri)
         if not c_node:
-            raise ValueError("Invalid URI '%s'" % uri)
+            raise ValueError("invalid URI '%s'" % uri)
 
         return Node.wrap(self, c_node)
 

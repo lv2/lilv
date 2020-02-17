@@ -1,5 +1,6 @@
 lilv (0.24.7) unstable;
 
+  * Allow passing strings for URIs in Python API when unambiguous
   * Fix cases where incorrect translation is used
   * Fix deleting state bundles loaded from the model
   * Fix memory leak when dyn-manifest has no plugins (thanks Michael Fisher)
