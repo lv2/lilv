@@ -241,6 +241,11 @@ class PluginTests(unittest.TestCase):
                 self.world.ns.lv2.InputPort, self.world.ns.lv2.control
             )
         )
+        self.assertIsNotNone(
+            self.plugin.get_port_by_designation(
+                self.lv2_OutputPort, self.params_amplitude
+            )
+        )
         self.assertIsNone(self.plugin.get_project())
         self.assertIsNone(self.plugin.get_author_name())
         self.assertIsNone(self.plugin.get_author_email())

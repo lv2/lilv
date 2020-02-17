@@ -41,6 +41,7 @@
 		a lv2:OutputPort ,
 			lv2:ControlPort ;
 		lv2:index 1 ;
+		lv2:designation <http://lv2plug.in/ns/ext/parameters#amplitude> ;
 		lv2:symbol "output" ;
 		lv2:name "Output"
     ] , [
