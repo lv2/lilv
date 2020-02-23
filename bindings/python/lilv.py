@@ -1152,6 +1152,9 @@ class Namespace:
     def __str__(self):
         return self.prefix
 
+    def __coerce__(self, ignored):
+        return None
+
     def __getattr__(self, suffix):
         return self.world.new_uri(self.prefix + suffix)
 
