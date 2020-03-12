@@ -95,10 +95,11 @@ typedef void LilvNodes;          /**< set<Node>. */
 
 /**
    @defgroup lilv Lilv
-   Lilv is a simple yet powerful C API for using LV2 plugins.
 
-   For more information about LV2, see <http://lv2plug.in>.
-   For more information about Lilv, see <http://drobilla.net/software/lilv>.
+   A library for discovering and using LV2 plugins.
+
+   For more information about LV2, see <http://lv2plug.in/>.
+
    @{
 */
 
