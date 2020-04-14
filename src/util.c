@@ -37,7 +37,7 @@
 #    include <io.h>
 #    define F_OK 0
 #    define mkdir(path, flags) _mkdir(path)
-#    if (defined(_MSC_VER) && _MSC_VER <= 1400) || defined(__MINGW64__) || defined(__MINGW32__)
+#    if (defined(_MSC_VER) && _MSC_VER <= 1400)
 /** Implement 'CreateSymbolicLink()' for MSVC 8 or earlier */
 #ifdef __cplusplus
 extern "C"
