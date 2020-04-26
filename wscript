@@ -12,7 +12,7 @@ from waflib.extras import autowaf
 # major increment <=> incompatible changes
 # minor increment <=> compatible changes (additions)
 # micro increment <=> no interface changes
-LILV_VERSION       = '0.24.7'
+LILV_VERSION       = '0.24.8'
 LILV_MAJOR_VERSION = '0'
 
 # Mandatory waf variables
@@ -88,7 +88,7 @@ def configure(conf):
     if not conf.env.BUILD_SHARED and not conf.env.BUILD_STATIC:
         conf.fatal('Neither a shared nor a static build requested')
 
-    conf.check_pkg('lv2 >= 1.17.0', uselib_store='LV2')
+    conf.check_pkg('lv2 >= 1.18.0', uselib_store='LV2')
     conf.check_pkg('serd-0 >= 0.30.0', uselib_store='SERD')
     conf.check_pkg('sord-0 >= 0.14.0', uselib_store='SORD')
     conf.check_pkg('sratom-0 >= 0.4.0', uselib_store='SRATOM')

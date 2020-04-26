@@ -1,4 +1,4 @@
-lilv (0.24.7) unstable;
+lilv (0.24.8) stable;
 
   * Allow passing strings for URIs in Python API when unambiguous
   * Fix cases where incorrect translation is used
@@ -6,7 +6,7 @@ lilv (0.24.7) unstable;
   * Fix memory leak when dyn-manifest has no plugins (thanks Michael Fisher)
   * Implement state:freePath feature
 
- -- David Robillard <d@drobilla.net>  Sat, 18 Jan 2020 16:34:41 +0000
+ -- David Robillard <d@drobilla.net>  Sun, 26 Apr 2020 17:55:26 +0200
 
 lilv (0.24.6) stable;
 
