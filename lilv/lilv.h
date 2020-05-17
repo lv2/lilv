@@ -516,6 +516,9 @@ lilv_plugins_get_by_uri(const LilvPlugins* plugins,
 LILV_API LilvWorld*
 lilv_world_new(void);
 
+LILV_API int
+lilv_world_dump(const LilvWorld* world, FILE* file);
+
 /**
    Enable/disable language filtering.
    Language filtering applies to any functions that return (a) value(s).

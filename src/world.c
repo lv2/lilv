@@ -182,6 +182,42 @@ lilv_world_free(LilvWorld* world)
 	free(world);
 }
 
+int
+lilv_world_dump(const LilvWorld* world, FILE* file)
+{
+	SerdEnv* env = serd_env_new(NULL);
+
+#define USTR(s) ((const uint8_t*)(s))
+	serd_env_set_prefix_from_strings(env, USTR("doap"), USTR(LILV_NS_DOAP));
+	serd_env_set_prefix_from_strings(env, USTR("foaf"), USTR(LILV_NS_FOAF));
+	serd_env_set_prefix_from_strings(env, USTR("lv2"),  USTR(LILV_NS_LV2));
+	serd_env_set_prefix_from_strings(env, USTR("owl"),  USTR(LILV_NS_OWL));
+	serd_env_set_prefix_from_strings(env, USTR("rdf"),  USTR(LILV_NS_RDF));
+	serd_env_set_prefix_from_strings(env, USTR("rdfs"), USTR(LILV_NS_RDFS));
+	serd_env_set_prefix_from_strings(env, USTR("xsd"),  USTR(LILV_NS_XSD));
+
+	SerdWriter* writer = serd_writer_new(
+		SERD_TURTLE,
+		(SerdStyle)(SERD_STYLE_ABBREVIATED|SERD_STYLE_CURIED),
+		env,
+		NULL,
+		serd_file_sink,
+		file);
+
+	// Write prefixes
+	serd_env_foreach(
+		env, (SerdPrefixSink)serd_writer_set_prefix, writer);
+
+	// Write model
+	SordIter* i = sord_begin(world->model);
+	sord_write_iter(i, writer);
+
+	serd_writer_free(writer);
+	serd_env_free(env);
+
+	return 0;
+}
+
 void
 lilv_world_set_option(LilvWorld*      world,
                       const char*     uri,

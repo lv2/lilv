@@ -20,6 +20,7 @@
 
 #include <stdbool.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 static void
@@ -87,6 +88,14 @@ main(int argc, char** argv)
 	const LilvPlugins* plugins = lilv_world_get_all_plugins(world);
 
 	list_plugins(plugins, show_names);
+
+	char* home = getenv("HOME");
+	char dump_path[1024] = {0};
+	strcat(dump_path, home);
+	strcat(dump_path, "/lv2dump.ttl");
+	FILE* dump = fopen(dump_path, "w");
+	lilv_world_dump(world, dump);
+	fclose(dump);
 
 	lilv_world_free(world);
 
