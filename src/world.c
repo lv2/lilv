@@ -240,6 +240,26 @@ lilv_world_get(LilvWorld*      world,
                const LilvNode* predicate,
                const LilvNode* object)
 {
+	if (!object) {
+		// TODO: Improve performance (see lilv_plugin_get_one)
+		SordIter* stream = sord_search(world->model,
+		                               subject   ? subject->node : NULL,
+		                               predicate ? predicate->node : NULL,
+		                               NULL,
+		                               NULL);
+
+		LilvNodes* nodes =
+		    lilv_nodes_from_stream_objects(world, stream, SORD_OBJECT);
+
+		if (nodes) {
+			LilvNode* value = lilv_node_duplicate(lilv_nodes_get_first(nodes));
+			lilv_nodes_free(nodes);
+			return value;
+		}
+
+		return NULL;
+	}
+
 	SordNode* snode = sord_get(world->model,
 	                           subject   ? subject->node   : NULL,
 	                           predicate ? predicate->node : NULL,
