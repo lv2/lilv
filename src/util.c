@@ -29,16 +29,8 @@
 #include "serd/serd.h"
 
 #ifdef _WIN32
-#ifndef _WIN32_WINNT
-#    define _WIN32_WINNT 0x0600  /* for CreateSymbolicLink */
-#endif
-#    include <windows.h>
-#    include <direct.h>
-#    include <io.h>
 #    define F_OK 0
-#    define mkdir(path, flags) _mkdir(path)
-#    if (defined(_MSC_VER) && _MSC_VER <= 1400) || defined(__MINGW64__) || defined(__MINGW32__)
-/** Implement 'CreateSymbolicLink()' for MSVC 8 or earlier */
+/** Implement 'CreateSymbolicLink()' for Windows XP/2003 and earlier */
 #ifdef __cplusplus
 extern "C"
 #endif
@@ -51,7 +43,6 @@ CreateSymbolicLink(LPCTSTR linkpath, LPCTSTR targetpath, DWORD flags)
 	                                  "CreateSymbolicLinkA");
 	return pfn ? pfn(linkpath, targetpath, flags) : 0;
 }
-#    endif
 #else
 #    include <dirent.h>
 #    include <unistd.h>
