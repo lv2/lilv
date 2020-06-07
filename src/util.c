@@ -39,9 +39,14 @@ _CreateSymbolicLink(LPCTSTR linkpath, LPCTSTR targetpath, DWORD flags)
 {
 	typedef BOOLEAN (WINAPI* PFUNC)(LPCTSTR, LPCTSTR, DWORD);
 
-	PFUNC pfn = (PFUNC)GetProcAddress(GetModuleHandle(TEXT("kernel32.dll")),
-	                                  "CreateSymbolicLinkA");
-	return pfn ? pfn(linkpath, targetpath, flags) : 0;
+	static PFUNC pfn = NULL;
+
+	if (pfn == NULL) {
+		pfn = (PFUNC)GetProcAddress(GetModuleHandle(TEXT("kernel32.dll")),
+		                            "CreateSymbolicLinkA");
+		if (pfn == NULL) return 0;
+	}
+	return pfn(linkpath, targetpath, flags);
 }
 #else
 #    include <dirent.h>
