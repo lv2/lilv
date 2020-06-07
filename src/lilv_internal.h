@@ -34,9 +34,6 @@ extern "C" {
 #include <stdlib.h>
 
 #ifdef _WIN32
-#    undef _WIN32_WINNT
-/** Force XP/2003 for excluding CreateSymbolicLinkA/W **/
-#    define _WIN32_WINNT 0x0500
 #    include <windows.h>
 #    include <direct.h>
 #    include <stdio.h>
