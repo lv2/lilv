@@ -35,7 +35,7 @@
 extern "C"
 #endif
 static BOOLEAN WINAPI
-CreateSymbolicLink(LPCTSTR linkpath, LPCTSTR targetpath, DWORD flags)
+_CreateSymbolicLink(LPCTSTR linkpath, LPCTSTR targetpath, DWORD flags)
 {
 	typedef BOOLEAN (WINAPI* PFUNC)(LPCTSTR, LPCTSTR, DWORD);
 
@@ -485,7 +485,7 @@ lilv_symlink(const char* oldpath, const char* newpath)
 	int ret = 0;
 	if (strcmp(oldpath, newpath)) {
 #ifdef _WIN32
-		ret = !CreateSymbolicLink(newpath, oldpath, 0);
+		ret = !_CreateSymbolicLink(newpath, oldpath, 0);
 		if (ret) {
 			ret = !CreateHardLink(newpath, oldpath, 0);
 		}
