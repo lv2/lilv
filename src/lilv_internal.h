@@ -34,13 +34,18 @@ extern "C" {
 #include <stdlib.h>
 
 #ifdef _WIN32
+#    undef _WIN32_WINNT
+/** Force XP/2003 for excluding CreateSymbolicLinkA/W **/
+#    define _WIN32_WINNT 0x0500
 #    include <windows.h>
 #    include <direct.h>
 #    include <stdio.h>
+#    include <io.h>
 #    define dlopen(path, flags) LoadLibrary(path)
 #    define dlclose(lib)        FreeLibrary((HMODULE)lib)
 #    define unlink(path)        _unlink(path)
 #    define rmdir(path)         _rmdir(path)
+#    define mkdir(path, flags)  _mkdir(path)
 #    ifdef _MSC_VER
 #        define __func__ __FUNCTION__
 #        ifndef snprintf
