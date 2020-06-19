@@ -106,18 +106,24 @@ def configure(conf):
                         header_name = ['sys/stat.h'],
                         defines     = defines,
                         define_name = 'HAVE_LSTAT',
+                        return_type = 'int',
+                        arg_types   = 'const char*, struct stat*',
                         mandatory   = False)
 
     conf.check_function('c', 'flock',
                         header_name = 'sys/file.h',
                         defines     = defines,
                         define_name = 'HAVE_FLOCK',
+                        return_type = 'int',
+                        arg_types   = 'int, int',
                         mandatory   = False)
 
     conf.check_function('c', 'fileno',
                         header_name = 'stdio.h',
                         defines     = defines,
                         define_name = 'HAVE_FILENO',
+                        return_type = 'int',
+                        arg_types   = 'FILE*',
                         mandatory   = False)
 
     conf.check_function('c', 'clock_gettime',
@@ -126,6 +132,8 @@ def configure(conf):
                         define_name  = 'HAVE_CLOCK_GETTIME',
                         uselib_store = 'CLOCK_GETTIME',
                         lib          = rt_lib,
+                        return_type  = 'int',
+                        arg_types    = 'clockid_t, struct timespec*',
                         mandatory    = False)
 
     conf.check_cc(define_name = 'HAVE_LIBDL',
