@@ -29,29 +29,11 @@
 #include "serd/serd.h"
 
 #ifdef _WIN32
-#ifndef _WIN32_WINNT
-#    define _WIN32_WINNT 0x0600  /* for CreateSymbolicLink */
-#endif
 #    include <windows.h>
 #    include <direct.h>
 #    include <io.h>
 #    define F_OK 0
 #    define mkdir(path, flags) _mkdir(path)
-#    if (defined(_MSC_VER) && _MSC_VER <= 1400) || defined(__MINGW64__) || defined(__MINGW32__)
-/** Implement 'CreateSymbolicLink()' for MSVC 8 or earlier */
-#ifdef __cplusplus
-extern "C"
-#endif
-static BOOLEAN WINAPI
-CreateSymbolicLink(LPCTSTR linkpath, LPCTSTR targetpath, DWORD flags)
-{
-	typedef BOOLEAN (WINAPI* PFUNC)(LPCTSTR, LPCTSTR, DWORD);
-
-	PFUNC pfn = (PFUNC)GetProcAddress(GetModuleHandle(TEXT("kernel32.dll")),
-	                                  "CreateSymbolicLinkA");
-	return pfn ? pfn(linkpath, targetpath, flags) : 0;
-}
-#    endif
 #else
 #    include <dirent.h>
 #    include <unistd.h>
@@ -494,7 +476,9 @@ lilv_symlink(const char* oldpath, const char* newpath)
 	int ret = 0;
 	if (strcmp(oldpath, newpath)) {
 #ifdef _WIN32
+#ifdef HAVE_CREATESYMBOLICLINK
 		ret = !CreateSymbolicLink(newpath, oldpath, 0);
+#endif
 		if (ret) {
 			ret = !CreateHardLink(newpath, oldpath, 0);
 		}
