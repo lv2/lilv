@@ -18,6 +18,8 @@
 #define _POSIX_C_SOURCE 200809L /* for setenv */
 #define _XOPEN_SOURCE   600     /* for mkstemp */
 
+#include "lilv_test_utils.h"
+
 #include "../src/lilv_internal.h"
 
 #ifdef _WIN32
@@ -60,225 +62,37 @@
 #    define SHLIB_EXT ".so"
 #endif
 
-static char test_bundle_path[TEST_PATH_MAX + sizeof("/.lv2/lilv-test.lv2")];
-static char test_bundle_uri[sizeof(test_bundle_path) + sizeof("file:///")];
-static char test_manifest_path[sizeof(test_bundle_path) + sizeof("/manifest.ttl")];
-static char test_content_path[sizeof(test_bundle_path) + sizeof("plugin.ttl")];
-
-static LilvWorld* world;
-
-int test_count  = 0;
-int error_count = 0;
-
-static void
-delete_bundle(void)
-{
-	unlink(test_content_path);
-	unlink(test_manifest_path);
-	remove(test_bundle_path);
-}
-
-static void
-init_tests(void)
-{
-	char* test_path = lilv_realpath(LILV_TEST_DIR);
-
-	snprintf(test_bundle_path, sizeof(test_bundle_path),
-	         "%s/test_lv2_path/lilv-test.lv2", test_path);
-	lilv_mkdir_p(test_bundle_path);
-
-	SerdNode s = serd_node_new_file_uri(
-		(const uint8_t*)test_bundle_path, NULL, NULL, true);
-
-	snprintf(test_bundle_uri, sizeof(test_bundle_uri), "%s/",
-	         (const char*)s.buf);
-	snprintf(test_manifest_path, sizeof(test_manifest_path), "%s/manifest.ttl",
-	         test_bundle_path);
-	snprintf(test_content_path, sizeof(test_content_path), "%s/plugin.ttl",
-	         test_bundle_path);
-
-	serd_node_free(&s);
-	lilv_free(test_path);
-
-	delete_bundle();
-}
-
-static void
-fatal_error(const char* fmt, ...)
-{
-	va_list args;
-	va_start(args, fmt);
-	fprintf(stderr, "error: ");
-	vfprintf(stderr, fmt, args);
-	va_end(args);
-	exit(1);
-}
-
-static void
-write_file(const char* name, const char* content)
-{
-	FILE* f = fopen(name, "w");
-	size_t len = strlen(content);
-	if (fwrite(content, 1, len, f) != len) {
-		fatal_error("Failed to write to file '%s' (%s)\n",
-		            name, strerror(errno));
-	}
-	fclose(f);
-}
-
-static int
-init_world(void)
-{
-	world = lilv_world_new();
-
-	// Set custom LV2_PATH in build directory to only use test data
-	char*     test_path = lilv_realpath(LILV_TEST_DIR);
-	char*     lv2_path  = lilv_strjoin(test_path, "/test_lv2_path", NULL);
-	LilvNode* path      = lilv_new_string(world, lv2_path);
-	lilv_world_set_option(world, LILV_OPTION_LV2_PATH, path);
-	free(lv2_path);
-	free(test_path);
-	lilv_node_free(path);
-
-	return world != NULL;
-}
-
-static int
-load_all_bundles(void)
-{
-	if (!init_world()) {
-		return 0;
-	}
-	lilv_world_load_all(world);
-	return 1;
-}
-
-static void
-create_bundle(const char* manifest, const char* content)
-{
-	if (mkdir(test_bundle_path, 0700) && errno != EEXIST) {
-		fatal_error("Failed to create directory '%s' (%s)\n",
-		            test_bundle_path, strerror(errno));
-	}
-	write_file(test_manifest_path, manifest);
-	write_file(test_content_path, content);
-}
-
-static int
-start_bundle(const char* manifest, const char* content)
-{
-	create_bundle(manifest, content);
-	return load_all_bundles();
-}
-
-static void
-unload_bundle(void)
-{
-	if (world) {
-		lilv_world_free(world);
-	}
-	world = NULL;
-}
-
-static void
-cleanup(void)
-{
-	delete_bundle();
-}
-
-static void
-set_env(const char* name, const char* value)
-{
-#ifdef _WIN32
-	// setenv on Windows does not modify the current process' environment
-	const size_t len = strlen(name) + 1 + strlen(value) + 1;
-	char*        str = (char*)calloc(1, len);
-	snprintf(str, len, "%s=%s", name, value);
-	putenv(str);
-	free(str);
-#else
-	setenv(name, value, 1);
-#endif
-}
-
-/*****************************************************************************/
-
 #define TEST_CASE(name) { #name, test_##name }
 #define TEST_ASSERT(check) do {\
-	test_count++;\
 	if (!(check)) {\
-		error_count++;\
 		fprintf(stderr, "lilv_test.c:%d: error: test `%s' failed\n", __LINE__, #check);\
 		abort();\
 	}\
 } while (0)
 
-typedef int (*TestFunc)(void);
+typedef int (*TestFunc)(LilvTestEnv*);
 
 struct TestCase {
 	const char* title;
 	TestFunc func;
 };
 
-#define PREFIX_ATOM "@prefix atom: <http://lv2plug.in/ns/ext/atom#> . \n"
-#define PREFIX_LINE "@prefix : <http://example.org/> .\n"
-#define PREFIX_LV2 "@prefix lv2: <http://lv2plug.in/ns/lv2core#> .\n"
-#define PREFIX_LV2EV "@prefix lv2ev: <http://lv2plug.in/ns/ext/event#> . \n"
-#define PREFIX_LV2UI "@prefix lv2ui: <http://lv2plug.in/ns/extensions/ui#> .\n"
-#define PREFIX_RDF "@prefix rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .\n"
-#define PREFIX_RDFS "@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .\n"
-#define PREFIX_FOAF "@prefix foaf: <http://xmlns.com/foaf/0.1/> .\n"
-#define PREFIX_DOAP "@prefix doap: <http://usefulinc.com/ns/doap#> .\n"
-#define PREFIX_PSET "@prefix pset: <http://lv2plug.in/ns/ext/presets#> .\n"
-
-#define MANIFEST_PREFIXES PREFIX_LINE PREFIX_LV2 PREFIX_RDFS
-#define BUNDLE_PREFIXES PREFIX_ATOM PREFIX_LINE PREFIX_LV2 PREFIX_RDF PREFIX_RDFS PREFIX_FOAF PREFIX_DOAP PREFIX_PSET
-#define PLUGIN_NAME(name) "doap:name \"" name "\""
-#define LICENSE_GPL "doap:license <http://usefulinc.com/doap/licenses/gpl>"
-
-static const char* uris_plugin = "http://example.org/plug";
-static LilvNode* plugin_uri_value;
-static LilvNode* plugin2_uri_value;
-
-/*****************************************************************************/
-
-static void
-init_uris(void)
-{
-	plugin_uri_value = lilv_new_uri(world, uris_plugin);
-	plugin2_uri_value = lilv_new_uri(world, "http://example.org/foobar");
-	TEST_ASSERT(plugin_uri_value);
-	TEST_ASSERT(plugin2_uri_value);
-}
-
-static void
-cleanup_uris(void)
-{
-	lilv_node_free(plugin2_uri_value);
-	lilv_node_free(plugin_uri_value);
-	plugin2_uri_value = NULL;
-	plugin_uri_value = NULL;
-}
-
-/*****************************************************************************/
-
 static int
-test_value(void)
+test_value(LilvTestEnv* env)
 {
-	if (!start_bundle(MANIFEST_PREFIXES
+	LilvWorld* const world = env->world;
+
+	if (start_bundle(env, MANIFEST_PREFIXES
 			":plug a lv2:Plugin ; lv2:binary <foo" SHLIB_EXT "> ; rdfs:seeAlso <plugin.ttl> .\n",
-			BUNDLE_PREFIXES
+			PLUGIN_PREFIXES
 			":plug a lv2:Plugin ; a lv2:CompressorPlugin ; "
-			PLUGIN_NAME("Test plugin") " ; "
-			LICENSE_GPL " ; "
+			"doap:name \"Test plugin\" ;"
 			"lv2:port [ "
 			"  a lv2:ControlPort ; a lv2:InputPort ; "
 			"  lv2:index 0 ; lv2:symbol \"foo\" ; lv2:name \"Foo\" ; "
 			"] .")) {
-		return 0;
+		return 1;
 	}
-
-	init_uris();
 
 	LilvNode* uval = lilv_new_uri(world, "http://example.org");
 	LilvNode* sval = lilv_new_string(world, "Foo");
@@ -400,14 +214,14 @@ test_value(void)
 	lilv_node_free(uval_dup);
 	lilv_node_free(nil2);
 
-	cleanup_uris();
-	return 1;
+	delete_bundle(env);
+	return 0;
 }
 
 /*****************************************************************************/
 
 static int
-test_util(void)
+test_util(LilvTestEnv* env)
 {
 	TEST_ASSERT(!lilv_realpath(NULL));
 
@@ -434,7 +248,7 @@ test_util(void)
 	TEST_ASSERT(!lilv_file_equals("does/not/exist", b_path));
 	TEST_ASSERT(!lilv_file_equals(a_path, "does/not/exist"));
 	TEST_ASSERT(!lilv_file_equals("does/not/exist", "/does/not/either"));
-	return 1;
+	return 0;
 }
 
 /*****************************************************************************/
@@ -442,12 +256,12 @@ test_util(void)
 static int discovery_plugin_found = 0;
 
 static void
-discovery_verify_plugin(const LilvPlugin* plugin)
+discovery_verify_plugin(const LilvTestEnv* env, const LilvPlugin* plugin)
 {
 	const LilvNode* value = lilv_plugin_get_uri(plugin);
-	if (lilv_node_equals(value, plugin_uri_value)) {
+	if (lilv_node_equals(value, env->plugin1_uri)) {
 		const LilvNode* lib_uri = NULL;
-		TEST_ASSERT(!lilv_node_equals(value, plugin2_uri_value));
+		TEST_ASSERT(!lilv_node_equals(value, env->plugin2_uri));
 		discovery_plugin_found = 1;
 		lib_uri = lilv_plugin_get_library_uri(plugin);
 		TEST_ASSERT(lib_uri);
@@ -459,27 +273,26 @@ discovery_verify_plugin(const LilvPlugin* plugin)
 }
 
 static int
-test_discovery(void)
+test_discovery(LilvTestEnv* env)
 {
-	if (!start_bundle(MANIFEST_PREFIXES
+	LilvWorld* const world = env->world;
+
+	if (start_bundle(env, MANIFEST_PREFIXES
 			":plug a lv2:Plugin ; lv2:binary <foo" SHLIB_EXT "> ; rdfs:seeAlso <plugin.ttl> .\n",
-			BUNDLE_PREFIXES
+			PLUGIN_PREFIXES
 			":plug a lv2:Plugin ;"
-			PLUGIN_NAME("Test plugin") " ; "
-			LICENSE_GPL " ; "
+			"doap:name \"Test plugin\" ;"
 			"lv2:port [ a lv2:ControlPort ; a lv2:InputPort ;"
 			" lv2:index 0 ; lv2:symbol \"foo\" ; lv2:name \"bar\" ; ] .")) {
-		return 0;
+		return 1;
 	}
-
-	init_uris();
 
 	const LilvPlugins* plugins = lilv_world_get_all_plugins(world);
 	TEST_ASSERT(lilv_plugins_size(plugins) > 0);
 
-	const LilvPlugin* explug = lilv_plugins_get_by_uri(plugins, plugin_uri_value);
+	const LilvPlugin* explug = lilv_plugins_get_by_uri(plugins, env->plugin1_uri);
 	TEST_ASSERT(explug != NULL);
-	const LilvPlugin* explug2 = lilv_plugins_get_by_uri(plugins, plugin2_uri_value);
+	const LilvPlugin* explug2 = lilv_plugins_get_by_uri(plugins, env->plugin2_uri);
 	TEST_ASSERT(explug2 == NULL);
 
 	if (explug) {
@@ -490,81 +303,82 @@ test_discovery(void)
 
 	discovery_plugin_found = 0;
 	LILV_FOREACH(plugins, i, plugins)
-		discovery_verify_plugin(lilv_plugins_get(plugins, i));
+		discovery_verify_plugin(env, lilv_plugins_get(plugins, i));
 
 	TEST_ASSERT(discovery_plugin_found);
 	plugins = NULL;
 
-	cleanup_uris();
-
-	return 1;
+	return 0;
 }
 
 /*****************************************************************************/
 
 static int
-test_verify(void)
+test_verify(LilvTestEnv* env)
 {
-	if (!start_bundle(MANIFEST_PREFIXES
+	LilvWorld* const world = env->world;
+
+	if (start_bundle(env, MANIFEST_PREFIXES
 			":plug a lv2:Plugin ; lv2:binary <foo" SHLIB_EXT "> ; rdfs:seeAlso <plugin.ttl> .\n",
-			BUNDLE_PREFIXES
+			PLUGIN_PREFIXES
 			":plug a lv2:Plugin ; "
-			PLUGIN_NAME("Test plugin") " ; "
-			LICENSE_GPL " ; "
+			"doap:name \"Test plugin\" ;"
 			"lv2:port [ a lv2:ControlPort ; a lv2:InputPort ;"
 			" lv2:index 0 ; lv2:symbol \"foo\" ; lv2:name \"bar\" ] .")) {
-		return 0;
+		return 1;
 	}
 
-	init_uris();
 	const LilvPlugins* plugins = lilv_world_get_all_plugins(world);
-	const LilvPlugin* explug = lilv_plugins_get_by_uri(plugins, plugin_uri_value);
+	const LilvPlugin* explug = lilv_plugins_get_by_uri(plugins, env->plugin1_uri);
 	TEST_ASSERT(explug);
 	TEST_ASSERT(lilv_plugin_verify(explug));
-	cleanup_uris();
-	return 1;
+
+	delete_bundle(env);
+	return 0;
 }
 
 /*****************************************************************************/
 
 static int
-test_no_verify(void)
+test_no_verify(LilvTestEnv* env)
 {
-	if (!start_bundle(MANIFEST_PREFIXES
+	LilvWorld* const world = env->world;
+
+	if (start_bundle(env, MANIFEST_PREFIXES
 			":plug a lv2:Plugin ; lv2:binary <foo" SHLIB_EXT "> ; rdfs:seeAlso <plugin.ttl> .\n",
-			BUNDLE_PREFIXES
+			PLUGIN_PREFIXES
 			":plug a lv2:Plugin . ")) {
-		return 0;
+		return 1;
 	}
 
-	init_uris();
 	const LilvPlugins* plugins = lilv_world_get_all_plugins(world);
-	const LilvPlugin* explug = lilv_plugins_get_by_uri(plugins, plugin_uri_value);
+	const LilvPlugin* explug = lilv_plugins_get_by_uri(plugins, env->plugin1_uri);
 	TEST_ASSERT(explug);
 	TEST_ASSERT(!lilv_plugin_verify(explug));
-	cleanup_uris();
-	return 1;
+
+	delete_bundle(env);
+	return 0;
 }
 
 /*****************************************************************************/
 
 static int
-test_classes(void)
+test_classes(LilvTestEnv* env)
 {
-	if (!start_bundle(MANIFEST_PREFIXES
+	LilvWorld* const world = env->world;
+
+	if (start_bundle(env, MANIFEST_PREFIXES
 			":plug a lv2:Plugin ; lv2:binary <foo" SHLIB_EXT "> ; rdfs:seeAlso <plugin.ttl> .\n",
-			BUNDLE_PREFIXES
+			PLUGIN_PREFIXES
 			":plug a lv2:Plugin ; a lv2:CompressorPlugin ; "
-			PLUGIN_NAME("Test plugin") " ; "
-			LICENSE_GPL " ; "
+			"doap:name \"Test plugin\" ;"
 			"lv2:port [ "
 			"  a lv2:ControlPort ; a lv2:InputPort ; "
 			"  lv2:index 0 ; lv2:symbol \"foo\" ; lv2:name \"Foo\" ; "
 			"] .")) {
-		return 0;
+		return 1;
 	}
 
-	init_uris();
 	const LilvPluginClass*   plugin   = lilv_world_get_plugin_class(world);
 	const LilvPluginClasses* classes  = lilv_world_get_plugin_classes(world);
 	LilvPluginClasses*       children = lilv_plugin_class_get_children(plugin);
@@ -589,21 +403,22 @@ test_classes(void)
 
 	lilv_plugin_class_free(NULL);
 
-	cleanup_uris();
-	return 1;
+	delete_bundle(env);
+	return 0;
 }
 
 /*****************************************************************************/
 
 static int
-test_plugin(void)
+test_plugin(LilvTestEnv* env)
 {
-	if (!start_bundle(MANIFEST_PREFIXES
+	LilvWorld* const world = env->world;
+
+	if (start_bundle(env, MANIFEST_PREFIXES
 			":plug a lv2:Plugin ; lv2:binary <foo" SHLIB_EXT "> ; rdfs:seeAlso <plugin.ttl> .\n",
-			BUNDLE_PREFIXES
+			PLUGIN_PREFIXES
 			":plug a lv2:Plugin ; a lv2:CompressorPlugin ; "
-			PLUGIN_NAME("Test plugin") " ; "
-			LICENSE_GPL " ; "
+			"doap:name \"Test plugin\" ;"
 			"lv2:optionalFeature lv2:hardRTCapable ; "
 			"lv2:requiredFeature <http://lv2plug.in/ns/ext/event> ; "
 			"lv2:extensionData <http://example.org/extdata> ;"
@@ -628,12 +443,11 @@ test_plugin(void)
 			"  lv2:designation lv2:latency "
 			"] . \n"
 			":thing doap:name \"Something else\" .\n")) {
-		return 0;
+		return 1;
 	}
 
-	init_uris();
 	const LilvPlugins* plugins = lilv_world_get_all_plugins(world);
-	const LilvPlugin* plug = lilv_plugins_get_by_uri(plugins, plugin_uri_value);
+	const LilvPlugin* plug = lilv_plugins_get_by_uri(plugins, env->plugin1_uri);
 	TEST_ASSERT(plug);
 
 	const LilvPluginClass* klass = lilv_plugin_get_class(plug);
@@ -653,7 +467,7 @@ test_plugin(void)
 	TEST_ASSERT(!lilv_plugin_get_related(plug, NULL));
 
 	const LilvNode* plug_bundle_uri = lilv_plugin_get_bundle_uri(plug);
-	TEST_ASSERT(!strcmp(lilv_node_as_string(plug_bundle_uri), test_bundle_uri));
+	TEST_ASSERT(!strcmp(lilv_node_as_string(plug_bundle_uri), env->test_bundle_uri));
 
 	const LilvNodes* data_uris = lilv_plugin_get_data_uris(plug);
 	TEST_ASSERT(lilv_nodes_size(data_uris) == 2);
@@ -827,21 +641,23 @@ test_plugin(void)
 	lilv_node_free(audio_class);
 	lilv_node_free(in_class);
 	lilv_node_free(out_class);
-	cleanup_uris();
-	return 1;
+
+	delete_bundle(env);
+	return 0;
 }
 
 /*****************************************************************************/
 
 static int
-test_project(void)
+test_project(LilvTestEnv* env)
 {
-	if (!start_bundle(MANIFEST_PREFIXES
+	LilvWorld* const world = env->world;
+
+	if (start_bundle(env, MANIFEST_PREFIXES
 			":plug a lv2:Plugin ; lv2:binary <foo" SHLIB_EXT "> ; rdfs:seeAlso <plugin.ttl> .\n",
-			BUNDLE_PREFIXES
+			PLUGIN_PREFIXES
 			":plug a lv2:Plugin ; a lv2:CompressorPlugin ; "
-			PLUGIN_NAME("Test plugin with project") " ; "
-			LICENSE_GPL " ; "
+			"doap:name \"Test plugin with project\" ;"
 			"lv2:project [ "
 			"  doap:maintainer [ "
 			"    foaf:name \"David Robillard\" ; "
@@ -862,12 +678,11 @@ test_project(void)
 			"  lv2:designation lv2:latency "
 			"] . \n"
 			":thing doap:name \"Something else\" .\n")) {
-		return 0;
+		return 1;
 	}
 
-	init_uris();
 	const LilvPlugins* plugins = lilv_world_get_all_plugins(world);
-	const LilvPlugin* plug = lilv_plugins_get_by_uri(plugins, plugin_uri_value);
+	const LilvPlugin* plug = lilv_plugins_get_by_uri(plugins, env->plugin1_uri);
 	TEST_ASSERT(plug);
 
 	LilvNode* author_name = lilv_plugin_get_author_name(plug);
@@ -882,21 +697,22 @@ test_project(void)
 	TEST_ASSERT(!strcmp(lilv_node_as_string(author_homepage), "http://drobilla.net"));
 	lilv_node_free(author_homepage);
 
-	cleanup_uris();
-	return 1;
+	delete_bundle(env);
+	return 0;
 }
 
 /*****************************************************************************/
 
 static int
-test_no_author(void)
+test_no_author(LilvTestEnv* env)
 {
-	if (!start_bundle(MANIFEST_PREFIXES
+	LilvWorld* const world = env->world;
+
+	if (start_bundle(env, MANIFEST_PREFIXES
 			":plug a lv2:Plugin ; lv2:binary <foo" SHLIB_EXT "> ; rdfs:seeAlso <plugin.ttl> .\n",
-			BUNDLE_PREFIXES
+			PLUGIN_PREFIXES
 			":plug a lv2:Plugin ; a lv2:CompressorPlugin ; "
-			PLUGIN_NAME("Test plugin with project") " ; "
-			LICENSE_GPL " ; "
+			"doap:name \"Test plugin with project\" ;"
 			"lv2:port [ "
 			"  a lv2:ControlPort ; a lv2:InputPort ; "
 			"  lv2:index 0 ; lv2:symbol \"foo\" ; lv2:name \"bar\" ; "
@@ -912,12 +728,12 @@ test_no_author(void)
 			"  lv2:designation lv2:latency "
 			"] . \n"
 			":thing doap:name \"Something else\" .\n")) {
-		return 0;
+		return 1;
 	}
 
-	init_uris();
+
 	const LilvPlugins* plugins = lilv_world_get_all_plugins(world);
-	const LilvPlugin* plug = lilv_plugins_get_by_uri(plugins, plugin_uri_value);
+	const LilvPlugin* plug = lilv_plugins_get_by_uri(plugins, env->plugin1_uri);
 	TEST_ASSERT(plug);
 
 	LilvNode* author_name = lilv_plugin_get_author_name(plug);
@@ -929,21 +745,22 @@ test_no_author(void)
 	LilvNode* author_homepage = lilv_plugin_get_author_homepage(plug);
 	TEST_ASSERT(!author_homepage);
 
-	cleanup_uris();
-	return 1;
+	delete_bundle(env);
+	return 0;
 }
 
 /*****************************************************************************/
 
 static int
-test_project_no_author(void)
+test_project_no_author(LilvTestEnv* env)
 {
-	if (!start_bundle(MANIFEST_PREFIXES
+	LilvWorld* const world = env->world;
+
+	if (start_bundle(env, MANIFEST_PREFIXES
 			":plug a lv2:Plugin ; lv2:binary <foo" SHLIB_EXT "> ; rdfs:seeAlso <plugin.ttl> .\n",
-			BUNDLE_PREFIXES
+			PLUGIN_PREFIXES
 			":plug a lv2:Plugin ; a lv2:CompressorPlugin ; "
-			PLUGIN_NAME("Test plugin with project") " ; "
-			LICENSE_GPL " ; "
+			"doap:name \"Test plugin with project\" ;"
 			"lv2:project [ "
 			"  doap:name \"Fake project\" ;"
 			"] ; "
@@ -962,12 +779,11 @@ test_project_no_author(void)
 			"  lv2:designation lv2:latency "
 			"] . \n"
 			":thing doap:name \"Something else\" .\n")) {
-		return 0;
+		return 1;
 	}
 
-	init_uris();
 	const LilvPlugins* plugins = lilv_world_get_all_plugins(world);
-	const LilvPlugin* plug = lilv_plugins_get_by_uri(plugins, plugin_uri_value);
+	const LilvPlugin* plug = lilv_plugins_get_by_uri(plugins, env->plugin1_uri);
 	TEST_ASSERT(plug);
 
 	LilvNode* author_name = lilv_plugin_get_author_name(plug);
@@ -979,21 +795,22 @@ test_project_no_author(void)
 	LilvNode* author_homepage = lilv_plugin_get_author_homepage(plug);
 	TEST_ASSERT(!author_homepage);
 
-	cleanup_uris();
-	return 1;
+	delete_bundle(env);
+	return 0;
 }
 
 /*****************************************************************************/
 
 static int
-test_preset(void)
+test_preset(LilvTestEnv* env)
 {
-	if (!start_bundle(MANIFEST_PREFIXES
+	LilvWorld* const world = env->world;
+
+	if (start_bundle(env, MANIFEST_PREFIXES
 			":plug a lv2:Plugin ; lv2:binary <foo" SHLIB_EXT "> ; rdfs:seeAlso <plugin.ttl> .\n",
-			BUNDLE_PREFIXES
+			PLUGIN_PREFIXES
 			":plug a lv2:Plugin ; a lv2:CompressorPlugin ; "
-			PLUGIN_NAME("Test plugin with project") " ; "
-			LICENSE_GPL " ; "
+			"doap:name \"Test plugin with project\" ;"
 			"lv2:project [ "
 			"  doap:name \"Fake project\" ;"
 			"] ; "
@@ -1014,12 +831,11 @@ test_preset(void)
 			"<http://example.org/preset> a pset:Preset ;"
 			"  lv2:appliesTo :plug ;"
 	                  "  rdfs:label \"some preset\" .\n")) {
-		return 0;
+		return 1;
 	}
 
-	init_uris();
 	const LilvPlugins* plugins = lilv_world_get_all_plugins(world);
-	const LilvPlugin*  plug    = lilv_plugins_get_by_uri(plugins, plugin_uri_value);
+	const LilvPlugin*  plug    = lilv_plugins_get_by_uri(plugins, env->plugin1_uri);
 	TEST_ASSERT(plug);
 
 	LilvNode*  pset_Preset = lilv_new_uri(world, LV2_PRESETS__Preset);
@@ -1029,21 +845,23 @@ test_preset(void)
 
 	lilv_node_free(pset_Preset);
 	lilv_nodes_free(related);
-	cleanup_uris();
-	return 1;
+
+	delete_bundle(env);
+	return 0;
 }
 
 /*****************************************************************************/
 
 static int
-test_prototype(void)
+test_prototype(LilvTestEnv* env)
 {
-	if (!start_bundle(MANIFEST_PREFIXES
+	LilvWorld* const world = env->world;
+
+	if (start_bundle(env, MANIFEST_PREFIXES
 			":prot a lv2:PluginBase ; rdfs:seeAlso <plugin.ttl> .\n"
 			":plug a lv2:Plugin ; lv2:binary <inst" SHLIB_EXT "> ; lv2:prototype :prot .\n",
-			BUNDLE_PREFIXES
+			PLUGIN_PREFIXES
 			":prot a lv2:Plugin ; a lv2:CompressorPlugin ; "
-			LICENSE_GPL " ; "
 			"lv2:project [ "
 			"  doap:name \"Fake project\" ;"
 			"] ; "
@@ -1062,12 +880,11 @@ test_prototype(void)
 			"  lv2:designation lv2:latency "
 			"] . \n"
 			":plug doap:name \"Instance\" .\n")) {
-		return 0;
+		return 1;
 	}
 
-	init_uris();
 	const LilvPlugins* plugins = lilv_world_get_all_plugins(world);
-	const LilvPlugin*  plug    = lilv_plugins_get_by_uri(plugins, plugin_uri_value);
+	const LilvPlugin*  plug    = lilv_plugins_get_by_uri(plugins, env->plugin1_uri);
 	TEST_ASSERT(plug);
 
 	// Test non-inherited property
@@ -1079,21 +896,23 @@ test_prototype(void)
 	const LilvNode* binary = lilv_plugin_get_library_uri(plug);
 	TEST_ASSERT(strstr(lilv_node_as_string(binary), "inst" SHLIB_EXT));
 
-	cleanup_uris();
-	return 1;
+	delete_bundle(env);
+	return 0;
 }
 
 /*****************************************************************************/
 
 static int
-test_port(void)
+test_port(LilvTestEnv* env)
 {
-	if (!start_bundle(MANIFEST_PREFIXES
+	LilvWorld* const world = env->world;
+
+	if (start_bundle(env, MANIFEST_PREFIXES
 			":plug a lv2:Plugin ; lv2:binary <foo" SHLIB_EXT "> ; rdfs:seeAlso <plugin.ttl> .\n",
-			BUNDLE_PREFIXES PREFIX_LV2EV
+			PLUGIN_PREFIXES
+			"@prefix lv2ev: <http://lv2plug.in/ns/ext/event#> . \n"
 			":plug a lv2:Plugin ; "
-			PLUGIN_NAME("Test plugin") " ; "
-			LICENSE_GPL " ; "
+			"doap:name \"Test plugin\" ;"
 			"doap:homepage <http://example.org/someplug> ; "
 			"lv2:port [ "
 			"  a lv2:ControlPort ; a lv2:InputPort ; "
@@ -1121,12 +940,11 @@ test_port(void)
 			"  lv2:index 3 ; lv2:symbol \"audio_out\" ; "
 			"  lv2:name \"Audio Output\" ; "
 			"] .")) {
-		return 0;
+		return 1;
 	}
 
-	init_uris();
 	const LilvPlugins* plugins = lilv_world_get_all_plugins(world);
-	const LilvPlugin*  plug    = lilv_plugins_get_by_uri(plugins, plugin_uri_value);
+	const LilvPlugin*  plug    = lilv_plugins_get_by_uri(plugins, env->plugin1_uri);
 	TEST_ASSERT(plug);
 
 	LilvNode*       psym = lilv_new_string(world, "foo");
@@ -1357,8 +1175,9 @@ test_port(void)
 	lilv_node_free(audio_class);
 	lilv_node_free(out_class);
 	lilv_node_free(in_class);
-	cleanup_uris();
-	return 1;
+
+	delete_bundle(env);
+	return 0;
 }
 
 /*****************************************************************************/
@@ -1371,14 +1190,16 @@ ui_supported(const char* container_type_uri,
 }
 
 static int
-test_ui(void)
+test_ui(LilvTestEnv* env)
 {
-	if (!start_bundle(MANIFEST_PREFIXES
+	LilvWorld* const world = env->world;
+
+	if (start_bundle(env, MANIFEST_PREFIXES
 			":plug a lv2:Plugin ; lv2:binary <foo" SHLIB_EXT "> ; rdfs:seeAlso <plugin.ttl> .\n",
-			BUNDLE_PREFIXES PREFIX_LV2UI
+			PLUGIN_PREFIXES
+			"@prefix lv2ui: <http://lv2plug.in/ns/extensions/ui#> .\n"
 			":plug a lv2:Plugin ; a lv2:CompressorPlugin ; "
-			PLUGIN_NAME("Test plugin") " ; "
-			LICENSE_GPL " ; "
+			"doap:name \"Test plugin\" ;"
 			"lv2:optionalFeature lv2:hardRTCapable ; "
 		    "lv2:requiredFeature <http://lv2plug.in/ns/ext/event> ; "
 			"lv2ui:ui :ui , :ui2 , :ui3 , :ui4 ; "
@@ -1404,12 +1225,11 @@ test_ui(void)
 			":ui2 a lv2ui:GtkUI ; lv2ui:binary <ui2" SHLIB_EXT "> . "
 			":ui3 a lv2ui:GtkUI ; lv2ui:binary <ui3" SHLIB_EXT "> . "
 			":ui4 a lv2ui:GtkUI ; lv2ui:binary <ui4" SHLIB_EXT "> . ")) {
-		return 0;
+		return 1;
 	}
 
-	init_uris();
 	const LilvPlugins* plugins = lilv_world_get_all_plugins(world);
-	const LilvPlugin* plug = lilv_plugins_get_by_uri(plugins, plugin_uri_value);
+	const LilvPlugin* plug = lilv_plugins_get_by_uri(plugins, env->plugin1_uri);
 	TEST_ASSERT(plug);
 
 	LilvUIs* uis = lilv_plugin_get_uis(plug);
@@ -1476,8 +1296,8 @@ test_ui(void)
 	lilv_node_free(expected_uri);
 	lilv_uis_free(uis);
 
-	cleanup_uris();
-	return 1;
+	delete_bundle(env);
+	return 0;
 }
 
 /*****************************************************************************/
@@ -1579,9 +1399,9 @@ lilv_free_path(LV2_State_Free_Path_Handle handle, char* path)
 }
 
 static int
-test_state(void)
+test_state(LilvTestEnv* env)
 {
-	init_world();
+	LilvWorld* const world = env->world;
 
 	uint8_t*   abs_bundle = (uint8_t*)lilv_path_absolute(LILV_TEST_BUNDLE);
 	SerdNode   bundle     = serd_node_new_file_uri(abs_bundle, 0, 0, true);
@@ -1794,9 +1614,10 @@ test_state(void)
 	// Test instantiating twice
 	LilvInstance* instance2 = lilv_plugin_instantiate(plugin, 48000.0, ffeatures);
 	if (!instance2) {
-		fatal_error("Failed to create multiple instances of <%s>\n",
-		            lilv_node_as_uri(state_plugin_uri));
-		return 0;
+		fprintf(stderr,
+		        "Failed to create multiple instances of <%s>\n",
+		        lilv_node_as_uri(state_plugin_uri));
+		return 1;
 	}
 	lilv_instance_free(instance2);
 
@@ -1940,79 +1761,76 @@ test_state(void)
 	free(copy_dir);
 	free(temp_dir);
 
-	cleanup_uris();
-	return 1;
+	return 0;
 }
 #endif
 
 /*****************************************************************************/
 
 static int
-test_bad_port_symbol(void)
+test_bad_port_symbol(LilvTestEnv* env)
 {
-	if (!start_bundle(MANIFEST_PREFIXES
+	LilvWorld* const world = env->world;
+
+	if (start_bundle(env, MANIFEST_PREFIXES
 			":plug a lv2:Plugin ; lv2:binary <foo" SHLIB_EXT "> ; rdfs:seeAlso <plugin.ttl> .\n",
-			BUNDLE_PREFIXES PREFIX_LV2EV
+			PLUGIN_PREFIXES
 			":plug a lv2:Plugin ; "
-			PLUGIN_NAME("Test plugin") " ; "
-			LICENSE_GPL " ; "
+			"doap:name \"Test plugin\" ;"
 			"doap:homepage <http://example.org/someplug> ; "
 			"lv2:port [ "
 			"  a lv2:ControlPort ; a lv2:InputPort ; "
 			"  lv2:index 0 ; lv2:symbol \"0invalid\" ;"
 			"  lv2:name \"Invalid\" ; "
 			"] .")) {
-		return 0;
+		return 1;
 	}
 
-	init_uris();
-
 	const LilvPlugins* plugins = lilv_world_get_all_plugins(world);
-	const LilvPlugin*  plug    = lilv_plugins_get_by_uri(plugins, plugin_uri_value);
+	const LilvPlugin*  plug    = lilv_plugins_get_by_uri(plugins, env->plugin1_uri);
 
 	uint32_t n_ports = lilv_plugin_get_num_ports(plug);
 	TEST_ASSERT(n_ports == 0);
 
-	cleanup_uris();
-	return 1;
+	delete_bundle(env);
+	return 0;
 }
 
 /*****************************************************************************/
 
 static int
-test_bad_port_index(void)
+test_bad_port_index(LilvTestEnv* env)
 {
-	if (!start_bundle(MANIFEST_PREFIXES
+	LilvWorld* const world = env->world;
+
+	if (start_bundle(env, MANIFEST_PREFIXES
 			":plug a lv2:Plugin ; lv2:binary <foo" SHLIB_EXT "> ; rdfs:seeAlso <plugin.ttl> .\n",
-			BUNDLE_PREFIXES PREFIX_LV2EV
+			PLUGIN_PREFIXES
 			":plug a lv2:Plugin ; "
-			PLUGIN_NAME("Test plugin") " ; "
-			LICENSE_GPL " ; "
+			"doap:name \"Test plugin\" ;"
 			"doap:homepage <http://example.org/someplug> ; "
 			"lv2:port [ "
 			"  a lv2:ControlPort ; a lv2:InputPort ; "
 			"  lv2:index \"notaninteger\" ; lv2:symbol \"invalid\" ;"
 			"  lv2:name \"Invalid\" ; "
 			"] .")) {
-		return 0;
+		return 1;
 	}
 
-	init_uris();
-
 	const LilvPlugins* plugins = lilv_world_get_all_plugins(world);
-	const LilvPlugin*  plug    = lilv_plugins_get_by_uri(plugins, plugin_uri_value);
+	const LilvPlugin*  plug    = lilv_plugins_get_by_uri(plugins, env->plugin1_uri);
 
 	uint32_t n_ports = lilv_plugin_get_num_ports(plug);
 	TEST_ASSERT(n_ports == 0);
 
-	cleanup_uris();
-	return 1;
+	delete_bundle(env);
+	return 0;
 }
 
 /*****************************************************************************/
 
 static int
-test_string(void)
+test_string(LilvTestEnv* env)
 {
 	char* s = NULL;
 
@@ -2047,20 +1865,18 @@ test_string(void)
 	unsetenv("LILV_TEST_1");
 #endif
 
-	return 1;
+	return 0;
 }
 
 /*****************************************************************************/
 
 static int
-test_world(void)
+test_world(LilvTestEnv* env)
 {
-	if (!init_world()) {
-		return 0;
-	}
+	LilvWorld* const world = env->world;
 
-	LilvNode* num = lilv_new_int(world, 4);
-	LilvNode* uri = lilv_new_uri(world, "http://example.org/object");
+	LilvNode* num = lilv_new_int(env->world, 4);
+	LilvNode* uri = lilv_new_uri(env->world, "http://example.org/object");
 
 	LilvNodes* matches = lilv_world_find_nodes(world, num, NULL, NULL);
 	TEST_ASSERT(!matches);
@@ -2076,35 +1892,32 @@ test_world(void)
 
 	lilv_world_unload_bundle(world, NULL);
 
-	return 1;
+	return 0;
 }
 
 /*****************************************************************************/
 
 static int
-test_reload_bundle(void)
+test_reload_bundle(LilvTestEnv* env)
 {
+	LilvWorld* const world = env->world;
+
 	// Create a simple plugin bundle
-	create_bundle(MANIFEST_PREFIXES
+	create_bundle(env, MANIFEST_PREFIXES
 	              ":plug a lv2:Plugin ; lv2:binary <foo" SHLIB_EXT "> ; rdfs:seeAlso <plugin.ttl> .\n",
-	              BUNDLE_PREFIXES
+	              PLUGIN_PREFIXES
 	              ":plug a lv2:Plugin ; "
-	              PLUGIN_NAME("First name") " .");
+	              "doap:name \"First name\" .");
 
-	if (!init_world()) {
-		return 0;
-	}
-
-	init_uris();
 	lilv_world_load_specifications(world);
 
 	// Load bundle
-	LilvNode* bundle_uri = lilv_new_uri(world, test_bundle_uri);
+	LilvNode* bundle_uri = lilv_new_uri(world, env->test_bundle_uri);
 	lilv_world_load_bundle(world, bundle_uri);
 
 	// Check that plugin is present
 	const LilvPlugins* plugins = lilv_world_get_all_plugins(world);
-	const LilvPlugin*  plug    = lilv_plugins_get_by_uri(plugins, plugin_uri_value);
+	const LilvPlugin*  plug    = lilv_plugins_get_by_uri(plugins, env->plugin1_uri);
 	TEST_ASSERT(plug);
 
 	// Check that plugin name is correct
@@ -2114,14 +1927,14 @@ test_reload_bundle(void)
 
 	// Unload bundle from world and delete it
 	lilv_world_unload_bundle(world, bundle_uri);
-	delete_bundle();
+	delete_bundle(env);
 
 	// Create a new version of the same bundle, but with a different name
-	create_bundle(MANIFEST_PREFIXES
+	create_bundle(env, MANIFEST_PREFIXES
 	              ":plug a lv2:Plugin ; lv2:binary <foo" SHLIB_EXT "> ; rdfs:seeAlso <plugin.ttl> .\n",
-	              BUNDLE_PREFIXES
+	              PLUGIN_PREFIXES
 	              ":plug a lv2:Plugin ; "
-	              PLUGIN_NAME("Second name") " .");
+	              "doap:name \"Second name\" .");
 
 	// Check that plugin is no longer in the world's plugin list
 	TEST_ASSERT(lilv_plugins_size(plugins) == 0);
@@ -2130,7 +1943,7 @@ test_reload_bundle(void)
 	lilv_world_load_bundle(world, bundle_uri);
 
 	// Check that plugin is present again and is the same LilvPlugin
-	const LilvPlugin* plug2 = lilv_plugins_get_by_uri(plugins, plugin_uri_value);
+	const LilvPlugin* plug2 = lilv_plugins_get_by_uri(plugins, env->plugin1_uri);
 	TEST_ASSERT(plug2);
 	TEST_ASSERT(plug2 == plug);
 
@@ -2143,22 +1956,18 @@ test_reload_bundle(void)
 	// Load new bundle again (noop)
 	lilv_world_load_bundle(world, bundle_uri);
 
-	cleanup_uris();
 	lilv_node_free(bundle_uri);
-	lilv_world_free(world);
-	world = NULL;
+	delete_bundle(env);
 
-	return 1;
+	return 0;
 }
 
 /*****************************************************************************/
 
 static int
-test_replace_version(void)
+test_replace_version(LilvTestEnv* env)
 {
-	if (!init_world()) {
-		return 0;
-	}
+	LilvWorld* const world = env->world;
 
 	LilvNode* plug_uri         = lilv_new_uri(world, "http://example.org/versioned");
 	LilvNode* lv2_minorVersion = lilv_new_uri(world, LV2_CORE__minorVersion);
@@ -2225,27 +2034,27 @@ test_replace_version(void)
 	lilv_node_free(plug_uri);
 	lilv_node_free(lv2_minorVersion);
 	lilv_node_free(lv2_microVersion);
-	return 1;
+	return 0;
 }
 
 /*****************************************************************************/
 
 static int
-test_get_symbol(void)
+test_get_symbol(LilvTestEnv* env)
 {
-	if (!start_bundle(
+	LilvWorld* const world = env->world;
+
+	if (start_bundle(env,
 		    MANIFEST_PREFIXES
 		    ":plug a lv2:Plugin ; lv2:symbol \"plugsym\" ; lv2:binary <foo" SHLIB_EXT "> ; rdfs:seeAlso <plugin.ttl> .\n",
-		    BUNDLE_PREFIXES PREFIX_LV2EV
+		    PLUGIN_PREFIXES
 		    ":plug a lv2:Plugin ; "
-		    PLUGIN_NAME("Test plugin") " ; "
+		    "doap:name \"Test plugin\" ;"
 		    "lv2:symbol \"plugsym\" .")) {
-		return 0;
+		return 1;
 	}
 
-	init_uris();
-
-	LilvNode* plug_sym      = lilv_world_get_symbol(world, plugin_uri_value);
+	LilvNode* plug_sym      = lilv_world_get_symbol(world, env->plugin1_uri);
 	LilvNode* path          = lilv_new_uri(world, "http://example.org/foo");
 	LilvNode* path_sym      = lilv_world_get_symbol(world, path);
 	LilvNode* query         = lilv_new_uri(world, "http://example.org/foo?bar=baz");
@@ -2273,9 +2082,9 @@ test_get_symbol(void)
 	lilv_node_free(path_sym);
 	lilv_node_free(path);
 	lilv_node_free(plug_sym);
-	cleanup_uris();
 
-	return 1;
+	delete_bundle(env);
+	return 0;
 }
 
 /*****************************************************************************/
@@ -2311,34 +2120,41 @@ static struct TestCase tests[] = {
 	{ NULL, NULL }
 };
 
-static void
+static unsigned
 run_tests(void)
 {
-	int i;
-	for (i = 0; tests[i].title; i++) {
+	unsigned n_failures = 0;
+
+	for (int i = 0; tests[i].title; ++i) {
 		printf("*** Test %s\n", tests[i].title);
-		if (!tests[i].func()) {
-			printf("\nTest failed\n");
-			/* test case that wasn't able to be executed at all counts as 1 test + 1 error */
-			error_count++;
-			test_count++;
+		LilvTestEnv* env = lilv_test_env_new();
+		if (tests[i].func(env)) {
+			fprintf(stderr, "\nTest %s failed\n", tests[i].title);
+			++n_failures;
 		}
-		unload_bundle();
-		cleanup();
+		lilv_test_env_free(env);
 	}
+
+	return n_failures;
 }
 
 int
 main(int argc, char* argv[])
 {
 	if (argc != 1) {
-		printf("Syntax: %s\n", argv[0]);
-		return 0;
+		printf("Usage: %s\n", argv[0]);
+		return 1;
 	}
+
 	set_env("LANG", "C");
-	init_tests();
-	run_tests();
-	cleanup();
-	printf("\n*** Test Results: %d tests, %d errors\n\n", test_count, error_count);
-	return error_count ? 1 : 0;
+
+	const unsigned n_failures = run_tests();
+
+	if (n_failures == 0) {
+		fprintf(stderr, "\n*** All tests passed\n");
+	} else {
+		fprintf(stderr, "\n*** %u tests failed\n", n_failures);
+	}
+
+	return n_failures;
 }

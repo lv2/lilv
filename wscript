@@ -368,7 +368,7 @@ def build(bld):
         bpath   = bpath.replace('\\', '/')
         testdir = testdir.replace('\\', '/')
         obj = bld(features     = 'c cprogram',
-                  source       = 'test/lilv_test.c',
+                  source       = ['test/lilv_test_utils.c', 'test/lilv_test.c'],
                   includes     = ['.', './src'],
                   use          = 'liblilv_profiled',
                   lib          = test_libs,
