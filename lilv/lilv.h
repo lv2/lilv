@@ -1332,10 +1332,16 @@ typedef const void* (*LilvGetPortValueFunc)(const char* port_symbol,
    explicitly disallows this.
 
    To support advanced file functionality, there are several directory
-   parameters.  Simple hosts that only wish to save a single plugins state once
-   may simply use the same directory for all of them (or pass NULL to not
-   support files at all).  The multiple parameters are necessary to support
-   saving an instances state many times while avoiding any duplication of data.
+   parameters.  The multiple parameters are necessary to support saving an
+   instance's state many times, or saving states from multiple instances, while
+   avoiding any duplication of data.  For example, a host could pass the same
+   `copy_dir` and `link_dir` for all plugins in a session (for example
+   `session/shared/copy/` `session/shared/link/`), while the `save_dir` would
+   be unique to each plugin instance (for example `session/states/state1.lv2`
+   for one instance and `session/states/state2.lv2` for another instance).
+   Simple hosts that only wish to save a single plugin's state once may simply
+   use the same directory for all of them, or pass NULL to not support files at
+   all.
 
    If supported (via state:makePath passed to LV2_Descriptor::instantiate()),
    `scratch_dir` should be the directory where any files created by the plugin
