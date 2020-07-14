@@ -1,21 +1,17 @@
+#undef NDEBUG
+
 #include "../src/lilv_internal.h"
 
 #include "serd/serd.h"
 #include "lilv/lilv.h"
 
+#include <assert.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 
 #define PLUGIN_URI "http://example.org/lib-descriptor"
-
-#define TEST_ASSERT(check) do {\
-	if (!(check)) {\
-		fprintf(stderr, "%s:%d: failed test: %s\n", __FILE__, __LINE__, #check);\
-		return 1;\
-	}\
-} while (0)
 
 int
 main(int argc, char** argv)
@@ -40,21 +36,21 @@ main(int argc, char** argv)
 	LilvNode*          plugin_uri = lilv_new_uri(world, PLUGIN_URI);
 	const LilvPlugins* plugins    = lilv_world_get_all_plugins(world);
 	const LilvPlugin*  plugin     = lilv_plugins_get_by_uri(plugins, plugin_uri);
-	TEST_ASSERT(plugin);
+	assert(plugin);
 
 	LilvInstance* instance = lilv_plugin_instantiate(plugin, 48000.0, NULL);
-	TEST_ASSERT(instance);
+	assert(instance);
 	lilv_instance_free(instance);
 
 	LilvNode* eg_blob = lilv_new_uri(world, "http://example.org/blob");
 	LilvNode* blob    = lilv_world_get(world, plugin_uri, eg_blob, NULL);
-	TEST_ASSERT(lilv_node_is_literal(blob));
+	assert(lilv_node_is_literal(blob));
 	lilv_node_free(blob);
 	lilv_node_free(eg_blob);
 
 	LilvNode* eg_junk = lilv_new_uri(world, "http://example.org/junk");
 	LilvNode* junk    = lilv_world_get(world, plugin_uri, eg_junk, NULL);
-	TEST_ASSERT(lilv_node_is_literal(junk));
+	assert(lilv_node_is_literal(junk));
 	lilv_node_free(junk);
 	lilv_node_free(eg_junk);
 

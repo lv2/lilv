@@ -1,21 +1,17 @@
+#undef NDEBUG
+
 #include "../src/lilv_internal.h"
 
 #include "serd/serd.h"
 #include "lilv/lilv.h"
 
+#include <assert.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 
 #define PLUGIN_URI "http://example.org/bad-syntax"
-
-#define TEST_ASSERT(check) do {\
-	if (!(check)) {\
-		fprintf(stderr, "%s:%d: failed test: %s\n", __FILE__, __LINE__, #check);\
-		return 1;\
-	}\
-} while (0)
 
 int
 main(int argc, char** argv)
@@ -41,8 +37,8 @@ main(int argc, char** argv)
 	const LilvPlugins* plugins    = lilv_world_get_all_plugins(world);
 	const LilvPlugin*  plugin     = lilv_plugins_get_by_uri(plugins, plugin_uri);
 
-	TEST_ASSERT(!lilv_plugin_get_name(plugin));
-	TEST_ASSERT(!lilv_plugin_instantiate(plugin, 48000, NULL));
+	assert(!lilv_plugin_get_name(plugin));
+	assert(!lilv_plugin_instantiate(plugin, 48000, NULL));
 
 	lilv_node_free(plugin_uri);
 	lilv_world_free(world);

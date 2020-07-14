@@ -1,21 +1,17 @@
+#undef NDEBUG
+
 #include "../src/lilv_internal.h"
 
 #include "serd/serd.h"
 #include "lilv/lilv.h"
 
+#include <assert.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 
 #define PLUGIN_URI "http://example.org/missing-port"
-
-#define TEST_ASSERT(check) do {\
-	if (!(check)) {\
-		fprintf(stderr, "%s:%d: failed test: %s\n", __FILE__, __LINE__, #check);\
-		return 1;\
-	}\
-} while (0)
 
 int
 main(int argc, char** argv)
@@ -42,7 +38,7 @@ main(int argc, char** argv)
 	const LilvPlugin*  plugin     = lilv_plugins_get_by_uri(plugins, plugin_uri);
 
 	// Check that all ports are ignored
-	TEST_ASSERT(lilv_plugin_get_num_ports(plugin) == 0);
+	assert(lilv_plugin_get_num_ports(plugin) == 0);
 
 	lilv_node_free(plugin_uri);
 	lilv_world_free(world);
