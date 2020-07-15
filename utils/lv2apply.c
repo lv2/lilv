@@ -27,6 +27,12 @@
 #include <stdlib.h>
 #include <string.h>
 
+#if defined(__GNUC__)
+#    define LILV_LOG_FUNC(fmt, arg1) __attribute__((format(printf, fmt, arg1)))
+#else
+#    define LILV_LOG_FUNC(fmt, arg1)
+#endif
+
 /** Control port value set from the command line */
 typedef struct Param {
 	const char* sym;    ///< Port symbol
@@ -121,6 +127,7 @@ cleanup(int status, LV2Apply* self)
 }
 
 /** Print a fatal error and clean up for exit. */
+LILV_LOG_FUNC(3, 4)
 static int
 fatal(LV2Apply* self, int status, const char* fmt, ...)
 {
