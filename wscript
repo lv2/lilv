@@ -113,6 +113,64 @@ def configure(conf):
     if not conf.env.BUILD_SHARED and not conf.env.BUILD_STATIC:
         conf.fatal('Neither a shared nor a static build requested')
 
+    if Options.options.ultra_strict:
+        autowaf.add_compiler_flags(conf.env, '*', {
+            'clang': [
+                '-Wno-documentation-unknown-command',
+            ]
+        })
+
+        autowaf.add_compiler_flags(conf.env, 'c', {
+            'clang': [
+                '-Wno-cast-align',
+                '-Wno-cast-qual',
+                '-Wno-double-promotion',
+                '-Wno-float-equal',
+                '-Wno-format-nonliteral',
+                '-Wno-implicit-float-conversion',
+                '-Wno-implicit-int-conversion',
+                '-Wno-padded',
+                '-Wno-reserved-id-macro',
+                '-Wno-shorten-64-to-32',
+                '-Wno-sign-conversion',
+                '-Wno-switch-enum',
+                '-Wno-unused-parameter',
+                '-Wno-vla',
+            ],
+            'gcc': [
+                '-Wno-cast-align',
+                '-Wno-cast-qual',
+                '-Wno-conversion',
+                '-Wno-double-promotion',
+                '-Wno-float-equal',
+                '-Wno-padded',
+                '-Wno-stack-protector',
+                '-Wno-switch-enum',
+                '-Wno-unused-parameter',
+                '-Wno-vla',
+            ],
+            'msvc': [
+                '/wd4061',  # enumerator in switch is not explicitly handled
+                '/wd4365',  # signed/unsigned mismatch
+                '/wd4514',  # unreferenced inline function has been removed
+                '/wd4774',  # format string is not a string literal
+                '/wd4820',  # padding added after construct
+                '/wd4996',  # POSIX name for this item is deprecated
+            ],
+        })
+
+        autowaf.add_compiler_flags(conf.env, 'cxx', {
+            'clang': [
+                '-Wno-extra-semi',
+                '-Wno-zero-as-null-pointer-constant',
+            ],
+            'gcc': [
+                '-Wno-effc++',
+                '-Wno-extra-semi',
+                '-Wno-pedantic',
+            ],
+        })
+
     conf.check_pkg('lv2 >= 1.18.0', uselib_store='LV2')
     conf.check_pkg('serd-0 >= 0.30.0', uselib_store='SERD')
     conf.check_pkg('sord-0 >= 0.14.0', uselib_store='SORD')
