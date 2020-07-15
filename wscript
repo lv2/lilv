@@ -115,6 +115,12 @@ def configure(conf):
     if not conf.env.BUILD_SHARED and not conf.env.BUILD_STATIC:
         conf.fatal('Neither a shared nor a static build requested')
 
+    if Options.options.strict:
+        # Check for programs used by lint target
+        conf.find_program("flake8", var="FLAKE8", mandatory=False)
+        conf.find_program("clang-tidy", var="CLANG_TIDY", mandatory=False)
+        conf.find_program("iwyu_tool", var="IWYU_TOOL", mandatory=False)
+
     if Options.options.ultra_strict:
         autowaf.add_compiler_flags(conf.env, '*', {
             'clang': [
@@ -574,15 +580,50 @@ def test(tst):
     except Exception:
         pass
 
+
+class LintContext(Build.BuildContext):
+    fun = cmd = 'lint'
+
+
 def lint(ctx):
     "checks code for style issues"
     import subprocess
-    cmd = ("clang-tidy -p=. -header-filter=.* -checks=\"*," +
-           "-clang-analyzer-alpha.*," +
-           "-google-readability-todo," +
-           "-llvm-header-guard," +
-           "-llvm-include-order," +
-           "-misc-unused-parameters," +
-           "-readability-else-after-return\" " +
-           "$(find .. -name '*.c')")
-    subprocess.call(cmd, cwd='build', shell=True)
+
+    st = 0
+
+    if "FLAKE8" in ctx.env:
+        Logs.info("Running flake8")
+        st = subprocess.call([ctx.env.FLAKE8[0],
+                              "wscript",
+                              "--ignore",
+                              "E101,E129,W191,E221,W504,E251,E241,E741"])
+    else:
+        Logs.warn("Not running flake8")
+
+    if "IWYU_TOOL" in ctx.env:
+        Logs.info("Running include-what-you-use")
+        cmd = [ctx.env.IWYU_TOOL[0], "-o", "clang", "-p", "build"]
+        output = subprocess.check_output(cmd).decode('utf-8')
+        if 'error: ' in output:
+            sys.stdout.write(output)
+            st += 1
+    else:
+        Logs.warn("Not running include-what-you-use")
+
+    if "CLANG_TIDY" in ctx.env and "clang" in ctx.env.CC[0]:
+        Logs.info("Running clang-tidy")
+        sources = glob.glob('src/*.c') + glob.glob('tests/*.c')
+        sources = list(map(os.path.abspath, sources))
+        procs = []
+        for source in sources:
+            cmd = [ctx.env.CLANG_TIDY[0], "--quiet", "-p=.", source]
+            procs += [subprocess.Popen(cmd, cwd="build")]
+
+        for proc in procs:
+            stdout, stderr = proc.communicate()
+            st += proc.returncode
+    else:
+        Logs.warn("Not running clang-tidy")
+
+    if st != 0:
+        sys.exit(st)
