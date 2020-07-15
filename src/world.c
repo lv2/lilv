@@ -892,7 +892,7 @@ lilv_world_drop_graph(LilvWorld* world, const SordNode* graph)
 static int
 lilv_world_unload_file(LilvWorld* world, const LilvNode* file)
 {
-	ZixTreeIter* iter;
+	ZixTreeIter* iter = NULL;
 	if (!zix_tree_find((ZixTree*)world->loaded_files, file, &iter)) {
 		zix_tree_remove((ZixTree*)world->loaded_files, iter);
 		return 0;
@@ -1108,12 +1108,12 @@ lilv_world_load_all(LilvWorld* world)
 SerdStatus
 lilv_world_load_file(LilvWorld* world, SerdReader* reader, const LilvNode* uri)
 {
-	ZixTreeIter* iter;
+	ZixTreeIter* iter = NULL;
 	if (!zix_tree_find((ZixTree*)world->loaded_files, uri, &iter)) {
 		return SERD_FAILURE;  // File has already been loaded
 	}
 
-	size_t               uri_len;
+	size_t               uri_len = 0;
 	const uint8_t* const uri_str = sord_node_get_string_counted(
 		uri->node, &uri_len);
 	if (strncmp((const char*)uri_str, "file:", 5)) {

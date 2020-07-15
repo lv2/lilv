@@ -433,7 +433,8 @@ lilv_state_new_from_instance(const LilvPlugin*          plugin,
 			const LilvPort* const port = plugin->ports[i];
 			if (lilv_port_is_a(plugin, port, lv2_ControlPort)
 			    && lilv_port_is_a(plugin, port, lv2_InputPort)) {
-				uint32_t size, type;
+				uint32_t    size  = 0;
+				uint32_t    type  = 0;
 				const char* sym   = lilv_node_as_string(port->symbol);
 				const void* value = get_value(sym, user_data, &size, &type);
 				append_port_value(state, sym, value, size, type);

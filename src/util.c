@@ -417,7 +417,7 @@ update_latest(const char* path, const char* name, void* data)
 {
 	Latest*  latest     = (Latest*)data;
 	char*    entry_path = lilv_path_join(path, name);
-	unsigned num;
+	unsigned num        = 0;
 	if (sscanf(entry_path, latest->pattern, &num) == 1) {
 		struct stat st;
 		if (!stat(entry_path, &st)) {
@@ -574,7 +574,7 @@ lilv_dir_for_each(const char* path,
 #else
 	DIR* dir = opendir(path);
 	if (dir) {
-		for (struct dirent* entry; (entry = readdir(dir));) {
+		for (struct dirent* entry = NULL; (entry = readdir(dir));) {
 			f(path, entry->d_name, data);
 		}
 		closedir(dir);
