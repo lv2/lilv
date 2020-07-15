@@ -26,6 +26,31 @@ uri          = 'http://drobilla.net/sw/lilv'
 dist_pattern = 'http://download.drobilla.net/lilv-%d.%d.%d.tar.bz2'
 post_tags    = ['Hacking', 'LAD', 'LV2', 'Lilv']
 
+tests = [
+    'test_bad_port_index',
+    'test_bad_port_symbol',
+    'test_classes',
+    'test_discovery',
+    'test_get_symbol',
+    'test_no_author',
+    'test_no_verify',
+    'test_plugin',
+    'test_port',
+    'test_preset',
+    'test_project',
+    'test_project_no_author',
+    'test_prototype',
+    'test_reload_bundle',
+    'test_replace_version',
+    'test_state',
+    'test_string',
+    'test_ui',
+    'test_util',
+    'test_value',
+    'test_verify',
+    'test_world',
+]
+
 test_plugins = [
     'bad_syntax',
     'failed_instantiation',
@@ -367,18 +392,21 @@ def build(bld):
         bpath   = os.path.join(testdir, 'test.lv2')
         bpath   = bpath.replace('\\', '/')
         testdir = testdir.replace('\\', '/')
-        obj = bld(features     = 'c cprogram',
-                  source       = ['test/lilv_test_utils.c', 'test/lilv_test.c'],
-                  includes     = ['.', './src'],
-                  use          = 'liblilv_profiled',
-                  lib          = test_libs,
-                  uselib       = 'SERD SORD SRATOM LV2',
-                  target       = 'test/lilv_test',
-                  install_path = None,
-                  defines      = (defines + ['LILV_TEST_BUNDLE=\"%s/\"' % bpath] +
-                                  ['LILV_TEST_DIR=\"%s/\"' % testdir]),
-                  cflags       = test_cflags,
-                  linkflags    = test_linkflags)
+        for test in tests:
+            obj = bld(features     = 'c cprogram',
+                      source       = ['test/lilv_test_utils.c',
+                                      'test/%s.c' % test],
+                      includes     = ['.', './src'],
+                      use          = 'liblilv_profiled',
+                      lib          = test_libs,
+                      uselib       = 'SERD SORD SRATOM LV2',
+                      target       = 'test/' + test,
+                      install_path = None,
+                      defines      = (defines +
+                                      ['LILV_TEST_BUNDLE=\"%s/\"' % bpath] +
+                                      ['LILV_TEST_DIR=\"%s/\"' % testdir]),
+                      cflags       = test_cflags,
+                      linkflags    = test_linkflags)
 
         # C++ API test
         if 'COMPILER_CXX' in bld.env:
@@ -460,7 +488,10 @@ def build(bld):
 
 def test(tst):
     with tst.group('unit') as check:
-        check(['./test/lilv_test'])
+        for test in tests:
+            if not (sys.platform == 'win32' and test == 'test_state'):
+                check(['./test/' + test])
+
         if tst.is_defined('LILV_CXX'):
             check(['./test/lilv_cxx_test'])
 
