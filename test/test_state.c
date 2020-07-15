@@ -41,10 +41,10 @@
 #include <stdlib.h>
 #include <string.h>
 
-uint32_t atom_Float = 0;
-float    in         = 1.0;
-float    out        = 42.0;
-float    control    = 1234.0;
+static uint32_t atom_Float = 0;
+static float    in         = 1.0;
+static float    out        = 42.0;
+static float    control    = 1234.0;
 
 static const void*
 get_port_value(const char* port_symbol,
@@ -93,8 +93,8 @@ set_port_value(const char* port_symbol,
 	}
 }
 
-char** uris   = NULL;
-size_t n_uris = 0;
+static char** uris   = NULL;
+static size_t n_uris = 0;
 
 static LV2_URID
 map_uri(LV2_URID_Map_Handle handle, const char* uri)

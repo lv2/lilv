@@ -29,14 +29,14 @@
 #include <stdlib.h>
 #include <string.h>
 
-LilvNode* applies_to_pred     = NULL;
-LilvNode* control_class       = NULL;
-LilvNode* event_class         = NULL;
-LilvNode* group_pred          = NULL;
-LilvNode* label_pred          = NULL;
-LilvNode* preset_class        = NULL;
-LilvNode* designation_pred    = NULL;
-LilvNode* supports_event_pred = NULL;
+static LilvNode* applies_to_pred     = NULL;
+static LilvNode* control_class       = NULL;
+static LilvNode* event_class         = NULL;
+static LilvNode* group_pred          = NULL;
+static LilvNode* label_pred          = NULL;
+static LilvNode* preset_class        = NULL;
+static LilvNode* designation_pred    = NULL;
+static LilvNode* supports_event_pred = NULL;
 
 static void
 print_port(const LilvPlugin* p,
