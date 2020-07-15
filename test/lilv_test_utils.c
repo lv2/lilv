@@ -118,17 +118,22 @@ create_bundle(LilvTestEnv* env, const char* manifest, const char* plugin)
 		return 3;
 	}
 
-	const size_t manifest_len = strlen(manifest);
-	const size_t plugin_len   = strlen(plugin);
-	size_t       n_written    = 0;
+	const size_t manifest_head_len = strlen(MANIFEST_PREFIXES);
+	const size_t manifest_len      = strlen(manifest);
+	const size_t plugin_head_len   = strlen(PLUGIN_PREFIXES);
+	const size_t plugin_len        = strlen(plugin);
+	const size_t n_total =
+	    manifest_len + plugin_len + manifest_head_len + plugin_head_len;
 
+	size_t n_written = 0;
+	n_written += fwrite(MANIFEST_PREFIXES, 1, manifest_head_len, manifest_file);
 	n_written += fwrite(manifest, 1, manifest_len, manifest_file);
+	n_written += fwrite(PLUGIN_PREFIXES, 1, plugin_head_len, plugin_file);
 	n_written += fwrite(plugin, 1, plugin_len, plugin_file);
 
 	fclose(manifest_file);
 	fclose(plugin_file);
-
-	return n_written == manifest_len + plugin_len ? 0 : 4;
+	return n_written == n_total ? 0 : 4;
 }
 
 int

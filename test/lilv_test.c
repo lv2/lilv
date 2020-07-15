@@ -78,9 +78,8 @@ test_value(LilvTestEnv* env)
 {
 	LilvWorld* const world = env->world;
 
-	if (start_bundle(env, MANIFEST_PREFIXES
+	if (start_bundle(env,
 			":plug a lv2:Plugin ; lv2:binary <foo" SHLIB_EXT "> ; rdfs:seeAlso <plugin.ttl> .\n",
-			PLUGIN_PREFIXES
 			":plug a lv2:Plugin ; a lv2:CompressorPlugin ; "
 			"doap:name \"Test plugin\" ;"
 			"lv2:port [ "
@@ -273,9 +272,8 @@ test_discovery(LilvTestEnv* env)
 {
 	LilvWorld* const world = env->world;
 
-	if (start_bundle(env, MANIFEST_PREFIXES
+	if (start_bundle(env,
 			":plug a lv2:Plugin ; lv2:binary <foo" SHLIB_EXT "> ; rdfs:seeAlso <plugin.ttl> .\n",
-			PLUGIN_PREFIXES
 			":plug a lv2:Plugin ;"
 			"doap:name \"Test plugin\" ;"
 			"lv2:port [ a lv2:ControlPort ; a lv2:InputPort ;"
@@ -314,9 +312,8 @@ test_verify(LilvTestEnv* env)
 {
 	LilvWorld* const world = env->world;
 
-	if (start_bundle(env, MANIFEST_PREFIXES
+	if (start_bundle(env,
 			":plug a lv2:Plugin ; lv2:binary <foo" SHLIB_EXT "> ; rdfs:seeAlso <plugin.ttl> .\n",
-			PLUGIN_PREFIXES
 			":plug a lv2:Plugin ; "
 			"doap:name \"Test plugin\" ;"
 			"lv2:port [ a lv2:ControlPort ; a lv2:InputPort ;"
@@ -340,9 +337,8 @@ test_no_verify(LilvTestEnv* env)
 {
 	LilvWorld* const world = env->world;
 
-	if (start_bundle(env, MANIFEST_PREFIXES
+	if (start_bundle(env,
 			":plug a lv2:Plugin ; lv2:binary <foo" SHLIB_EXT "> ; rdfs:seeAlso <plugin.ttl> .\n",
-			PLUGIN_PREFIXES
 			":plug a lv2:Plugin . ")) {
 		return 1;
 	}
@@ -363,9 +359,8 @@ test_classes(LilvTestEnv* env)
 {
 	LilvWorld* const world = env->world;
 
-	if (start_bundle(env, MANIFEST_PREFIXES
+	if (start_bundle(env,
 			":plug a lv2:Plugin ; lv2:binary <foo" SHLIB_EXT "> ; rdfs:seeAlso <plugin.ttl> .\n",
-			PLUGIN_PREFIXES
 			":plug a lv2:Plugin ; a lv2:CompressorPlugin ; "
 			"doap:name \"Test plugin\" ;"
 			"lv2:port [ "
@@ -410,9 +405,8 @@ test_plugin(LilvTestEnv* env)
 {
 	LilvWorld* const world = env->world;
 
-	if (start_bundle(env, MANIFEST_PREFIXES
+	if (start_bundle(env,
 			":plug a lv2:Plugin ; lv2:binary <foo" SHLIB_EXT "> ; rdfs:seeAlso <plugin.ttl> .\n",
-			PLUGIN_PREFIXES
 			":plug a lv2:Plugin ; a lv2:CompressorPlugin ; "
 			"doap:name \"Test plugin\" ;"
 			"lv2:optionalFeature lv2:hardRTCapable ; "
@@ -649,9 +643,8 @@ test_project(LilvTestEnv* env)
 {
 	LilvWorld* const world = env->world;
 
-	if (start_bundle(env, MANIFEST_PREFIXES
+	if (start_bundle(env,
 			":plug a lv2:Plugin ; lv2:binary <foo" SHLIB_EXT "> ; rdfs:seeAlso <plugin.ttl> .\n",
-			PLUGIN_PREFIXES
 			":plug a lv2:Plugin ; a lv2:CompressorPlugin ; "
 			"doap:name \"Test plugin with project\" ;"
 			"lv2:project [ "
@@ -704,9 +697,8 @@ test_no_author(LilvTestEnv* env)
 {
 	LilvWorld* const world = env->world;
 
-	if (start_bundle(env, MANIFEST_PREFIXES
+	if (start_bundle(env,
 			":plug a lv2:Plugin ; lv2:binary <foo" SHLIB_EXT "> ; rdfs:seeAlso <plugin.ttl> .\n",
-			PLUGIN_PREFIXES
 			":plug a lv2:Plugin ; a lv2:CompressorPlugin ; "
 			"doap:name \"Test plugin with project\" ;"
 			"lv2:port [ "
@@ -752,9 +744,8 @@ test_project_no_author(LilvTestEnv* env)
 {
 	LilvWorld* const world = env->world;
 
-	if (start_bundle(env, MANIFEST_PREFIXES
+	if (start_bundle(env,
 			":plug a lv2:Plugin ; lv2:binary <foo" SHLIB_EXT "> ; rdfs:seeAlso <plugin.ttl> .\n",
-			PLUGIN_PREFIXES
 			":plug a lv2:Plugin ; a lv2:CompressorPlugin ; "
 			"doap:name \"Test plugin with project\" ;"
 			"lv2:project [ "
@@ -802,9 +793,8 @@ test_preset(LilvTestEnv* env)
 {
 	LilvWorld* const world = env->world;
 
-	if (start_bundle(env, MANIFEST_PREFIXES
+	if (start_bundle(env,
 			":plug a lv2:Plugin ; lv2:binary <foo" SHLIB_EXT "> ; rdfs:seeAlso <plugin.ttl> .\n",
-			PLUGIN_PREFIXES
 			":plug a lv2:Plugin ; a lv2:CompressorPlugin ; "
 			"doap:name \"Test plugin with project\" ;"
 			"lv2:project [ "
@@ -853,10 +843,9 @@ test_prototype(LilvTestEnv* env)
 {
 	LilvWorld* const world = env->world;
 
-	if (start_bundle(env, MANIFEST_PREFIXES
+	if (start_bundle(env,
 			":prot a lv2:PluginBase ; rdfs:seeAlso <plugin.ttl> .\n"
 			":plug a lv2:Plugin ; lv2:binary <inst" SHLIB_EXT "> ; lv2:prototype :prot .\n",
-			PLUGIN_PREFIXES
 			":prot a lv2:Plugin ; a lv2:CompressorPlugin ; "
 			"lv2:project [ "
 			"  doap:name \"Fake project\" ;"
@@ -903,9 +892,8 @@ test_port(LilvTestEnv* env)
 {
 	LilvWorld* const world = env->world;
 
-	if (start_bundle(env, MANIFEST_PREFIXES
+	if (start_bundle(env,
 			":plug a lv2:Plugin ; lv2:binary <foo" SHLIB_EXT "> ; rdfs:seeAlso <plugin.ttl> .\n",
-			PLUGIN_PREFIXES
 			"@prefix lv2ev: <http://lv2plug.in/ns/ext/event#> . \n"
 			":plug a lv2:Plugin ; "
 			"doap:name \"Test plugin\" ;"
@@ -1190,9 +1178,8 @@ test_ui(LilvTestEnv* env)
 {
 	LilvWorld* const world = env->world;
 
-	if (start_bundle(env, MANIFEST_PREFIXES
+	if (start_bundle(env,
 			":plug a lv2:Plugin ; lv2:binary <foo" SHLIB_EXT "> ; rdfs:seeAlso <plugin.ttl> .\n",
-			PLUGIN_PREFIXES
 			"@prefix lv2ui: <http://lv2plug.in/ns/extensions/ui#> .\n"
 			":plug a lv2:Plugin ; a lv2:CompressorPlugin ; "
 			"doap:name \"Test plugin\" ;"
@@ -1768,9 +1755,8 @@ test_bad_port_symbol(LilvTestEnv* env)
 {
 	LilvWorld* const world = env->world;
 
-	if (start_bundle(env, MANIFEST_PREFIXES
+	if (start_bundle(env,
 			":plug a lv2:Plugin ; lv2:binary <foo" SHLIB_EXT "> ; rdfs:seeAlso <plugin.ttl> .\n",
-			PLUGIN_PREFIXES
 			":plug a lv2:Plugin ; "
 			"doap:name \"Test plugin\" ;"
 			"doap:homepage <http://example.org/someplug> ; "
@@ -1799,9 +1785,8 @@ test_bad_port_index(LilvTestEnv* env)
 {
 	LilvWorld* const world = env->world;
 
-	if (start_bundle(env, MANIFEST_PREFIXES
+	if (start_bundle(env,
 			":plug a lv2:Plugin ; lv2:binary <foo" SHLIB_EXT "> ; rdfs:seeAlso <plugin.ttl> .\n",
-			PLUGIN_PREFIXES
 			":plug a lv2:Plugin ; "
 			"doap:name \"Test plugin\" ;"
 			"doap:homepage <http://example.org/someplug> ; "
@@ -1899,9 +1884,8 @@ test_reload_bundle(LilvTestEnv* env)
 	LilvWorld* const world = env->world;
 
 	// Create a simple plugin bundle
-	create_bundle(env, MANIFEST_PREFIXES
+	create_bundle(env,
 	              ":plug a lv2:Plugin ; lv2:binary <foo" SHLIB_EXT "> ; rdfs:seeAlso <plugin.ttl> .\n",
-	              PLUGIN_PREFIXES
 	              ":plug a lv2:Plugin ; "
 	              "doap:name \"First name\" .");
 
@@ -1926,9 +1910,8 @@ test_reload_bundle(LilvTestEnv* env)
 	delete_bundle(env);
 
 	// Create a new version of the same bundle, but with a different name
-	create_bundle(env, MANIFEST_PREFIXES
+	create_bundle(env,
 	              ":plug a lv2:Plugin ; lv2:binary <foo" SHLIB_EXT "> ; rdfs:seeAlso <plugin.ttl> .\n",
-	              PLUGIN_PREFIXES
 	              ":plug a lv2:Plugin ; "
 	              "doap:name \"Second name\" .");
 
@@ -2041,9 +2024,7 @@ test_get_symbol(LilvTestEnv* env)
 	LilvWorld* const world = env->world;
 
 	if (start_bundle(env,
-		    MANIFEST_PREFIXES
 		    ":plug a lv2:Plugin ; lv2:symbol \"plugsym\" ; lv2:binary <foo" SHLIB_EXT "> ; rdfs:seeAlso <plugin.ttl> .\n",
-		    PLUGIN_PREFIXES
 		    ":plug a lv2:Plugin ; "
 		    "doap:name \"Test plugin\" ;"
 		    "lv2:symbol \"plugsym\" .")) {
