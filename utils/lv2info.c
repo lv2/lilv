@@ -47,7 +47,7 @@ print_port(const LilvPlugin* p,
 {
 	const LilvPort* port = lilv_plugin_get_port_by_index(p, index);
 
-	printf("\n\tPort %d:\n", index);
+	printf("\n\tPort %u:\n", index);
 
 	if (!port) {
 		printf("\t\tERROR: Illegal/nonexistent port\n");
@@ -183,7 +183,7 @@ print_plugin(LilvWorld*        world,
 
 	if (lilv_plugin_has_latency(p)) {
 		uint32_t latency_port = lilv_plugin_get_latency_port_index(p);
-		printf("\tHas latency:       yes, reported by port %d\n", latency_port);
+		printf("\tHas latency:       yes, reported by port %u\n", latency_port);
 	} else {
 		printf("\tHas latency:       no\n");
 	}

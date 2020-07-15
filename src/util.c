@@ -302,7 +302,7 @@ lilv_find_free_path(const char* in_path,
 	char*        path        = (char*)malloc(in_path_len + 7);
 	memcpy(path, in_path, in_path_len + 1);
 
-	for (int i = 2; i < 1000000; ++i) {
+	for (unsigned i = 2; i < 1000000u; ++i) {
 		if (!exists(path, user_data)) {
 			return path;
 		}

@@ -345,7 +345,7 @@ const uint8_t*
 lilv_world_blank_node_prefix(LilvWorld* world)
 {
 	static char str[32];
-	snprintf(str, sizeof(str), "%d", world->n_read_files++);
+	snprintf(str, sizeof(str), "%u", world->n_read_files++);
 	return (const uint8_t*)str;
 }
 

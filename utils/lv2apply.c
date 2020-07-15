@@ -169,7 +169,7 @@ create_ports(LV2Apply* self)
 			port->is_input = true;
 		} else if (!lilv_port_is_a(self->plugin, lport, lv2_OutputPort) &&
 		           !port->optional) {
-			return fatal(self, 1, "Port %d is neither input nor output\n", i);
+			return fatal(self, 1, "Port %u is neither input nor output\n", i);
 		}
 
 		/* Check if port is an audio or control port */
@@ -183,7 +183,7 @@ create_ports(LV2Apply* self)
 				++self->n_audio_out;
 			}
 		} else if (!port->optional) {
-			return fatal(self, 1, "Port %d has unsupported type\n", i);
+			return fatal(self, 1, "Port %u has unsupported type\n", i);
 		}
 	}
 
@@ -296,7 +296,7 @@ main(int argc, char** argv)
 
 	if (self.n_audio_in == 0 ||
 	    (in_fmt.channels != (int)self.n_audio_in && in_fmt.channels != 1)) {
-		return fatal(&self, 6, "Unable to map %d inputs to %d ports\n",
+		return fatal(&self, 6, "Unable to map %d inputs to %u ports\n",
 		             in_fmt.channels, self.n_audio_in);
 	}
 

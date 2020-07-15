@@ -146,7 +146,7 @@ bench(const LilvPlugin* p, uint32_t sample_count, uint32_t block_size)
 			} else if (lilv_port_is_a(p, port, lv2_OutputPort)) {
 				lilv_instance_connect_port(instance, index, out);
 			} else {
-				fprintf(stderr, "<%s> port %d neither input nor output, skipping\n",
+				fprintf(stderr, "<%s> port %u neither input nor output, skipping\n",
 				        uri, index);
 				lilv_instance_free(instance);
 				free(seq_out);
@@ -162,7 +162,7 @@ bench(const LilvPlugin* p, uint32_t sample_count, uint32_t block_size)
 				lilv_instance_connect_port(instance, index, seq_out);
 			}
 		} else {
-			fprintf(stderr, "<%s> port %d has unknown type, skipping\n",
+			fprintf(stderr, "<%s> port %u has unknown type, skipping\n",
 			        uri, index);
 			lilv_instance_free(instance);
 			free(seq_out);
@@ -193,7 +193,7 @@ bench(const LilvPlugin* p, uint32_t sample_count, uint32_t block_size)
 	uri_table_destroy(&uri_table);
 
 	if (full_output) {
-		printf("%d %d ", block_size, sample_count);
+		printf("%u %u ", block_size, sample_count);
 	}
 	printf("%lf %s\n", elapsed, uri);
 

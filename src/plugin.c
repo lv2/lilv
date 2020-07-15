@@ -353,7 +353,7 @@ lilv_plugin_load_ports_if_necessary(const LilvPlugin* const_plugin)
 		// Check sanity
 		for (uint32_t i = 0; i < plugin->num_ports; ++i) {
 			if (!plugin->ports[i]) {
-				LILV_ERRORF("Plugin <%s> is missing port %d/%d\n",
+				LILV_ERRORF("Plugin <%s> is missing port %u/%u\n",
 				            lilv_node_as_uri(plugin->plugin_uri), i, plugin->num_ports);
 				lilv_plugin_free_ports(plugin);
 				break;
