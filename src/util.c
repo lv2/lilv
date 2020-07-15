@@ -85,6 +85,7 @@ lilv_strjoin(const char* first, ...)
 		const size_t this_len   = strlen(s);
 		char*        new_result = (char*)realloc(result, len + this_len + 1);
 		if (!new_result) {
+			va_end(args);
 			free(result);
 			return NULL;
 		}
