@@ -1,11 +1,11 @@
 #!/usr/bin/env python
 
+import glob
 import os
 import shutil
-import subprocess
 import sys
 
-from waflib import Options, Logs
+from waflib import Build, Options, Logs
 from waflib.extras import autowaf
 
 # Library and package version (UNIX style major, minor, micro)
@@ -65,6 +65,7 @@ test_plugins = [
     'old_version'
 ]
 
+
 def options(ctx):
     ctx.load('compiler_c')
     ctx.load('compiler_cxx')
@@ -84,21 +85,22 @@ def options(ctx):
                    dest='default_lv2_path',
                    help='default LV2 path to use if LV2_PATH is unset')
 
+
 def configure(conf):
     conf.load('compiler_c', cache=True)
     try:
         conf.load('compiler_cxx', cache=True)
         conf.define('LILV_CXX', True)
-    except:
+    except Exception:
         pass
 
     if not Options.options.no_bindings:
         try:
             conf.load('python', cache=True)
-            conf.check_python_version((2,6,0))
+            conf.check_python_version((2, 6, 0))
             conf.env.LILV_PYTHON = 1
-        except:
-            Logs.warn('Failed to configure Python (%s)\n' % sys.exc_info()[1])
+        except Exception as e:
+            Logs.warn('Failed to configure Python (%s)\n' % e)
 
     conf.load('autowaf', cache=True)
     autowaf.set_c_lang(conf, 'c99')
@@ -210,7 +212,7 @@ def configure(conf):
                         mandatory   = False)
 
     conf.check_function('c', 'clock_gettime',
-                        header_name  = ['sys/time.h','time.h'],
+                        header_name  = ['sys/time.h', 'time.h'],
                         defines      = ['_POSIX_C_SOURCE=200809L'],
                         define_name  = 'HAVE_CLOCK_GETTIME',
                         uselib_store = 'CLOCK_GETTIME',
@@ -278,6 +280,7 @@ def configure(conf):
          'Dynamic manifest support': conf.is_defined('LILV_DYN_MANIFEST'),
          'Python bindings':          bool(conf.env.LILV_PYTHON)})
 
+
 def build_util(bld, name, defines, libs=''):
     obj = bld(features     = 'c cprogram',
               source       = name + '.c',
@@ -295,6 +298,7 @@ def build_util(bld, name, defines, libs=''):
             obj.env.SHLIB_MARKER = obj.env.STLIB_MARKER
             obj.linkflags        = ['-static', '-Wl,--start-group']
     return obj
+
 
 def build(bld):
     # C/C++ Headers
@@ -331,9 +335,9 @@ def build(bld):
 
     # Pkgconfig file
     autowaf.build_pc(bld, 'LILV', LILV_VERSION, LILV_MAJOR_VERSION, [],
-                     {'LILV_MAJOR_VERSION' : LILV_MAJOR_VERSION,
-                      'LILV_PKG_DEPS'      : 'lv2 serd-0 sord-0 sratom-0',
-                      'LILV_PKG_LIBS'      : ' -l'.join([''] + lib)})
+                     {'LILV_MAJOR_VERSION': LILV_MAJOR_VERSION,
+                      'LILV_PKG_DEPS': 'lv2 serd-0 sord-0 sratom-0',
+                      'LILV_PKG_LIBS': ' -l'.join([''] + lib)})
 
     # Shared Library
     if bld.env.BUILD_SHARED:
@@ -424,13 +428,13 @@ def build(bld):
 
         # Test plugin data files
         for p in ['test'] + test_plugins:
-            for i in [ 'manifest.ttl.in', p + '.ttl.in' ]:
+            for i in ['manifest.ttl.in', p + '.ttl.in']:
                 bundle = 'test/%s.lv2/' % p
                 bld(features     = 'subst',
                     source       = bundle + i,
                     target       = bundle + i.replace('.in', ''),
                     install_path = None,
-                SHLIB_EXT    = shlib_ext)
+                    SHLIB_EXT    = shlib_ext)
 
         # Static profiled library (for unit test code coverage)
         obj = bld(features     = 'c cstlib',
@@ -480,8 +484,10 @@ def build(bld):
                       linkflags    = test_linkflags)
 
         if bld.env.LILV_PYTHON:
+            test_bundle = 'bindings/bindings_test_plugin.lv2/'
+
             # Copy Python unittest files
-            for i in [ 'test_api.py' ]:
+            for i in ['test_api.py']:
                 bld(features     = 'subst',
                     is_copy      = True,
                     source       = 'bindings/test/python/' + i,
@@ -492,7 +498,7 @@ def build(bld):
             obj = bld(features     = 'c cshlib',
                       source       = 'bindings/test/bindings_test_plugin.c',
                       name         = 'bindings_test_plugin',
-                      target       = 'bindings/bindings_test_plugin.lv2/bindings_test_plugin',
+                      target       = test_bundle + '/bindings_test_plugin',
                       install_path = None,
                       defines      = defines,
                       cflags       = test_cflags,
@@ -502,13 +508,12 @@ def build(bld):
             obj.env.cshlib_PATTERN = module_pattern
 
             # Bindings test plugin data files
-            for i in [ 'manifest.ttl.in', 'bindings_test_plugin.ttl.in' ]:
+            for i in ['manifest.ttl.in', 'bindings_test_plugin.ttl.in']:
                 bld(features     = 'subst',
                     source       = 'bindings/test/' + i,
-                    target       = 'bindings/bindings_test_plugin.lv2/' + i.replace('.in', ''),
+                    target       = test_bundle + i.replace('.in', ''),
                     install_path = None,
                     SHLIB_EXT    = shlib_ext)
-
 
     # Utilities
     if bld.env.BUILD_UTILS:
@@ -539,10 +544,11 @@ def build(bld):
 
     # Bash completion
     if bld.env.BASH_COMPLETION:
-        bld.install_as(
-            '${SYSCONFDIR}/bash_completion.d/lilv', 'utils/lilv.bash_completion')
+        bld.install_as('${SYSCONFDIR}/bash_completion.d/lilv',
+                       'utils/lilv.bash_completion')
 
     bld.add_post_fun(autowaf.run_ldconfig)
+
 
 def test(tst):
     with tst.group('unit') as check:
@@ -565,7 +571,7 @@ def test(tst):
 
     try:
         shutil.rmtree('state')
-    except:
+    except Exception:
         pass
 
 def lint(ctx):
