@@ -21,20 +21,21 @@
 #include "../src/lilv_internal.h"
 
 #include "lilv/lilv.h"
+#include "serd/serd.h"
 
 #ifdef _WIN32
 #	include <direct.h>
-#	include <io.h>
 #	define mkdir(path, flags) _mkdir(path)
 #else
 #	include <unistd.h>
 #endif
 
 #include <errno.h>
+#include <stdbool.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/stat.h>
 
 LilvTestEnv*
 lilv_test_env_new(void)

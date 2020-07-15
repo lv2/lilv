@@ -29,6 +29,10 @@
 #include "lv2/state/state.h"
 #include "lv2/urid/urid.h"
 
+#ifndef _WIN32
+#include <unistd.h>
+#endif
+
 #include <assert.h>
 #include <errno.h>
 #include <stdbool.h>

@@ -25,7 +25,7 @@
 #include "lv2/core/lv2.h"
 
 /** Include standard C headers */
-#include <math.h>
+#include <stdint.h>
 #include <stdlib.h>
 
 /**

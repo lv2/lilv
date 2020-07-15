@@ -33,10 +33,10 @@
 
 #include <assert.h>
 #include <stdbool.h>
-#include <stdlib.h>
-#include <string.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 static int
 lilv_world_drop_graph(LilvWorld* world, const SordNode* graph);
