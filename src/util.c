@@ -347,12 +347,14 @@ lilv_copy_file(const char* src, const char* dst)
 	return st;
 }
 
+#ifdef _WIN32
 static inline bool
 is_windows_path(const char* path)
 {
 	return (isalpha(path[0]) && (path[1] == ':' || path[1] == '|') &&
 	        (path[2] == '/' || path[2] == '\\'));
 }
+#endif
 
 bool
 lilv_path_is_absolute(const char* path)
