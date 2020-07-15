@@ -20,8 +20,6 @@
 #include <stdint.h>
 #include <stdlib.h>
 
-#define PLUGIN_URI "http://example.org/missing-plugin"
-
 static const LV2_Descriptor descriptor = {
 	"http://example.org/not-the-plugin-you-are-looking-for",
 	NULL,

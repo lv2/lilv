@@ -19,8 +19,6 @@
 
 #include <stdlib.h>
 
-#define PLUGIN_URI "http://example.org/failed-lib-descriptor"
-
 LV2_SYMBOL_EXPORT
 const LV2_Lib_Descriptor*
 lv2_lib_descriptor(const char*              bundle_path,

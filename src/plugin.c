@@ -14,8 +14,6 @@
   OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 */
 
-#define __STDC_LIMIT_MACROS
-
 #include "lilv_config.h"
 #include "lilv_internal.h"
 
