@@ -950,7 +950,6 @@ class Plugins(Collection):
 
     def __init__(self, world, collection):
         assert type(collection) == POINTER(Plugins)
-        assert collection
 
         def constructor(world, plugin):
             return Plugin.wrap(world, plugin)
@@ -994,7 +993,6 @@ class PluginClasses(Collection):
 
     def __init__(self, world, collection, owning=False):
         assert type(collection) == POINTER(PluginClasses)
-        assert collection
 
         self.owning = owning
         super(PluginClasses, self).__init__(
@@ -1045,7 +1043,6 @@ class UIs(Collection):
 
     def __init__(self, world, collection):
         assert type(collection) == POINTER(UIs)
-        assert collection
         super(UIs, self).__init__(
             world,
             collection,
