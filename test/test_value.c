@@ -49,7 +49,7 @@ main(void)
 	LilvNode* uval = lilv_new_uri(world, "http://example.org");
 	LilvNode* sval = lilv_new_string(world, "Foo");
 	LilvNode* ival = lilv_new_int(world, 42);
-	LilvNode* fval = lilv_new_float(world, 1.6180);
+	LilvNode* fval = lilv_new_float(world, 1.6180f);
 
 	assert(lilv_node_is_uri(uval));
 	assert(lilv_node_is_string(sval));
@@ -116,11 +116,11 @@ main(void)
 	LilvNode* uval_e  = lilv_new_uri(world, "http://example.org");
 	LilvNode* sval_e  = lilv_new_string(world, "Foo");
 	LilvNode* ival_e  = lilv_new_int(world, 42);
-	LilvNode* fval_e  = lilv_new_float(world, 1.6180);
+	LilvNode* fval_e  = lilv_new_float(world, 1.6180f);
 	LilvNode* uval_ne = lilv_new_uri(world, "http://no-example.org");
 	LilvNode* sval_ne = lilv_new_string(world, "Bar");
 	LilvNode* ival_ne = lilv_new_int(world, 24);
-	LilvNode* fval_ne = lilv_new_float(world, 3.14159);
+	LilvNode* fval_ne = lilv_new_float(world, 3.14159f);
 
 	assert(lilv_node_equals(uval, uval_e));
 	assert(lilv_node_equals(sval, sval_e));
