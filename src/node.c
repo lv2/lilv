@@ -182,7 +182,9 @@ lilv_new_int(LilvWorld* world, int val)
 	char str[32];
 	snprintf(str, sizeof(str), "%d", val);
 	LilvNode* ret = lilv_node_new(world, LILV_VALUE_INT, str);
-	ret->val.int_val = val;
+	if (ret) {
+		ret->val.int_val = val;
+	}
 	return ret;
 }
 
@@ -192,7 +194,9 @@ lilv_new_float(LilvWorld* world, float val)
 	char str[32];
 	snprintf(str, sizeof(str), "%f", val);
 	LilvNode* ret = lilv_node_new(world, LILV_VALUE_FLOAT, str);
-	ret->val.float_val = val;
+	if (ret) {
+		ret->val.float_val = val;
+	}
 	return ret;
 }
 
@@ -201,7 +205,9 @@ lilv_new_bool(LilvWorld* world, bool val)
 {
 	LilvNode* ret = lilv_node_new(world, LILV_VALUE_BOOL,
 	                              val ? "true" : "false");
-	ret->val.bool_val = val;
+	if (ret) {
+		ret->val.bool_val = val;
+	}
 	return ret;
 }
 
