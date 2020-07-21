@@ -55,6 +55,10 @@
 
 #ifdef __cplusplus
 extern "C" {
+#    if defined(__clang__)
+#        pragma clang diagnostic push
+#        pragma clang diagnostic ignored "-Wzero-as-null-pointer-constant"
+#    endif
 #endif
 
 #define LILV_NS_DOAP "http://usefulinc.com/ns/doap#"
@@ -1848,6 +1852,9 @@ lilv_ui_get_binary_uri(const LilvUI* ui);
 */
 
 #ifdef __cplusplus
+#    if defined(__clang__)
+#        pragma clang diagnostic pop
+#    endif
 } /* extern "C" */
 #endif
 
