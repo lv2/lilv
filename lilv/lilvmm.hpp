@@ -269,7 +269,7 @@ struct Instance {
 
 	LILV_DEPRECATED
 	inline Instance(Plugin plugin, double sample_rate) {
-		me = lilv_plugin_instantiate(plugin, sample_rate, NULL);
+		me = lilv_plugin_instantiate(plugin, sample_rate, nullptr);
 	}
 
 	LILV_DEPRECATED inline Instance(Plugin              plugin,
@@ -284,7 +284,7 @@ struct Instance {
 		LilvInstance* me = lilv_plugin_instantiate(
 			plugin, sample_rate, features);
 
-		return me ? new Instance(me) : NULL;
+		return me ? new Instance(me) : nullptr;
 	}
 
 	LILV_WRAP_CONVERSION(LilvInstance);

@@ -170,7 +170,6 @@ def configure(conf):
         autowaf.add_compiler_flags(conf.env, 'cxx', {
             'clang': [
                 '-Wno-extra-semi',
-                '-Wno-zero-as-null-pointer-constant',
             ],
             'gcc': [
                 '-Wno-effc++',
