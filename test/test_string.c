@@ -36,21 +36,21 @@ main(void)
 {
 	char* s = NULL;
 
-	assert(!strcmp((s = lilv_dirname("/foo/bar")), "/foo"));
+	assert(!strcmp((s = lilv_path_parent("/foo/bar")), "/foo"));
 	free(s);
-	assert(!strcmp((s = lilv_dirname("/foo/bar/")), "/foo"));
+	assert(!strcmp((s = lilv_path_parent("/foo/bar/")), "/foo"));
 	free(s);
-	assert(!strcmp((s = lilv_dirname("/foo///bar/")), "/foo"));
+	assert(!strcmp((s = lilv_path_parent("/foo///bar/")), "/foo"));
 	free(s);
-	assert(!strcmp((s = lilv_dirname("/foo///bar//")), "/foo"));
+	assert(!strcmp((s = lilv_path_parent("/foo///bar//")), "/foo"));
 	free(s);
-	assert(!strcmp((s = lilv_dirname("foo")), "."));
+	assert(!strcmp((s = lilv_path_parent("foo")), "."));
 	free(s);
-	assert(!strcmp((s = lilv_dirname("/foo")), "/"));
+	assert(!strcmp((s = lilv_path_parent("/foo")), "/"));
 	free(s);
-	assert(!strcmp((s = lilv_dirname("/")), "/"));
+	assert(!strcmp((s = lilv_path_parent("/")), "/"));
 	free(s);
-	assert(!strcmp((s = lilv_dirname("//")), "/"));
+	assert(!strcmp((s = lilv_path_parent("//")), "/"));
 	free(s);
 	assert(!strcmp((s = lilv_path_relative_to("/a/b", "/a/")), "b"));
 	free(s);

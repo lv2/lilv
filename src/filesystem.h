@@ -50,7 +50,7 @@ lilv_path_relative_to(const char* path, const char* base);
    Returns the root path if `path` is the root path.
 */
 char*
-lilv_dirname(const char* path);
+lilv_path_parent(const char* path);
 
 /// Join path `a` and path `b` with a single directory separator between them
 char*
@@ -67,7 +67,7 @@ lilv_dir_path(const char* path);
    directory separators.
 */
 char*
-lilv_realpath(const char* path);
+lilv_path_canonical(const char* path);
 
 /// Return true iff `path` points to an existing file system entry
 bool
@@ -122,7 +122,7 @@ lilv_dir_for_each(const char* path,
    @return Zero on success, or an `errno` error code.
 */
 int
-lilv_mkdir_p(const char* dir_path);
+lilv_create_directories(const char* dir_path);
 
 /// Return true iff the given paths point to files with identical contents
 bool

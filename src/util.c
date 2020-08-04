@@ -264,7 +264,7 @@ update_latest(const char* path, const char* name, void* data)
 char*
 lilv_get_latest_copy(const char* path, const char* copy_path)
 {
-	char*  copy_dir = lilv_dirname(copy_path);
+	char*  copy_dir = lilv_path_parent(copy_path);
 	Latest latest   = { lilv_strjoin(copy_path, ".%u", NULL), 0, NULL };
 
 	struct stat st;

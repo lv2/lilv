@@ -149,7 +149,7 @@ lilv_path_relative_to(const char* path, const char* base)
 }
 
 char*
-lilv_dirname(const char* path)
+lilv_path_parent(const char* path)
 {
 	const char* s = path + strlen(path) - 1;  // Last character
 	for (; s > path && lilv_is_dir_sep(*s); --s) {}  // Last non-slash
@@ -207,7 +207,7 @@ lilv_dir_path(const char* path)
 }
 
 char*
-lilv_realpath(const char* path)
+lilv_path_canonical(const char* path)
 {
 	if (!path) {
 		return NULL;
@@ -325,7 +325,7 @@ lilv_dir_for_each(const char* path,
 }
 
 int
-lilv_mkdir_p(const char* dir_path)
+lilv_create_directories(const char* dir_path)
 {
 	char*        path     = lilv_strdup(dir_path);
 	const size_t path_len = strlen(path);
@@ -373,8 +373,8 @@ lilv_file_equals(const char* a_path, const char* b_path)
 	bool        match  = false;
 	FILE*       a_file = NULL;
 	FILE*       b_file = NULL;
-	char* const a_real = lilv_realpath(a_path);
-	char* const b_real = lilv_realpath(b_path);
+	char* const a_real = lilv_path_canonical(a_path);
+	char* const b_real = lilv_path_canonical(b_path);
 	if (!strcmp(a_real, b_real)) {
 		match = true;  // Real paths match
 	} else if (lilv_file_size(a_path) != lilv_file_size(b_path)) {

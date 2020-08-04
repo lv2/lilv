@@ -53,7 +53,7 @@ lilv_test_env_new(void)
 	env->plugin2_uri = lilv_new_uri(world, "http://example.org/foobar");
 
 	// Set custom LV2_PATH in build directory to only use test data
-	char*     test_path = lilv_realpath(LILV_TEST_DIR);
+	char*     test_path = lilv_path_canonical(LILV_TEST_DIR);
 	char*     lv2_path  = lilv_strjoin(test_path, "/test_lv2_path", NULL);
 	LilvNode* path      = lilv_new_string(world, lv2_path);
 	lilv_world_set_option(world, LILV_OPTION_LV2_PATH, path);
@@ -83,12 +83,12 @@ create_bundle(LilvTestEnv* env, const char* manifest, const char* plugin)
 	{
 		static const char* const bundle_path = "/test_lv2_path/lilv-test.lv2";
 
-		char* const test_path = lilv_realpath(LILV_TEST_DIR);
+		char* const test_path = lilv_path_canonical(LILV_TEST_DIR);
 		env->test_bundle_path = lilv_strjoin(test_path, bundle_path, NULL);
 		lilv_free(test_path);
 	}
 
-	if (lilv_mkdir_p(env->test_bundle_path)) {
+	if (lilv_create_directories(env->test_bundle_path)) {
 		fprintf(stderr,
 		        "Failed to create directory '%s' (%s)\n",
 		        env->test_bundle_path,

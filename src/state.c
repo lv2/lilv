@@ -244,7 +244,7 @@ static char*
 make_path(LV2_State_Make_Path_Handle handle, const char* path)
 {
 	LilvState* state = (LilvState*)handle;
-	lilv_mkdir_p(state->dir);
+	lilv_create_directories(state->dir);
 
 	return lilv_path_join(state->dir, path);
 }
@@ -255,7 +255,7 @@ abstract_path(LV2_State_Map_Path_Handle handle,
 {
 	LilvState*    state     = (LilvState*)handle;
 	char*         path      = NULL;
-	char*         real_path = lilv_realpath(abs_path);
+	char*         real_path = lilv_path_canonical(abs_path);
 	const PathMap key       = { real_path, NULL };
 	ZixTreeIter*  iter      = NULL;
 
@@ -273,7 +273,7 @@ abstract_path(LV2_State_Map_Path_Handle handle,
 		// File created by plugin earlier
 		path = lilv_path_relative_to(real_path, state->scratch_dir);
 		if (state->copy_dir) {
-			int st = lilv_mkdir_p(state->copy_dir);
+			int st = lilv_create_directories(state->copy_dir);
 			if (st) {
 				LILV_ERRORF("Error creating directory %s (%s)\n",
 				            state->copy_dir, strerror(st));
@@ -725,8 +725,8 @@ lilv_state_new_from_file(LilvWorld*      world,
 		? subject->node
 		: sord_node_from_serd_node(world->world, env, &node, NULL, NULL);
 
-	char*      dirname   = lilv_dirname(path);
-	char*      real_path = lilv_realpath(dirname);
+	char*      dirname   = lilv_path_parent(path);
+	char*      real_path = lilv_path_canonical(dirname);
 	char*      dir_path  = lilv_dir_path(real_path);
 	LilvState* state =
 		new_state_from_model(world, map, model, subject_node, dir_path);
@@ -966,7 +966,7 @@ link_exists(const char* path, const void* data)
 	if (!lilv_path_exists(path)) {
 		return false;
 	}
-	char* real_path = lilv_realpath(path);
+	char* real_path = lilv_path_canonical(path);
 	bool  matches   = !strcmp(real_path, target);
 	free(real_path);
 	return !matches;
@@ -1174,7 +1174,7 @@ lilv_state_save(LilvWorld*       world,
                 const char*      dir,
                 const char*      filename)
 {
-	if (!filename || !dir || lilv_mkdir_p(dir)) {
+	if (!filename || !dir || lilv_create_directories(dir)) {
 		return 1;
 	}
 

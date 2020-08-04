@@ -37,7 +37,7 @@
 int
 main(void)
 {
-	assert(!lilv_realpath(NULL));
+	assert(!lilv_path_canonical(NULL));
 
 	char a_path[16];
 	char b_path[16];

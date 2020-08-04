@@ -175,7 +175,7 @@ main(void)
 	assert(in == 1.0);
 	assert(out == 1.0);
 
-	temp_dir = lilv_realpath("temp");
+	temp_dir = lilv_path_canonical("temp");
 
 	const char* scratch_dir = NULL;
 	char*       copy_dir    = NULL;
@@ -369,9 +369,9 @@ main(void)
 	mkdir("temp", 0700);
 	scratch_dir = temp_dir;
 	mkdir("files", 0700);
-	copy_dir = lilv_realpath("files");
+	copy_dir = lilv_path_canonical("files");
 	mkdir("links", 0700);
-	link_dir = lilv_realpath("links");
+	link_dir = lilv_path_canonical("links");
 
 	LV2_State_Make_Path make_path         = {NULL, lilv_make_path};
 	LV2_Feature         make_path_feature = {LV2_STATE__makePath, &make_path};
