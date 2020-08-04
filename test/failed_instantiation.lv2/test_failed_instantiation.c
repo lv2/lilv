@@ -1,6 +1,6 @@
 #undef NDEBUG
 
-#include "../src/lilv_internal.h"
+#include "../src/filesystem.h"
 
 #include "lilv/lilv.h"
 #include "serd/serd.h"

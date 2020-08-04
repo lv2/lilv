@@ -313,6 +313,7 @@ def build(bld):
 
     lib_source = '''
         src/collections.c
+        src/filesystem.c
         src/instance.c
         src/lib.c
         src/node.c

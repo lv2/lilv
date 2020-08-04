@@ -14,7 +14,6 @@
   OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 */
 
-#include "lilv_config.h"
 #include "lilv_internal.h"
 
 #include "lilv/lilv.h"

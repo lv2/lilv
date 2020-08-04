@@ -18,7 +18,11 @@
 
 #undef NDEBUG
 
-#include "../src/lilv_internal.h"
+#ifdef _WIN32
+#	 include "lilv_internal.h"
+#endif
+
+#include "../src/filesystem.h"
 
 #ifdef _WIN32
 #    include <io.h>

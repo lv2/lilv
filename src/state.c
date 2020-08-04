@@ -14,6 +14,7 @@
   OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 */
 
+#include "filesystem.h"
 #include "lilv_internal.h"
 
 #include "lilv/lilv.h"
@@ -228,6 +229,12 @@ retrieve_callback(LV2_State_Handle handle,
 }
 
 static bool
+path_exists(const char* path, const void* ignored)
+{
+	return lilv_path_exists(path);
+}
+
+static bool
 lilv_state_has_path(const char* path, const void* state)
 {
 	return lilv_state_rel2abs((const LilvState*)state, path) != path;
@@ -277,7 +284,7 @@ abstract_path(LV2_State_Map_Path_Handle handle,
 			if (!copy || !lilv_file_equals(real_path, copy)) {
 				// No recent enough copy, make a new one
 				free(copy);
-				copy = lilv_find_free_path(cpath, lilv_path_exists, NULL);
+				copy = lilv_find_free_path(cpath, path_exists, NULL);
 				if ((st = lilv_copy_file(real_path, copy))) {
 					LILV_ERRORF("Error copying state file %s (%s)\n",
 					            copy, strerror(st));
@@ -956,7 +963,7 @@ static bool
 link_exists(const char* path, const void* data)
 {
 	const char* target = (const char*)data;
-	if (!lilv_path_exists(path, NULL)) {
+	if (!lilv_path_exists(path)) {
 		return false;
 	}
 	char* real_path = lilv_realpath(path);
@@ -968,7 +975,19 @@ link_exists(const char* path, const void* data)
 static int
 maybe_symlink(const char* oldpath, const char* newpath)
 {
-  return link_exists(newpath, oldpath) ? 0 : lilv_symlink(oldpath, newpath);
+	if (link_exists(newpath, oldpath)) {
+		return 0;
+	}
+
+	const int st = lilv_symlink(oldpath, newpath);
+	if (st) {
+		LILV_ERRORF("Failed to link %s => %s (%s)\n",
+		            newpath,
+		            oldpath,
+		            strerror(errno));
+	}
+
+	return st;
 }
 
 static void
@@ -1125,8 +1144,13 @@ lilv_state_make_links(const LilvState* state, const char* dir)
 			} else {
 				// Make a link in the link directory to external file
 				char* lpath = lilv_find_free_path(pat, link_exists, pm->abs);
-				if (!lilv_path_exists(lpath, NULL)) {
-					lilv_symlink(pm->abs, lpath);
+				if (!lilv_path_exists(lpath)) {
+					if (lilv_symlink(pm->abs, lpath)) {
+						LILV_ERRORF("Failed to link %s => %s (%s)\n",
+						            pm->abs,
+						            lpath,
+						            strerror(errno));
+					}
 				}
 
 				// Make a link in the save directory to the external link
@@ -1228,7 +1252,7 @@ static void
 try_unlink(const char* state_dir, const char* path)
 {
 	if (!strncmp(state_dir, path, strlen(state_dir))) {
-		if (lilv_path_exists(path, NULL) && unlink(path)) {
+		if (lilv_path_exists(path) && unlink(path)) {
 			LILV_ERRORF("Failed to remove %s (%s)\n", path, strerror(errno));
 		}
 	}
@@ -1246,7 +1270,7 @@ lilv_state_delete(LilvWorld*       world,
 	LilvNode*  bundle        = lilv_new_file_uri(world, NULL, state->dir);
 	LilvNode*  manifest      = lilv_world_get_manifest_uri(world, bundle);
 	char*      manifest_path = lilv_node_get_path(manifest, NULL);
-	const bool has_manifest  = lilv_path_exists(manifest_path, NULL);
+	const bool has_manifest  = lilv_path_exists(manifest_path);
 	SordModel* model         = sord_new(world->world, SORD_SPO, false);
 
 	if (has_manifest) {

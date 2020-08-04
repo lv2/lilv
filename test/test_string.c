@@ -18,6 +18,7 @@
 
 #undef NDEBUG
 
+#include "../src/filesystem.h"
 #include "../src/lilv_internal.h"
 
 #ifdef _WIN32

@@ -18,6 +18,7 @@
 
 #include "lilv_test_utils.h"
 
+#include "../src/filesystem.h"
 #include "../src/lilv_internal.h"
 
 #include "lilv/lilv.h"
