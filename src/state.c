@@ -539,7 +539,7 @@ set_state_dir_from_model(LilvState* state, const SordNode* graph)
 		const char* uri  = (const char*)sord_node_get_string(graph);
 		char*       path = lilv_file_uri_parse(uri, NULL);
 
-		state->dir = lilv_dir_path(path);
+		state->dir = lilv_path_join(path, NULL);
 		free(path);
 	}
 	assert(!state->dir || lilv_path_is_absolute(state->dir));
@@ -559,7 +559,7 @@ new_state_from_model(LilvWorld*       world,
 
 	// Allocate state
 	LilvState* const state = (LilvState*)calloc(1, sizeof(LilvState));
-	state->dir       = lilv_dir_path(dir);
+	state->dir       = lilv_path_join(dir, NULL);
 	state->atom_Path = map->map(map->handle, LV2_ATOM__Path);
 	state->uri       = lilv_node_new_from_node(world, node);
 
@@ -727,7 +727,7 @@ lilv_state_new_from_file(LilvWorld*      world,
 
 	char*      dirname   = lilv_path_parent(path);
 	char*      real_path = lilv_path_canonical(dirname);
-	char*      dir_path  = lilv_dir_path(real_path);
+	char*      dir_path  = lilv_path_join(real_path, NULL);
 	LilvState* state =
 		new_state_from_model(world, map, model, subject_node, dir_path);
 	free(dir_path);

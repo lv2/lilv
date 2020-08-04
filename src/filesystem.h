@@ -56,10 +56,6 @@ lilv_path_parent(const char* path);
 char*
 lilv_path_join(const char* a, const char* b);
 
-/// Return `path` normalized to have a trailing directory separator
-char*
-lilv_dir_path(const char* path);
-
 /**
    Return `path` as a canonicalized absolute path.
 

@@ -170,7 +170,7 @@ char*
 lilv_path_join(const char* a, const char* b)
 {
 	if (!a) {
-		return lilv_strdup(b);
+		return (b && b[0]) ? lilv_strdup(b) : NULL;
 	}
 
 	const size_t a_len   = strlen(a);
@@ -185,25 +185,6 @@ lilv_path_join(const char* a, const char* b)
 		       lilv_is_dir_sep(b[0]) ? b_len - 1 : b_len);
 	}
 	return path;
-}
-
-char*
-lilv_dir_path(const char* path)
-{
-	if (!path) {
-		return NULL;
-	}
-
-	const size_t len = strlen(path);
-
-	if (lilv_is_dir_sep(path[len - 1])) {
-		return lilv_strdup(path);
-	}
-
-	char* dir_path = (char*)calloc(len + 2, 1);
-	memcpy(dir_path, path, len);
-	dir_path[len] = LILV_DIR_SEP[0];
-	return dir_path;
 }
 
 char*
