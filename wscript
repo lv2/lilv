@@ -462,8 +462,8 @@ def build(bld):
         testdir = testdir.replace('\\', '/')
         for test in tests:
             obj = bld(features     = 'c cprogram',
-                      source       = ['test/lilv_test_utils.c',
-                                      'test/%s.c' % test],
+                      source       = ['test/%s.c' % test,
+                                      'test/lilv_test_utils.c'],
                       includes     = ['.', './src'],
                       use          = 'liblilv_profiled',
                       lib          = test_libs,
