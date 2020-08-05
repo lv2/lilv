@@ -270,10 +270,11 @@ lilv_symlink(const char* oldpath, const char* newpath)
 }
 
 int
-lilv_flock(FILE* file, bool lock)
+lilv_flock(FILE* file, bool lock, bool block)
 {
 #if defined(HAVE_FLOCK) && defined(HAVE_FILENO)
-	return flock(fileno(file), lock ? LOCK_EX : LOCK_UN);
+	return flock(fileno(file),
+	             (lock ? LOCK_EX : LOCK_UN) | (block ? 0 : LOCK_NB));
 #else
 	return 0;
 #endif

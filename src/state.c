@@ -902,7 +902,7 @@ add_state_to_manifest(LilvWorld*      lworld,
 	if (rfd) {
 		// Read manifest into model
 		SerdReader* reader = sord_new_reader(model, env, SERD_TURTLE, NULL);
-		lilv_flock(rfd, true);
+		lilv_flock(rfd, true, true);
 		serd_reader_read_file_handle(reader, rfd, manifest.buf);
 		serd_reader_free(reader);
 	}
@@ -952,7 +952,7 @@ add_state_to_manifest(LilvWorld*      lworld,
 	serd_env_free(env);
 
 	if (rfd) {
-		lilv_flock(rfd, false);
+		lilv_flock(rfd, false, true);
 		fclose(rfd);
 	}
 
