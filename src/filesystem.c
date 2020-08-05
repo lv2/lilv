@@ -32,6 +32,7 @@
 #    include <io.h>
 #    define F_OK 0
 #    define mkdir(path, flags) _mkdir(path)
+#    define S_ISDIR(mode)  (((mode) & S_IFMT) == S_IFDIR)
 #else
 #    include <dirent.h>
 #    include <unistd.h>
@@ -238,6 +239,13 @@ lilv_path_exists(const char* path)
 #else
 	return !access(path, F_OK);
 #endif
+}
+
+bool
+lilv_is_directory(const char* path)
+{
+	struct stat st;
+	return !stat(path, &st) && S_ISDIR(st.st_mode);
 }
 
 int

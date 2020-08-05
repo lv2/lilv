@@ -77,6 +77,10 @@ lilv_path_canonical(const char* path);
 bool
 lilv_path_exists(const char* path);
 
+/// Return true iff `path` points to an existing directory
+bool
+lilv_is_directory(const char* path);
+
 /**
    Copy the file at path `src` to path `dst`.
 
