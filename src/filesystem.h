@@ -129,6 +129,17 @@ lilv_dir_for_each(const char* path,
                   void (*f)(const char* path, const char* name, void* data));
 
 /**
+   Create a unique temporary directory.
+
+   The last six characters of `pattern` must be `XXXXXX` and will be replaced
+   with random characters.  This works roughly like mkdtemp, except the pattern
+   should only be a directory name, not a full path.  The returned path will be
+   in a suitable system temporary directory.
+*/
+char*
+lilv_create_temporary_directory(const char* pattern);
+
+/**
    Create the directory `dir_path` and any parent directories if necessary.
 
    @return Zero on success, or an `errno` error code.

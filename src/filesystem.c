@@ -339,6 +339,46 @@ lilv_dir_for_each(const char* path,
 #endif
 }
 
+char*
+lilv_create_temporary_directory(const char* pattern)
+{
+#ifdef _WIN32
+	static const char chars[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+	static const int  n_chars = sizeof(chars) - 1;
+
+	const size_t pattern_len = strlen(pattern);
+	if (pattern_len < 7 || strcmp(pattern + pattern_len - 6, "XXXXXX")) {
+		errno = EINVAL;
+		return NULL;
+	}
+
+	char* const  tmpdir           = lilv_temp_directory_path();
+	char* const  path_pattern     = lilv_path_join(tmpdir, pattern);
+	const size_t path_pattern_len = strlen(path_pattern);
+	char* const  suffix           = path_pattern + path_pattern_len - 6;
+
+	free(tmpdir);
+
+	for (unsigned attempt = 0; attempt < 128; ++attempt) {
+		for (unsigned i = 0; i < 6; ++i) {
+			suffix[i] = chars[rand() % n_chars];
+		}
+
+		if (!mkdir(path_pattern, 0700)) {
+			return path_pattern;
+		}
+	}
+
+	return NULL;
+#else
+	char* const tmpdir       = lilv_temp_directory_path();
+	char* const path_pattern = lilv_path_join(tmpdir, pattern);
+
+	free(tmpdir);
+	return mkdtemp(path_pattern); // NOLINT (not a leak)
+#endif
+}
+
 int
 lilv_create_directories(const char* dir_path)
 {
