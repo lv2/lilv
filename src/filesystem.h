@@ -29,6 +29,10 @@ lilv_path_is_absolute(const char* path);
 bool
 lilv_path_is_child(const char* path, const char* dir);
 
+/// Return the current working directory
+char*
+lilv_path_current(void);
+
 /**
    Return `path` as an absolute path.
 

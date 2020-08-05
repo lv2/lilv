@@ -115,6 +115,12 @@ lilv_path_is_child(const char* path, const char* dir)
 }
 
 char*
+lilv_path_current(void)
+{
+	return getcwd(NULL, 0);
+}
+
+char*
 lilv_path_absolute(const char* path)
 {
 	if (lilv_path_is_absolute(path)) {
