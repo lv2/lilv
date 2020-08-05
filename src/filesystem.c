@@ -324,7 +324,9 @@ lilv_dir_for_each(const char* path,
 	HANDLE          fh  = FindFirstFile(pat, &fd);
 	if (fh != INVALID_HANDLE_VALUE) {
 		do {
-			f(path, fd.cFileName, data);
+			if (strcmp(fd.cFileName, ".") && strcmp(fd.cFileName, "..")) {
+				f(path, fd.cFileName, data);
+			}
 		} while (FindNextFile(fh, &fd));
 	}
 	free(pat);
@@ -332,7 +334,9 @@ lilv_dir_for_each(const char* path,
 	DIR* dir = opendir(path);
 	if (dir) {
 		for (struct dirent* entry = NULL; (entry = readdir(dir));) {
-			f(path, entry->d_name, data);
+			if (strcmp(entry->d_name, ".") && strcmp(entry->d_name, "..")) {
+				f(path, entry->d_name, data);
+			}
 		}
 		closedir(dir);
 	}

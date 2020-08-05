@@ -956,13 +956,9 @@ static void
 load_dir_entry(const char* dir, const char* name, void* data)
 {
 	LilvWorld* world = (LilvWorld*)data;
-	if (!strcmp(name, ".") || !strcmp(name, "..")) {
-		return;
-	}
-
-	char*     path = lilv_strjoin(dir, "/", name, "/", NULL);
-	SerdNode  suri = serd_node_new_file_uri((const uint8_t*)path, 0, 0, true);
-	LilvNode* node = lilv_new_uri(world, (const char*)suri.buf);
+	char*      path  = lilv_strjoin(dir, "/", name, "/", NULL);
+	SerdNode   suri  = serd_node_new_file_uri((const uint8_t*)path, 0, 0, true);
+	LilvNode*  node  = lilv_new_uri(world, (const char*)suri.buf);
 
 	lilv_world_load_bundle(world, node);
 	lilv_node_free(node);
