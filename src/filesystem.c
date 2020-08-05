@@ -68,6 +68,25 @@ is_windows_path(const char* path)
 }
 #endif
 
+char*
+lilv_temp_directory_path(void)
+{
+#ifdef _WIN32
+	DWORD len = GetTempPath(0, NULL);
+	char* buf = (char*)calloc(len, 1);
+	if (GetTempPath(len, buf) == 0) {
+		free(buf);
+		return NULL;
+	}
+
+	return buf;
+#else
+	const char* const tmpdir = getenv("TMPDIR");
+
+	return tmpdir ? lilv_strdup(tmpdir) : lilv_strdup("/tmp");
+#endif
+}
+
 bool
 lilv_path_is_absolute(const char* path)
 {
