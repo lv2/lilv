@@ -21,6 +21,7 @@
 #include "../src/filesystem.h"
 
 #include <assert.h>
+#include <errno.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -271,6 +272,19 @@ test_copy_file(void)
 
 	assert(!lilv_copy_file(file_path, copy_path));
 	assert(lilv_file_equals(file_path, copy_path));
+
+	if (lilv_path_exists("/dev/full")) {
+		// Copy short file (error after flushing)
+		assert(lilv_copy_file(file_path, "/dev/full") == ENOSPC);
+
+		// Copy long file (error during writing)
+		f = fopen(file_path, "w");
+		for (size_t i = 0; i < 4096; ++i) {
+			fprintf(f, "test\n");
+		}
+		fclose(f);
+		assert(lilv_copy_file(file_path, "/dev/full") == ENOSPC);
+	}
 
 	assert(!lilv_remove(copy_path));
 	assert(!lilv_remove(file_path));

@@ -272,6 +272,10 @@ lilv_copy_file(const char* src, const char* dst)
 		}
 	}
 
+	if (!st && fflush(out)) {
+		st = errno;
+	}
+
 	if (!st && (ferror(in) || ferror(out))) {
 		st = EBADF;
 	}
