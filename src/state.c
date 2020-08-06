@@ -30,10 +30,6 @@
 #include "lv2/state/state.h"
 #include "lv2/urid/urid.h"
 
-#ifndef _WIN32
-#include <unistd.h>
-#endif
-
 #include <assert.h>
 #include <errno.h>
 #include <stdbool.h>
@@ -1252,7 +1248,7 @@ static void
 try_unlink(const char* state_dir, const char* path)
 {
 	if (!strncmp(state_dir, path, strlen(state_dir))) {
-		if (lilv_path_exists(path) && unlink(path)) {
+		if (lilv_path_exists(path) && lilv_remove(path)) {
 			LILV_ERRORF("Failed to remove %s (%s)\n", path, strerror(errno));
 		}
 	}
@@ -1329,7 +1325,7 @@ lilv_state_delete(LilvWorld*       world,
 			}
 		}
 
-		if (rmdir(state->dir)) {
+		if (lilv_remove(state->dir)) {
 			LILV_ERRORF("Failed to remove directory %s (%s)\n",
 			            state->dir, strerror(errno));
 		}

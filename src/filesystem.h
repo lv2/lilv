@@ -147,6 +147,10 @@ lilv_create_temporary_directory(const char* pattern);
 int
 lilv_create_directories(const char* dir_path);
 
+/// Remove the file or empty directory at `path`
+int
+lilv_remove(const char* path);
+
 /// Return true iff the given paths point to files with identical contents
 bool
 lilv_file_equals(const char* a_path, const char* b_path);

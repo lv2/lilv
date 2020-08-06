@@ -32,7 +32,6 @@
 #	define mkdir(path, flags) _mkdir(path)
 #else
 #	include <sys/stat.h>
-#	include <unistd.h>
 #endif
 
 #include <assert.h>
@@ -561,7 +560,7 @@ main(void)
 	lilv_state_free(fstate7);
 	lilv_state_free(fstate72);
 
-	rmdir("state");
+	lilv_remove("state");
 
 	// Free URI map
 	for (size_t i = 0; i < n_uris; ++i) {

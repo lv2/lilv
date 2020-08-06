@@ -24,13 +24,6 @@
 #include "lilv/lilv.h"
 #include "serd/serd.h"
 
-#ifdef _WIN32
-#	include <direct.h>
-#	define mkdir(path, flags) _mkdir(path)
-#else
-#	include <unistd.h>
-#endif
-
 #include <errno.h>
 #include <stdbool.h>
 #include <stdint.h>
@@ -153,11 +146,11 @@ void
 delete_bundle(LilvTestEnv* env)
 {
 	if (env->test_content_path) {
-		unlink(env->test_content_path);
+		lilv_remove(env->test_content_path);
 	}
 
 	if (env->test_manifest_path) {
-		unlink(env->test_manifest_path);
+		lilv_remove(env->test_manifest_path);
 	}
 
 	if (env->test_bundle_path) {

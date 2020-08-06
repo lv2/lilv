@@ -39,8 +39,6 @@ extern "C" {
 #    include <stdio.h>
 #    define dlopen(path, flags) LoadLibrary(path)
 #    define dlclose(lib)        FreeLibrary((HMODULE)lib)
-#    define unlink(path)        _unlink(path)
-#    define rmdir(path)         _rmdir(path)
 #    ifdef _MSC_VER
 #        define __func__ __FUNCTION__
 #        ifndef snprintf

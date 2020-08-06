@@ -423,6 +423,18 @@ lilv_file_size(const char* path)
 	return buf.st_size;
 }
 
+int
+lilv_remove(const char* path)
+{
+#ifdef _WIN32
+	if (lilv_is_directory(path)) {
+		return !RemoveDirectory(path);
+	}
+#endif
+
+	return remove(path);
+}
+
 bool
 lilv_file_equals(const char* a_path, const char* b_path)
 {
