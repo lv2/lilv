@@ -31,6 +31,7 @@ tests = [
     'test_bad_port_symbol',
     'test_classes',
     'test_discovery',
+    'test_filesystem',
     'test_get_symbol',
     'test_no_author',
     'test_no_verify',

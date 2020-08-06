@@ -18,7 +18,6 @@
 
 #undef NDEBUG
 
-#include "../src/filesystem.h"
 #include "../src/lilv_internal.h"
 
 #ifdef _WIN32
@@ -34,47 +33,9 @@
 int
 main(void)
 {
+#ifndef _WIN32
 	char* s = NULL;
 
-	assert(!strcmp((s = lilv_path_parent("/foo/bar")), "/foo"));
-	free(s);
-	assert(!strcmp((s = lilv_path_parent("/foo/bar/")), "/foo"));
-	free(s);
-	assert(!strcmp((s = lilv_path_parent("/foo///bar/")), "/foo"));
-	free(s);
-	assert(!strcmp((s = lilv_path_parent("/foo///bar//")), "/foo"));
-	free(s);
-	assert(!strcmp((s = lilv_path_parent("foo")), "."));
-	free(s);
-	assert(!strcmp((s = lilv_path_parent("/foo")), "/"));
-	free(s);
-	assert(!strcmp((s = lilv_path_parent("/")), "/"));
-	free(s);
-	assert(!strcmp((s = lilv_path_parent("//")), "/"));
-	free(s);
-	assert(!strcmp((s = lilv_path_relative_to("/a/b", "/a/")), "b"));
-	free(s);
-	assert(!strcmp((s = lilv_path_relative_to("/a", "/b/c/")), "/a"));
-	free(s);
-	assert(!strcmp((s = lilv_path_relative_to("/a/b/c", "/a/b/d/")), "../c"));
-	free(s);
-	assert(
-	    !strcmp((s = lilv_path_relative_to("/a/b/c", "/a/b/d/e/")), "../../c"));
-	free(s);
-	assert(!strcmp((s = lilv_path_join("/a", "b")), "/a/b"));
-	free(s);
-	assert(!strcmp((s = lilv_path_join("/a", "/b")), "/a/b"));
-	free(s);
-	assert(!strcmp((s = lilv_path_join("/a/", "/b")), "/a/b"));
-	free(s);
-	assert(!strcmp((s = lilv_path_join("/a/", "b")), "/a/b"));
-	free(s);
-	assert(!strcmp((s = lilv_path_join("/a", NULL)), "/a/"));
-	free(s);
-	assert(!strcmp((s = lilv_path_join(NULL, "/b")), "/b"));
-	free(s);
-
-#ifndef _WIN32
 	setenv("LILV_TEST_1", "test", 1);
 	char* home_foo = lilv_strjoin(getenv("HOME"), "/foo", NULL);
 	assert(!strcmp((s = lilv_expand("$LILV_TEST_1")), "test"));
