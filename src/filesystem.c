@@ -400,7 +400,8 @@ lilv_create_directories(const char* dir_path)
 		const char c = path[i];
 		if (c == LILV_DIR_SEP[0] || c == '/' || c == '\0') {
 			path[i] = '\0';
-			if (mkdir(path, 0755) && errno != EEXIST) {
+			if (mkdir(path, 0755) &&
+			    (errno != EEXIST || !lilv_is_directory(path))) {
 				free(path);
 				return errno;
 			}
