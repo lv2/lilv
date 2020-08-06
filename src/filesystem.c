@@ -305,7 +305,20 @@ lilv_symlink(const char* oldpath, const char* newpath)
 int
 lilv_flock(FILE* file, bool lock, bool block)
 {
-#if defined(HAVE_FLOCK) && defined(HAVE_FILENO)
+#ifdef _WIN32
+	HANDLE     handle     = (HANDLE)_get_osfhandle(fileno(file));
+	OVERLAPPED overlapped = {0};
+
+	if (lock) {
+		const DWORD flags = (LOCKFILE_EXCLUSIVE_LOCK |
+		                     (block ? 0 : LOCKFILE_FAIL_IMMEDIATELY));
+
+		return !LockFileEx(
+			handle, flags, 0, UINT32_MAX, UINT32_MAX, &overlapped);
+	} else {
+		return !UnlockFileEx(handle, 0, UINT32_MAX, UINT32_MAX, &overlapped);
+	}
+#elif defined(HAVE_FLOCK) && defined(HAVE_FILENO)
 	return flock(fileno(file),
 	             (lock ? LOCK_EX : LOCK_UN) | (block ? 0 : LOCK_NB));
 #else
