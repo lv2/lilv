@@ -188,6 +188,9 @@ bench(const LilvPlugin* p, uint32_t sample_count, uint32_t block_size)
 
 	lilv_instance_deactivate(instance);
 	lilv_instance_free(instance);
+	free(controls);
+	free(maxes);
+	free(mins);
 	free(seq_out);
 
 	uri_table_destroy(&uri_table);
@@ -198,7 +201,6 @@ bench(const LilvPlugin* p, uint32_t sample_count, uint32_t block_size)
 	printf("%lf %s\n", elapsed, uri);
 
 	free(buf);
-	free(controls);
 	return elapsed;
 }
 
@@ -252,6 +254,7 @@ main(int argc, char** argv)
 	if (plugin_uri_str) {
 		LilvNode* uri = lilv_new_uri(world, plugin_uri_str);
 		bench(lilv_plugins_get_by_uri(plugins, uri), sample_count, block_size);
+		lilv_node_free(uri);
 	} else {
 		LILV_FOREACH(plugins, i, plugins) {
 			bench(lilv_plugins_get(plugins, i), sample_count, block_size);

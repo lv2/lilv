@@ -1,8 +1,9 @@
 lilv (0.24.9) unstable;
 
+  * Fix memory leaks in lv2bench
   * Make lilv_world_get() use translations
 
- -- David Robillard <d@drobilla.net>  Sun, 17 May 2020 18:44:04 +0000
+ -- David Robillard <d@drobilla.net>  Sat, 26 Sep 2020 15:44:21 +0000
 
 lilv (0.24.8) stable;
 

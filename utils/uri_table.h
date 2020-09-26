@@ -41,6 +41,10 @@ uri_table_init(URITable* table)
 static void
 uri_table_destroy(URITable* table)
 {
+	for (size_t i = 0; i < table->n_uris; ++i) {
+		free(table->uris[i]);
+	}
+
 	free(table->uris);
 }
 
