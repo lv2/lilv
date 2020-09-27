@@ -154,6 +154,8 @@ def configure(conf):
                 '-Wno-float-equal',
                 '-Wno-padded',
                 '-Wno-stack-protector',
+                '-Wno-suggest-attribute=const',
+                '-Wno-suggest-attribute=pure',
                 '-Wno-switch-enum',
                 '-Wno-unused-parameter',
                 '-Wno-vla',
