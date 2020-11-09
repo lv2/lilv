@@ -1460,6 +1460,10 @@ class Instance(Structure):
             self.get_descriptor().connect_port(
                 self.get_handle(), port_index, data
             )
+        elif isinstance(data, Structure):
+            self.get_descriptor().connect_port(
+                self.get_handle(), port_index, cast(byref(data), c_void_p)
+            )
         elif type(data) == numpy.ndarray:
             self.get_descriptor().connect_port(
                 self.get_handle(),
