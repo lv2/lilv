@@ -126,6 +126,7 @@ def configure(conf):
         autowaf.add_compiler_flags(conf.env, '*', {
             'clang': [
                 '-Wno-documentation-unknown-command',
+                '-Wno-nullability-extension',
             ]
         })
 
