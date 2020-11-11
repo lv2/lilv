@@ -95,7 +95,16 @@ rel_cmp(const void* a, const void* b, void* user_data)
 static int
 property_cmp(const void* a, const void* b)
 {
-	return ((const Property*)a)->key - ((const Property*)b)->key;
+	const Property* const a_key = ((const Property*)a)->key;
+	const Property* const b_key = ((const Property*)b)->key;
+
+	if (a_key < b_key) {
+		return -1;
+	} else if (b_key < a_key) {
+		return 1;
+	}
+
+	return 0;
 }
 
 static int
@@ -175,6 +184,10 @@ append_property(LilvState*     state,
 static const Property*
 find_property(const LilvState* const state, const uint32_t key)
 {
+	if (!state->props.props) {
+		return NULL;
+	}
+
 	const Property search_key = {NULL, 0, key, 0, 0};
 
 	return (const Property*)bsearch(&search_key,
@@ -466,7 +479,9 @@ lilv_state_new_from_instance(const LilvPlugin*          plugin,
 		}
 	}
 
-	qsort(state->values, state->n_values, sizeof(PortValue), value_cmp);
+	if (state->values) {
+		qsort(state->values, state->n_values, sizeof(PortValue), value_cmp);
+	}
 
 	free(sfeatures);
 	return state;
