@@ -199,10 +199,11 @@ lilv_path_join(const char* a, const char* b)
 		return (b && b[0]) ? lilv_strdup(b) : NULL;
 	}
 
-	const size_t a_len   = strlen(a);
-	const size_t b_len   = b ? strlen(b) : 0;
-	const size_t pre_len = a_len - (lilv_is_dir_sep(a[a_len - 1]) ? 1 : 0);
-	char*        path    = (char*)calloc(1, a_len + b_len + 2);
+	const size_t a_len        = strlen(a);
+	const size_t b_len        = b ? strlen(b) : 0;
+	const bool   a_end_is_sep = a_len > 0 && lilv_is_dir_sep(a[a_len - 1]);
+	const size_t pre_len      = a_len - (a_end_is_sep ? 1 : 0);
+	char*        path         = (char*)calloc(1, a_len + b_len + 2);
 	memcpy(path, a, pre_len);
 	path[pre_len] = '/';
 	if (b) {

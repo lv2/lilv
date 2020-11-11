@@ -1,3 +1,9 @@
+lilv (0.24.11) unstable;
+
+  * Fix potential memory error when joining filesystem paths
+
+ -- David Robillard <d@drobilla.net>  Wed, 11 Nov 2020 00:02:31 +0000
+
 lilv (0.24.10) stable;
 
   * Fix memory leaks in lv2bench
