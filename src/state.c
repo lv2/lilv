@@ -95,8 +95,8 @@ rel_cmp(const void* a, const void* b, void* user_data)
 static int
 property_cmp(const void* a, const void* b)
 {
-	const Property* const a_key = ((const Property*)a)->key;
-	const Property* const b_key = ((const Property*)b)->key;
+	const uint32_t a_key = ((const Property*)a)->key;
+	const uint32_t b_key = ((const Property*)b)->key;
 
 	if (a_key < b_key) {
 		return -1;
