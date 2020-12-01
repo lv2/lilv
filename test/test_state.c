@@ -46,11 +46,17 @@
 
 typedef struct
 {
-	LilvTestEnv* env;
-	LV2_URID     atom_Float;
-	float        in;
-	float        out;
-	float        control;
+	LilvTestEnv*       env;
+	LilvTestUriMap     uri_map;
+	LV2_URID_Map       map;
+	LV2_Feature        map_feature;
+	LV2_URID_Unmap     unmap;
+	LV2_Feature        unmap_feature;
+	const LV2_Feature* features[3];
+	LV2_URID           atom_Float;
+	float              in;
+	float              out;
+	float              control;
 } TestContext;
 
 static TestContext*
@@ -58,11 +64,27 @@ test_context_new(void)
 {
 	TestContext* ctx = (TestContext*)calloc(1, sizeof(TestContext));
 
-	ctx->env        = lilv_test_env_new();
-	ctx->atom_Float = 0;
-	ctx->in         = 1.0;
-	ctx->out        = 42.0;
-	ctx->control    = 1234.0;
+	lilv_test_uri_map_init(&ctx->uri_map);
+
+	ctx->env                = lilv_test_env_new();
+	ctx->map.handle         = &ctx->uri_map;
+	ctx->map.map            = map_uri;
+	ctx->map_feature.URI    = LV2_URID_MAP_URI;
+	ctx->map_feature.data   = &ctx->map;
+	ctx->unmap.handle       = &ctx->uri_map;
+	ctx->unmap.unmap        = unmap_uri;
+	ctx->unmap_feature.URI  = LV2_URID_UNMAP_URI;
+	ctx->unmap_feature.data = &ctx->unmap;
+	ctx->features[0]        = &ctx->map_feature;
+	ctx->features[1]        = &ctx->unmap_feature;
+	ctx->features[2]        = NULL;
+
+	ctx->atom_Float =
+	    map_uri(&ctx->uri_map, "http://lv2plug.in/ns/ext/atom#Float");
+
+	ctx->in      = 1.0;
+	ctx->out     = 42.0;
+	ctx->control = 1234.0;
 
 	return ctx;
 }
@@ -70,6 +92,7 @@ test_context_new(void)
 static void
 test_context_free(TestContext* ctx)
 {
+	lilv_test_uri_map_clear(&ctx->uri_map);
 	lilv_test_env_free(ctx->env);
 	free(ctx);
 }
@@ -167,27 +190,21 @@ main(void)
 	TestContext* const ctx        = test_context_new();
 	LilvTestEnv* const env        = ctx->env;
 	LilvWorld* const   world      = env->world;
-	LilvNode*          plugin_uri = lilv_new_uri(world, TEST_PLUGIN_URI);
+	LilvNode* const    plugin_uri = lilv_new_uri(world, TEST_PLUGIN_URI);
 	const LilvPlugin*  plugin     = load_test_plugin(ctx, env);
 	assert(plugin);
 
-	LilvTestUriMap uri_map;
-	lilv_test_uri_map_init(&uri_map);
-
-	LV2_URID_Map       map           = {&uri_map, map_uri};
-	LV2_Feature        map_feature   = {LV2_URID_MAP_URI, &map};
-	LV2_URID_Unmap     unmap         = {&uri_map, unmap_uri};
-	LV2_Feature        unmap_feature = {LV2_URID_UNMAP_URI, &unmap};
-	const LV2_Feature* features[]    = {&map_feature, &unmap_feature, NULL};
-
-	ctx->atom_Float =
-	    map.map(map.handle, "http://lv2plug.in/ns/ext/atom#Float");
+	LV2_URID_Map* const   map   = &ctx->map;
+	LV2_URID_Unmap* const unmap = &ctx->unmap;
 
 	LilvNode*  num     = lilv_new_int(world, 5);
-	LilvState* nostate = lilv_state_new_from_file(world, &map, num, "/junk");
+	LilvState* nostate = lilv_state_new_from_file(world, map, num, "/junk");
+
 	assert(!nostate);
 
-	LilvInstance* instance = lilv_plugin_instantiate(plugin, 48000.0, features);
+	LilvInstance* instance =
+	    lilv_plugin_instantiate(plugin, 48000.0, ctx->features);
+
 	assert(instance);
 	lilv_instance_activate(instance);
 	lilv_instance_connect_port(instance, 0, &ctx->in);
@@ -203,10 +220,10 @@ main(void)
 	char*       link_dir    = NULL;
 	char*       save_dir    = NULL;
 
-	// Get instance state state
+	// Get instance state
 	LilvState* state = lilv_state_new_from_instance(plugin,
 	                                                instance,
-	                                                &map,
+	                                                map,
 	                                                scratch_dir,
 	                                                copy_dir,
 	                                                link_dir,
@@ -219,7 +236,7 @@ main(void)
 	// Get another instance state
 	LilvState* state2 = lilv_state_new_from_instance(plugin,
 	                                                 instance,
-	                                                 &map,
+	                                                 map,
 	                                                 scratch_dir,
 	                                                 copy_dir,
 	                                                 link_dir,
@@ -240,19 +257,19 @@ main(void)
 
 	// Check that we can't save a state with no URI
 	char* bad_state_str =
-	    lilv_state_to_string(world, &map, &unmap, state, NULL, NULL);
+	    lilv_state_to_string(world, map, unmap, state, NULL, NULL);
 	assert(!bad_state_str);
 
 	// Check that we can't restore the NULL string (and it doesn't crash)
-	LilvState* bad_state = lilv_state_new_from_string(world, &map, NULL);
+	LilvState* bad_state = lilv_state_new_from_string(world, map, NULL);
 	assert(!bad_state);
 
 	// Save state to a string
 	char* state1_str = lilv_state_to_string(
-	    world, &map, &unmap, state, "http://example.org/state1", NULL);
+	    world, map, unmap, state, "http://example.org/state1", NULL);
 
 	// Restore from string
-	LilvState* from_str = lilv_state_new_from_string(world, &map, state1_str);
+	LilvState* from_str = lilv_state_new_from_string(world, map, state1_str);
 
 	// Ensure they are equal
 	assert(lilv_state_equals(state, from_str));
@@ -274,7 +291,7 @@ main(void)
 	lilv_instance_run(instance, 1);
 	LilvState* state3 = lilv_state_new_from_instance(plugin,
 	                                                 instance,
-	                                                 &map,
+	                                                 map,
 	                                                 scratch_dir,
 	                                                 copy_dir,
 	                                                 link_dir,
@@ -291,7 +308,7 @@ main(void)
 	// Take a new snapshot and ensure it matches the set state
 	LilvState* state4 = lilv_state_new_from_instance(plugin,
 	                                                 instance,
-	                                                 &map,
+	                                                 map,
 	                                                 scratch_dir,
 	                                                 copy_dir,
 	                                                 link_dir,
@@ -304,51 +321,48 @@ main(void)
 
 	// Set some metadata properties
 	lilv_state_set_metadata(state,
-	                        map.map(map.handle, LILV_NS_RDFS "comment"),
+	                        map->map(map->handle, LILV_NS_RDFS "comment"),
 	                        "This is a comment",
 	                        strlen("This is a comment") + 1,
-	                        map.map(map.handle,
-	                                "http://lv2plug.in/ns/ext/atom#Literal"),
+	                        map->map(map->handle,
+	                                 "http://lv2plug.in/ns/ext/atom#Literal"),
 	                        LV2_STATE_IS_POD);
 	lilv_state_set_metadata(state,
-	                        map.map(map.handle, "http://example.org/metablob"),
+	                        map->map(map->handle,
+	                                 "http://example.org/metablob"),
 	                        "LIVEBEEF",
 	                        strlen("LIVEBEEF") + 1,
-	                        map.map(map.handle, "http://example.org/MetaBlob"),
+	                        map->map(map->handle,
+	                                 "http://example.org/MetaBlob"),
 	                        0);
 
 	// Save state to a directory
 	int ret = lilv_state_save(
-	    world, &map, &unmap, state, NULL, "state/state.lv2", "state.ttl");
+	    world, map, unmap, state, NULL, "state/state.lv2", "state.ttl");
 	assert(!ret);
 
 	// Load state from directory
-	LilvState* state5 = lilv_state_new_from_file(world,
-	                                             &map,
-	                                             NULL,
-	                                             "state/state.lv2/state.ttl");
+	LilvState* state5 =
+	    lilv_state_new_from_file(world, map, NULL, "state/state.lv2/state.ttl");
 
 	assert(lilv_state_equals(state, state5)); // Round trip accuracy
 	assert(lilv_state_get_num_properties(state) == 8);
 
 	// Attempt to save state to nowhere (error)
-	ret = lilv_state_save(world, &map, &unmap, state, NULL, NULL, NULL);
+	ret = lilv_state_save(world, map, unmap, state, NULL, NULL, NULL);
+
 	assert(ret);
 
 	// Save another state to the same directory (update manifest)
 	ret = lilv_state_save(
-	    world, &map, &unmap, state, NULL, "state/state.lv2", "state2.ttl");
+	    world, map, unmap, state, NULL, "state/state.lv2", "state2.ttl");
 	assert(!ret);
 
 	// Save state with URI to a directory
 	const char* state_uri = "http://example.org/state";
-	ret                   = lilv_state_save(world,
-                          &map,
-                          &unmap,
-                          state,
-                          state_uri,
-                          "state/state6.lv2",
-                          "state6.ttl");
+
+	ret = lilv_state_save(
+	    world, map, unmap, state, state_uri, "state/state6.lv2", "state6.ttl");
 	assert(!ret);
 
 	// Load state bundle into world and verify it matches
@@ -364,7 +378,7 @@ main(void)
 		serd_node_free(&state6_uri);
 		lilv_free(state6_path);
 
-		LilvState* state6 = lilv_state_new_from_world(world, &map, state6_node);
+		LilvState* state6 = lilv_state_new_from_world(world, map, state6_node);
 		assert(lilv_state_equals(state, state6)); // Round trip accuracy
 
 		// Check that loaded state has correct URI
@@ -377,7 +391,7 @@ main(void)
 		lilv_world_unload_bundle(world, state6_bundle);
 
 		// Ensure that it is no longer present
-		assert(!lilv_state_new_from_world(world, &map, state6_node));
+		assert(!lilv_state_new_from_world(world, map, state6_node));
 		lilv_node_free(state6_bundle);
 		lilv_node_free(state6_node);
 
@@ -399,7 +413,7 @@ main(void)
 	LV2_State_Free_Path free_path         = {NULL, lilv_free_path};
 	LV2_Feature         free_path_feature = {LV2_STATE__freePath, &free_path};
 	const LV2_Feature*  ffeatures[]       = {&make_path_feature,
-                                      &map_feature,
+                                      &ctx->map_feature,
                                       &free_path_feature,
                                       NULL};
 
@@ -425,7 +439,7 @@ main(void)
 	// Get instance state state
 	LilvState* fstate = lilv_state_new_from_instance(plugin,
 	                                                 instance,
-	                                                 &map,
+	                                                 map,
 	                                                 scratch_dir,
 	                                                 copy_dir,
 	                                                 link_dir,
@@ -439,7 +453,7 @@ main(void)
 		// Get another instance state
 		LilvState* fstate2 = lilv_state_new_from_instance(plugin,
 		                                                  instance,
-		                                                  &map,
+		                                                  map,
 		                                                  scratch_dir,
 		                                                  copy_dir,
 		                                                  link_dir,
@@ -462,7 +476,7 @@ main(void)
 	// Get yet another instance state
 	LilvState* fstate3 = lilv_state_new_from_instance(plugin,
 	                                                  instance,
-	                                                  &map,
+	                                                  map,
 	                                                  scratch_dir,
 	                                                  copy_dir,
 	                                                  link_dir,
@@ -477,12 +491,12 @@ main(void)
 
 	// Save state to a directory
 	ret = lilv_state_save(
-	    world, &map, &unmap, fstate, NULL, "state/fstate.lv2", "fstate.ttl");
+	    world, map, unmap, fstate, NULL, "state/fstate.lv2", "fstate.ttl");
 	assert(!ret);
 
 	// Load state from directory
 	LilvState* fstate4 = lilv_state_new_from_file(
-	    world, &map, NULL, "state/fstate.lv2/fstate.ttl");
+	    world, map, NULL, "state/fstate.lv2/fstate.ttl");
 	assert(lilv_state_equals(fstate, fstate4)); // Round trip accuracy
 
 	// Restore instance state to loaded state
@@ -491,7 +505,7 @@ main(void)
 	// Take a new snapshot and ensure it matches
 	LilvState* fstate5 = lilv_state_new_from_instance(plugin,
 	                                                  instance,
-	                                                  &map,
+	                                                  map,
 	                                                  scratch_dir,
 	                                                  copy_dir,
 	                                                  link_dir,
@@ -504,12 +518,12 @@ main(void)
 
 	// Save state to a (different) directory again
 	ret = lilv_state_save(
-	    world, &map, &unmap, fstate, NULL, "state/fstate6.lv2", "fstate6.ttl");
+	    world, map, unmap, fstate, NULL, "state/fstate6.lv2", "fstate6.ttl");
 	assert(!ret);
 
 	// Reload it and ensure it's identical to the other loaded version
 	LilvState* fstate6 = lilv_state_new_from_file(
-	    world, &map, NULL, "state/fstate6.lv2/fstate6.ttl");
+	    world, map, NULL, "state/fstate6.lv2/fstate6.ttl");
 	assert(lilv_state_equals(fstate4, fstate6));
 
 	// Run, changing rec file (without changing size)
@@ -518,7 +532,7 @@ main(void)
 	// Take a new snapshot
 	LilvState* fstate7 = lilv_state_new_from_instance(plugin,
 	                                                  instance,
-	                                                  &map,
+	                                                  map,
 	                                                  scratch_dir,
 	                                                  copy_dir,
 	                                                  link_dir,
@@ -531,12 +545,12 @@ main(void)
 
 	// Save the changed state to a (different) directory again
 	ret = lilv_state_save(
-	    world, &map, &unmap, fstate7, NULL, "state/fstate7.lv2", "fstate7.ttl");
+	    world, map, unmap, fstate7, NULL, "state/fstate7.lv2", "fstate7.ttl");
 	assert(!ret);
 
 	// Reload it and ensure it's changed
 	LilvState* fstate72 = lilv_state_new_from_file(
-	    world, &map, NULL, "state/fstate7.lv2/fstate7.ttl");
+	    world, map, NULL, "state/fstate7.lv2/fstate7.ttl");
 	assert(lilv_state_equals(fstate72, fstate7));
 	assert(!lilv_state_equals(fstate6, fstate72));
 
@@ -556,9 +570,8 @@ main(void)
 	                                       NULL};
 
 	for (const char* const* p = old_state_paths; *p; ++p) {
-		const char* path = *p;
-		LilvState*  old_state =
-		    lilv_state_new_from_file(world, &map, NULL, path);
+		const char* path     = *p;
+		LilvState* old_state = lilv_state_new_from_file(world, map, NULL, path);
 		lilv_state_delete(world, old_state);
 		lilv_state_free(old_state);
 	}
@@ -583,8 +596,6 @@ main(void)
 	lilv_state_free(fstate72);
 
 	lilv_remove("state");
-
-	lilv_test_uri_map_clear(&uri_map);
 
 	lilv_node_free(plugin_uri);
 	free(link_dir);
