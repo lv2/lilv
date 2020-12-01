@@ -42,6 +42,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#define TEST_PLUGIN_URI "http://example.org/lilv-test-plugin"
+
 typedef struct
 {
 	LilvTestEnv* env;
@@ -137,28 +139,40 @@ lilv_free_path(LV2_State_Free_Path_Handle handle, char* path)
 	lilv_free(path);
 }
 
-int
-main(void)
+static const LilvPlugin*
+load_test_plugin(const TestContext* const ctx, const LilvTestEnv* const env)
 {
-	TestContext* const ctx   = test_context_new();
-	LilvTestEnv* const env   = ctx->env;
-	LilvWorld* const   world = env->world;
+	LilvWorld* world      = env->world;
+	uint8_t*   abs_bundle = (uint8_t*)lilv_path_absolute(LILV_TEST_BUNDLE);
+	SerdNode   bundle     = serd_node_new_file_uri(abs_bundle, 0, 0, true);
+	LilvNode*  bundle_uri = lilv_new_uri(world, (const char*)bundle.buf);
+	LilvNode*  plugin_uri = lilv_new_uri(world, TEST_PLUGIN_URI);
 
-	LilvTestUriMap uri_map;
-	lilv_test_uri_map_init(&uri_map);
-
-	uint8_t*  abs_bundle = (uint8_t*)lilv_path_absolute(LILV_TEST_BUNDLE);
-	SerdNode  bundle     = serd_node_new_file_uri(abs_bundle, 0, 0, true);
-	LilvNode* bundle_uri = lilv_new_uri(world, (const char*)bundle.buf);
-	LilvNode* plugin_uri =
-	    lilv_new_uri(world, "http://example.org/lilv-test-plugin");
 	lilv_world_load_bundle(world, bundle_uri);
-	free(abs_bundle);
-	serd_node_free(&bundle);
 
 	const LilvPlugins* plugins = lilv_world_get_all_plugins(world);
 	const LilvPlugin*  plugin  = lilv_plugins_get_by_uri(plugins, plugin_uri);
+
+	lilv_node_free(plugin_uri);
+	lilv_node_free(bundle_uri);
+	serd_node_free(&bundle);
+	free(abs_bundle);
+
+	return plugin;
+}
+
+int
+main(void)
+{
+	TestContext* const ctx        = test_context_new();
+	LilvTestEnv* const env        = ctx->env;
+	LilvWorld* const   world      = env->world;
+	LilvNode*          plugin_uri = lilv_new_uri(world, TEST_PLUGIN_URI);
+	const LilvPlugin*  plugin     = load_test_plugin(ctx, env);
 	assert(plugin);
+
+	LilvTestUriMap uri_map;
+	lilv_test_uri_map_init(&uri_map);
 
 	LV2_URID_Map       map           = {&uri_map, map_uri};
 	LV2_Feature        map_feature   = {LV2_URID_MAP_URI, &map};
@@ -573,7 +587,6 @@ main(void)
 	lilv_test_uri_map_clear(&uri_map);
 
 	lilv_node_free(plugin_uri);
-	lilv_node_free(bundle_uri);
 	free(link_dir);
 	free(copy_dir);
 	free(temp_dir);
