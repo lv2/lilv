@@ -16,6 +16,7 @@
 
 #undef NDEBUG
 
+#include "lilv_test_uri_map.h"
 #include "lilv_test_utils.h"
 
 #include "../src/filesystem.h"
@@ -93,33 +94,6 @@ set_port_value(const char* port_symbol,
 	}
 }
 
-static char** uris   = NULL;
-static size_t n_uris = 0;
-
-static LV2_URID
-map_uri(LV2_URID_Map_Handle handle, const char* uri)
-{
-	for (size_t i = 0; i < n_uris; ++i) {
-		if (!strcmp(uris[i], uri)) {
-			return i + 1;
-		}
-	}
-
-	assert(serd_uri_string_has_scheme((const uint8_t*)uri));
-	uris             = (char**)realloc(uris, ++n_uris * sizeof(char*));
-	uris[n_uris - 1] = lilv_strdup(uri);
-	return n_uris;
-}
-
-static const char*
-unmap_uri(LV2_URID_Map_Handle handle, LV2_URID urid)
-{
-	if (urid > 0 && urid <= n_uris) {
-		return uris[urid - 1];
-	}
-	return NULL;
-}
-
 static char* temp_dir = NULL;
 
 static char*
@@ -140,6 +114,9 @@ main(void)
 	LilvTestEnv* const env   = lilv_test_env_new();
 	LilvWorld* const   world = env->world;
 
+	LilvTestUriMap uri_map;
+	lilv_test_uri_map_init(&uri_map);
+
 	uint8_t*  abs_bundle = (uint8_t*)lilv_path_absolute(LILV_TEST_BUNDLE);
 	SerdNode  bundle     = serd_node_new_file_uri(abs_bundle, 0, 0, true);
 	LilvNode* bundle_uri = lilv_new_uri(world, (const char*)bundle.buf);
@@ -153,9 +130,9 @@ main(void)
 	const LilvPlugin*  plugin  = lilv_plugins_get_by_uri(plugins, plugin_uri);
 	assert(plugin);
 
-	LV2_URID_Map       map           = {NULL, map_uri};
+	LV2_URID_Map       map           = {&uri_map, map_uri};
 	LV2_Feature        map_feature   = {LV2_URID_MAP_URI, &map};
-	LV2_URID_Unmap     unmap         = {NULL, unmap_uri};
+	LV2_URID_Unmap     unmap         = {&uri_map, unmap_uri};
 	LV2_Feature        unmap_feature = {LV2_URID_UNMAP_URI, &unmap};
 	const LV2_Feature* features[]    = {&map_feature, &unmap_feature, NULL};
 
@@ -562,12 +539,7 @@ main(void)
 
 	lilv_remove("state");
 
-	// Free URI map
-	for (size_t i = 0; i < n_uris; ++i) {
-		free(uris[i]);
-	}
-	free(uris);
-	n_uris = 0;
+	lilv_test_uri_map_clear(&uri_map);
 
 	lilv_node_free(plugin_uri);
 	lilv_node_free(bundle_uri);

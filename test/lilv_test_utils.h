@@ -14,6 +14,9 @@
   OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 */
 
+#ifndef LILV_TEST_UTILS_H
+#define LILV_TEST_UTILS_H
+
 #include "lilv/lilv.h"
 
 #define MANIFEST_PREFIXES \
@@ -83,3 +86,5 @@ delete_bundle(LilvTestEnv* env);
 // Set an environment variable so it is immediately visible in this process
 void
 set_env(const char* name, const char* value);
+
+#endif // LILV_TEST_UTILS_H
