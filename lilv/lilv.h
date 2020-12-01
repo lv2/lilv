@@ -1345,11 +1345,12 @@ typedef const void* (*LilvGetPortValueFunc)(const char* port_symbol,
 
    If supported (via state:makePath passed to LV2_Descriptor::instantiate()),
    `scratch_dir` should be the directory where any files created by the plugin
-   (not during save time, e.g. during instantiation) are stored.  These files
-   will be copied to preserve their state at this time.plugin-created files are
-   stored.  Lilv will assume any files within this directory (recursively) are
-   created by the plugin and all other files are immutable.  Note that this
-   function does not save the state, use lilv_state_save() for that.
+   (for example during instantiation or while running) are stored.  Any files
+   here that are referred to in the state will be copied to preserve their
+   contents at the time of the save.  Lilv will assume any files within this
+   directory (recursively) are created by the plugin and that all other files
+   are immutable.  Note that this function does not completely save the state,
+   use lilv_state_save() for that.
 
    See <a href="http://lv2plug.in/ns/ext/state/state.h">state.h</a> from the
    LV2 State extension for details on the `flags` and `features` parameters.
