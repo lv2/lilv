@@ -42,10 +42,35 @@
 #include <stdlib.h>
 #include <string.h>
 
-static uint32_t atom_Float = 0;
-static float    in         = 1.0;
-static float    out        = 42.0;
-static float    control    = 1234.0;
+typedef struct
+{
+	LilvTestEnv* env;
+	LV2_URID     atom_Float;
+	float        in;
+	float        out;
+	float        control;
+} TestContext;
+
+static TestContext*
+test_context_new(void)
+{
+	TestContext* ctx = (TestContext*)calloc(1, sizeof(TestContext));
+
+	ctx->env        = lilv_test_env_new();
+	ctx->atom_Float = 0;
+	ctx->in         = 1.0;
+	ctx->out        = 42.0;
+	ctx->control    = 1234.0;
+
+	return ctx;
+}
+
+static void
+test_context_free(TestContext* ctx)
+{
+	lilv_test_env_free(ctx->env);
+	free(ctx);
+}
 
 static const void*
 get_port_value(const char* port_symbol,
@@ -53,18 +78,20 @@ get_port_value(const char* port_symbol,
                uint32_t*   size,
                uint32_t*   type)
 {
+	TestContext* ctx = (TestContext*)user_data;
+
 	if (!strcmp(port_symbol, "input")) {
 		*size = sizeof(float);
-		*type = atom_Float;
-		return &in;
+		*type = ctx->atom_Float;
+		return &ctx->in;
 	} else if (!strcmp(port_symbol, "output")) {
 		*size = sizeof(float);
-		*type = atom_Float;
-		return &out;
+		*type = ctx->atom_Float;
+		return &ctx->out;
 	} else if (!strcmp(port_symbol, "control")) {
 		*size = sizeof(float);
-		*type = atom_Float;
-		return &control;
+		*type = ctx->atom_Float;
+		return &ctx->control;
 	} else {
 		fprintf(stderr,
 		        "error: get_port_value for nonexistent port `%s'\n",
@@ -81,12 +108,14 @@ set_port_value(const char* port_symbol,
                uint32_t    size,
                uint32_t    type)
 {
+	TestContext* ctx = (TestContext*)user_data;
+
 	if (!strcmp(port_symbol, "input")) {
-		in = *(const float*)value;
+		ctx->in = *(const float*)value;
 	} else if (!strcmp(port_symbol, "output")) {
-		out = *(const float*)value;
+		ctx->out = *(const float*)value;
 	} else if (!strcmp(port_symbol, "control")) {
-		control = *(const float*)value;
+		ctx->control = *(const float*)value;
 	} else {
 		fprintf(stderr,
 		        "error: set_port_value for nonexistent port `%s'\n",
@@ -111,7 +140,8 @@ lilv_free_path(LV2_State_Free_Path_Handle handle, char* path)
 int
 main(void)
 {
-	LilvTestEnv* const env   = lilv_test_env_new();
+	TestContext* const ctx   = test_context_new();
+	LilvTestEnv* const env   = ctx->env;
 	LilvWorld* const   world = env->world;
 
 	LilvTestUriMap uri_map;
@@ -136,7 +166,8 @@ main(void)
 	LV2_Feature        unmap_feature = {LV2_URID_UNMAP_URI, &unmap};
 	const LV2_Feature* features[]    = {&map_feature, &unmap_feature, NULL};
 
-	atom_Float = map.map(map.handle, "http://lv2plug.in/ns/ext/atom#Float");
+	ctx->atom_Float =
+	    map.map(map.handle, "http://lv2plug.in/ns/ext/atom#Float");
 
 	LilvNode*  num     = lilv_new_int(world, 5);
 	LilvState* nostate = lilv_state_new_from_file(world, &map, num, "/junk");
@@ -145,11 +176,11 @@ main(void)
 	LilvInstance* instance = lilv_plugin_instantiate(plugin, 48000.0, features);
 	assert(instance);
 	lilv_instance_activate(instance);
-	lilv_instance_connect_port(instance, 0, &in);
-	lilv_instance_connect_port(instance, 1, &out);
+	lilv_instance_connect_port(instance, 0, &ctx->in);
+	lilv_instance_connect_port(instance, 1, &ctx->out);
 	lilv_instance_run(instance, 1);
-	assert(in == 1.0);
-	assert(out == 1.0);
+	assert(ctx->in == 1.0);
+	assert(ctx->out == 1.0);
 
 	temp_dir = lilv_path_canonical("temp");
 
@@ -167,7 +198,7 @@ main(void)
 	                                                link_dir,
 	                                                save_dir,
 	                                                get_port_value,
-	                                                world,
+	                                                ctx,
 	                                                0,
 	                                                NULL);
 
@@ -180,7 +211,7 @@ main(void)
 	                                                 link_dir,
 	                                                 save_dir,
 	                                                 get_port_value,
-	                                                 world,
+	                                                 ctx,
 	                                                 0,
 	                                                 NULL);
 
@@ -235,13 +266,13 @@ main(void)
 	                                                 link_dir,
 	                                                 save_dir,
 	                                                 get_port_value,
-	                                                 world,
+	                                                 ctx,
 	                                                 0,
 	                                                 NULL);
 	assert(!lilv_state_equals(state2, state3)); // num_runs changed
 
 	// Restore instance state to original state
-	lilv_state_restore(state2, instance, set_port_value, NULL, 0, NULL);
+	lilv_state_restore(state2, instance, set_port_value, ctx, 0, NULL);
 
 	// Take a new snapshot and ensure it matches the set state
 	LilvState* state4 = lilv_state_new_from_instance(plugin,
@@ -252,7 +283,7 @@ main(void)
 	                                                 link_dir,
 	                                                 save_dir,
 	                                                 get_port_value,
-	                                                 world,
+	                                                 ctx,
 	                                                 0,
 	                                                 NULL);
 	assert(lilv_state_equals(state2, state4));
@@ -362,8 +393,8 @@ main(void)
 	lilv_instance_free(instance);
 	instance = lilv_plugin_instantiate(plugin, 48000.0, ffeatures);
 	lilv_instance_activate(instance);
-	lilv_instance_connect_port(instance, 0, &in);
-	lilv_instance_connect_port(instance, 1, &out);
+	lilv_instance_connect_port(instance, 0, &ctx->in);
+	lilv_instance_connect_port(instance, 1, &ctx->out);
 	lilv_instance_run(instance, 1);
 
 	// Test instantiating twice
@@ -386,7 +417,7 @@ main(void)
 	                                                 link_dir,
 	                                                 "state/fstate.lv2",
 	                                                 get_port_value,
-	                                                 world,
+	                                                 ctx,
 	                                                 0,
 	                                                 ffeatures);
 
@@ -400,7 +431,7 @@ main(void)
 		                                                  link_dir,
 		                                                  "state/fstate2.lv2",
 		                                                  get_port_value,
-		                                                  world,
+		                                                  ctx,
 		                                                  0,
 		                                                  ffeatures);
 
@@ -423,7 +454,7 @@ main(void)
 	                                                  link_dir,
 	                                                  "state/fstate3.lv2",
 	                                                  get_port_value,
-	                                                  world,
+	                                                  ctx,
 	                                                  0,
 	                                                  ffeatures);
 
@@ -441,7 +472,7 @@ main(void)
 	assert(lilv_state_equals(fstate, fstate4)); // Round trip accuracy
 
 	// Restore instance state to loaded state
-	lilv_state_restore(fstate4, instance, set_port_value, NULL, 0, ffeatures);
+	lilv_state_restore(fstate4, instance, set_port_value, ctx, 0, ffeatures);
 
 	// Take a new snapshot and ensure it matches
 	LilvState* fstate5 = lilv_state_new_from_instance(plugin,
@@ -452,7 +483,7 @@ main(void)
 	                                                  link_dir,
 	                                                  "state/fstate5.lv2",
 	                                                  get_port_value,
-	                                                  world,
+	                                                  ctx,
 	                                                  0,
 	                                                  ffeatures);
 	assert(lilv_state_equals(fstate3, fstate5));
@@ -479,7 +510,7 @@ main(void)
 	                                                  link_dir,
 	                                                  "state/fstate7.lv2",
 	                                                  get_port_value,
-	                                                  world,
+	                                                  ctx,
 	                                                  0,
 	                                                  ffeatures);
 	assert(!lilv_state_equals(fstate6, fstate7));
@@ -547,7 +578,7 @@ main(void)
 	free(copy_dir);
 	free(temp_dir);
 
-	lilv_test_env_free(env);
+	test_context_free(ctx);
 
 	return 0;
 }
