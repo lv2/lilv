@@ -1,5 +1,6 @@
 Checks: >
   *,
+  -*-else-after-return,
   -*-magic-numbers,
   -*-uppercase-literal-suffix,
   -android-cloexec-fopen,
@@ -7,7 +8,10 @@ Checks: >
   -bugprone-macro-parentheses,
   -bugprone-narrowing-conversions,
   -bugprone-not-null-terminated-result,
+  -bugprone-reserved-identifier,
   -bugprone-suspicious-string-compare,
+  -cert-dcl37-c,
+  -cert-dcl51-cpp,
   -cert-err34-c,
   -clang-analyzer-alpha.*,
   -cppcoreguidelines-narrowing-conversions,
@@ -15,8 +19,8 @@ Checks: >
   -hicpp-multiway-paths-covered,
   -hicpp-signed-bitwise,
   -llvm-header-guard,
+  -llvmlibc-*,
   -misc-unused-parameters,
-  -readability-else-after-return,
   -readability-implicit-bool-conversion,
 WarningsAsErrors: '*'
 HeaderFilterRegex: '.*'
