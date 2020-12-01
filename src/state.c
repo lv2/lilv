@@ -378,10 +378,11 @@ add_features(const LV2_Feature* const* features,
 	return ret;
 }
 
+/// Return the canonical path for a directory with a trailing separator
 static char*
-absolute_dir(const char* path)
+real_dir(const char* path)
 {
-	char* abs_path = lilv_path_absolute(path);
+	char* abs_path = lilv_path_canonical(path);
 	char* base     = lilv_path_join(abs_path, NULL);
 	free(abs_path);
 	return base;
@@ -425,10 +426,10 @@ lilv_state_new_from_instance(const LilvPlugin*          plugin,
 	state->plugin_uri  = lilv_node_duplicate(lilv_plugin_get_uri(plugin));
 	state->abs2rel     = zix_tree_new(false, abs_cmp, NULL, path_rel_free);
 	state->rel2abs     = zix_tree_new(false, rel_cmp, NULL, NULL);
-	state->scratch_dir = scratch_dir ? absolute_dir(scratch_dir) : NULL;
-	state->copy_dir    = copy_dir ? absolute_dir(copy_dir) : NULL;
-	state->link_dir    = link_dir ? absolute_dir(link_dir) : NULL;
-	state->dir         = save_dir ? absolute_dir(save_dir) : NULL;
+	state->scratch_dir = scratch_dir ? real_dir(scratch_dir) : NULL;
+	state->copy_dir    = copy_dir ? real_dir(copy_dir) : NULL;
+	state->link_dir    = link_dir ? real_dir(link_dir) : NULL;
+	state->dir         = save_dir ? real_dir(save_dir) : NULL;
 	state->atom_Path   = map->map(map->handle, LV2_ATOM__Path);
 
 	LV2_State_Map_Path  pmap          = { state, abstract_path, absolute_path };
@@ -1189,7 +1190,7 @@ lilv_state_save(LilvWorld*       world,
 		return 1;
 	}
 
-	char*       abs_dir = absolute_dir(dir);
+	char*       abs_dir = real_dir(dir);
 	char* const path    = lilv_path_join(abs_dir, filename);
 	FILE*       fd      = fopen(path, "w");
 	if (!fd) {
