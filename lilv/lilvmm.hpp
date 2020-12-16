@@ -93,7 +93,28 @@ uri_to_path(const char* uri) {
 
 struct Node {
 	inline Node(const LilvNode* node) : me(lilv_node_duplicate(node)) {}
-	inline Node(const Node& copy)     : me(lilv_node_duplicate(copy.me)) {}
+
+	inline Node(const Node& copy) : me(lilv_node_duplicate(copy.me)) {}
+
+	inline Node& operator=(const Node& rhs)
+	{
+		if (&rhs != this) {
+			lilv_node_free(me);
+			me = lilv_node_duplicate(rhs.me);
+		}
+		return *this;
+	}
+
+	inline Node(Node&& other) noexcept : me(other.me) { other.me = nullptr; }
+
+	inline Node& operator=(Node&& rhs) noexcept
+	{
+		if (&rhs != this) {
+			me     = rhs.me;
+			rhs.me = nullptr;
+		}
+		return *this;
+	}
 
 	inline ~Node() { lilv_node_free(me); }
 
@@ -333,6 +354,12 @@ struct Instance {
 struct World {
 	inline World() : me(lilv_world_new()) {}
 	inline ~World() { lilv_world_free(me); }
+
+	World(const World&) = delete;
+	World& operator=(const World&) = delete;
+
+	World(World&&) = delete;
+	World& operator=(World&&) = delete;
 
 	inline LilvNode* new_uri(const char* uri) {
 		return lilv_new_uri(me, uri);
