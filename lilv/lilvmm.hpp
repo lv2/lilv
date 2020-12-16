@@ -18,6 +18,10 @@
 #define LILV_LILVMM_HPP
 
 #include "lilv/lilv.h"
+#include "lv2/core/lv2.h"
+
+#include <cstdarg>
+#include <cstdint>
 
 namespace Lilv {
 
@@ -28,6 +32,20 @@ namespace Lilv {
 #    pragma GCC diagnostic push
 #    pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 #endif
+
+struct Instance;
+struct Node;
+struct Nodes;
+struct Plugin;
+struct PluginClass;
+struct PluginClasses;
+struct Plugins;
+struct Port;
+struct ScalePoint;
+struct ScalePoints;
+struct UI;
+struct UIs;
+struct World;
 
 LILV_DEPRECATED
 static inline const char*

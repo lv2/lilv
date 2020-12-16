@@ -2,8 +2,8 @@
 
 #include "../src/filesystem.h"
 
-#include "serd/serd.h"
 #include "lilv/lilv.h"
+#include "serd/serd.h"
 
 #include <assert.h>
 #include <stdbool.h>

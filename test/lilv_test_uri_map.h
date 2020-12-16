@@ -17,14 +17,14 @@
 #ifndef LILV_TEST_URI_MAP_H
 #define LILV_TEST_URI_MAP_H
 
-#include "lilv_test_utils.h"
-
 #include "../src/lilv_internal.h"
 
+#include "lv2/urid/urid.h"
 #include "serd/serd.h"
 
 #include <assert.h>
 #include <stddef.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 

@@ -20,7 +20,6 @@
 #include "lilv_test_utils.h"
 
 #include "../src/filesystem.h"
-#include "../src/lilv_internal.h"
 
 #include "lilv/lilv.h"
 #include "lv2/core/lv2.h"

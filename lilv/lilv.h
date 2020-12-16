@@ -26,7 +26,6 @@
 
 #include <stdarg.h>
 #include <stdbool.h>
-#include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
 
@@ -79,6 +78,8 @@ extern "C" {
 #define LILV_URI_MIDI_EVENT   "http://lv2plug.in/ns/ext/midi#MidiEvent"
 #define LILV_URI_OUTPUT_PORT  "http://lv2plug.in/ns/lv2core#OutputPort"
 #define LILV_URI_PORT         "http://lv2plug.in/ns/lv2core#Port"
+
+struct LilvInstanceImpl;
 
 typedef struct LilvPluginImpl      LilvPlugin;       /**< LV2 Plugin. */
 typedef struct LilvPluginClassImpl LilvPluginClass;  /**< Plugin Class. */

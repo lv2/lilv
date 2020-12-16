@@ -21,17 +21,17 @@
 extern "C" {
 #endif
 
-#include "lilv_config.h"
+#include "lilv_config.h" // IWYU pragma: keep
 
 #include "lilv/lilv.h"
+#include "lv2/core/lv2.h"
 #include "serd/serd.h"
 #include "sord/sord.h"
 #include "zix/tree.h"
 
-#include <float.h>
-#include <stddef.h>
+#include <stdbool.h>
 #include <stdint.h>
-#include <stdlib.h>
+#include <stdio.h>
 
 #ifdef _WIN32
 #    include <windows.h>
@@ -54,7 +54,6 @@ extern "C" {
 static inline const char* dlerror(void) { return "Unknown error"; }
 #else
 #    include <dlfcn.h>
-#    include <unistd.h>
 #endif
 
 #ifdef LILV_DYN_MANIFEST
@@ -67,8 +66,6 @@ static inline const char* dlerror(void) { return "Unknown error"; }
  *
  */
 
-typedef struct LilvSpecImpl LilvSpec;
-
 typedef void LilvCollection;
 
 struct LilvPortImpl {
@@ -78,12 +75,12 @@ struct LilvPortImpl {
 	LilvNodes* classes;  ///< rdf:type
 };
 
-struct LilvSpecImpl {
+typedef struct LilvSpecImpl {
 	SordNode*            spec;
 	SordNode*            bundle;
 	LilvNodes*           data_uris;
 	struct LilvSpecImpl* next;
-};
+} LilvSpec;
 
 /**
    Header of an LilvPlugin, LilvPluginClass, or LilvUI.

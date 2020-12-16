@@ -23,28 +23,29 @@
 
 #define _POSIX_C_SOURCE 200809L
 
-#include <sys/time.h>
 #include <time.h>
 
+typedef struct timespec BenchmarkTime;
+
 static inline double
-bench_elapsed_s(const struct timespec* start, const struct timespec* end)
+bench_elapsed_s(const BenchmarkTime* start, const BenchmarkTime* end)
 {
 	return ((end->tv_sec - start->tv_sec)
 	        + ((end->tv_nsec - start->tv_nsec) * 0.000000001));
 }
 
-static inline struct timespec
+static inline BenchmarkTime
 bench_start(void)
 {
-	struct timespec start_t;
+	BenchmarkTime start_t;
 	clock_gettime(CLOCK_REALTIME, &start_t);
 	return start_t;
 }
 
 static inline double
-bench_end(const struct timespec* start_t)
+bench_end(const BenchmarkTime* start_t)
 {
-	struct timespec end_t;
+	BenchmarkTime end_t;
 	clock_gettime(CLOCK_REALTIME, &end_t);
 	return bench_elapsed_s(start_t, &end_t);
 }
