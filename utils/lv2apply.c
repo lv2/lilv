@@ -330,8 +330,8 @@ main(int argc, char** argv)
 
 	/* Instantiate plugin and connect ports */
 	const uint32_t n_ports = lilv_plugin_get_num_ports(plugin);
-	float          in_buf[self.n_audio_in];
-	float          out_buf[self.n_audio_out];
+	float          in_buf[self.n_audio_in > 0 ? self.n_audio_in : 1];
+	float          out_buf[self.n_audio_out > 0 ? self.n_audio_out : 1];
 	self.instance = lilv_plugin_instantiate(
 		self.plugin, in_fmt.samplerate, NULL);
 	for (uint32_t p = 0, i = 0, o = 0; p < n_ports; ++p) {
