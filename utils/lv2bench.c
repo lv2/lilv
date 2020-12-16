@@ -105,6 +105,7 @@ bench(const LilvPlugin* p, uint32_t sample_count, uint32_t block_size)
 		if (!lilv_node_equals(feature, urid_map)) {
 			fprintf(stderr, "<%s> requires feature <%s>, skipping\n",
 			        uri, lilv_node_as_uri(feature));
+			free(seq_out);
 			free(buf);
 			uri_table_destroy(&uri_table);
 			return 0.0;
@@ -115,6 +116,7 @@ bench(const LilvPlugin* p, uint32_t sample_count, uint32_t block_size)
 	if (!instance) {
 		fprintf(stderr, "Failed to instantiate <%s>\n",
 		        lilv_node_as_uri(lilv_plugin_get_uri(p)));
+		free(seq_out);
 		free(buf);
 		uri_table_destroy(&uri_table);
 		return 0.0;
