@@ -269,22 +269,22 @@ struct Plugin {
 	LILV_WRAP0(UIs,         plugin, get_uis);
 	LILV_WRAP1(Nodes,       plugin, get_related, const Node&, type);
 
-	inline Port get_port_by_index(unsigned index) {
+	inline Port get_port_by_index(unsigned index) const {
 		return Port(me, lilv_plugin_get_port_by_index(me, index));
 	}
 
-	inline Port get_port_by_symbol(LilvNode* symbol) {
+	inline Port get_port_by_symbol(LilvNode* symbol) const {
 		return Port(me, lilv_plugin_get_port_by_symbol(me, symbol));
 	}
 
 	inline void get_port_ranges_float(float* min_values,
 	                                  float* max_values,
-	                                  float* def_values) {
+	                                  float* def_values) const {
 		return lilv_plugin_get_port_ranges_float(
 			me, min_values, max_values, def_values);
 	}
 
-	inline unsigned get_num_ports_of_class(LilvNode* class_1, ...) {
+	inline unsigned get_num_ports_of_class(LilvNode* class_1, ...) const {
 		va_list args;
 		va_start(args, class_1);
 
@@ -336,15 +336,15 @@ struct Instance {
 	LILV_WRAP1_VOID(instance, run, unsigned, sample_count);
 	LILV_WRAP0_VOID(instance, deactivate);
 
-	inline const void* get_extension_data(const char* uri) {
+	inline const void* get_extension_data(const char* uri) const {
 		return lilv_instance_get_extension_data(me, uri);
 	}
 
-	inline const LV2_Descriptor* get_descriptor() {
+	inline const LV2_Descriptor* get_descriptor() const {
 		return lilv_instance_get_descriptor(me);
 	}
 
-	inline LV2_Handle get_handle() {
+	inline LV2_Handle get_handle() const {
 		return lilv_instance_get_handle(me);
 	}
 
@@ -361,24 +361,24 @@ struct World {
 	World(World&&) = delete;
 	World& operator=(World&&) = delete;
 
-	inline LilvNode* new_uri(const char* uri) {
+	inline LilvNode* new_uri(const char* uri) const {
 		return lilv_new_uri(me, uri);
 	}
-	inline LilvNode* new_string(const char* str) {
+	inline LilvNode* new_string(const char* str) const {
 		return lilv_new_string(me, str);
 	}
-	inline LilvNode* new_int(int val) {
+	inline LilvNode* new_int(int val) const {
 		return lilv_new_int(me, val);
 	}
-	inline LilvNode* new_float(float val) {
+	inline LilvNode* new_float(float val) const {
 		return lilv_new_float(me, val);
 	}
-	inline LilvNode* new_bool(bool val) {
+	inline LilvNode* new_bool(bool val) const {
 		return lilv_new_bool(me, val);
 	}
 	inline Nodes find_nodes(const LilvNode* subject,
 	                        const LilvNode* predicate,
-	                        const LilvNode* object) {
+	                        const LilvNode* object) const {
 		return lilv_world_find_nodes(me, subject, predicate, object);
 	}
 
