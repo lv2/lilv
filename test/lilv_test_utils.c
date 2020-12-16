@@ -132,9 +132,9 @@ create_bundle(LilvTestEnv* env, const char* manifest, const char* plugin)
 }
 
 int
-start_bundle(LilvTestEnv* env, const char* manifest, const char* content)
+start_bundle(LilvTestEnv* env, const char* manifest, const char* plugin)
 {
-	if (create_bundle(env, manifest, content)) {
+	if (create_bundle(env, manifest, plugin)) {
 		return 1;
 	}
 
