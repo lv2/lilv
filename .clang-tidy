@@ -14,13 +14,18 @@ Checks: >
   -cert-dcl51-cpp,
   -cert-err34-c,
   -clang-analyzer-alpha.*,
+  -cppcoreguidelines-avoid-non-const-global-variables,
+  -cppcoreguidelines-macro-usage,
   -cppcoreguidelines-narrowing-conversions,
   -google-readability-todo,
   -hicpp-multiway-paths-covered,
   -hicpp-signed-bitwise,
   -llvm-header-guard,
   -llvmlibc-*,
+  -misc-no-recursion,
+  -misc-non-private-member-variables-in-classes,
   -misc-unused-parameters,
+  -modernize-use-trailing-return-type,
   -readability-implicit-bool-conversion,
 WarningsAsErrors: '*'
 HeaderFilterRegex: '.*'
