@@ -324,6 +324,7 @@ main(int argc, char** argv)
 	SF_INFO out_fmt = in_fmt;
 	out_fmt.channels = self.n_audio_out;
 	if (!(self.out_file = sopen(&self, self.out_path, SFM_WRITE, &out_fmt))) {
+		free(self.ports);
 		return 8;
 	}
 
