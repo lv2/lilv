@@ -1301,7 +1301,9 @@ lilv_state_delete(LilvWorld*       world,
 			// Remove state file
 			const uint8_t* uri  = sord_node_get_string(file);
 			char*          path = (char*)serd_file_uri_parse(uri, NULL);
-			try_unlink(state->dir, path);
+			if (path) {
+				try_unlink(state->dir, path);
+			}
 			serd_free(path);
 		}
 
