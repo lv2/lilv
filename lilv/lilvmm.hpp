@@ -167,7 +167,7 @@ struct ScalePoints {
 
 struct Nodes {
 	LILV_WRAP_COLL(Nodes, Node, nodes);
-	LILV_WRAP1(bool, nodes, contains, const Node, node);
+	LILV_WRAP1(bool, nodes, contains, const Node&, node);
 	LILV_WRAP0(Node, nodes, get_first);
 };
 
@@ -232,8 +232,8 @@ struct Plugin {
 	LILV_WRAP0(Node,        plugin, get_library_uri);
 	LILV_WRAP0(Node,        plugin, get_name);
 	LILV_WRAP0(PluginClass, plugin, get_class);
-	LILV_WRAP1(Nodes,       plugin, get_value, Node, pred);
-	LILV_WRAP1(bool,        plugin, has_feature, Node, feature_uri);
+	LILV_WRAP1(Nodes,       plugin, get_value, const Node&, pred);
+	LILV_WRAP1(bool,        plugin, has_feature, const Node&, feature_uri);
 	LILV_WRAP0(Nodes,       plugin, get_supported_features);
 	LILV_WRAP0(Nodes,       plugin, get_required_features);
 	LILV_WRAP0(Nodes,       plugin, get_optional_features);
@@ -246,7 +246,7 @@ struct Plugin {
 	LILV_WRAP0(bool,        plugin, is_replaced);
 	LILV_WRAP0(Nodes,       plugin, get_extension_data);
 	LILV_WRAP0(UIs,         plugin, get_uis);
-	LILV_WRAP1(Nodes,       plugin, get_related, Node, type);
+	LILV_WRAP1(Nodes,       plugin, get_related, const Node&, type);
 
 	inline Port get_port_by_index(unsigned index) {
 		return Port(me, lilv_plugin_get_port_by_index(me, index));
