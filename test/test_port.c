@@ -228,7 +228,9 @@ main(void)
 	assert(!strcmp(lilv_node_as_string(lilv_nodes_get_first(homepages)),
 	               "http://example.org/someplug"));
 
-	LilvNode *min, *max, *def;
+	LilvNode* min = NULL;
+	LilvNode* max = NULL;
+	LilvNode* def = NULL;
 	lilv_port_get_range(plug, p, &def, &min, &max);
 	assert(def);
 	assert(min);

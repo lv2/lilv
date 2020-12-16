@@ -350,9 +350,9 @@ restore(LV2_Handle                  instance,
 		}
 	}
 
-	size_t   size;
-	uint32_t type;
-	uint32_t valflags;
+	size_t   size     = 0;
+	uint32_t type     = 0;
+	uint32_t valflags = 0;
 
 	plugin->num_runs = *(int32_t*)retrieve(
 		callback_data,

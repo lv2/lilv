@@ -91,7 +91,7 @@ sopen(LV2Apply* self, const char* path, int mode, SF_INFO* fmt)
 static void
 sclose(const char* path, SNDFILE* file)
 {
-	int st;
+	int st = 0;
 	if (file && (st = sf_close(file))) {
 		fatal(NULL, 1, "Failed to close %s (%s)\n", path, sf_error_number(st));
 	}
