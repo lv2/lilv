@@ -149,7 +149,7 @@ struct PluginClass {
 	inline CT(const Lilv ## CT* c_obj) : me(c_obj) {} \
 	LILV_WRAP_CONVERSION(const Lilv ## CT); \
 	LILV_WRAP0(unsigned, prefix, size); \
-	LILV_WRAP1(const ET, prefix, get, LilvIter*, i); \
+	LILV_WRAP1(ET, prefix, get, LilvIter*, i); \
 	LILV_WRAP0(LilvIter*, prefix, begin); \
 	LILV_WRAP1(LilvIter*, prefix, next, LilvIter*, i); \
 	LILV_WRAP1(bool, prefix, is_end, LilvIter*, i); \
@@ -157,7 +157,7 @@ struct PluginClass {
 
 struct PluginClasses {
 	LILV_WRAP_COLL(PluginClasses, PluginClass, plugin_classes);
-	LILV_WRAP1(const PluginClass, plugin_classes,
+	LILV_WRAP1(PluginClass, plugin_classes,
 	           get_by_uri, const LilvNode*, uri);
 };
 
@@ -279,7 +279,7 @@ struct Plugin {
 
 struct Plugins {
 	LILV_WRAP_COLL(Plugins, Plugin, plugins);
-	LILV_WRAP1(const Plugin, plugins, get_by_uri, const LilvNode*, uri);
+	LILV_WRAP1(Plugin, plugins, get_by_uri, const LilvNode*, uri);
 };
 
 struct Instance {
@@ -360,7 +360,7 @@ struct World {
 	LILV_WRAP1_VOID(world, load_bundle, LilvNode*, bundle_uri);
 	LILV_WRAP0(const LilvPluginClass*, world, get_plugin_class);
 	LILV_WRAP0(const LilvPluginClasses*, world, get_plugin_classes);
-	LILV_WRAP0(const Plugins, world, get_all_plugins);
+	LILV_WRAP0(Plugins, world, get_all_plugins);
 	LILV_WRAP1(int, world, load_resource, const LilvNode*, resource);
 
 	LilvWorld* me;
