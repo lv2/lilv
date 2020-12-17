@@ -914,7 +914,6 @@ add_state_to_manifest(LilvWorld*      lworld,
 	if (rfd) {
 		// Read manifest into model
 		SerdReader* reader = sord_new_reader(model, env, SERD_TURTLE, NULL);
-		lilv_flock(rfd, true, true);
 		serd_reader_read_file_handle(reader, rfd, manifest.buf);
 		serd_reader_free(reader);
 	}
@@ -955,20 +954,36 @@ add_state_to_manifest(LilvWorld*      lworld,
 	             serd_node_from_string(SERD_URI,
 	                                   USTR(lilv_node_as_string(plugin_uri))));
 
-	// Write manifest model to file
-	write_manifest(lworld, env, model, &manifest);
+	// Close manifest since we're done reading
+	if (rfd) {
+		fclose(rfd);
+	}
+
+	/* Re-open manifest for locked writing.  We need to do this because it may
+	   need to be truncated, and the file can only be open once on Windows. */
+
+	FILE* wfd = fopen(manifest_path, "w");
+	int   st  = 0;
+	if (!wfd) {
+		LILV_ERRORF("Failed to open %s for writing (%s)\n",
+		            manifest_path,
+		            strerror(errno));
+		st = 1;
+	}
+
+	SerdWriter* writer = ttl_file_writer(wfd, &manifest, &env);
+	lilv_flock(wfd, true, true);
+	sord_write(model, writer, NULL);
+	lilv_flock(wfd, false, true);
+	serd_writer_free(writer);
+	fclose(wfd);
 
 	sord_free(model);
 	serd_node_free(&file);
 	serd_node_free(&manifest);
 	serd_env_free(env);
 
-	if (rfd) {
-		lilv_flock(rfd, false, true);
-		fclose(rfd);
-	}
-
-	return 0;
+	return st;
 }
 
 static bool
@@ -1223,10 +1238,15 @@ lilv_state_save(LilvWorld*       world,
 	fclose(fd);
 
 	// Add entry to manifest
-	char* const manifest = lilv_path_join(abs_dir, "manifest.ttl");
-	add_state_to_manifest(world, state->plugin_uri, manifest, uri, path);
+	if (!ret) {
+		char* const manifest = lilv_path_join(abs_dir, "manifest.ttl");
 
-	free(manifest);
+		ret = add_state_to_manifest(
+			world, state->plugin_uri, manifest, uri, path);
+
+		free(manifest);
+	}
+
 	free(abs_dir);
 	free(path);
 	return ret;

@@ -529,6 +529,42 @@ test_string_round_trip(void)
 	test_context_free(ctx);
 }
 
+static SerdStatus
+count_sink(void* const              handle,
+           const SerdStatementFlags flags,
+           const SerdNode* const    graph,
+           const SerdNode* const    subject,
+           const SerdNode* const    predicate,
+           const SerdNode* const    object,
+           const SerdNode* const    object_datatype,
+           const SerdNode* const    object_lang)
+{
+	size_t* const n_statements = (size_t*)handle;
+
+	++(*n_statements);
+
+	return SERD_SUCCESS;
+}
+
+static size_t
+count_statements(const char* path)
+{
+	size_t n_statements = 0;
+
+	SerdReader* reader = serd_reader_new(
+	    SERD_TURTLE, &n_statements, NULL, NULL, NULL, count_sink, NULL);
+
+	SerdNode uri =
+	    serd_node_new_file_uri((const uint8_t*)path, NULL, NULL, true);
+
+	assert(!serd_reader_read_file(reader, uri.buf));
+
+	serd_node_free(&uri);
+	serd_reader_free(reader);
+
+	return n_statements;
+}
+
 static void
 test_to_files(void)
 {
@@ -574,7 +610,7 @@ test_to_files(void)
 	char* const recfile_copy_1 = lilv_path_join(dirs.copy, "recfile");
 	assert(lilv_path_exists(recfile_copy_1));
 
-	// Set a label and save state to a bundle
+	// Save state to a bundle
 	assert(!lilv_state_save(ctx->env->world,
 	                        &ctx->map,
 	                        &ctx->unmap,
@@ -582,6 +618,13 @@ test_to_files(void)
 	                        "http://example.org/state1",
 	                        bundle_1_path,
 	                        "state.ttl"));
+
+	// Check that a manifest exists
+	char* const manifest_path = lilv_path_join(bundle_1_path, "manifest.ttl");
+	assert(lilv_path_exists(manifest_path));
+
+	// Check that the expected statements are in the manifest file
+	assert(count_statements(manifest_path) == 3);
 
 	// Check that a link to the recfile exists in the saved bundle
 	char* const recfile_link_1 = lilv_path_join(bundle_1_path, "recfile");
@@ -633,10 +676,84 @@ test_to_files(void)
 	free(bundle_2_path);
 	free(recfile_link_1_real);
 	free(recfile_link_1);
+	free(manifest_path);
 	free(recfile_copy_1);
 	lilv_state_free(state_1);
 	free(bundle_1_path);
 	free(recfile_path);
+	lilv_instance_free(instance);
+	test_context_free(ctx);
+}
+
+static void
+test_multi_save(void)
+{
+	TestContext* const      ctx    = test_context_new();
+	TestDirectories         dirs   = create_test_directories();
+	const LilvPlugin* const plugin = load_test_plugin(ctx);
+
+	LV2_State_Make_Path make_path         = {&dirs, make_scratch_path};
+	LV2_Feature         make_path_feature = {LV2_STATE__makePath, &make_path};
+
+	const LV2_Feature* const instance_features[] = {&ctx->map_feature,
+	                                                &ctx->free_path_feature,
+	                                                &make_path_feature,
+	                                                NULL};
+
+	LilvInstance* const instance =
+	    lilv_plugin_instantiate(plugin, 48000.0, instance_features);
+
+	assert(instance);
+
+	// Get state
+	char* const      bundle_1_path = lilv_path_join(dirs.top, "state1.lv2");
+	LilvState* const state_1 =
+	    state_from_instance(plugin, instance, ctx, &dirs, bundle_1_path);
+
+	// Save state to a bundle
+	assert(!lilv_state_save(ctx->env->world,
+	                        &ctx->map,
+	                        &ctx->unmap,
+	                        state_1,
+	                        "http://example.org/state1",
+	                        bundle_1_path,
+	                        "state.ttl"));
+
+	// Check that a manifest exists
+	char* const manifest_path = lilv_path_join(bundle_1_path, "manifest.ttl");
+	assert(lilv_path_exists(manifest_path));
+
+	// Check that the state file exists
+	char* const state_path = lilv_path_join(bundle_1_path, "state.ttl");
+	assert(lilv_path_exists(state_path));
+
+	// Check that the expected statements are in the files
+	assert(count_statements(manifest_path) == 3);
+	assert(count_statements(state_path) == 21);
+
+	// Save state again to the same bundle
+	assert(!lilv_state_save(ctx->env->world,
+	                        &ctx->map,
+	                        &ctx->unmap,
+	                        state_1,
+	                        "http://example.org/state1",
+	                        bundle_1_path,
+	                        "state.ttl"));
+
+	// Check that everything is the same
+	assert(lilv_path_exists(manifest_path));
+	assert(lilv_path_exists(state_path));
+	assert(count_statements(manifest_path) == 3);
+	assert(count_statements(state_path) == 21);
+
+	lilv_dir_for_each(bundle_1_path, NULL, remove_file);
+	lilv_remove(bundle_1_path);
+	cleanup_test_directories(dirs);
+
+	free(state_path);
+	free(manifest_path);
+	lilv_state_free(state_1);
+	free(bundle_1_path);
 	lilv_instance_free(instance);
 	test_context_free(ctx);
 }
@@ -995,6 +1112,7 @@ main(void)
 	test_to_string();
 	test_string_round_trip();
 	test_to_files();
+	test_multi_save();
 	test_files_round_trip();
 	test_world_round_trip();
 	test_label_round_trip();

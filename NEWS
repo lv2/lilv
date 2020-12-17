@@ -3,8 +3,9 @@ lilv (0.24.11) unstable;
   * Allow connecting ports to structures in Python
   * Fix potential memory error when joining filesystem paths
   * Fix unlikely undefined behavior when saving state
+  * Fix writing state manifests on Windows
 
- -- David Robillard <d@drobilla.net>  Tue, 01 Dec 2020 12:19:48 +0000
+ -- David Robillard <d@drobilla.net>  Thu, 17 Dec 2020 22:05:55 +0000
 
 lilv (0.24.10) stable;
 
