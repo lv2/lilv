@@ -631,8 +631,7 @@ test_to_files(void)
 	assert(lilv_path_exists(recfile_link_1));
 
 	// Check that link points to the corresponding copy
-	char* const recfile_link_1_real = lilv_path_canonical(recfile_link_1);
-	assert(!strcmp(recfile_link_1_real, recfile_copy_1));
+	assert(lilv_file_equals(recfile_link_1, recfile_copy_1));
 
 	// Run plugin again to modify recording file data
 	lilv_instance_run(instance, 2);
@@ -660,8 +659,7 @@ test_to_files(void)
 	assert(lilv_path_exists(recfile_link_2));
 
 	// Check that link points to the corresponding copy
-	char* const recfile_link_2_real = lilv_path_canonical(recfile_link_2);
-	assert(!strcmp(recfile_link_2_real, recfile_copy_2));
+	assert(lilv_file_equals(recfile_link_2, recfile_copy_2));
 
 	lilv_instance_free(instance);
 	lilv_dir_for_each(bundle_2_path, NULL, remove_file);
@@ -670,12 +668,10 @@ test_to_files(void)
 	lilv_remove(bundle_1_path);
 	cleanup_test_directories(dirs);
 
-	free(recfile_link_2_real);
 	free(recfile_link_2);
 	free(recfile_copy_2);
 	lilv_state_free(state_2);
 	free(bundle_2_path);
-	free(recfile_link_1_real);
 	free(recfile_link_1);
 	free(manifest_path);
 	free(recfile_copy_1);
