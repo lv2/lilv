@@ -55,6 +55,13 @@ test_path_is_absolute(void)
 	assert(!lilv_path_is_absolute("a/b"));
 	assert(!lilv_path_is_absolute("a"));
 	assert(!lilv_path_is_absolute("."));
+
+#ifdef _WIN32
+	assert(lilv_path_is_absolute("C:/a/b"));
+	assert(lilv_path_is_absolute("C:\\a\\b"));
+	assert(lilv_path_is_absolute("D:/a/b"));
+	assert(lilv_path_is_absolute("D:\\a\\b"));
+#endif
 }
 
 static void
