@@ -351,7 +351,11 @@ lilv_symlink(const char* oldpath, const char* newpath)
 #ifdef _WIN32
 		ret = !CreateHardLink(newpath, oldpath, 0);
 #else
-		ret = symlink(oldpath, newpath);
+		char* target = lilv_path_relative_to(oldpath, newpath);
+
+		ret = symlink(target, newpath);
+
+		free(target);
 #endif
 	}
 	return ret;
