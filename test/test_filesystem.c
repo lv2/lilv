@@ -105,6 +105,26 @@ test_path_absolute(void)
 }
 
 static void
+test_path_absolute_child(void)
+{
+	const char* const parent     = "/parent";
+	const char* const short_path = "a";
+	const char* const long_path  = "a/b/c";
+
+	char* const expected_short = lilv_path_join(parent, short_path);
+	char* const expected_long  = lilv_path_join(parent, long_path);
+
+	assert(equals(lilv_path_absolute_child(short_path, parent),
+	              expected_short));
+
+	assert(equals(lilv_path_absolute_child(long_path, parent),
+	              expected_long));
+
+	free(expected_long);
+	free(expected_short);
+}
+
+static void
 test_path_relative_to(void)
 {
 	assert(equals(lilv_path_relative_to("/a/b", "/a/"), "b"));
@@ -478,6 +498,7 @@ main(void)
 	test_path_is_child();
 	test_path_current();
 	test_path_absolute();
+	test_path_absolute_child();
 	test_path_relative_to();
 	test_path_parent();
 	test_path_filename();

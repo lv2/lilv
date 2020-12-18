@@ -135,6 +135,16 @@ lilv_path_absolute(const char* path)
 }
 
 char*
+lilv_path_absolute_child(const char* path, const char* parent)
+{
+	if (lilv_path_is_absolute(path)) {
+		return lilv_strdup(path);
+	}
+
+	return lilv_path_join(parent, path);
+}
+
+char*
 lilv_path_relative_to(const char* path, const char* base)
 {
 	const size_t path_len = strlen(path);
