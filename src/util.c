@@ -90,14 +90,14 @@ lilv_strdup(const char* str)
 const char*
 lilv_uri_to_path(const char* uri)
 {
-#ifdef __GNUC__
+#if defined(__GNUC__) && __GNUC__ > 4
 #	pragma GCC diagnostic push
 #	pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 #endif
 
 	return (const char*)serd_uri_to_path((const uint8_t*)uri);
 
-#ifdef __GNUC__
+#if defined(__GNUC__) && __GNUC__ > 4
 #	pragma GCC diagnostic pop
 #endif
 }
