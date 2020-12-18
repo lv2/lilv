@@ -130,6 +130,28 @@ test_path_parent(void)
 }
 
 static void
+test_path_filename(void)
+{
+	// Cases from cppreference.com for std::filesystem::path::filename
+	assert(equals(lilv_path_filename("/foo/bar.txt"), "bar.txt"));
+	assert(equals(lilv_path_filename("/foo/.bar"), ".bar"));
+	assert(equals(lilv_path_filename("/foo/bar/"), ""));
+	assert(equals(lilv_path_filename("/foo/."), "."));
+	assert(equals(lilv_path_filename("/foo/.."), ".."));
+	assert(equals(lilv_path_filename("."), "."));
+	assert(equals(lilv_path_filename(".."), ".."));
+	assert(equals(lilv_path_filename("/"), ""));
+	assert(equals(lilv_path_filename("//host"), "host"));
+
+#ifdef _WIN32
+	assert(equals(lilv_path_filename("C:/foo/bar.txt"), "bar.txt"));
+	assert(equals(lilv_path_filename("C:\\foo\\bar.txt"), "bar.txt"));
+	assert(equals(lilv_path_filename("foo/bar.txt"), "bar.txt"));
+	assert(equals(lilv_path_filename("foo\\bar.txt"), "bar.txt"));
+#endif
+}
+
+static void
 test_path_join(void)
 {
 	assert(lilv_path_join(NULL, NULL) == NULL);
@@ -458,6 +480,7 @@ main(void)
 	test_path_absolute();
 	test_path_relative_to();
 	test_path_parent();
+	test_path_filename();
 	test_path_join();
 	test_path_canonical();
 	test_path_exists();

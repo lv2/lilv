@@ -60,6 +60,14 @@ lilv_path_relative_to(const char* path, const char* base);
 char*
 lilv_path_parent(const char* path);
 
+/**
+   Return the filename component of `path` without any directories.
+
+   Returns the empty string if `path` is the root path.
+*/
+char*
+lilv_path_filename(const char* path);
+
 /// Join path `a` and path `b` with a single directory separator between them
 char*
 lilv_path_join(const char* a, const char* b);
