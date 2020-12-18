@@ -663,6 +663,7 @@ test_to_files(void)
 	char* const recfile_link_2_real = lilv_path_canonical(recfile_link_2);
 	assert(!strcmp(recfile_link_2_real, recfile_copy_2));
 
+	lilv_instance_free(instance);
 	lilv_dir_for_each(bundle_2_path, NULL, remove_file);
 	lilv_dir_for_each(bundle_1_path, NULL, remove_file);
 	lilv_remove(bundle_2_path);
@@ -681,7 +682,6 @@ test_to_files(void)
 	lilv_state_free(state_1);
 	free(bundle_1_path);
 	free(recfile_path);
-	lilv_instance_free(instance);
 	test_context_free(ctx);
 }
 
@@ -746,6 +746,7 @@ test_multi_save(void)
 	assert(count_statements(manifest_path) == 3);
 	assert(count_statements(state_path) == 21);
 
+	lilv_instance_free(instance);
 	lilv_dir_for_each(bundle_1_path, NULL, remove_file);
 	lilv_remove(bundle_1_path);
 	cleanup_test_directories(dirs);
@@ -754,7 +755,6 @@ test_multi_save(void)
 	free(manifest_path);
 	lilv_state_free(state_1);
 	free(bundle_1_path);
-	lilv_instance_free(instance);
 	test_context_free(ctx);
 }
 
@@ -858,6 +858,7 @@ test_files_round_trip(void)
 	assert(state_2_loaded);
 	assert(!lilv_state_equals(state_1_1_loaded, state_2_loaded));
 
+	lilv_instance_free(instance);
 	lilv_dir_for_each(bundle_1_1_path, NULL, remove_file);
 	lilv_dir_for_each(bundle_1_2_path, NULL, remove_file);
 	lilv_dir_for_each(bundle_2_path, NULL, remove_file);
@@ -878,7 +879,6 @@ test_files_round_trip(void)
 	free(bundle_1_2_path);
 	lilv_state_free(state_1_1);
 	free(bundle_1_1_path);
-	lilv_instance_free(instance);
 	test_context_free(ctx);
 }
 
@@ -947,7 +947,8 @@ test_world_round_trip(void)
 	// Ensure that it is no longer present
 	assert(!lilv_state_new_from_world(world, &ctx->map, state_node));
 
-	lilv_state_delete(world, restored);
+	lilv_instance_free(instance);
+	lilv_state_delete(world, start_state);
 	cleanup_test_directories(dirs);
 
 	lilv_state_free(restored);
@@ -956,7 +957,6 @@ test_world_round_trip(void)
 	serd_node_free(&bundle_uri);
 	lilv_state_free(start_state);
 	free(bundle_path);
-	lilv_instance_free(instance);
 	test_context_free(ctx);
 }
 
@@ -998,6 +998,7 @@ test_label_round_trip(void)
 	assert(lilv_state_equals(state, loaded));
 	assert(!strcmp(lilv_state_get_label(loaded), "Monopoly on violence"));
 
+	lilv_instance_free(instance);
 	lilv_state_delete(ctx->env->world, state);
 	cleanup_test_directories(dirs);
 
@@ -1005,7 +1006,6 @@ test_label_round_trip(void)
 	free(state_path);
 	free(bundle_path);
 	lilv_state_free(state);
-	lilv_instance_free(instance);
 	test_context_free(ctx);
 }
 
@@ -1083,6 +1083,8 @@ test_delete(void)
 	unsigned n_shared_files_before = 0;
 	lilv_dir_for_each(dirs.shared, &n_shared_files_before, count_file);
 
+	lilv_instance_free(instance);
+
 	// Delete the state
 	assert(!lilv_state_delete(ctx->env->world, state));
 
@@ -1098,7 +1100,6 @@ test_delete(void)
 
 	lilv_state_free(state);
 	free(bundle_path);
-	lilv_instance_free(instance);
 	test_context_free(ctx);
 }
 
