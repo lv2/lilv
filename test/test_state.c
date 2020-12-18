@@ -664,8 +664,8 @@ test_to_files(void)
 	lilv_instance_free(instance);
 	lilv_dir_for_each(bundle_2_path, NULL, remove_file);
 	lilv_dir_for_each(bundle_1_path, NULL, remove_file);
-	lilv_remove(bundle_2_path);
-	lilv_remove(bundle_1_path);
+	assert(!lilv_remove(bundle_2_path));
+	assert(!lilv_remove(bundle_1_path));
 	cleanup_test_directories(dirs);
 
 	free(recfile_link_2);
