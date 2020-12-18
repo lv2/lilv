@@ -307,11 +307,12 @@ abstract_path(LV2_State_Map_Path_Handle handle,
 		}
 	} else if (state->link_dir) {
 		// New path outside state directory, make a link
-		const char* slash = strrchr(real_path, '/');
-		const char* name  = slash ? (slash + 1) : real_path;
+		char* const name = lilv_path_filename(real_path);
 
 		// Find a free name in the (virtual) state directory
 		path = lilv_find_free_path(name, lilv_state_has_path, state);
+
+		free(name);
 	} else {
 		// No link directory, preserve absolute path
 		path = lilv_strdup(abs_path);
