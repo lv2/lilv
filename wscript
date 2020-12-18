@@ -234,14 +234,6 @@ def configure(conf):
                   lib         = 'dl',
                   mandatory   = False)
 
-    if conf.env.DEST_OS == 'win32':
-        conf.check_function('c', 'CreateSymbolicLink',
-                            header_name = ['windows.h'],
-                            define_name = 'HAVE_CREATESYMBOLICLINK',
-                            return_type = 'BOOLEAN',
-                            arg_types   = 'LPCSTR, LPCSTR, DWORD',
-                            mandatory   = False)
-
     if Options.options.dyn_manifest:
         conf.define('LILV_DYN_MANIFEST', 1)
 

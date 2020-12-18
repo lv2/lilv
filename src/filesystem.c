@@ -326,12 +326,7 @@ lilv_symlink(const char* oldpath, const char* newpath)
 	int ret = 0;
 	if (strcmp(oldpath, newpath)) {
 #ifdef _WIN32
-#ifdef HAVE_CREATESYMBOLICLINK
-		ret = !CreateSymbolicLink(newpath, oldpath, 0);
-#endif
-		if (ret) {
-			ret = !CreateHardLink(newpath, oldpath, 0);
-		}
+		ret = !CreateHardLink(newpath, oldpath, 0);
 #else
 		ret = symlink(oldpath, newpath);
 #endif
