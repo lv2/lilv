@@ -555,8 +555,7 @@ def build(bld):
 def test(tst):
     with tst.group('unit') as check:
         for test in tests:
-            if not (sys.platform == 'win32' and test == 'test_state'):
-                check(['./test/' + test])
+            check(['./test/' + test])
 
         if tst.is_defined('LILV_CXX'):
             check(['./test/lilv_cxx_test'])
