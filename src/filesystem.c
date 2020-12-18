@@ -172,11 +172,21 @@ lilv_path_relative_to(const char* path, const char* base)
 		}
 	}
 
+#ifdef _WIN32
+	const bool use_slash = strchr(path, '/');
+#else
+	static const bool use_slash = true;
+#endif
+
 	// Write up references
 	const size_t suffix_len = path_len - last_shared_sep;
 	char*        rel        = (char*)calloc(1, suffix_len + (up * 3) + 1);
 	for (size_t i = 0; i < up; ++i) {
-		memcpy(rel + (i * 3), "../", 3);
+		if (use_slash) {
+			memcpy(rel + (i * 3), "../", 3);
+		} else {
+			memcpy(rel + (i * 3), "..\\", 3);
+		}
 	}
 
 	// Write suffix
@@ -237,7 +247,20 @@ lilv_path_join(const char* a, const char* b)
 	const size_t pre_len      = a_len - (a_end_is_sep ? 1 : 0);
 	char*        path         = (char*)calloc(1, a_len + b_len + 2);
 	memcpy(path, a, pre_len);
+
+#ifdef _WIN32
+	// Use forward slash if it seems that the input paths do
+	const bool a_has_slash = strchr(a, '/');
+	const bool b_has_slash = b && strchr(b, '/');
+	if (a_has_slash || b_has_slash) {
+		path[pre_len] = '/';
+	} else {
+		path[pre_len] = '\\';
+	}
+#else
 	path[pre_len] = '/';
+#endif
+
 	if (b) {
 		memcpy(path + pre_len + 1,
 		       b + (lilv_is_dir_sep(b[0]) ? 1 : 0),

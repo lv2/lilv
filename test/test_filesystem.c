@@ -138,6 +138,18 @@ test_path_relative_to(void)
 	assert(equals(lilv_path_relative_to("/a", "/b/c/"), "/a"));
 	assert(equals(lilv_path_relative_to("/a/b/c", "/a/b/d/"), "../c"));
 	assert(equals(lilv_path_relative_to("/a/b/c", "/a/b/d/e/"), "../../c"));
+
+#ifdef _WIN32
+	assert(equals(lilv_path_relative_to("C:/a/b", "C:/a/"), "b"));
+	assert(equals(lilv_path_relative_to("C:/a", "C:/b/c/"), "../../a"));
+	assert(equals(lilv_path_relative_to("C:/a/b/c", "C:/a/b/d/"), "../c"));
+	assert(equals(lilv_path_relative_to("C:/a/b/c", "C:/a/b/d/e/"), "../../c"));
+
+	assert(equals(lilv_path_relative_to("C:\\a\\b", "C:\\a\\"), "b"));
+	assert(equals(lilv_path_relative_to("C:\\a", "C:\\b\\c\\"), "..\\..\\a"));
+	assert(equals(lilv_path_relative_to("C:\\a\\b\\c", "C:\\a\\b\\d\\"), "..\\c"));
+	assert(equals(lilv_path_relative_to("C:\\a\\b\\c", "C:\\a\\b\\d\\e\\"), "..\\..\\c"));
+#endif
 }
 
 static void
@@ -183,14 +195,25 @@ test_path_join(void)
 {
 	assert(lilv_path_join(NULL, NULL) == NULL);
 	assert(lilv_path_join(NULL, "") == NULL);
+
+#ifdef _WIN32
+	assert(equals(lilv_path_join("", NULL), "\\"));
+	assert(equals(lilv_path_join("", ""), "\\"));
+	assert(equals(lilv_path_join("a", ""), "a\\"));
+	assert(equals(lilv_path_join("a", NULL), "a\\"));
+	assert(equals(lilv_path_join("a", "b"), "a\\b"));
+#else
 	assert(equals(lilv_path_join("", NULL), "/"));
 	assert(equals(lilv_path_join("", ""), "/"));
+	assert(equals(lilv_path_join("a", ""), "a/"));
+	assert(equals(lilv_path_join("a", NULL), "a/"));
+	assert(equals(lilv_path_join("a", "b"), "a/b"));
+#endif
 
 	assert(equals(lilv_path_join("/a", ""), "/a/"));
 	assert(equals(lilv_path_join("/a/b", ""), "/a/b/"));
 	assert(equals(lilv_path_join("/a/", ""), "/a/"));
 	assert(equals(lilv_path_join("/a/b/", ""), "/a/b/"));
-	assert(equals(lilv_path_join("a", ""), "a/"));
 	assert(equals(lilv_path_join("a/b", ""), "a/b/"));
 	assert(equals(lilv_path_join("a/", ""), "a/"));
 	assert(equals(lilv_path_join("a/b/", ""), "a/b/"));
@@ -199,20 +222,25 @@ test_path_join(void)
 	assert(equals(lilv_path_join("/a/b", NULL), "/a/b/"));
 	assert(equals(lilv_path_join("/a/", NULL), "/a/"));
 	assert(equals(lilv_path_join("/a/b/", NULL), "/a/b/"));
-	assert(equals(lilv_path_join("a", NULL), "a/"));
 	assert(equals(lilv_path_join("a/b", NULL), "a/b/"));
 	assert(equals(lilv_path_join("a/", NULL), "a/"));
 	assert(equals(lilv_path_join("a/b/", NULL), "a/b/"));
 
 	assert(equals(lilv_path_join("/a", "b"), "/a/b"));
 	assert(equals(lilv_path_join("/a/", "b"), "/a/b"));
-	assert(equals(lilv_path_join("a", "b"), "a/b"));
 	assert(equals(lilv_path_join("a/", "b"), "a/b"));
 
 	assert(equals(lilv_path_join("/a", "b/"), "/a/b/"));
 	assert(equals(lilv_path_join("/a/", "b/"), "/a/b/"));
 	assert(equals(lilv_path_join("a", "b/"), "a/b/"));
 	assert(equals(lilv_path_join("a/", "b/"), "a/b/"));
+
+#ifdef _WIN32
+	assert(equals(lilv_path_join("C:/a", "b"), "C:/a/b"));
+	assert(equals(lilv_path_join("C:\\a", "b"), "C:\\a\\b"));
+	assert(equals(lilv_path_join("C:/a", "b/"), "C:/a/b/"));
+	assert(equals(lilv_path_join("C:\\a", "b\\"), "C:\\a\\b\\"));
+#endif
 }
 
 static void
