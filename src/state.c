@@ -1152,16 +1152,14 @@ lilv_state_make_links(const LilvState* state, const char* dir)
 	     i = zix_tree_iter_next(i)) {
 		const PathMap* pm = (const PathMap*)zix_tree_get(i);
 
-		char* path = lilv_path_join(dir, pm->rel);
+		char* path = lilv_path_absolute_child(pm->rel, dir);
 		if (lilv_path_is_child(pm->abs, state->copy_dir)
 		    && strcmp(state->copy_dir, dir)) {
 			// Link directly to snapshot in the copy directory
-			char* target = lilv_path_relative_to(pm->abs, dir);
-			maybe_symlink(target, path);
-			free(target);
+			maybe_symlink(pm->abs, path);
 		} else if (!lilv_path_is_child(pm->abs, dir)) {
 			const char* link_dir = state->link_dir ? state->link_dir : dir;
-			char*       pat      = lilv_path_join(link_dir, pm->rel);
+			char*       pat      = lilv_path_absolute_child(pm->rel, link_dir);
 			if (!strcmp(dir, link_dir)) {
 				// Link directory is save directory, make link at exact path
 				remove(pat);
@@ -1180,7 +1178,7 @@ lilv_state_make_links(const LilvState* state, const char* dir)
 
 				// Make a link in the save directory to the external link
 				char* target = lilv_path_relative_to(lpath, dir);
-				maybe_symlink(target, path);
+				maybe_symlink(lpath, path);
 				free(target);
 				free(lpath);
 			}
@@ -1288,6 +1286,16 @@ try_unlink(const char* state_dir, const char* path)
 	}
 }
 
+static char*
+get_canonical_path(const LilvNode* const node)
+{
+	char* const path      = lilv_node_get_path(node, NULL);
+	char* const real_path = lilv_path_canonical(path);
+
+	free(path);
+	return real_path;
+}
+
 int
 lilv_state_delete(LilvWorld*       world,
                   const LilvState* state)
@@ -1299,7 +1307,7 @@ lilv_state_delete(LilvWorld*       world,
 
 	LilvNode*  bundle        = lilv_new_file_uri(world, NULL, state->dir);
 	LilvNode*  manifest      = lilv_world_get_manifest_uri(world, bundle);
-	char*      manifest_path = lilv_node_get_path(manifest, NULL);
+	char*      manifest_path = get_canonical_path(manifest);
 	const bool has_manifest  = lilv_path_exists(manifest_path);
 	SordModel* model         = sord_new(world->world, SORD_SPO, false);
 
@@ -1317,11 +1325,13 @@ lilv_state_delete(LilvWorld*       world,
 			model, state->uri->node, world->uris.rdfs_seeAlso, NULL, NULL);
 		if (file) {
 			// Remove state file
-			const uint8_t* uri  = sord_node_get_string(file);
-			char*          path = (char*)serd_file_uri_parse(uri, NULL);
+			const uint8_t* uri       = sord_node_get_string(file);
+			char*          path      = (char*)serd_file_uri_parse(uri, NULL);
+			char*          real_path = lilv_path_canonical(path);
 			if (path) {
-				try_unlink(state->dir, path);
+				try_unlink(state->dir, real_path);
 			}
+			serd_free(real_path);
 			serd_free(path);
 		}
 
