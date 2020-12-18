@@ -379,6 +379,7 @@ lilv_dir_for_each(const char* path,
 			}
 		} while (FindNextFile(fh, &fd));
 	}
+	FindClose(fh);
 	free(pat);
 #else
 	DIR* dir = opendir(path);
