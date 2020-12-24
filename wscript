@@ -268,7 +268,10 @@ def configure(conf):
                                            '/usr/local/%s/lv2' % libdirname])
     conf.define('LILV_DEFAULT_LV2_PATH', lv2_path)
 
-    autowaf.set_lib_env(conf, 'lilv', LILV_VERSION)
+    # Set up environment for building/using as a subproject
+    autowaf.set_lib_env(conf, 'lilv', LILV_VERSION,
+                        include_path=str(conf.path.find_node('include')))
+
     conf.write_config_header('lilv_config.h', remove=False)
 
     conf.undefine('LILV_DEFAULT_LV2_PATH')  # Cmd line errors with VC++
@@ -285,7 +288,7 @@ def configure(conf):
 def build_util(bld, name, defines, libs=''):
     obj = bld(features     = 'c cprogram',
               source       = name + '.c',
-              includes     = ['include', './src', './utils'],
+              includes     = ['.', 'include', './src', './utils'],
               use          = 'liblilv',
               uselib       = 'SERD SORD SRATOM LV2 ' + libs,
               target       = name,
@@ -344,9 +347,9 @@ def build(bld):
     # Shared Library
     if bld.env.BUILD_SHARED:
         obj = bld(features        = 'c cshlib',
-                  export_includes = ['include'],
+                  export_includes = ['.', 'include'],
                   source          = lib_source,
-                  includes        = ['include', './src'],
+                  includes        = ['.', 'include', './src'],
                   name            = 'liblilv',
                   target          = 'lilv-%s' % LILV_MAJOR_VERSION,
                   vnum            = LILV_VERSION,
@@ -359,9 +362,9 @@ def build(bld):
     # Static library
     if bld.env.BUILD_STATIC:
         obj = bld(features        = 'c cstlib',
-                  export_includes = ['include'],
+                  export_includes = ['.', 'include'],
                   source          = lib_source,
-                  includes        = ['include', './src'],
+                  includes        = ['.', 'include', './src'],
                   name            = 'liblilv_static',
                   target          = 'lilv-%s' % LILV_MAJOR_VERSION,
                   vnum            = LILV_VERSION,
@@ -419,7 +422,7 @@ def build(bld):
             obj = bld(features     = 'c cprogram',
                       source       = 'test/%s.lv2/test_%s.c' % (p, p),
                       target       = 'test/test_%s' % p,
-                      includes     = ['include', './src'],
+                      includes     = ['.', 'include', './src'],
                       use          = 'liblilv_profiled',
                       install_path = None,
                       defines      = defines,
@@ -441,7 +444,7 @@ def build(bld):
         # Static profiled library (for unit test code coverage)
         obj = bld(features     = 'c cstlib',
                   source       = lib_source,
-                  includes     = ['include', './src'],
+                  includes     = ['.', 'include', './src'],
                   name         = 'liblilv_profiled',
                   target       = 'lilv_profiled',
                   install_path = None,
@@ -460,7 +463,7 @@ def build(bld):
             obj = bld(features     = 'c cprogram',
                       source       = ['test/%s.c' % test,
                                       'test/lilv_test_utils.c'],
-                      includes     = ['include', './src'],
+                      includes     = ['.', 'include', './src'],
                       use          = 'liblilv_profiled',
                       lib          = test_libs,
                       uselib       = 'SERD SORD SRATOM LV2',
@@ -476,7 +479,7 @@ def build(bld):
         if 'COMPILER_CXX' in bld.env:
             obj = bld(features     = 'cxx cxxprogram',
                       source       = 'test/lilv_cxx_test.cpp',
-                      includes     = ['include', './src'],
+                      includes     = ['.', 'include', './src'],
                       use          = 'liblilv_profiled',
                       lib          = test_libs,
                       uselib       = 'SERD SORD SRATOM LV2',
