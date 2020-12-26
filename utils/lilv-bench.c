@@ -19,16 +19,16 @@
 int
 main(int argc, char** argv)
 {
-	LilvWorld* world = lilv_world_new();
-	lilv_world_load_all(world);
+  LilvWorld* world = lilv_world_new();
+  lilv_world_load_all(world);
 
-	const LilvPlugins* plugins = lilv_world_get_all_plugins(world);
-	LILV_FOREACH(plugins, p, plugins) {
-		const LilvPlugin* plugin = lilv_plugins_get(plugins, p);
-		lilv_plugin_get_class(plugin);
-	}
+  const LilvPlugins* plugins = lilv_world_get_all_plugins(world);
+  LILV_FOREACH (plugins, p, plugins) {
+    const LilvPlugin* plugin = lilv_plugins_get(plugins, p);
+    lilv_plugin_get_class(plugin);
+  }
 
-	lilv_world_free(world);
+  lilv_world_free(world);
 
-	return 0;
+  return 0;
 }

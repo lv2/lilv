@@ -38,21 +38,21 @@ static const char* const plugin_ttl = "\
 int
 main(void)
 {
-	LilvTestEnv* const env   = lilv_test_env_new();
-	LilvWorld* const   world = env->world;
+  LilvTestEnv* const env   = lilv_test_env_new();
+  LilvWorld* const   world = env->world;
 
-	if (start_bundle(env, SIMPLE_MANIFEST_TTL, plugin_ttl)) {
-		return 1;
-	}
+  if (start_bundle(env, SIMPLE_MANIFEST_TTL, plugin_ttl)) {
+    return 1;
+  }
 
-	const LilvPlugins* plugins = lilv_world_get_all_plugins(world);
-	const LilvPlugin* plug = lilv_plugins_get_by_uri(plugins, env->plugin1_uri);
+  const LilvPlugins* plugins = lilv_world_get_all_plugins(world);
+  const LilvPlugin*  plug = lilv_plugins_get_by_uri(plugins, env->plugin1_uri);
 
-	uint32_t n_ports = lilv_plugin_get_num_ports(plug);
-	assert(n_ports == 0);
+  uint32_t n_ports = lilv_plugin_get_num_ports(plug);
+  assert(n_ports == 0);
 
-	delete_bundle(env);
-	lilv_test_env_free(env);
+  delete_bundle(env);
+  lilv_test_env_free(env);
 
-	return 0;
+  return 0;
 }

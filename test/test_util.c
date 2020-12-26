@@ -19,14 +19,14 @@
 #undef NDEBUG
 
 #ifdef _WIN32
-#	 include "lilv_internal.h"
+#  include "lilv_internal.h"
 #endif
 
 #include "../src/filesystem.h"
 
 #ifdef _WIN32
-#    include <io.h>
-#    define mkstemp(pat) _mktemp(pat)
+#  include <io.h>
+#  define mkstemp(pat) _mktemp(pat)
 #endif
 
 #include <assert.h>
@@ -37,31 +37,31 @@
 int
 main(void)
 {
-	assert(!lilv_path_canonical(NULL));
+  assert(!lilv_path_canonical(NULL));
 
-	char a_path[16];
-	char b_path[16];
-	strncpy(a_path, "copy_a_XXXXXX", sizeof(a_path));
-	strncpy(b_path, "copy_b_XXXXXX", sizeof(b_path));
-	mkstemp(a_path);
-	mkstemp(b_path);
+  char a_path[16];
+  char b_path[16];
+  strncpy(a_path, "copy_a_XXXXXX", sizeof(a_path));
+  strncpy(b_path, "copy_b_XXXXXX", sizeof(b_path));
+  mkstemp(a_path);
+  mkstemp(b_path);
 
-	FILE* fa = fopen(a_path, "w");
-	FILE* fb = fopen(b_path, "w");
-	fprintf(fa, "AA\n");
-	fprintf(fb, "AB\n");
-	fclose(fa);
-	fclose(fb);
+  FILE* fa = fopen(a_path, "w");
+  FILE* fb = fopen(b_path, "w");
+  fprintf(fa, "AA\n");
+  fprintf(fb, "AB\n");
+  fclose(fa);
+  fclose(fb);
 
-	assert(lilv_copy_file("does/not/exist", "copy"));
-	assert(lilv_copy_file(a_path, "not/a/dir/copy"));
-	assert(!lilv_copy_file(a_path, "copy_c"));
-	assert(!lilv_file_equals(a_path, b_path));
-	assert(lilv_file_equals(a_path, a_path));
-	assert(lilv_file_equals(a_path, "copy_c"));
-	assert(!lilv_file_equals("does/not/exist", b_path));
-	assert(!lilv_file_equals(a_path, "does/not/exist"));
-	assert(!lilv_file_equals("does/not/exist", "/does/not/either"));
+  assert(lilv_copy_file("does/not/exist", "copy"));
+  assert(lilv_copy_file(a_path, "not/a/dir/copy"));
+  assert(!lilv_copy_file(a_path, "copy_c"));
+  assert(!lilv_file_equals(a_path, b_path));
+  assert(lilv_file_equals(a_path, a_path));
+  assert(lilv_file_equals(a_path, "copy_c"));
+  assert(!lilv_file_equals("does/not/exist", b_path));
+  assert(!lilv_file_equals(a_path, "does/not/exist"));
+  assert(!lilv_file_equals("does/not/exist", "/does/not/either"));
 
-	return 0;
+  return 0;
 }

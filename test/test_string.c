@@ -21,9 +21,9 @@
 #include "../src/lilv_internal.h"
 
 #ifdef _WIN32
-#	include <windows.h>
-#	define setenv(n, v, r) SetEnvironmentVariable((n), (v))
-#	define unsetenv(n) SetEnvironmentVariable((n), NULL)
+#  include <windows.h>
+#  define setenv(n, v, r) SetEnvironmentVariable((n), (v))
+#  define unsetenv(n) SetEnvironmentVariable((n), NULL)
 #endif
 
 #include <assert.h>
@@ -34,23 +34,23 @@ int
 main(void)
 {
 #ifndef _WIN32
-	char* s = NULL;
+  char* s = NULL;
 
-	setenv("LILV_TEST_1", "test", 1);
-	char* home_foo = lilv_strjoin(getenv("HOME"), "/foo", NULL);
-	assert(!strcmp((s = lilv_expand("$LILV_TEST_1")), "test"));
-	free(s);
-	assert(!strcmp((s = lilv_expand("~")), getenv("HOME")));
-	free(s);
-	assert(!strcmp((s = lilv_expand("~foo")), "~foo"));
-	free(s);
-	assert(!strcmp((s = lilv_expand("~/foo")), home_foo));
-	free(s);
-	assert(!strcmp((s = lilv_expand("$NOT_A_VAR")), "$NOT_A_VAR"));
-	free(s);
-	free(home_foo);
-	unsetenv("LILV_TEST_1");
+  setenv("LILV_TEST_1", "test", 1);
+  char* home_foo = lilv_strjoin(getenv("HOME"), "/foo", NULL);
+  assert(!strcmp((s = lilv_expand("$LILV_TEST_1")), "test"));
+  free(s);
+  assert(!strcmp((s = lilv_expand("~")), getenv("HOME")));
+  free(s);
+  assert(!strcmp((s = lilv_expand("~foo")), "~foo"));
+  free(s);
+  assert(!strcmp((s = lilv_expand("~/foo")), home_foo));
+  free(s);
+  assert(!strcmp((s = lilv_expand("$NOT_A_VAR")), "$NOT_A_VAR"));
+  free(s);
+  free(home_foo);
+  unsetenv("LILV_TEST_1");
 #endif
 
-	return 0;
+  return 0;
 }

@@ -39,58 +39,56 @@ static int discovery_plugin_found = 0;
 static void
 discovery_verify_plugin(const LilvTestEnv* env, const LilvPlugin* plugin)
 {
-	const LilvNode* value = lilv_plugin_get_uri(plugin);
-	if (lilv_node_equals(value, env->plugin1_uri)) {
-		const LilvNode* lib_uri = NULL;
-		assert(!lilv_node_equals(value, env->plugin2_uri));
-		discovery_plugin_found = 1;
-		lib_uri                = lilv_plugin_get_library_uri(plugin);
-		assert(lib_uri);
-		assert(lilv_node_is_uri(lib_uri));
-		assert(lilv_node_as_uri(lib_uri));
-		assert(strstr(lilv_node_as_uri(lib_uri), "foo" SHLIB_EXT));
-		assert(lilv_plugin_verify(plugin));
-	}
+  const LilvNode* value = lilv_plugin_get_uri(plugin);
+  if (lilv_node_equals(value, env->plugin1_uri)) {
+    const LilvNode* lib_uri = NULL;
+    assert(!lilv_node_equals(value, env->plugin2_uri));
+    discovery_plugin_found = 1;
+    lib_uri                = lilv_plugin_get_library_uri(plugin);
+    assert(lib_uri);
+    assert(lilv_node_is_uri(lib_uri));
+    assert(lilv_node_as_uri(lib_uri));
+    assert(strstr(lilv_node_as_uri(lib_uri), "foo" SHLIB_EXT));
+    assert(lilv_plugin_verify(plugin));
+  }
 }
 
 int
 main(void)
 {
-	LilvTestEnv* const env   = lilv_test_env_new();
-	LilvWorld* const   world = env->world;
+  LilvTestEnv* const env   = lilv_test_env_new();
+  LilvWorld* const   world = env->world;
 
-	if (start_bundle(env, SIMPLE_MANIFEST_TTL, plugin_ttl)) {
-		return 1;
-	}
+  if (start_bundle(env, SIMPLE_MANIFEST_TTL, plugin_ttl)) {
+    return 1;
+  }
 
-	const LilvPlugins* plugins = lilv_world_get_all_plugins(world);
-	assert(lilv_plugins_size(plugins) > 0);
+  const LilvPlugins* plugins = lilv_world_get_all_plugins(world);
+  assert(lilv_plugins_size(plugins) > 0);
 
-	const LilvPlugin* plug1 =
-	    lilv_plugins_get_by_uri(plugins, env->plugin1_uri);
+  const LilvPlugin* plug1 = lilv_plugins_get_by_uri(plugins, env->plugin1_uri);
 
-	const LilvPlugin* plug2 =
-	    lilv_plugins_get_by_uri(plugins, env->plugin2_uri);
+  const LilvPlugin* plug2 = lilv_plugins_get_by_uri(plugins, env->plugin2_uri);
 
-	assert(plug1);
-	assert(!plug2);
+  assert(plug1);
+  assert(!plug2);
 
-	{
-		LilvNode* name = lilv_plugin_get_name(plug1);
-		assert(!strcmp(lilv_node_as_string(name), "Test plugin"));
-		lilv_node_free(name);
-	}
+  {
+    LilvNode* name = lilv_plugin_get_name(plug1);
+    assert(!strcmp(lilv_node_as_string(name), "Test plugin"));
+    lilv_node_free(name);
+  }
 
-	discovery_plugin_found = 0;
-	LILV_FOREACH (plugins, i, plugins) {
-		discovery_verify_plugin(env, lilv_plugins_get(plugins, i));
-	}
+  discovery_plugin_found = 0;
+  LILV_FOREACH (plugins, i, plugins) {
+    discovery_verify_plugin(env, lilv_plugins_get(plugins, i));
+  }
 
-	assert(discovery_plugin_found);
-	plugins = NULL;
+  assert(discovery_plugin_found);
+  plugins = NULL;
 
-	delete_bundle(env);
-	lilv_test_env_free(env);
+  delete_bundle(env);
+  lilv_test_env_free(env);
 
-	return 0;
+  return 0;
 }

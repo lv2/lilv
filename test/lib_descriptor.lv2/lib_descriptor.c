@@ -22,36 +22,33 @@
 
 #define PLUGIN_URI "http://example.org/lib-descriptor"
 
-enum {
-	TEST_INPUT  = 0,
-	TEST_OUTPUT = 1
-};
+enum { TEST_INPUT = 0, TEST_OUTPUT = 1 };
 
 typedef struct {
-	float* input;
-	float* output;
+  float* input;
+  float* output;
 } Test;
 
 static void
 cleanup(LV2_Handle instance)
 {
-	free((Test*)instance);
+  free((Test*)instance);
 }
 
 static void
 connect_port(LV2_Handle instance, uint32_t port, void* data)
 {
-	Test* test = (Test*)instance;
-	switch (port) {
-	case TEST_INPUT:
-		test->input = (float*)data;
-		break;
-	case TEST_OUTPUT:
-		test->output = (float*)data;
-		break;
-	default:
-		break;
-	}
+  Test* test = (Test*)instance;
+  switch (port) {
+  case TEST_INPUT:
+    test->input = (float*)data;
+    break;
+  case TEST_OUTPUT:
+    test->output = (float*)data;
+    break;
+  default:
+    break;
+  }
 }
 
 static LV2_Handle
@@ -60,54 +57,52 @@ instantiate(const LV2_Descriptor*     descriptor,
             const char*               path,
             const LV2_Feature* const* features)
 {
-	Test* test = (Test*)calloc(1, sizeof(Test));
-	if (!test) {
-		return NULL;
-	}
+  Test* test = (Test*)calloc(1, sizeof(Test));
+  if (!test) {
+    return NULL;
+  }
 
-	return (LV2_Handle)test;
+  return (LV2_Handle)test;
 }
 
 static void
 run(LV2_Handle instance, uint32_t sample_count)
 {
-	Test* test = (Test*)instance;
+  Test* test = (Test*)instance;
 
-	*test->output = *test->input;
+  *test->output = *test->input;
 }
 
 static const LV2_Descriptor descriptor = {
-	PLUGIN_URI,
-	instantiate,
-	connect_port,
-	NULL, // activate,
-	run,
-	NULL, // deactivate,
-	cleanup,
-	NULL  // extension_data
+  PLUGIN_URI,
+  instantiate,
+  connect_port,
+  NULL, // activate,
+  run,
+  NULL, // deactivate,
+  cleanup,
+  NULL // extension_data
 };
 
 static const LV2_Descriptor*
 get_plugin(LV2_Lib_Handle handle, uint32_t index)
 {
-	switch (index) {
-	case 0:
-		return &descriptor;
-	default:
-		return NULL;
-	}
+  switch (index) {
+  case 0:
+    return &descriptor;
+  default:
+    return NULL;
+  }
 }
 
-static const LV2_Lib_Descriptor lib = {
-	NULL,
-	sizeof(LV2_Lib_Descriptor),
-	NULL,
-	get_plugin };
+static const LV2_Lib_Descriptor lib = {NULL,
+                                       sizeof(LV2_Lib_Descriptor),
+                                       NULL,
+                                       get_plugin};
 
 LV2_SYMBOL_EXPORT
 const LV2_Lib_Descriptor*
-lv2_lib_descriptor(const char*              bundle_path,
-                   const LV2_Feature*const* features)
+lv2_lib_descriptor(const char* bundle_path, const LV2_Feature* const* features)
 {
-	return &lib;
+  return &lib;
 }

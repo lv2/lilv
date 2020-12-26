@@ -47,10 +47,10 @@ typedef struct ZixTreeNodeImpl ZixTreeIter;
    Create a new (empty) tree.
 */
 ZIX_API ZixTree*
-zix_tree_new(bool           allow_duplicates,
-             ZixComparator  cmp,
-             void*          cmp_data,
-             ZixDestroyFunc destroy);
+        zix_tree_new(bool           allow_duplicates,
+                     ZixComparator  cmp,
+                     void*          cmp_data,
+                     ZixDestroyFunc destroy);
 
 /**
    Free `t`.
@@ -93,13 +93,13 @@ zix_tree_get(const ZixTreeIter* ti);
    Return an iterator to the first (smallest) element in `t`.
 */
 ZIX_API ZixTreeIter*
-zix_tree_begin(ZixTree* t);
+        zix_tree_begin(ZixTree* t);
 
 /**
    Return an iterator the the element one past the last element in `t`.
 */
 ZIX_API ZixTreeIter*
-zix_tree_end(ZixTree* t);
+        zix_tree_end(ZixTree* t);
 
 /**
    Return true iff `i` is an iterator to the end of its tree.
@@ -111,13 +111,13 @@ zix_tree_iter_is_end(const ZixTreeIter* i);
    Return an iterator to the last (largest) element in `t`.
 */
 ZIX_API ZixTreeIter*
-zix_tree_rbegin(ZixTree* t);
+        zix_tree_rbegin(ZixTree* t);
 
 /**
    Return an iterator the the element one before the first element in `t`.
 */
 ZIX_API ZixTreeIter*
-zix_tree_rend(ZixTree* t);
+        zix_tree_rend(ZixTree* t);
 
 /**
    Return true iff `i` is an iterator to the reverse end of its tree.
@@ -129,13 +129,13 @@ zix_tree_iter_is_rend(const ZixTreeIter* i);
    Return an iterator that points to the element one past `i`.
 */
 ZIX_API ZixTreeIter*
-zix_tree_iter_next(ZixTreeIter* i);
+        zix_tree_iter_next(ZixTreeIter* i);
 
 /**
    Return an iterator that points to the element one before `i`.
 */
 ZIX_API ZixTreeIter*
-zix_tree_iter_prev(ZixTreeIter* i);
+        zix_tree_iter_prev(ZixTreeIter* i);
 
 /**
    @}
@@ -143,7 +143,7 @@ zix_tree_iter_prev(ZixTreeIter* i);
 */
 
 #ifdef __cplusplus
-}  /* extern "C" */
+} /* extern "C" */
 #endif
 
-#endif  /* ZIX_TREE_H */
+#endif /* ZIX_TREE_H */

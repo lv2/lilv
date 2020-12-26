@@ -20,13 +20,13 @@
 #include "lilv/lilv.h"
 
 #define MANIFEST_PREFIXES \
-	"\
+  "\
 @prefix : <http://example.org/> .\n\
 @prefix lv2: <http://lv2plug.in/ns/lv2core#> .\n\
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .\n"
 
 #define PLUGIN_PREFIXES \
-	"\
+  "\
 @prefix : <http://example.org/> .\n\
 @prefix atom: <http://lv2plug.in/ns/ext/atom#> . \n\
 @prefix doap: <http://usefulinc.com/ns/doap#> .\n\
@@ -37,30 +37,29 @@
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .\n"
 
 #define SIMPLE_MANIFEST_TTL \
-	"\
+  "\
 :plug a lv2:Plugin ;\n\
 	lv2:binary <foo" SHLIB_EXT "> ;\n\
 	rdfs:seeAlso <plugin.ttl> .\n"
 
 #if defined(__APPLE__)
-#	define SHLIB_EXT ".dylib"
+#  define SHLIB_EXT ".dylib"
 #elif defined(_WIN32)
-#	define SHLIB_EXT ".dll"
+#  define SHLIB_EXT ".dll"
 #else
-#	define SHLIB_EXT ".so"
+#  define SHLIB_EXT ".so"
 #endif
 
-typedef struct
-{
-	LilvWorld* world;
-	LilvNode*  plugin1_uri;
-	LilvNode*  plugin2_uri;
-	char*      test_bundle_path;
-	char*      test_bundle_uri;
-	char*      test_manifest_path;
-	char*      test_content_path;
-	int        test_count;
-	int        error_count;
+typedef struct {
+  LilvWorld* world;
+  LilvNode*  plugin1_uri;
+  LilvNode*  plugin2_uri;
+  char*      test_bundle_path;
+  char*      test_bundle_uri;
+  char*      test_manifest_path;
+  char*      test_content_path;
+  int        test_count;
+  int        error_count;
 } LilvTestEnv;
 
 // Create a new test environment with a world, common values, and test LV2_PATH

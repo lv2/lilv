@@ -73,28 +73,28 @@ static const char* const plugin_ttl = "\
 int
 main(void)
 {
-	LilvTestEnv* const env   = lilv_test_env_new();
-	LilvWorld* const   world = env->world;
+  LilvTestEnv* const env   = lilv_test_env_new();
+  LilvWorld* const   world = env->world;
 
-	if (start_bundle(env, manifest_ttl, plugin_ttl)) {
-		return 1;
-	}
+  if (start_bundle(env, manifest_ttl, plugin_ttl)) {
+    return 1;
+  }
 
-	const LilvPlugins* plugins = lilv_world_get_all_plugins(world);
-	const LilvPlugin* plug = lilv_plugins_get_by_uri(plugins, env->plugin1_uri);
-	assert(plug);
+  const LilvPlugins* plugins = lilv_world_get_all_plugins(world);
+  const LilvPlugin*  plug = lilv_plugins_get_by_uri(plugins, env->plugin1_uri);
+  assert(plug);
 
-	// Test non-inherited property
-	LilvNode* name = lilv_plugin_get_name(plug);
-	assert(!strcmp(lilv_node_as_string(name), "Instance"));
-	lilv_node_free(name);
+  // Test non-inherited property
+  LilvNode* name = lilv_plugin_get_name(plug);
+  assert(!strcmp(lilv_node_as_string(name), "Instance"));
+  lilv_node_free(name);
 
-	// Test inherited property
-	const LilvNode* binary = lilv_plugin_get_library_uri(plug);
-	assert(strstr(lilv_node_as_string(binary), "inst" SHLIB_EXT));
+  // Test inherited property
+  const LilvNode* binary = lilv_plugin_get_library_uri(plug);
+  assert(strstr(lilv_node_as_string(binary), "inst" SHLIB_EXT));
 
-	delete_bundle(env);
-	lilv_test_env_free(env);
+  delete_bundle(env);
+  lilv_test_env_free(env);
 
-	return 0;
+  return 0;
 }

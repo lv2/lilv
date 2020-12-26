@@ -24,42 +24,42 @@
 
 /** @cond */
 #ifdef ZIX_SHARED
-#    ifdef _WIN32
-#        define ZIX_LIB_IMPORT __declspec(dllimport)
-#        define ZIX_LIB_EXPORT __declspec(dllexport)
-#    else
-#        define ZIX_LIB_IMPORT __attribute__((visibility("default")))
-#        define ZIX_LIB_EXPORT __attribute__((visibility("default")))
-#    endif
-#    ifdef ZIX_INTERNAL
-#        define ZIX_API ZIX_LIB_EXPORT
-#    else
-#        define ZIX_API ZIX_LIB_IMPORT
-#    endif
-#    define ZIX_PRIVATE static
+#  ifdef _WIN32
+#    define ZIX_LIB_IMPORT __declspec(dllimport)
+#    define ZIX_LIB_EXPORT __declspec(dllexport)
+#  else
+#    define ZIX_LIB_IMPORT __attribute__((visibility("default")))
+#    define ZIX_LIB_EXPORT __attribute__((visibility("default")))
+#  endif
+#  ifdef ZIX_INTERNAL
+#    define ZIX_API ZIX_LIB_EXPORT
+#  else
+#    define ZIX_API ZIX_LIB_IMPORT
+#  endif
+#  define ZIX_PRIVATE static
 #elif defined(ZIX_INLINE)
-#    define ZIX_API     static inline
-#    define ZIX_PRIVATE static inline
+#  define ZIX_API static inline
+#  define ZIX_PRIVATE static inline
 #else
-#    define ZIX_API
-#    define ZIX_PRIVATE static
+#  define ZIX_API
+#  define ZIX_PRIVATE static
 #endif
 /** @endcond */
 
 #ifdef __cplusplus
 extern "C" {
 #else
-#    include <stdbool.h>
+#  include <stdbool.h>
 #endif
 
 typedef enum {
-	ZIX_STATUS_SUCCESS,
-	ZIX_STATUS_ERROR,
-	ZIX_STATUS_NO_MEM,
-	ZIX_STATUS_NOT_FOUND,
-	ZIX_STATUS_EXISTS,
-	ZIX_STATUS_BAD_ARG,
-	ZIX_STATUS_BAD_PERMS
+  ZIX_STATUS_SUCCESS,
+  ZIX_STATUS_ERROR,
+  ZIX_STATUS_NO_MEM,
+  ZIX_STATUS_NOT_FOUND,
+  ZIX_STATUS_EXISTS,
+  ZIX_STATUS_BAD_ARG,
+  ZIX_STATUS_BAD_PERMS
 } ZixStatus;
 
 /**
@@ -82,7 +82,7 @@ typedef void (*ZixDestroyFunc)(void* ptr);
 */
 
 #ifdef __cplusplus
-}  /* extern "C" */
+} /* extern "C" */
 #endif
 
-#endif  /* ZIX_COMMON_H */
+#endif /* ZIX_COMMON_H */

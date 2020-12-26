@@ -60,28 +60,28 @@ static const char* const plugin_ttl = "\
 int
 main(void)
 {
-	LilvTestEnv* const env   = lilv_test_env_new();
-	LilvWorld* const   world = env->world;
+  LilvTestEnv* const env   = lilv_test_env_new();
+  LilvWorld* const   world = env->world;
 
-	if (start_bundle(env, SIMPLE_MANIFEST_TTL, plugin_ttl)) {
-		return 1;
-	}
+  if (start_bundle(env, SIMPLE_MANIFEST_TTL, plugin_ttl)) {
+    return 1;
+  }
 
-	const LilvPlugins* plugins = lilv_world_get_all_plugins(world);
-	const LilvPlugin* plug = lilv_plugins_get_by_uri(plugins, env->plugin1_uri);
-	assert(plug);
+  const LilvPlugins* plugins = lilv_world_get_all_plugins(world);
+  const LilvPlugin*  plug = lilv_plugins_get_by_uri(plugins, env->plugin1_uri);
+  assert(plug);
 
-	LilvNode* author_name = lilv_plugin_get_author_name(plug);
-	assert(!author_name);
+  LilvNode* author_name = lilv_plugin_get_author_name(plug);
+  assert(!author_name);
 
-	LilvNode* author_email = lilv_plugin_get_author_email(plug);
-	assert(!author_email);
+  LilvNode* author_email = lilv_plugin_get_author_email(plug);
+  assert(!author_email);
 
-	LilvNode* author_homepage = lilv_plugin_get_author_homepage(plug);
-	assert(!author_homepage);
+  LilvNode* author_homepage = lilv_plugin_get_author_homepage(plug);
+  assert(!author_homepage);
 
-	delete_bundle(env);
-	lilv_test_env_free(env);
+  delete_bundle(env);
+  lilv_test_env_free(env);
 
-	return 0;
+  return 0;
 }

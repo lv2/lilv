@@ -42,10 +42,10 @@
    should be defined for readability.
 */
 typedef enum {
-	TEST_CONTROL_IN   = 0,
-	TEST_CONTROL_OUT  = 1,
-	TEST_AUDIO_IN     = 2,
-	TEST_AUDIO_OUT    = 3
+  TEST_CONTROL_IN  = 0,
+  TEST_CONTROL_OUT = 1,
+  TEST_AUDIO_IN    = 2,
+  TEST_AUDIO_OUT   = 3
 } PortIndex;
 
 /**
@@ -54,7 +54,7 @@ typedef enum {
    every instance method.  In this simple plugin, only port buffers need to be
    stored, since there is no additional instance data.  */
 typedef struct {
-	float* buf;
+  float* buf;
 } Test;
 
 /**
@@ -73,9 +73,9 @@ instantiate(const LV2_Descriptor*     descriptor,
             const char*               bundle_path,
             const LV2_Feature* const* features)
 {
-	Test* test = (Test*)malloc(sizeof(Test));
+  Test* test = (Test*)malloc(sizeof(Test));
 
-	return (LV2_Handle)test;
+  return (LV2_Handle)test;
 }
 
 /**
@@ -87,11 +87,8 @@ instantiate(const LV2_Descriptor*     descriptor,
    context as run().
 */
 static void
-connect_port(LV2_Handle instance,
-             uint32_t   port,
-             void*      data)
-{
-}
+connect_port(LV2_Handle instance, uint32_t port, void* data)
+{}
 
 /**
    The activate() method is called by the host to initialise and prepare the
@@ -104,14 +101,12 @@ connect_port(LV2_Handle instance,
 */
 static void
 activate(LV2_Handle instance)
-{
-}
+{}
 
 /** Process a block of audio (audio thread, must be RT safe). */
 static void
 run(LV2_Handle instance, uint32_t n_samples)
-{
-}
+{}
 
 /**
    The deactivate() method is the counterpart to activate() called by the host
@@ -126,8 +121,7 @@ run(LV2_Handle instance, uint32_t n_samples)
 */
 static void
 deactivate(LV2_Handle instance)
-{
-}
+{}
 
 /**
    Destroy a plugin instance (counterpart to instantiate()).
@@ -138,7 +132,7 @@ deactivate(LV2_Handle instance)
 static void
 cleanup(LV2_Handle instance)
 {
-	free(instance);
+  free(instance);
 }
 
 /**
@@ -154,7 +148,7 @@ cleanup(LV2_Handle instance)
 static const void*
 extension_data(const char* uri)
 {
-	return NULL;
+  return NULL;
 }
 
 /**
@@ -162,16 +156,14 @@ extension_data(const char* uri)
    statically to avoid leaking memory and non-portable shared library
    constructors and destructors to clean up properly.
 */
-static const LV2_Descriptor descriptor = {
-	TEST_URI,
-	instantiate,
-	connect_port,
-	activate,
-	run,
-	deactivate,
-	cleanup,
-	extension_data
-};
+static const LV2_Descriptor descriptor = {TEST_URI,
+                                          instantiate,
+                                          connect_port,
+                                          activate,
+                                          run,
+                                          deactivate,
+                                          cleanup,
+                                          extension_data};
 
 /**
    The lv2_descriptor() function is the entry point to the plugin library.  The
@@ -187,10 +179,10 @@ LV2_SYMBOL_EXPORT
 const LV2_Descriptor*
 lv2_descriptor(uint32_t index)
 {
-	switch (index) {
-	case 0:
-		return &descriptor;
-	default:
-		return NULL;
-	}
+  switch (index) {
+  case 0:
+    return &descriptor;
+  default:
+    return NULL;
+  }
 }

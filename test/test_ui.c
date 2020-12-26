@@ -86,95 +86,95 @@ static const char* const plugin_ttl = "\
 static unsigned
 ui_supported(const char* container_type_uri, const char* ui_type_uri)
 {
-	return !strcmp(container_type_uri, ui_type_uri);
+  return !strcmp(container_type_uri, ui_type_uri);
 }
 
 int
 main(void)
 {
-	LilvTestEnv* const env   = lilv_test_env_new();
-	LilvWorld* const   world = env->world;
+  LilvTestEnv* const env   = lilv_test_env_new();
+  LilvWorld* const   world = env->world;
 
-	if (start_bundle(env, SIMPLE_MANIFEST_TTL, plugin_ttl)) {
-		return 1;
-	}
-	const LilvPlugins* plugins = lilv_world_get_all_plugins(world);
-	const LilvPlugin* plug = lilv_plugins_get_by_uri(plugins, env->plugin1_uri);
-	assert(plug);
+  if (start_bundle(env, SIMPLE_MANIFEST_TTL, plugin_ttl)) {
+    return 1;
+  }
+  const LilvPlugins* plugins = lilv_world_get_all_plugins(world);
+  const LilvPlugin*  plug = lilv_plugins_get_by_uri(plugins, env->plugin1_uri);
+  assert(plug);
 
-	LilvUIs* uis = lilv_plugin_get_uis(plug);
-	assert(lilv_uis_size(uis) == 4);
+  LilvUIs* uis = lilv_plugin_get_uis(plug);
+  assert(lilv_uis_size(uis) == 4);
 
-	const LilvUI* ui0 = lilv_uis_get(uis, lilv_uis_begin(uis));
-	assert(ui0);
+  const LilvUI* ui0 = lilv_uis_get(uis, lilv_uis_begin(uis));
+  assert(ui0);
 
-	LilvNode* ui_uri   = lilv_new_uri(world, "http://example.org/ui");
-	LilvNode* ui2_uri  = lilv_new_uri(world, "http://example.org/ui3");
-	LilvNode* ui3_uri  = lilv_new_uri(world, "http://example.org/ui4");
-	LilvNode* noui_uri = lilv_new_uri(world, "http://example.org/notaui");
+  LilvNode* ui_uri   = lilv_new_uri(world, "http://example.org/ui");
+  LilvNode* ui2_uri  = lilv_new_uri(world, "http://example.org/ui3");
+  LilvNode* ui3_uri  = lilv_new_uri(world, "http://example.org/ui4");
+  LilvNode* noui_uri = lilv_new_uri(world, "http://example.org/notaui");
 
-	const LilvUI* ui0_2 = lilv_uis_get_by_uri(uis, ui_uri);
-	assert(ui0 == ui0_2);
-	assert(lilv_node_equals(lilv_ui_get_uri(ui0_2), ui_uri));
+  const LilvUI* ui0_2 = lilv_uis_get_by_uri(uis, ui_uri);
+  assert(ui0 == ui0_2);
+  assert(lilv_node_equals(lilv_ui_get_uri(ui0_2), ui_uri));
 
-	const LilvUI* ui2 = lilv_uis_get_by_uri(uis, ui2_uri);
-	assert(ui2 != ui0);
+  const LilvUI* ui2 = lilv_uis_get_by_uri(uis, ui2_uri);
+  assert(ui2 != ui0);
 
-	const LilvUI* ui3 = lilv_uis_get_by_uri(uis, ui3_uri);
-	assert(ui3 != ui0);
+  const LilvUI* ui3 = lilv_uis_get_by_uri(uis, ui3_uri);
+  assert(ui3 != ui0);
 
-	const LilvUI* noui = lilv_uis_get_by_uri(uis, noui_uri);
-	assert(noui == NULL);
+  const LilvUI* noui = lilv_uis_get_by_uri(uis, noui_uri);
+  assert(noui == NULL);
 
-	const LilvNodes* classes = lilv_ui_get_classes(ui0);
-	assert(lilv_nodes_size(classes) == 1);
+  const LilvNodes* classes = lilv_ui_get_classes(ui0);
+  assert(lilv_nodes_size(classes) == 1);
 
-	LilvNode* ui_class_uri =
-	    lilv_new_uri(world, "http://lv2plug.in/ns/extensions/ui#GtkUI");
+  LilvNode* ui_class_uri =
+    lilv_new_uri(world, "http://lv2plug.in/ns/extensions/ui#GtkUI");
 
-	LilvNode* unknown_ui_class_uri =
-	    lilv_new_uri(world, "http://example.org/mysteryUI");
+  LilvNode* unknown_ui_class_uri =
+    lilv_new_uri(world, "http://example.org/mysteryUI");
 
-	assert(lilv_node_equals(lilv_nodes_get_first(classes), ui_class_uri));
-	assert(lilv_ui_is_a(ui0, ui_class_uri));
+  assert(lilv_node_equals(lilv_nodes_get_first(classes), ui_class_uri));
+  assert(lilv_ui_is_a(ui0, ui_class_uri));
 
-	const LilvNode* ui_type = NULL;
-	assert(lilv_ui_is_supported(ui0, ui_supported, ui_class_uri, &ui_type));
-	assert(!lilv_ui_is_supported(
-	    ui0, ui_supported, unknown_ui_class_uri, &ui_type));
-	assert(lilv_node_equals(ui_type, ui_class_uri));
+  const LilvNode* ui_type = NULL;
+  assert(lilv_ui_is_supported(ui0, ui_supported, ui_class_uri, &ui_type));
+  assert(
+    !lilv_ui_is_supported(ui0, ui_supported, unknown_ui_class_uri, &ui_type));
+  assert(lilv_node_equals(ui_type, ui_class_uri));
 
-	const LilvNode* plug_bundle_uri = lilv_plugin_get_bundle_uri(plug);
-	const LilvNode* ui_bundle_uri   = lilv_ui_get_bundle_uri(ui0);
-	assert(lilv_node_equals(plug_bundle_uri, ui_bundle_uri));
+  const LilvNode* plug_bundle_uri = lilv_plugin_get_bundle_uri(plug);
+  const LilvNode* ui_bundle_uri   = lilv_ui_get_bundle_uri(ui0);
+  assert(lilv_node_equals(plug_bundle_uri, ui_bundle_uri));
 
-	const size_t ui_binary_uri_str_len =
-	    strlen(lilv_node_as_string(plug_bundle_uri)) + strlen("ui" SHLIB_EXT);
+  const size_t ui_binary_uri_str_len =
+    strlen(lilv_node_as_string(plug_bundle_uri)) + strlen("ui" SHLIB_EXT);
 
-	char* ui_binary_uri_str = (char*)calloc(1, ui_binary_uri_str_len + 1);
-	snprintf(ui_binary_uri_str,
-	         ui_binary_uri_str_len + 1,
-	         "%s%s",
-	         lilv_node_as_string(plug_bundle_uri),
-	         "ui" SHLIB_EXT);
+  char* ui_binary_uri_str = (char*)calloc(1, ui_binary_uri_str_len + 1);
+  snprintf(ui_binary_uri_str,
+           ui_binary_uri_str_len + 1,
+           "%s%s",
+           lilv_node_as_string(plug_bundle_uri),
+           "ui" SHLIB_EXT);
 
-	const LilvNode* ui_binary_uri = lilv_ui_get_binary_uri(ui0);
+  const LilvNode* ui_binary_uri = lilv_ui_get_binary_uri(ui0);
 
-	LilvNode* expected_uri = lilv_new_uri(world, ui_binary_uri_str);
-	assert(lilv_node_equals(expected_uri, ui_binary_uri));
+  LilvNode* expected_uri = lilv_new_uri(world, ui_binary_uri_str);
+  assert(lilv_node_equals(expected_uri, ui_binary_uri));
 
-	free(ui_binary_uri_str);
-	lilv_node_free(unknown_ui_class_uri);
-	lilv_node_free(ui_class_uri);
-	lilv_node_free(ui_uri);
-	lilv_node_free(ui2_uri);
-	lilv_node_free(ui3_uri);
-	lilv_node_free(noui_uri);
-	lilv_node_free(expected_uri);
-	lilv_uis_free(uis);
+  free(ui_binary_uri_str);
+  lilv_node_free(unknown_ui_class_uri);
+  lilv_node_free(ui_class_uri);
+  lilv_node_free(ui_uri);
+  lilv_node_free(ui2_uri);
+  lilv_node_free(ui3_uri);
+  lilv_node_free(noui_uri);
+  lilv_node_free(expected_uri);
+  lilv_uis_free(uis);
 
-	delete_bundle(env);
-	lilv_test_env_free(env);
+  delete_bundle(env);
+  lilv_test_env_free(env);
 
-	return 0;
+  return 0;
 }

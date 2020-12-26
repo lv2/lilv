@@ -38,38 +38,38 @@ static const char* const plugin_ttl = "\
 int
 main(void)
 {
-	LilvTestEnv* const env   = lilv_test_env_new();
-	LilvWorld* const   world = env->world;
+  LilvTestEnv* const env   = lilv_test_env_new();
+  LilvWorld* const   world = env->world;
 
-	if (start_bundle(env, SIMPLE_MANIFEST_TTL, plugin_ttl)) {
-		return 1;
-	}
+  if (start_bundle(env, SIMPLE_MANIFEST_TTL, plugin_ttl)) {
+    return 1;
+  }
 
-	const LilvPluginClass*   plugin   = lilv_world_get_plugin_class(world);
-	const LilvPluginClasses* classes  = lilv_world_get_plugin_classes(world);
-	LilvPluginClasses*       children = lilv_plugin_class_get_children(plugin);
+  const LilvPluginClass*   plugin   = lilv_world_get_plugin_class(world);
+  const LilvPluginClasses* classes  = lilv_world_get_plugin_classes(world);
+  LilvPluginClasses*       children = lilv_plugin_class_get_children(plugin);
 
-	assert(lilv_plugin_class_get_parent_uri(plugin) == NULL);
-	assert(lilv_plugin_classes_size(classes) >
-	       lilv_plugin_classes_size(children));
-	assert(!strcmp(lilv_node_as_string(lilv_plugin_class_get_label(plugin)),
-	               "Plugin"));
-	assert(!strcmp(lilv_node_as_string(lilv_plugin_class_get_uri(plugin)),
-	               "http://lv2plug.in/ns/lv2core#Plugin"));
+  assert(lilv_plugin_class_get_parent_uri(plugin) == NULL);
+  assert(lilv_plugin_classes_size(classes) >
+         lilv_plugin_classes_size(children));
+  assert(!strcmp(lilv_node_as_string(lilv_plugin_class_get_label(plugin)),
+                 "Plugin"));
+  assert(!strcmp(lilv_node_as_string(lilv_plugin_class_get_uri(plugin)),
+                 "http://lv2plug.in/ns/lv2core#Plugin"));
 
-	LILV_FOREACH (plugin_classes, i, children) {
-		assert(lilv_node_equals(lilv_plugin_class_get_parent_uri(
-		                            lilv_plugin_classes_get(children, i)),
-		                        lilv_plugin_class_get_uri(plugin)));
-	}
+  LILV_FOREACH (plugin_classes, i, children) {
+    assert(lilv_node_equals(
+      lilv_plugin_class_get_parent_uri(lilv_plugin_classes_get(children, i)),
+      lilv_plugin_class_get_uri(plugin)));
+  }
 
-	LilvNode* some_uri = lilv_new_uri(world, "http://example.org/whatever");
-	assert(lilv_plugin_classes_get_by_uri(classes, some_uri) == NULL);
-	lilv_node_free(some_uri);
+  LilvNode* some_uri = lilv_new_uri(world, "http://example.org/whatever");
+  assert(lilv_plugin_classes_get_by_uri(classes, some_uri) == NULL);
+  lilv_node_free(some_uri);
 
-	lilv_plugin_classes_free(children);
-	delete_bundle(env);
-	lilv_test_env_free(env);
+  lilv_plugin_classes_free(children);
+  delete_bundle(env);
+  lilv_test_env_free(env);
 
-	return 0;
+  return 0;
 }

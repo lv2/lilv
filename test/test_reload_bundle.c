@@ -26,67 +26,66 @@
 int
 main(void)
 {
-	LilvTestEnv* const env   = lilv_test_env_new();
-	LilvWorld* const   world = env->world;
+  LilvTestEnv* const env   = lilv_test_env_new();
+  LilvWorld* const   world = env->world;
 
-	// Create a simple plugin bundle
-	create_bundle(env,
-	              ":plug a lv2:Plugin ; lv2:binary <foo" SHLIB_EXT
-	              "> ; rdfs:seeAlso <plugin.ttl> .\n",
-	              ":plug a lv2:Plugin ; "
-	              "doap:name \"First name\" .");
+  // Create a simple plugin bundle
+  create_bundle(env,
+                ":plug a lv2:Plugin ; lv2:binary <foo" SHLIB_EXT
+                "> ; rdfs:seeAlso <plugin.ttl> .\n",
+                ":plug a lv2:Plugin ; "
+                "doap:name \"First name\" .");
 
-	lilv_world_load_specifications(world);
+  lilv_world_load_specifications(world);
 
-	// Load bundle
-	LilvNode* bundle_uri = lilv_new_uri(world, env->test_bundle_uri);
-	lilv_world_load_bundle(world, bundle_uri);
+  // Load bundle
+  LilvNode* bundle_uri = lilv_new_uri(world, env->test_bundle_uri);
+  lilv_world_load_bundle(world, bundle_uri);
 
-	// Check that plugin is present
-	const LilvPlugins* plugins = lilv_world_get_all_plugins(world);
-	const LilvPlugin* plug = lilv_plugins_get_by_uri(plugins, env->plugin1_uri);
-	assert(plug);
+  // Check that plugin is present
+  const LilvPlugins* plugins = lilv_world_get_all_plugins(world);
+  const LilvPlugin*  plug = lilv_plugins_get_by_uri(plugins, env->plugin1_uri);
+  assert(plug);
 
-	// Check that plugin name is correct
-	LilvNode* name = lilv_plugin_get_name(plug);
-	assert(!strcmp(lilv_node_as_string(name), "First name"));
-	lilv_node_free(name);
+  // Check that plugin name is correct
+  LilvNode* name = lilv_plugin_get_name(plug);
+  assert(!strcmp(lilv_node_as_string(name), "First name"));
+  lilv_node_free(name);
 
-	// Unload bundle from world and delete it
-	lilv_world_unload_bundle(world, bundle_uri);
-	delete_bundle(env);
+  // Unload bundle from world and delete it
+  lilv_world_unload_bundle(world, bundle_uri);
+  delete_bundle(env);
 
-	// Create a new version of the same bundle, but with a different name
-	create_bundle(env,
-	              ":plug a lv2:Plugin ; lv2:binary <foo" SHLIB_EXT
-	              "> ; rdfs:seeAlso <plugin.ttl> .\n",
-	              ":plug a lv2:Plugin ; "
-	              "doap:name \"Second name\" .");
+  // Create a new version of the same bundle, but with a different name
+  create_bundle(env,
+                ":plug a lv2:Plugin ; lv2:binary <foo" SHLIB_EXT
+                "> ; rdfs:seeAlso <plugin.ttl> .\n",
+                ":plug a lv2:Plugin ; "
+                "doap:name \"Second name\" .");
 
-	// Check that plugin is no longer in the world's plugin list
-	assert(lilv_plugins_size(plugins) == 0);
+  // Check that plugin is no longer in the world's plugin list
+  assert(lilv_plugins_size(plugins) == 0);
 
-	// Load new bundle
-	lilv_world_load_bundle(world, bundle_uri);
+  // Load new bundle
+  lilv_world_load_bundle(world, bundle_uri);
 
-	// Check that plugin is present again and is the same LilvPlugin
-	const LilvPlugin* plug2 =
-	    lilv_plugins_get_by_uri(plugins, env->plugin1_uri);
-	assert(plug2);
-	assert(plug2 == plug);
+  // Check that plugin is present again and is the same LilvPlugin
+  const LilvPlugin* plug2 = lilv_plugins_get_by_uri(plugins, env->plugin1_uri);
+  assert(plug2);
+  assert(plug2 == plug);
 
-	// Check that plugin now has new name
-	LilvNode* name2 = lilv_plugin_get_name(plug2);
-	assert(name2);
-	assert(!strcmp(lilv_node_as_string(name2), "Second name"));
-	lilv_node_free(name2);
+  // Check that plugin now has new name
+  LilvNode* name2 = lilv_plugin_get_name(plug2);
+  assert(name2);
+  assert(!strcmp(lilv_node_as_string(name2), "Second name"));
+  lilv_node_free(name2);
 
-	// Load new bundle again (noop)
-	lilv_world_load_bundle(world, bundle_uri);
+  // Load new bundle again (noop)
+  lilv_world_load_bundle(world, bundle_uri);
 
-	lilv_node_free(bundle_uri);
-	delete_bundle(env);
-	lilv_test_env_free(env);
+  lilv_node_free(bundle_uri);
+  delete_bundle(env);
+  lilv_test_env_free(env);
 
-	return 0;
+  return 0;
 }

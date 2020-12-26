@@ -22,14 +22,11 @@
 
 #define PLUGIN_URI "http://example.org/failed-instantiation"
 
-enum {
-	TEST_INPUT  = 0,
-	TEST_OUTPUT = 1
-};
+enum { TEST_INPUT = 0, TEST_OUTPUT = 1 };
 
 typedef struct {
-	float* input;
-	float* output;
+  float* input;
+  float* output;
 } Test;
 
 static void
@@ -46,7 +43,7 @@ instantiate(const LV2_Descriptor*     descriptor,
             const char*               path,
             const LV2_Feature* const* features)
 {
-	return NULL;
+  return NULL;
 }
 
 static void
@@ -54,18 +51,19 @@ run(LV2_Handle instance, uint32_t sample_count)
 {}
 
 static const LV2_Descriptor descriptor = {
-	PLUGIN_URI,
-	instantiate,
-	connect_port,
-	NULL, // activate,
-	run,
-	NULL, // deactivate,
-	cleanup,
-	NULL  // extension_data
+  PLUGIN_URI,
+  instantiate,
+  connect_port,
+  NULL, // activate,
+  run,
+  NULL, // deactivate,
+  cleanup,
+  NULL // extension_data
 };
 
 LV2_SYMBOL_EXPORT
-const LV2_Descriptor* lv2_descriptor(uint32_t index)
+const LV2_Descriptor*
+lv2_descriptor(uint32_t index)
 {
-	return (index == 0) ? &descriptor : NULL;
+  return (index == 0) ? &descriptor : NULL;
 }

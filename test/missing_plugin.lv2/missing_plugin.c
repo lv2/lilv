@@ -21,22 +21,22 @@
 #include <stdlib.h>
 
 static const LV2_Descriptor descriptor = {
-	"http://example.org/not-the-plugin-you-are-looking-for",
-	NULL,
-	NULL,
-	NULL,
-	NULL,
-	NULL,
-	NULL,
-	NULL
-};
+  "http://example.org/not-the-plugin-you-are-looking-for",
+  NULL,
+  NULL,
+  NULL,
+  NULL,
+  NULL,
+  NULL,
+  NULL};
 
 LV2_SYMBOL_EXPORT
-const LV2_Descriptor* lv2_descriptor(uint32_t index)
+const LV2_Descriptor*
+lv2_descriptor(uint32_t index)
 {
-	if (index == 0) {
-		return &descriptor;
-	}
+  if (index == 0) {
+    return &descriptor;
+  }
 
-	return NULL;
+  return NULL;
 }
