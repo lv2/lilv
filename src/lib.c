@@ -101,9 +101,12 @@ lilv_lib_get_plugin(LilvLib* lib, uint32_t index)
 {
 	if (lib->lv2_descriptor) {
 		return lib->lv2_descriptor(index);
-	} else if (lib->desc) {
+	}
+
+	if (lib->desc) {
 		return lib->desc->get_plugin(lib->desc->handle, index);
 	}
+
 	return NULL;
 }
 

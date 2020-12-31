@@ -371,10 +371,14 @@ main(int argc, char** argv)
 		if (!strcmp(argv[i], "--version")) {
 			print_version();
 			return 0;
-		} else if (!strcmp(argv[i], "--help")) {
+		}
+
+		if (!strcmp(argv[i], "--help")) {
 			print_usage();
 			return 0;
-		} else if (!strcmp(argv[i], "-p")) {
+		}
+
+		if (!strcmp(argv[i], "-p")) {
 			plugin_file = argv[++i];
 		} else if (!strcmp(argv[i], "-m")) {
 			manifest_file = argv[++i];

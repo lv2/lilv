@@ -243,10 +243,14 @@ main(int argc, char** argv)
 			free(self.params);
 			print_version();
 			return 0;
-		} else if (!strcmp(argv[i], "--help")) {
+		}
+
+		if (!strcmp(argv[i], "--help")) {
 			free(self.params);
 			return print_usage(0);
-		} else if (!strcmp(argv[i], "-i")) {
+		}
+
+		if (!strcmp(argv[i], "-i")) {
 			self.in_path = argv[++i];
 		} else if (!strcmp(argv[i], "-o")) {
 			self.out_path = argv[++i];

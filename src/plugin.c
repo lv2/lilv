@@ -740,11 +740,13 @@ lilv_plugin_get_latency_port_index(const LilvPlugin* plugin)
 
 	if (prop_port) {
 		return prop_port->index;
-	} else if (des_port) {
-		return des_port->index;
-	} else {
-		return (uint32_t)-1;
 	}
+
+	if (des_port) {
+		return des_port->index;
+	}
+
+	return (uint32_t)-1;
 }
 
 bool
@@ -827,9 +829,9 @@ lilv_plugin_get_port_by_index(const LilvPlugin* plugin,
 	lilv_plugin_load_ports_if_necessary(plugin);
 	if (index < plugin->num_ports) {
 		return plugin->ports[index];
-	} else {
-		return NULL;
 	}
+
+	return NULL;
 }
 
 const LilvPort*
@@ -1005,10 +1007,10 @@ lilv_plugin_get_uis(const LilvPlugin* plugin)
 
 	if (lilv_uis_size(result) > 0) {
 		return result;
-	} else {
-		lilv_uis_free(result);
-		return NULL;
 	}
+
+	lilv_uis_free(result);
+	return NULL;
 }
 
 LilvNodes*

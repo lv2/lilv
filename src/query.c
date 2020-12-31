@@ -34,7 +34,9 @@ lilv_lang_matches(const char* a, const char* b)
 {
 	if (!a || !b) {
 		return LILV_LANG_MATCH_NONE;
-	} else if (!strcmp(a, b)) {
+	}
+
+	if (!strcmp(a, b)) {
 		return LILV_LANG_MATCH_EXACT;
 	}
 
@@ -125,18 +127,20 @@ lilv_nodes_from_stream_objects(LilvWorld*    world,
 	if (sord_iter_end(stream)) {
 		sord_iter_free(stream);
 		return NULL;
-	} else if (world->opt.filter_language) {
-		return lilv_nodes_from_stream_objects_i18n(world, stream, field);
-	} else {
-		LilvNodes* values = lilv_nodes_new();
-		FOREACH_MATCH(stream) {
-			const SordNode* value = sord_iter_get_node(stream, field);
-			LilvNode*       node  = lilv_node_new_from_node(world, value);
-			if (node) {
-				zix_tree_insert((ZixTree*)values, node, NULL);
-			}
-		}
-		sord_iter_free(stream);
-		return values;
 	}
+
+	if (world->opt.filter_language) {
+		return lilv_nodes_from_stream_objects_i18n(world, stream, field);
+	}
+
+	LilvNodes* values = lilv_nodes_new();
+	FOREACH_MATCH(stream) {
+		const SordNode* value = sord_iter_get_node(stream, field);
+		LilvNode*       node  = lilv_node_new_from_node(world, value);
+		if (node) {
+			zix_tree_insert((ZixTree*)values, node, NULL);
+		}
+	}
+	sord_iter_free(stream);
+	return values;
 }

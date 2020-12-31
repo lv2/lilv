@@ -599,7 +599,9 @@ zix_tree_find(const ZixTree* t, const void* e, ZixTreeIter** ti)
 		const int cmp = t->cmp(e, n->data, t->cmp_data);
 		if (cmp == 0) {
 			break;
-		} else if (cmp < 0) {
+		}
+
+		if (cmp < 0) {
 			n = n->left;
 		} else {
 			n = n->right;

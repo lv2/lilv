@@ -325,12 +325,14 @@ lilv_version_cmp(const LilvVersion* a, const LilvVersion* b)
 {
 	if (a->minor == b->minor && a->micro == b->micro) {
 		return 0;
-	} else if ((a->minor < b->minor)
-	           || (a->minor == b->minor && a->micro < b->micro)) {
-		return -1;
-	} else {
-		return 1;
 	}
+
+	if ((a->minor < b->minor)
+	    || (a->minor == b->minor && a->micro < b->micro)) {
+		return -1;
+	}
+
+	return 1;
 }
 
 struct LilvHeader*

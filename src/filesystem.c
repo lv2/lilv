@@ -126,12 +126,12 @@ lilv_path_absolute(const char* path)
 {
 	if (lilv_path_is_absolute(path)) {
 		return lilv_strdup(path);
-	} else {
-		char* cwd      = getcwd(NULL, 0);
-		char* abs_path = lilv_path_join(cwd, path);
-		free(cwd);
-		return abs_path;
 	}
+
+	char* cwd      = getcwd(NULL, 0);
+	char* abs_path = lilv_path_join(cwd, path);
+	free(cwd);
+	return abs_path;
 }
 
 char*
@@ -204,12 +204,13 @@ lilv_path_parent(const char* path)
 
 	if (s == path) {  // Hit beginning
 		return lilv_is_dir_sep(*s) ? lilv_strdup("/") : lilv_strdup(".");
-	} else {  // Pointing to the last character of the result (inclusive)
-		char* dirname = (char*)malloc(s - path + 2);
-		memcpy(dirname, path, s - path + 1);
-		dirname[s - path + 1] = '\0';
-		return dirname;
 	}
+
+	// Pointing to the last character of the result (inclusive)
+	char* dirname = (char*)malloc(s - path + 2);
+	memcpy(dirname, path, s - path + 1);
+	dirname[s - path + 1] = '\0';
+	return dirname;
 }
 
 char*

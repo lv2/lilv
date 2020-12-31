@@ -217,10 +217,14 @@ main(int argc, char** argv)
 		if (!strcmp(argv[a], "--version")) {
 			print_version();
 			return 0;
-		} else if (!strcmp(argv[a], "--help")) {
+		}
+
+		if (!strcmp(argv[a], "--help")) {
 			print_usage();
 			return 0;
-		} else if (!strcmp(argv[a], "-f")) {
+		}
+
+		if (!strcmp(argv[a], "-f")) {
 			full_output = true;
 		} else if (!strcmp(argv[a], "-n") && (a + 1 < argc)) {
 			sample_count = atoi(argv[++a]);

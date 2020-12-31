@@ -217,14 +217,20 @@ lilv_world_find_nodes(LilvWorld*      world,
 		LILV_ERRORF("Subject `%s' is not a resource\n",
 		            sord_node_get_string(subject->node));
 		return NULL;
-	} else if (!predicate) {
+	}
+
+	if (!predicate) {
 		LILV_ERROR("Missing required predicate\n");
 		return NULL;
-	} else if (!lilv_node_is_uri(predicate)) {
+	}
+
+	if (!lilv_node_is_uri(predicate)) {
 		LILV_ERRORF("Predicate `%s' is not a URI\n",
 		            sord_node_get_string(predicate->node));
 		return NULL;
-	} else if (!subject && !object) {
+	}
+
+	if (!subject && !object) {
 		LILV_ERROR("Both subject and object are NULL\n");
 		return NULL;
 	}
@@ -1115,7 +1121,9 @@ lilv_world_load_file(LilvWorld* world, SerdReader* reader, const LilvNode* uri)
 		uri->node, &uri_len);
 	if (strncmp((const char*)uri_str, "file:", 5)) {
 		return SERD_FAILURE;  // Not a local file
-	} else if (strcmp((const char*)uri_str + uri_len - 4, ".ttl")) {
+	}
+
+	if (strcmp((const char*)uri_str + uri_len - 4, ".ttl")) {
 		return SERD_FAILURE;  // Not a Turtle file
 	}
 

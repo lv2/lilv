@@ -241,9 +241,9 @@ lilv_node_equals(const LilvNode* value, const LilvNode* other)
 {
 	if (value == NULL && other == NULL) {
 		return true;
-	} else if (value == NULL || other == NULL) {
-		return false;
-	} else if (value->type != other->type) {
+	}
+
+	if (value == NULL || other == NULL || value->type != other->type) {
 		return false;
 	}
 
@@ -384,9 +384,12 @@ lilv_node_as_float(const LilvNode* value)
 {
 	if (lilv_node_is_float(value)) {
 		return value->val.float_val;
-	} else if (lilv_node_is_int(value)) {
+	}
+
+	if (lilv_node_is_int(value)) {
 		return (float)value->val.int_val;
 	}
+
 	return NAN;
 }
 

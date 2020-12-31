@@ -100,7 +100,9 @@ property_cmp(const void* a, const void* b)
 
 	if (a_key < b_key) {
 		return -1;
-	} else if (b_key < a_key) {
+	}
+
+	if (b_key < a_key) {
 		return 1;
 	}
 
@@ -270,12 +272,16 @@ abstract_path(LV2_State_Map_Path_Handle handle,
 
 	if (abs_path[0] == '\0') {
 		return lilv_strdup(abs_path);
-	} else if (!zix_tree_find(state->abs2rel, &key, &iter)) {
+	}
+
+	if (!zix_tree_find(state->abs2rel, &key, &iter)) {
 		// Already mapped path in a previous call
 		PathMap* pm = (PathMap*)zix_tree_get(iter);
 		free(real_path);
 		return lilv_strdup(pm->rel);
-	} else if (lilv_path_is_child(real_path, state->dir)) {
+	}
+
+	if (lilv_path_is_child(real_path, state->dir)) {
 		// File in state directory (loaded, or created by plugin during save)
 		path = lilv_path_relative_to(real_path, state->dir);
 	} else if (lilv_path_is_child(real_path, state->scratch_dir)) {
@@ -1460,7 +1466,9 @@ lilv_state_equals(const LilvState* a, const LilvState* b)
 		    || ap->type != bp->type
 		    || ap->flags != bp->flags) {
 			return false;
-		} else if (ap->type == a->atom_Path) {
+		}
+
+		if (ap->type == a->atom_Path) {
 			if (!lilv_file_equals(lilv_state_rel2abs(a, (char*)ap->value),
 			                      lilv_state_rel2abs(b, (char*)bp->value))) {
 				return false;

@@ -165,10 +165,11 @@ append_var(char* dst, size_t* dst_len, const char* var)
 	const char* val = getenv(var);
 	if (val) {  // Value found, append it
 		return strappend(dst, dst_len, val, strlen(val));
-	} else {  // No value found, append variable reference as-is
-		return strappend(strappend(dst, dst_len, "$", 1),
-		                 dst_len, var, strlen(var));
 	}
+
+	// No value found, append variable reference as-is
+	return strappend(strappend(dst, dst_len, "$", 1),
+	                 dst_len, var, strlen(var));
 }
 
 #endif
