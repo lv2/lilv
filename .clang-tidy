@@ -13,6 +13,7 @@ Checks: >
   -cert-dcl51-cpp,
   -cert-err34-c,
   -clang-analyzer-alpha.*,
+  -clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling,
   -cppcoreguidelines-avoid-non-const-global-variables,
   -cppcoreguidelines-macro-usage,
   -cppcoreguidelines-narrowing-conversions,
