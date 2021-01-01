@@ -1,5 +1,5 @@
 /*
-  Copyright 2007-2020 David Robillard <http://drobilla.net>
+  Copyright 2007-2021 David Robillard <http://drobilla.net>
 
   Permission to use, copy, modify, and/or distribute this software for any
   purpose with or without fee is hereby granted, provided that the above
@@ -38,7 +38,7 @@
 #  include <unistd.h>
 #endif
 
-#if defined(HAVE_FLOCK) && defined(HAVE_FILENO)
+#if USE_FLOCK && USE_FILENO
 #  include <sys/file.h>
 #endif
 
@@ -299,7 +299,7 @@ lilv_path_canonical(const char* path)
 bool
 lilv_path_exists(const char* path)
 {
-#ifdef HAVE_LSTAT
+#if USE_LSTAT
   struct stat st;
   return !lstat(path, &st);
 #else
@@ -386,7 +386,7 @@ lilv_flock(FILE* file, bool lock, bool block)
   } else {
     return !UnlockFileEx(handle, 0, UINT32_MAX, UINT32_MAX, &overlapped);
   }
-#elif defined(HAVE_FLOCK) && defined(HAVE_FILENO)
+#elif USE_FLOCK && USE_FILENO
   return flock(fileno(file),
                (lock ? LOCK_EX : LOCK_UN) | (block ? 0 : LOCK_NB));
 #else

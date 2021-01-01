@@ -266,15 +266,13 @@ def configure(conf):
             lv2_path = lilv_path_sep.join(['~/.lv2',
                                            '/usr/%s/lv2' % libdirname,
                                            '/usr/local/%s/lv2' % libdirname])
-    conf.define('LILV_DEFAULT_LV2_PATH', lv2_path)
+    conf.define('LILV_DEFAULT_LV2_PATH', lv2_path.replace('%', '%%'))
 
     # Set up environment for building/using as a subproject
     autowaf.set_lib_env(conf, 'lilv', LILV_VERSION,
                         include_path=str(conf.path.find_node('include')))
 
-    conf.write_config_header('lilv_config.h', remove=False)
-
-    conf.undefine('LILV_DEFAULT_LV2_PATH')  # Cmd line errors with VC++
+    conf.define('LILV_NO_DEFAULT_CONFIG', 1)
 
     autowaf.display_summary(
         conf,

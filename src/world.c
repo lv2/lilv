@@ -15,7 +15,7 @@
 */
 
 #include "filesystem.h"
-#include "lilv_config.h"
+#include "lilv_config.h" // IWYU pragma: keep
 #include "lilv_internal.h"
 
 #include "lilv/lilv.h"

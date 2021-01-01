@@ -5,8 +5,9 @@ lilv (0.24.11) unstable;
   * Fix saving state with files on Windows
   * Fix unlikely undefined behavior when saving state
   * Fix writing state manifests on Windows
+  * Remove the need for a generated configuration header
 
- -- David Robillard <d@drobilla.net>  Fri, 18 Dec 2020 16:30:48 +0000
+ -- David Robillard <d@drobilla.net>  Fri, 01 Jan 2021 16:54:05 +0000
 
 lilv (0.24.10) stable;
 
