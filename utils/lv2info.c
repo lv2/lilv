@@ -332,7 +332,7 @@ static void
 print_version(void)
 {
   printf("lv2info (lilv) " LILV_VERSION "\n"
-         "Copyright 2007-2019 David Robillard <d@drobilla.net>\n"
+         "Copyright 2007-2021 David Robillard <d@drobilla.net>\n"
          "License: <http://www.opensource.org/licenses/isc-license>\n"
          "This is free software: you are free to change and redistribute it.\n"
          "There is NO WARRANTY, to the extent permitted by law.\n");
