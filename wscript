@@ -352,7 +352,7 @@ def build(bld):
                   target          = 'lilv-%s' % LILV_MAJOR_VERSION,
                   vnum            = LILV_VERSION,
                   install_path    = '${LIBDIR}',
-                  defines         = ['LILV_SHARED', 'LILV_INTERNAL'],
+                  defines         = ['LILV_INTERNAL'],
                   cflags          = libflags,
                   lib             = lib,
                   uselib          = 'SERD SORD SRATOM LV2')
@@ -367,7 +367,7 @@ def build(bld):
                   target          = 'lilv-%s' % LILV_MAJOR_VERSION,
                   vnum            = LILV_VERSION,
                   install_path    = '${LIBDIR}',
-                  defines         = defines + ['LILV_INTERNAL'],
+                  defines         = defines + ['LILV_STATIC', 'LILV_INTERNAL'],
                   uselib          = 'SERD SORD SRATOM LV2')
 
     # Python bindings
@@ -406,7 +406,7 @@ def build(bld):
                       name         = p,
                       target       = 'test/%s.lv2/%s' % (p, p),
                       install_path = None,
-                      defines      = defines,
+                      defines      = defines + ['LILV_STATIC'],
                       cflags       = test_cflags,
                       linkflags    = test_linkflags,
                       lib          = test_libs,
@@ -423,7 +423,7 @@ def build(bld):
                       includes     = ['.', 'include', './src'],
                       use          = 'liblilv_profiled',
                       install_path = None,
-                      defines      = defines,
+                      defines      = defines + ['LILV_STATIC'],
                       cflags       = test_cflags,
                       linkflags    = test_linkflags,
                       lib          = test_libs,
@@ -446,7 +446,7 @@ def build(bld):
                   name         = 'liblilv_profiled',
                   target       = 'lilv_profiled',
                   install_path = None,
-                  defines      = defines + ['LILV_INTERNAL'],
+                  defines      = defines + ['LILV_STATIC', 'LILV_INTERNAL'],
                   cflags       = test_cflags,
                   linkflags    = test_linkflags,
                   lib          = test_libs,
@@ -468,6 +468,7 @@ def build(bld):
                       target       = 'test/' + test,
                       install_path = None,
                       defines      = (defines +
+                                      ['LILV_STATIC'] +
                                       ['LILV_TEST_BUNDLE=\"%s/\"' % bpath] +
                                       ['LILV_TEST_DIR=\"%s/\"' % testdir]),
                       cflags       = test_cflags,
@@ -483,6 +484,7 @@ def build(bld):
                       uselib       = 'SERD SORD SRATOM LV2',
                       target       = 'test/lilv_cxx_test',
                       install_path = None,
+                      defines      = ['LILV_STATIC'],
                       cxxflags     = test_cflags,
                       linkflags    = test_linkflags)
 

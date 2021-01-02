@@ -29,22 +29,16 @@
 #include <stdint.h>
 #include <stdio.h>
 
-#ifdef LILV_SHARED
-#  ifdef _WIN32
-#    define LILV_LIB_IMPORT __declspec(dllimport)
-#    define LILV_LIB_EXPORT __declspec(dllexport)
-#  else
-#    define LILV_LIB_IMPORT __attribute__((visibility("default")))
-#    define LILV_LIB_EXPORT __attribute__((visibility("default")))
-#  endif
-#  ifdef LILV_INTERNAL
-#    define LILV_API LILV_LIB_EXPORT
-#  else
-#    define LILV_API LILV_LIB_IMPORT
-#  endif
+#if defined(_WIN32) && !defined(LILV_STATIC) && defined(LILV_INTERNAL)
+#  define LILV_API __declspec(dllexport)
+#elif defined(_WIN32) && !defined(LILV_STATIC)
+#  define LILV_API __declspec(dllimport)
+#elif defined(__GNUC__)
+#  define LILV_API __attribute__((visibility("default")))
 #else
 #  define LILV_API
 #endif
+
 #if defined(__GNUC__) && \
   (__GNUC__ > 3 || (__GNUC__ == 3 && __GNUC_MINOR__ >= 1))
 #  define LILV_DEPRECATED __attribute__((__deprecated__))
