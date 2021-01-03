@@ -266,7 +266,11 @@ def configure(conf):
             lv2_path = lilv_path_sep.join(['~/.lv2',
                                            '/usr/%s/lv2' % libdirname,
                                            '/usr/local/%s/lv2' % libdirname])
-    conf.define('LILV_DEFAULT_LV2_PATH', lv2_path.replace('%', '%%'))
+
+    if sys.platform == 'win32':
+        lv2_path = lv2_path.replace('%', '%%')
+
+    conf.define('LILV_DEFAULT_LV2_PATH', lv2_path)
 
     # Set up environment for building/using as a subproject
     autowaf.set_lib_env(conf, 'lilv', LILV_VERSION,
