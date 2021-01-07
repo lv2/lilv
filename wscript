@@ -106,6 +106,9 @@ def configure(conf):
     conf.load('autowaf', cache=True)
     autowaf.set_c_lang(conf, 'c99')
 
+    if conf.env.DOCS:
+        conf.load('sphinx')
+
     conf.env.BASH_COMPLETION = not Options.options.no_bash_completion
     conf.env.BUILD_UTILS     = not Options.options.no_utils
     conf.env.BUILD_SHARED    = not Options.options.no_shared
@@ -546,7 +549,8 @@ def build(bld):
                 obj.lib = ['rt']
 
     # Documentation
-    autowaf.build_dox(bld, 'LILV', LILV_VERSION, top, out)
+    if bld.env.DOCS:
+        bld.recurse('doc/c')
 
     # Man pages
     bld.install_files('${MANDIR}/man1', bld.path.ant_glob('doc/*.1'))
