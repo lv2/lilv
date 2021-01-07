@@ -1,4 +1,4 @@
-lilv (0.24.11) unstable;
+lilv (0.24.12) stable;
 
   * Allow connecting ports to structures in Python
   * Fix potential memory error when joining filesystem paths
@@ -7,7 +7,7 @@ lilv (0.24.11) unstable;
   * Fix writing state manifests on Windows
   * Remove the need for a generated configuration header
 
- -- David Robillard <d@drobilla.net>  Fri, 01 Jan 2021 16:54:05 +0000
+ -- David Robillard <d@drobilla.net>  Thu, 07 Jan 2021 21:46:06 +0000
 
 lilv (0.24.10) stable;
 
