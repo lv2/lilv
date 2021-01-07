@@ -35,7 +35,7 @@ which can be done with :func:`lilv_plugins_get_by_uri`:
    const LilvPlugin* plugin = lilv_plugins_get_by_uri(list, plugin_uri);
 
 :struct:`LilvPlugin` has various accessors that can be used to get information about the plugin.
-See the :doc:`API reference <api/plugin>` for details.
+See the :doc:`API reference <api/lilv_plugin>` for details.
 
 *********
 Instances

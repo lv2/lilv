@@ -108,7 +108,7 @@ void
 lilv_free(void* ptr);
 
 /**
-   @defgroup node Nodes
+   @defgroup lilv_node Nodes
    @{
 */
 
@@ -362,7 +362,7 @@ lilv_node_as_bool(const LilvNode* value);
 
 /**
    @}
-   @defgroup collections Collections
+   @defgroup lilv_collections Collections
 
    Lilv has several collection types for holding various types of value.
    Each collection type supports a similar basic API, except #LilvPlugins which
@@ -583,7 +583,7 @@ lilv_plugins_get_by_uri(const LilvPlugins* plugins, const LilvNode* uri);
 
 /**
    @}
-   @defgroup world World
+   @defgroup lilv_world World
 
    The "world" represents all Lilv state, and is used to discover/load/cache
    LV2 data (plugins, UIs, and extensions).
@@ -841,7 +841,7 @@ lilv_world_get_symbol(LilvWorld* world, const LilvNode* subject);
 
 /**
    @}
-   @defgroup plugin Plugins
+   @defgroup lilv_plugin Plugins
    @{
 */
 
@@ -1242,7 +1242,7 @@ lilv_plugin_get_related(const LilvPlugin* plugin, const LilvNode* type);
 
 /**
    @}
-   @defgroup port Ports
+   @defgroup lilv_port Ports
    @{
 */
 
@@ -1396,7 +1396,7 @@ lilv_port_get_scale_points(const LilvPlugin* plugin, const LilvPort* port);
 
 /**
    @}
-   @defgroup state Plugin State
+   @defgroup lilv_state Plugin State
    @{
 */
 
@@ -1773,7 +1773,7 @@ lilv_state_delete(LilvWorld* world, const LilvState* state);
 
 /**
    @}
-   @defgroup scalepoint Scale Points
+   @defgroup lilv_scalepoint Scale Points
    @{
 */
 
@@ -1797,7 +1797,7 @@ lilv_scale_point_get_value(const LilvScalePoint* point);
 
 /**
    @}
-   @defgroup klass Plugin Classes
+   @defgroup lilv_class Plugin Classes
    @{
 */
 
@@ -1840,7 +1840,7 @@ lilv_plugin_class_get_children(const LilvPluginClass* plugin_class);
 
 /**
    @}
-   @defgroup instance Plugin Instances
+   @defgroup lilv_instance Plugin Instances
    @{
 */
 
@@ -2010,7 +2010,7 @@ lilv_instance_get_handle(const LilvInstance* instance)
 
 /**
    @}
-   @defgroup ui Plugin UIs
+   @defgroup lilv_ui Plugin UIs
    @{
 */
 
