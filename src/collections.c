@@ -26,13 +26,13 @@
 #include <stdint.h>
 
 int
-lilv_ptr_cmp(const void* a, const void* b, void* user_data)
+lilv_ptr_cmp(const void* a, const void* b, const void* user_data)
 {
   return (intptr_t)a - (intptr_t)b;
 }
 
 int
-lilv_resource_node_cmp(const void* a, const void* b, void* user_data)
+lilv_resource_node_cmp(const void* a, const void* b, const void* user_data)
 {
   const SordNode* an = ((const LilvNode*)a)->node;
   const SordNode* bn = ((const LilvNode*)b)->node;

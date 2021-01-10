@@ -29,7 +29,7 @@
 #define LILV_CONFIG_H
 
 // Define version unconditionally so a warning will catch a mismatch
-#define LILV_VERSION "0.24.12"
+#define LILV_VERSION "0.24.13"
 
 #if !defined(LILV_NO_DEFAULT_CONFIG)
 

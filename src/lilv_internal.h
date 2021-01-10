@@ -351,16 +351,16 @@ LilvNode*
 lilv_node_new_from_node(LilvWorld* world, const SordNode* node);
 
 int
-lilv_header_compare_by_uri(const void* a, const void* b, void* user_data);
+lilv_header_compare_by_uri(const void* a, const void* b, const void* user_data);
 
 int
-lilv_lib_compare(const void* a, const void* b, void* user_data);
+lilv_lib_compare(const void* a, const void* b, const void* user_data);
 
 int
-lilv_ptr_cmp(const void* a, const void* b, void* user_data);
+lilv_ptr_cmp(const void* a, const void* b, const void* user_data);
 
 int
-lilv_resource_node_cmp(const void* a, const void* b, void* user_data);
+lilv_resource_node_cmp(const void* a, const void* b, const void* user_data);
 
 static inline int
 lilv_version_cmp(const LilvVersion* a, const LilvVersion* b)

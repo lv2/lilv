@@ -1,3 +1,9 @@
+lilv (0.24.13) unstable;
+
+  * Update zix tree
+
+ -- David Robillard <d@drobilla.net>  Mon, 11 Jan 2021 11:20:00 +0000
+
 lilv (0.24.12) stable;
 
   * Allow connecting ports to structures in Python

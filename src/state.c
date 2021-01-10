@@ -81,13 +81,13 @@ struct LilvStateImpl {
 };
 
 static int
-abs_cmp(const void* a, const void* b, void* user_data)
+abs_cmp(const void* a, const void* b, const void* user_data)
 {
   return strcmp(((const PathMap*)a)->abs, ((const PathMap*)b)->abs);
 }
 
 static int
-rel_cmp(const void* a, const void* b, void* user_data)
+rel_cmp(const void* a, const void* b, const void* user_data)
 {
   return strcmp(((const PathMap*)a)->rel, ((const PathMap*)b)->rel);
 }

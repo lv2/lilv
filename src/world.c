@@ -356,7 +356,7 @@ lilv_world_blank_node_prefix(LilvWorld* world)
 
 /** Comparator for sequences (e.g. world->plugins). */
 int
-lilv_header_compare_by_uri(const void* a, const void* b, void* user_data)
+lilv_header_compare_by_uri(const void* a, const void* b, const void* user_data)
 {
   const struct LilvHeader* const header_a = (const struct LilvHeader*)a;
   const struct LilvHeader* const header_b = (const struct LilvHeader*)b;
@@ -372,7 +372,7 @@ lilv_header_compare_by_uri(const void* a, const void* b, void* user_data)
    consequently different contents (mainly plugins).
  */
 int
-lilv_lib_compare(const void* a, const void* b, void* user_data)
+lilv_lib_compare(const void* a, const void* b, const void* user_data)
 {
   const LilvLib* const lib_a = (const LilvLib*)a;
   const LilvLib* const lib_b = (const LilvLib*)b;
