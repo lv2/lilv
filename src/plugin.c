@@ -1095,6 +1095,8 @@ lilv_plugin_write_manifest_entry(LilvWorld*        world,
                                  FILE*             manifest_file,
                                  const char*       plugin_file_path)
 {
+  (void)world;
+
   const LilvNode* subject = lilv_plugin_get_uri(plugin);
   const SerdNode* base    = sord_node_to_serd_node(base_uri->node);
   SerdEnv*        env     = new_lv2_env(base);

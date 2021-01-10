@@ -83,12 +83,16 @@ struct LilvStateImpl {
 static int
 abs_cmp(const void* a, const void* b, const void* user_data)
 {
+  (void)user_data;
+
   return strcmp(((const PathMap*)a)->abs, ((const PathMap*)b)->abs);
 }
 
 static int
 rel_cmp(const void* a, const void* b, const void* user_data)
 {
+  (void)user_data;
+
   return strcmp(((const PathMap*)a)->rel, ((const PathMap*)b)->rel);
 }
 
@@ -241,6 +245,8 @@ retrieve_callback(LV2_State_Handle handle,
 static bool
 path_exists(const char* path, const void* ignored)
 {
+  (void)ignored;
+
   return lilv_path_exists(path);
 }
 
@@ -414,6 +420,8 @@ state_strerror(LV2_State_Status st)
 static void
 lilv_free_path(LV2_State_Free_Path_Handle handle, char* path)
 {
+  (void)handle;
+
   lilv_free(path);
 }
 
@@ -885,6 +893,8 @@ write_manifest(LilvWorld*      world,
                SordModel*      model,
                const SerdNode* file_uri)
 {
+  (void)world;
+
   char* const path = (char*)serd_file_uri_parse(file_uri->buf, NULL);
   FILE* const wfd  = fopen(path, "w");
   if (!wfd) {
@@ -1069,6 +1079,8 @@ lilv_state_write(LilvWorld*       world,
                  const char*      uri,
                  const char*      dir)
 {
+  (void)world;
+
   SerdNode lv2_appliesTo =
     serd_node_from_string(SERD_CURIE, USTR("lv2:appliesTo"));
 

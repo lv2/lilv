@@ -57,6 +57,11 @@ instantiate(const LV2_Descriptor*     descriptor,
             const char*               path,
             const LV2_Feature* const* features)
 {
+  (void)descriptor;
+  (void)rate;
+  (void)path;
+  (void)features;
+
   Test* test = (Test*)calloc(1, sizeof(Test));
   if (!test) {
     return NULL;
@@ -68,6 +73,8 @@ instantiate(const LV2_Descriptor*     descriptor,
 static void
 run(LV2_Handle instance, uint32_t sample_count)
 {
+  (void)sample_count;
+
   Test* test = (Test*)instance;
 
   *test->output = *test->input;

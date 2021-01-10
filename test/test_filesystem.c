@@ -401,6 +401,8 @@ typedef struct {
 static void
 visit(const char* const path, const char* const name, void* const data)
 {
+  (void)path;
+
   FileList* file_list = (FileList*)data;
 
   file_list->names =

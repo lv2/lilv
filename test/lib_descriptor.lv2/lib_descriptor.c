@@ -57,6 +57,11 @@ instantiate(const LV2_Descriptor*     descriptor,
             const char*               path,
             const LV2_Feature* const* features)
 {
+  (void)descriptor;
+  (void)rate;
+  (void)path;
+  (void)features;
+
   Test* test = (Test*)calloc(1, sizeof(Test));
   if (!test) {
     return NULL;
@@ -68,6 +73,8 @@ instantiate(const LV2_Descriptor*     descriptor,
 static void
 run(LV2_Handle instance, uint32_t sample_count)
 {
+  (void)sample_count;
+
   Test* test = (Test*)instance;
 
   *test->output = *test->input;
@@ -87,6 +94,8 @@ static const LV2_Descriptor descriptor = {
 static const LV2_Descriptor*
 get_plugin(LV2_Lib_Handle handle, uint32_t index)
 {
+  (void)handle;
+
   switch (index) {
   case 0:
     return &descriptor;
@@ -104,5 +113,8 @@ LV2_SYMBOL_EXPORT
 const LV2_Lib_Descriptor*
 lv2_lib_descriptor(const char* bundle_path, const LV2_Feature* const* features)
 {
+  (void)bundle_path;
+  (void)features;
+
   return &lib;
 }

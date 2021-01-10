@@ -95,6 +95,10 @@ instantiate(const LV2_Descriptor*     descriptor,
             const char*               path,
             const LV2_Feature* const* features)
 {
+  (void)descriptor;
+  (void)rate;
+  (void)path;
+
   Test* test = (Test*)calloc(1, sizeof(Test));
   if (!test) {
     return NULL;
@@ -171,6 +175,8 @@ save(LV2_Handle                instance,
      uint32_t                  flags,
      const LV2_Feature* const* features)
 {
+  (void)flags;
+
   Test* plugin = (Test*)instance;
 
   LV2_State_Map_Path*  map_path  = NULL;
@@ -329,6 +335,8 @@ restore(LV2_Handle                  instance,
         uint32_t                    flags,
         const LV2_Feature* const*   features)
 {
+  (void)flags;
+
   Test* plugin = (Test*)instance;
 
   LV2_State_Map_Path*  map_path  = NULL;

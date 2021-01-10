@@ -17,7 +17,7 @@
 #include "lilv/lilv.h"
 
 int
-main(int argc, char** argv)
+main(void)
 {
   LilvWorld* world = lilv_world_new();
   lilv_world_load_all(world);

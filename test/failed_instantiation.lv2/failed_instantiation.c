@@ -31,11 +31,17 @@ typedef struct {
 
 static void
 cleanup(LV2_Handle instance)
-{}
+{
+  (void)instance;
+}
 
 static void
 connect_port(LV2_Handle instance, uint32_t port, void* data)
-{}
+{
+  (void)instance;
+  (void)port;
+  (void)data;
+}
 
 static LV2_Handle
 instantiate(const LV2_Descriptor*     descriptor,
@@ -43,12 +49,20 @@ instantiate(const LV2_Descriptor*     descriptor,
             const char*               path,
             const LV2_Feature* const* features)
 {
+  (void)descriptor;
+  (void)rate;
+  (void)path;
+  (void)features;
+
   return NULL;
 }
 
 static void
 run(LV2_Handle instance, uint32_t sample_count)
-{}
+{
+  (void)instance;
+  (void)sample_count;
+}
 
 static const LV2_Descriptor descriptor = {
   PLUGIN_URI,

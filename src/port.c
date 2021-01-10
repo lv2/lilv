@@ -47,6 +47,8 @@ lilv_port_new(LilvWorld*      world,
 void
 lilv_port_free(const LilvPlugin* plugin, LilvPort* port)
 {
+  (void)plugin;
+
   if (port) {
     lilv_node_free(port->node);
     lilv_nodes_free(port->classes);
@@ -60,6 +62,8 @@ lilv_port_is_a(const LilvPlugin* plugin,
                const LilvPort*   port,
                const LilvNode*   port_class)
 {
+  (void)plugin;
+
   LILV_FOREACH (nodes, i, port->classes) {
     if (lilv_node_equals(lilv_nodes_get(port->classes, i), port_class)) {
       return true;
@@ -112,6 +116,8 @@ lilv_port_get_value_by_node(const LilvPlugin* plugin,
 const LilvNode*
 lilv_port_get_node(const LilvPlugin* plugin, const LilvPort* port)
 {
+  (void)plugin;
+
   return port->node;
 }
 
@@ -146,12 +152,16 @@ lilv_port_get(const LilvPlugin* plugin,
 uint32_t
 lilv_port_get_index(const LilvPlugin* plugin, const LilvPort* port)
 {
+  (void)plugin;
+
   return port->index;
 }
 
 const LilvNode*
 lilv_port_get_symbol(const LilvPlugin* plugin, const LilvPort* port)
 {
+  (void)plugin;
+
   return port->symbol;
 }
 
@@ -181,6 +191,8 @@ lilv_port_get_name(const LilvPlugin* plugin, const LilvPort* port)
 const LilvNodes*
 lilv_port_get_classes(const LilvPlugin* plugin, const LilvPort* port)
 {
+  (void)plugin;
+
   return port->classes;
 }
 

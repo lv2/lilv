@@ -73,6 +73,11 @@ instantiate(const LV2_Descriptor*     descriptor,
             const char*               bundle_path,
             const LV2_Feature* const* features)
 {
+  (void)descriptor;
+  (void)rate;
+  (void)bundle_path;
+  (void)features;
+
   Test* test = (Test*)malloc(sizeof(Test));
 
   return (LV2_Handle)test;
@@ -88,7 +93,11 @@ instantiate(const LV2_Descriptor*     descriptor,
 */
 static void
 connect_port(LV2_Handle instance, uint32_t port, void* data)
-{}
+{
+  (void)instance;
+  (void)port;
+  (void)data;
+}
 
 /**
    The activate() method is called by the host to initialise and prepare the
@@ -101,12 +110,17 @@ connect_port(LV2_Handle instance, uint32_t port, void* data)
 */
 static void
 activate(LV2_Handle instance)
-{}
+{
+  (void)instance;
+}
 
 /** Process a block of audio (audio thread, must be RT safe). */
 static void
 run(LV2_Handle instance, uint32_t n_samples)
-{}
+{
+  (void)instance;
+  (void)n_samples;
+}
 
 /**
    The deactivate() method is the counterpart to activate() called by the host
@@ -121,7 +135,9 @@ run(LV2_Handle instance, uint32_t n_samples)
 */
 static void
 deactivate(LV2_Handle instance)
-{}
+{
+  (void)instance;
+}
 
 /**
    Destroy a plugin instance (counterpart to instantiate()).
@@ -148,6 +164,8 @@ cleanup(LV2_Handle instance)
 static const void*
 extension_data(const char* uri)
 {
+  (void)uri;
+
   return NULL;
 }
 

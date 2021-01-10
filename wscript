@@ -147,7 +147,6 @@ def configure(conf):
                 '-Wno-shorten-64-to-32',
                 '-Wno-sign-conversion',
                 '-Wno-switch-enum',
-                '-Wno-unused-parameter',
                 '-Wno-vla',
             ],
             'gcc': [
@@ -161,7 +160,6 @@ def configure(conf):
                 '-Wno-suggest-attribute=const',
                 '-Wno-suggest-attribute=pure',
                 '-Wno-switch-enum',
-                '-Wno-unused-parameter',
                 '-Wno-vla',
             ],
             'msvc': [

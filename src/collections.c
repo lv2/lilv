@@ -28,14 +28,19 @@
 int
 lilv_ptr_cmp(const void* a, const void* b, const void* user_data)
 {
+  (void)user_data;
+
   return (intptr_t)a - (intptr_t)b;
 }
 
 int
 lilv_resource_node_cmp(const void* a, const void* b, const void* user_data)
 {
+  (void)user_data;
+
   const SordNode* an = ((const LilvNode*)a)->node;
   const SordNode* bn = ((const LilvNode*)b)->node;
+
   return (intptr_t)an - (intptr_t)bn;
 }
 
@@ -70,6 +75,8 @@ lilv_collection_begin(const LilvCollection* collection)
 void*
 lilv_collection_get(const LilvCollection* collection, const LilvIter* i)
 {
+  (void)collection;
+
   return zix_tree_get((const ZixTreeIter*)i);
 }
 
@@ -185,11 +192,13 @@ lilv_nodes_merge(const LilvNodes* a, const LilvNodes* b)
                                                              \
   LilvIter* prefix##_next(const CT* collection, LilvIter* i) \
   {                                                          \
+    (void)collection;                                        \
     return zix_tree_iter_next((ZixTreeIter*)i);              \
   }                                                          \
                                                              \
   bool prefix##_is_end(const CT* collection, LilvIter* i)    \
   {                                                          \
+    (void)collection;                                        \
     return zix_tree_iter_is_end((ZixTreeIter*)i);            \
   }
 

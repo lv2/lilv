@@ -358,8 +358,11 @@ lilv_world_blank_node_prefix(LilvWorld* world)
 int
 lilv_header_compare_by_uri(const void* a, const void* b, const void* user_data)
 {
+  (void)user_data;
+
   const struct LilvHeader* const header_a = (const struct LilvHeader*)a;
   const struct LilvHeader* const header_b = (const struct LilvHeader*)b;
+
   return strcmp(lilv_node_as_uri(header_a->uri),
                 lilv_node_as_uri(header_b->uri));
 }
@@ -374,9 +377,14 @@ lilv_header_compare_by_uri(const void* a, const void* b, const void* user_data)
 int
 lilv_lib_compare(const void* a, const void* b, const void* user_data)
 {
+  (void)user_data;
+
   const LilvLib* const lib_a = (const LilvLib*)a;
   const LilvLib* const lib_b = (const LilvLib*)b;
-  int cmp = strcmp(lilv_node_as_uri(lib_a->uri), lilv_node_as_uri(lib_b->uri));
+
+  const int cmp =
+    strcmp(lilv_node_as_uri(lib_a->uri), lilv_node_as_uri(lib_b->uri));
+
   return cmp ? cmp : strcmp(lib_a->bundle_path, lib_b->bundle_path);
 }
 
@@ -434,6 +442,8 @@ lilv_world_add_plugin(LilvWorld*      world,
                       void*           dynmanifest,
                       const SordNode* bundle)
 {
+  (void)dynmanifest;
+
   LilvNode*    plugin_uri = lilv_node_new_from_node(world, plugin_node);
   ZixTreeIter* z          = NULL;
   LilvPlugin*  plugin =
@@ -636,7 +646,12 @@ lilv_world_load_dyn_manifest(LilvWorld*      world,
   }
   sord_iter_free(iter);
   sord_free(model);
-#endif // LILV_DYN_MANIFEST
+
+#else // LILV_DYN_MANIFEST
+  (void)world;
+  (void)bundle_node;
+  (void)manifest;
+#endif
 }
 
 #ifdef LILV_DYN_MANIFEST

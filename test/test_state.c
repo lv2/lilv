@@ -155,6 +155,8 @@ no_test_directories(void)
 static void
 remove_file(const char* path, const char* name, void* data)
 {
+  (void)data;
+
   char* const full_path = lilv_path_join(path, name);
   assert(!lilv_remove(full_path));
   free(full_path);
@@ -215,6 +217,9 @@ set_port_value(const char* port_symbol,
                uint32_t    size,
                uint32_t    type)
 {
+  (void)size;
+  (void)type;
+
   TestContext* ctx = (TestContext*)user_data;
 
   if (!strcmp(port_symbol, "input")) {
@@ -535,6 +540,14 @@ count_sink(void* const              handle,
            const SerdNode* const    object_datatype,
            const SerdNode* const    object_lang)
 {
+  (void)flags;
+  (void)graph;
+  (void)subject;
+  (void)predicate;
+  (void)object;
+  (void)object_datatype;
+  (void)object_lang;
+
   size_t* const n_statements = (size_t*)handle;
 
   ++(*n_statements);
@@ -1009,6 +1022,9 @@ test_bad_subject(void)
 static void
 count_file(const char* path, const char* name, void* data)
 {
+  (void)path;
+  (void)name;
+
   *(unsigned*)data += 1;
 }
 
