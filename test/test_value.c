@@ -42,9 +42,12 @@ main(void)
   LilvTestEnv* const env   = lilv_test_env_new();
   LilvWorld* const   world = env->world;
 
-  if (start_bundle(env, SIMPLE_MANIFEST_TTL, plugin_ttl)) {
+  if (create_bundle(env, "value.lv2", SIMPLE_MANIFEST_TTL, plugin_ttl)) {
     return 1;
   }
+
+  lilv_world_load_specifications(env->world);
+  lilv_world_load_bundle(env->world, env->test_bundle_uri);
 
   LilvNode* uval = lilv_new_uri(world, "http://example.org");
   LilvNode* sval = lilv_new_string(world, "Foo");

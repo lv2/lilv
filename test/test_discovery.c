@@ -59,9 +59,12 @@ main(void)
   LilvTestEnv* const env   = lilv_test_env_new();
   LilvWorld* const   world = env->world;
 
-  if (start_bundle(env, SIMPLE_MANIFEST_TTL, plugin_ttl)) {
+  if (create_bundle(env, "discovery.lv2", SIMPLE_MANIFEST_TTL, plugin_ttl)) {
     return 1;
   }
+
+  lilv_world_load_specifications(env->world);
+  lilv_world_load_bundle(env->world, env->test_bundle_uri);
 
   const LilvPlugins* plugins = lilv_world_get_all_plugins(world);
   assert(lilv_plugins_size(plugins) > 0);

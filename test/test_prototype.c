@@ -76,9 +76,12 @@ main(void)
   LilvTestEnv* const env   = lilv_test_env_new();
   LilvWorld* const   world = env->world;
 
-  if (start_bundle(env, manifest_ttl, plugin_ttl)) {
+  if (create_bundle(env, "prototype.lv2", manifest_ttl, plugin_ttl)) {
     return 1;
   }
+
+  lilv_world_load_specifications(env->world);
+  lilv_world_load_bundle(env->world, env->test_bundle_uri);
 
   const LilvPlugins* plugins = lilv_world_get_all_plugins(world);
   const LilvPlugin*  plug = lilv_plugins_get_by_uri(plugins, env->plugin1_uri);

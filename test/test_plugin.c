@@ -82,9 +82,14 @@ main(void)
   LilvTestEnv* const env   = lilv_test_env_new();
   LilvWorld* const   world = env->world;
 
-  if (start_bundle(env, SIMPLE_MANIFEST_TTL, plugin_ttl)) {
+  lilv_world_load_all(world);
+
+  if (create_bundle(env, "plugin.lv2", SIMPLE_MANIFEST_TTL, plugin_ttl)) {
     return 1;
   }
+
+  lilv_world_load_specifications(env->world);
+  lilv_world_load_bundle(env->world, env->test_bundle_uri);
 
   const LilvPlugins* plugins = lilv_world_get_all_plugins(world);
   const LilvPlugin*  plug = lilv_plugins_get_by_uri(plugins, env->plugin1_uri);
@@ -104,7 +109,7 @@ main(void)
   assert(!lilv_plugin_get_related(plug, NULL));
 
   const LilvNode* plug_bundle_uri = lilv_plugin_get_bundle_uri(plug);
-  assert(!strcmp(lilv_node_as_string(plug_bundle_uri), env->test_bundle_uri));
+  assert(lilv_node_equals(plug_bundle_uri, env->test_bundle_uri));
 
   const LilvNodes* data_uris = lilv_plugin_get_data_uris(plug);
   assert(lilv_nodes_size(data_uris) == 2);

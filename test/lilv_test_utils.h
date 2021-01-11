@@ -55,7 +55,7 @@ typedef struct {
   LilvNode*  plugin1_uri;
   LilvNode*  plugin2_uri;
   char*      test_bundle_path;
-  char*      test_bundle_uri;
+  LilvNode*  test_bundle_uri;
   char*      test_manifest_path;
   char*      test_content_path;
   int        test_count;
@@ -72,11 +72,17 @@ lilv_test_env_free(LilvTestEnv* env);
 
 // Create a bundle with a manifest and plugin files, without loading anything
 int
-create_bundle(LilvTestEnv* env, const char* manifest, const char* plugin);
+create_bundle(LilvTestEnv* env,
+              const char*  name,
+              const char*  manifest,
+              const char*  plugin);
 
 // Create a bundle with a manifest and plugin files, then load everything
 int
-start_bundle(LilvTestEnv* env, const char* manifest, const char* plugin);
+start_bundle(LilvTestEnv* env,
+             const char*  name,
+             const char*  manifest,
+             const char*  plugin);
 
 // Remove the created bundle from the file system and free its paths in `env`
 void

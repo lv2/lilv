@@ -41,9 +41,14 @@ main(void)
   LilvTestEnv* const env   = lilv_test_env_new();
   LilvWorld* const   world = env->world;
 
-  if (start_bundle(env, SIMPLE_MANIFEST_TTL, plugin_ttl)) {
+  lilv_world_load_all(world);
+
+  if (create_bundle(env, "classes.lv2", SIMPLE_MANIFEST_TTL, plugin_ttl)) {
     return 1;
   }
+
+  lilv_world_load_specifications(env->world);
+  lilv_world_load_bundle(env->world, env->test_bundle_uri);
 
   const LilvPluginClass*   plugin   = lilv_world_get_plugin_class(world);
   const LilvPluginClasses* classes  = lilv_world_get_plugin_classes(world);

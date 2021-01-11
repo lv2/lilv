@@ -40,9 +40,12 @@ main(void)
   LilvTestEnv* const env   = lilv_test_env_new();
   LilvWorld* const   world = env->world;
 
-  if (start_bundle(env, manifest_ttl, plugin_ttl)) {
+  if (create_bundle(env, "get_symbol.lv2", manifest_ttl, plugin_ttl)) {
     return 1;
   }
+
+  lilv_world_load_specifications(env->world);
+  lilv_world_load_bundle(env->world, env->test_bundle_uri);
 
   LilvNode* plug_sym  = lilv_world_get_symbol(world, env->plugin1_uri);
   LilvNode* path      = lilv_new_uri(world, "http://example.org/foo");

@@ -71,14 +71,19 @@ lilv_test_env_free(LilvTestEnv* env)
 }
 
 int
-create_bundle(LilvTestEnv* env, const char* manifest, const char* plugin)
+create_bundle(LilvTestEnv* env,
+              const char*  name,
+              const char*  manifest,
+              const char*  plugin)
 {
   {
-    static const char* const bundle_path = "/test_lv2_path/lilv-test.lv2";
+    char* const test_dir   = lilv_path_canonical(LILV_TEST_DIR);
+    char* const bundle_dir = lilv_path_join(test_dir, name);
 
-    char* const test_path = lilv_path_canonical(LILV_TEST_DIR);
-    env->test_bundle_path = lilv_strjoin(test_path, bundle_path, NULL);
-    lilv_free(test_path);
+    env->test_bundle_path = lilv_path_join(bundle_dir, "");
+
+    lilv_free(bundle_dir);
+    lilv_free(test_dir);
   }
 
   if (lilv_create_directories(env->test_bundle_path)) {
@@ -92,11 +97,10 @@ create_bundle(LilvTestEnv* env, const char* manifest, const char* plugin)
   SerdNode s = serd_node_new_file_uri(
     (const uint8_t*)env->test_bundle_path, NULL, NULL, true);
 
-  env->test_bundle_uri = lilv_strjoin((const char*)s.buf, "/", NULL);
+  env->test_bundle_uri = lilv_new_uri(env->world, (const char*)s.buf);
   env->test_manifest_path =
-    lilv_strjoin(env->test_bundle_path, "/manifest.ttl", NULL);
-  env->test_content_path =
-    lilv_strjoin(env->test_bundle_path, "/plugin.ttl", NULL);
+    lilv_path_join(env->test_bundle_path, "manifest.ttl");
+  env->test_content_path = lilv_path_join(env->test_bundle_path, "plugin.ttl");
 
   serd_node_free(&s);
 
@@ -130,13 +134,17 @@ create_bundle(LilvTestEnv* env, const char* manifest, const char* plugin)
 }
 
 int
-start_bundle(LilvTestEnv* env, const char* manifest, const char* plugin)
+start_bundle(LilvTestEnv* env,
+             const char*  name,
+             const char*  manifest,
+             const char*  plugin)
 {
-  if (create_bundle(env, manifest, plugin)) {
+  if (create_bundle(env, name, manifest, plugin)) {
     return 1;
   }
 
-  lilv_world_load_all(env->world);
+  lilv_world_load_bundle(env->world, env->test_bundle_uri);
+
   return 0;
 }
 
