@@ -1,0 +1,24 @@
+module = shared_module('bad_syntax',
+                       'bad_syntax.c',
+                       dependencies: lv2_dep,
+                       gnu_symbol_visibility: 'hidden',
+                       name_prefix: '')
+
+extension = '.' + module.full_path().split('.')[-1]
+config = configuration_data({'SHLIB_EXT': extension})
+ttl_files = ['manifest.ttl', 'bad_syntax.ttl']
+
+foreach f : ttl_files
+  configure_file(input: f + '.in',
+                 output: f,
+                 configuration: config)
+endforeach
+
+test('bad_syntax',
+     executable('test_bad_syntax',
+                'test_bad_syntax.c',
+                c_args: prog_args,
+                dependencies: [lv2_dep, lilv_static_dep]),
+     args: [meson.current_build_dir() / ''],
+     suite: 'plugin')
+
