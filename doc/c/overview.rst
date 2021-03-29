@@ -1,9 +1,9 @@
 .. default-domain:: c
 .. highlight:: c
 
-########
-Overview
-########
+##########
+Using Lilv
+##########
 
 The complete API is declared in ``lilv.h``:
 
