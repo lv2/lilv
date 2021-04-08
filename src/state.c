@@ -920,7 +920,7 @@ write_manifest(LilvWorld*      world,
 
   SerdWriter* writer = ttl_file_writer(world->world, wfd, file_uri, &env);
   SerdRange*  all    = serd_model_all(model, SERD_ORDER_SPO);
-  serd_range_serialise(all, serd_writer_sink(writer), 0);
+  serd_write_range(all, serd_writer_sink(writer), 0);
   serd_range_free(all);
   serd_writer_free(writer);
   fclose(wfd);
@@ -956,6 +956,7 @@ add_state_to_manifest(LilvWorld*      lworld,
     SerdByteSource* source =
       serd_byte_source_new_function((SerdReadFunc)fread,
                                     (SerdStreamErrorFunc)ferror,
+                                    NULL,
                                     rfd,
                                     manifest,
                                     PAGE_SIZE);

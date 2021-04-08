@@ -1032,14 +1032,14 @@ lilv_plugin_write_description(LilvWorld*        world,
   // Write plugin description
   SerdRange* plug_range =
     serd_model_range(world->model, subject, NULL, NULL, NULL);
-  serd_range_serialise(plug_range, iface, 0);
+  serd_write_range(plug_range, iface, 0);
 
   // Write port descriptions
   for (uint32_t i = 0; i < num_ports; ++i) {
     const LilvPort* port = plugin->ports[i];
     SerdRange*      port_range =
       serd_model_range(world->model, port->node, NULL, NULL, NULL);
-    serd_range_serialise(port_range, iface, 0);
+    serd_write_range(port_range, iface, 0);
   }
 
   serd_writer_free(writer);
