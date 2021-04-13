@@ -54,6 +54,7 @@ if get_option('strict')
       '-Wno-format-truncation',
       '-Wno-padded',
       '-Wno-stack-protector',
+      '-Wno-strict-overflow',
       '-Wno-suggest-attribute=const',
       '-Wno-suggest-attribute=pure',
       '-Wno-switch-default',
