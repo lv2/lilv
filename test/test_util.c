@@ -15,6 +15,7 @@
 */
 
 #define _XOPEN_SOURCE 600 /* for mkstemp */
+#define __BSD_VISIBLE 1
 
 #undef NDEBUG
 

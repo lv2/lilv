@@ -72,12 +72,6 @@ main(void)
   assert(fabs(lilv_node_as_float(fval) - 1.6180) < FLT_EPSILON);
   assert(isnan(lilv_node_as_float(sval)));
 
-#if defined(__clang__)
-#  pragma clang diagnostic pop
-#elif defined(__GNUC__) && __GNUC__ > 4
-#  pragma GCC diagnostic pop
-#endif
-
   LilvNode* loc_abs  = lilv_new_file_uri(world, NULL, "/foo/bar");
   LilvNode* loc_rel  = lilv_new_file_uri(world, NULL, "foo");
   LilvNode* host_abs = lilv_new_file_uri(world, "host", "/foo/bar");

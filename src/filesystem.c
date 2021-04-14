@@ -17,6 +17,7 @@
 #define _POSIX_C_SOURCE 200809L /* for fileno */
 #define _BSD_SOURCE 1           /* for realpath, symlink */
 #define _DEFAULT_SOURCE 1       /* for realpath, symlink */
+#define __BSD_VISIBLE 1
 
 #ifdef __APPLE__
 #  define _DARWIN_C_SOURCE 1 /* for flock */
@@ -39,6 +40,8 @@
 #endif
 
 #if USE_FLOCK && USE_FILENO
+#  include <sys/types.h>
+#
 #  include <sys/file.h>
 #endif
 
