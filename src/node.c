@@ -31,7 +31,7 @@ LilvNode*
 lilv_new_uri(LilvWorld* world, const char* uri)
 {
   (void)world;
-  return serd_new_uri(SERD_MEASURE_STRING(uri));
+  return serd_new_uri(SERD_STRING(uri));
 }
 
 LilvNode*
@@ -40,8 +40,8 @@ lilv_new_file_uri(LilvWorld* world, const char* host, const char* path)
   (void)world;
 
   char*     abs_path = lilv_path_absolute(path);
-  SerdNode* s =
-    serd_new_file_uri(SERD_MEASURE_STRING(abs_path), SERD_MEASURE_STRING(host));
+  SerdNode* s        = serd_new_file_uri(
+    SERD_STRING(abs_path), host ? SERD_STRING(host) : SERD_EMPTY_STRING());
 
   free(abs_path);
   return s;
@@ -52,7 +52,7 @@ lilv_new_string(LilvWorld* world, const char* str)
 {
   (void)world;
 
-  return serd_new_string(SERD_MEASURE_STRING(str));
+  return serd_new_string(SERD_STRING(str));
 }
 
 LilvNode*
@@ -60,7 +60,7 @@ lilv_new_int(LilvWorld* world, int val)
 {
   (void)world;
 
-  return serd_new_integer(val, world->uris.xsd_int);
+  return serd_new_integer(val, serd_node_string_view(world->uris.xsd_int));
 }
 
 LilvNode*
@@ -76,9 +76,7 @@ lilv_new_bool(LilvWorld* world, bool val)
 {
   (void)world;
 
-  return serd_new_typed_literal(val ? SERD_STATIC_STRING("true")
-                                    : SERD_STATIC_STRING("false"),
-                                serd_node_string_view(world->uris.xsd_boolean));
+  return serd_new_boolean(val);
 }
 
 LilvNode*

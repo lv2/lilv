@@ -248,7 +248,7 @@ load_test_plugin(const TestContext* const ctx)
   LilvWorld* world      = ctx->env->world;
   char*      abs_bundle = lilv_path_absolute(LILV_TEST_BUNDLE);
   SerdNode*  bundle =
-    serd_new_file_uri(SERD_MEASURE_STRING(abs_bundle), SERD_EMPTY_STRING());
+    serd_new_file_uri(SERD_STRING(abs_bundle), SERD_EMPTY_STRING());
 
   LilvNode* bundle_uri = lilv_new_uri(world, serd_node_string(bundle));
   LilvNode* plugin_uri = lilv_new_uri(world, TEST_PLUGIN_URI);
@@ -550,7 +550,7 @@ count_statements(const char* path)
   size_t n_statements = 0;
 
   SerdWorld* const     world     = serd_world_new();
-  const SerdStringView path_view = SERD_MEASURE_STRING(path);
+  const SerdStringView path_view = SERD_STRING(path);
   SerdNode* const      base = serd_new_file_uri(path_view, SERD_EMPTY_STRING());
 
   SerdEnv* const    env  = serd_env_new(serd_node_string_view(base));
@@ -919,7 +919,7 @@ test_world_round_trip(void)
 
   // Load state bundle into world
   SerdNode* bundle_uri =
-    serd_new_file_uri(SERD_MEASURE_STRING(bundle_path), SERD_EMPTY_STRING());
+    serd_new_file_uri(SERD_STRING(bundle_path), SERD_EMPTY_STRING());
   LilvNode* const bundle_node =
     lilv_new_uri(world, serd_node_string(bundle_uri));
   LilvNode* const state_node = lilv_new_uri(world, state_uri);

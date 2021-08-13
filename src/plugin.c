@@ -160,23 +160,22 @@ lilv_plugin_load(LilvPlugin* plugin)
                                        inserter,
                                        LILV_READER_STACK_SIZE);
 
-  SerdModel* prots = lilv_world_filter_model(plugin->world,
+  SerdModel*  prots = lilv_world_filter_model(plugin->world,
                                              plugin->world->model,
                                              plugin->plugin_uri,
                                              plugin->world->uris.lv2_prototype,
                                              NULL,
                                              NULL);
-  SerdModel* skel  = serd_model_new(plugin->world->world, SERD_INDEX_SPO);
-  SerdIter*  iter  = serd_model_begin(prots);
-  for (; !serd_iter_equals(iter, serd_model_end(prots)); serd_iter_next(iter)) {
-    const SerdStatement* statement = serd_iter_get(iter);
+  SerdModel*  skel  = serd_model_new(plugin->world->world, SERD_ORDER_SPO, 0u);
+  SerdCursor* iter  = serd_model_begin(prots);
+  for (; !serd_cursor_is_end(iter); serd_cursor_advance(iter)) {
+    const SerdStatement* statement = serd_cursor_get(iter);
     const SerdNode*      t         = serd_statement_object(statement);
     LilvNode*            prototype = serd_node_copy(t);
 
     lilv_world_load_resource(plugin->world, prototype);
 
-    FOREACH_PAT(s, plugin->world->model, prototype, NULL, NULL, NULL)
-    {
+    FOREACH_PAT (s, plugin->world->model, prototype, NULL, NULL, NULL) {
       serd_model_add(skel,
                      plugin->plugin_uri,
                      serd_statement_predicate(s),
@@ -186,11 +185,11 @@ lilv_plugin_load(LilvPlugin* plugin)
 
     lilv_node_free(prototype);
   }
-  serd_iter_free(iter);
+  serd_cursor_free(iter);
 
-  SerdRange* all = serd_model_all(skel, SERD_ORDER_SPO);
-  serd_model_add_range(plugin->world->model, all);
-  serd_range_free(all);
+  SerdCursor* all = serd_model_begin_ordered(skel, SERD_ORDER_SPO);
+  serd_model_insert_statements(plugin->world->model, all);
+  serd_cursor_free(all);
 
   serd_model_free(skel);
   serd_model_free(prots);
@@ -268,7 +267,7 @@ lilv_plugin_load_ports_if_necessary(const LilvPlugin* const_plugin)
     plugin->ports    = (LilvPort**)malloc(sizeof(LilvPort*));
     plugin->ports[0] = NULL;
 
-    SerdRange* ports = serd_model_range(plugin->world->model,
+    SerdCursor* ports = serd_model_find(plugin->world->model,
                                         plugin->plugin_uri,
                                         plugin->world->uris.lv2_port,
                                         NULL,
@@ -321,7 +320,7 @@ lilv_plugin_load_ports_if_necessary(const LilvPlugin* const_plugin)
         plugin->ports[this_index] = this_port;
       }
 
-      SerdRange* types = serd_model_range(
+      SerdCursor* types = serd_model_find(
         plugin->world->model, port, plugin->world->uris.rdf_a, NULL, NULL);
       FOREACH_MATCH (t, types) {
         const SerdNode* type = serd_statement_object(t);
@@ -333,12 +332,12 @@ lilv_plugin_load_ports_if_necessary(const LilvPlugin* const_plugin)
                      lilv_node_as_uri(plugin->plugin_uri));
         }
       }
-      serd_range_free(types);
+      serd_cursor_free(types);
 
       lilv_node_free(symbol);
       lilv_node_free(index);
     }
-    serd_range_free(ports);
+    serd_cursor_free(ports);
 
     // Check sanity
     for (uint32_t i = 0; i < plugin->num_ports; ++i) {
@@ -380,7 +379,7 @@ lilv_plugin_get_library_uri(const LilvPlugin* plugin)
   lilv_plugin_load_if_necessary((LilvPlugin*)plugin);
   if (!plugin->binary_uri) {
     // <plugin> lv2:binary ?binary
-    SerdRange* i = serd_model_range(plugin->world->model,
+    SerdCursor* i = serd_model_find(plugin->world->model,
                                     plugin->plugin_uri,
                                     plugin->world->uris.lv2_binary,
                                     NULL,
@@ -392,7 +391,7 @@ lilv_plugin_get_library_uri(const LilvPlugin* plugin)
         break;
       }
     }
-    serd_range_free(i);
+    serd_cursor_free(i);
   }
   if (!plugin->binary_uri) {
     LILV_WARNF("Plugin <%s> has no lv2:binary\n",
@@ -413,7 +412,7 @@ lilv_plugin_get_class(const LilvPlugin* plugin)
   lilv_plugin_load_if_necessary((LilvPlugin*)plugin);
   if (!plugin->plugin_class) {
     // <plugin> a ?class
-    SerdRange* c = serd_model_range(plugin->world->model,
+    SerdCursor* c = serd_model_find(plugin->world->model,
                                     plugin->plugin_uri,
                                     plugin->world->uris.rdf_a,
                                     NULL,
@@ -438,7 +437,7 @@ lilv_plugin_get_class(const LilvPlugin* plugin)
 
       lilv_node_free(klass);
     }
-    serd_range_free(c);
+    serd_cursor_free(c);
 
     if (plugin->plugin_class == NULL) {
       ((LilvPlugin*)plugin)->plugin_class = plugin->world->lv2_plugin_class;
@@ -632,7 +631,7 @@ lilv_plugin_has_latency(const LilvPlugin* plugin)
 {
   lilv_plugin_load_if_necessary(plugin);
 
-  SerdRange* ports = serd_model_range(plugin->world->model,
+  SerdCursor* ports = serd_model_find(plugin->world->model,
                                       plugin->plugin_uri,
                                       plugin->world->uris.lv2_port,
                                       NULL,
@@ -655,7 +654,7 @@ lilv_plugin_has_latency(const LilvPlugin* plugin)
       break;
     }
   }
-  serd_range_free(ports);
+  serd_cursor_free(ports);
 
   return ret;
 }
@@ -838,8 +837,7 @@ lilv_plugin_get_author(const LilvPlugin* plugin)
 {
   lilv_plugin_load_if_necessary(plugin);
 
-  SerdNode* doap_maintainer =
-    serd_new_uri(SERD_STATIC_STRING(NS_DOAP "maintainer"));
+  SerdNode* doap_maintainer = serd_new_uri(SERD_STRING(NS_DOAP "maintainer"));
 
   const SerdNode* maintainer = serd_model_get(
     plugin->world->model, plugin->plugin_uri, doap_maintainer, NULL, NULL);
@@ -867,7 +865,7 @@ lilv_plugin_get_author_property(const LilvPlugin* plugin, const char* uri)
 {
   SerdNode* author = lilv_plugin_get_author(plugin);
   if (author) {
-    SerdNode* pred = serd_new_uri(SERD_MEASURE_STRING(uri));
+    SerdNode* pred = serd_new_uri(SERD_STRING(uri));
     LilvNode* ret  = lilv_plugin_get_one(plugin, author, pred);
     serd_node_free(pred);
     serd_node_free(author);
@@ -905,11 +903,11 @@ lilv_plugin_get_uis(const LilvPlugin* plugin)
 {
   lilv_plugin_load_if_necessary(plugin);
 
-  SerdNode* ui_ui_node     = serd_new_uri(SERD_STATIC_STRING(LV2_UI__ui));
-  SerdNode* ui_binary_node = serd_new_uri(SERD_STATIC_STRING(LV2_UI__binary));
+  SerdNode* ui_ui_node     = serd_new_uri(SERD_STRING(LV2_UI__ui));
+  SerdNode* ui_binary_node = serd_new_uri(SERD_STRING(LV2_UI__binary));
 
-  LilvUIs*   result = lilv_uis_new();
-  SerdRange* uis    = serd_model_range(
+  LilvUIs*    result = lilv_uis_new();
+  SerdCursor* uis    = serd_model_find(
     plugin->world->model, plugin->plugin_uri, ui_ui_node, NULL, NULL);
 
   FOREACH_MATCH (s, uis) {
@@ -936,7 +934,7 @@ lilv_plugin_get_uis(const LilvPlugin* plugin)
 
     zix_tree_insert((ZixTree*)result, lilv_ui, NULL);
   }
-  serd_range_free(uis);
+  serd_cursor_free(uis);
 
   serd_node_free(ui_binary_node);
   serd_node_free(ui_ui_node);
@@ -979,20 +977,13 @@ new_lv2_env(const SerdNode* base)
 {
   SerdEnv* env = serd_env_new(serd_node_string_view(base));
 
-  serd_env_set_prefix(
-    env, SERD_STATIC_STRING("doap"), SERD_STATIC_STRING(NS_DOAP));
-  serd_env_set_prefix(
-    env, SERD_STATIC_STRING("foaf"), SERD_STATIC_STRING(NS_FOAF));
-  serd_env_set_prefix(
-    env, SERD_STATIC_STRING("lv2"), SERD_STATIC_STRING(NS_LV2));
-  serd_env_set_prefix(
-    env, SERD_STATIC_STRING("owl"), SERD_STATIC_STRING(NS_OWL));
-  serd_env_set_prefix(
-    env, SERD_STATIC_STRING("rdf"), SERD_STATIC_STRING(NS_RDF));
-  serd_env_set_prefix(
-    env, SERD_STATIC_STRING("rdfs"), SERD_STATIC_STRING(NS_RDFS));
-  serd_env_set_prefix(
-    env, SERD_STATIC_STRING("xsd"), SERD_STATIC_STRING(NS_XSD));
+  serd_env_set_prefix(env, SERD_STRING("doap"), SERD_STRING(NS_DOAP));
+  serd_env_set_prefix(env, SERD_STRING("foaf"), SERD_STRING(NS_FOAF));
+  serd_env_set_prefix(env, SERD_STRING("lv2"), SERD_STRING(NS_LV2));
+  serd_env_set_prefix(env, SERD_STRING("owl"), SERD_STRING(NS_OWL));
+  serd_env_set_prefix(env, SERD_STRING("rdf"), SERD_STRING(NS_RDF));
+  serd_env_set_prefix(env, SERD_STRING("rdfs"), SERD_STRING(NS_RDFS));
+  serd_env_set_prefix(env, SERD_STRING("xsd"), SERD_STRING(NS_XSD));
 
   return env;
 }
@@ -1020,7 +1011,7 @@ lilv_plugin_write_description(LilvWorld*        world,
   SerdEnv*        env       = new_lv2_env(base);
 
   SerdByteSink* const sink =
-    serd_byte_sink_new_function((SerdWriteFunc)fwrite, plugin_file, 1);
+    serd_byte_sink_new_function((SerdWriteFunc)fwrite, NULL, plugin_file, 1);
 
   SerdWriter* writer = serd_writer_new(world->world, SERD_TURTLE, 0, env, sink);
 
@@ -1030,15 +1021,15 @@ lilv_plugin_write_description(LilvWorld*        world,
   maybe_write_prefixes(iface, env, plugin_file);
 
   // Write plugin description
-  SerdRange* plug_range =
-    serd_model_range(world->model, subject, NULL, NULL, NULL);
+  SerdCursor* plug_range =
+    serd_model_find(world->model, subject, NULL, NULL, NULL);
   serd_write_range(plug_range, iface, 0);
 
   // Write port descriptions
   for (uint32_t i = 0; i < num_ports; ++i) {
     const LilvPort* port = plugin->ports[i];
-    SerdRange*      port_range =
-      serd_model_range(world->model, port->node, NULL, NULL, NULL);
+    SerdCursor*     port_range =
+      serd_model_find(world->model, port->node, NULL, NULL, NULL);
     serd_write_range(port_range, iface, 0);
   }
 
@@ -1058,7 +1049,7 @@ lilv_plugin_write_manifest_entry(LilvWorld*        world,
   SerdEnv*        env     = new_lv2_env(base);
 
   SerdByteSink* const sink =
-    serd_byte_sink_new_function((SerdWriteFunc)fwrite, manifest_file, 1);
+    serd_byte_sink_new_function((SerdWriteFunc)fwrite, NULL, manifest_file, 1);
 
   SerdWriter* writer = serd_writer_new(world->world, SERD_TURTLE, 0, env, sink);
 
@@ -1075,8 +1066,7 @@ lilv_plugin_write_manifest_entry(LilvWorld*        world,
                   plugin->world->uris.lv2_Plugin,
                   NULL);
 
-  const SerdNode* file_node =
-    serd_new_uri(SERD_MEASURE_STRING(plugin_file_path));
+  const SerdNode* file_node = serd_new_uri(SERD_STRING(plugin_file_path));
 
   serd_sink_write(serd_writer_sink(writer),
                   0,

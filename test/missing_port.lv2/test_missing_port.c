@@ -24,7 +24,7 @@ main(int argc, char** argv)
 
   // Load test plugin bundle
   char* const          abs_bundle      = lilv_path_absolute(bundle_path);
-  const SerdStringView abs_bundle_view = SERD_MEASURE_STRING(abs_bundle);
+  const SerdStringView abs_bundle_view = SERD_STRING(abs_bundle);
   SerdNode* bundle = serd_new_file_uri(abs_bundle_view, SERD_EMPTY_STRING());
   lilv_world_load_bundle(world, bundle);
   free(abs_bundle);

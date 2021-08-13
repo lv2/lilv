@@ -53,7 +53,7 @@ lilv_lang_matches(const char* a, const char* b)
 }
 
 static LilvNodes*
-lilv_nodes_from_range_i18n(LilvWorld* world, SerdRange* range, SerdField field)
+lilv_nodes_from_range_i18n(LilvWorld* world, SerdCursor* range, SerdField field)
 {
   (void)world;
 
@@ -87,7 +87,7 @@ lilv_nodes_from_range_i18n(LilvWorld* world, SerdRange* range, SerdField field)
       zix_tree_insert((ZixTree*)values, serd_node_copy(value), NULL);
     }
   }
-  serd_range_free(range);
+  serd_cursor_free(range);
   free(syslang);
 
   if (lilv_nodes_size(values) > 0) {
@@ -116,10 +116,10 @@ lilv_nodes_from_range_i18n(LilvWorld* world, SerdRange* range, SerdField field)
 }
 
 LilvNodes*
-lilv_nodes_from_range(LilvWorld* world, SerdRange* range, SerdField field)
+lilv_nodes_from_range(LilvWorld* world, SerdCursor* range, SerdField field)
 {
-  if (serd_range_empty(range)) {
-    serd_range_free(range);
+  if (serd_cursor_is_end(range)) {
+    serd_cursor_free(range);
     return NULL;
   } else if (world->opt.filter_language) {
     return lilv_nodes_from_range_i18n(world, range, field);
@@ -132,7 +132,7 @@ lilv_nodes_from_range(LilvWorld* world, SerdRange* range, SerdField field)
         zix_tree_insert((ZixTree*)values, node, NULL);
       }
     }
-    serd_range_free(range);
+    serd_cursor_free(range);
     return values;
   }
 }

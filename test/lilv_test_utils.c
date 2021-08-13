@@ -94,8 +94,8 @@ create_bundle(LilvTestEnv* env,
     return 1;
   }
 
-  SerdNode* s = serd_new_file_uri(SERD_MEASURE_STRING(env->test_bundle_path),
-                                  SERD_EMPTY_STRING());
+  SerdNode* s =
+    serd_new_file_uri(SERD_STRING(env->test_bundle_path), SERD_EMPTY_STRING());
 
   env->test_bundle_uri = lilv_new_uri(env->world, serd_node_string(s));
   env->test_manifest_path =

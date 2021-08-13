@@ -71,15 +71,15 @@ dlerror(void)
 
 #define FOREACH_MATCH(statement_name_, range)       \
   for (const SerdStatement* statement_name_ = NULL; \
-       !serd_range_empty(range) &&                  \
-       (statement_name_ = serd_range_front(range)); \
-       serd_range_next(range))
+       !serd_cursor_is_end(range) &&                \
+       (statement_name_ = serd_cursor_get(range));  \
+       serd_cursor_advance(range))
 
 #define FOREACH_PAT(name_, model_, s_, p_, o_, g_)               \
-  for (SerdRange* r_ = serd_model_range(model_, s_, p_, o_, g_); \
-       !serd_range_empty(r_) || (serd_range_free(r_), false);    \
-       serd_range_next(r_))                                      \
-    for (const SerdStatement* name_ = serd_range_front(r_); name_; name_ = NULL)
+  for (SerdCursor* r_ = serd_model_find(model_, s_, p_, o_, g_); \
+       !serd_cursor_is_end(r_) || (serd_cursor_free(r_), false); \
+       serd_cursor_advance(r_))                                  \
+    for (const SerdStatement* name_ = serd_cursor_get(r_); name_; name_ = NULL)
 
 /*
  *
@@ -405,7 +405,7 @@ lilv_world_filter_model(LilvWorld*      world,
                         const SerdNode* graph);
 
 LilvNodes*
-lilv_nodes_from_range(LilvWorld* world, SerdRange* range, SerdField field);
+lilv_nodes_from_range(LilvWorld* world, SerdCursor* range, SerdField field);
 
 char*
 lilv_strjoin(const char* first, ...);

@@ -63,6 +63,7 @@ if get_option('strict')
       '-Wno-switch-enum',
       '-Wno-unsuffixed-float-constants',
       '-Wno-unused-const-variable',
+      '-Wno-unused-macros',
       '-Wno-unused-parameter',
       '-Wno-vla',
     ]

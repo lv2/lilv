@@ -37,7 +37,7 @@ lilv_port_new(const SerdNode* node, uint32_t index, const char* symbol)
 
   port->node    = serd_node_copy(node);
   port->index   = index;
-  port->symbol  = serd_new_string(SERD_MEASURE_STRING(symbol));
+  port->symbol  = serd_new_string(SERD_STRING(symbol));
   port->classes = lilv_nodes_new();
   return port;
 }
@@ -94,7 +94,7 @@ lilv_port_supports_event(const LilvPlugin* plugin,
   for (const char** pred = predicates; *pred; ++pred) {
     if (serd_model_ask(plugin->world->model,
                        port->node,
-                       serd_new_uri(SERD_MEASURE_STRING(*pred)),
+                       serd_new_uri(SERD_STRING(*pred)),
                        event_type,
                        NULL)) {
       return true;
@@ -229,15 +229,15 @@ lilv_port_get_range(const LilvPlugin* plugin,
 LilvScalePoints*
 lilv_port_get_scale_points(const LilvPlugin* plugin, const LilvPort* port)
 {
-  SerdRange* points =
-    serd_model_range(plugin->world->model,
-                     port->node,
-                     serd_new_uri(SERD_STATIC_STRING(LV2_CORE__scalePoint)),
-                     NULL,
-                     NULL);
+  SerdCursor* points =
+    serd_model_find(plugin->world->model,
+                    port->node,
+                    serd_new_uri(SERD_STRING(LV2_CORE__scalePoint)),
+                    NULL,
+                    NULL);
 
   LilvScalePoints* ret = NULL;
-  if (!serd_range_empty(points)) {
+  if (!serd_cursor_is_end(points)) {
     ret = lilv_scale_points_new();
   }
 
@@ -254,7 +254,7 @@ lilv_port_get_scale_points(const LilvPlugin* plugin, const LilvPort* port)
       zix_tree_insert((ZixTree*)ret, lilv_scale_point_new(value, label), NULL);
     }
   }
-  serd_range_free(points);
+  serd_cursor_free(points);
 
   assert(!ret || lilv_nodes_size(ret) > 0);
   return ret;
