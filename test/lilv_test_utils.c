@@ -94,15 +94,15 @@ create_bundle(LilvTestEnv* env,
     return 1;
   }
 
-  SerdNode* s =
-    serd_new_file_uri(SERD_STRING(env->test_bundle_path), SERD_EMPTY_STRING());
+  SerdNode* s = serd_new_file_uri(
+    NULL, SERD_STRING(env->test_bundle_path), SERD_EMPTY_STRING());
 
   env->test_bundle_uri = lilv_new_uri(env->world, serd_node_string(s));
   env->test_manifest_path =
     lilv_path_join(env->test_bundle_path, "manifest.ttl");
   env->test_content_path = lilv_path_join(env->test_bundle_path, "plugin.ttl");
 
-  serd_node_free(s);
+  serd_node_free(NULL, s);
 
   FILE* const manifest_file = fopen(env->test_manifest_path, "w");
   if (!manifest_file) {

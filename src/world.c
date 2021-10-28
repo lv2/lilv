@@ -45,7 +45,7 @@ lilv_world_new(void)
 {
   LilvWorld* world = (LilvWorld*)calloc(1, sizeof(LilvWorld));
 
-  world->world = serd_world_new();
+  world->world = serd_world_new(NULL);
   if (!world->world) {
     goto fail;
   }
@@ -74,7 +74,7 @@ lilv_world_new(void)
 #define NS_DYNMAN "http://lv2plug.in/ns/ext/dynmanifest#"
 #define NS_OWL "http://www.w3.org/2002/07/owl#"
 
-#define NEW_URI(uri) serd_new_uri(SERD_STRING(uri))
+#define NEW_URI(uri) serd_new_uri(NULL, SERD_STRING(uri))
 
   world->uris.dc_replaces         = NEW_URI(NS_DCTERMS "replaces");
   world->uris.dman_DynManifest    = NEW_URI(NS_DYNMAN "DynManifest");
@@ -145,13 +145,13 @@ lilv_world_free(LilvWorld* world)
   world->lv2_plugin_class = NULL;
 
   for (SerdNode** n = (SerdNode**)&world->uris; *n; ++n) {
-    serd_node_free(*n);
+    serd_node_free(NULL, *n);
   }
 
   for (LilvSpec* spec = world->specs; spec;) {
     LilvSpec* next = spec->next;
-    serd_node_free(spec->spec);
-    serd_node_free(spec->bundle);
+    serd_node_free(NULL, spec->spec);
+    serd_node_free(NULL, spec->bundle);
     lilv_nodes_free(spec->data_uris);
     free(spec);
     spec = next;
@@ -243,7 +243,7 @@ lilv_world_get(LilvWorld*      world,
                const LilvNode* object)
 {
   return serd_node_copy(
-    serd_model_get(world->model, subject, predicate, object, NULL));
+    NULL, serd_model_get(world->model, subject, predicate, object, NULL));
 }
 
 bool
@@ -354,15 +354,16 @@ lilv_world_add_spec(LilvWorld*      world,
                     const SerdNode* bundle_node)
 {
   LilvSpec* spec  = (LilvSpec*)malloc(sizeof(LilvSpec));
-  spec->spec      = serd_node_copy(specification_node);
-  spec->bundle    = serd_node_copy(bundle_node);
+  spec->spec      = serd_node_copy(NULL, specification_node);
+  spec->bundle    = serd_node_copy(NULL, bundle_node);
   spec->data_uris = lilv_nodes_new();
 
   // Add all data files (rdfs:seeAlso)
   FOREACH_PAT (
     s, world->model, specification_node, world->uris.rdfs_seeAlso, NULL, NULL) {
     const SerdNode* file_node = serd_statement_object(s);
-    zix_tree_insert((ZixTree*)spec->data_uris, serd_node_copy(file_node), NULL);
+    zix_tree_insert(
+      (ZixTree*)spec->data_uris, serd_node_copy(NULL, file_node), NULL);
   }
 
   // Add specification to world specification list
@@ -429,7 +430,7 @@ lilv_world_add_plugin(LilvWorld*      world,
     s, world->model, plugin_uri, world->uris.rdfs_seeAlso, NULL, NULL) {
     const SerdNode* file_node = serd_statement_object(s);
     zix_tree_insert(
-      (ZixTree*)plugin->data_uris, serd_node_copy(file_node), NULL);
+      (ZixTree*)plugin->data_uris, serd_node_copy(NULL, file_node), NULL);
   }
 }
 
@@ -438,7 +439,7 @@ lilv_world_load_graph(LilvWorld*      world,
                       const SerdNode* graph,
                       const LilvNode* uri)
 {
-  SerdEnv*    env      = serd_env_new(serd_node_string_view(uri));
+  SerdEnv*    env      = serd_env_new(world->world, serd_node_string_view(uri));
   SerdSink*   inserter = serd_inserter_new(world->model, graph);
   SerdReader* reader   = serd_reader_new(
     world->world, SERD_TURTLE, 0, env, inserter, LILV_READER_STACK_SIZE);
@@ -530,7 +531,7 @@ lilv_world_load_dyn_manifest(LilvWorld*      world,
     }
 
     LilvDynManifest* desc = (LilvDynManifest*)malloc(sizeof(LilvDynManifest));
-    desc->bundle          = serd_node_copy(bundle_node);
+    desc->bundle          = serd_node_copy(NULL, bundle_node);
     desc->lib             = lib;
     desc->handle          = handle;
     desc->refs            = 0;
@@ -547,7 +548,7 @@ lilv_world_load_dyn_manifest(LilvWorld*      world,
     const SerdNode* base   = dmanifest;
     SerdEnv*        env    = serd_env_new(base);
     SerdReader*     reader = serd_model_new_reader(
-      world->model, env, SERD_TURTLE, serd_node_copy(dmanifest));
+      world->model, env, SERD_TURTLE, serd_node_copy(NULL, dmanifest));
     serd_reader_add_blank_prefix(reader, lilv_world_blank_node_prefix(world));
     serd_reader_read_file_handle(reader, fd, "(dyn-manifest)");
     serd_reader_free(reader);
@@ -611,7 +612,7 @@ lilv_world_get_manifest_node(LilvWorld* world, const LilvNode* bundle_node)
   const SerdURIView manifest_ref = serd_parse_uri("manifest.ttl");
   const SerdURIView manifest_uri = serd_resolve_uri(manifest_ref, bundle_uri);
 
-  return serd_new_parsed_uri(manifest_uri);
+  return serd_new_parsed_uri(NULL, manifest_uri);
 }
 
 char*
@@ -619,7 +620,7 @@ lilv_world_get_manifest_path(LilvWorld* world, const LilvNode* bundle_node)
 {
   const SerdNode* const node = lilv_world_get_manifest_node(world, bundle_node);
 
-  return serd_parse_file_uri(serd_node_string(node), NULL);
+  return serd_parse_file_uri(NULL, serd_node_string(node), NULL);
 }
 
 static SerdModel*
@@ -628,19 +629,18 @@ load_plugin_model(LilvWorld*      world,
                   const LilvNode* plugin_uri)
 {
   // Create model and reader for loading into it
-  SerdModel*  model    = serd_model_new(world->world, SERD_ORDER_SPO, 0u);
-  SerdEnv*    env      = serd_env_new(serd_node_string_view(bundle_uri));
-  SerdSink*   inserter = serd_inserter_new(model, NULL);
-  SerdReader* reader   = serd_reader_new(
+  SerdModel* model = serd_model_new(world->world, SERD_ORDER_SPO, 0u);
+  SerdEnv*  env = serd_env_new(world->world, serd_node_string_view(bundle_uri));
+  SerdSink* inserter = serd_inserter_new(model, NULL);
+  SerdReader* reader = serd_reader_new(
     world->world, SERD_TURTLE, 0, env, inserter, LILV_READER_STACK_SIZE);
 
   serd_model_add_index(model, SERD_ORDER_OPS);
 
   // Load manifest
-  char* manifest_path = lilv_world_get_manifest_path(world, bundle_uri);
-  SerdByteSource* manifest_source =
-    serd_byte_source_new_filename(manifest_path, 4096);
-  serd_reader_start(reader, manifest_source);
+  char* manifest_path         = lilv_world_get_manifest_path(world, bundle_uri);
+  SerdInputStream manifest_in = serd_open_input_file(manifest_path);
+  serd_reader_start(reader, &manifest_in, bundle_uri, PAGE_SIZE);
   serd_reader_read_document(reader);
   serd_reader_finish(reader);
 
@@ -653,14 +653,13 @@ load_plugin_model(LilvWorld*      world,
     const SerdNode* file    = serd_statement_object(serd_cursor_get(f));
     const char*     uri_str = serd_node_string(file);
     if (serd_node_type(file) == SERD_URI) {
-      char*           path_str = serd_parse_file_uri(uri_str, NULL);
-      SerdByteSource* source   = serd_byte_source_new_filename(path_str, 4096);
+      char*           path_str = serd_parse_file_uri(NULL, uri_str, NULL);
+      SerdInputStream in       = serd_open_input_file(path_str);
 
-      serd_reader_start(reader, source);
+      serd_reader_start(reader, &in, file, PAGE_SIZE);
       serd_reader_read_document(reader);
       serd_reader_finish(reader);
-
-      serd_byte_source_free(source);
+      serd_close_input(&in);
     }
   }
 
@@ -716,7 +715,7 @@ lilv_world_load_bundle(LilvWorld* world, const LilvNode* bundle_uri)
   FOREACH_MATCH (s, plug_results) {
     const SerdNode* plug = serd_statement_subject(s);
 
-    LilvNode*         plugin_uri = serd_node_copy(plug);
+    LilvNode*         plugin_uri = serd_node_copy(NULL, plug);
     const LilvPlugin* plugin =
       lilv_plugins_get_by_uri(world->plugins, plugin_uri);
     const LilvNode* last_bundle =
@@ -898,12 +897,14 @@ load_dir_entry(const char* dir, const char* name, void* data)
   }
 
   char*     path = lilv_strjoin(dir, "/", name, "/", NULL);
-  SerdNode* suri = serd_new_file_uri(SERD_STRING(path), SERD_EMPTY_STRING());
+  SerdNode* suri =
+    serd_new_file_uri(NULL, SERD_STRING(path), SERD_EMPTY_STRING());
+
   LilvNode* node = lilv_new_uri(world, serd_node_string(suri));
 
   lilv_world_load_bundle(world, node);
   lilv_node_free(node);
-  serd_node_free(suri);
+  serd_node_free(NULL, suri);
   free(path);
 }
 
@@ -1050,15 +1051,16 @@ lilv_world_load_file(LilvWorld* world, SerdReader* reader, const LilvNode* uri)
 
   SerdStatus st       = SERD_SUCCESS;
   char*      hostname = NULL;
-  char*      filename = serd_parse_file_uri(serd_node_string(uri), &hostname);
+  char* filename = serd_parse_file_uri(NULL, serd_node_string(uri), &hostname);
   if (!filename || hostname) {
-    return SERD_ERR_BAD_ARG;
+    return SERD_BAD_ARG;
   }
 
-  SerdByteSource* const source =
-    serd_byte_source_new_filename(filename, PAGE_SIZE);
+  SerdInputStream in = serd_open_input_file(filename);
 
-  if ((st = serd_reader_start(reader, source)) ||
+  serd_free(NULL, filename);
+
+  if ((st = serd_reader_start(reader, &in, uri, PAGE_SIZE)) ||
       (st = serd_reader_read_document(reader)) ||
       (st = serd_reader_finish(reader))) {
     LILV_ERRORF("Error loading file `%s'\n", lilv_node_as_string(uri));
@@ -1087,7 +1089,7 @@ lilv_world_load_resource(LilvWorld* world, const LilvNode* resource)
        serd_cursor_advance(f)) {
     const SerdNode* file      = serd_statement_object(serd_cursor_get(f));
     const char*     file_str  = serd_node_string(file);
-    LilvNode*       file_node = serd_node_copy(file);
+    LilvNode*       file_node = serd_node_copy(NULL, file);
     if (serd_node_type(file) != SERD_URI) {
       LILV_ERRORF("rdfs:seeAlso node `%s' is not a URI\n", file_str);
     } else if (!lilv_world_load_graph(world, (SerdNode*)file, file_node)) {
@@ -1116,7 +1118,7 @@ lilv_world_unload_resource(LilvWorld* world, const LilvNode* resource)
   int         n_dropped = 0;
   for (; !serd_cursor_is_end(f); serd_cursor_advance(f)) {
     const SerdNode* file      = serd_statement_object(serd_cursor_get(f));
-    LilvNode*       file_node = serd_node_copy(file);
+    LilvNode*       file_node = serd_node_copy(NULL, file);
     if (serd_node_type(file) != SERD_URI) {
       LILV_ERRORF("rdfs:seeAlso node `%s' is not a URI\n",
                   serd_node_string(file));
@@ -1158,7 +1160,7 @@ lilv_world_get_symbol(LilvWorld* world, const LilvNode* subject)
     serd_model_get(world->model, subject, world->uris.lv2_symbol, NULL, NULL);
 
   if (snode) {
-    return serd_node_copy(snode);
+    return serd_node_copy(NULL, snode);
   }
 
   if (!lilv_node_is_uri(subject)) {

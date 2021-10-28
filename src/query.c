@@ -78,13 +78,13 @@ lilv_nodes_from_range_i18n(LilvWorld* world, SerdCursor* range, SerdField field)
 
       if (lm == LILV_LANG_MATCH_EXACT) {
         // Exact language match, add to results
-        zix_tree_insert((ZixTree*)values, serd_node_copy(value), NULL);
+        zix_tree_insert((ZixTree*)values, serd_node_copy(NULL, value), NULL);
       } else if (lm == LILV_LANG_MATCH_PARTIAL) {
         // Partial language match, save in case we find no exact
         partial = value;
       }
     } else {
-      zix_tree_insert((ZixTree*)values, serd_node_copy(value), NULL);
+      zix_tree_insert((ZixTree*)values, serd_node_copy(NULL, value), NULL);
     }
   }
   serd_cursor_free(range);
@@ -105,7 +105,7 @@ lilv_nodes_from_range_i18n(LilvWorld* world, SerdCursor* range, SerdField field)
   }
 
   if (best) {
-    zix_tree_insert((ZixTree*)values, serd_node_copy(best), NULL);
+    zix_tree_insert((ZixTree*)values, serd_node_copy(NULL, best), NULL);
   } else {
     // No matches whatsoever
     lilv_nodes_free(values);
@@ -127,7 +127,7 @@ lilv_nodes_from_range(LilvWorld* world, SerdCursor* range, SerdField field)
     LilvNodes* values = lilv_nodes_new();
     FOREACH_MATCH (s, range) {
       const SerdNode* value = serd_statement_node(s, field);
-      LilvNode*       node  = serd_node_copy(value);
+      LilvNode*       node  = serd_node_copy(NULL, value);
       if (node) {
         zix_tree_insert((ZixTree*)values, node, NULL);
       }

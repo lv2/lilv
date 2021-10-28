@@ -32,9 +32,9 @@ lilv_plugin_class_new(LilvWorld*      world,
   LilvPluginClass* pc = (LilvPluginClass*)malloc(sizeof(LilvPluginClass));
 
   pc->world      = world;
-  pc->uri        = serd_node_copy(uri);
-  pc->label      = serd_new_string(SERD_STRING(label));
-  pc->parent_uri = (parent_node ? serd_node_copy(parent_node) : NULL);
+  pc->uri        = serd_node_copy(NULL, uri);
+  pc->label      = serd_new_string(NULL, SERD_STRING(label));
+  pc->parent_uri = (parent_node ? serd_node_copy(NULL, parent_node) : NULL);
 
   return pc;
 }

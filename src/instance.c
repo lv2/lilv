@@ -44,11 +44,11 @@ lilv_plugin_instantiate(const LilvPlugin*         plugin,
   }
 
   char* const bundle_path =
-    serd_parse_file_uri(lilv_node_as_uri(bundle_uri), NULL);
+    serd_parse_file_uri(NULL, lilv_node_as_uri(bundle_uri), NULL);
 
   LilvLib* lib = lilv_lib_open(plugin->world, lib_uri, bundle_path, features);
   if (!lib) {
-    serd_free(bundle_path);
+    serd_free(NULL, bundle_path);
     return NULL;
   }
 
@@ -81,7 +81,7 @@ lilv_plugin_instantiate(const LilvPlugin*         plugin,
   }
 
   free(local_features);
-  serd_free(bundle_path);
+  serd_free(NULL, bundle_path);
 
   if (result) {
     if (result->lv2_handle == NULL) {

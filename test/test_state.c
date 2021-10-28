@@ -248,7 +248,7 @@ load_test_plugin(const TestContext* const ctx)
   LilvWorld* world      = ctx->env->world;
   char*      abs_bundle = lilv_path_absolute(LILV_TEST_BUNDLE);
   SerdNode*  bundle =
-    serd_new_file_uri(SERD_STRING(abs_bundle), SERD_EMPTY_STRING());
+    serd_new_file_uri(NULL, SERD_STRING(abs_bundle), SERD_EMPTY_STRING());
 
   LilvNode* bundle_uri = lilv_new_uri(world, serd_node_string(bundle));
   LilvNode* plugin_uri = lilv_new_uri(world, TEST_PLUGIN_URI);
@@ -260,7 +260,7 @@ load_test_plugin(const TestContext* const ctx)
 
   lilv_node_free(plugin_uri);
   lilv_node_free(bundle_uri);
-  serd_node_free(bundle);
+  serd_node_free(NULL, bundle);
   free(abs_bundle);
 
   assert(plugin);
@@ -549,26 +549,25 @@ count_statements(const char* path)
 {
   size_t n_statements = 0;
 
-  SerdWorld* const     world     = serd_world_new();
+  SerdWorld* const     world     = serd_world_new(NULL);
   const SerdStringView path_view = SERD_STRING(path);
-  SerdNode* const      base = serd_new_file_uri(path_view, SERD_EMPTY_STRING());
+  SerdNode* const      base =
+    serd_new_file_uri(NULL, path_view, SERD_EMPTY_STRING());
 
-  SerdEnv* const    env  = serd_env_new(serd_node_string_view(base));
-  SerdSink* const   sink = serd_sink_new(&n_statements, count_func, NULL);
+  SerdEnv* const  env  = serd_env_new(world, serd_node_string_view(base));
+  SerdSink* const sink = serd_sink_new(world, &n_statements, count_func, NULL);
   SerdReader* const reader =
     serd_reader_new(world, SERD_TURTLE, 0, env, sink, 4096);
 
-  SerdByteSource* const source = serd_byte_source_new_filename(path, 4096);
-
-  SerdStatus st = SERD_SUCCESS;
-  assert(!(st = serd_reader_start(reader, source)));
+  SerdInputStream in = serd_open_input_file(path);
+  SerdStatus      st = SERD_SUCCESS;
+  assert(!(st = serd_reader_start(reader, &in, NULL, 4096)));
   assert(!(st = serd_reader_read_document(reader)));
 
-  serd_byte_source_free(source);
-  serd_reader_free(reader);
+  serd_close_input(&in);
   serd_sink_free(sink);
   serd_env_free(env);
-  serd_node_free(base);
+  serd_node_free(NULL, base);
   serd_world_free(world);
 
   return n_statements;
@@ -918,10 +917,13 @@ test_world_round_trip(void)
                           "state.ttl"));
 
   // Load state bundle into world
+
   SerdNode* bundle_uri =
-    serd_new_file_uri(SERD_STRING(bundle_path), SERD_EMPTY_STRING());
+    serd_new_file_uri(NULL, SERD_STRING(bundle_path), SERD_EMPTY_STRING());
+
   LilvNode* const bundle_node =
     lilv_new_uri(world, serd_node_string(bundle_uri));
+
   LilvNode* const state_node = lilv_new_uri(world, state_uri);
   lilv_world_load_bundle(world, bundle_node);
   lilv_world_load_resource(world, state_node);
@@ -945,7 +947,7 @@ test_world_round_trip(void)
   lilv_state_free(restored);
   lilv_node_free(state_node);
   lilv_node_free(bundle_node);
-  serd_node_free(bundle_uri);
+  serd_node_free(NULL, bundle_uri);
   lilv_state_free(start_state);
   free(bundle_path);
   test_context_free(ctx);
