@@ -556,6 +556,7 @@ def build(bld):
 
     # Documentation
     if bld.env.DOCS:
+        bld.env.LILV_MAJOR_VERSION = LILV_MAJOR_VERSION
         bld.recurse('doc/c')
 
     # Man pages
