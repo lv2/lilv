@@ -669,9 +669,9 @@ new_state_from_model(LilvWorld*      world,
     serd_cursor_free(i);
   }
 
-  SerdEnv*      env    = serd_env_new(world->world, SERD_EMPTY_STRING());
+  SerdEnv*      env    = serd_env_new(world->world, serd_empty_string());
   SratomLoader* loader = sratom_loader_new(world->world, map);
-  SerdBuffer    buffer = {NULL, 0};
+  SerdBuffer    buffer = {NULL, NULL, 0};
 
   // Get metadata
   SerdCursor* meta = serd_model_find(model, node, 0, 0, 0);
@@ -772,7 +772,7 @@ lilv_state_new_from_file(LilvWorld*      world,
 
   char*     abs_path = lilv_path_absolute(path);
   SerdNode* node =
-    serd_new_file_uri(NULL, SERD_STRING(abs_path), SERD_EMPTY_STRING());
+    serd_new_file_uri(NULL, serd_string(abs_path), serd_empty_string());
 
   SerdEnv*    env   = serd_env_new(world->world, serd_node_string_view(node));
   SerdModel*  model = serd_model_new(world->world, SERD_ORDER_SPO, 0u);
@@ -808,7 +808,7 @@ lilv_state_new_from_file(LilvWorld*      world,
 static void
 set_prefixes(SerdEnv* env)
 {
-#define SET_PSET(e, p, u) serd_env_set_prefix(e, SERD_STRING(p), SERD_STRING(u))
+#define SET_PSET(e, p, u) serd_env_set_prefix(e, serd_string(p), serd_string(u))
 
   SET_PSET(env, "atom", LV2_ATOM_PREFIX);
   SET_PSET(env, "lv2", LV2_CORE_PREFIX);
@@ -826,7 +826,7 @@ lilv_state_new_from_string(LilvWorld* world, LV2_URID_Map* map, const char* str)
     return NULL;
   }
 
-  SerdEnv*    env      = serd_env_new(world->world, SERD_EMPTY_STRING());
+  SerdEnv*    env      = serd_env_new(world->world, serd_empty_string());
   SerdModel*  model    = serd_model_new(world->world, SERD_ORDER_SPO, 0u);
   SerdSink*   inserter = serd_inserter_new(model, NULL);
   SerdReader* reader   = serd_reader_new(
@@ -841,7 +841,7 @@ lilv_state_new_from_string(LilvWorld* world, LV2_URID_Map* map, const char* str)
   serd_reader_read_document(reader);
   serd_close_input(&in);
 
-  SerdNode*       o = serd_new_uri(NULL, SERD_STRING(LV2_PRESETS__Preset));
+  SerdNode*       o = serd_new_uri(NULL, serd_string(LV2_PRESETS__Preset));
   const SerdNode* s = serd_model_get(model, NULL, world->uris.rdf_a, o, NULL);
 
   LilvState* state = new_state_from_model(world, map, model, s, NULL);
@@ -896,7 +896,7 @@ ttl_file_writer(SerdWorld*        world,
 static void
 remove_manifest_entry(SerdModel* model, const char* subject)
 {
-  SerdNode* const   s = serd_new_uri(NULL, SERD_STRING(subject));
+  SerdNode* const   s = serd_new_uri(NULL, serd_string(subject));
   SerdCursor* const r = serd_model_find(model, s, NULL, NULL, NULL);
 
   serd_model_erase_statements(model, r);
@@ -944,8 +944,8 @@ add_state_to_manifest(LilvWorld*      lworld,
 {
   static const SerdStringView empty = {"", 0};
 
-  const SerdStringView manifest_path_view = SERD_STRING(manifest_path);
-  const SerdStringView state_path_view    = SERD_STRING(state_path);
+  const SerdStringView manifest_path_view = serd_string(manifest_path);
+  const SerdStringView state_path_view    = serd_string(state_path);
 
   SerdWorld* world    = lworld->world;
   SerdNode*  manifest = serd_new_file_uri(NULL, manifest_path_view, empty);
@@ -986,7 +986,7 @@ add_state_to_manifest(LilvWorld*      lworld,
   remove_manifest_entry(model, state_uri);
 
   // Add manifest entry for this state to model
-  SerdNode* s = serd_new_uri(NULL, SERD_STRING(state_uri));
+  SerdNode* s = serd_new_uri(NULL, serd_string(state_uri));
 
   // <state> a pset:Preset
   serd_model_add(model, s, lworld->uris.rdf_a, lworld->uris.pset_Preset, NULL);
@@ -1053,7 +1053,7 @@ write_property_array(const LilvState*     state,
     Property*   prop = &array->props[i];
     const char* key  = unmap->unmap(unmap->handle, prop->key);
 
-    SerdNode* p = serd_new_uri(NULL, SERD_STRING(key));
+    SerdNode* p = serd_new_uri(NULL, serd_string(key));
     if (prop->type == state->atom_Path && !dir) {
       const char* path     = (const char*)prop->value;
       const char* abs_path = lilv_state_rel2abs(state, path);
@@ -1091,7 +1091,7 @@ lilv_state_write(LilvWorld*       world,
   const SerdSink* sink       = serd_writer_sink(writer);
   const SerdNode* plugin_uri = state->plugin_uri;
   SerdNode*       subject =
-    serd_new_uri(NULL, uri ? SERD_STRING(uri) : SERD_EMPTY_STRING());
+    serd_new_uri(NULL, uri ? serd_string(uri) : serd_empty_string());
 
   SerdStatus st = SERD_SUCCESS;
 
@@ -1109,7 +1109,7 @@ lilv_state_write(LilvWorld*       world,
 
   // <subject> rdfs:label label
   if (state->label) {
-    SerdNode* label = serd_new_string(NULL, SERD_STRING(state->label));
+    SerdNode* label = serd_new_string(NULL, serd_string(state->label));
     if ((st = serd_sink_write(
            sink, 0, subject, world->uris.rdfs_label, label, NULL))) {
       return st;
@@ -1128,7 +1128,7 @@ lilv_state_write(LilvWorld*       world,
   for (uint32_t i = 0; i < state->n_values; ++i) {
     PortValue* const value = &state->values[i];
     SerdNode*        port =
-      serd_new_token(NULL, SERD_BLANK, SERD_STRING(value->symbol));
+      serd_new_token(NULL, SERD_BLANK, serd_string(value->symbol));
 
     // <> lv2:port _:symbol
     if ((st = serd_sink_write(
@@ -1137,7 +1137,7 @@ lilv_state_write(LilvWorld*       world,
     }
 
     // _:symbol lv2:symbol "symbol"
-    SerdNode* symbol = serd_new_string(NULL, SERD_STRING(value->symbol));
+    SerdNode* symbol = serd_new_string(NULL, serd_string(value->symbol));
     if ((st = serd_sink_write(
            sink, 0, port, world->uris.lv2_symbol, symbol, NULL))) {
       return st;
@@ -1162,7 +1162,7 @@ lilv_state_write(LilvWorld*       world,
 
   // <> state:state _:body
 
-  SerdNode* body = serd_new_token(NULL, SERD_BLANK, SERD_STRING("body"));
+  SerdNode* body = serd_new_token(NULL, SERD_BLANK, serd_string("body"));
   if (state->props.n > 0) {
     if ((st = serd_sink_write(
            sink, SERD_ANON_O, subject, world->uris.state_state, body, NULL))) {
@@ -1259,10 +1259,10 @@ lilv_state_save(LilvWorld*       world,
 
   // Write state to Turtle file
   SerdNode* file =
-    serd_new_file_uri(NULL, SERD_STRING(path), SERD_EMPTY_STRING());
+    serd_new_file_uri(NULL, serd_string(path), serd_empty_string());
 
   SerdNode* node =
-    uri ? serd_new_uri(NULL, SERD_STRING(uri)) : serd_node_copy(NULL, file);
+    uri ? serd_new_uri(NULL, serd_string(uri)) : serd_node_copy(NULL, file);
 
   SerdOutputStream out = serd_open_output_stream(
     (SerdWriteFunc)fwrite, (SerdErrorFunc)ferror, (SerdCloseFunc)fclose, fd);
@@ -1306,10 +1306,10 @@ lilv_state_to_string(LilvWorld*       world,
     return NULL;
   }
 
-  SerdDynamicBuffer buffer = {NULL, NULL, 0};
-  SerdEnv*          env    = NULL;
-  SerdNode*         base =
-    serd_new_uri(NULL, base_uri ? SERD_STRING(base_uri) : SERD_EMPTY_STRING());
+  SerdBuffer buffer = {NULL, NULL, 0};
+  SerdEnv*   env    = NULL;
+  SerdNode*  base =
+    serd_new_uri(NULL, base_uri ? serd_string(base_uri) : serd_empty_string());
 
   SerdOutputStream out    = serd_open_output_buffer(&buffer);
   SerdWriter*      writer = ttl_writer(world->world, &out, base, &env);

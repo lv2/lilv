@@ -37,7 +37,7 @@ lilv_port_new(const SerdNode* node, uint32_t index, const char* symbol)
 
   port->node    = serd_node_copy(NULL, node);
   port->index   = index;
-  port->symbol  = serd_new_string(NULL, SERD_STRING(symbol));
+  port->symbol  = serd_new_string(NULL, serd_string(symbol));
   port->classes = lilv_nodes_new();
   return port;
 }
@@ -94,7 +94,7 @@ lilv_port_supports_event(const LilvPlugin* plugin,
   for (const char** pred = predicates; *pred; ++pred) {
     if (serd_model_ask(plugin->world->model,
                        port->node,
-                       serd_new_uri(NULL, SERD_STRING(*pred)),
+                       serd_new_uri(NULL, serd_string(*pred)),
                        event_type,
                        NULL)) {
       return true;
@@ -232,7 +232,7 @@ lilv_port_get_scale_points(const LilvPlugin* plugin, const LilvPort* port)
   SerdCursor* points =
     serd_model_find(plugin->world->model,
                     port->node,
-                    serd_new_uri(NULL, SERD_STRING(LV2_CORE__scalePoint)),
+                    serd_new_uri(NULL, serd_string(LV2_CORE__scalePoint)),
                     NULL,
                     NULL);
 

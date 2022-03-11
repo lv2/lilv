@@ -74,7 +74,7 @@ lilv_world_new(void)
 #define NS_DYNMAN "http://lv2plug.in/ns/ext/dynmanifest#"
 #define NS_OWL "http://www.w3.org/2002/07/owl#"
 
-#define NEW_URI(uri) serd_new_uri(NULL, SERD_STRING(uri))
+#define NEW_URI(uri) serd_new_uri(NULL, serd_string(uri))
 
   world->uris.dc_replaces         = NEW_URI(NS_DCTERMS "replaces");
   world->uris.dman_DynManifest    = NEW_URI(NS_DYNMAN "DynManifest");
@@ -898,7 +898,7 @@ load_dir_entry(const char* dir, const char* name, void* data)
 
   char*     path = lilv_strjoin(dir, "/", name, "/", NULL);
   SerdNode* suri =
-    serd_new_file_uri(NULL, SERD_STRING(path), SERD_EMPTY_STRING());
+    serd_new_file_uri(NULL, serd_string(path), serd_empty_string());
 
   LilvNode* node = lilv_new_uri(world, serd_node_string(suri));
 

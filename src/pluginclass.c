@@ -33,7 +33,7 @@ lilv_plugin_class_new(LilvWorld*      world,
 
   pc->world      = world;
   pc->uri        = serd_node_copy(NULL, uri);
-  pc->label      = serd_new_string(NULL, SERD_STRING(label));
+  pc->label      = serd_new_string(NULL, serd_string(label));
   pc->parent_uri = (parent_node ? serd_node_copy(NULL, parent_node) : NULL);
 
   return pc;

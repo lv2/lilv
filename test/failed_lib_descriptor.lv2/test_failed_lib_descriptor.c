@@ -25,7 +25,7 @@ main(int argc, char** argv)
   // Load test plugin bundle
   char*     abs_bundle = lilv_path_absolute(bundle_path);
   SerdNode* bundle =
-    serd_new_file_uri(NULL, SERD_STRING(abs_bundle), SERD_EMPTY_STRING());
+    serd_new_file_uri(NULL, serd_string(abs_bundle), serd_empty_string());
 
   lilv_world_load_bundle(world, bundle);
   free(abs_bundle);

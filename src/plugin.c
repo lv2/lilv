@@ -842,7 +842,7 @@ lilv_plugin_get_author(const LilvPlugin* plugin)
   lilv_plugin_load_if_necessary(plugin);
 
   SerdNode* doap_maintainer =
-    serd_new_uri(NULL, SERD_STRING(NS_DOAP "maintainer"));
+    serd_new_uri(NULL, serd_string(NS_DOAP "maintainer"));
 
   const SerdNode* maintainer = serd_model_get(
     plugin->world->model, plugin->plugin_uri, doap_maintainer, NULL, NULL);
@@ -870,7 +870,7 @@ lilv_plugin_get_author_property(const LilvPlugin* plugin, const char* uri)
 {
   SerdNode* author = lilv_plugin_get_author(plugin);
   if (author) {
-    SerdNode* pred = serd_new_uri(NULL, SERD_STRING(uri));
+    SerdNode* pred = serd_new_uri(NULL, serd_string(uri));
     LilvNode* ret  = lilv_plugin_get_one(plugin, author, pred);
     serd_node_free(NULL, pred);
     serd_node_free(NULL, author);
@@ -908,8 +908,8 @@ lilv_plugin_get_uis(const LilvPlugin* plugin)
 {
   lilv_plugin_load_if_necessary(plugin);
 
-  SerdNode* ui_ui_node     = serd_new_uri(NULL, SERD_STRING(LV2_UI__ui));
-  SerdNode* ui_binary_node = serd_new_uri(NULL, SERD_STRING(LV2_UI__binary));
+  SerdNode* ui_ui_node     = serd_new_uri(NULL, serd_string(LV2_UI__ui));
+  SerdNode* ui_binary_node = serd_new_uri(NULL, serd_string(LV2_UI__binary));
 
   LilvUIs*    result = lilv_uis_new();
   SerdCursor* uis    = serd_model_find(
@@ -978,17 +978,17 @@ lilv_plugin_get_related(const LilvPlugin* plugin, const LilvNode* type)
 }
 
 static SerdEnv*
-new_lv2_env(const SerdWorld* const world, const SerdNode* base)
+new_lv2_env(SerdWorld* const world, const SerdNode* base)
 {
   SerdEnv* env = serd_env_new(world, serd_node_string_view(base));
 
-  serd_env_set_prefix(env, SERD_STRING("doap"), SERD_STRING(NS_DOAP));
-  serd_env_set_prefix(env, SERD_STRING("foaf"), SERD_STRING(NS_FOAF));
-  serd_env_set_prefix(env, SERD_STRING("lv2"), SERD_STRING(NS_LV2));
-  serd_env_set_prefix(env, SERD_STRING("owl"), SERD_STRING(NS_OWL));
-  serd_env_set_prefix(env, SERD_STRING("rdf"), SERD_STRING(NS_RDF));
-  serd_env_set_prefix(env, SERD_STRING("rdfs"), SERD_STRING(NS_RDFS));
-  serd_env_set_prefix(env, SERD_STRING("xsd"), SERD_STRING(NS_XSD));
+  serd_env_set_prefix(env, serd_string("doap"), serd_string(NS_DOAP));
+  serd_env_set_prefix(env, serd_string("foaf"), serd_string(NS_FOAF));
+  serd_env_set_prefix(env, serd_string("lv2"), serd_string(NS_LV2));
+  serd_env_set_prefix(env, serd_string("owl"), serd_string(NS_OWL));
+  serd_env_set_prefix(env, serd_string("rdf"), serd_string(NS_RDF));
+  serd_env_set_prefix(env, serd_string("rdfs"), serd_string(NS_RDFS));
+  serd_env_set_prefix(env, serd_string("xsd"), serd_string(NS_XSD));
 
   return env;
 }
@@ -1073,7 +1073,7 @@ lilv_plugin_write_manifest_entry(LilvWorld*        world,
                   plugin->world->uris.lv2_Plugin,
                   NULL);
 
-  const SerdNode* file_node = serd_new_uri(NULL, SERD_STRING(plugin_file_path));
+  const SerdNode* file_node = serd_new_uri(NULL, serd_string(plugin_file_path));
 
   serd_sink_write(serd_writer_sink(writer),
                   0,
