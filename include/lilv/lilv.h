@@ -23,7 +23,7 @@
 #include "lv2/urid/urid.h"
 #include "serd/serd.h"
 
-#include <stdarg.h>
+#include <stdarg.h> // IWYU pragma: keep
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>

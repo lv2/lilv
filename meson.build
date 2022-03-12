@@ -54,6 +54,7 @@ if get_option('strict')
       '-Wno-float-equal',
       '-Wno-format-nonliteral',
       '-Wno-format-truncation',
+      '-Wno-inline',
       '-Wno-padded',
       '-Wno-stack-protector',
       '-Wno-strict-overflow',

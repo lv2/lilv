@@ -18,10 +18,8 @@
 #include "lilv_internal.h"
 
 #include "lilv/lilv.h"
-#include "serd/serd.h"
 
 #include <sys/stat.h>
-#include <sys/types.h>
 
 #include <ctype.h>
 #include <errno.h>
@@ -30,6 +28,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 
 void
 lilv_free(void* ptr)

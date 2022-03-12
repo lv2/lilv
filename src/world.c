@@ -264,12 +264,13 @@ lilv_world_filter_model(LilvWorld*      world,
                         const SerdNode* graph)
 {
   SerdModel*  results = serd_model_new(world->world, SERD_ORDER_SPO, 0u);
-  SerdCursor* r = serd_model_find(model, subject, predicate, object, graph);
-  for (; !serd_cursor_is_end(r); serd_cursor_advance(r)) {
-    serd_model_insert(results, serd_cursor_get(r));
+  SerdCursor* i = serd_model_find(model, subject, predicate, object, graph);
+  for (const SerdStatement* s; (s = serd_cursor_get(i));
+       serd_cursor_advance(i)) {
+    serd_model_insert(results, s);
   }
 
-  serd_cursor_free(r);
+  serd_cursor_free(i);
   return results;
 }
 
@@ -727,6 +728,7 @@ lilv_world_load_bundle(LilvWorld* world, const LilvNode* bundle_uri)
     }
 
     // Compare versions
+    // FIXME: Transaction?
     SerdModel*  this_model   = load_plugin_model(world, bundle_uri, plugin_uri);
     LilvVersion this_version = get_version(world, this_model, plugin_uri);
     SerdModel*  last_model = load_plugin_model(world, last_bundle, plugin_uri);
@@ -1116,17 +1118,16 @@ lilv_world_unload_resource(LilvWorld* world, const LilvNode* resource)
 
   SerdCursor* f         = serd_model_begin(files);
   int         n_dropped = 0;
-  for (; !serd_cursor_is_end(f); serd_cursor_advance(f)) {
-    const SerdNode* file      = serd_statement_object(serd_cursor_get(f));
-    LilvNode*       file_node = serd_node_copy(NULL, file);
+  for (const SerdStatement* link = NULL; (link = serd_cursor_get(f));
+       serd_cursor_advance(f)) {
+    const SerdNode* const file = serd_statement_object(link);
     if (serd_node_type(file) != SERD_URI) {
       LILV_ERRORF("rdfs:seeAlso node `%s' is not a URI\n",
                   serd_node_string(file));
-    } else if (!lilv_world_drop_graph(world, file_node)) {
-      lilv_world_unload_file(world, file_node);
+    } else if (!lilv_world_drop_graph(world, file)) {
+      lilv_world_unload_file(world, file);
       ++n_dropped;
     }
-    lilv_node_free(file_node);
   }
   serd_cursor_free(f);
 

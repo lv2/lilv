@@ -63,7 +63,7 @@ lilv_nodes_from_range_i18n(LilvWorld* world, SerdCursor* range, SerdField field)
   char*           syslang = lilv_get_lang();
   FOREACH_MATCH (s, range) {
     const SerdNode* value = serd_statement_node(s, field);
-    if (serd_node_type(value) == SERD_LITERAL) {
+    if (value && serd_node_type(value) == SERD_LITERAL) {
       const SerdNode* lang = serd_node_language(value);
       LilvLangMatch   lm   = LILV_LANG_MATCH_NONE;
       if (lang) {

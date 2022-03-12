@@ -171,10 +171,11 @@ lilv_plugin_load(LilvPlugin* plugin)
 
   SerdModel*  skel = serd_model_new(plugin->world->world, SERD_ORDER_SPO, 0u);
   SerdCursor* iter = serd_model_begin(prots);
-  for (; !serd_cursor_is_end(iter); serd_cursor_advance(iter)) {
-    const SerdStatement* statement = serd_cursor_get(iter);
-    const SerdNode*      t         = serd_statement_object(statement);
-    LilvNode*            prototype = serd_node_copy(NULL, t);
+  for (const SerdStatement* statement = NULL;
+       (statement = serd_cursor_get(iter));
+       serd_cursor_advance(iter)) {
+    const SerdNode* t         = serd_statement_object(statement);
+    LilvNode*       prototype = serd_node_copy(NULL, t);
 
     lilv_world_load_resource(plugin->world, prototype);
 

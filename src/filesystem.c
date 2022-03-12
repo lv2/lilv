@@ -40,8 +40,6 @@
 #endif
 
 #if USE_FLOCK && USE_FILENO
-#  include <sys/types.h>
-#
 #  include <sys/file.h>
 #endif
 

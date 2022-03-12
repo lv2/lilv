@@ -23,7 +23,6 @@
 #include "zix/tree.h"
 
 #include "lv2/atom/atom.h"
-#include "lv2/atom/forge.h"
 #include "lv2/core/lv2.h"
 #include "lv2/presets/presets.h"
 #include "lv2/state/state.h"
@@ -749,9 +748,9 @@ lilv_state_new_from_world(LilvWorld*      world,
                           LV2_URID_Map*   map,
                           const LilvNode* node)
 {
-  if (!lilv_node_is_uri(node) && !lilv_node_is_blank(node)) {
+  if (!node || (!lilv_node_is_uri(node) && !lilv_node_is_blank(node))) {
     LILV_ERRORF("Subject `%s' is not a URI or blank node.\n",
-                lilv_node_as_string(node));
+                node ? lilv_node_as_string(node) : "(null)");
     return NULL;
   }
 
@@ -1435,7 +1434,7 @@ lilv_state_delete(LilvWorld* world, const LilvState* state)
     }
   } else {
     // Still something in the manifest, update and reload bundle
-    SerdEnv* env = serd_env_new(NULL, serd_node_string_view(manifest));
+    SerdEnv* env = serd_env_new(world->world, serd_node_string_view(manifest));
 
     if (write_manifest(world, env, model, manifest)) {
       return 1;
