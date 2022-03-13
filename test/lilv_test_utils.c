@@ -163,7 +163,7 @@ delete_bundle(LilvTestEnv* env)
 
   free(env->test_content_path);
   free(env->test_manifest_path);
-  free(env->test_bundle_uri);
+  serd_node_free(NULL, env->test_bundle_uri);
   free(env->test_bundle_path);
 
   env->test_content_path  = NULL;

@@ -17,7 +17,7 @@ endforeach
 test('failed_lib_descriptor',
      executable('test_failed_lib_descriptor',
                 'test_failed_lib_descriptor.c',
-                c_args: prog_args,
+                c_args: prog_args + ['-DLILV_STATIC'],
                 dependencies: [lv2_dep, lilv_static_dep]),
      args: [meson.current_build_dir() / ''],
      suite: 'plugin')

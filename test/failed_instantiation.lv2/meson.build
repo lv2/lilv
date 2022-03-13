@@ -17,7 +17,7 @@ endforeach
 test('failed_instantiation',
      executable('test_failed_instantiation',
                 'test_failed_instantiation.c',
-                c_args: prog_args,
+                c_args: prog_args + ['-DLILV_STATIC'],
                 dependencies: [lv2_dep, lilv_static_dep]),
      args: [meson.current_build_dir() / ''],
      suite: 'plugin')

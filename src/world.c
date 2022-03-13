@@ -574,11 +574,11 @@ lilv_world_load_dyn_manifest(LilvWorld*      world,
       free(desc);
     }
     serd_cursor_free(p);
-    serd_free(plugins);
+    serd_model_free(plugins);
     lilv_free(lib_path);
   }
   serd_cursor_free(iter);
-  serd_free(model);
+  serd_model_free(model);
 
 #else
   (void)world;
@@ -644,6 +644,7 @@ load_plugin_model(LilvWorld*      world,
   serd_reader_start(reader, &manifest_in, bundle_uri, PAGE_SIZE);
   serd_reader_read_document(reader);
   serd_reader_finish(reader);
+  serd_close_input(&manifest_in);
 
   // Load any seeAlso files
   SerdModel* files = lilv_world_filter_model(
@@ -1066,12 +1067,16 @@ lilv_world_load_file(LilvWorld* world, SerdReader* reader, const LilvNode* uri)
       (st = serd_reader_read_document(reader)) ||
       (st = serd_reader_finish(reader))) {
     LILV_ERRORF("Error loading file `%s'\n", lilv_node_as_string(uri));
-    return st;
   }
 
-  zix_tree_insert(
-    (ZixTree*)world->loaded_files, lilv_node_duplicate(uri), NULL);
-  return SERD_SUCCESS;
+  serd_close_input(&in);
+
+  if (!st) {
+    zix_tree_insert(
+      (ZixTree*)world->loaded_files, lilv_node_duplicate(uri), NULL);
+  }
+
+  return st;
 }
 
 int

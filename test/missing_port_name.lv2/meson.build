@@ -17,7 +17,7 @@ endforeach
 test('missing_port_name',
      executable('test_missing_port_name',
                 'test_missing_port_name.c',
-                c_args: prog_args,
+                c_args: prog_args + ['-DLILV_STATIC'],
                 dependencies: [lv2_dep, lilv_static_dep]),
      args: [meson.current_build_dir() / ''],
      suite: 'plugin')

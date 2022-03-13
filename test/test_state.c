@@ -562,7 +562,9 @@ count_statements(const char* path)
   SerdStatus      st = SERD_SUCCESS;
   assert(!(st = serd_reader_start(reader, &in, NULL, 4096)));
   assert(!(st = serd_reader_read_document(reader)));
+  assert(!(st = serd_reader_finish(reader)));
 
+  serd_reader_free(reader);
   serd_close_input(&in);
   serd_sink_free(sink);
   serd_env_free(env);

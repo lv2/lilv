@@ -17,7 +17,7 @@ endforeach
 test('bad_syntax',
      executable('test_bad_syntax',
                 'test_bad_syntax.c',
-                c_args: prog_args,
+                c_args: prog_args + ['-DLILV_STATIC'],
                 dependencies: [lv2_dep, lilv_static_dep]),
      args: [meson.current_build_dir() / ''],
      suite: 'plugin')

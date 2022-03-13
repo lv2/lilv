@@ -73,9 +73,11 @@ if get_option('strict')
       '/wd4061',  # enumerator in switch is not explicitly handled
       '/wd4365',  # signed/unsigned mismatch
       '/wd4514',  # unreferenced inline function has been removed
+      '/wd4706',  # assignment within conditional expression
       '/wd4774',  # format string is not a string literal
       '/wd4820',  # padding added after construct
       '/wd4996',  # POSIX name for this item is deprecated
+      '/wd5045',  # compiler will insert Spectre mitigation
     ]
   endif
 
@@ -153,6 +155,8 @@ else
   library_args = ['-DLILV_INTERNAL', '-DLILV_STATIC']
   prog_args = ['-DLILV_STATIC']
 endif
+
+library_args += ['-DZIX_STATIC']
 
 # Build shared and/or static library/libraries
 liblilv = build_target(

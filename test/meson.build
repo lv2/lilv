@@ -46,13 +46,22 @@ define_args = [
   '-DLILV_TEST_DIR="@0@/"'.format(meson.current_build_dir()),
 ]
 
+test_args = prog_args + define_args + ['-DLILV_STATIC']
+if cc.get_id() == 'msvc'
+  test_args += [
+    '/wd4191', # Unsafe conversion from 'FARPROC'
+    '/wd4464', # Relative include path contains '..'
+    '/wd5045', # Compiler will insert Spectre mitigation for memory load
+  ]
+endif
+
 foreach unit : unit_tests
   test(unit,
        executable('test_@0@'.format(unit),
                   ['lilv_test_utils.c', 'test_@0@.c'.format(unit)],
-                  c_args: prog_args + define_args,
+                  c_args: test_args,
                   include_directories: include_directories(['../src']),
-                  dependencies: [lv2_dep, lilv_static_dep]),
+                  dependencies: [lv2_dep, serd_dep, lilv_static_dep]),
        suite: 'unit')
 endforeach
 
