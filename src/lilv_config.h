@@ -53,7 +53,7 @@
 
 // Classic UNIX: flock()
 #  ifndef HAVE_FLOCK
-#    if defined(__unix__)
+#    if defined(__unix__) || defined(__APPLE__)
 #      define HAVE_FLOCK
 #    endif
 #  endif
