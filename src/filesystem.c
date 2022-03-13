@@ -391,6 +391,9 @@ lilv_flock(FILE* file, bool lock, bool block)
   return flock(fileno(file),
                (lock ? LOCK_EX : LOCK_UN) | (block ? 0 : LOCK_NB));
 #else
+  (void)file;
+  (void)lock;
+  (void)block;
   return 0;
 #endif
 }
