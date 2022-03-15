@@ -68,6 +68,13 @@ if get_option('strict')
       '-Wno-unused-parameter',
       '-Wno-vla',
     ]
+
+    if host_machine.system() == 'windows'
+      c_warnings += [
+        '-Wno-bad-function-cast',
+      ]
+    endif
+
   elif cc.get_id() == 'msvc'
     c_warnings += [
       '/wd4061',  # enumerator in switch is not explicitly handled
