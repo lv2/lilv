@@ -665,8 +665,8 @@ new_state_from_model(LilvWorld*      world,
     const SerdNode*      graph  = serd_statement_graph(s);
     state->label                = lilv_strdup(serd_node_string(object));
     set_state_dir_from_model(state, graph);
-    serd_cursor_free(i);
   }
+  serd_cursor_free(i);
 
   SerdEnv*      env    = serd_env_new(world->world, serd_empty_string());
   SratomLoader* loader = sratom_loader_new(world->world, map);
@@ -732,6 +732,7 @@ new_state_from_model(LilvWorld*      world,
 
   serd_free(NULL, buffer.buf);
   sratom_loader_free(loader);
+  serd_env_free(env);
 
   if (state->props.props) {
     qsort(state->props.props, state->props.n, sizeof(Property), property_cmp);
@@ -799,6 +800,7 @@ lilv_state_new_from_file(LilvWorld*      world,
   serd_node_free(NULL, node);
   free(abs_path);
   serd_reader_free(reader);
+  serd_sink_free(inserter);
   serd_model_free(model);
   serd_env_free(env);
   return state;
@@ -847,6 +849,7 @@ lilv_state_new_from_string(LilvWorld* world, LV2_URID_Map* map, const char* str)
 
   serd_node_free(NULL, o);
   serd_reader_free(reader);
+  serd_sink_free(inserter);
   serd_model_free(model);
   serd_env_free(env);
 
@@ -1000,6 +1003,7 @@ add_state_to_manifest(LilvWorld*      lworld,
   write_manifest(lworld, env, model, manifest);
 
   serd_node_free(NULL, s);
+  serd_sink_free(inserter);
   serd_model_free(model);
   serd_node_free(NULL, file);
   serd_node_free(NULL, manifest);
@@ -1154,7 +1158,9 @@ lilv_state_write(LilvWorld*       world,
                      value->atom,
                      0); // SRATOM_PRETTY_NUMBERS);
 
-    if ((st = serd_sink_write_end(sink, port))) {
+    st = serd_sink_write_end(sink, port);
+    serd_node_free(NULL, port);
+    if (st) {
       return st;
     }
   }
@@ -1182,6 +1188,7 @@ lilv_state_write(LilvWorld*       world,
 
   serd_node_free(NULL, body);
   sratom_dumper_free(dumper);
+  serd_node_free(NULL, subject);
   return SERD_SUCCESS;
 }
 
@@ -1321,6 +1328,7 @@ lilv_state_to_string(LilvWorld*       world,
   char* str    = (char*)buffer.buf;
   char* result = lilv_strdup(str); // FIXME: Alloc in lilv to avoid this (win32)
   serd_free(NULL, str);
+  serd_node_free(NULL, base);
   return result;
 }
 
@@ -1371,6 +1379,7 @@ lilv_state_delete(LilvWorld* world, const LilvState* state)
     serd_reader_read_document(reader);
     serd_close_input(&in);
     serd_reader_free(reader);
+    serd_sink_free(inserter);
     serd_env_free(env);
   }
 

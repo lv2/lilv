@@ -619,9 +619,12 @@ lilv_world_get_manifest_node(LilvWorld* world, const LilvNode* bundle_node)
 char*
 lilv_world_get_manifest_path(LilvWorld* world, const LilvNode* bundle_node)
 {
-  const SerdNode* const node = lilv_world_get_manifest_node(world, bundle_node);
+  SerdNode* const node = lilv_world_get_manifest_node(world, bundle_node);
 
-  return serd_parse_file_uri(NULL, serd_node_string(node), NULL);
+  char* const path = serd_parse_file_uri(NULL, serd_node_string(node), NULL);
+
+  serd_node_free(NULL, node);
+  return path;
 }
 
 static SerdModel*
@@ -645,6 +648,7 @@ load_plugin_model(LilvWorld*      world,
   serd_reader_read_document(reader);
   serd_reader_finish(reader);
   serd_close_input(&manifest_in);
+  serd_free(NULL, manifest_path);
 
   // Load any seeAlso files
   SerdModel* files = lilv_world_filter_model(
@@ -662,12 +666,14 @@ load_plugin_model(LilvWorld*      world,
       serd_reader_read_document(reader);
       serd_reader_finish(reader);
       serd_close_input(&in);
+      serd_free(NULL, path_str);
     }
   }
 
   serd_cursor_free(f);
   serd_model_free(files);
   serd_reader_free(reader);
+  serd_sink_free(inserter);
   serd_env_free(env);
 
   return model;

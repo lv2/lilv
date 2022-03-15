@@ -30,7 +30,9 @@ lilv_ptr_cmp(const void* a, const void* b, const void* user_data)
 {
   (void)user_data;
 
-  return (intptr_t)a - (intptr_t)b;
+  return ((uintptr_t)a < (uintptr_t)b)   ? -1
+         : ((uintptr_t)b < (uintptr_t)a) ? 1
+                                         : 0;
 }
 
 int

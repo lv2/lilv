@@ -88,19 +88,25 @@ lilv_port_supports_event(const LilvPlugin* plugin,
                          const LilvPort*   port,
                          const LilvNode*   event_type)
 {
-  const char* predicates[] = {
-    LV2_EVENT__supportsEvent, LV2_ATOM__supports, NULL};
+  SerdNode* predicates[] = {
+    serd_new_uri(NULL, serd_string(LV2_EVENT__supportsEvent)),
+    serd_new_uri(NULL, serd_string(LV2_ATOM__supports)),
+    NULL};
 
-  for (const char** pred = predicates; *pred; ++pred) {
-    if (serd_model_ask(plugin->world->model,
-                       port->node,
-                       serd_new_uri(NULL, serd_string(*pred)),
-                       event_type,
-                       NULL)) {
-      return true;
+  bool supported = false;
+
+  for (SerdNode** pred = predicates; *pred; ++pred) {
+    if ((supported = serd_model_ask(
+           plugin->world->model, port->node, *pred, event_type, NULL))) {
+      break;
     }
   }
-  return false;
+
+  for (SerdNode** pred = predicates; *pred; ++pred) {
+    serd_node_free(NULL, *pred);
+  }
+
+  return supported;
 }
 
 static LilvNodes*
@@ -229,12 +235,13 @@ lilv_port_get_range(const LilvPlugin* plugin,
 LilvScalePoints*
 lilv_port_get_scale_points(const LilvPlugin* plugin, const LilvPort* port)
 {
-  SerdCursor* points =
-    serd_model_find(plugin->world->model,
-                    port->node,
-                    serd_new_uri(NULL, serd_string(LV2_CORE__scalePoint)),
-                    NULL,
-                    NULL);
+  SerdNode* const lv2_scalePoint =
+    serd_new_uri(NULL, serd_string(LV2_CORE__scalePoint));
+
+  SerdCursor* const points = serd_model_find(
+    plugin->world->model, port->node, lv2_scalePoint, NULL, NULL);
+
+  serd_node_free(NULL, lv2_scalePoint);
 
   LilvScalePoints* ret = NULL;
   if (!serd_cursor_is_end(points)) {
