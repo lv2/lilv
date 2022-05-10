@@ -109,6 +109,8 @@ def configure(conf):
     if conf.env.DOCS:
         conf.load('sphinx')
 
+    conf.env.LILV_MAJOR_VERSION = LILV_MAJOR_VERSION
+
     conf.env.BASH_COMPLETION = not Options.options.no_bash_completion
     conf.env.BUILD_UTILS     = not Options.options.no_utils
     conf.env.BUILD_SHARED    = not Options.options.no_shared
