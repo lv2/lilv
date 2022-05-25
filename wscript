@@ -581,7 +581,7 @@ def test(tst):
 
     if tst.env.LILV_PYTHON:
         with tst.group('python') as check:
-            check(['python', '-m', 'unittest', 'discover', 'bindings/'])
+            check([tst.env.PYTHON[0], '-m', 'unittest', 'discover', 'bindings/'])
 
     with tst.group('plugin') as check:
         for p in test_plugins:
