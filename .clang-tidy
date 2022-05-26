@@ -2,8 +2,10 @@ Checks: >
   *,
   -*-magic-numbers,
   -*-uppercase-literal-suffix,
+  -altera-*,
   -android-cloexec-fopen,
   -bugprone-branch-clone,
+  -bugprone-easily-swappable-parameters,
   -bugprone-macro-parentheses,
   -bugprone-narrowing-conversions,
   -bugprone-not-null-terminated-result,
@@ -14,6 +16,7 @@ Checks: >
   -cert-err34-c,
   -clang-analyzer-alpha.*,
   -clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling,
+  -concurrency-mt-unsafe,
   -cppcoreguidelines-avoid-non-const-global-variables,
   -cppcoreguidelines-macro-usage,
   -cppcoreguidelines-narrowing-conversions,
@@ -26,7 +29,10 @@ Checks: >
   -misc-non-private-member-variables-in-classes,
   -misc-unused-parameters,
   -modernize-use-trailing-return-type,
+  -performance-no-int-to-ptr,
+  -readability-function-cognitive-complexity,
   -readability-implicit-bool-conversion,
+  -readability-suspicious-call-argument,
 WarningsAsErrors: '*'
 HeaderFilterRegex: '.*'
 FormatStyle: file
