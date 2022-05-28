@@ -9,6 +9,11 @@
 #include <lv2/core/lv2.h>
 #include <lv2/urid/urid.h>
 
+#include <sched.h>
+#include <sys/mman.h>
+#include <unistd.h>
+
+#include <errno.h>
 #include <float.h>
 #include <math.h>
 #include <stdbool.h>
@@ -16,6 +21,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
+
+// IWYU pragma: no_include <bits/types/struct_sched_param.h>
 
 #ifndef MIN
 #  define MIN(a, b) (((a) < (b)) ? (a) : (b))
@@ -29,6 +37,8 @@ typedef struct {
   uint32_t block_size;
   uint32_t sample_count;
   uint32_t skip_buffers;
+  int      realtime_priority;
+  bool     lock_memory;
 } Options;
 
 static LilvNode* atom_AtomPort   = NULL;
@@ -56,7 +66,9 @@ print_usage(const char* const name, const int status)
           "  -V, --version        Print version information and exit\n"
           "  -b, --block FRAMES   Block length to run, in audio frames\n"
           "  -h, --help           Print this help and exit\n"
+          "  -l, --lock           Lock memory into RAM\n"
           "  -n, --length FRAMES  Total number of frames to process\n"
+          "  -p, --priority NUM   Real-time process priority\n"
           "  -s, --skip BUFFERS   Skip initial buffers before timing\n");
   return status;
 }
@@ -165,12 +177,33 @@ bench(const LilvPlugin* const p, const Options options)
   }
 
   if (!skip_plugin) {
+    if (options.lock_memory) {
+      if (mlockall(MCL_CURRENT) != 0) {
+        fprintf(stderr, "Failed to lock memory: %s\n", strerror(errno));
+        return 1;
+      }
+    }
+
     lilv_instance_activate(instance);
+
+    if (options.realtime_priority != -1) {
+      struct sched_param sp;
+      sp.sched_priority = options.realtime_priority;
+      if (sched_setscheduler(getpid(), SCHED_FIFO, &sp) != 0) {
+        fprintf(
+          stderr,
+          "Failed to set realtime scheduling SCHED_FIFO at priority %d: %s\n",
+          options.realtime_priority,
+          strerror(errno));
+        return 1;
+      }
+    }
 
     const BenchmarkTime benchmark_start = bench_start();
     const uint32_t      n_blocks   = options.sample_count / options.block_size;
     double              buffer_min = DBL_MAX;
     double              buffer_max = 0.0;
+    double              buffer_total = 0.0;
 
     seq_in.atom.size = sizeof(LV2_Atom_Sequence_Body);
     seq_in.atom.type = uri_table_map(&uri_table, LV2_ATOM__Sequence);
@@ -195,12 +228,19 @@ bench(const LilvPlugin* const p, const Options options)
 
       const double buffer_elapsed = bench_end(&buffer_start);
 
+      // Give the system a chance to do its bookkeeping
+      if (options.realtime_priority != -1) {
+        const struct timespec pause = {0, 1000000};
+        nanosleep(&pause, NULL);
+      }
+
       buffer_min = MIN(buffer_min, buffer_elapsed);
       buffer_max = MAX(buffer_max, buffer_elapsed);
+      buffer_total += buffer_elapsed;
     }
 
     const double benchmark_elapsed = bench_end(&benchmark_start);
-    const double buffer_mean       = benchmark_elapsed / n_blocks;
+    const double buffer_mean       = buffer_total / n_blocks;
 
     printf("%u\t%u\t%.9g\t%.9g\t%.9g\t%.9g\t%s\n",
            options.block_size,
@@ -224,32 +264,44 @@ bench(const LilvPlugin* const p, const Options options)
   return 0;
 }
 
+static bool
+is_option(const char* const arg, const char* const flag, const char* const name)
+{
+  return !strcmp(arg, flag) || !strcmp(arg, name);
+}
+
 int
 main(const int argc, char** const argv)
 {
-  Options options = {512U, (1U << 19U), 0U};
+  Options options = {512U, (1U << 19U), 0U, -1, false};
 
   int a = 1;
   for (; a < argc; ++a) {
-    if (!strcmp(argv[a], "-V") || !strcmp(argv[a], "--version")) {
+    if (is_option(argv[a], "-V", "--version")) {
       print_version();
       return 0;
     }
 
-    if (!strcmp(argv[a], "-h") || !strcmp(argv[a], "--help")) {
+    if (is_option(argv[a], "-h", "--help")) {
       return print_usage(argv[0], 0);
     }
 
-    if ((!strcmp(argv[a], "-n") || !strcmp(argv[a], "--frames")) &&
-        (a + 1 < argc)) {
+    if (!strcmp(argv[a], "-b") && (a + 1 < argc)) {
+      const long l = strtol(argv[++a], NULL, 10);
+      if (l > 0 && l < 16384) {
+        options.block_size = (uint32_t)l;
+      }
+    } else if (!strcmp(argv[a], "-l")) {
+      options.lock_memory = true;
+    } else if (is_option(argv[a], "-n", "--length") && (a + 1 < argc)) {
       const long l = strtol(argv[++a], NULL, 10);
       if (l > 0 && (unsigned long)l < (1UL << 28UL)) {
         options.sample_count = (uint32_t)l;
       }
-    } else if (!strcmp(argv[a], "-b") && (a + 1 < argc)) {
+    } else if (is_option(argv[a], "-p", "--priority") && (a + 1 < argc)) {
       const long l = strtol(argv[++a], NULL, 10);
-      if (l > 0 && l < 16384) {
-        options.block_size = (uint32_t)l;
+      if (l > 0 && l < 100) {
+        options.realtime_priority = (uint32_t)l;
       }
     } else if (!strcmp(argv[a], "-s") && (a + 1 < argc)) {
       const long l = strtol(argv[++a], NULL, 10);
