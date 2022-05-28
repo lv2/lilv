@@ -67,16 +67,24 @@ if host_machine.system() != 'windows'
 int main(void) { struct timespec t; return clock_gettime(CLOCK_MONOTONIC, &t); }
 '''
 
+  nanosleep_code = '''#include <time.h>
+int main(void) { const struct timespec t = {0, 100000}; nanosleep(&t, NULL); }
+'''
+
   if cc.compiles(
     clock_gettime_code,
     args: platform_defines,
     dependencies: [rt_dep],
     name: 'clock_gettime',
+  ) and cc.compiles(
+    nanosleep_code,
+    args: platform_defines,
+    name: 'nanosleep'
   )
     lv2bench = executable(
       'lv2bench',
       files('lv2bench.c'),
-      c_args: c_suppressions,
+      c_args: c_suppressions + platform_defines,
       dependencies: [lilv_dep, rt_dep, sndfile_dep],
       install: true,
     )

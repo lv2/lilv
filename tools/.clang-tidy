@@ -1,4 +1,4 @@
-# Copyright 2020-2022 David Robillard <d@drobilla.net>
+# Copyright 2020-2024 David Robillard <d@drobilla.net>
 # SPDX-License-Identifier: 0BSD OR ISC
 
 Checks: >
@@ -7,6 +7,7 @@ Checks: >
   -bugprone-narrowing-conversions,
   -cert-err33-c,
   -cert-err34-c,
+  -concurrency-mt-unsafe,
   -cppcoreguidelines-avoid-non-const-global-variables,
   -cppcoreguidelines-narrowing-conversions,
   -hicpp-signed-bitwise,
