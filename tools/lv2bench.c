@@ -10,12 +10,18 @@
 #include "lilv_config.h"
 #include "uri_table.h"
 
+#include <errno.h>
 #include <float.h>
 #include <math.h>
+#include <sched.h>
+#include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/mman.h>
+#include <time.h>
+#include <unistd.h>
 
 #ifndef MIN
 #  define MIN(a, b) (((a) < (b)) ? (a) : (b))
@@ -29,6 +35,9 @@ typedef struct {
   uint32_t block_size;
   uint32_t sample_count;
   uint32_t skip_buffers;
+  int      realtime_priority;
+  bool     lock_memory;
+  bool     output_all;
 } Options;
 
 static LilvNode* atom_AtomPort   = NULL;
@@ -57,9 +66,12 @@ print_usage(void)
          "Benchmark LV2 plugins.\n"
          "\n"
          "  -V, --version  Display version information and exit.\n"
+         "  -a             Output timings for all individual buffers.\n"
          "  -b BLOCK_SIZE  Block size in audio frames.\n"
          "  -h, --help     Display this help and exit.\n"
+         "  -l             Lock memory into RAM.\n"
          "  -n FRAMES      Total number of frames to process.\n"
+         "  -p PRIORITY    Real-time process priority.\n"
          "  -s BUFFERS     Skip initial buffers before recording timings.\n");
 }
 
@@ -176,7 +188,27 @@ bench(const LilvPlugin* const p, const Options options)
     }
   }
 
+  if (options.lock_memory) {
+    if (mlockall(MCL_CURRENT) != 0) {
+      fprintf(stderr, "Failed to lock memory: %s\n", strerror(errno));
+      exit(EXIT_FAILURE);
+    }
+  }
+
   lilv_instance_activate(instance);
+
+  if (options.realtime_priority != -1) {
+    struct sched_param sp;
+    sp.sched_priority = options.realtime_priority;
+    if (sched_setscheduler(getpid(), SCHED_FIFO, &sp) != 0) {
+      fprintf(
+        stderr,
+        "Failed to set realtime scheduling SCHED_FIFO at priority %d: %s\n",
+        options.realtime_priority,
+        strerror(errno));
+      exit(EXIT_FAILURE);
+    }
+  }
 
   const uint32_t n_blocks = options.sample_count / options.block_size;
   seq_in.atom.size        = sizeof(LV2_Atom_Sequence_Body);
@@ -187,6 +219,11 @@ bench(const LilvPlugin* const p, const Options options)
     seq_out->atom.size = atom_capacity;
     seq_out->atom.type = uri_table_map(&uri_table, LV2_ATOM__Chunk);
     lilv_instance_run(instance, options.block_size);
+  }
+
+  double* elapsed = 0;
+  if (options.output_all) {
+    elapsed = (double*)calloc(n_blocks, sizeof(double));
   }
 
   const BenchmarkTime benchmark_start = bench_start();
@@ -204,8 +241,31 @@ bench(const LilvPlugin* const p, const Options options)
 
     const double buffer_elapsed = bench_end(&buffer_start);
 
+    // Give the system a chance to do its bookkeeping
+    if (options.realtime_priority != -1) {
+      const struct timespec pause = {0, 1000000};
+      nanosleep(&pause, NULL);
+    }
+
+    if (options.output_all) {
+      elapsed[i] = buffer_elapsed;
+    }
+
     buffer_min = MIN(buffer_min, buffer_elapsed);
     buffer_max = MAX(buffer_max, buffer_elapsed);
+  }
+
+  if (options.realtime_priority != -1) {
+    struct sched_param sp;
+    sp.sched_priority = 0;
+    if (sched_setscheduler(getpid(), SCHED_OTHER, &sp) != 0) {
+      fprintf(
+        stderr,
+        "Failed to set realtime scheduling SCHED_FIFO at priority %d: %s\n",
+        options.realtime_priority,
+        strerror(errno));
+      exit(EXIT_FAILURE);
+    }
   }
 
   const double benchmark_elapsed = bench_end(&benchmark_start);
@@ -229,6 +289,14 @@ bench(const LilvPlugin* const p, const Options options)
          benchmark_elapsed,
          uri);
 
+  if (options.output_all) {
+    printf("# Buffer\tElapsed\n");
+    for (uint32_t i = 0; i < n_blocks; ++i) {
+      printf("%u\t%.9g\n", i, elapsed[i]);
+    }
+    free(elapsed);
+  }
+
   free(buf);
   return 0;
 }
@@ -236,7 +304,7 @@ bench(const LilvPlugin* const p, const Options options)
 int
 main(const int argc, char** const argv)
 {
-  Options options = {512U, (1U << 19U), 0U};
+  Options options = {512U, (1U << 19U), 0U, -1, false, false};
 
   int a = 1;
   for (; a < argc; ++a) {
@@ -250,10 +318,16 @@ main(const int argc, char** const argv)
       return 0;
     }
 
-    if (!strcmp(argv[a], "-n") && (a + 1 < argc)) {
-      options.sample_count = atoi(argv[++a]);
+    if (!strcmp(argv[a], "-a")) {
+      options.output_all = true;
     } else if (!strcmp(argv[a], "-b") && (a + 1 < argc)) {
       options.block_size = atoi(argv[++a]);
+    } else if (!strcmp(argv[a], "-l")) {
+      options.lock_memory = true;
+    } else if (!strcmp(argv[a], "-n") && (a + 1 < argc)) {
+      options.sample_count = atoi(argv[++a]);
+    } else if (!strcmp(argv[a], "-p") && (a + 1 < argc)) {
+      options.realtime_priority = atoi(argv[++a]);
     } else if (!strcmp(argv[a], "-s") && (a + 1 < argc)) {
       options.skip_buffers = atoi(argv[++a]);
     } else if (argv[a][0] != '-') {
