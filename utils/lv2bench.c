@@ -32,6 +32,13 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include <float.h>
+
+#include <sched.h>
+#include <sys/mman.h>
+#include <sys/types.h>
+#include <unistd.h>
+#include <errno.h>
 
 static LilvNode* atom_AtomPort   = NULL;
 static LilvNode* atom_Sequence   = NULL;
@@ -42,7 +49,13 @@ static LilvNode* lv2_InputPort   = NULL;
 static LilvNode* lv2_OutputPort  = NULL;
 static LilvNode* urid_map        = NULL;
 
-static bool full_output = false;
+static bool full_output          = false;
+static bool output_all           = false;
+static bool report_microseconds  = false;
+static int  realtime_priority    = -1;
+static bool lock_memory          = false;
+static bool aggregate_statistics = false;
+
 
 static void
 print_version(void)
@@ -60,11 +73,15 @@ print_usage(void)
   printf("lv2bench - Benchmark all installed and supported LV2 plugins.\n");
   printf("Usage: lv2bench [OPTIONS] [PLUGIN_URI]\n");
   printf("\n");
-  printf("  -b BLOCK_SIZE  Specify block size, in audio frames.\n");
-  printf("  -f, --full     Full plottable output.\n");
-  printf("  -h, --help     Display this help and exit.\n");
-  printf("  -n FRAMES      Total number of audio frames to process\n");
-  printf("  --version      Display version information and exit\n");
+  printf("  -h, --help        Display this help and exit.\n");
+  printf("  -b BLOCK_SIZE     Specify block size, in audio frames.\n");
+  printf("  -n FRAMES         Total number of audio frames to process\n");
+  printf("  -u, --usecs       Report microseconds instead of seconds\n");
+  printf("  -f, --full        Full plottable output.\n");
+  printf("  -a, --all-buffers Output elapsed times for all individual buffers (for benchmarking a single plugin only)\n");
+  printf("  -m, --mlock       Lock memory into RAM (mlockall)\n");
+  printf("  -p PRIORITY       Process priority (also sets scheduling class SCHED_FIFO)\n");
+  printf("  --version         Display version information and exit\n");
 }
 
 static double
@@ -177,18 +194,65 @@ bench(const LilvPlugin* p, uint32_t sample_count, uint32_t block_size)
     }
   }
 
+  if (lock_memory) {
+    if (mlockall(MCL_CURRENT) != 0) {
+      fprintf(stderr, "Failed to lock memory: %s\n", strerror(errno));
+      exit(EXIT_FAILURE);
+    }
+  }
+
   lilv_instance_activate(instance);
 
-  struct timespec ts = bench_start();
+  if (realtime_priority != -1) {
+    struct sched_param sp;
+    sp.sched_priority = realtime_priority;
+    if (sched_setscheduler(getpid(), SCHED_FIFO, &sp) != 0) {
+      fprintf(stderr, "Failed to set realtime scheduling SCHED_FIFO at priority %d: %s\n", realtime_priority, strerror(errno));
+      exit(EXIT_FAILURE); 
+    }
+  }
+
+  double time_base = 1.0;
+  if (report_microseconds) {
+    time_base = 1000000.0;
+  }
+
+  double *elapsed = 0;
+  if (output_all) {
+    elapsed = malloc(sizeof(double) * (sample_count / block_size));
+  }
+
+  double elapsed_min = FLT_MAX;
+  double elapsed_max = 0.f;
+  double elapsed_total = 0.f;
+
   for (uint32_t i = 0; i < (sample_count / block_size); ++i) {
     seq_in.atom.size   = sizeof(LV2_Atom_Sequence_Body);
     seq_in.atom.type   = uri_table_map(&uri_table, LV2_ATOM__Sequence);
     seq_out->atom.size = atom_capacity;
     seq_out->atom.type = uri_table_map(&uri_table, LV2_ATOM__Chunk);
 
+    BenchmarkTime ts_buffer = bench_start();
     lilv_instance_run(instance, block_size);
+    const double elapsed_buffer = bench_end(&ts_buffer);
+    usleep(10);
+    elapsed_total += elapsed_buffer;
+    if (output_all) {
+      elapsed[i] = elapsed_buffer;
+    }
+
+    if (elapsed_buffer < elapsed_min) elapsed_min = elapsed_buffer;
+    if (elapsed_buffer > elapsed_max) elapsed_max = elapsed_buffer; 
   }
-  const double elapsed = bench_end(&ts);
+
+  if (realtime_priority != -1) {
+    struct sched_param sp;
+    sp.sched_priority = 0;
+    if (sched_setscheduler(getpid(), SCHED_OTHER, &sp) != 0) {
+      fprintf(stderr, "Failed to set realtime scheduling SCHED_FIFO at priority %d: %s\n", realtime_priority, strerror(errno));
+      exit(EXIT_FAILURE); 
+    }
+  }
 
   lilv_instance_deactivate(instance);
   lilv_instance_free(instance);
@@ -200,12 +264,20 @@ bench(const LilvPlugin* p, uint32_t sample_count, uint32_t block_size)
   uri_table_destroy(&uri_table);
 
   if (full_output) {
-    printf("%u %u ", block_size, sample_count);
+    printf("%u %u %lf %lf %lf ", block_size, sample_count, time_base * elapsed_min, time_base * elapsed_total / (sample_count / block_size), time_base * elapsed_max);
   }
-  printf("%lf %s\n", elapsed, uri);
+  printf("%lf %s\n", time_base * elapsed_total, uri);
+
+  if (output_all) {
+    printf("# Buffer Elapsed\n");
+    for (uint32_t i = 0; i < (sample_count / block_size); ++i) {
+      printf("%d %f\n", i, time_base * elapsed[i]);
+    }
+    free(elapsed);
+  }
 
   free(buf);
-  return elapsed;
+  return elapsed_total;
 }
 
 int
@@ -228,6 +300,14 @@ main(int argc, char** argv)
 
     if (!strcmp(argv[a], "-f")) {
       full_output = true;
+    } else if (!strcmp(argv[a], "-m")) {
+      lock_memory = true;
+    } else if (!strcmp(argv[a], "-a")) {
+      output_all = true;
+    } else if (!strcmp(argv[a], "-u")) {
+      report_microseconds = true;
+    } else if (!strcmp(argv[a], "-p") && (a + 1 < argc)) {
+      realtime_priority = atoi(argv[++a]);
     } else if (!strcmp(argv[a], "-n") && (a + 1 < argc)) {
       sample_count = atoi(argv[++a]);
     } else if (!strcmp(argv[a], "-b") && (a + 1 < argc)) {
@@ -255,7 +335,7 @@ main(int argc, char** argv)
   urid_map        = lilv_new_uri(world, LV2_URID__map);
 
   if (full_output) {
-    printf("# Block Samples Time Plugin\n");
+    printf("# Blocksize Frames Minimum Average Maximum Total Plugin(URI)\n");
   }
 
   const LilvPlugins* plugins = lilv_world_get_all_plugins(world);

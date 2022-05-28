@@ -38,7 +38,7 @@ static inline BenchmarkTime
 bench_start(void)
 {
   BenchmarkTime start_t;
-  clock_gettime(CLOCK_REALTIME, &start_t);
+  clock_gettime(CLOCK_MONOTONIC, &start_t);
   return start_t;
 }
 
@@ -46,7 +46,7 @@ static inline double
 bench_end(const BenchmarkTime* start_t)
 {
   BenchmarkTime end_t;
-  clock_gettime(CLOCK_REALTIME, &end_t);
+  clock_gettime(CLOCK_MONOTONIC, &end_t);
   return bench_elapsed_s(start_t, &end_t);
 }
 
