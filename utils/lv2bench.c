@@ -242,7 +242,6 @@ bench(const LilvPlugin* p, uint32_t sample_count, uint32_t block_size)
     BenchmarkTime ts_buffer = bench_start();
     lilv_instance_run(instance, block_size);
     const double elapsed_buffer = bench_end(&ts_buffer);
-    usleep(10);
 
     if (skip_first && i == 0) {
       continue;
