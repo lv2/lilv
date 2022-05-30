@@ -51,7 +51,9 @@ static LilvNode* urid_map        = NULL;
 
 static bool full_output          = false;
 static bool output_all           = false;
+static bool skip_first           = false;
 static bool report_microseconds  = false;
+static bool report_milliseconds  = false;
 static int  realtime_priority    = -1;
 static bool lock_memory          = false;
 static bool aggregate_statistics = false;
@@ -77,9 +79,11 @@ print_usage(void)
   printf("  -b BLOCK_SIZE     Specify block size, in audio frames.\n");
   printf("  -n FRAMES         Total number of audio frames to process\n");
   printf("  -u, --usecs       Report microseconds instead of seconds\n");
+  printf("  -m, --msecs       Report milliseconds instead of seconds\n");
   printf("  -f, --full        Full plottable output.\n");
   printf("  -a, --all-buffers Output elapsed times for all individual buffers (for benchmarking a single plugin only)\n");
-  printf("  -m, --mlock       Lock memory into RAM (mlockall)\n");
+  printf("  -s, --skip-first  Skip measuring the first buffer processing time\n");
+  printf("  -l, --lock        Lock memory into RAM (mlockall)\n");
   printf("  -p PRIORITY       Process priority (also sets scheduling class SCHED_FIFO)\n");
   printf("  --version         Display version information and exit\n");
 }
@@ -213,6 +217,9 @@ bench(const LilvPlugin* p, uint32_t sample_count, uint32_t block_size)
   }
 
   double time_base = 1.0;
+  if (report_milliseconds) {
+    time_base = 1000.0;
+  }
   if (report_microseconds) {
     time_base = 1000000.0;
   }
@@ -236,6 +243,11 @@ bench(const LilvPlugin* p, uint32_t sample_count, uint32_t block_size)
     lilv_instance_run(instance, block_size);
     const double elapsed_buffer = bench_end(&ts_buffer);
     usleep(10);
+
+    if (skip_first && i == 0) {
+      continue;
+    }
+
     elapsed_total += elapsed_buffer;
     if (output_all) {
       elapsed[i] = elapsed_buffer;
@@ -271,6 +283,9 @@ bench(const LilvPlugin* p, uint32_t sample_count, uint32_t block_size)
   if (output_all) {
     printf("# Buffer Elapsed\n");
     for (uint32_t i = 0; i < (sample_count / block_size); ++i) {
+      if (skip_first && i == 0) {
+        continue;
+      }
       printf("%d %f\n", i, time_base * elapsed[i]);
     }
     free(elapsed);
@@ -300,10 +315,14 @@ main(int argc, char** argv)
 
     if (!strcmp(argv[a], "-f")) {
       full_output = true;
-    } else if (!strcmp(argv[a], "-m")) {
+    } else if (!strcmp(argv[a], "-l")) {
       lock_memory = true;
     } else if (!strcmp(argv[a], "-a")) {
       output_all = true;
+    } else if (!strcmp(argv[a], "-s")) {
+      skip_first = true;
+    } else if (!strcmp(argv[a], "-m")) {
+      report_milliseconds = true;
     } else if (!strcmp(argv[a], "-u")) {
       report_microseconds = true;
     } else if (!strcmp(argv[a], "-p") && (a + 1 < argc)) {
