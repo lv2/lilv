@@ -29,7 +29,7 @@
 #define LILV_CONFIG_H
 
 // Define version unconditionally so a warning will catch a mismatch
-#define LILV_VERSION "0.24.14"
+#define LILV_VERSION "0.24.15"
 
 #if !defined(LILV_NO_DEFAULT_CONFIG)
 
@@ -53,7 +53,7 @@
 
 // Classic UNIX: flock()
 #  ifndef HAVE_FLOCK
-#    if defined(__unix__)
+#    if defined(__unix__) || defined(__APPLE__)
 #      define HAVE_FLOCK
 #    endif
 #  endif
