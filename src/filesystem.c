@@ -487,9 +487,10 @@ lilv_create_directories(const char* dir_path)
   }
 #endif
 
+  char prev = path[0];
   for (; i <= path_len; ++i) {
     const char c = path[i];
-    if (c == LILV_DIR_SEP[0] || c == '/' || c == '\0') {
+    if (lilv_is_dir_sep(c) || (c == '\0' && !lilv_is_dir_sep(prev))) {
       path[i] = '\0';
       if (mkdir(path, 0755) && (errno != EEXIST || !lilv_is_directory(path))) {
         free(path);
@@ -497,6 +498,7 @@ lilv_create_directories(const char* dir_path)
       }
       path[i] = c;
     }
+    prev = c;
   }
 
   free(path);
