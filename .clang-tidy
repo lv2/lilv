@@ -16,6 +16,7 @@ Checks: >
   -cert-err34-c,
   -clang-analyzer-alpha.*,
   -clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling,
+  -clang-analyzer-valist.Uninitialized,
   -concurrency-mt-unsafe,
   -cppcoreguidelines-avoid-non-const-global-variables,
   -cppcoreguidelines-macro-usage,
