@@ -22,7 +22,7 @@
 #include "lv2/core/lv2.h"
 #include "lv2/urid/urid.h"
 
-#include <stdarg.h>
+#include <stdarg.h> // IWYU pragma: keep
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
