@@ -641,8 +641,9 @@ zix_tree_begin(ZixTree* t)
 }
 
 ZixTreeIter*
-zix_tree_end(ZixTree* ZIX_UNUSED(t))
+zix_tree_end(ZixTree* t)
 {
+  (void)t;
   return NULL;
 }
 
@@ -662,8 +663,9 @@ zix_tree_rbegin(ZixTree* t)
 }
 
 ZixTreeIter*
-zix_tree_rend(ZixTree* ZIX_UNUSED(t))
+zix_tree_rend(ZixTree* t)
 {
+  (void)t;
   return NULL;
 }
 

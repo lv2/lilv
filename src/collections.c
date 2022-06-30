@@ -23,14 +23,13 @@
 
 #include <stdbool.h>
 #include <stddef.h>
-#include <stdint.h>
 
 int
 lilv_ptr_cmp(const void* a, const void* b, const void* user_data)
 {
   (void)user_data;
 
-  return (intptr_t)a - (intptr_t)b;
+  return a < b ? -1 : b < a ? 1 : 0;
 }
 
 int
@@ -41,7 +40,7 @@ lilv_resource_node_cmp(const void* a, const void* b, const void* user_data)
   const SordNode* an = ((const LilvNode*)a)->node;
   const SordNode* bn = ((const LilvNode*)b)->node;
 
-  return (intptr_t)an - (intptr_t)bn;
+  return an < bn ? -1 : bn < an ? 1 : 0;
 }
 
 /* Generic collection functions */
