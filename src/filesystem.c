@@ -258,7 +258,9 @@ lilv_path_join(const char* a, const char* b)
   char*        path         = (char*)calloc(1, a_len + b_len + 2);
   memcpy(path, a, pre_len);
 
-#ifdef _WIN32
+#ifndef _WIN32
+  path[pre_len] = '/';
+#else
   // Use forward slash if it seems that the input paths do
   const bool a_has_slash = strchr(a, '/');
   const bool b_has_slash = b && strchr(b, '/');
@@ -267,8 +269,6 @@ lilv_path_join(const char* a, const char* b)
   } else {
     path[pre_len] = '\\';
   }
-#else
-  path[pre_len] = '/';
 #endif
 
   if (b) {
