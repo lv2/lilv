@@ -1,6 +1,6 @@
 /*
   Lilv Test Plugin
-  Copyright 2011-2019 David Robillard <d@drobilla.net>
+  Copyright 2011-2022 David Robillard <d@drobilla.net>
 
   Permission to use, copy, modify, and/or distribute this software for any
   purpose with or without fee is hereby granted, provided that the above
@@ -22,9 +22,9 @@
 #include "lv2/state/state.h"
 #include "lv2/urid/urid.h"
 
-#ifdef _MSC_VER
-#  include <io.h>
-#  define mkstemp(pat) _mktemp(pat)
+#ifdef _WIN32
+#  define _WIN32_LEAN_AND_MEAN
+#  include <windows.h>
 #endif
 
 #include <stdint.h>
@@ -33,8 +33,6 @@
 #include <string.h>
 
 #define TEST_URI "http://example.org/lilv-test-plugin"
-
-#define TMP_TEMPLATE "lilv_testXXXXXX"
 
 enum { TEST_INPUT = 0, TEST_OUTPUT = 1, TEST_CONTROL = 2 };
 
@@ -46,7 +44,7 @@ typedef struct {
     LV2_URID atom_Float;
   } uris;
 
-  char  tmp_file_path[sizeof(TMP_TEMPLATE)];
+  char* tmp_dir_path;
   char* rec_file_path;
   FILE* rec_file;
 
@@ -54,6 +52,35 @@ typedef struct {
   float*   output;
   unsigned num_runs;
 } Test;
+
+static char*
+temp_directory_path(void)
+{
+#ifdef _WIN32
+  const DWORD len = GetTempPath(0, NULL);
+  char* const buf = (char*)calloc(len, 1);
+  if (GetTempPath(len, buf) == 0) {
+    free(buf);
+    return NULL;
+  }
+
+  return buf;
+#else
+  const char* const tmpdir = getenv("TMPDIR");
+  if (tmpdir) {
+    const size_t tmpdir_len = strlen(tmpdir);
+    char* const  result     = (char*)calloc(tmpdir_len + 1, 1);
+
+    memcpy(result, tmpdir, tmpdir_len + 1);
+    return result;
+  }
+
+  char* const result = (char*)calloc(6, 1);
+
+  memcpy(result, "/tmp/", 6);
+  return result;
+#endif
+}
 
 static void
 cleanup(LV2_Handle instance)
@@ -67,6 +94,7 @@ cleanup(LV2_Handle instance)
     test->free_path->free_path(test->free_path->handle, test->rec_file_path);
   }
 
+  free(test->tmp_dir_path);
   free(instance);
 }
 
@@ -104,8 +132,7 @@ instantiate(const LV2_Descriptor*     descriptor,
     return NULL;
   }
 
-  strncpy(test->tmp_file_path, TMP_TEMPLATE, strlen(TMP_TEMPLATE) + 1);
-  mkstemp(test->tmp_file_path);
+  test->tmp_dir_path = temp_directory_path();
 
   LV2_State_Make_Path* make_path = NULL;
 
@@ -272,15 +299,30 @@ save(LV2_Handle                instance,
         LV2_STATE_IS_POD | LV2_STATE_IS_PORTABLE);
 
   if (map_path) {
-    FILE* file = fopen(plugin->tmp_file_path, "w");
+    const char* const file_name     = "temp_file.txt";
+    const size_t      file_name_len = strlen(file_name);
+    const size_t      dir_path_len  = strlen(plugin->tmp_dir_path);
+    char* const       tmp_file_path =
+      (char*)calloc(dir_path_len + file_name_len + 1, 1);
+
+    memcpy(tmp_file_path, plugin->tmp_dir_path, dir_path_len);
+    memcpy(tmp_file_path + dir_path_len, file_name, file_name_len + 1);
+
+    FILE* file = fopen(tmp_file_path, "w");
+    if (!file) {
+      fprintf(stderr, "error: Failed to open file %s\n", tmp_file_path);
+      free(tmp_file_path);
+      return LV2_STATE_ERR_UNKNOWN;
+    }
+
     fprintf(file, "Hello\n");
     fclose(file);
-    char* apath =
-      map_path->abstract_path(map_path->handle, plugin->tmp_file_path);
-    char* apath2 =
-      map_path->abstract_path(map_path->handle, plugin->tmp_file_path);
+
+    char* apath  = map_path->abstract_path(map_path->handle, tmp_file_path);
+    char* apath2 = map_path->abstract_path(map_path->handle, tmp_file_path);
+    free(tmp_file_path);
     if (strcmp(apath, apath2)) {
-      fprintf(stderr, "ERROR: Path %s != %s\n", apath, apath2);
+      fprintf(stderr, "error: Path %s != %s\n", apath, apath2);
     }
 
     store(callback_data,
