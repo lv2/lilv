@@ -310,8 +310,15 @@ lilv_path_exists(const char* path)
 bool
 lilv_is_directory(const char* path)
 {
+#if defined(_WIN32)
+  const DWORD attrs = GetFileAttributes(path);
+
+  return (attrs != INVALID_FILE_ATTRIBUTES) &&
+         (attrs & FILE_ATTRIBUTE_DIRECTORY);
+#else
   struct stat st;
   return !stat(path, &st) && S_ISDIR(st.st_mode);
+#endif
 }
 
 int
