@@ -13,6 +13,7 @@ Checks: >
   -bugprone-suspicious-string-compare,
   -cert-dcl37-c,
   -cert-dcl51-cpp,
+  -cert-err33-c,
   -cert-err34-c,
   -clang-analyzer-alpha.*,
   -clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling,
@@ -32,6 +33,7 @@ Checks: >
   -modernize-use-trailing-return-type,
   -performance-no-int-to-ptr,
   -readability-function-cognitive-complexity,
+  -readability-identifier-length,
   -readability-implicit-bool-conversion,
   -readability-suspicious-call-argument,
 WarningsAsErrors: '*'
