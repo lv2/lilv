@@ -36,19 +36,27 @@ main(void)
 #ifndef _WIN32
   char* s = NULL;
 
+  const char* const home = getenv("HOME");
+
   setenv("LILV_TEST_1", "test", 1);
-  char* home_foo = lilv_strjoin(getenv("HOME"), "/foo", NULL);
+
   assert(!strcmp((s = lilv_expand("$LILV_TEST_1")), "test"));
   free(s);
-  assert(!strcmp((s = lilv_expand("~")), getenv("HOME")));
-  free(s);
-  assert(!strcmp((s = lilv_expand("~foo")), "~foo"));
-  free(s);
-  assert(!strcmp((s = lilv_expand("~/foo")), home_foo));
-  free(s);
+  if (home) {
+    assert(!strcmp((s = lilv_expand("~")), home));
+    free(s);
+    assert(!strcmp((s = lilv_expand("~foo")), "~foo"));
+    free(s);
+
+    char* const home_foo = lilv_strjoin(home, "/foo", NULL);
+    assert(!strcmp((s = lilv_expand("~/foo")), home_foo));
+    free(s);
+    free(home_foo);
+  }
+
   assert(!strcmp((s = lilv_expand("$NOT_A_VAR")), "$NOT_A_VAR"));
   free(s);
-  free(home_foo);
+
   unsetenv("LILV_TEST_1");
 #endif
 
