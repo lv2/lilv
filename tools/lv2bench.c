@@ -14,8 +14,6 @@
   OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 */
 
-#define _POSIX_C_SOURCE 200809L
-
 #include "lilv/lilv.h"
 #include "lv2/atom/atom.h"
 #include "lv2/core/lv2.h"

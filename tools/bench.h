@@ -21,8 +21,6 @@
 #ifndef BENCH_H
 #define BENCH_H
 
-#define _POSIX_C_SOURCE 200809L
-
 #include <time.h>
 
 typedef struct timespec BenchmarkTime;

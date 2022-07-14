@@ -14,14 +14,6 @@
   OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 */
 
-#define _POSIX_C_SOURCE 200809L /* for fileno */
-#define _BSD_SOURCE 1           /* for realpath, symlink */
-#define _DEFAULT_SOURCE 1       /* for realpath, symlink */
-
-#ifdef __APPLE__
-#  define _DARWIN_C_SOURCE 1 /* for flock */
-#endif
-
 #include "filesystem.h"
 #include "lilv_config.h"
 #include "lilv_internal.h"

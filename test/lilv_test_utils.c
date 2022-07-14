@@ -14,8 +14,6 @@
   OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 */
 
-#define _POSIX_C_SOURCE 200809L /* for setenv */
-
 #include "lilv_test_utils.h"
 
 #include "../src/filesystem.h"
@@ -47,7 +45,7 @@ lilv_test_env_new(void)
 
   // Set custom LV2_PATH in build directory to only use test data
   char*     test_path = lilv_path_canonical(LILV_TEST_DIR);
-  char*     lv2_path  = lilv_strjoin(test_path, "/test_lv2_path", NULL);
+  char*     lv2_path  = lilv_strjoin(test_path, "/lv2", NULL);
   LilvNode* path      = lilv_new_string(world, lv2_path);
   lilv_world_set_option(world, LILV_OPTION_LV2_PATH, path);
   free(lv2_path);

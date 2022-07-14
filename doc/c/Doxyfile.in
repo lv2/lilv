@@ -21,6 +21,8 @@ SHOW_FILES             = NO
 MACRO_EXPANSION        = YES
 PREDEFINED             = LILV_API LILV_DEPRECATED
 
-INPUT                  = ../../include/lilv/lilv.h
+RECURSIVE              = YES
+STRIP_FROM_PATH        = @LILV_SRCDIR@
+INPUT                  = @LILV_SRCDIR@/include
 
-OUTPUT_DIRECTORY       = .
+OUTPUT_DIRECTORY       = @DOX_OUTPUT@

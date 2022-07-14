@@ -23,14 +23,13 @@
 #include "serd/serd.h"
 
 #include <assert.h>
-#include <stddef.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 
 typedef struct {
-  char** uris;
-  size_t n_uris;
+  char**   uris;
+  uint32_t n_uris;
 } LilvTestUriMap;
 
 static inline void
@@ -43,7 +42,7 @@ lilv_test_uri_map_init(LilvTestUriMap* const map)
 static inline void
 lilv_test_uri_map_clear(LilvTestUriMap* const map)
 {
-  for (size_t i = 0; i < map->n_uris; ++i) {
+  for (uint32_t i = 0; i < map->n_uris; ++i) {
     free(map->uris[i]);
   }
 
@@ -57,7 +56,7 @@ map_uri(LV2_URID_Map_Handle handle, const char* uri)
 {
   LilvTestUriMap* map = (LilvTestUriMap*)handle;
 
-  for (size_t i = 0; i < map->n_uris; ++i) {
+  for (uint32_t i = 0; i < map->n_uris; ++i) {
     if (!strcmp(map->uris[i], uri)) {
       return i + 1;
     }
