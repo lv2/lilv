@@ -1,11 +1,11 @@
-lilv (0.24.16) stable;
+lilv (0.24.16) stable; urgency=medium
 
   * Fix fallback flock() detection on MacOS
   * Switch to meson build system
 
  -- David Robillard <d@drobilla.net>  Tue, 19 Jul 2022 01:16:26 +0000
 
-lilv (0.24.14) stable;
+lilv (0.24.14) stable; urgency=medium
 
   * Fix build issues with newer toolchains
   * Fix unused parameter warnings
@@ -13,7 +13,7 @@ lilv (0.24.14) stable;
 
  -- David Robillard <d@drobilla.net>  Fri, 27 May 2022 01:38:26 +0000
 
-lilv (0.24.12) stable;
+lilv (0.24.12) stable; urgency=medium
 
   * Allow connecting ports to structures in Python
   * Fix potential memory error when joining filesystem paths
@@ -24,7 +24,7 @@ lilv (0.24.12) stable;
 
  -- David Robillard <d@drobilla.net>  Thu, 07 Jan 2021 21:46:06 +0000
 
-lilv (0.24.10) stable;
+lilv (0.24.10) stable; urgency=medium
 
   * Fix memory leaks in lv2bench
   * Fix various minor warnings and other code quality issues
@@ -33,7 +33,7 @@ lilv (0.24.10) stable;
 
  -- David Robillard <d@drobilla.net>  Sun, 27 Sep 2020 12:17:02 +0000
 
-lilv (0.24.8) stable;
+lilv (0.24.8) stable; urgency=medium
 
   * Allow passing strings for URIs in Python API when unambiguous
   * Fix cases where incorrect translation is used
@@ -43,7 +43,7 @@ lilv (0.24.8) stable;
 
  -- David Robillard <d@drobilla.net>  Sun, 26 Apr 2020 15:55:26 +0000
 
-lilv (0.24.6) stable;
+lilv (0.24.6) stable; urgency=medium
 
   * Add more strict error detection when storing plugin state properties
   * Add option to override LV2_PATH in applications
@@ -57,7 +57,7 @@ lilv (0.24.6) stable;
 
  -- David Robillard <d@drobilla.net>  Sun, 10 Nov 2019 21:39:37 +0000
 
-lilv (0.24.4) stable;
+lilv (0.24.4) stable; urgency=medium
 
   * Don't attempt to load remote or non-Turtle files
   * Fix saving state when broken links are encountered
@@ -72,14 +72,14 @@ lilv (0.24.4) stable;
 
  -- David Robillard <d@drobilla.net>  Sun, 22 Jul 2018 18:42:00 +0000
 
-lilv (0.24.2) stable;
+lilv (0.24.2) stable; urgency=medium
 
   * Fix comparison of restored states with paths
   * Fix saving state to paths that contain URI delimiters (#, ?, etc)
 
  -- David Robillard <d@drobilla.net>  Wed, 04 Jan 2017 16:48:08 +0000
 
-lilv (0.24.0) stable;
+lilv (0.24.0) stable; urgency=medium
 
   * Add LILV_URI_ATOM_PORT and LILV_URI_CV_PORT defines
   * Add lilv_state_set_metadata() for adding state banks/comments/etc (based
@@ -102,7 +102,7 @@ lilv (0.24.0) stable;
 
  -- David Robillard <d@drobilla.net>  Tue, 20 Sep 2016 02:24:57 +0000
 
-lilv (0.22.0) stable;
+lilv (0.22.0) stable; urgency=medium
 
   * Add lilv_file_uri_parse() for correct URI to path conversion
   * Add lilv_free() for systems picky about such things
@@ -129,7 +129,7 @@ lilv (0.22.0) stable;
 
  -- David Robillard <d@drobilla.net>  Thu, 08 Oct 2015 19:39:29 +0000
 
-lilv (0.20.0) stable;
+lilv (0.20.0) stable; urgency=medium
 
   * Add convenient lilv_new_file_uri for creating file URIs
   * Add lilv_world_unload_bundle() and lilv_world_unload_resource()
@@ -150,7 +150,7 @@ lilv (0.20.0) stable;
 
  -- David Robillard <d@drobilla.net>  Fri, 08 Aug 2014 22:21:32 +0000
 
-lilv (0.18.0) stable;
+lilv (0.18.0) stable; urgency=medium
 
   * Add lilv_port_get_node() for using world query functions with ports
   * Add support for running plugins from Python by Kaspar Emanuel
@@ -167,7 +167,7 @@ lilv (0.18.0) stable;
 
  -- David Robillard <d@drobilla.net>  Sat, 04 Jan 2014 21:06:42 +0000
 
-lilv (0.16.0) stable;
+lilv (0.16.0) stable; urgency=medium
 
   * Add lilv_nodes_merge()
   * Add lilv_world_ask() for easily checking if a statement exists
@@ -189,7 +189,7 @@ lilv (0.16.0) stable;
 
  -- David Robillard <d@drobilla.net>  Mon, 18 Feb 2013 21:43:10 +0000
 
-lilv (0.14.4) stable;
+lilv (0.14.4) stable; urgency=medium
 
   * Add lv2bench utility
   * Add option to build utilities as static binaries
@@ -209,13 +209,13 @@ lilv (0.14.4) stable;
 
  -- David Robillard <d@drobilla.net>  Thu, 23 Aug 2012 05:38:29 +0000
 
-lilv (0.14.2) stable;
+lilv (0.14.2) stable; urgency=medium
 
   * Fix dynmanifest support
 
  -- David Robillard <d@drobilla.net>  Thu, 19 Apr 2012 20:11:31 +0000
 
-lilv (0.14.0) stable;
+lilv (0.14.0) stable; urgency=medium
 
   * Add LilvState API for handling plugin state.  This makes it simple to save
     and restore plugin state both in memory and on disk, as well as save
@@ -246,7 +246,7 @@ lilv (0.14.0) stable;
 
  -- David Robillard <d@drobilla.net>  Thu, 19 Apr 2012 00:06:28 +0000
 
-lilv (0.5.0) stable;
+lilv (0.5.0) stable; urgency=medium
 
   * Add ability to build static library
   * Add lv2core as a pkg-config dependency (for lv2.h header include)
@@ -257,7 +257,7 @@ lilv (0.5.0) stable;
 
  -- David Robillard <d@drobilla.net>  Thu, 29 Sep 2011 04:00:00 +0000
 
-lilv (0.4.4) stable;
+lilv (0.4.4) stable; urgency=medium
 
   * Fix building python bindings
   * Fix lilv_ui_is_supported when Lilv is built independently
@@ -267,14 +267,14 @@ lilv (0.4.4) stable;
 
  -- David Robillard <d@drobilla.net>  Sat, 11 Jun 2011 15:20:11 +0000
 
-lilv (0.4.2) stable;
+lilv (0.4.2) stable; urgency=medium
 
   * Fix build system Python 3 compatibility
   * Fix compilation issues on some systems
 
  -- David Robillard <d@drobilla.net>  Wed, 25 May 2011 23:00:00 +0000
 
-lilv (0.4.0) stable;
+lilv (0.4.0) stable; urgency=medium
 
   * Initial version (forked from SLV2)
 
