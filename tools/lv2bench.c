@@ -15,7 +15,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <time.h>
 
 static LilvNode* atom_AtomPort   = NULL;
 static LilvNode* atom_Sequence   = NULL;
@@ -47,15 +46,19 @@ print_usage(const char* const name, const int status)
 }
 
 static int
-bench(const LilvPlugin* p, uint32_t sample_count, uint32_t block_size)
+bench(const LilvPlugin* const p,
+      const uint32_t          sample_count,
+      const uint32_t          block_size)
 {
+  static const size_t atom_capacity = 1024;
+
   URITable uri_table;
   uri_table_init(&uri_table);
 
   LV2_URID_Map       map           = {&uri_table, uri_table_map};
-  LV2_Feature        map_feature   = {LV2_URID_MAP_URI, &map};
   LV2_URID_Unmap     unmap         = {&uri_table, uri_table_unmap};
-  LV2_Feature        unmap_feature = {LV2_URID_UNMAP_URI, &unmap};
+  const LV2_Feature  map_feature   = {LV2_URID_MAP_URI, &map};
+  const LV2_Feature  unmap_feature = {LV2_URID_UNMAP_URI, &unmap};
   const LV2_Feature* features[]    = {&map_feature, &unmap_feature, NULL};
 
   float* const buf = (float*)calloc(block_size * 2UL, sizeof(float));
@@ -67,8 +70,6 @@ bench(const LilvPlugin* p, uint32_t sample_count, uint32_t block_size)
   float* const in  = buf;
   float* const out = buf + block_size;
 
-  const size_t atom_capacity = 1024;
-
   LV2_Atom_Sequence seq_in = {{sizeof(LV2_Atom_Sequence_Body),
                                uri_table_map(&uri_table, LV2_ATOM__Sequence)},
                               {0, 0}};
@@ -76,10 +77,10 @@ bench(const LilvPlugin* p, uint32_t sample_count, uint32_t block_size)
   LV2_Atom_Sequence* seq_out =
     (LV2_Atom_Sequence*)malloc(sizeof(LV2_Atom_Sequence) + atom_capacity);
 
-  const char*      uri      = lilv_node_as_string(lilv_plugin_get_uri(p));
-  const LilvNodes* required = lilv_plugin_get_required_features(p);
+  const char* const uri      = lilv_node_as_string(lilv_plugin_get_uri(p));
+  LilvNodes* const  required = lilv_plugin_get_required_features(p);
   LILV_FOREACH (nodes, i, required) {
-    const LilvNode* feature = lilv_nodes_get(required, i);
+    const LilvNode* const feature = lilv_nodes_get(required, i);
     if (!lilv_node_equals(feature, urid_map)) {
       fprintf(stderr,
               "<%s> requires feature <%s>, skipping\n",
@@ -91,8 +92,9 @@ bench(const LilvPlugin* p, uint32_t sample_count, uint32_t block_size)
       return 1;
     }
   }
+  lilv_nodes_free(required);
 
-  LilvInstance* instance = lilv_plugin_instantiate(p, 48000.0, features);
+  LilvInstance* const instance = lilv_plugin_instantiate(p, 48000.0, features);
   if (!instance) {
     fprintf(stderr,
             "Failed to instantiate <%s>\n",
@@ -111,7 +113,7 @@ bench(const LilvPlugin* p, uint32_t sample_count, uint32_t block_size)
 
   bool skip_plugin = false;
   for (uint32_t index = 0; !skip_plugin && index < n_ports; ++index) {
-    const LilvPort* port = lilv_plugin_get_port_by_index(p, index);
+    const LilvPort* const port = lilv_plugin_get_port_by_index(p, index);
     if (lilv_port_is_a(p, port, lv2_ControlPort)) {
       if (isnan(controls[index])) {
         if (!isnan(mins[index])) {
@@ -151,7 +153,7 @@ bench(const LilvPlugin* p, uint32_t sample_count, uint32_t block_size)
   if (!skip_plugin) {
     lilv_instance_activate(instance);
 
-    struct timespec ts = bench_start();
+    const BenchmarkTime benchmark_start = bench_start();
 
     for (uint32_t i = 0; i < (sample_count / block_size); ++i) {
       seq_in.atom.size   = sizeof(LV2_Atom_Sequence_Body);
@@ -162,7 +164,7 @@ bench(const LilvPlugin* p, uint32_t sample_count, uint32_t block_size)
       lilv_instance_run(instance, block_size);
     }
 
-    const double elapsed = bench_end(&ts);
+    const double elapsed = bench_end(&benchmark_start);
 
     printf("%u\t%u\t%.9g\t%s\n", block_size, sample_count, elapsed, uri);
 
@@ -180,7 +182,7 @@ bench(const LilvPlugin* p, uint32_t sample_count, uint32_t block_size)
 }
 
 int
-main(int argc, char** argv)
+main(const int argc, char** const argv)
 {
   uint32_t block_size   = 512;
   uint32_t sample_count = (1U << 19U);
@@ -214,7 +216,7 @@ main(int argc, char** argv)
 
   const char* const plugin_uri_str = (a < argc ? argv[a++] : NULL);
 
-  LilvWorld* world = lilv_world_new();
+  LilvWorld* const world = lilv_world_new();
   lilv_world_set_option(world, LILV_OPTION_OBJECT_INDEX, NULL);
   lilv_world_load_all(world);
 
@@ -229,9 +231,9 @@ main(int argc, char** argv)
 
   printf("Block\tSamples\tTime\tPlugin\n");
 
-  const LilvPlugins* plugins = lilv_world_get_all_plugins(world);
+  const LilvPlugins* const plugins = lilv_world_get_all_plugins(world);
   if (plugin_uri_str) {
-    LilvNode* uri = lilv_new_uri(world, plugin_uri_str);
+    LilvNode* const uri = lilv_new_uri(world, plugin_uri_str);
     bench(lilv_plugins_get_by_uri(plugins, uri), sample_count, block_size);
     lilv_node_free(uri);
   } else {
