@@ -72,7 +72,7 @@ bench(const LilvPlugin* p, uint32_t sample_count, uint32_t block_size)
   float* const in  = buf;
   float* const out = buf + block_size;
 
-  const size_t atom_capacity = 1024;
+  const size_t atom_capacity = 4096;
 
   LV2_Atom_Sequence seq_in = {{sizeof(LV2_Atom_Sequence_Body),
                                uri_table_map(&uri_table, LV2_ATOM__Sequence)},
