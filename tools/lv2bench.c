@@ -10,7 +10,6 @@
 #include <lv2/urid/urid.h>
 
 #include <math.h>
-#include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -25,8 +24,6 @@ static LilvNode* lv2_ControlPort = NULL;
 static LilvNode* lv2_InputPort   = NULL;
 static LilvNode* lv2_OutputPort  = NULL;
 static LilvNode* urid_map        = NULL;
-
-static bool full_output = false;
 
 static void
 print_version(void)
@@ -46,7 +43,6 @@ print_usage(void)
          "\n"
          "  -V, --version  Display version information and exit\n"
          "  -b BLOCK_SIZE  Block size in audio frames\n"
-         "  -f             Full plottable output\n"
          "  -h, --help     Display this help and exit\n"
          "  -n FRAMES      Total number of frames to process\n");
 }
@@ -184,10 +180,7 @@ bench(const LilvPlugin* p, uint32_t sample_count, uint32_t block_size)
 
   uri_table_destroy(&uri_table);
 
-  if (full_output) {
-    printf("%u %u ", block_size, sample_count);
-  }
-  printf("%lf %s\n", elapsed, uri);
+  printf("%u\t%u\t%.9g\t%s\n", block_size, sample_count, elapsed, uri);
 
   free(buf);
   return elapsed;
@@ -211,9 +204,7 @@ main(int argc, char** argv)
       return 0;
     }
 
-    if (!strcmp(argv[a], "-f")) {
-      full_output = true;
-    } else if (!strcmp(argv[a], "-n") && (a + 1 < argc)) {
+    if (!strcmp(argv[a], "-n") && (a + 1 < argc)) {
       sample_count = atoi(argv[++a]);
     } else if (!strcmp(argv[a], "-b") && (a + 1 < argc)) {
       block_size = atoi(argv[++a]);
@@ -239,9 +230,7 @@ main(int argc, char** argv)
   lv2_OutputPort  = lilv_new_uri(world, LV2_CORE__OutputPort);
   urid_map        = lilv_new_uri(world, LV2_URID__map);
 
-  if (full_output) {
-    printf("# Block Samples Time Plugin\n");
-  }
+  printf("Block\tSamples\tTime\tPlugin\n");
 
   const LilvPlugins* plugins = lilv_world_get_all_plugins(world);
   if (plugin_uri_str) {
