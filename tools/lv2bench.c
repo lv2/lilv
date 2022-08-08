@@ -1,4 +1,4 @@
-// Copyright 2012-2019 David Robillard <d@drobilla.net>
+// Copyright 2012-2024 David Robillard <d@drobilla.net>
 // SPDX-License-Identifier: ISC
 
 #include "bench.h"
@@ -32,7 +32,7 @@ static void
 print_version(void)
 {
   printf("lv2bench (lilv) " LILV_VERSION "\n"
-         "Copyright 2012-2021 David Robillard <d@drobilla.net>\n"
+         "Copyright 2012-2024 David Robillard <d@drobilla.net>\n"
          "License: <http://www.opensource.org/licenses/isc-license>\n"
          "This is free software: you are free to change and redistribute it.\n"
          "There is NO WARRANTY, to the extent permitted by law.\n");
@@ -41,14 +41,14 @@ print_version(void)
 static void
 print_usage(void)
 {
-  printf("lv2bench - Benchmark all installed and supported LV2 plugins.\n");
-  printf("Usage: lv2bench [OPTIONS] [PLUGIN_URI]\n");
-  printf("\n");
-  printf("  -V, --version  Display version information and exit\n");
-  printf("  -b BLOCK_SIZE  Specify block size, in audio frames\n");
-  printf("  -f, --full     Full plottable output\n");
-  printf("  -h, --help     Display this help and exit\n");
-  printf("  -n FRAMES      Total number of audio frames to process\n");
+  printf("Usage: lv2bench [OPTION]... [PLUGIN_URI]\n"
+         "Benchmark LV2 plugins.\n"
+         "\n"
+         "  -V, --version  Display version information and exit\n"
+         "  -b BLOCK_SIZE  Block size in audio frames\n"
+         "  -f             Full plottable output\n"
+         "  -h, --help     Display this help and exit\n"
+         "  -n FRAMES      Total number of frames to process\n");
 }
 
 static double
