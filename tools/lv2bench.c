@@ -24,6 +24,12 @@
 #  define MAX(a, b) (((a) > (b)) ? (a) : (b))
 #endif
 
+typedef struct {
+  uint32_t block_size;
+  uint32_t sample_count;
+  uint32_t skip_buffers;
+} Options;
+
 static LilvNode* atom_AtomPort   = NULL;
 static LilvNode* atom_Sequence   = NULL;
 static LilvNode* lv2_AudioPort   = NULL;
@@ -57,10 +63,7 @@ print_usage(void)
 }
 
 static int
-bench(const LilvPlugin* const p,
-      const uint32_t          sample_count,
-      const uint32_t          block_size,
-      const uint32_t          skip_buffers)
+bench(const LilvPlugin* const p, const Options options)
 {
   static const size_t atom_capacity = 2097152;
 
@@ -73,14 +76,14 @@ bench(const LilvPlugin* const p,
   const LV2_Feature  unmap_feature = {LV2_URID_UNMAP_URI, &unmap};
   const LV2_Feature* features[]    = {&map_feature, &unmap_feature, NULL};
 
-  float* const buf = (float*)calloc(block_size * 2UL, sizeof(float));
+  float* const buf = (float*)calloc(options.block_size * 2UL, sizeof(float));
   if (!buf) {
     fprintf(stderr, "error: Out of memory\n");
     return 1;
   }
 
   float* const in  = buf;
-  float* const out = buf + block_size;
+  float* const out = buf + options.block_size;
 
   LV2_Atom_Sequence seq_in = {{sizeof(LV2_Atom_Sequence_Body),
                                uri_table_map(&uri_table, LV2_ATOM__Sequence)},
@@ -176,15 +179,15 @@ bench(const LilvPlugin* const p,
 
   lilv_instance_activate(instance);
 
-  const uint32_t n_blocks = sample_count / block_size;
+  const uint32_t n_blocks = options.sample_count / options.block_size;
   seq_in.atom.size        = sizeof(LV2_Atom_Sequence_Body);
   seq_in.atom.type        = uri_table_map(&uri_table, LV2_ATOM__Sequence);
 
   // Pre-roll plugin to skip initial buffers if requested
-  for (uint32_t i = 0; i < skip_buffers; ++i) {
+  for (uint32_t i = 0; i < options.skip_buffers; ++i) {
     seq_out->atom.size = atom_capacity;
     seq_out->atom.type = uri_table_map(&uri_table, LV2_ATOM__Chunk);
-    lilv_instance_run(instance, block_size);
+    lilv_instance_run(instance, options.block_size);
   }
 
   const BenchmarkTime benchmark_start = bench_start();
@@ -198,7 +201,7 @@ bench(const LilvPlugin* const p,
 
     const BenchmarkTime buffer_start = bench_start();
 
-    lilv_instance_run(instance, block_size);
+    lilv_instance_run(instance, options.block_size);
 
     const double buffer_elapsed = bench_end(&buffer_start);
 
@@ -219,8 +222,8 @@ bench(const LilvPlugin* const p,
   uri_table_destroy(&uri_table);
 
   printf("%u\t%u\t%.9g\t%.9g\t%.9g\t%.9g\t%s\n",
-         block_size,
-         sample_count,
+         options.block_size,
+         options.sample_count,
          buffer_min,
          buffer_mean,
          buffer_max,
@@ -234,9 +237,7 @@ bench(const LilvPlugin* const p,
 int
 main(const int argc, char** const argv)
 {
-  uint32_t block_size   = 512;
-  uint32_t sample_count = (1 << 19);
-  uint32_t skip_buffers = 0;
+  Options options = {512U, (1U << 19U), 0U};
 
   int a = 1;
   for (; a < argc; ++a) {
@@ -251,11 +252,11 @@ main(const int argc, char** const argv)
     }
 
     if (!strcmp(argv[a], "-n") && (a + 1 < argc)) {
-      sample_count = atoi(argv[++a]);
+      options.sample_count = atoi(argv[++a]);
     } else if (!strcmp(argv[a], "-b") && (a + 1 < argc)) {
-      block_size = atoi(argv[++a]);
+      options.block_size = atoi(argv[++a]);
     } else if (!strcmp(argv[a], "-s") && (a + 1 < argc)) {
-      skip_buffers = atoi(argv[++a]);
+      options.skip_buffers = atoi(argv[++a]);
     } else if (argv[a][0] != '-') {
       break;
     } else {
@@ -285,16 +286,12 @@ main(const int argc, char** const argv)
   if (plugin_uri_str) {
     LilvNode* const uri = lilv_new_uri(world, plugin_uri_str);
 
-    exit_status = bench(lilv_plugins_get_by_uri(plugins, uri),
-                        sample_count,
-                        block_size,
-                        skip_buffers);
+    exit_status = bench(lilv_plugins_get_by_uri(plugins, uri), options);
 
     lilv_node_free(uri);
   } else {
     LILV_FOREACH (plugins, i, plugins) {
-      const int st = bench(
-        lilv_plugins_get(plugins, i), sample_count, block_size, skip_buffers);
+      const int st = bench(lilv_plugins_get(plugins, i), options);
 
       exit_status = exit_status ? exit_status : st;
     }
