@@ -59,7 +59,7 @@ bench(const LilvPlugin* const p,
       const uint32_t          sample_count,
       const uint32_t          block_size)
 {
-  static const size_t atom_capacity = 1024;
+  static const size_t atom_capacity = 2097152;
 
   URITable uri_table;
   uri_table_init(&uri_table);
