@@ -63,7 +63,7 @@ bench(const LilvPlugin* const p,
 
   float* const buf = (float*)calloc(block_size * 2UL, sizeof(float));
   if (!buf) {
-    fprintf(stderr, "Out of memory\n");
+    fprintf(stderr, "error: Out of memory\n");
     return 1;
   }
 
@@ -83,13 +83,13 @@ bench(const LilvPlugin* const p,
     const LilvNode* const feature = lilv_nodes_get(required, i);
     if (!lilv_node_equals(feature, urid_map)) {
       fprintf(stderr,
-              "<%s> requires feature <%s>, skipping\n",
+              "warning: <%s> requires feature <%s>, skipping\n",
               uri,
               lilv_node_as_uri(feature));
       free(seq_out);
       free(buf);
       uri_table_destroy(&uri_table);
-      return 1;
+      return 2;
     }
   }
   lilv_nodes_free(required);
@@ -97,12 +97,12 @@ bench(const LilvPlugin* const p,
   LilvInstance* const instance = lilv_plugin_instantiate(p, 48000.0, features);
   if (!instance) {
     fprintf(stderr,
-            "Failed to instantiate <%s>\n",
+            "warning: Failed to instantiate <%s>\n",
             lilv_node_as_uri(lilv_plugin_get_uri(p)));
     free(seq_out);
     free(buf);
     uri_table_destroy(&uri_table);
-    return 1;
+    return 3;
   }
 
   const uint32_t n_ports  = lilv_plugin_get_num_ports(p);
@@ -133,7 +133,7 @@ bench(const LilvPlugin* const p,
         lilv_instance_connect_port(instance, index, out);
       } else {
         fprintf(stderr,
-                "<%s> port %u neither input nor output, skipping\n",
+                "warning: <%s> port %u neither input nor output, skipping\n",
                 uri,
                 index);
         skip_plugin = true;
@@ -231,14 +231,21 @@ main(const int argc, char** const argv)
 
   printf("Block\tSamples\tTime\tPlugin\n");
 
-  const LilvPlugins* const plugins = lilv_world_get_all_plugins(world);
+  const LilvPlugins* const plugins     = lilv_world_get_all_plugins(world);
+  int                      exit_status = 0;
   if (plugin_uri_str) {
     LilvNode* const uri = lilv_new_uri(world, plugin_uri_str);
-    bench(lilv_plugins_get_by_uri(plugins, uri), sample_count, block_size);
+
+    exit_status =
+      bench(lilv_plugins_get_by_uri(plugins, uri), sample_count, block_size);
+
     lilv_node_free(uri);
   } else {
     LILV_FOREACH (plugins, i, plugins) {
-      bench(lilv_plugins_get(plugins, i), sample_count, block_size);
+      const int st =
+        bench(lilv_plugins_get(plugins, i), sample_count, block_size);
+
+      exit_status = exit_status ? exit_status : st;
     }
   }
 
@@ -253,5 +260,5 @@ main(const int argc, char** const argv)
 
   lilv_world_free(world);
 
-  return 0;
+  return exit_status;
 }
