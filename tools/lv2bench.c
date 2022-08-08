@@ -9,11 +9,20 @@
 #include <lv2/core/lv2.h>
 #include <lv2/urid/urid.h>
 
+#include <float.h>
 #include <math.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+#ifndef MIN
+#  define MIN(a, b) (((a) < (b)) ? (a) : (b))
+#endif
+
+#ifndef MAX
+#  define MAX(a, b) (((a) > (b)) ? (a) : (b))
+#endif
 
 static LilvNode* atom_AtomPort   = NULL;
 static LilvNode* atom_Sequence   = NULL;
@@ -165,18 +174,30 @@ bench(const LilvPlugin* const p,
 
   lilv_instance_activate(instance);
 
-  const BenchmarkTime benchmark_start = bench_start();
+  const uint32_t n_blocks = sample_count / block_size;
 
-  for (uint32_t i = 0; i < (sample_count / block_size); ++i) {
+  const BenchmarkTime benchmark_start = bench_start();
+  double              buffer_min      = DBL_MAX;
+  double              buffer_max      = 0.0;
+
+  for (uint32_t i = 0; i < n_blocks; ++i) {
     seq_in.atom.size   = sizeof(LV2_Atom_Sequence_Body);
     seq_in.atom.type   = uri_table_map(&uri_table, LV2_ATOM__Sequence);
     seq_out->atom.size = atom_capacity;
     seq_out->atom.type = uri_table_map(&uri_table, LV2_ATOM__Chunk);
 
+    const BenchmarkTime buffer_start = bench_start();
+
     lilv_instance_run(instance, block_size);
+
+    const double buffer_elapsed = bench_end(&buffer_start);
+
+    buffer_min = MIN(buffer_min, buffer_elapsed);
+    buffer_max = MAX(buffer_max, buffer_elapsed);
   }
 
   const double benchmark_elapsed = bench_end(&benchmark_start);
+  const double buffer_mean       = benchmark_elapsed / n_blocks;
 
   lilv_instance_deactivate(instance);
   lilv_instance_free(instance);
@@ -187,8 +208,14 @@ bench(const LilvPlugin* const p,
 
   uri_table_destroy(&uri_table);
 
-  printf(
-    "%u\t%u\t%.9g\t%s\n", block_size, sample_count, benchmark_elapsed, uri);
+  printf("%u\t%u\t%.9g\t%.9g\t%.9g\t%.9g\t%s\n",
+         block_size,
+         sample_count,
+         buffer_min,
+         buffer_mean,
+         buffer_max,
+         benchmark_elapsed,
+         uri);
 
   free(buf);
   return 0;
@@ -238,7 +265,7 @@ main(const int argc, char** const argv)
   lv2_OutputPort  = lilv_new_uri(world, LV2_CORE__OutputPort);
   urid_map        = lilv_new_uri(world, LV2_URID__map);
 
-  printf("Block\tSamples\tTime\tPlugin\n");
+  printf("Block\tFrames\tMin\tMean\tMax\tTotal\tPlugin\n");
 
   const LilvPlugins* const plugins     = lilv_world_get_all_plugins(world);
   int                      exit_status = 0;
