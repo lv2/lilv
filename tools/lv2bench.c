@@ -26,8 +26,6 @@ static LilvNode* lv2_InputPort   = NULL;
 static LilvNode* lv2_OutputPort  = NULL;
 static LilvNode* urid_map        = NULL;
 
-static bool full_output = false;
-
 static void
 print_version(void)
 {
@@ -43,7 +41,6 @@ print_usage(const char* const name, const int status)
           "Benchmark installed LV2 plugins.\n\n"
           "  -V, --version        Print version information and exit\n"
           "  -b, --block FRAMES   Block length to run, in audio frames\n"
-          "  -f, --full           Full plottable output\n"
           "  -h, --help           Print this help and exit\n"
           "  -n, --length FRAMES  Total number of frames to process\n");
   return status;
@@ -167,10 +164,7 @@ bench(const LilvPlugin* p, uint32_t sample_count, uint32_t block_size)
 
     const double elapsed = bench_end(&ts);
 
-    if (full_output) {
-      printf("%u %u ", block_size, sample_count);
-    }
-    printf("%lf %s\n", elapsed, uri);
+    printf("%u\t%u\t%.9g\t%s\n", block_size, sample_count, elapsed, uri);
 
     lilv_instance_deactivate(instance);
   }
@@ -202,10 +196,8 @@ main(int argc, char** argv)
       return print_usage(argv[0], 0);
     }
 
-    if (!strcmp(argv[a], "-f")) {
-      full_output = true;
-    } else if ((!strcmp(argv[a], "-n") || !strcmp(argv[a], "--frames")) &&
-               (a + 1 < argc)) {
+    if ((!strcmp(argv[a], "-n") || !strcmp(argv[a], "--frames")) &&
+        (a + 1 < argc)) {
       const long l = strtol(argv[++a], NULL, 10);
       if (l > 0 && (unsigned long)l < (1UL << 28UL)) {
         sample_count = (uint32_t)l;
@@ -235,9 +227,7 @@ main(int argc, char** argv)
   lv2_OutputPort  = lilv_new_uri(world, LV2_CORE__OutputPort);
   urid_map        = lilv_new_uri(world, LV2_URID__map);
 
-  if (full_output) {
-    printf("# Block Samples Time Plugin\n");
-  }
+  printf("Block\tSamples\tTime\tPlugin\n");
 
   const LilvPlugins* plugins = lilv_world_get_all_plugins(world);
   if (plugin_uri_str) {
