@@ -11,6 +11,7 @@
 .Op Fl hV
 .Op Fl b Ar block_size
 .Op Fl n Ar frames
+.Op Fl s Ar buffers
 .Op Fl Fl help
 .Op Fl Fl version
 .Sh DESCRIPTION
@@ -30,7 +31,11 @@ Block size, in audio frames.
 Print the command line options.
 .Pp
 .It Fl n Ar frames
-Total number of audio frames to process.
+Total number of audio frames to process, excluding any pre-roll buffers given by
+.Fl s .
+.Pp
+.It Fl s Ar buffers
+Skip a number of buffers before recording timings.
 .El
 .Sh EXIT STATUS
 .Nm
