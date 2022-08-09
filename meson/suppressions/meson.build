@@ -94,13 +94,12 @@ if is_variable('cc')
         '/wd5045', # will insert Spectre mitigation for memory load
       ]
     endif
+  endif
 
-  else
-    if cc.get_id() == 'msvc'
-      c_suppressions += [
-        '/wd4090', # different const qualifiers
-      ]
-    endif
+  if cc.get_id() == 'msvc'
+    c_suppressions += [
+      '/wd4090', # different const qualifiers
+    ]
   endif
 
   c_suppressions = cc.get_supported_arguments(c_suppressions)
