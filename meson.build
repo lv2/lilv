@@ -46,6 +46,41 @@ elif host_machine.system() in ['gnu', 'linux']
   ]
 endif
 
+default_lv2_path = get_option('default_lv2_path')
+if default_lv2_path == ''
+  if host_machine.system() == 'darwin'
+    lv2_dirs = [
+      '~/.lv2',
+      '~/Library/Audio/Plug-Ins/LV2',
+      '/usr/local/lib/lv2',
+      '/usr/lib/lv2',
+      '/Library/Audio/Plug-Ins/LV2',
+    ]
+
+    default_lv2_path = ':'.join(lv2_dirs)
+
+  elif host_machine.system() == 'haiku'
+    default_lv2_path = ':'.join(['~/.lv2', '/boot/common/add-ons/lv2'])
+
+  elif host_machine.system() == 'windows'
+    lv2_dirs = ['%%APPDATA%%\\\\LV2', '%%COMMONPROGRAMFILES%%\\\\LV2']
+    default_lv2_path = ';'.join(lv2_dirs)
+
+  else
+    lv2_dirs = [
+      '~' / '.lv2',
+      '/usr/local' / get_option('libdir') / 'lv2',
+      '/usr' / get_option('libdir') / 'lv2',
+    ]
+
+    default_lv2_path = ':'.join(lv2_dirs)
+  endif
+endif
+
+platform_defines += [
+  '-DLILV_DEFAULT_LV2_PATH="@0@"'.format(default_lv2_path)
+]
+
 add_project_arguments(platform_defines, language: ['c'])
 
 ################
@@ -190,6 +225,7 @@ if not meson.is_subproject()
   summary('Tools', not get_option('tools').disabled(), bool_yn: true)
 
   summary('Install prefix', get_option('prefix'))
+  summary('Default LV2_PATH', default_lv2_path)
 
   summary('Headers', get_option('prefix') / get_option('includedir'))
   summary('Libraries', get_option('prefix') / get_option('libdir'))

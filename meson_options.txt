@@ -15,3 +15,6 @@ option('title', type: 'string', value: 'Lilv',
 
 option('tools', type: 'feature', value: 'auto', yield: true,
        description: 'Build command line utilities')
+
+option('default_lv2_path', type: 'string', value: '', yield: true,
+       description: 'Default LV2_PATH to use if it is unset')
