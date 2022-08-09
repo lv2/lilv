@@ -13,7 +13,7 @@ basic_tools = [
 ]
 
 foreach tool : basic_tools
-  executable(
+  exe = executable(
     tool,
     files(tool + '.c'),
     c_args: c_suppressions,
@@ -21,6 +21,8 @@ foreach tool : basic_tools
     include_directories: include_dirs,
     install: true,
   )
+
+  meson.override_find_program(tool, exe)
 
   install_man(files('..' / 'doc' / tool + '.1'))
 endforeach
@@ -42,7 +44,7 @@ sndfile_dep = dependency(
 )
 
 if sndfile_dep.found()
-  executable(
+  lv2apply = executable(
     'lv2apply',
     files('lv2apply.c'),
     c_args: c_suppressions,
@@ -50,6 +52,8 @@ if sndfile_dep.found()
     include_directories: include_dirs,
     install: true,
   )
+
+  meson.override_find_program('lv2apply', lv2apply)
 
   install_man(files('..' / 'doc' / 'lv2apply.1'))
 endif
@@ -69,7 +73,7 @@ int main(void) { struct timespec t; return clock_gettime(CLOCK_MONOTONIC, &t); }
                  args: platform_defines,
                  dependencies: [rt_dep],
                  name: 'clock_gettime')
-    executable(
+    lv2bench = executable(
       'lv2bench',
       files('lv2bench.c'),
       c_args: c_suppressions,
@@ -77,6 +81,8 @@ int main(void) { struct timespec t; return clock_gettime(CLOCK_MONOTONIC, &t); }
       include_directories: include_dirs,
       install: true,
     )
+
+    meson.override_find_program('lv2bench', lv2bench)
 
     install_man(files('..' / 'doc' / 'lv2bench.1'))
   endif

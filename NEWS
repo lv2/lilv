@@ -1,3 +1,9 @@
+lilv (0.24.17) unstable; urgency=medium
+
+  * Allow programs to be used from subproject
+
+ -- David Robillard <d@drobilla.net>  Tue, 09 Aug 2022 13:44:56 +0000
+
 lilv (0.24.16) stable; urgency=medium
 
   * Fix fallback flock() detection on MacOS
