@@ -79,7 +79,6 @@ if is_variable('cc')
     elif cc.get_id() == 'msvc'
       c_suppressions += [
         '/wd4061', # enumerator in switch is not explicitly handled
-        '/wd4090', # different const qualifiers
         '/wd4191', # unsafe conversion from FARPROC
         '/wd4244', # conversion from floating point, possible loss of data
         '/wd4267', # conversion from size_t, possible loss of data
@@ -96,6 +95,12 @@ if is_variable('cc')
       ]
     endif
 
+  else
+    if cc.get_id() == 'msvc'
+      c_suppressions += [
+        '/wd4090', # different const qualifiers
+      ]
+    endif
   endif
 
   c_suppressions = cc.get_supported_arguments(c_suppressions)
