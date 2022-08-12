@@ -1,9 +1,9 @@
-lilv (0.24.17) unstable; urgency=medium
+lilv (0.24.18) stable; urgency=medium
 
   * Allow programs to be used from subproject
   * Fix default LV2_PATH
 
- -- David Robillard <d@drobilla.net>  Tue, 09 Aug 2022 13:46:15 +0000
+ -- David Robillard <d@drobilla.net>  Fri, 12 Aug 2022 22:15:29 +0000
 
 lilv (0.24.16) stable; urgency=medium
 
