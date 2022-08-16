@@ -3,7 +3,7 @@
 __author__ = "David Robillard"
 __copyright__ = "Copyright 2016-2020 David Robillard"
 __license__ = "ISC"
-__version__ = "0.24.18"
+__version__ = "0.24.19"
 __maintainer__ = "David Robillard"
 __email__ = "d@drobilla.net"
 __status__ = "Production"

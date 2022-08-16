@@ -1,3 +1,9 @@
+lilv (0.24.19) unstable; urgency=medium
+
+  * Update project metadata
+
+ -- David Robillard <d@drobilla.net>  Tue, 16 Aug 2022 00:21:46 +0000
+
 lilv (0.24.18) stable; urgency=medium
 
   * Allow programs to be used from subproject
