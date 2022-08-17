@@ -95,15 +95,15 @@ lv2_dep = dependency('lv2',
                      fallback: ['lv2', 'lv2_dep'])
 
 serd_dep = dependency('serd-0',
-                      version: '>= 0.30.9',
+                      version: '>= 0.30.10',
                       fallback: ['serd', 'serd_dep'])
 
 sord_dep = dependency('sord-0',
-                      version: '>= 0.16.9',
+                      version: '>= 0.16.10',
                       fallback: ['sord', 'sord_dep'])
 
 sratom_dep = dependency('sratom-0',
-                        version: '>=0.6.9',
+                        version: '>= 0.6.10',
                         fallback: ['sratom', 'sratom_dep'])
 
 ###########
