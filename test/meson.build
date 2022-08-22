@@ -2,9 +2,11 @@
 # SPDX-License-Identifier: CC0-1.0 OR ISC
 
 # Check release metadata
-autoship = find_program('autoship', required: false)
-if autoship.found()
-  test('autoship', autoship, args: ['test', lilv_src_root], suite: 'data')
+if get_option('strict') and not meson.is_subproject()
+  autoship = find_program('autoship', required: false)
+  if autoship.found()
+    test('autoship', autoship, args: ['test', lilv_src_root], suite: 'data')
+  endif
 endif
 
 test_args = ['-DLILV_STATIC']
