@@ -1,6 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+# Copyright 2019-2020 David Robillard <d@drobilla.net>
+# SPDX-License-Identifier: ISC
+
 import sys
 import lilv
 

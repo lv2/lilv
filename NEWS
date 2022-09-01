@@ -1,8 +1,9 @@
 lilv (0.24.19) unstable; urgency=medium
 
+  * Adopt REUSE machine-readable licensing standard
   * Update project metadata
 
- -- David Robillard <d@drobilla.net>  Tue, 16 Aug 2022 00:21:46 +0000
+ -- David Robillard <d@drobilla.net>  Thu, 01 Sep 2022 21:58:44 +0000
 
 lilv (0.24.18) stable; urgency=medium
 

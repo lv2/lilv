@@ -1,6 +1,10 @@
 # Copyright 2020-2022 David Robillard <d@drobilla.net>
 # SPDX-License-Identifier: CC0-1.0 OR ISC
 
+####################
+# Project Metadata #
+####################
+
 # Check release metadata
 if get_option('strict') and not meson.is_subproject()
   autoship = find_program('autoship', required: false)
@@ -8,6 +12,18 @@ if get_option('strict') and not meson.is_subproject()
     test('autoship', autoship, args: ['test', lilv_src_root], suite: 'data')
   endif
 endif
+
+# Check licensing metadata
+reuse = find_program('reuse', required: false)
+if reuse.found()
+  test('REUSE', reuse,
+       args: ['--root', lilv_src_root, 'lint'],
+       suite: 'data')
+endif
+
+##############
+# Test Setup #
+##############
 
 test_args = ['-DLILV_STATIC']
 if cc.get_id() == 'msvc'
@@ -79,4 +95,3 @@ foreach unit : unit_tests
                   dependencies: [lv2_dep, lilv_static_dep]),
        suite: 'unit')
 endforeach
-

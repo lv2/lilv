@@ -1,5 +1,8 @@
 #!/usr/bin/env python
 
+# Copyright 2007-2011 David Robillard <d@drobilla.net>
+# SPDX-License-Identifier: ISC
+
 import lilv
 
 world = lilv.World()

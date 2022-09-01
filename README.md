@@ -1,3 +1,6 @@
+<!-- Copyright 2006-2019 David Robillard <d@drobilla.net> -->
+<!-- SPDX-License-Identifier: ISC -->
+
 Lilv
 ====
 

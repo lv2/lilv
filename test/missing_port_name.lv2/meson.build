@@ -1,3 +1,6 @@
+# Copyright 2021-2022 David Robillard <d@drobilla.net>
+# SPDX-License-Identifier: CC0-1.0 OR ISC
+
 module = shared_module('missing_port_name',
                        files('missing_port_name.c'),
                        c_args: c_suppressions,

@@ -1,3 +1,6 @@
+# Copyright 2021-2022 David Robillard <d@drobilla.net>
+# SPDX-License-Identifier: CC0-1.0 OR ISC
+
 module = shared_module('test_plugin',
                        files('test_plugin.c'),
                        c_args: c_suppressions,

@@ -1,4 +1,8 @@
 # -*- coding: utf-8 -*-
+
+# Copyright 2016-2022 David Robillard <d@drobilla.net>
+# SPDX-License-Identifier: CC0-1.0 OR ISC
+
 #
 # Lilv documentation build configuration file, created by
 # sphinx-quickstart on Sun Sep  4 18:25:58 2016.

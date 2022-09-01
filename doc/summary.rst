@@ -1,3 +1,7 @@
+..
+   Copyright 2020-2022 David Robillard <d@drobilla.net>
+   SPDX-License-Identifier: ISC
+
 Lilv is a library for working with LV2_ plugins.
 It provides several types and functions that can be used to discover plugins,
 investigate their data, load and run them, and save and restore their state.

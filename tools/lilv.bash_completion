@@ -1,10 +1,9 @@
-# Bash auto-completion script written for lv2info and lv2jack.
-# Could be adapted to any other program that takes an
-# LV2 plugin URI as parameter.
+# Copyright 2012-2022 David Robillard <d@drobilla.net>
+# Copyright 2009 Lars Luthman <lars.luthman@gmail.com>
+# SPDX-License-Identifier: CC0-1.0 OR ISC
 
-# Updated for Lilv by David Robillard <d@drobilla.net> on 2012-01-08.
-# Written by Lars Luthman <lars.luthman@gmail.com> on 2009-10-12. 
-# No copyright claimed for this script. Do what you want with it.
+# Bash auto-completion script written for lv2info.  Could be adapted to any
+# other program that takes an LV2 plugin URI as parameter.
 
 # For some reason Bash splits the command line not only at whitespace
 # but also at ':' signs before putting the parts into COMP_WORDS.
@@ -54,6 +53,3 @@ function _lv2info() {
 }
 
 complete -F _lv2info lv2info
-
-# And the same for lv2jack.
-complete -F _lv2info lv2jack
