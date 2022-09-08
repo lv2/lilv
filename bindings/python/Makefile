@@ -1,7 +1,7 @@
 # Makefile for Sphinx documentation
 #
 # Copyright 2016 David Robillard <d@drobilla.net>
-# SPDX-License-Identifier: CC0-1.0 OR ISC
+# SPDX-License-Identifier: 0BSD OR ISC
 
 # You can set these variables from the command line.
 SPHINXOPTS    =

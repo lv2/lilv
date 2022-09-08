@@ -1,6 +1,6 @@
 # Copyright 2012-2022 David Robillard <d@drobilla.net>
 # Copyright 2009 Lars Luthman <lars.luthman@gmail.com>
-# SPDX-License-Identifier: CC0-1.0 OR ISC
+# SPDX-License-Identifier: 0BSD OR ISC
 
 # Bash auto-completion script written for lv2info.  Could be adapted to any
 # other program that takes an LV2 plugin URI as parameter.

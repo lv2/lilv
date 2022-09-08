@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 # Copyright 2016-2022 David Robillard <d@drobilla.net>
-# SPDX-License-Identifier: CC0-1.0 OR ISC
+# SPDX-License-Identifier: 0BSD OR ISC
 
 #
 # Lilv documentation build configuration file, created by
