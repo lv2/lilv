@@ -5,20 +5,22 @@
 # Project Metadata #
 ####################
 
-# Check release metadata
-if get_option('strict') and not meson.is_subproject()
-  autoship = find_program('autoship', required: false)
-  if autoship.found()
-    test('autoship', autoship, args: ['test', lilv_src_root], suite: 'data')
+if get_option('strict')
+  # Check release metadata
+  if not meson.is_subproject()
+    autoship = find_program('autoship', required: false)
+    if autoship.found()
+      test('autoship', autoship, args: ['test', lilv_src_root], suite: 'data')
+    endif
   endif
-endif
 
-# Check licensing metadata
-reuse = find_program('reuse', required: false)
-if reuse.found()
-  test('REUSE', reuse,
-       args: ['--root', lilv_src_root, 'lint'],
-       suite: 'data')
+  # Check licensing metadata
+  reuse = find_program('reuse', required: false)
+  if reuse.found()
+    test('REUSE', reuse,
+         args: ['--root', lilv_src_root, 'lint'],
+         suite: 'data')
+  endif
 endif
 
 ##############
