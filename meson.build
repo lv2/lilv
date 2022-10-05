@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: 0BSD OR ISC
 
 project('lilv', ['c'],
-        version: '0.24.20',
+        version: '0.24.21',
         license: 'ISC',
         meson_version: '>= 0.56.0',
         default_options: [
@@ -165,6 +165,7 @@ pkg.generate(
   extra_cflags: extra_c_args,
   filebase: versioned_name,
   name: 'Lilv',
+  requires: ['lv2'],
   subdirs: [versioned_name],
   version: meson.project_version(),
 )

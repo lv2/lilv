@@ -1,3 +1,9 @@
+lilv (0.24.21) unstable; urgency=medium
+
+  * Fix dependencies in pkg-config file
+
+ -- David Robillard <d@drobilla.net>  Wed, 05 Oct 2022 19:46:05 +0000
+
 lilv (0.24.20) stable; urgency=medium
 
   * Adopt REUSE machine-readable licensing standard
