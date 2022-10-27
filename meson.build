@@ -120,6 +120,15 @@ sources = files(
   'src/zix/tree.c',
 )
 
+common_dependencies = [
+  dl_dep,
+  lv2_dep,
+  m_dep,
+  serd_dep,
+  sord_dep,
+  sratom_dep,
+]
+
 # Set appropriate arguments for building against the library type
 extra_c_args = []
 subdir('meson/library')
@@ -132,7 +141,7 @@ liblilv = library(
   meson.project_name() + library_suffix,
   sources,
   c_args: c_suppressions +  extra_c_args + ['-DLILV_INTERNAL', '-DZIX_STATIC'],
-  dependencies: [m_dep, dl_dep, lv2_dep, serd_dep, sord_dep, sratom_dep],
+  dependencies: common_dependencies,
   gnu_symbol_visibility: 'hidden',
   include_directories: include_directories('include', 'src'),
   install: true,
@@ -142,7 +151,7 @@ liblilv = library(
 # Declare dependency for internal meson dependants
 lilv_dep = declare_dependency(
   compile_args: extra_c_args,
-  dependencies: [m_dep, dl_dep, lv2_dep, serd_dep, sord_dep, sratom_dep],
+  dependencies: common_dependencies,
   include_directories: include_directories('include'),
   link_with: liblilv,
 )
@@ -196,7 +205,7 @@ if not get_option('tests').disabled()
       sources,
       include_directories: include_directories('include', 'src'),
       c_args: c_suppressions + ['-DLILV_INTERNAL', '-DLILV_STATIC', '-DZIX_STATIC'],
-      dependencies: [m_dep, dl_dep, lv2_dep, serd_dep, sord_dep, sratom_dep],
+      dependencies: common_dependencies,
       gnu_symbol_visibility: 'default')
   else
     liblilv_static = liblilv
@@ -204,7 +213,7 @@ if not get_option('tests').disabled()
 
   lilv_static_dep = declare_dependency(
     compile_args: extra_c_args,
-    dependencies: [m_dep, dl_dep, lv2_dep, serd_dep, sord_dep, sratom_dep],
+    dependencies: common_dependencies,
     include_directories: include_directories('include'),
     link_with: liblilv_static,
   )
