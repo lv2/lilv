@@ -224,10 +224,11 @@ lilv_port_get_scale_points(const LilvPlugin* plugin, const LilvPort* port)
     sord_new_uri(plugin->world->world, (const uint8_t*)LV2_CORE__scalePoint),
     NULL);
 
-  LilvScalePoints* ret = NULL;
-  if (!sord_iter_end(points)) {
-    ret = lilv_scale_points_new();
+  if (sord_iter_end(points)) {
+    return NULL;
   }
+
+  LilvScalePoints* ret = lilv_scale_points_new();
 
   FOREACH_MATCH (points) {
     const SordNode* point = sord_iter_get_node(points, SORD_OBJECT);
@@ -244,7 +245,7 @@ lilv_port_get_scale_points(const LilvPlugin* plugin, const LilvPort* port)
   }
   sord_iter_free(points);
 
-  assert(!ret || lilv_nodes_size(ret) > 0);
+  assert(lilv_nodes_size(ret) > 0);
   return ret;
 }
 

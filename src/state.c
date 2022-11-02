@@ -107,8 +107,9 @@ value_cmp(const void* a, const void* b)
 }
 
 static void
-path_rel_free(void* ptr)
+map_free(void* ptr, const void* user_data)
 {
+  (void)user_data;
   free(((PathMap*)ptr)->abs);
   free(((PathMap*)ptr)->rel);
   free(ptr);
@@ -429,8 +430,8 @@ lilv_state_new_from_instance(const LilvPlugin*         plugin,
   LilvWorld* const    world     = plugin->world;
   LilvState* const    state     = (LilvState*)calloc(1, sizeof(LilvState));
   state->plugin_uri  = lilv_node_duplicate(lilv_plugin_get_uri(plugin));
-  state->abs2rel     = zix_tree_new(false, abs_cmp, NULL, path_rel_free);
-  state->rel2abs     = zix_tree_new(false, rel_cmp, NULL, NULL);
+  state->abs2rel     = zix_tree_new(NULL, false, abs_cmp, NULL, map_free, NULL);
+  state->rel2abs     = zix_tree_new(NULL, false, rel_cmp, NULL, NULL, NULL);
   state->scratch_dir = scratch_dir ? real_dir(scratch_dir) : NULL;
   state->copy_dir    = copy_dir ? real_dir(copy_dir) : NULL;
   state->link_dir    = link_dir ? real_dir(link_dir) : NULL;

@@ -90,6 +90,7 @@ add_project_arguments(platform_defines, language: ['c'])
 m_dep = cc.find_library('m', required: false)
 dl_dep = cc.find_library('dl', required: false)
 
+zix_dep = dependency('zix-0', fallback: 'zix', version: '>= 0.3.0')
 serd_dep = dependency('serd-0', fallback: 'serd', version: '>= 0.30.10')
 sord_dep = dependency('sord-0', fallback: 'sord', version: '>= 0.16.10')
 lv2_dep = dependency('lv2', fallback: 'lv2', version: '>= 1.18.2')
@@ -117,7 +118,6 @@ sources = files(
   'src/ui.c',
   'src/util.c',
   'src/world.c',
-  'src/zix/tree.c',
 )
 
 common_dependencies = [
@@ -127,6 +127,7 @@ common_dependencies = [
   serd_dep,
   sord_dep,
   sratom_dep,
+  zix_dep,
 ]
 
 # Set appropriate arguments for building against the library type
@@ -140,7 +141,7 @@ endif
 liblilv = library(
   meson.project_name() + library_suffix,
   sources,
-  c_args: c_suppressions +  extra_c_args + ['-DLILV_INTERNAL', '-DZIX_STATIC'],
+  c_args: c_suppressions +  extra_c_args + ['-DLILV_INTERNAL'],
   dependencies: common_dependencies,
   gnu_symbol_visibility: 'hidden',
   include_directories: include_directories('include', 'src'),
@@ -204,7 +205,7 @@ if not get_option('tests').disabled()
       meson.project_name() + library_suffix,
       sources,
       include_directories: include_directories('include', 'src'),
-      c_args: c_suppressions + ['-DLILV_INTERNAL', '-DLILV_STATIC', '-DZIX_STATIC'],
+      c_args: c_suppressions + ['-DLILV_INTERNAL', '-DLILV_STATIC'],
       dependencies: common_dependencies,
       gnu_symbol_visibility: 'default')
   else

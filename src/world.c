@@ -8,7 +8,6 @@
 #include "lilv/lilv.h"
 #include "serd/serd.h"
 #include "sord/sord.h"
-#include "zix/common.h"
 #include "zix/tree.h"
 
 #include "lv2/core/lv2.h"
@@ -27,6 +26,13 @@
 
 static int
 lilv_world_drop_graph(LilvWorld* world, const SordNode* graph);
+
+static void
+destroy_node(void* const ptr, const void* const user_data)
+{
+  (void)user_data;
+  lilv_node_free((LilvNode*)ptr);
+}
 
 LilvWorld*
 lilv_world_new(void)
@@ -47,10 +53,11 @@ lilv_world_new(void)
   world->plugin_classes = lilv_plugin_classes_new();
   world->plugins        = lilv_plugins_new();
   world->zombies        = lilv_plugins_new();
-  world->loaded_files   = zix_tree_new(
-    false, lilv_resource_node_cmp, NULL, (ZixDestroyFunc)lilv_node_free);
 
-  world->libs = zix_tree_new(false, lilv_lib_compare, NULL, NULL);
+  world->loaded_files =
+    zix_tree_new(NULL, false, lilv_resource_node_cmp, NULL, destroy_node, NULL);
+
+  world->libs = zix_tree_new(NULL, false, lilv_lib_compare, NULL, NULL, NULL);
 
 #define NS_DCTERMS "http://purl.org/dc/terms/"
 #define NS_DYNMAN "http://lv2plug.in/ns/ext/dynmanifest#"
@@ -914,7 +921,7 @@ lilv_world_unload_bundle(LilvWorld* world, const LilvNode* bundle_uri)
      still be used.
   */
   ZixTreeIter* i = zix_tree_begin((ZixTree*)world->plugins);
-  while (i != zix_tree_end((ZixTree*)world->plugins)) {
+  while (i && i != zix_tree_end((ZixTree*)world->plugins)) {
     LilvPlugin*  p    = (LilvPlugin*)zix_tree_get(i);
     ZixTreeIter* next = zix_tree_iter_next(i);
 

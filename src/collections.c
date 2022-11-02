@@ -5,11 +5,12 @@
 
 #include "lilv/lilv.h"
 #include "sord/sord.h"
-#include "zix/common.h"
 #include "zix/tree.h"
 
 #include <stdbool.h>
 #include <stddef.h>
+
+typedef void (*LilvFreeFunc)(void* ptr);
 
 int
 lilv_ptr_cmp(const void* a, const void* b, const void* user_data)
@@ -32,10 +33,18 @@ lilv_resource_node_cmp(const void* a, const void* b, const void* user_data)
 
 /* Generic collection functions */
 
-static inline LilvCollection*
-lilv_collection_new(ZixComparator cmp, ZixDestroyFunc destructor)
+static void
+destroy(void* const ptr, const void* const user_data)
 {
-  return zix_tree_new(false, cmp, NULL, destructor);
+  if (user_data) {
+    ((LilvFreeFunc)user_data)(ptr);
+  }
+}
+
+static inline LilvCollection*
+lilv_collection_new(ZixTreeCompareFunc cmp, LilvFreeFunc free_func)
+{
+  return zix_tree_new(NULL, false, cmp, NULL, destroy, (const void*)free_func);
 }
 
 void
@@ -71,28 +80,27 @@ lilv_collection_get(const LilvCollection* collection, const LilvIter* i)
 LilvScalePoints*
 lilv_scale_points_new(void)
 {
-  return lilv_collection_new(lilv_ptr_cmp,
-                             (ZixDestroyFunc)lilv_scale_point_free);
+  return lilv_collection_new(lilv_ptr_cmp, (LilvFreeFunc)lilv_scale_point_free);
 }
 
 LilvNodes*
 lilv_nodes_new(void)
 {
-  return lilv_collection_new(lilv_ptr_cmp, (ZixDestroyFunc)lilv_node_free);
+  return lilv_collection_new(lilv_ptr_cmp, (LilvFreeFunc)lilv_node_free);
 }
 
 LilvUIs*
 lilv_uis_new(void)
 {
   return lilv_collection_new(lilv_header_compare_by_uri,
-                             (ZixDestroyFunc)lilv_ui_free);
+                             (LilvFreeFunc)lilv_ui_free);
 }
 
 LilvPluginClasses*
 lilv_plugin_classes_new(void)
 {
   return lilv_collection_new(lilv_header_compare_by_uri,
-                             (ZixDestroyFunc)lilv_plugin_class_free);
+                             (LilvFreeFunc)lilv_plugin_class_free);
 }
 
 /* URI based accessors (for collections of things with URIs) */
