@@ -105,7 +105,6 @@ cpp_headers = files('include/lilv/lilvmm.hpp')
 
 sources = files(
   'src/collections.c',
-  'src/filesystem.c',
   'src/instance.c',
   'src/lib.c',
   'src/node.c',

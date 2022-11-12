@@ -176,3 +176,16 @@ set_env(const char* name, const char* value)
   setenv(name, value, 1);
 #endif
 }
+
+char*
+lilv_create_temporary_directory(const char* pattern)
+{
+  char* const tmpdir       = zix_temp_directory_path(NULL);
+  char* const path_pattern = zix_path_join(NULL, tmpdir, pattern);
+  char* const result       = zix_create_temporary_directory(NULL, path_pattern);
+
+  zix_free(NULL, path_pattern);
+  zix_free(NULL, tmpdir);
+
+  return result;
+}

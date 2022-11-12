@@ -1,7 +1,6 @@
 // Copyright 2007-2022 David Robillard <d@drobilla.net>
 // SPDX-License-Identifier: ISC
 
-#include "filesystem.h"
 #include "lilv_internal.h"
 
 #include "lilv/lilv.h"
@@ -258,6 +257,17 @@ make_path(LV2_State_Make_Path_Handle handle, const char* path)
   return zix_path_join(NULL, state->dir, path);
 }
 
+static bool
+path_is_child(const char* path, const char* dir)
+{
+  if (path && dir) {
+    const size_t path_len = strlen(path);
+    const size_t dir_len  = strlen(dir);
+    return dir && path_len >= dir_len && !strncmp(path, dir, dir_len);
+  }
+  return false;
+}
+
 static char*
 abstract_path(LV2_State_Map_Path_Handle handle, const char* abs_path)
 {
@@ -282,10 +292,10 @@ abstract_path(LV2_State_Map_Path_Handle handle, const char* abs_path)
     return lilv_strdup(pm->rel);
   }
 
-  if (lilv_path_is_child(real_path, state->dir)) {
+  if (path_is_child(real_path, state->dir)) {
     // File in state directory (loaded, or created by plugin during save)
     path = zix_path_lexically_relative(NULL, real_path, state->dir);
-  } else if (lilv_path_is_child(real_path, state->scratch_dir)) {
+  } else if (path_is_child(real_path, state->scratch_dir)) {
     // File created by plugin earlier
     path = zix_path_lexically_relative(NULL, real_path, state->scratch_dir);
     if (state->copy_dir) {
@@ -1193,11 +1203,11 @@ lilv_state_make_links(const LilvState* state, const char* dir)
     const PathMap* const pm   = (const PathMap*)zix_tree_get(i);
     char* const          path = zix_path_join(NULL, dir, pm->rel);
 
-    if (lilv_path_is_child(pm->abs, state->copy_dir) &&
+    if (path_is_child(pm->abs, state->copy_dir) &&
         strcmp(state->copy_dir, dir)) {
       // Link directly to snapshot in the copy directory
       maybe_symlink(pm->abs, path);
-    } else if (!lilv_path_is_child(pm->abs, dir)) {
+    } else if (!path_is_child(pm->abs, dir)) {
       const char* link_dir = state->link_dir ? state->link_dir : dir;
       char*       pat      = zix_path_join(NULL, link_dir, pm->rel);
 

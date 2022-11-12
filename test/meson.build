@@ -62,7 +62,6 @@ unit_tests = [
   'bad_port_symbol',
   'classes',
   'discovery',
-  'filesystem',
   'get_symbol',
   'no_author',
   'no_verify',

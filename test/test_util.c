@@ -3,7 +3,7 @@
 
 #undef NDEBUG
 
-#include "../src/filesystem.h"
+#include "lilv_test_utils.h"
 
 #include "lilv/lilv.h"
 #include "zix/filesystem.h"

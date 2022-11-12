@@ -6,8 +6,6 @@
 #include "lilv_test_uri_map.h"
 #include "lilv_test_utils.h"
 
-#include "../src/filesystem.h"
-
 #include "lilv/lilv.h"
 #include "lv2/core/lv2.h"
 #include "lv2/state/state.h"

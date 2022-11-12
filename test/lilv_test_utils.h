@@ -79,4 +79,8 @@ delete_bundle(LilvTestEnv* env);
 void
 set_env(const char* name, const char* value);
 
+// Create a unique temporary directory
+char*
+lilv_create_temporary_directory(const char* pattern);
+
 #endif // LILV_TEST_UTILS_H
