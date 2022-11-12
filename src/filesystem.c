@@ -9,13 +9,6 @@
 #include "zix/filesystem.h"
 #include "zix/path.h"
 
-#ifdef _WIN32
-#  include <io.h>
-#  include <windows.h>
-#else
-#  include <dirent.h>
-#endif
-
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -145,41 +138,6 @@ lilv_path_filename(const char* path)
 
   strncpy(ret, path + last_sep + 1, ret_len);
   return ret;
-}
-
-void
-lilv_dir_for_each(const char* path,
-                  void*       data,
-                  void (*f)(const char* path, const char* name, void* data))
-{
-#ifdef _WIN32
-
-  char*           pat = zix_path_join(NULL, path, "*");
-  WIN32_FIND_DATA fd;
-  HANDLE          fh = FindFirstFile(pat, &fd);
-  if (fh != INVALID_HANDLE_VALUE) {
-    do {
-      if (strcmp(fd.cFileName, ".") && strcmp(fd.cFileName, "..")) {
-        f(path, fd.cFileName, data);
-      }
-    } while (FindNextFile(fh, &fd));
-  }
-  FindClose(fh);
-  free(pat);
-
-#else
-
-  DIR* dir = opendir(path);
-  if (dir) {
-    for (struct dirent* entry = NULL; (entry = readdir(dir));) {
-      if (strcmp(entry->d_name, ".") && strcmp(entry->d_name, "..")) {
-        f(path, entry->d_name, data);
-      }
-    }
-    closedir(dir);
-  }
-
-#endif
 }
 
 char*

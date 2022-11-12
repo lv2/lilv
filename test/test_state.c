@@ -155,9 +155,9 @@ remove_file(const char* path, const char* name, void* data)
 static void
 cleanup_test_directories(const TestDirectories dirs)
 {
-  lilv_dir_for_each(dirs.scratch, NULL, remove_file);
-  lilv_dir_for_each(dirs.copy, NULL, remove_file);
-  lilv_dir_for_each(dirs.link, NULL, remove_file);
+  zix_dir_for_each(dirs.scratch, NULL, remove_file);
+  zix_dir_for_each(dirs.copy, NULL, remove_file);
+  zix_dir_for_each(dirs.link, NULL, remove_file);
 
   assert(!zix_remove(dirs.link));
   assert(!zix_remove(dirs.copy));
@@ -661,8 +661,8 @@ test_to_files(void)
   assert(zix_file_equals(NULL, recfile_link_2, recfile_copy_2));
 
   lilv_instance_free(instance);
-  lilv_dir_for_each(bundle_2_path, NULL, remove_file);
-  lilv_dir_for_each(bundle_1_path, NULL, remove_file);
+  zix_dir_for_each(bundle_2_path, NULL, remove_file);
+  zix_dir_for_each(bundle_1_path, NULL, remove_file);
   assert(!zix_remove(bundle_2_path));
   assert(!zix_remove(bundle_1_path));
   cleanup_test_directories(dirs);
@@ -741,7 +741,7 @@ test_multi_save(void)
   assert(count_statements(state_path) == 21);
 
   lilv_instance_free(instance);
-  lilv_dir_for_each(bundle_1_path, NULL, remove_file);
+  zix_dir_for_each(bundle_1_path, NULL, remove_file);
   zix_remove(bundle_1_path);
   cleanup_test_directories(dirs);
 
@@ -847,9 +847,9 @@ test_files_round_trip(void)
   assert(!lilv_state_equals(state_1_1_loaded, state_2_loaded));
 
   lilv_instance_free(instance);
-  lilv_dir_for_each(bundle_1_1_path, NULL, remove_file);
-  lilv_dir_for_each(bundle_1_2_path, NULL, remove_file);
-  lilv_dir_for_each(bundle_2_path, NULL, remove_file);
+  zix_dir_for_each(bundle_1_1_path, NULL, remove_file);
+  zix_dir_for_each(bundle_1_2_path, NULL, remove_file);
+  zix_dir_for_each(bundle_2_path, NULL, remove_file);
   zix_remove(bundle_1_1_path);
   zix_remove(bundle_1_2_path);
   zix_remove(bundle_2_path);
@@ -1066,7 +1066,7 @@ test_delete(void)
 
   // Count the number of shared files before doing anything
   unsigned n_shared_files_before = 0;
-  lilv_dir_for_each(dirs.shared, &n_shared_files_before, count_file);
+  zix_dir_for_each(dirs.shared, &n_shared_files_before, count_file);
 
   lilv_instance_free(instance);
 
@@ -1075,7 +1075,7 @@ test_delete(void)
 
   // Ensure the number of shared files is the same after deletion
   unsigned n_shared_files_after = 0;
-  lilv_dir_for_each(dirs.shared, &n_shared_files_after, count_file);
+  zix_dir_for_each(dirs.shared, &n_shared_files_after, count_file);
   assert(n_shared_files_before == n_shared_files_after);
 
   // Ensure the state directory has been deleted

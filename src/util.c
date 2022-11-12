@@ -7,6 +7,7 @@
 #include "lilv/lilv.h"
 #include "serd/serd.h"
 #include "zix/allocator.h"
+#include "zix/filesystem.h"
 #include "zix/path.h"
 
 #include <sys/stat.h>
@@ -271,7 +272,7 @@ lilv_get_latest_copy(const char* path, const char* copy_path)
     LILV_ERRORF("stat(%s) (%s)\n", path, strerror(errno));
   }
 
-  lilv_dir_for_each(copy_dir, &latest, update_latest);
+  zix_dir_for_each(copy_dir, &latest, update_latest);
 
   free(latest.pattern);
   free(copy_dir);

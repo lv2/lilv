@@ -34,22 +34,6 @@ char*
 lilv_path_filename(const char* path);
 
 /**
-   Visit every file in the directory at `path`.
-
-   @param path A path to a directory.
-
-   @param data Opaque user data that is passed to `f`.
-
-   @param f A function called on every entry in the directory.  The `path`
-   parameter is always the directory path passed to this function, the `name`
-   parameter is the name of the directory entry (not its full path).
-*/
-void
-lilv_dir_for_each(const char* path,
-                  void*       data,
-                  void (*f)(const char* path, const char* name, void* data));
-
-/**
    Create a unique temporary directory.
 
    This is like lilv_create_temporary_directory_in(), except it creates the

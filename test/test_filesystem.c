@@ -3,16 +3,10 @@
 
 #undef NDEBUG
 
-#include "lilv_internal.h"
-
 #include "../src/filesystem.h"
-
-#include "zix/filesystem.h"
-#include "zix/path.h"
 
 #include <assert.h>
 #include <stdbool.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -104,58 +98,6 @@ test_path_filename(void)
 #endif
 }
 
-typedef struct {
-  size_t n_names;
-  char** names;
-} FileList;
-
-static void
-visit(const char* const path, const char* const name, void* const data)
-{
-  (void)path;
-
-  FileList* file_list = (FileList*)data;
-
-  file_list->names =
-    (char**)realloc(file_list->names, sizeof(char*) * ++file_list->n_names);
-
-  file_list->names[file_list->n_names - 1] = lilv_strdup(name);
-}
-
-static void
-test_dir_for_each(void)
-{
-  char* const temp_dir = lilv_create_temporary_directory("lilvXXXXXX");
-  char* const path1    = zix_path_join(NULL, temp_dir, "lilv_test_1");
-  char* const path2    = zix_path_join(NULL, temp_dir, "lilv_test_2");
-
-  FILE* const f1 = fopen(path1, "w");
-  FILE* const f2 = fopen(path2, "w");
-  fprintf(f1, "test\n");
-  fprintf(f2, "test\n");
-  fclose(f2);
-  fclose(f1);
-
-  FileList file_list = {0, NULL};
-  lilv_dir_for_each(temp_dir, &file_list, visit);
-
-  assert((!strcmp(file_list.names[0], "lilv_test_1") &&
-          !strcmp(file_list.names[1], "lilv_test_2")) ||
-         (!strcmp(file_list.names[0], "lilv_test_2") &&
-          !strcmp(file_list.names[1], "lilv_test_1")));
-
-  assert(!zix_remove(path2));
-  assert(!zix_remove(path1));
-  assert(!zix_remove(temp_dir));
-
-  free(file_list.names[0]);
-  free(file_list.names[1]);
-  free(file_list.names);
-  free(path2);
-  free(path1);
-  free(temp_dir);
-}
-
 int
 main(void)
 {
@@ -163,7 +105,6 @@ main(void)
   test_path_relative_to();
   test_path_parent();
   test_path_filename();
-  test_dir_for_each();
 
   return 0;
 }
