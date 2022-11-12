@@ -172,24 +172,6 @@ lilv_is_directory(const char* path)
 #endif
 }
 
-int
-lilv_symlink(const char* oldpath, const char* newpath)
-{
-  int ret = 0;
-  if (strcmp(oldpath, newpath)) {
-#ifdef _WIN32
-    ret = !CreateHardLink(newpath, oldpath, 0);
-#else
-    char* target = lilv_path_relative_to(oldpath, newpath);
-
-    ret = symlink(target, newpath);
-
-    free(target);
-#endif
-  }
-  return ret;
-}
-
 void
 lilv_dir_for_each(const char* path,
                   void*       data,

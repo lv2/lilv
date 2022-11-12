@@ -42,14 +42,6 @@ bool
 lilv_is_directory(const char* path);
 
 /**
-   Create a symlink at `newpath` that points to `oldpath`.
-
-   @return Zero on success, otherwise non-zero and `errno` is set.
-*/
-int
-lilv_symlink(const char* oldpath, const char* newpath);
-
-/**
    Visit every file in the directory at `path`.
 
    @param path A path to a directory.

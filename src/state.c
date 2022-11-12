@@ -12,6 +12,7 @@
 #include "zix/filesystem.h"
 #include "zix/path.h"
 #include "zix/status.h"
+#include "zix/string_view.h"
 #include "zix/tree.h"
 
 #include "lv2/atom/atom.h"
@@ -1018,20 +1019,32 @@ link_exists(const char* path, const void* data)
   return !matches;
 }
 
-static int
+static ZixStatus
+create_link(const char* oldpath, const char* newpath)
+{
+  const ZixStringView parent_path = zix_path_parent_path(newpath);
+  char* const         parent      = zix_string_view_copy(NULL, parent_path);
+
+  char* const relpath = zix_path_lexically_relative(NULL, oldpath, parent);
+
+  ZixStatus st = ZIX_STATUS_SUCCESS;
+  if ((st = zix_create_symlink(relpath, newpath))) {
+    if ((st = zix_create_hard_link(oldpath, newpath))) {
+      LILV_ERRORF(
+        "Failed to link %s => %s (%s)\n", newpath, oldpath, zix_strerror(st));
+    }
+  }
+
+  zix_free(NULL, relpath);
+  zix_free(NULL, parent);
+  return st;
+}
+
+static ZixStatus
 maybe_symlink(const char* oldpath, const char* newpath)
 {
-  if (link_exists(newpath, oldpath)) {
-    return 0;
-  }
-
-  const int st = lilv_symlink(oldpath, newpath);
-  if (st) {
-    LILV_ERRORF(
-      "Failed to link %s => %s (%s)\n", newpath, oldpath, strerror(errno));
-  }
-
-  return st;
+  return link_exists(newpath, oldpath) ? ZIX_STATUS_SUCCESS
+                                       : create_link(oldpath, newpath);
 }
 
 static void
@@ -1197,11 +1210,12 @@ lilv_state_make_links(const LilvState* state, const char* dir)
         // Make a link in the link directory to external file
         char* lpath = lilv_find_free_path(pat, link_exists, pm->abs);
         if (zix_file_type(lpath) == ZIX_FILE_TYPE_NONE) {
-          if (lilv_symlink(pm->abs, lpath)) {
+          const ZixStatus st = create_link(pm->abs, lpath);
+          if (st) {
             LILV_ERRORF("Failed to link %s => %s (%s)\n",
                         pm->abs,
                         lpath,
-                        strerror(errno));
+                        zix_strerror(st));
           }
         }
 
