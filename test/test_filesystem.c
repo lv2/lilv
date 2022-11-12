@@ -178,7 +178,7 @@ test_copy_file(void)
   fclose(f);
 
   assert(!lilv_copy_file(file_path, copy_path));
-  assert(lilv_file_equals(file_path, copy_path));
+  assert(zix_file_equals(NULL, file_path, copy_path));
 
   if (zix_file_type("/dev/full") != ZIX_FILE_TYPE_NONE) {
     // Copy short file (error after flushing)
@@ -325,37 +325,6 @@ test_create_directories(void)
   free(temp_dir);
 }
 
-static void
-test_file_equals(void)
-{
-  char* const temp_dir = lilv_create_temporary_directory("lilvXXXXXX");
-  char* const path1    = zix_path_join(NULL, temp_dir, "lilv_test_1");
-  char* const path2    = zix_path_join(NULL, temp_dir, "lilv_test_2");
-
-  FILE* const f1 = fopen(path1, "w");
-  FILE* const f2 = fopen(path2, "w");
-  fprintf(f1, "test\n");
-  fprintf(f2, "test\n");
-
-  assert(lilv_file_equals(path1, path2));
-
-  fprintf(f2, "diff\n");
-  fflush(f2);
-
-  assert(!lilv_file_equals(path1, path2));
-
-  fclose(f2);
-  fclose(f1);
-
-  assert(!lilv_remove(path2));
-  assert(!lilv_remove(path1));
-  assert(!lilv_remove(temp_dir));
-
-  free(path2);
-  free(path1);
-  free(temp_dir);
-}
-
 int
 main(void)
 {
@@ -372,7 +341,6 @@ main(void)
   test_dir_for_each();
   test_create_temporary_directory();
   test_create_directories();
-  test_file_equals();
 
   return 0;
 }

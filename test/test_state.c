@@ -627,7 +627,7 @@ test_to_files(void)
 #endif
 
   // Check that link points to the corresponding copy
-  assert(lilv_file_equals(recfile_link_1, recfile_copy_1));
+  assert(zix_file_equals(NULL, recfile_link_1, recfile_copy_1));
 
   // Run plugin again to modify recording file data
   lilv_instance_run(instance, 2);
@@ -658,7 +658,7 @@ test_to_files(void)
 #endif
 
   // Check that link points to the corresponding copy
-  assert(lilv_file_equals(recfile_link_2, recfile_copy_2));
+  assert(zix_file_equals(NULL, recfile_link_2, recfile_copy_2));
 
   lilv_instance_free(instance);
   lilv_dir_for_each(bundle_2_path, NULL, remove_file);

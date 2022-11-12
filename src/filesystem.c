@@ -5,8 +5,6 @@
 #include "lilv_config.h"
 #include "lilv_internal.h"
 
-#include "zix/allocator.h"
-#include "zix/filesystem.h"
 #include "zix/path.h"
 
 #ifdef _WIN32
@@ -408,16 +406,6 @@ lilv_create_directories(const char* dir_path)
   return 0;
 }
 
-static off_t
-lilv_file_size(const char* path)
-{
-  struct stat buf;
-  if (stat(path, &buf)) {
-    return 0;
-  }
-  return buf.st_size;
-}
-
 int
 lilv_remove(const char* path)
 {
@@ -428,47 +416,4 @@ lilv_remove(const char* path)
 #endif
 
   return remove(path);
-}
-
-bool
-lilv_file_equals(const char* a_path, const char* b_path)
-{
-  if (!strcmp(a_path, b_path)) {
-    return true; // Paths match
-  }
-
-  bool        match  = false;
-  FILE*       a_file = NULL;
-  FILE*       b_file = NULL;
-  char* const a_real = zix_canonical_path(NULL, a_path);
-  char* const b_real = zix_canonical_path(NULL, b_path);
-  if (!a_real || !b_real) {
-    match = false; // At least one file doesn't exist
-  } else if (!strcmp(a_real, b_real)) {
-    match = true; // Real paths match
-  } else if (lilv_file_size(a_real) != lilv_file_size(b_real)) {
-    match = false; // Sizes differ
-  } else if (!(a_file = fopen(a_real, "rb")) ||
-             !(b_file = fopen(b_real, "rb"))) {
-    match = false; // Missing file matches nothing
-  } else {
-    // TODO: Improve performance by reading chunks
-    match = true;
-    while (!feof(a_file) && !feof(b_file)) {
-      if (fgetc(a_file) != fgetc(b_file)) {
-        match = false;
-        break;
-      }
-    }
-  }
-
-  if (a_file) {
-    fclose(a_file);
-  }
-  if (b_file) {
-    fclose(b_file);
-  }
-  zix_free(NULL, a_real);
-  zix_free(NULL, b_real);
-  return match;
 }

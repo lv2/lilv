@@ -28,12 +28,6 @@ main(void)
   assert(lilv_copy_file("does/not/exist", "copy"));
   assert(lilv_copy_file(a_path, "not/a/dir/copy"));
   assert(!lilv_copy_file(a_path, "copy_c"));
-  assert(!lilv_file_equals(a_path, b_path));
-  assert(lilv_file_equals(a_path, a_path));
-  assert(lilv_file_equals(a_path, "copy_c"));
-  assert(!lilv_file_equals("does/not/exist", b_path));
-  assert(!lilv_file_equals(a_path, "does/not/exist"));
-  assert(!lilv_file_equals("does/not/exist", "/does/not/either"));
 
   assert(!lilv_remove(a_path));
   assert(!lilv_remove(b_path));

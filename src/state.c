@@ -295,7 +295,7 @@ abstract_path(LV2_State_Map_Path_Handle handle, const char* abs_path)
 
       char* cpath = zix_path_join(NULL, state->copy_dir, path);
       char* copy  = lilv_get_latest_copy(real_path, cpath);
-      if (!copy || !lilv_file_equals(real_path, copy)) {
+      if (!copy || !zix_file_equals(NULL, real_path, copy)) {
         // No recent enough copy, make a new one
         free(copy);
         copy = lilv_find_free_path(cpath, path_exists, NULL);
@@ -1483,8 +1483,9 @@ lilv_state_equals(const LilvState* a, const LilvState* b)
     }
 
     if (ap->type == a->atom_Path) {
-      if (!lilv_file_equals(lilv_state_rel2abs(a, (char*)ap->value),
-                            lilv_state_rel2abs(b, (char*)bp->value))) {
+      if (!zix_file_equals(NULL,
+                           lilv_state_rel2abs(a, (char*)ap->value),
+                           lilv_state_rel2abs(b, (char*)bp->value))) {
         return false;
       }
     } else if (ap->size != bp->size || memcmp(ap->value, bp->value, ap->size)) {
