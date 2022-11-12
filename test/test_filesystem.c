@@ -44,16 +44,6 @@ test_path_is_child(void)
 }
 
 static void
-test_path_current(void)
-{
-  char* cwd = lilv_path_current();
-
-  assert(lilv_is_directory(cwd));
-
-  free(cwd);
-}
-
-static void
 test_path_relative_to(void)
 {
   assert(equals(lilv_path_relative_to("/a/b", "/a/"), "b"));
@@ -114,28 +104,6 @@ test_path_filename(void)
 #endif
 }
 
-static void
-test_is_directory(void)
-{
-  char* const temp_dir  = lilv_create_temporary_directory("lilvXXXXXX");
-  char* const file_path = zix_path_join(NULL, temp_dir, "lilv_test_file");
-
-  assert(lilv_is_directory(temp_dir));
-  assert(!lilv_is_directory(file_path)); // Nonexistent
-
-  FILE* f = fopen(file_path, "w");
-  fprintf(f, "test\n");
-  fclose(f);
-
-  assert(!lilv_is_directory(file_path)); // File
-
-  assert(!zix_remove(file_path));
-  assert(!zix_remove(temp_dir));
-
-  free(file_path);
-  free(temp_dir);
-}
-
 typedef struct {
   size_t n_names;
   char** names;
@@ -192,11 +160,9 @@ int
 main(void)
 {
   test_path_is_child();
-  test_path_current();
   test_path_relative_to();
   test_path_parent();
   test_path_filename();
-  test_is_directory();
   test_dir_for_each();
 
   return 0;

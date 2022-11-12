@@ -10,16 +10,11 @@
 #include "zix/path.h"
 
 #ifdef _WIN32
-#  include <direct.h>
 #  include <io.h>
 #  include <windows.h>
-#  define S_ISDIR(mode) (((mode)&S_IFMT) == S_IFDIR)
 #else
 #  include <dirent.h>
-#  include <unistd.h>
 #endif
-
-#include <sys/stat.h>
 
 #include <stdbool.h>
 #include <stdio.h>
@@ -50,12 +45,6 @@ lilv_path_is_child(const char* path, const char* dir)
     return dir && path_len >= dir_len && !strncmp(path, dir, dir_len);
   }
   return false;
-}
-
-char*
-lilv_path_current(void)
-{
-  return getcwd(NULL, 0);
 }
 
 char*
@@ -158,26 +147,13 @@ lilv_path_filename(const char* path)
   return ret;
 }
 
-bool
-lilv_is_directory(const char* path)
-{
-#if defined(_WIN32)
-  const DWORD attrs = GetFileAttributes(path);
-
-  return (attrs != INVALID_FILE_ATTRIBUTES) &&
-         (attrs & FILE_ATTRIBUTE_DIRECTORY);
-#else
-  struct stat       st;
-  return !stat(path, &st) && S_ISDIR(st.st_mode);
-#endif
-}
-
 void
 lilv_dir_for_each(const char* path,
                   void*       data,
                   void (*f)(const char* path, const char* name, void* data))
 {
 #ifdef _WIN32
+
   char*           pat = zix_path_join(NULL, path, "*");
   WIN32_FIND_DATA fd;
   HANDLE          fh = FindFirstFile(pat, &fd);
@@ -190,7 +166,9 @@ lilv_dir_for_each(const char* path,
   }
   FindClose(fh);
   free(pat);
+
 #else
+
   DIR* dir = opendir(path);
   if (dir) {
     for (struct dirent* entry = NULL; (entry = readdir(dir));) {
@@ -200,6 +178,7 @@ lilv_dir_for_each(const char* path,
     }
     closedir(dir);
   }
+
 #endif
 }
 

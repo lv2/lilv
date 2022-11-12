@@ -7,10 +7,6 @@
 bool
 lilv_path_is_child(const char* path, const char* dir);
 
-/// Return the current working directory
-char*
-lilv_path_current(void);
-
 /**
    Return `path` relative to `base` if possible.
 
@@ -36,10 +32,6 @@ lilv_path_parent(const char* path);
 */
 char*
 lilv_path_filename(const char* path);
-
-/// Return true iff `path` points to an existing directory
-bool
-lilv_is_directory(const char* path);
 
 /**
    Visit every file in the directory at `path`.
