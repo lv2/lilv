@@ -7,6 +7,8 @@
 
 #include "../src/filesystem.h"
 
+#include "zix/filesystem.h"
+
 #include <assert.h>
 #include <errno.h>
 #include <stdbool.h>
@@ -281,27 +283,6 @@ test_path_canonical(void)
 }
 
 static void
-test_path_exists(void)
-{
-  char* const temp_dir  = lilv_create_temporary_directory("lilvXXXXXX");
-  char* const file_path = lilv_path_join(temp_dir, "lilv_test_file");
-
-  assert(!lilv_path_exists(file_path));
-
-  FILE* f = fopen(file_path, "w");
-  fprintf(f, "test\n");
-  fclose(f);
-
-  assert(lilv_path_exists(file_path));
-
-  assert(!lilv_remove(file_path));
-  assert(!lilv_remove(temp_dir));
-
-  free(file_path);
-  free(temp_dir);
-}
-
-static void
 test_is_directory(void)
 {
   char* const temp_dir  = lilv_create_temporary_directory("lilvXXXXXX");
@@ -337,7 +318,7 @@ test_copy_file(void)
   assert(!lilv_copy_file(file_path, copy_path));
   assert(lilv_file_equals(file_path, copy_path));
 
-  if (lilv_path_exists("/dev/full")) {
+  if (zix_file_type("/dev/full") != ZIX_FILE_TYPE_NONE) {
     // Copy short file (error after flushing)
     assert(lilv_copy_file(file_path, "/dev/full") == ENOSPC);
 
@@ -527,7 +508,6 @@ main(void)
   test_path_filename();
   test_path_join();
   test_path_canonical();
-  test_path_exists();
   test_is_directory();
   test_copy_file();
   test_flock();

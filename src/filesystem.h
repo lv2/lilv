@@ -77,10 +77,6 @@ lilv_path_join(const char* a, const char* b);
 char*
 lilv_path_canonical(const char* path);
 
-/// Return true iff `path` points to an existing file system entry
-bool
-lilv_path_exists(const char* path);
-
 /// Return true iff `path` points to an existing directory
 bool
 lilv_is_directory(const char* path);

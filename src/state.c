@@ -1,4 +1,4 @@
-// Copyright 2007-2019 David Robillard <d@drobilla.net>
+// Copyright 2007-2022 David Robillard <d@drobilla.net>
 // SPDX-License-Identifier: ISC
 
 #include "filesystem.h"
@@ -8,6 +8,7 @@
 #include "serd/serd.h"
 #include "sord/sord.h"
 #include "sratom/sratom.h"
+#include "zix/filesystem.h"
 #include "zix/tree.h"
 
 #include "lv2/atom/atom.h"
@@ -235,7 +236,7 @@ path_exists(const char* path, const void* ignored)
 {
   (void)ignored;
 
-  return lilv_path_exists(path);
+  return zix_file_type(path) != ZIX_FILE_TYPE_NONE;
 }
 
 static bool
@@ -913,7 +914,7 @@ add_state_to_manifest(LilvWorld*      lworld,
   SerdEnv*   env      = serd_env_new(&manifest);
   SordModel* model    = sord_new(world, SORD_SPO, false);
 
-  if (lilv_path_exists(manifest_path)) {
+  if (zix_file_type(manifest_path) == ZIX_FILE_TYPE_REGULAR) {
     // Read manifest into model
     SerdReader* reader = sord_new_reader(model, env, SERD_TURTLE, NULL);
     SerdStatus  st     = serd_reader_read_file(reader, manifest.buf);
@@ -997,7 +998,7 @@ static bool
 link_exists(const char* path, const void* data)
 {
   const char* target = (const char*)data;
-  if (!lilv_path_exists(path)) {
+  if (zix_file_type(path) == ZIX_FILE_TYPE_NONE) {
     return false;
   }
   char* real_path = lilv_path_canonical(path);
@@ -1183,7 +1184,7 @@ lilv_state_make_links(const LilvState* state, const char* dir)
       } else {
         // Make a link in the link directory to external file
         char* lpath = lilv_find_free_path(pat, link_exists, pm->abs);
-        if (!lilv_path_exists(lpath)) {
+        if (zix_file_type(lpath) == ZIX_FILE_TYPE_NONE) {
           if (lilv_symlink(pm->abs, lpath)) {
             LILV_ERRORF("Failed to link %s => %s (%s)\n",
                         pm->abs,
@@ -1295,7 +1296,7 @@ static void
 try_unlink(const char* state_dir, const char* path)
 {
   if (!strncmp(state_dir, path, strlen(state_dir))) {
-    if (lilv_path_exists(path) && lilv_remove(path)) {
+    if (zix_file_type(path) != ZIX_FILE_TYPE_NONE && lilv_remove(path)) {
       LILV_ERRORF("Failed to remove %s (%s)\n", path, strerror(errno));
     }
   }
@@ -1322,7 +1323,7 @@ lilv_state_delete(LilvWorld* world, const LilvState* state)
   LilvNode*  bundle        = lilv_new_file_uri(world, NULL, state->dir);
   LilvNode*  manifest      = lilv_world_get_manifest_uri(world, bundle);
   char*      manifest_path = get_canonical_path(manifest);
-  const bool has_manifest  = lilv_path_exists(manifest_path);
+  const bool has_manifest  = zix_file_type(manifest_path) != ZIX_FILE_TYPE_NONE;
   SordModel* model         = sord_new(world->world, SORD_SPO, false);
 
   if (has_manifest) {

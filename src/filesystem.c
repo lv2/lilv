@@ -9,7 +9,6 @@
 #  include <direct.h>
 #  include <io.h>
 #  include <windows.h>
-#  define F_OK 0
 #  define mkdir(path, flags) _mkdir(path)
 #  define S_ISDIR(mode) (((mode)&S_IFMT) == S_IFDIR)
 #else
@@ -272,17 +271,6 @@ lilv_path_canonical(const char* path)
 #else
   char* real_path = realpath(path, NULL);
   return real_path ? real_path : lilv_strdup(path);
-#endif
-}
-
-bool
-lilv_path_exists(const char* path)
-{
-#if USE_LSTAT
-  struct stat st;
-  return !lstat(path, &st);
-#else
-  return !access(path, F_OK);
 #endif
 }
 
