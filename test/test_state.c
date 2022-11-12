@@ -233,9 +233,7 @@ static const LilvPlugin*
 load_test_plugin(const TestContext* const ctx)
 {
   LilvWorld* world      = ctx->env->world;
-  uint8_t*   abs_bundle = (uint8_t*)lilv_path_absolute(LILV_TEST_BUNDLE);
-  SerdNode   bundle     = serd_node_new_file_uri(abs_bundle, 0, 0, true);
-  LilvNode*  bundle_uri = lilv_new_uri(world, (const char*)bundle.buf);
+  LilvNode*  bundle_uri = lilv_new_file_uri(world, NULL, LILV_TEST_BUNDLE);
   LilvNode*  plugin_uri = lilv_new_uri(world, TEST_PLUGIN_URI);
 
   lilv_world_load_bundle(world, bundle_uri);
@@ -245,8 +243,6 @@ load_test_plugin(const TestContext* const ctx)
 
   lilv_node_free(plugin_uri);
   lilv_node_free(bundle_uri);
-  serd_node_free(&bundle);
-  free(abs_bundle);
 
   assert(plugin);
   return plugin;
