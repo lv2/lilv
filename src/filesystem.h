@@ -8,14 +8,6 @@ bool
 lilv_path_is_child(const char* path, const char* dir);
 
 /**
-   Return the path to the directory that contains `path`.
-
-   Returns the root path if `path` is the root path.
-*/
-char*
-lilv_path_parent(const char* path);
-
-/**
    Create a unique temporary directory.
 
    This is like lilv_create_temporary_directory_in(), except it creates the

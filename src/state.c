@@ -752,14 +752,15 @@ lilv_state_new_from_file(LilvWorld*      world,
     (subject) ? subject->node
               : sord_node_from_serd_node(world->world, env, &node, NULL, NULL);
 
-  char*      dirname   = lilv_path_parent(path);
-  char*      real_path = zix_canonical_path(NULL, dirname);
-  char*      dir_path  = zix_path_join(NULL, real_path, NULL);
-  LilvState* state =
+  const ZixStringView dirname   = zix_path_parent_path(path);
+  char* const         real_path = zix_canonical_path(NULL, dirname.data);
+  char* const         dir_path  = zix_path_join(NULL, real_path, NULL);
+
+  LilvState* const state =
     new_state_from_model(world, map, model, subject_node, dir_path);
+
   zix_free(NULL, dir_path);
   zix_free(NULL, real_path);
-  free(dirname);
 
   serd_node_free(&node);
   zix_free(NULL, abs_path);

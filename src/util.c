@@ -1,7 +1,6 @@
 // Copyright 2007-2019 David Robillard <d@drobilla.net>
 // SPDX-License-Identifier: ISC
 
-#include "filesystem.h"
 #include "lilv_internal.h"
 
 #include "lilv/lilv.h"
@@ -9,6 +8,7 @@
 #include "zix/allocator.h"
 #include "zix/filesystem.h"
 #include "zix/path.h"
+#include "zix/string_view.h"
 
 #include <sys/stat.h>
 
@@ -262,8 +262,9 @@ update_latest(const char* path, const char* name, void* data)
 char*
 lilv_get_latest_copy(const char* path, const char* copy_path)
 {
-  char*  copy_dir = lilv_path_parent(copy_path);
-  Latest latest   = {lilv_strjoin(copy_path, ".%u", NULL), 0, NULL};
+  char* copy_dir = zix_string_view_copy(NULL, zix_path_parent_path(copy_path));
+
+  Latest latest = {lilv_strjoin(copy_path, ".%u", NULL), 0, NULL};
 
   struct stat st;
   if (!stat(path, &st)) {
@@ -275,6 +276,6 @@ lilv_get_latest_copy(const char* path, const char* copy_path)
   zix_dir_for_each(copy_dir, &latest, update_latest);
 
   free(latest.pattern);
-  free(copy_dir);
+  zix_free(NULL, copy_dir);
   return latest.latest;
 }
