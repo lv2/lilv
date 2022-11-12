@@ -47,7 +47,7 @@ lilv_test_env_free(LilvTestEnv* env)
 {
   free(env->test_content_path);
   free(env->test_manifest_path);
-  free(env->test_bundle_uri);
+  lilv_node_free(env->test_bundle_uri);
   free(env->test_bundle_path);
   lilv_node_free(env->plugin2_uri);
   lilv_node_free(env->plugin1_uri);
@@ -150,7 +150,7 @@ delete_bundle(LilvTestEnv* env)
 
   free(env->test_content_path);
   free(env->test_manifest_path);
-  free(env->test_bundle_uri);
+  lilv_node_free(env->test_bundle_uri);
   free(env->test_bundle_path);
 
   env->test_content_path  = NULL;
