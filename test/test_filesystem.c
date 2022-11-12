@@ -38,29 +38,6 @@ test_path_is_child(void)
 }
 
 static void
-test_path_relative_to(void)
-{
-  assert(equals(lilv_path_relative_to("/a/b", "/a/"), "b"));
-  assert(equals(lilv_path_relative_to("/a", "/b/c/"), "/a"));
-  assert(equals(lilv_path_relative_to("/a/b/c", "/a/b/d/"), "../c"));
-  assert(equals(lilv_path_relative_to("/a/b/c", "/a/b/d/e/"), "../../c"));
-
-#ifdef _WIN32
-  assert(equals(lilv_path_relative_to("C:/a/b", "C:/a/"), "b"));
-  assert(equals(lilv_path_relative_to("C:/a", "C:/b/c/"), "../../a"));
-  assert(equals(lilv_path_relative_to("C:/a/b/c", "C:/a/b/d/"), "../c"));
-  assert(equals(lilv_path_relative_to("C:/a/b/c", "C:/a/b/d/e/"), "../../c"));
-
-  assert(equals(lilv_path_relative_to("C:\\a\\b", "C:\\a\\"), "b"));
-  assert(equals(lilv_path_relative_to("C:\\a", "C:\\b\\c\\"), "..\\..\\a"));
-  assert(
-    equals(lilv_path_relative_to("C:\\a\\b\\c", "C:\\a\\b\\d\\"), "..\\c"));
-  assert(equals(lilv_path_relative_to("C:\\a\\b\\c", "C:\\a\\b\\d\\e\\"),
-                "..\\..\\c"));
-#endif
-}
-
-static void
 test_path_parent(void)
 {
   assert(equals(lilv_path_parent("/"), "/"));
@@ -102,7 +79,6 @@ int
 main(void)
 {
   test_path_is_child();
-  test_path_relative_to();
   test_path_parent();
   test_path_filename();
 

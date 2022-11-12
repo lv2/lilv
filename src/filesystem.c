@@ -41,56 +41,6 @@ lilv_path_is_child(const char* path, const char* dir)
 }
 
 char*
-lilv_path_relative_to(const char* path, const char* base)
-{
-  const size_t path_len = strlen(path);
-  const size_t base_len = strlen(base);
-  const size_t min_len  = (path_len < base_len) ? path_len : base_len;
-
-  // Find the last separator common to both paths
-  size_t last_shared_sep = 0;
-  for (size_t i = 0; i < min_len && path[i] == base[i]; ++i) {
-    if (lilv_is_dir_sep(path[i])) {
-      last_shared_sep = i;
-    }
-  }
-
-  if (last_shared_sep == 0) {
-    // No common components, return path
-    return lilv_strdup(path);
-  }
-
-  // Find the number of up references ("..") required
-  size_t up = 0;
-  for (size_t i = last_shared_sep + 1; i < base_len; ++i) {
-    if (lilv_is_dir_sep(base[i])) {
-      ++up;
-    }
-  }
-
-#ifdef _WIN32
-  const bool use_slash = strchr(path, '/');
-#else
-  static const bool use_slash = true;
-#endif
-
-  // Write up references
-  const size_t suffix_len = path_len - last_shared_sep;
-  char*        rel        = (char*)calloc(1, suffix_len + (up * 3) + 1);
-  for (size_t i = 0; i < up; ++i) {
-    if (use_slash) {
-      memcpy(rel + (i * 3), "../", 3);
-    } else {
-      memcpy(rel + (i * 3), "..\\", 3);
-    }
-  }
-
-  // Write suffix
-  memcpy(rel + (up * 3), path + last_shared_sep + 1, suffix_len);
-  return rel;
-}
-
-char*
 lilv_path_parent(const char* path)
 {
   const char* s = path + strlen(path) - 1; // Last character

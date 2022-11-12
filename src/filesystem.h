@@ -8,16 +8,6 @@ bool
 lilv_path_is_child(const char* path, const char* dir);
 
 /**
-   Return `path` relative to `base` if possible.
-
-   If `path` is not within `base`, a copy is returned.  Otherwise, an
-   equivalent path relative to `base` is returned (which may contain
-   up-references).
-*/
-char*
-lilv_path_relative_to(const char* path, const char* base);
-
-/**
    Return the path to the directory that contains `path`.
 
    Returns the root path if `path` is the root path.

@@ -284,10 +284,10 @@ abstract_path(LV2_State_Map_Path_Handle handle, const char* abs_path)
 
   if (lilv_path_is_child(real_path, state->dir)) {
     // File in state directory (loaded, or created by plugin during save)
-    path = lilv_path_relative_to(real_path, state->dir);
+    path = zix_path_lexically_relative(NULL, real_path, state->dir);
   } else if (lilv_path_is_child(real_path, state->scratch_dir)) {
     // File created by plugin earlier
-    path = lilv_path_relative_to(real_path, state->scratch_dir);
+    path = zix_path_lexically_relative(NULL, real_path, state->scratch_dir);
     if (state->copy_dir) {
       ZixStatus st = zix_create_directories(NULL, state->copy_dir);
       if (st) {
@@ -1220,7 +1220,7 @@ lilv_state_make_links(const LilvState* state, const char* dir)
         }
 
         // Make a link in the save directory to the external link
-        char* target = lilv_path_relative_to(lpath, dir);
+        char* target = zix_path_lexically_relative(NULL, lpath, dir);
         maybe_symlink(lpath, path);
         free(target);
         free(lpath);
