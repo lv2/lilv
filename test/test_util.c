@@ -27,10 +27,6 @@ main(void)
   fclose(fb);
   fclose(fa);
 
-  assert(lilv_copy_file("does/not/exist", "copy"));
-  assert(lilv_copy_file(a_path, "not/a/dir/copy"));
-  assert(!lilv_copy_file(a_path, "copy_c"));
-
   assert(!zix_remove(a_path));
   assert(!zix_remove(b_path));
   assert(!zix_remove(dir));

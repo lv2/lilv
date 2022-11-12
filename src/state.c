@@ -300,10 +300,10 @@ abstract_path(LV2_State_Map_Path_Handle handle, const char* abs_path)
       if (!copy || !zix_file_equals(NULL, real_path, copy)) {
         // No recent enough copy, make a new one
         free(copy);
-        copy   = lilv_find_free_path(cpath, path_exists, NULL);
-        int rc = 0;
-        if ((rc = lilv_copy_file(real_path, copy))) {
-          LILV_ERRORF("Error copying state file %s (%s)\n", copy, strerror(st));
+        copy = lilv_find_free_path(cpath, path_exists, NULL);
+        if ((st = zix_copy_file(NULL, real_path, copy, 0U))) {
+          LILV_ERRORF(
+            "Error copying state file %s (%s)\n", copy, zix_strerror(st));
         }
       }
       zix_free(NULL, real_path);

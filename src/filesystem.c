@@ -25,15 +25,10 @@
 
 #include <sys/stat.h>
 
-#include <errno.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
-#ifndef PAGE_SIZE
-#  define PAGE_SIZE 4096
-#endif
 
 static bool
 lilv_is_dir_sep(const char c)
@@ -195,45 +190,6 @@ lilv_is_directory(const char* path)
   struct stat       st;
   return !stat(path, &st) && S_ISDIR(st.st_mode);
 #endif
-}
-
-int
-lilv_copy_file(const char* src, const char* dst)
-{
-  FILE* in = fopen(src, "r");
-  if (!in) {
-    return errno;
-  }
-
-  FILE* out = fopen(dst, "w");
-  if (!out) {
-    fclose(in);
-    return errno;
-  }
-
-  char*  page   = (char*)malloc(PAGE_SIZE);
-  size_t n_read = 0;
-  int    st     = 0;
-  while ((n_read = fread(page, 1, PAGE_SIZE, in)) > 0) {
-    if (fwrite(page, 1, n_read, out) != n_read) {
-      st = errno;
-      break;
-    }
-  }
-
-  if (!st && fflush(out)) {
-    st = errno;
-  }
-
-  if (!st && (ferror(in) || ferror(out))) {
-    st = EBADF;
-  }
-
-  free(page);
-  fclose(in);
-  fclose(out);
-
-  return st;
 }
 
 int

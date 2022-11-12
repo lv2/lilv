@@ -47,14 +47,6 @@ bool
 lilv_is_directory(const char* path);
 
 /**
-   Copy the file at path `src` to path `dst`.
-
-   @return Zero on success, or a standard `errno` error code.
-*/
-int
-lilv_copy_file(const char* src, const char* dst);
-
-/**
    Create a symlink at `newpath` that points to `oldpath`.
 
    @return Zero on success, otherwise non-zero and `errno` is set.

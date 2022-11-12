@@ -11,7 +11,6 @@
 #include "zix/path.h"
 
 #include <assert.h>
-#include <errno.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -157,42 +156,6 @@ test_is_directory(void)
 }
 
 static void
-test_copy_file(void)
-{
-  char* const temp_dir  = lilv_create_temporary_directory("lilvXXXXXX");
-  char* const file_path = zix_path_join(NULL, temp_dir, "lilv_test_file");
-  char* const copy_path = zix_path_join(NULL, temp_dir, "lilv_test_copy");
-
-  FILE* f = fopen(file_path, "w");
-  fprintf(f, "test\n");
-  fclose(f);
-
-  assert(!lilv_copy_file(file_path, copy_path));
-  assert(zix_file_equals(NULL, file_path, copy_path));
-
-  if (zix_file_type("/dev/full") != ZIX_FILE_TYPE_NONE) {
-    // Copy short file (error after flushing)
-    assert(lilv_copy_file(file_path, "/dev/full") == ENOSPC);
-
-    // Copy long file (error during writing)
-    f = fopen(file_path, "w");
-    for (size_t i = 0; i < 4096; ++i) {
-      fprintf(f, "test\n");
-    }
-    fclose(f);
-    assert(lilv_copy_file(file_path, "/dev/full") == ENOSPC);
-  }
-
-  assert(!zix_remove(copy_path));
-  assert(!zix_remove(file_path));
-  assert(!zix_remove(temp_dir));
-
-  free(copy_path);
-  free(file_path);
-  free(temp_dir);
-}
-
-static void
 test_flock(void)
 {
   char* const temp_dir  = lilv_create_temporary_directory("lilvXXXXXX");
@@ -275,7 +238,6 @@ main(void)
   test_path_parent();
   test_path_filename();
   test_is_directory();
-  test_copy_file();
   test_flock();
   test_dir_for_each();
 
