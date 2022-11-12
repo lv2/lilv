@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: ISC
 
 #include <stdbool.h>
-#include <stdio.h>
 
 /// Return true iff `path` is an absolute path
 bool
@@ -53,21 +52,6 @@ lilv_is_directory(const char* path);
 */
 int
 lilv_symlink(const char* oldpath, const char* newpath);
-
-/**
-   Set or remove an advisory exclusive lock on `file`.
-
-   If the `lock` is true and the file is already locked by another process, or
-   by this process via a different file handle, then this will not succeed and
-   non-zero will be returned.
-
-   @param file Handle for open file to lock.
-   @param lock True to set lock, false to release lock.
-   @param block If true, then this call will block until the lock is acquired.
-   @return Zero on success.
-*/
-int
-lilv_flock(FILE* file, bool lock, bool block);
 
 /**
    Visit every file in the directory at `path`.

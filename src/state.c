@@ -990,9 +990,9 @@ add_state_to_manifest(LilvWorld*      lworld,
   }
 
   SerdWriter* writer = ttl_file_writer(wfd, &manifest, &env);
-  lilv_flock(wfd, true, true);
+  zix_file_lock(wfd, ZIX_FILE_LOCK_BLOCK);
   sord_write(model, writer, NULL);
-  lilv_flock(wfd, false, true);
+  zix_file_unlock(wfd, ZIX_FILE_LOCK_BLOCK);
   serd_writer_free(writer);
   fclose(wfd);
 

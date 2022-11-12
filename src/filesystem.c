@@ -19,10 +19,6 @@
 #  include <unistd.h>
 #endif
 
-#if USE_FLOCK && USE_FILENO
-#  include <sys/file.h>
-#endif
-
 #include <sys/stat.h>
 
 #include <stdbool.h>
@@ -208,32 +204,6 @@ lilv_symlink(const char* oldpath, const char* newpath)
 #endif
   }
   return ret;
-}
-
-int
-lilv_flock(FILE* file, bool lock, bool block)
-{
-#ifdef _WIN32
-  HANDLE     handle     = (HANDLE)_get_osfhandle(fileno(file));
-  OVERLAPPED overlapped = {0};
-
-  if (lock) {
-    const DWORD flags =
-      (LOCKFILE_EXCLUSIVE_LOCK | (block ? 0 : LOCKFILE_FAIL_IMMEDIATELY));
-
-    return !LockFileEx(handle, flags, 0, UINT32_MAX, UINT32_MAX, &overlapped);
-  } else {
-    return !UnlockFileEx(handle, 0, UINT32_MAX, UINT32_MAX, &overlapped);
-  }
-#elif USE_FLOCK && USE_FILENO
-  return flock(fileno(file),
-               (lock ? LOCK_EX : LOCK_UN) | (block ? 0 : LOCK_NB));
-#else
-  (void)file;
-  (void)lock;
-  (void)block;
-  return 0;
-#endif
 }
 
 void

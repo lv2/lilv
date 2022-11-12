@@ -155,27 +155,6 @@ test_is_directory(void)
   free(temp_dir);
 }
 
-static void
-test_flock(void)
-{
-  char* const temp_dir  = lilv_create_temporary_directory("lilvXXXXXX");
-  char* const file_path = zix_path_join(NULL, temp_dir, "lilv_test_file");
-
-  FILE* const f1 = fopen(file_path, "w");
-  FILE* const f2 = fopen(file_path, "w");
-
-  assert(!lilv_flock(f1, true, false));
-  assert(lilv_flock(f2, true, false));
-  assert(!lilv_flock(f1, false, false));
-
-  fclose(f2);
-  fclose(f1);
-  assert(!zix_remove(file_path));
-  assert(!zix_remove(temp_dir));
-  free(file_path);
-  free(temp_dir);
-}
-
 typedef struct {
   size_t n_names;
   char** names;
@@ -238,7 +217,6 @@ main(void)
   test_path_parent();
   test_path_filename();
   test_is_directory();
-  test_flock();
   test_dir_for_each();
 
   return 0;
