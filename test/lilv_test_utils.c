@@ -8,6 +8,7 @@
 #include "lilv/lilv.h"
 #include "serd/serd.h"
 #include "zix/allocator.h"
+#include "zix/filesystem.h"
 #include "zix/path.h"
 
 #include <errno.h>
@@ -32,13 +33,13 @@ lilv_test_env_new(void)
   env->plugin2_uri = lilv_new_uri(world, "http://example.org/foobar");
 
   // Set custom LV2_PATH in build directory to only use test data
-  char*     test_path = lilv_path_canonical(LILV_TEST_DIR);
+  char*     test_path = zix_canonical_path(NULL, LILV_TEST_DIR);
   char*     lv2_path  = zix_path_join(NULL, test_path, "lv2");
   LilvNode* path      = lilv_new_string(world, lv2_path);
   lilv_world_set_option(world, LILV_OPTION_LV2_PATH, path);
-  zix_free(NULL, lv2_path);
-  free(test_path);
   lilv_node_free(path);
+  zix_free(NULL, lv2_path);
+  zix_free(NULL, test_path);
 
   return env;
 }
@@ -63,13 +64,13 @@ create_bundle(LilvTestEnv* env,
               const char*  plugin)
 {
   {
-    char* const test_dir   = lilv_path_canonical(LILV_TEST_DIR);
+    char* const test_dir   = zix_canonical_path(NULL, LILV_TEST_DIR);
     char* const bundle_dir = zix_path_join(NULL, test_dir, name);
 
     env->test_bundle_path = zix_path_join(NULL, bundle_dir, "");
 
     zix_free(NULL, bundle_dir);
-    lilv_free(test_dir);
+    zix_free(NULL, test_dir);
   }
 
   if (lilv_create_directories(env->test_bundle_path)) {

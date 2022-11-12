@@ -84,24 +84,6 @@ test_path_current(void)
 }
 
 static void
-test_path_absolute(void)
-{
-  const char* const short_path = "a";
-  const char* const long_path  = "a/b/c";
-
-  char* const cwd            = lilv_path_current();
-  char* const expected_short = zix_path_join(NULL, cwd, short_path);
-  char* const expected_long  = zix_path_join(NULL, cwd, long_path);
-
-  assert(equals(lilv_path_absolute(short_path), expected_short));
-  assert(equals(lilv_path_absolute(long_path), expected_long));
-
-  free(expected_long);
-  free(expected_short);
-  free(cwd);
-}
-
-static void
 test_path_relative_to(void)
 {
   assert(equals(lilv_path_relative_to("/a/b", "/a/"), "b"));
@@ -160,56 +142,6 @@ test_path_filename(void)
   assert(equals(lilv_path_filename("foo/bar.txt"), "bar.txt"));
   assert(equals(lilv_path_filename("foo\\bar.txt"), "bar.txt"));
 #endif
-}
-
-static void
-test_path_canonical(void)
-{
-  char* const temp_dir  = lilv_create_temporary_directory("lilvXXXXXX");
-  char* const file_path = zix_path_join(NULL, temp_dir, "lilv_test_file");
-
-  FILE* f = fopen(file_path, "w");
-  fprintf(f, "test\n");
-  fclose(f);
-
-#ifndef _WIN32
-  // Test symlink resolution
-
-  char* const link_path = zix_path_join(NULL, temp_dir, "lilv_test_link");
-
-  assert(!lilv_symlink(file_path, link_path));
-
-  char* const real_file_path = lilv_path_canonical(file_path);
-  char* const real_link_path = lilv_path_canonical(link_path);
-
-  assert(!strcmp(real_file_path, real_link_path));
-
-  assert(!lilv_remove(link_path));
-  free(real_link_path);
-  free(real_file_path);
-  free(link_path);
-#endif
-
-  // Test dot segment resolution
-
-  char* const parent_dir_1      = zix_path_join(NULL, temp_dir, "..");
-  char* const parent_dir_2      = lilv_path_parent(temp_dir);
-  char* const real_parent_dir_1 = lilv_path_canonical(parent_dir_1);
-  char* const real_parent_dir_2 = lilv_path_canonical(parent_dir_2);
-
-  assert(!strcmp(real_parent_dir_1, real_parent_dir_2));
-
-  // Clean everything up
-
-  assert(!lilv_remove(file_path));
-  assert(!lilv_remove(temp_dir));
-
-  free(real_parent_dir_2);
-  free(real_parent_dir_1);
-  free(parent_dir_2);
-  free(parent_dir_1);
-  free(file_path);
-  free(temp_dir);
 }
 
 static void
@@ -431,11 +363,9 @@ main(void)
   test_path_is_absolute();
   test_path_is_child();
   test_path_current();
-  test_path_absolute();
   test_path_relative_to();
   test_path_parent();
   test_path_filename();
-  test_path_canonical();
   test_is_directory();
   test_copy_file();
   test_flock();

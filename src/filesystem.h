@@ -21,15 +21,6 @@ char*
 lilv_path_current(void);
 
 /**
-   Return `path` as an absolute path.
-
-   If `path` is absolute, an identical copy of it is returned.  Otherwise, the
-   returned path is relative to the current working directory.
-*/
-char*
-lilv_path_absolute(const char* path);
-
-/**
    Return `path` relative to `base` if possible.
 
    If `path` is not within `base`, a copy is returned.  Otherwise, an
@@ -54,15 +45,6 @@ lilv_path_parent(const char* path);
 */
 char*
 lilv_path_filename(const char* path);
-
-/**
-   Return `path` as a canonicalized absolute path.
-
-   This expands all symbolic links, relative references, and removes extra
-   directory separators.
-*/
-char*
-lilv_path_canonical(const char* path);
 
 /// Return true iff `path` points to an existing directory
 bool

@@ -14,8 +14,6 @@
 int
 main(void)
 {
-  assert(!lilv_path_canonical(NULL));
-
   char* const dir    = lilv_create_temporary_directory("lilv_test_util_XXXXXX");
   char* const a_path = zix_path_join(NULL, dir, "copy_a_XXXXXX");
   char* const b_path = zix_path_join(NULL, dir, "copy_b_XXXXXX");

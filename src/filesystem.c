@@ -5,6 +5,8 @@
 #include "lilv_config.h"
 #include "lilv_internal.h"
 
+#include "zix/allocator.h"
+#include "zix/filesystem.h"
 #include "zix/path.h"
 
 #ifdef _WIN32
@@ -99,19 +101,6 @@ char*
 lilv_path_current(void)
 {
   return getcwd(NULL, 0);
-}
-
-char*
-lilv_path_absolute(const char* path)
-{
-  if (lilv_path_is_absolute(path)) {
-    return lilv_strdup(path);
-  }
-
-  char* cwd      = getcwd(NULL, 0);
-  char* abs_path = zix_path_join(NULL, cwd, path);
-  free(cwd);
-  return abs_path;
 }
 
 char*
@@ -214,23 +203,6 @@ lilv_path_filename(const char* path)
   return ret;
 }
 
-char*
-lilv_path_canonical(const char* path)
-{
-  if (!path) {
-    return NULL;
-  }
-
-#if defined(_WIN32)
-  char* out = (char*)malloc(MAX_PATH);
-  GetFullPathName(path, MAX_PATH, out, NULL);
-  return out;
-#else
-  char*             real_path = realpath(path, NULL);
-  return real_path ? real_path : lilv_strdup(path);
-#endif
-}
-
 bool
 lilv_is_directory(const char* path)
 {
@@ -240,7 +212,7 @@ lilv_is_directory(const char* path)
   return (attrs != INVALID_FILE_ATTRIBUTES) &&
          (attrs & FILE_ATTRIBUTE_DIRECTORY);
 #else
-  struct stat st;
+  struct stat       st;
   return !stat(path, &st) && S_ISDIR(st.st_mode);
 #endif
 }
@@ -468,11 +440,13 @@ lilv_file_equals(const char* a_path, const char* b_path)
   bool        match  = false;
   FILE*       a_file = NULL;
   FILE*       b_file = NULL;
-  char* const a_real = lilv_path_canonical(a_path);
-  char* const b_real = lilv_path_canonical(b_path);
-  if (!strcmp(a_real, b_real)) {
+  char* const a_real = zix_canonical_path(NULL, a_path);
+  char* const b_real = zix_canonical_path(NULL, b_path);
+  if (!a_real || !b_real) {
+    match = false; // At least one file doesn't exist
+  } else if (!strcmp(a_real, b_real)) {
     match = true; // Real paths match
-  } else if (lilv_file_size(a_path) != lilv_file_size(b_path)) {
+  } else if (lilv_file_size(a_real) != lilv_file_size(b_real)) {
     match = false; // Sizes differ
   } else if (!(a_file = fopen(a_real, "rb")) ||
              !(b_file = fopen(b_real, "rb"))) {
@@ -494,7 +468,7 @@ lilv_file_equals(const char* a_path, const char* b_path)
   if (b_file) {
     fclose(b_file);
   }
-  free(a_real);
-  free(b_real);
+  zix_free(NULL, a_real);
+  zix_free(NULL, b_real);
   return match;
 }

@@ -259,11 +259,15 @@ make_path(LV2_State_Make_Path_Handle handle, const char* path)
 static char*
 abstract_path(LV2_State_Map_Path_Handle handle, const char* abs_path)
 {
-  LilvState*    state     = (LilvState*)handle;
-  char*         path      = NULL;
-  char*         real_path = lilv_path_canonical(abs_path);
-  const PathMap key       = {real_path, NULL};
-  ZixTreeIter*  iter      = NULL;
+  LilvState* state     = (LilvState*)handle;
+  char*      path      = NULL;
+  char*      real_path = zix_canonical_path(NULL, abs_path);
+  if (!real_path) {
+    real_path = zix_path_lexically_normal(NULL, abs_path);
+  }
+
+  const PathMap key  = {real_path, NULL};
+  ZixTreeIter*  iter = NULL;
 
   if (abs_path[0] == '\0') {
     return lilv_strdup(abs_path);
@@ -272,7 +276,7 @@ abstract_path(LV2_State_Map_Path_Handle handle, const char* abs_path)
   if (!zix_tree_find(state->abs2rel, &key, &iter)) {
     // Already mapped path in a previous call
     PathMap* pm = (PathMap*)zix_tree_get(iter);
-    free(real_path);
+    zix_free(NULL, real_path);
     return lilv_strdup(pm->rel);
   }
 
@@ -299,7 +303,7 @@ abstract_path(LV2_State_Map_Path_Handle handle, const char* abs_path)
           LILV_ERRORF("Error copying state file %s (%s)\n", copy, strerror(st));
         }
       }
-      free(real_path);
+      zix_free(NULL, real_path);
       zix_free(NULL, cpath);
 
       // Refer to the latest copy in plugin state
@@ -379,14 +383,15 @@ add_features(const LV2_Feature* const* features,
   return ret;
 }
 
-/// Return the canonical path for a directory with a trailing separator
+/// Return a normal path for a directory with a trailing separator
 static char*
-real_dir(const char* path)
+normal_dir(const char* path)
 {
-  char* abs_path = lilv_path_canonical(path);
-  char* base     = zix_path_join(NULL, abs_path, NULL);
-  free(abs_path);
-  return base;
+  char* const normal_path = zix_path_lexically_normal(NULL, path);
+  char* const base_path   = zix_path_join(NULL, normal_path, NULL);
+
+  zix_free(NULL, normal_path);
+  return base_path;
 }
 
 static const char*
@@ -435,10 +440,10 @@ lilv_state_new_from_instance(const LilvPlugin*         plugin,
   state->plugin_uri  = lilv_node_duplicate(lilv_plugin_get_uri(plugin));
   state->abs2rel     = zix_tree_new(NULL, false, abs_cmp, NULL, map_free, NULL);
   state->rel2abs     = zix_tree_new(NULL, false, rel_cmp, NULL, NULL, NULL);
-  state->scratch_dir = scratch_dir ? real_dir(scratch_dir) : NULL;
-  state->copy_dir    = copy_dir ? real_dir(copy_dir) : NULL;
-  state->link_dir    = link_dir ? real_dir(link_dir) : NULL;
-  state->dir         = save_dir ? real_dir(save_dir) : NULL;
+  state->scratch_dir = scratch_dir ? normal_dir(scratch_dir) : NULL;
+  state->copy_dir    = copy_dir ? normal_dir(copy_dir) : NULL;
+  state->link_dir    = link_dir ? normal_dir(link_dir) : NULL;
+  state->dir         = save_dir ? normal_dir(save_dir) : NULL;
   state->atom_Path   = map->map(map->handle, LV2_ATOM__Path);
 
   LV2_State_Map_Path  pmap          = {state, abstract_path, absolute_path};
@@ -733,7 +738,7 @@ lilv_state_new_from_file(LilvWorld*      world,
     return NULL;
   }
 
-  uint8_t*    abs_path = (uint8_t*)lilv_path_absolute(path);
+  uint8_t*    abs_path = (uint8_t*)zix_canonical_path(NULL, path);
   SerdNode    node     = serd_node_new_file_uri(abs_path, NULL, NULL, true);
   SerdEnv*    env      = serd_env_new(&node);
   SordModel*  model    = sord_new(world->world, SORD_SPO, false);
@@ -746,16 +751,16 @@ lilv_state_new_from_file(LilvWorld*      world,
               : sord_node_from_serd_node(world->world, env, &node, NULL, NULL);
 
   char*      dirname   = lilv_path_parent(path);
-  char*      real_path = lilv_path_canonical(dirname);
+  char*      real_path = zix_canonical_path(NULL, dirname);
   char*      dir_path  = zix_path_join(NULL, real_path, NULL);
   LilvState* state =
     new_state_from_model(world, map, model, subject_node, dir_path);
   zix_free(NULL, dir_path);
-  free(real_path);
+  zix_free(NULL, real_path);
   free(dirname);
 
   serd_node_free(&node);
-  free(abs_path);
+  zix_free(NULL, abs_path);
   serd_reader_free(reader);
   sord_free(model);
   serd_env_free(env);
@@ -1003,9 +1008,10 @@ link_exists(const char* path, const void* data)
   if (zix_file_type(path) == ZIX_FILE_TYPE_NONE) {
     return false;
   }
-  char* real_path = lilv_path_canonical(path);
+
+  char* real_path = zix_canonical_path(NULL, path);
   bool  matches   = !strcmp(real_path, target);
-  free(real_path);
+  zix_free(NULL, real_path);
   return !matches;
 }
 
@@ -1221,12 +1227,12 @@ lilv_state_save(LilvWorld*       world,
     return 1;
   }
 
-  char*       abs_dir = real_dir(dir);
+  char*       abs_dir = zix_canonical_path(NULL, dir);
   char* const path    = zix_path_join(NULL, abs_dir, filename);
   FILE*       fd      = fopen(path, "w");
   if (!fd) {
     LILV_ERRORF("Failed to open %s (%s)\n", path, strerror(errno));
-    free(abs_dir);
+    zix_free(NULL, abs_dir);
     zix_free(NULL, path);
     return 4;
   }
@@ -1245,7 +1251,7 @@ lilv_state_save(LilvWorld*       world,
   // Set saved dir and uri (FIXME: const violation)
   zix_free(NULL, state->dir);
   lilv_node_free(state->uri);
-  ((LilvState*)state)->dir = lilv_strdup(abs_dir);
+  ((LilvState*)state)->dir = zix_path_join(NULL, abs_dir, "");
   ((LilvState*)state)->uri = lilv_new_uri(world, (const char*)node.buf);
 
   serd_node_free(&file);
@@ -1262,7 +1268,7 @@ lilv_state_save(LilvWorld*       world,
     zix_free(NULL, manifest);
   }
 
-  free(abs_dir);
+  zix_free(NULL, abs_dir);
   zix_free(NULL, path);
   return ret;
 }
@@ -1309,7 +1315,7 @@ static char*
 get_canonical_path(const LilvNode* const node)
 {
   char* const path      = lilv_node_get_path(node, NULL);
-  char* const real_path = lilv_path_canonical(path);
+  char* const real_path = zix_canonical_path(NULL, path);
 
   free(path);
   return real_path;
@@ -1326,8 +1332,10 @@ lilv_state_delete(LilvWorld* world, const LilvState* state)
   LilvNode*  bundle        = lilv_new_file_uri(world, NULL, state->dir);
   LilvNode*  manifest      = lilv_world_get_manifest_uri(world, bundle);
   char*      manifest_path = get_canonical_path(manifest);
-  const bool has_manifest  = zix_file_type(manifest_path) != ZIX_FILE_TYPE_NONE;
-  SordModel* model         = sord_new(world->world, SORD_SPO, false);
+  const bool has_manifest =
+    manifest_path && zix_file_type(manifest_path) == ZIX_FILE_TYPE_REGULAR;
+
+  SordModel* model = sord_new(world->world, SORD_SPO, false);
 
   if (has_manifest) {
     // Read manifest into temporary local model
@@ -1345,11 +1353,11 @@ lilv_state_delete(LilvWorld* world, const LilvState* state)
       // Remove state file
       const uint8_t* uri       = sord_node_get_string(file);
       char*          path      = (char*)serd_file_uri_parse(uri, NULL);
-      char*          real_path = lilv_path_canonical(path);
-      if (path) {
+      char*          real_path = zix_canonical_path(NULL, path);
+      if (real_path) {
         try_unlink(state->dir, real_path);
       }
-      serd_free(real_path);
+      zix_free(NULL, real_path);
       serd_free(path);
     }
 
@@ -1404,7 +1412,7 @@ lilv_state_delete(LilvWorld* world, const LilvState* state)
   }
 
   sord_free(model);
-  lilv_free(manifest_path);
+  zix_free(NULL, manifest_path);
   lilv_node_free(manifest);
   lilv_node_free(bundle);
 

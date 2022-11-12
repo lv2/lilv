@@ -118,7 +118,7 @@ create_test_directories(void)
   /* On MacOS, temporary directories from mkdtemp involve symlinks, so
      resolve it here so that path comparisons in tests work. */
 
-  dirs.top     = lilv_path_canonical(top);
+  dirs.top     = zix_canonical_path(NULL, top);
   dirs.shared  = zix_path_join(NULL, dirs.top, "shared");
   dirs.scratch = zix_path_join(NULL, dirs.shared, "scratch");
   dirs.copy    = zix_path_join(NULL, dirs.shared, "copy");
