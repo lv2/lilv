@@ -13,7 +13,9 @@
 #include "lv2/state/state.h"
 #include "lv2/urid/urid.h"
 #include "serd/serd.h"
+#include "zix/allocator.h"
 #include "zix/filesystem.h"
+#include "zix/path.h"
 
 #ifdef _WIN32
 #  include <direct.h>
@@ -117,10 +119,10 @@ create_test_directories(void)
      resolve it here so that path comparisons in tests work. */
 
   dirs.top     = lilv_path_canonical(top);
-  dirs.shared  = lilv_path_join(dirs.top, "shared");
-  dirs.scratch = lilv_path_join(dirs.shared, "scratch");
-  dirs.copy    = lilv_path_join(dirs.shared, "copy");
-  dirs.link    = lilv_path_join(dirs.shared, "link");
+  dirs.shared  = zix_path_join(NULL, dirs.top, "shared");
+  dirs.scratch = zix_path_join(NULL, dirs.shared, "scratch");
+  dirs.copy    = zix_path_join(NULL, dirs.shared, "copy");
+  dirs.link    = zix_path_join(NULL, dirs.shared, "link");
 
   assert(!mkdir(dirs.shared, 0700));
   assert(!mkdir(dirs.scratch, 0700));
@@ -145,7 +147,7 @@ remove_file(const char* path, const char* name, void* data)
 {
   (void)data;
 
-  char* const full_path = lilv_path_join(path, name);
+  char* const full_path = zix_path_join(NULL, path, name);
   assert(!lilv_remove(full_path));
   free(full_path);
 }
@@ -163,10 +165,10 @@ cleanup_test_directories(const TestDirectories dirs)
   assert(!lilv_remove(dirs.shared));
   assert(!lilv_remove(dirs.top));
 
-  free(dirs.link);
-  free(dirs.copy);
-  free(dirs.scratch);
-  free(dirs.shared);
+  zix_free(NULL, dirs.link);
+  zix_free(NULL, dirs.copy);
+  zix_free(NULL, dirs.scratch);
+  zix_free(NULL, dirs.shared);
   free(dirs.top);
 }
 
@@ -227,7 +229,7 @@ make_scratch_path(LV2_State_Make_Path_Handle handle, const char* path)
 {
   TestDirectories* dirs = (TestDirectories*)handle;
 
-  return lilv_path_join(dirs->scratch, path);
+  return zix_path_join(NULL, dirs->scratch, path);
 }
 
 static const LilvPlugin*
@@ -585,11 +587,11 @@ test_to_files(void)
   assert(ctx->out == 1.0);
 
   // Check that the test plugin has made its recording scratch file
-  char* const recfile_path = lilv_path_join(dirs.scratch, "recfile");
+  char* const recfile_path = zix_path_join(NULL, dirs.scratch, "recfile");
   assert(zix_file_type(recfile_path) == ZIX_FILE_TYPE_REGULAR);
 
   // Get state
-  char* const      bundle_1_path = lilv_path_join(dirs.top, "state1.lv2");
+  char* const      bundle_1_path = zix_path_join(NULL, dirs.top, "state1.lv2");
   LilvState* const state_1 =
     state_from_instance(plugin, instance, ctx, &dirs, bundle_1_path);
 
@@ -597,7 +599,7 @@ test_to_files(void)
   assert(lilv_state_get_num_properties(state_1) == 10);
 
   // Check that a snapshop of the recfile was created
-  char* const recfile_copy_1 = lilv_path_join(dirs.copy, "recfile");
+  char* const recfile_copy_1 = zix_path_join(NULL, dirs.copy, "recfile");
   assert(zix_file_type(recfile_copy_1) == ZIX_FILE_TYPE_REGULAR);
 
   // Save state to a bundle
@@ -610,14 +612,15 @@ test_to_files(void)
                           "state.ttl"));
 
   // Check that a manifest exists
-  char* const manifest_path = lilv_path_join(bundle_1_path, "manifest.ttl");
+  char* const manifest_path =
+    zix_path_join(NULL, bundle_1_path, "manifest.ttl");
   assert(zix_file_type(manifest_path) == ZIX_FILE_TYPE_REGULAR);
 
   // Check that the expected statements are in the manifest file
   assert(count_statements(manifest_path) == 3);
 
   // Check that a link to the recfile exists in the saved bundle
-  char* const recfile_link_1 = lilv_path_join(bundle_1_path, "recfile");
+  char* const recfile_link_1 = zix_path_join(NULL, bundle_1_path, "recfile");
   assert(zix_file_type(recfile_link_1) == ZIX_FILE_TYPE_REGULAR);
 #ifndef _WIN32
   assert(zix_symlink_type(recfile_link_1) == ZIX_FILE_TYPE_SYMLINK);
@@ -630,7 +633,7 @@ test_to_files(void)
   lilv_instance_run(instance, 2);
 
   // Get updated state
-  char* const      bundle_2_path = lilv_path_join(dirs.top, "state2.lv2");
+  char* const      bundle_2_path = zix_path_join(NULL, dirs.top, "state2.lv2");
   LilvState* const state_2 =
     state_from_instance(plugin, instance, ctx, &dirs, bundle_2_path);
 
@@ -644,11 +647,11 @@ test_to_files(void)
                           "state.ttl"));
 
   // Check that a new snapshop of the recfile was created
-  char* const recfile_copy_2 = lilv_path_join(dirs.copy, "recfile.2");
+  char* const recfile_copy_2 = zix_path_join(NULL, dirs.copy, "recfile.2");
   assert(zix_file_type(recfile_copy_2) == ZIX_FILE_TYPE_REGULAR);
 
   // Check that a link to the recfile exists in the updated bundle
-  char* const recfile_link_2 = lilv_path_join(bundle_2_path, "recfile");
+  char* const recfile_link_2 = zix_path_join(NULL, bundle_2_path, "recfile");
   assert(zix_file_type(recfile_link_2) == ZIX_FILE_TYPE_REGULAR);
 #ifndef _WIN32
   assert(zix_symlink_type(recfile_link_2) == ZIX_FILE_TYPE_SYMLINK);
@@ -664,16 +667,16 @@ test_to_files(void)
   assert(!lilv_remove(bundle_1_path));
   cleanup_test_directories(dirs);
 
-  free(recfile_link_2);
-  free(recfile_copy_2);
+  zix_free(NULL, recfile_link_2);
+  zix_free(NULL, recfile_copy_2);
   lilv_state_free(state_2);
-  free(bundle_2_path);
-  free(recfile_link_1);
-  free(manifest_path);
-  free(recfile_copy_1);
+  zix_free(NULL, bundle_2_path);
+  zix_free(NULL, recfile_link_1);
+  zix_free(NULL, manifest_path);
+  zix_free(NULL, recfile_copy_1);
   lilv_state_free(state_1);
-  free(bundle_1_path);
-  free(recfile_path);
+  zix_free(NULL, bundle_1_path);
+  zix_free(NULL, recfile_path);
   test_context_free(ctx);
 }
 
@@ -696,7 +699,7 @@ test_multi_save(void)
   assert(instance);
 
   // Get state
-  char* const      bundle_1_path = lilv_path_join(dirs.top, "state1.lv2");
+  char* const      bundle_1_path = zix_path_join(NULL, dirs.top, "state1.lv2");
   LilvState* const state_1 =
     state_from_instance(plugin, instance, ctx, &dirs, bundle_1_path);
 
@@ -710,11 +713,12 @@ test_multi_save(void)
                           "state.ttl"));
 
   // Check that a manifest exists
-  char* const manifest_path = lilv_path_join(bundle_1_path, "manifest.ttl");
+  char* const manifest_path =
+    zix_path_join(NULL, bundle_1_path, "manifest.ttl");
   assert(zix_file_type(manifest_path) == ZIX_FILE_TYPE_REGULAR);
 
   // Check that the state file exists
-  char* const state_path = lilv_path_join(bundle_1_path, "state.ttl");
+  char* const state_path = zix_path_join(NULL, bundle_1_path, "state.ttl");
   assert(zix_file_type(state_path) == ZIX_FILE_TYPE_REGULAR);
 
   // Check that the expected statements are in the files
@@ -776,7 +780,7 @@ test_files_round_trip(void)
   assert(ctx->out == 1.0);
 
   // Save first state to a bundle
-  char* const      bundle_1_1_path = lilv_path_join(dirs.top, "state1_1.lv2");
+  char* const bundle_1_1_path = zix_path_join(NULL, dirs.top, "state1_1.lv2");
   LilvState* const state_1_1 =
     state_from_instance(plugin, instance, ctx, &dirs, bundle_1_1_path);
 
@@ -789,7 +793,7 @@ test_files_round_trip(void)
                           "state.ttl"));
 
   // Save first state to another bundle
-  char* const      bundle_1_2_path = lilv_path_join(dirs.top, "state1_2.lv2");
+  char* const bundle_1_2_path = zix_path_join(NULL, dirs.top, "state1_2.lv2");
   LilvState* const state_1_2 =
     state_from_instance(plugin, instance, ctx, &dirs, bundle_1_2_path);
 
@@ -802,8 +806,10 @@ test_files_round_trip(void)
                           "state.ttl"));
 
   // Load both first state bundles and check that the results are equal
-  char* const state_1_1_path = lilv_path_join(bundle_1_1_path, "state.ttl");
-  char* const state_1_2_path = lilv_path_join(bundle_1_2_path, "state.ttl");
+  char* const state_1_1_path =
+    zix_path_join(NULL, bundle_1_1_path, "state.ttl");
+  char* const state_1_2_path =
+    zix_path_join(NULL, bundle_1_2_path, "state.ttl");
 
   LilvState* state_1_1_loaded =
     lilv_state_new_from_file(ctx->env->world, &ctx->map, NULL, state_1_1_path);
@@ -819,7 +825,7 @@ test_files_round_trip(void)
   lilv_instance_run(instance, 2);
 
   // Save updated state to a bundle
-  char* const      bundle_2_path = lilv_path_join(dirs.top, "state2.lv2");
+  char* const      bundle_2_path = zix_path_join(NULL, dirs.top, "state2.lv2");
   LilvState* const state_2 =
     state_from_instance(plugin, instance, ctx, &dirs, bundle_2_path);
 
@@ -832,7 +838,7 @@ test_files_round_trip(void)
                           "state.ttl"));
 
   // Load updated state bundle and check that it differs from the others
-  char* const state_2_path = lilv_path_join(bundle_2_path, "state.ttl");
+  char* const state_2_path = zix_path_join(NULL, bundle_2_path, "state.ttl");
 
   LilvState* state_2_loaded =
     lilv_state_new_from_file(ctx->env->world, &ctx->map, NULL, state_2_path);
@@ -894,7 +900,7 @@ test_world_round_trip(void)
   assert(ctx->out == 1.0);
 
   // Save state to a bundle
-  char* const      bundle_path = lilv_path_join(dirs.top, "state.lv2/");
+  char* const      bundle_path = zix_path_join(NULL, dirs.top, "state.lv2/");
   LilvState* const start_state =
     state_from_instance(plugin, instance, ctx, &dirs, bundle_path);
 
@@ -959,7 +965,7 @@ test_label_round_trip(void)
   lilv_state_set_label(state, "Monopoly on violence");
 
   // Save to a bundle
-  char* const bundle_path = lilv_path_join(dirs.top, "state.lv2/");
+  char* const bundle_path = zix_path_join(NULL, dirs.top, "state.lv2/");
   assert(!lilv_state_save(ctx->env->world,
                           &ctx->map,
                           &ctx->unmap,
@@ -969,7 +975,7 @@ test_label_round_trip(void)
                           "state.ttl"));
 
   // Load bundle and check the label and that the states are equal
-  char* const state_path = lilv_path_join(bundle_path, "state.ttl");
+  char* const state_path = zix_path_join(NULL, bundle_path, "state.ttl");
 
   LilvState* const loaded =
     lilv_state_new_from_file(ctx->env->world, &ctx->map, NULL, state_path);
@@ -1046,7 +1052,7 @@ test_delete(void)
   assert(ctx->out == 1.0);
 
   // Save state to a bundle
-  char* const      bundle_path = lilv_path_join(dirs.top, "state.lv2/");
+  char* const      bundle_path = zix_path_join(NULL, dirs.top, "state.lv2/");
   LilvState* const state =
     state_from_instance(plugin, instance, ctx, &dirs, bundle_path);
 

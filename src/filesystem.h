@@ -30,15 +30,6 @@ char*
 lilv_path_absolute(const char* path);
 
 /**
-   Return `path` as an absolute path relative to `parent`.
-
-   If `path` is absolute, an identical copy of it is returned.  Otherwise, the
-   returned path is relative to `parent`.
-*/
-char*
-lilv_path_absolute_child(const char* path, const char* parent);
-
-/**
    Return `path` relative to `base` if possible.
 
    If `path` is not within `base`, a copy is returned.  Otherwise, an
@@ -63,10 +54,6 @@ lilv_path_parent(const char* path);
 */
 char*
 lilv_path_filename(const char* path);
-
-/// Join path `a` and path `b` with a single directory separator between them
-char*
-lilv_path_join(const char* a, const char* b);
 
 /**
    Return `path` as a canonicalized absolute path.

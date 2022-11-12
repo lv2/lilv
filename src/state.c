@@ -8,7 +8,9 @@
 #include "serd/serd.h"
 #include "sord/sord.h"
 #include "sratom/sratom.h"
+#include "zix/allocator.h"
 #include "zix/filesystem.h"
+#include "zix/path.h"
 #include "zix/tree.h"
 
 #include "lv2/atom/atom.h"
@@ -251,7 +253,7 @@ make_path(LV2_State_Make_Path_Handle handle, const char* path)
   LilvState* state = (LilvState*)handle;
   lilv_create_directories(state->dir);
 
-  return lilv_path_join(state->dir, path);
+  return zix_path_join(NULL, state->dir, path);
 }
 
 static char*
@@ -287,7 +289,7 @@ abstract_path(LV2_State_Map_Path_Handle handle, const char* abs_path)
           "Error creating directory %s (%s)\n", state->copy_dir, strerror(st));
       }
 
-      char* cpath = lilv_path_join(state->copy_dir, path);
+      char* cpath = zix_path_join(NULL, state->copy_dir, path);
       char* copy  = lilv_get_latest_copy(real_path, cpath);
       if (!copy || !lilv_file_equals(real_path, copy)) {
         // No recent enough copy, make a new one
@@ -298,7 +300,7 @@ abstract_path(LV2_State_Map_Path_Handle handle, const char* abs_path)
         }
       }
       free(real_path);
-      free(cpath);
+      zix_free(NULL, cpath);
 
       // Refer to the latest copy in plugin state
       real_path = copy;
@@ -336,7 +338,7 @@ absolute_path(LV2_State_Map_Path_Handle handle, const char* state_path)
     path = lilv_strdup(state_path);
   } else if (state->dir) {
     // Relative path inside state directory
-    path = lilv_path_join(state->dir, state_path);
+    path = zix_path_join(NULL, state->dir, state_path);
   } else {
     // State has not been saved, unmap
     path = lilv_strdup(lilv_state_rel2abs(state, state_path));
@@ -382,7 +384,7 @@ static char*
 real_dir(const char* path)
 {
   char* abs_path = lilv_path_canonical(path);
-  char* base     = lilv_path_join(abs_path, NULL);
+  char* base     = zix_path_join(NULL, abs_path, NULL);
   free(abs_path);
   return base;
 }
@@ -560,7 +562,7 @@ set_state_dir_from_model(LilvState* state, const SordNode* graph)
     const char* uri  = (const char*)sord_node_get_string(graph);
     char*       path = lilv_file_uri_parse(uri, NULL);
 
-    state->dir = lilv_path_join(path, NULL);
+    state->dir = zix_path_join(NULL, path, NULL);
     free(path);
   }
   assert(!state->dir || lilv_path_is_absolute(state->dir));
@@ -580,7 +582,7 @@ new_state_from_model(LilvWorld*      world,
 
   // Allocate state
   LilvState* const state = (LilvState*)calloc(1, sizeof(LilvState));
-  state->dir             = lilv_path_join(dir, NULL);
+  state->dir             = dir ? zix_path_join(NULL, dir, NULL) : NULL;
   state->atom_Path       = map->map(map->handle, LV2_ATOM__Path);
   state->uri             = lilv_node_new_from_node(world, node);
 
@@ -745,10 +747,10 @@ lilv_state_new_from_file(LilvWorld*      world,
 
   char*      dirname   = lilv_path_parent(path);
   char*      real_path = lilv_path_canonical(dirname);
-  char*      dir_path  = lilv_path_join(real_path, NULL);
+  char*      dir_path  = zix_path_join(NULL, real_path, NULL);
   LilvState* state =
     new_state_from_model(world, map, model, subject_node, dir_path);
-  free(dir_path);
+  zix_free(NULL, dir_path);
   free(real_path);
   free(dirname);
 
@@ -1167,16 +1169,17 @@ lilv_state_make_links(const LilvState* state, const char* dir)
   for (ZixTreeIter* i = zix_tree_begin(state->abs2rel);
        i != zix_tree_end(state->abs2rel);
        i = zix_tree_iter_next(i)) {
-    const PathMap* pm = (const PathMap*)zix_tree_get(i);
+    const PathMap* const pm   = (const PathMap*)zix_tree_get(i);
+    char* const          path = zix_path_join(NULL, dir, pm->rel);
 
-    char* path = lilv_path_absolute_child(pm->rel, dir);
     if (lilv_path_is_child(pm->abs, state->copy_dir) &&
         strcmp(state->copy_dir, dir)) {
       // Link directly to snapshot in the copy directory
       maybe_symlink(pm->abs, path);
     } else if (!lilv_path_is_child(pm->abs, dir)) {
       const char* link_dir = state->link_dir ? state->link_dir : dir;
-      char*       pat      = lilv_path_absolute_child(pm->rel, link_dir);
+      char*       pat      = zix_path_join(NULL, link_dir, pm->rel);
+
       if (!strcmp(dir, link_dir)) {
         // Link directory is save directory, make link at exact path
         remove(pat);
@@ -1219,12 +1222,12 @@ lilv_state_save(LilvWorld*       world,
   }
 
   char*       abs_dir = real_dir(dir);
-  char* const path    = lilv_path_join(abs_dir, filename);
+  char* const path    = zix_path_join(NULL, abs_dir, filename);
   FILE*       fd      = fopen(path, "w");
   if (!fd) {
     LILV_ERRORF("Failed to open %s (%s)\n", path, strerror(errno));
     free(abs_dir);
-    free(path);
+    zix_free(NULL, path);
     return 4;
   }
 
@@ -1240,7 +1243,7 @@ lilv_state_save(LilvWorld*       world,
     lilv_state_write(world, map, unmap, state, ttl, (const char*)node.buf, dir);
 
   // Set saved dir and uri (FIXME: const violation)
-  free(state->dir);
+  zix_free(NULL, state->dir);
   lilv_node_free(state->uri);
   ((LilvState*)state)->dir = lilv_strdup(abs_dir);
   ((LilvState*)state)->uri = lilv_new_uri(world, (const char*)node.buf);
@@ -1252,15 +1255,15 @@ lilv_state_save(LilvWorld*       world,
 
   // Add entry to manifest
   if (!ret) {
-    char* const manifest = lilv_path_join(abs_dir, "manifest.ttl");
+    char* const manifest = zix_path_join(NULL, abs_dir, "manifest.ttl");
 
     ret = add_state_to_manifest(world, state->plugin_uri, manifest, uri, path);
 
-    free(manifest);
+    zix_free(NULL, manifest);
   }
 
   free(abs_dir);
-  free(path);
+  zix_free(NULL, path);
   return ret;
 }
 
@@ -1372,9 +1375,9 @@ lilv_state_delete(LilvWorld* world, const LilvState* state)
            i != zix_tree_end(state->abs2rel);
            i = zix_tree_iter_next(i)) {
         const PathMap* pm   = (const PathMap*)zix_tree_get(i);
-        char*          path = lilv_path_join(state->dir, pm->rel);
+        char*          path = zix_path_join(NULL, state->dir, pm->rel);
         try_unlink(state->dir, path);
-        free(path);
+        zix_free(NULL, path);
       }
     } else {
       // State loaded from model, get paths from loaded properties

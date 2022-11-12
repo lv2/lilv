@@ -8,6 +8,7 @@
 #include "../src/filesystem.h"
 
 #include "zix/filesystem.h"
+#include "zix/path.h"
 
 #include <assert.h>
 #include <errno.h>
@@ -89,8 +90,8 @@ test_path_absolute(void)
   const char* const long_path  = "a/b/c";
 
   char* const cwd            = lilv_path_current();
-  char* const expected_short = lilv_path_join(cwd, short_path);
-  char* const expected_long  = lilv_path_join(cwd, long_path);
+  char* const expected_short = zix_path_join(NULL, cwd, short_path);
+  char* const expected_long  = zix_path_join(NULL, cwd, long_path);
 
   assert(equals(lilv_path_absolute(short_path), expected_short));
   assert(equals(lilv_path_absolute(long_path), expected_long));
@@ -98,24 +99,6 @@ test_path_absolute(void)
   free(expected_long);
   free(expected_short);
   free(cwd);
-}
-
-static void
-test_path_absolute_child(void)
-{
-  const char* const parent     = "/parent";
-  const char* const short_path = "a";
-  const char* const long_path  = "a/b/c";
-
-  char* const expected_short = lilv_path_join(parent, short_path);
-  char* const expected_long  = lilv_path_join(parent, long_path);
-
-  assert(equals(lilv_path_absolute_child(short_path, parent), expected_short));
-
-  assert(equals(lilv_path_absolute_child(long_path, parent), expected_long));
-
-  free(expected_long);
-  free(expected_short);
 }
 
 static void
@@ -180,63 +163,10 @@ test_path_filename(void)
 }
 
 static void
-test_path_join(void)
-{
-  assert(lilv_path_join(NULL, NULL) == NULL);
-  assert(lilv_path_join(NULL, "") == NULL);
-
-#ifdef _WIN32
-  assert(equals(lilv_path_join("", NULL), "\\"));
-  assert(equals(lilv_path_join("", ""), "\\"));
-  assert(equals(lilv_path_join("a", ""), "a\\"));
-  assert(equals(lilv_path_join("a", NULL), "a\\"));
-  assert(equals(lilv_path_join("a", "b"), "a\\b"));
-#else
-  assert(equals(lilv_path_join("", NULL), "/"));
-  assert(equals(lilv_path_join("", ""), "/"));
-  assert(equals(lilv_path_join("a", ""), "a/"));
-  assert(equals(lilv_path_join("a", NULL), "a/"));
-  assert(equals(lilv_path_join("a", "b"), "a/b"));
-#endif
-
-  assert(equals(lilv_path_join("/a", ""), "/a/"));
-  assert(equals(lilv_path_join("/a/b", ""), "/a/b/"));
-  assert(equals(lilv_path_join("/a/", ""), "/a/"));
-  assert(equals(lilv_path_join("/a/b/", ""), "/a/b/"));
-  assert(equals(lilv_path_join("a/b", ""), "a/b/"));
-  assert(equals(lilv_path_join("a/", ""), "a/"));
-  assert(equals(lilv_path_join("a/b/", ""), "a/b/"));
-
-  assert(equals(lilv_path_join("/a", NULL), "/a/"));
-  assert(equals(lilv_path_join("/a/b", NULL), "/a/b/"));
-  assert(equals(lilv_path_join("/a/", NULL), "/a/"));
-  assert(equals(lilv_path_join("/a/b/", NULL), "/a/b/"));
-  assert(equals(lilv_path_join("a/b", NULL), "a/b/"));
-  assert(equals(lilv_path_join("a/", NULL), "a/"));
-  assert(equals(lilv_path_join("a/b/", NULL), "a/b/"));
-
-  assert(equals(lilv_path_join("/a", "b"), "/a/b"));
-  assert(equals(lilv_path_join("/a/", "b"), "/a/b"));
-  assert(equals(lilv_path_join("a/", "b"), "a/b"));
-
-  assert(equals(lilv_path_join("/a", "b/"), "/a/b/"));
-  assert(equals(lilv_path_join("/a/", "b/"), "/a/b/"));
-  assert(equals(lilv_path_join("a", "b/"), "a/b/"));
-  assert(equals(lilv_path_join("a/", "b/"), "a/b/"));
-
-#ifdef _WIN32
-  assert(equals(lilv_path_join("C:/a", "b"), "C:/a/b"));
-  assert(equals(lilv_path_join("C:\\a", "b"), "C:\\a\\b"));
-  assert(equals(lilv_path_join("C:/a", "b/"), "C:/a/b/"));
-  assert(equals(lilv_path_join("C:\\a", "b\\"), "C:\\a\\b\\"));
-#endif
-}
-
-static void
 test_path_canonical(void)
 {
   char* const temp_dir  = lilv_create_temporary_directory("lilvXXXXXX");
-  char* const file_path = lilv_path_join(temp_dir, "lilv_test_file");
+  char* const file_path = zix_path_join(NULL, temp_dir, "lilv_test_file");
 
   FILE* f = fopen(file_path, "w");
   fprintf(f, "test\n");
@@ -245,7 +175,7 @@ test_path_canonical(void)
 #ifndef _WIN32
   // Test symlink resolution
 
-  char* const link_path = lilv_path_join(temp_dir, "lilv_test_link");
+  char* const link_path = zix_path_join(NULL, temp_dir, "lilv_test_link");
 
   assert(!lilv_symlink(file_path, link_path));
 
@@ -262,7 +192,7 @@ test_path_canonical(void)
 
   // Test dot segment resolution
 
-  char* const parent_dir_1      = lilv_path_join(temp_dir, "..");
+  char* const parent_dir_1      = zix_path_join(NULL, temp_dir, "..");
   char* const parent_dir_2      = lilv_path_parent(temp_dir);
   char* const real_parent_dir_1 = lilv_path_canonical(parent_dir_1);
   char* const real_parent_dir_2 = lilv_path_canonical(parent_dir_2);
@@ -286,7 +216,7 @@ static void
 test_is_directory(void)
 {
   char* const temp_dir  = lilv_create_temporary_directory("lilvXXXXXX");
-  char* const file_path = lilv_path_join(temp_dir, "lilv_test_file");
+  char* const file_path = zix_path_join(NULL, temp_dir, "lilv_test_file");
 
   assert(lilv_is_directory(temp_dir));
   assert(!lilv_is_directory(file_path)); // Nonexistent
@@ -308,8 +238,8 @@ static void
 test_copy_file(void)
 {
   char* const temp_dir  = lilv_create_temporary_directory("lilvXXXXXX");
-  char* const file_path = lilv_path_join(temp_dir, "lilv_test_file");
-  char* const copy_path = lilv_path_join(temp_dir, "lilv_test_copy");
+  char* const file_path = zix_path_join(NULL, temp_dir, "lilv_test_file");
+  char* const copy_path = zix_path_join(NULL, temp_dir, "lilv_test_copy");
 
   FILE* f = fopen(file_path, "w");
   fprintf(f, "test\n");
@@ -344,7 +274,7 @@ static void
 test_flock(void)
 {
   char* const temp_dir  = lilv_create_temporary_directory("lilvXXXXXX");
-  char* const file_path = lilv_path_join(temp_dir, "lilv_test_file");
+  char* const file_path = zix_path_join(NULL, temp_dir, "lilv_test_file");
 
   FILE* const f1 = fopen(file_path, "w");
   FILE* const f2 = fopen(file_path, "w");
@@ -383,8 +313,8 @@ static void
 test_dir_for_each(void)
 {
   char* const temp_dir = lilv_create_temporary_directory("lilvXXXXXX");
-  char* const path1    = lilv_path_join(temp_dir, "lilv_test_1");
-  char* const path2    = lilv_path_join(temp_dir, "lilv_test_2");
+  char* const path1    = zix_path_join(NULL, temp_dir, "lilv_test_1");
+  char* const path2    = zix_path_join(NULL, temp_dir, "lilv_test_2");
 
   FILE* const f1 = fopen(path1, "w");
   FILE* const f2 = fopen(path2, "w");
@@ -438,14 +368,14 @@ test_create_directories(void)
 
   assert(lilv_is_directory(temp_dir));
 
-  char* const child_dir      = lilv_path_join(temp_dir, "child");
-  char* const grandchild_dir = lilv_path_join(child_dir, "grandchild");
+  char* const child_dir      = zix_path_join(NULL, temp_dir, "child");
+  char* const grandchild_dir = zix_path_join(NULL, child_dir, "grandchild");
 
   assert(!lilv_create_directories(grandchild_dir));
   assert(lilv_is_directory(grandchild_dir));
   assert(lilv_is_directory(child_dir));
 
-  char* const file_path = lilv_path_join(temp_dir, "lilv_test_file");
+  char* const file_path = zix_path_join(NULL, temp_dir, "lilv_test_file");
   FILE* const f         = fopen(file_path, "w");
 
   fprintf(f, "test\n");
@@ -467,8 +397,8 @@ static void
 test_file_equals(void)
 {
   char* const temp_dir = lilv_create_temporary_directory("lilvXXXXXX");
-  char* const path1    = lilv_path_join(temp_dir, "lilv_test_1");
-  char* const path2    = lilv_path_join(temp_dir, "lilv_test_2");
+  char* const path1    = zix_path_join(NULL, temp_dir, "lilv_test_1");
+  char* const path2    = zix_path_join(NULL, temp_dir, "lilv_test_2");
 
   FILE* const f1 = fopen(path1, "w");
   FILE* const f2 = fopen(path2, "w");
@@ -502,11 +432,9 @@ main(void)
   test_path_is_child();
   test_path_current();
   test_path_absolute();
-  test_path_absolute_child();
   test_path_relative_to();
   test_path_parent();
   test_path_filename();
-  test_path_join();
   test_path_canonical();
   test_is_directory();
   test_copy_file();

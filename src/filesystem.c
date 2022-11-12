@@ -5,6 +5,8 @@
 #include "lilv_config.h"
 #include "lilv_internal.h"
 
+#include "zix/path.h"
+
 #ifdef _WIN32
 #  include <direct.h>
 #  include <io.h>
@@ -107,19 +109,9 @@ lilv_path_absolute(const char* path)
   }
 
   char* cwd      = getcwd(NULL, 0);
-  char* abs_path = lilv_path_join(cwd, path);
+  char* abs_path = zix_path_join(NULL, cwd, path);
   free(cwd);
   return abs_path;
-}
-
-char*
-lilv_path_absolute_child(const char* path, const char* parent)
-{
-  if (lilv_path_is_absolute(path)) {
-    return lilv_strdup(path);
-  }
-
-  return lilv_path_join(parent, path);
 }
 
 char*
@@ -223,41 +215,6 @@ lilv_path_filename(const char* path)
 }
 
 char*
-lilv_path_join(const char* a, const char* b)
-{
-  if (!a) {
-    return (b && b[0]) ? lilv_strdup(b) : NULL;
-  }
-
-  const size_t a_len        = strlen(a);
-  const size_t b_len        = b ? strlen(b) : 0;
-  const bool   a_end_is_sep = a_len > 0 && lilv_is_dir_sep(a[a_len - 1]);
-  const size_t pre_len      = a_len - (a_end_is_sep ? 1 : 0);
-  char*        path         = (char*)calloc(1, a_len + b_len + 2);
-  memcpy(path, a, pre_len);
-
-#ifndef _WIN32
-  path[pre_len] = '/';
-#else
-  // Use forward slash if it seems that the input paths do
-  const bool a_has_slash = strchr(a, '/');
-  const bool b_has_slash = b && strchr(b, '/');
-  if (a_has_slash || b_has_slash) {
-    path[pre_len] = '/';
-  } else {
-    path[pre_len] = '\\';
-  }
-#endif
-
-  if (b) {
-    memcpy(path + pre_len + 1,
-           b + (lilv_is_dir_sep(b[0]) ? 1 : 0),
-           lilv_is_dir_sep(b[0]) ? b_len - 1 : b_len);
-  }
-  return path;
-}
-
-char*
 lilv_path_canonical(const char* path)
 {
   if (!path) {
@@ -269,7 +226,7 @@ lilv_path_canonical(const char* path)
   GetFullPathName(path, MAX_PATH, out, NULL);
   return out;
 #else
-  char* real_path = realpath(path, NULL);
+  char*             real_path = realpath(path, NULL);
   return real_path ? real_path : lilv_strdup(path);
 #endif
 }
@@ -377,7 +334,7 @@ lilv_dir_for_each(const char* path,
                   void (*f)(const char* path, const char* name, void* data))
 {
 #ifdef _WIN32
-  char*           pat = lilv_path_join(path, "*");
+  char*           pat = zix_path_join(NULL, path, "*");
   WIN32_FIND_DATA fd;
   HANDLE          fh = FindFirstFile(pat, &fd);
   if (fh != INVALID_HANDLE_VALUE) {
@@ -415,7 +372,7 @@ lilv_create_temporary_directory_in(const char* pattern, const char* parent)
     return NULL;
   }
 
-  char* const  path_pattern     = lilv_path_join(parent, pattern);
+  char* const  path_pattern     = zix_path_join(NULL, parent, pattern);
   const size_t path_pattern_len = strlen(path_pattern);
   char* const  suffix           = path_pattern + path_pattern_len - 6;
 
@@ -431,7 +388,7 @@ lilv_create_temporary_directory_in(const char* pattern, const char* parent)
 
   return NULL;
 #else
-  char* const path_pattern = lilv_path_join(parent, pattern);
+  char* const path_pattern = zix_path_join(NULL, parent, pattern);
 
   return mkdtemp(path_pattern); // NOLINT (not a leak)
 #endif

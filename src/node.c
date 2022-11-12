@@ -1,12 +1,15 @@
 // Copyright 2007-2019 David Robillard <d@drobilla.net>
 // SPDX-License-Identifier: ISC
 
-#include "filesystem.h"
 #include "lilv_internal.h"
 
 #include "lilv/lilv.h"
 #include "serd/serd.h"
 #include "sord/sord.h"
+#include "zix/allocator.h"
+#include "zix/filesystem.h"
+#include "zix/path.h"
+#include "zix/string_view.h"
 
 #include <math.h>
 #include <stdbool.h>
@@ -147,13 +150,23 @@ lilv_new_uri(LilvWorld* world, const char* uri)
 LilvNode*
 lilv_new_file_uri(LilvWorld* world, const char* host, const char* path)
 {
-  char*    abs_path = lilv_path_absolute(path);
-  SerdNode s        = serd_node_new_file_uri(
-    (const uint8_t*)abs_path, (const uint8_t*)host, NULL, true);
+  SerdNode s = SERD_NODE_NULL;
+  if (zix_path_root_directory(path).length) {
+    s = serd_node_new_file_uri(
+      (const uint8_t*)path, (const uint8_t*)host, NULL, true);
+  } else {
+    char* const cwd      = zix_current_path(NULL);
+    char* const abs_path = zix_path_join(NULL, cwd, path);
+
+    s = serd_node_new_file_uri(
+      (const uint8_t*)abs_path, (const uint8_t*)host, NULL, true);
+
+    zix_free(NULL, abs_path);
+    zix_free(NULL, cwd);
+  }
 
   LilvNode* ret = lilv_node_new(world, LILV_VALUE_URI, (const char*)s.buf);
   serd_node_free(&s);
-  free(abs_path);
   return ret;
 }
 

@@ -4,10 +4,11 @@
 #include "lilv_test_utils.h"
 
 #include "../src/filesystem.h"
-#include "../src/lilv_internal.h"
 
 #include "lilv/lilv.h"
 #include "serd/serd.h"
+#include "zix/allocator.h"
+#include "zix/path.h"
 
 #include <errno.h>
 #include <stdbool.h>
@@ -32,10 +33,10 @@ lilv_test_env_new(void)
 
   // Set custom LV2_PATH in build directory to only use test data
   char*     test_path = lilv_path_canonical(LILV_TEST_DIR);
-  char*     lv2_path  = lilv_strjoin(test_path, "/lv2", NULL);
+  char*     lv2_path  = zix_path_join(NULL, test_path, "lv2");
   LilvNode* path      = lilv_new_string(world, lv2_path);
   lilv_world_set_option(world, LILV_OPTION_LV2_PATH, path);
-  free(lv2_path);
+  zix_free(NULL, lv2_path);
   free(test_path);
   lilv_node_free(path);
 
@@ -45,10 +46,10 @@ lilv_test_env_new(void)
 void
 lilv_test_env_free(LilvTestEnv* env)
 {
-  free(env->test_content_path);
-  free(env->test_manifest_path);
+  zix_free(NULL, env->test_content_path);
+  zix_free(NULL, env->test_manifest_path);
   lilv_node_free(env->test_bundle_uri);
-  free(env->test_bundle_path);
+  zix_free(NULL, env->test_bundle_path);
   lilv_node_free(env->plugin2_uri);
   lilv_node_free(env->plugin1_uri);
   lilv_world_free(env->world);
@@ -63,11 +64,11 @@ create_bundle(LilvTestEnv* env,
 {
   {
     char* const test_dir   = lilv_path_canonical(LILV_TEST_DIR);
-    char* const bundle_dir = lilv_path_join(test_dir, name);
+    char* const bundle_dir = zix_path_join(NULL, test_dir, name);
 
-    env->test_bundle_path = lilv_path_join(bundle_dir, "");
+    env->test_bundle_path = zix_path_join(NULL, bundle_dir, "");
 
-    lilv_free(bundle_dir);
+    zix_free(NULL, bundle_dir);
     lilv_free(test_dir);
   }
 
@@ -83,9 +84,12 @@ create_bundle(LilvTestEnv* env,
     (const uint8_t*)env->test_bundle_path, NULL, NULL, true);
 
   env->test_bundle_uri = lilv_new_uri(env->world, (const char*)s.buf);
+
   env->test_manifest_path =
-    lilv_path_join(env->test_bundle_path, "manifest.ttl");
-  env->test_content_path = lilv_path_join(env->test_bundle_path, "plugin.ttl");
+    zix_path_join(NULL, env->test_bundle_path, "manifest.ttl");
+
+  env->test_content_path =
+    zix_path_join(NULL, env->test_bundle_path, "plugin.ttl");
 
   serd_node_free(&s);
 
@@ -148,10 +152,10 @@ delete_bundle(LilvTestEnv* env)
     remove(env->test_bundle_path);
   }
 
-  free(env->test_content_path);
-  free(env->test_manifest_path);
+  zix_free(NULL, env->test_content_path);
+  zix_free(NULL, env->test_manifest_path);
   lilv_node_free(env->test_bundle_uri);
-  free(env->test_bundle_path);
+  zix_free(NULL, env->test_bundle_path);
 
   env->test_content_path  = NULL;
   env->test_manifest_path = NULL;

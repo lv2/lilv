@@ -6,6 +6,8 @@
 
 #include "lilv/lilv.h"
 #include "serd/serd.h"
+#include "zix/allocator.h"
+#include "zix/path.h"
 
 #include <sys/stat.h>
 
@@ -237,13 +239,13 @@ static void
 update_latest(const char* path, const char* name, void* data)
 {
   Latest*  latest     = (Latest*)data;
-  char*    entry_path = lilv_path_join(path, name);
+  char*    entry_path = zix_path_join(NULL, path, name);
   unsigned num        = 0;
   if (sscanf(entry_path, latest->pattern, &num) == 1) {
     struct stat st;
     if (!stat(entry_path, &st)) {
       if (st.st_mtime >= latest->time) {
-        free(latest->latest);
+        zix_free(NULL, latest->latest);
         latest->latest = entry_path;
       }
     } else {
@@ -251,7 +253,7 @@ update_latest(const char* path, const char* name, void* data)
     }
   }
   if (entry_path != latest->latest) {
-    free(entry_path);
+    zix_free(NULL, entry_path);
   }
 }
 

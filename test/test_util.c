@@ -6,6 +6,7 @@
 #include "../src/filesystem.h"
 
 #include "lilv/lilv.h"
+#include "zix/path.h"
 
 #include <assert.h>
 #include <stdio.h>
@@ -16,8 +17,8 @@ main(void)
   assert(!lilv_path_canonical(NULL));
 
   char* const dir    = lilv_create_temporary_directory("lilv_test_util_XXXXXX");
-  char* const a_path = lilv_path_join(dir, "copy_a_XXXXXX");
-  char* const b_path = lilv_path_join(dir, "copy_b_XXXXXX");
+  char* const a_path = zix_path_join(NULL, dir, "copy_a_XXXXXX");
+  char* const b_path = zix_path_join(NULL, dir, "copy_b_XXXXXX");
 
   FILE* const fa = fopen(a_path, "w");
   FILE* const fb = fopen(b_path, "w");
