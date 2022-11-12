@@ -5,6 +5,7 @@
 #include "lilv_config.h"
 #include "lilv_internal.h"
 
+#include "zix/filesystem.h"
 #include "zix/path.h"
 
 #ifdef _WIN32
@@ -48,25 +49,6 @@ is_windows_path(const char* path)
           (path[2] == '/' || path[2] == '\\'));
 }
 #endif
-
-char*
-lilv_temp_directory_path(void)
-{
-#ifdef _WIN32
-  DWORD len = GetTempPath(0, NULL);
-  char* buf = (char*)calloc(len, 1);
-  if (GetTempPath(len, buf) == 0) {
-    free(buf);
-    return NULL;
-  }
-
-  return buf;
-#else
-  const char* const tmpdir = getenv("TMPDIR");
-
-  return tmpdir ? lilv_strdup(tmpdir) : lilv_strdup("/tmp");
-#endif
-}
 
 bool
 lilv_path_is_absolute(const char* path)
@@ -367,7 +349,7 @@ lilv_create_temporary_directory_in(const char* pattern, const char* parent)
 char*
 lilv_create_temporary_directory(const char* pattern)
 {
-  char* const tmpdir = lilv_temp_directory_path();
+  char* const tmpdir = zix_temp_directory_path(NULL);
   char* const result = lilv_create_temporary_directory_in(pattern, tmpdir);
 
   free(tmpdir);

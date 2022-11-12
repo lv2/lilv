@@ -26,16 +26,6 @@ equals(char* string, const char* expected)
 }
 
 static void
-test_temp_directory_path(void)
-{
-  char* tmpdir = lilv_temp_directory_path();
-
-  assert(lilv_is_directory(tmpdir));
-
-  free(tmpdir);
-}
-
-static void
 test_path_is_absolute(void)
 {
   assert(lilv_path_is_absolute("/a/b"));
@@ -328,7 +318,6 @@ test_create_directories(void)
 int
 main(void)
 {
-  test_temp_directory_path();
   test_path_is_absolute();
   test_path_is_child();
   test_path_current();

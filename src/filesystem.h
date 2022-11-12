@@ -4,10 +4,6 @@
 #include <stdbool.h>
 #include <stdio.h>
 
-/// Return the path to a directory suitable for making temporary files
-char*
-lilv_temp_directory_path(void);
-
 /// Return true iff `path` is an absolute path
 bool
 lilv_path_is_absolute(const char* path);
