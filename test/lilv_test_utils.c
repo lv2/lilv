@@ -3,8 +3,6 @@
 
 #include "lilv_test_utils.h"
 
-#include "../src/filesystem.h"
-
 #include "lilv/lilv.h"
 #include "serd/serd.h"
 #include "zix/allocator.h"
@@ -73,7 +71,7 @@ create_bundle(LilvTestEnv* env,
     zix_free(NULL, test_dir);
   }
 
-  if (lilv_create_directories(env->test_bundle_path)) {
+  if (zix_create_directories(NULL, env->test_bundle_path)) {
     fprintf(stderr,
             "Failed to create directory '%s' (%s)\n",
             env->test_bundle_path,

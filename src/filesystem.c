@@ -356,34 +356,3 @@ lilv_create_temporary_directory(const char* pattern)
 
   return result;
 }
-
-int
-lilv_create_directories(const char* dir_path)
-{
-  char*        path     = lilv_strdup(dir_path);
-  const size_t path_len = strlen(path);
-  size_t       i        = 1;
-
-#ifdef _WIN32
-  if (is_windows_path(dir_path)) {
-    i = 3;
-  }
-#endif
-
-  char prev = path[0];
-  for (; i <= path_len; ++i) {
-    const char c = path[i];
-    if (lilv_is_dir_sep(c) || (c == '\0' && !lilv_is_dir_sep(prev))) {
-      path[i] = '\0';
-      if (mkdir(path, 0755) && (errno != EEXIST || !lilv_is_directory(path))) {
-        free(path);
-        return errno;
-      }
-      path[i] = c;
-    }
-    prev = c;
-  }
-
-  free(path);
-  return 0;
-}

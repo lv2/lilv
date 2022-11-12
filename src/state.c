@@ -11,6 +11,7 @@
 #include "zix/allocator.h"
 #include "zix/filesystem.h"
 #include "zix/path.h"
+#include "zix/status.h"
 #include "zix/tree.h"
 
 #include "lv2/atom/atom.h"
@@ -251,7 +252,7 @@ static char*
 make_path(LV2_State_Make_Path_Handle handle, const char* path)
 {
   LilvState* state = (LilvState*)handle;
-  lilv_create_directories(state->dir);
+  zix_create_directories(NULL, state->dir);
 
   return zix_path_join(NULL, state->dir, path);
 }
@@ -287,10 +288,11 @@ abstract_path(LV2_State_Map_Path_Handle handle, const char* abs_path)
     // File created by plugin earlier
     path = lilv_path_relative_to(real_path, state->scratch_dir);
     if (state->copy_dir) {
-      int st = lilv_create_directories(state->copy_dir);
+      ZixStatus st = zix_create_directories(NULL, state->copy_dir);
       if (st) {
-        LILV_ERRORF(
-          "Error creating directory %s (%s)\n", state->copy_dir, strerror(st));
+        LILV_ERRORF("Error creating directory %s (%s)\n",
+                    state->copy_dir,
+                    zix_strerror(st));
       }
 
       char* cpath = zix_path_join(NULL, state->copy_dir, path);
@@ -298,8 +300,9 @@ abstract_path(LV2_State_Map_Path_Handle handle, const char* abs_path)
       if (!copy || !zix_file_equals(NULL, real_path, copy)) {
         // No recent enough copy, make a new one
         free(copy);
-        copy = lilv_find_free_path(cpath, path_exists, NULL);
-        if ((st = lilv_copy_file(real_path, copy))) {
+        copy   = lilv_find_free_path(cpath, path_exists, NULL);
+        int rc = 0;
+        if ((rc = lilv_copy_file(real_path, copy))) {
           LILV_ERRORF("Error copying state file %s (%s)\n", copy, strerror(st));
         }
       }
@@ -1223,7 +1226,7 @@ lilv_state_save(LilvWorld*       world,
                 const char*      dir,
                 const char*      filename)
 {
-  if (!filename || !dir || lilv_create_directories(dir)) {
+  if (!filename || !dir || zix_create_directories(NULL, dir)) {
     return 1;
   }
 

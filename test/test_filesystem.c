@@ -283,38 +283,6 @@ test_create_temporary_directory(void)
   free(path1);
 }
 
-static void
-test_create_directories(void)
-{
-  char* const temp_dir = lilv_create_temporary_directory("lilvXXXXXX");
-
-  assert(lilv_is_directory(temp_dir));
-
-  char* const child_dir      = zix_path_join(NULL, temp_dir, "child");
-  char* const grandchild_dir = zix_path_join(NULL, child_dir, "grandchild");
-
-  assert(!lilv_create_directories(grandchild_dir));
-  assert(lilv_is_directory(grandchild_dir));
-  assert(lilv_is_directory(child_dir));
-
-  char* const file_path = zix_path_join(NULL, temp_dir, "lilv_test_file");
-  FILE* const f         = fopen(file_path, "w");
-
-  fprintf(f, "test\n");
-  fclose(f);
-
-  assert(lilv_create_directories(file_path));
-
-  assert(!zix_remove(file_path));
-  assert(!zix_remove(grandchild_dir));
-  assert(!zix_remove(child_dir));
-  assert(!zix_remove(temp_dir));
-  free(file_path);
-  free(child_dir);
-  free(grandchild_dir);
-  free(temp_dir);
-}
-
 int
 main(void)
 {
@@ -329,7 +297,6 @@ main(void)
   test_flock();
   test_dir_for_each();
   test_create_temporary_directory();
-  test_create_directories();
 
   return 0;
 }

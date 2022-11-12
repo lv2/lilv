@@ -112,11 +112,3 @@ lilv_create_temporary_directory_in(const char* pattern, const char* parent);
 */
 char*
 lilv_create_temporary_directory(const char* pattern);
-
-/**
-   Create the directory `dir_path` and any parent directories if necessary.
-
-   @return Zero on success, or an `errno` error code.
-*/
-int
-lilv_create_directories(const char* dir_path);
