@@ -340,7 +340,7 @@ absolute_path(LV2_State_Map_Path_Handle handle, const char* state_path)
 {
   LilvState* state = (LilvState*)handle;
   char*      path  = NULL;
-  if (lilv_path_is_absolute(state_path)) {
+  if (zix_path_is_absolute(state_path)) {
     // Absolute path, return identical path
     path = lilv_strdup(state_path);
   } else if (state->dir) {
@@ -573,7 +573,7 @@ set_state_dir_from_model(LilvState* state, const SordNode* graph)
     state->dir = zix_path_join(NULL, path, NULL);
     free(path);
   }
-  assert(!state->dir || lilv_path_is_absolute(state->dir));
+  assert(!state->dir || zix_path_is_absolute(state->dir));
 }
 
 static LilvState*

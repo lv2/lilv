@@ -3,10 +3,6 @@
 
 #include <stdbool.h>
 
-/// Return true iff `path` is an absolute path
-bool
-lilv_path_is_absolute(const char* path);
-
 /// Return true iff `path` is a child of `dir`
 bool
 lilv_path_is_child(const char* path, const char* dir);

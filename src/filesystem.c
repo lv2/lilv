@@ -42,22 +42,6 @@ is_windows_path(const char* path)
 #endif
 
 bool
-lilv_path_is_absolute(const char* path)
-{
-  if (lilv_is_dir_sep(path[0])) {
-    return true;
-  }
-
-#ifdef _WIN32
-  if (is_windows_path(path)) {
-    return true;
-  }
-#endif
-
-  return false;
-}
-
-bool
 lilv_path_is_child(const char* path, const char* dir)
 {
   if (path && dir) {

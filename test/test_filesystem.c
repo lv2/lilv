@@ -25,25 +25,6 @@ equals(char* string, const char* expected)
 }
 
 static void
-test_path_is_absolute(void)
-{
-  assert(lilv_path_is_absolute("/a/b"));
-  assert(lilv_path_is_absolute("/a"));
-  assert(lilv_path_is_absolute("/"));
-
-  assert(!lilv_path_is_absolute("a/b"));
-  assert(!lilv_path_is_absolute("a"));
-  assert(!lilv_path_is_absolute("."));
-
-#ifdef _WIN32
-  assert(lilv_path_is_absolute("C:/a/b"));
-  assert(lilv_path_is_absolute("C:\\a\\b"));
-  assert(lilv_path_is_absolute("D:/a/b"));
-  assert(lilv_path_is_absolute("D:\\a\\b"));
-#endif
-}
-
-static void
 test_path_is_child(void)
 {
   assert(lilv_path_is_child("/a/b", "/a"));
@@ -210,7 +191,6 @@ test_dir_for_each(void)
 int
 main(void)
 {
-  test_path_is_absolute();
   test_path_is_child();
   test_path_current();
   test_path_relative_to();
