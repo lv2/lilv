@@ -159,8 +159,8 @@ test_is_directory(void)
 
   assert(!lilv_is_directory(file_path)); // File
 
-  assert(!lilv_remove(file_path));
-  assert(!lilv_remove(temp_dir));
+  assert(!zix_remove(file_path));
+  assert(!zix_remove(temp_dir));
 
   free(file_path);
   free(temp_dir);
@@ -193,9 +193,9 @@ test_copy_file(void)
     assert(lilv_copy_file(file_path, "/dev/full") == ENOSPC);
   }
 
-  assert(!lilv_remove(copy_path));
-  assert(!lilv_remove(file_path));
-  assert(!lilv_remove(temp_dir));
+  assert(!zix_remove(copy_path));
+  assert(!zix_remove(file_path));
+  assert(!zix_remove(temp_dir));
 
   free(copy_path);
   free(file_path);
@@ -217,8 +217,8 @@ test_flock(void)
 
   fclose(f2);
   fclose(f1);
-  assert(!lilv_remove(file_path));
-  assert(!lilv_remove(temp_dir));
+  assert(!zix_remove(file_path));
+  assert(!zix_remove(temp_dir));
   free(file_path);
   free(temp_dir);
 }
@@ -263,9 +263,9 @@ test_dir_for_each(void)
          (!strcmp(file_list.names[0], "lilv_test_2") &&
           !strcmp(file_list.names[1], "lilv_test_1")));
 
-  assert(!lilv_remove(path2));
-  assert(!lilv_remove(path1));
-  assert(!lilv_remove(temp_dir));
+  assert(!zix_remove(path2));
+  assert(!zix_remove(path1));
+  assert(!zix_remove(temp_dir));
 
   free(file_list.names[0]);
   free(file_list.names[1]);
@@ -287,8 +287,8 @@ test_create_temporary_directory(void)
   assert(strcmp(path1, path2));
   assert(lilv_is_directory(path2));
 
-  assert(!lilv_remove(path2));
-  assert(!lilv_remove(path1));
+  assert(!zix_remove(path2));
+  assert(!zix_remove(path1));
   free(path2);
   free(path1);
 }
@@ -315,10 +315,10 @@ test_create_directories(void)
 
   assert(lilv_create_directories(file_path));
 
-  assert(!lilv_remove(file_path));
-  assert(!lilv_remove(grandchild_dir));
-  assert(!lilv_remove(child_dir));
-  assert(!lilv_remove(temp_dir));
+  assert(!zix_remove(file_path));
+  assert(!zix_remove(grandchild_dir));
+  assert(!zix_remove(child_dir));
+  assert(!zix_remove(temp_dir));
   free(file_path);
   free(child_dir);
   free(grandchild_dir);

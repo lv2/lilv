@@ -6,6 +6,7 @@
 #include "../src/filesystem.h"
 
 #include "lilv/lilv.h"
+#include "zix/filesystem.h"
 #include "zix/path.h"
 
 #include <assert.h>
@@ -29,9 +30,9 @@ main(void)
   assert(lilv_copy_file(a_path, "not/a/dir/copy"));
   assert(!lilv_copy_file(a_path, "copy_c"));
 
-  assert(!lilv_remove(a_path));
-  assert(!lilv_remove(b_path));
-  assert(!lilv_remove(dir));
+  assert(!zix_remove(a_path));
+  assert(!zix_remove(b_path));
+  assert(!zix_remove(dir));
 
   lilv_free(b_path);
   lilv_free(a_path);

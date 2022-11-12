@@ -124,7 +124,3 @@ lilv_create_temporary_directory(const char* pattern);
 */
 int
 lilv_create_directories(const char* dir_path);
-
-/// Remove the file or empty directory at `path`
-int
-lilv_remove(const char* path);

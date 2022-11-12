@@ -1305,7 +1305,7 @@ static void
 try_unlink(const char* state_dir, const char* path)
 {
   if (!strncmp(state_dir, path, strlen(state_dir))) {
-    if (zix_file_type(path) != ZIX_FILE_TYPE_NONE && lilv_remove(path)) {
+    if (zix_file_type(path) != ZIX_FILE_TYPE_NONE && zix_remove(path)) {
       LILV_ERRORF("Failed to remove %s (%s)\n", path, strerror(errno));
     }
   }
@@ -1397,7 +1397,7 @@ lilv_state_delete(LilvWorld* world, const LilvState* state)
       }
     }
 
-    if (lilv_remove(state->dir)) {
+    if (zix_remove(state->dir)) {
       LILV_ERRORF(
         "Failed to remove directory %s (%s)\n", state->dir, strerror(errno));
     }

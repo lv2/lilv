@@ -405,15 +405,3 @@ lilv_create_directories(const char* dir_path)
   free(path);
   return 0;
 }
-
-int
-lilv_remove(const char* path)
-{
-#ifdef _WIN32
-  if (lilv_is_directory(path)) {
-    return !RemoveDirectory(path);
-  }
-#endif
-
-  return remove(path);
-}

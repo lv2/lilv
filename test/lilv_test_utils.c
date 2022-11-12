@@ -142,11 +142,11 @@ void
 delete_bundle(LilvTestEnv* env)
 {
   if (env->test_content_path) {
-    lilv_remove(env->test_content_path);
+    zix_remove(env->test_content_path);
   }
 
   if (env->test_manifest_path) {
-    lilv_remove(env->test_manifest_path);
+    zix_remove(env->test_manifest_path);
   }
 
   if (env->test_bundle_path) {

@@ -148,7 +148,7 @@ remove_file(const char* path, const char* name, void* data)
   (void)data;
 
   char* const full_path = zix_path_join(NULL, path, name);
-  assert(!lilv_remove(full_path));
+  assert(!zix_remove(full_path));
   free(full_path);
 }
 
@@ -159,11 +159,11 @@ cleanup_test_directories(const TestDirectories dirs)
   lilv_dir_for_each(dirs.copy, NULL, remove_file);
   lilv_dir_for_each(dirs.link, NULL, remove_file);
 
-  assert(!lilv_remove(dirs.link));
-  assert(!lilv_remove(dirs.copy));
-  assert(!lilv_remove(dirs.scratch));
-  assert(!lilv_remove(dirs.shared));
-  assert(!lilv_remove(dirs.top));
+  assert(!zix_remove(dirs.link));
+  assert(!zix_remove(dirs.copy));
+  assert(!zix_remove(dirs.scratch));
+  assert(!zix_remove(dirs.shared));
+  assert(!zix_remove(dirs.top));
 
   zix_free(NULL, dirs.link);
   zix_free(NULL, dirs.copy);
@@ -663,8 +663,8 @@ test_to_files(void)
   lilv_instance_free(instance);
   lilv_dir_for_each(bundle_2_path, NULL, remove_file);
   lilv_dir_for_each(bundle_1_path, NULL, remove_file);
-  assert(!lilv_remove(bundle_2_path));
-  assert(!lilv_remove(bundle_1_path));
+  assert(!zix_remove(bundle_2_path));
+  assert(!zix_remove(bundle_1_path));
   cleanup_test_directories(dirs);
 
   zix_free(NULL, recfile_link_2);
@@ -742,7 +742,7 @@ test_multi_save(void)
 
   lilv_instance_free(instance);
   lilv_dir_for_each(bundle_1_path, NULL, remove_file);
-  lilv_remove(bundle_1_path);
+  zix_remove(bundle_1_path);
   cleanup_test_directories(dirs);
 
   free(state_path);
@@ -850,9 +850,9 @@ test_files_round_trip(void)
   lilv_dir_for_each(bundle_1_1_path, NULL, remove_file);
   lilv_dir_for_each(bundle_1_2_path, NULL, remove_file);
   lilv_dir_for_each(bundle_2_path, NULL, remove_file);
-  lilv_remove(bundle_1_1_path);
-  lilv_remove(bundle_1_2_path);
-  lilv_remove(bundle_2_path);
+  zix_remove(bundle_1_1_path);
+  zix_remove(bundle_1_2_path);
+  zix_remove(bundle_2_path);
   cleanup_test_directories(dirs);
 
   lilv_state_free(state_2_loaded);
