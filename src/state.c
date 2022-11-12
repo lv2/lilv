@@ -315,12 +315,10 @@ abstract_path(LV2_State_Map_Path_Handle handle, const char* abs_path)
     }
   } else if (state->link_dir) {
     // New path outside state directory, make a link
-    char* const name = lilv_path_filename(real_path);
+    const ZixStringView name = zix_path_filename(real_path);
 
     // Find a free name in the (virtual) state directory
-    path = lilv_find_free_path(name, lilv_state_has_path, state);
-
-    free(name);
+    path = lilv_find_free_path(name.data, lilv_state_has_path, state);
   } else {
     // No link directory, preserve absolute path
     path = lilv_strdup(abs_path);

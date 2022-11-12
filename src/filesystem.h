@@ -16,14 +16,6 @@ char*
 lilv_path_parent(const char* path);
 
 /**
-   Return the filename component of `path` without any directories.
-
-   Returns the empty string if `path` is the root path.
-*/
-char*
-lilv_path_filename(const char* path);
-
-/**
    Create a unique temporary directory.
 
    This is like lilv_create_temporary_directory_in(), except it creates the

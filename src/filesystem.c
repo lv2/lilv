@@ -69,28 +69,6 @@ lilv_path_parent(const char* path)
 }
 
 char*
-lilv_path_filename(const char* path)
-{
-  const size_t path_len = strlen(path);
-  size_t       last_sep = path_len;
-  for (size_t i = 0; i < path_len; ++i) {
-    if (lilv_is_dir_sep(path[i])) {
-      last_sep = i;
-    }
-  }
-
-  if (last_sep >= path_len) {
-    return lilv_strdup(path);
-  }
-
-  const size_t ret_len = path_len - last_sep;
-  char* const  ret     = (char*)calloc(ret_len + 1, 1);
-
-  strncpy(ret, path + last_sep + 1, ret_len);
-  return ret;
-}
-
-char*
 lilv_create_temporary_directory(const char* pattern)
 {
   char* const tmpdir       = zix_temp_directory_path(NULL);

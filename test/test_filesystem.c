@@ -53,34 +53,11 @@ test_path_parent(void)
   assert(equals(lilv_path_parent("a"), "."));
 }
 
-static void
-test_path_filename(void)
-{
-  // Cases from cppreference.com for std::filesystem::path::filename
-  assert(equals(lilv_path_filename("/foo/bar.txt"), "bar.txt"));
-  assert(equals(lilv_path_filename("/foo/.bar"), ".bar"));
-  assert(equals(lilv_path_filename("/foo/bar/"), ""));
-  assert(equals(lilv_path_filename("/foo/."), "."));
-  assert(equals(lilv_path_filename("/foo/.."), ".."));
-  assert(equals(lilv_path_filename("."), "."));
-  assert(equals(lilv_path_filename(".."), ".."));
-  assert(equals(lilv_path_filename("/"), ""));
-  assert(equals(lilv_path_filename("//host"), "host"));
-
-#ifdef _WIN32
-  assert(equals(lilv_path_filename("C:/foo/bar.txt"), "bar.txt"));
-  assert(equals(lilv_path_filename("C:\\foo\\bar.txt"), "bar.txt"));
-  assert(equals(lilv_path_filename("foo/bar.txt"), "bar.txt"));
-  assert(equals(lilv_path_filename("foo\\bar.txt"), "bar.txt"));
-#endif
-}
-
 int
 main(void)
 {
   test_path_is_child();
   test_path_parent();
-  test_path_filename();
 
   return 0;
 }
