@@ -5,6 +5,7 @@
 #include "lilv_config.h"
 #include "lilv_internal.h"
 
+#include "zix/allocator.h"
 #include "zix/filesystem.h"
 #include "zix/path.h"
 
@@ -12,7 +13,6 @@
 #  include <direct.h>
 #  include <io.h>
 #  include <windows.h>
-#  define mkdir(path, flags) _mkdir(path)
 #  define S_ISDIR(mode) (((mode)&S_IFMT) == S_IFDIR)
 #else
 #  include <dirent.h>
@@ -312,47 +312,14 @@ lilv_dir_for_each(const char* path,
 }
 
 char*
-lilv_create_temporary_directory_in(const char* pattern, const char* parent)
-{
-#ifdef _WIN32
-  static const char chars[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-  static const int  n_chars = sizeof(chars) - 1;
-
-  const size_t pattern_len = strlen(pattern);
-  if (pattern_len < 7 || strcmp(pattern + pattern_len - 6, "XXXXXX")) {
-    errno = EINVAL;
-    return NULL;
-  }
-
-  char* const  path_pattern     = zix_path_join(NULL, parent, pattern);
-  const size_t path_pattern_len = strlen(path_pattern);
-  char* const  suffix           = path_pattern + path_pattern_len - 6;
-
-  for (unsigned attempt = 0; attempt < 128; ++attempt) {
-    for (unsigned i = 0; i < 6; ++i) {
-      suffix[i] = chars[rand() % n_chars];
-    }
-
-    if (!mkdir(path_pattern, 0700)) {
-      return path_pattern;
-    }
-  }
-
-  return NULL;
-#else
-  char* const path_pattern = zix_path_join(NULL, parent, pattern);
-
-  return mkdtemp(path_pattern); // NOLINT (not a leak)
-#endif
-}
-
-char*
 lilv_create_temporary_directory(const char* pattern)
 {
-  char* const tmpdir = zix_temp_directory_path(NULL);
-  char* const result = lilv_create_temporary_directory_in(pattern, tmpdir);
+  char* const tmpdir       = zix_temp_directory_path(NULL);
+  char* const path_pattern = zix_path_join(NULL, tmpdir, pattern);
+  char* const result       = zix_create_temporary_directory(NULL, path_pattern);
 
-  free(tmpdir);
+  zix_free(NULL, path_pattern);
+  zix_free(NULL, tmpdir);
 
   return result;
 }

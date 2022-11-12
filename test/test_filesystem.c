@@ -265,24 +265,6 @@ test_dir_for_each(void)
   free(temp_dir);
 }
 
-static void
-test_create_temporary_directory(void)
-{
-  char* const path1 = lilv_create_temporary_directory("lilvXXXXXX");
-
-  assert(lilv_is_directory(path1));
-
-  char* const path2 = lilv_create_temporary_directory("lilvXXXXXX");
-
-  assert(strcmp(path1, path2));
-  assert(lilv_is_directory(path2));
-
-  assert(!zix_remove(path2));
-  assert(!zix_remove(path1));
-  free(path2);
-  free(path1);
-}
-
 int
 main(void)
 {
@@ -296,7 +278,6 @@ main(void)
   test_copy_file();
   test_flock();
   test_dir_for_each();
-  test_create_temporary_directory();
 
   return 0;
 }
