@@ -997,14 +997,14 @@ add_state_to_manifest(LilvWorld*      lworld,
     LILV_ERRORF(
       "Failed to open %s for writing (%s)\n", manifest_path, strerror(errno));
     r = 1;
+  } else {
+    SerdWriter* writer = ttl_file_writer(wfd, &manifest, &env);
+    zix_file_lock(wfd, ZIX_FILE_LOCK_BLOCK);
+    sord_write(model, writer, NULL);
+    zix_file_unlock(wfd, ZIX_FILE_LOCK_BLOCK);
+    serd_writer_free(writer);
+    fclose(wfd);
   }
-
-  SerdWriter* writer = ttl_file_writer(wfd, &manifest, &env);
-  zix_file_lock(wfd, ZIX_FILE_LOCK_BLOCK);
-  sord_write(model, writer, NULL);
-  zix_file_unlock(wfd, ZIX_FILE_LOCK_BLOCK);
-  serd_writer_free(writer);
-  fclose(wfd);
 
   sord_free(model);
   serd_node_free(&file);
