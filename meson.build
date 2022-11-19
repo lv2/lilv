@@ -179,13 +179,17 @@ install_headers(cpp_headers, subdir: versioned_name / 'lilv')
 # Tools #
 #########
 
-subdir('tools')
+if not get_option('tools').disabled()
+  subdir('tools')
+endif
 
 ############
 # Bindings #
 ############
 
-subdir('bindings/python')
+if not get_option('bindings_py').disabled()
+  subdir('bindings/python')
+endif
 
 ###########
 # Support #
