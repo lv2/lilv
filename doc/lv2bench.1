@@ -1,36 +1,55 @@
 .\" # Copyright 2022 David Robillard <d@drobilla.net>
 .\" # SPDX-License-Identifier: ISC
-
-.TH LV2BENCH 1 "08 Jul 2022"
-
-.SH NAME
-.B lv2bench \- benchmark all installed and supported LV2 plugins
-.SH SYNOPSIS
-.B lv2bench [OPTIONS] [PLUGIN_URI]
-
-.SH OPTIONS
-.TP
-\fB\-b BLOCK_SIZE\fR
-Block size in audio frames
-
-.TP
-\fB\-f\fR, \fB\-\-full\fR
-Full plottable output
-
-.TP
-\fB\-h\fR, \fB\-\-help\fR
-Display help and exit
-
-.TP
-\fB\-n FRAMES\fR
-Total number of audio frames to process
-
-.TP
-\fB\-\-version\fR
-Display version information and exit
-
-.SH "SEE ALSO"
-.BR lv2ls(1)
-
-.SH AUTHOR
-lv2bench was written by David Robillard <d@drobilla.net>
+.Dd Nov 29, 2022
+.Dt LV2BENCH 1
+.Os Lilv 0.24.21
+.Sh NAME
+.Nm lv2bench
+.Nd benchmark all installed and supported LV2 plugins
+.Sh SYNOPSIS
+.Nm lv2bench
+.Op Fl fhV
+.Op Fl b Ar block_size
+.Op Fl n Ar frames
+.Op Fl Fl full
+.Op Fl Fl help
+.Op Fl Fl version
+.Sh DESCRIPTION
+.Nm
+is a simple utility for running basic benchmarks of installed LV2 plugins.
+.Pp
+The options are as follows:
+.Pp
+.Bl -tag -compact -width 3n
+.It Fl V , Fl Fl version
+Display version information and exit.
+.Pp
+.It Fl b Ar block_size
+Block size, in audio frames.
+.Pp
+.It Fl f , Fl Fl full
+Emit full plottable output with values for every block.
+.Pp
+.It Fl h , Fl Fl help
+Print the command line options.
+.Pp
+.It Fl n Ar frames
+Total number of audio frames to process.
+.El
+.Sh EXIT STATUS
+.Nm
+exits with a status of 0, or non-zero if an error occurred.
+.Sh SEE ALSO
+.Bl -item -compact
+.It
+.Xr lv2apply 1
+.It
+.Xr lv2info 1
+.It
+.Xr lv2ls 1
+.El
+.Sh AUTHORS
+.Nm
+is a part of lilv, by
+.An David Robillard
+.Mt d@drobilla.net .

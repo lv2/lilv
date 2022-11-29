@@ -1,33 +1,59 @@
-.\" # Copyright 2010-2016 David Robillard <d@drobilla.net>
+.\" # Copyright 2010-2022 David Robillard <d@drobilla.net>
 .\" # SPDX-License-Identifier: ISC
-
-.TH LV2LS 1 "26 Aug 2016"
-
-.SH NAME
-.B lv2ls \- list all installed LV2 plugins
-
-.SH SYNOPSIS
-.B lv2ls [OPTION]...
-
-.SH OPTIONS
-.TP
-\fB\-n\fR, \fB\-\-names\fR
-Show names instead of URIs
-
-.TP
-\fB\-\-help\fR
-Display help and exit
-
-.TP
-\fB\-\-version\fR
-Display version information and exit
-
-.SH "SEE ALSO"
-.BR lilv(3),
-.BR lv2info(1)
-
-.SH AUTHOR
-lv2ls was written by David Robillard <d@drobilla.net>
-.PP
-This manual page was written by Jaromír Mikes <mira.mikes@seznam.cz>
-and David Robillard <d@drobilla.net>
+.Dd Nov 29, 2022
+.Dt LV2LS 1
+.Os Lilv 0.24.21
+.Sh NAME
+.Nm lv2ls
+.Nd list all installed LV2 plugins
+.Sh SYNOPSIS
+.Nm lv2ls
+.Op Fl Vhn
+.Op Fl Fl help
+.Op Fl Fl names
+.Op Fl Fl version
+.Sh DESCRIPTION
+.Nm
+prints the URI of every installed LV2 plugin to stdout.
+.Pp
+Plugins are discovered with the same mechanism used by most hosts.
+The default path can be overridden by setting the
+.Ev LV2_PATH
+environment variable.
+.Pp
+The options are as follows:
+.Pp
+.Bl -tag -compact -width 3n
+.It Fl V , Fl Fl version
+Display version information and exit.
+.Pp
+.It Fl h , Fl Fl help
+Print the command line options.
+.Pp
+.It Fl n , Fl Fl names
+Show names instead of URIs.
+.El
+.Sh ENVIRONMENT
+.Bl -tag -width LV2_PATH -compact
+.It Ev LV2_PATH
+List of directories to search for LV2 plugin bundles,
+in the style of
+.Ev PATH .
+.El
+.Sh EXIT STATUS
+.Nm
+exits with a status of 0, or non-zero if an error occurred.
+.Sh SEE ALSO
+.Bl -item -compact
+.It
+.Xr lv2apply 1
+.It
+.Xr lv2bench 1
+.It
+.Xr lv2info 1
+.El
+.Sh AUTHORS
+.Nm
+is a part of lilv, by
+.An David Robillard
+.Mt d@drobilla.net .

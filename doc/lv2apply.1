@@ -1,37 +1,66 @@
-.\" # Copyright 2016 David Robillard <d@drobilla.net>
+.\" # Copyright 2010-2022 David Robillard <d@drobilla.net>
 .\" # SPDX-License-Identifier: ISC
-
-.TH LV2APPLY 1 "05 Sep 2016"
-
-.SH NAME
-.B lv2apply \- apply an LV2 plugin to an audio file
-.SH SYNOPSIS
-.B lv2apply [OPTION]... PLUGIN_URI
-
-.SH OPTIONS
-.TP
-\fB\-i IN_FILE\fR
-Input file
-
-.TP
-\fB\-o OUT_FILE\fR
-Output file
-
-.TP
-\fB\-c SYM VAL\fR
-Set control port SYM to VAL
-
-.TP
-\fB\-\-help\fR
-Display help and exit
-
-.TP
-\fB\-\-version\fR
-Display version information and exit
-
-.SH "SEE ALSO"
-.BR lv2ls(1)
-.BR lv2info(1)
-
-.SH AUTHOR
-lv2apply was written by David Robillard <d@drobilla.net>
+.Dd Nov 29, 2022
+.Dt LV2APPLY 1
+.Os Lilv 0.24.21
+.Sh NAME
+.Nm lv2apply
+.Nd apply an LV2 plugin to an audio file
+.Sh SYNOPSIS
+.Nm lv2apply
+.Op Fl Vh
+.Op Fl c Ar symbol value
+.Op Fl i Ar in_file
+.Op Fl o Ar out_file
+.Op Fl Fl help
+.Op Fl Fl version
+.Ar plugin_uri
+.Sh DESCRIPTION
+.Nm
+Runs an LV2 plugin on an audio file and writes the processed output to another.
+.Pp
+The options are as follows:
+.Pp
+.Bl -tag -compact -width 3n
+.It Fl V , Fl Fl version
+Display version information and exit.
+.Pp
+.It Fl c Ar symbol value
+Set control port
+.Ar symbol
+to
+.Ar value.
+.Pp
+.It Fl h , Fl Fl help
+Print the command line options.
+.Pp
+.It Fl i Ar in_file
+Input file path.
+.Pp
+.It Fl o Ar out_file
+Output file path.
+.El
+.Sh ENVIRONMENT
+.Bl -tag -width LV2_PATH -compact
+.It Ev LV2_PATH
+List of directories to search for LV2 plugin bundles,
+in the style of
+.Ev PATH .
+.El
+.Sh EXIT STATUS
+.Nm
+exits with a status of 0, or non-zero if an error occurred.
+.Sh SEE ALSO
+.Bl -item -compact
+.It
+.Xr lv2bench 1
+.It
+.Xr lv2info 1
+.It
+.Xr lv2ls 1
+.El
+.Sh AUTHORS
+.Nm
+is a part of lilv, by
+.An David Robillard
+.Mt d@drobilla.net .
