@@ -45,11 +45,11 @@ print_usage(void)
   printf("lv2bench - Benchmark all installed and supported LV2 plugins.\n");
   printf("Usage: lv2bench [OPTIONS] [PLUGIN_URI]\n");
   printf("\n");
+  printf("  -V, --version  Display version information and exit\n");
   printf("  -b BLOCK_SIZE  Specify block size, in audio frames.\n");
   printf("  -f, --full     Full plottable output.\n");
   printf("  -h, --help     Display this help and exit.\n");
   printf("  -n FRAMES      Total number of audio frames to process\n");
-  printf("  --version      Display version information and exit\n");
 }
 
 static double
@@ -201,12 +201,12 @@ main(int argc, char** argv)
 
   int a = 1;
   for (; a < argc; ++a) {
-    if (!strcmp(argv[a], "--version")) {
+    if (!strcmp(argv[a], "-V") || !strcmp(argv[a], "--version")) {
       print_version();
       return 0;
     }
 
-    if (!strcmp(argv[a], "--help")) {
+    if (!strcmp(argv[a], "-h") || !strcmp(argv[a], "--help")) {
       print_usage();
       return 0;
     }

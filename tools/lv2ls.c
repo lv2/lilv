@@ -40,9 +40,9 @@ print_usage(void)
   printf("Usage: lv2ls [OPTION]...\n");
   printf("List all installed LV2 plugins.\n");
   printf("\n");
+  printf("  -V, --version  Display version information and exit\n");
+  printf("  -h, --help     Display this help and exit\n");
   printf("  -n, --names    Show names instead of URIs\n");
-  printf("  --help         Display this help and exit\n");
-  printf("  --version      Display version information and exit\n");
   printf("\n");
   printf("The environment variable LV2_PATH can be used to control where\n");
   printf(
@@ -56,10 +56,10 @@ main(int argc, char** argv)
   for (int i = 1; i < argc; ++i) {
     if (!strcmp(argv[i], "--names") || !strcmp(argv[i], "-n")) {
       show_names = true;
-    } else if (!strcmp(argv[i], "--version")) {
+    } else if (!strcmp(argv[i], "-V") || !strcmp(argv[i], "--version")) {
       print_version();
       return 0;
-    } else if (!strcmp(argv[i], "--help")) {
+    } else if (!strcmp(argv[i], "-h") || !strcmp(argv[i], "--help")) {
       print_usage();
       return 0;
     } else {

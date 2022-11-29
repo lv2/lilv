@@ -206,11 +206,11 @@ print_usage(int status)
   fprintf(status ? stderr : stdout,
           "Usage: lv2apply [OPTION]... PLUGIN_URI\n"
           "Apply an LV2 plugin to an audio file.\n\n"
-          "  -i IN_FILE   Input file\n"
-          "  -o OUT_FILE  Output file\n"
-          "  -c SYM VAL   Control value\n"
-          "  --help       Display this help and exit\n"
-          "  --version    Display version information and exit\n");
+          "  -V, --version  Display version information and exit\n"
+          "  -c SYM VAL     Control value\n"
+          "  -h, --help     Display this help and exit\n"
+          "  -i IN_FILE     Input file\n"
+          "  -o OUT_FILE    Output file\n");
   return status;
 }
 
@@ -223,13 +223,13 @@ main(int argc, char** argv)
   /* Parse command line arguments */
   const char* plugin_uri = NULL;
   for (int i = 1; i < argc; ++i) {
-    if (!strcmp(argv[i], "--version")) {
+    if (!strcmp(argv[i], "-V") || !strcmp(argv[i], "--version")) {
       free(self.params);
       print_version();
       return 0;
     }
 
-    if (!strcmp(argv[i], "--help")) {
+    if (!strcmp(argv[i], "-h") || !strcmp(argv[i], "--help")) {
       free(self.params);
       return print_usage(0);
     }

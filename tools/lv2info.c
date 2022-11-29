@@ -330,10 +330,10 @@ print_usage(void)
 {
   printf("Usage: lv2info [OPTION]... PLUGIN_URI\n"
          "Print information about an installed LV2 plugin.\n\n"
-         "  -p FILE      Write Turtle description of plugin to FILE\n"
-         "  -m FILE      Add record of plugin to manifest FILE\n"
-         "  --help       Display this help and exit\n"
-         "  --version    Display version information and exit\n\n"
+         "  -V, --version  Display version information and exit\n"
+         "  -h, --help     Display this help and exit\n"
+         "  -m FILE        Add record of plugin to manifest FILE\n"
+         "  -p FILE        Write Turtle description of plugin to FILE\n\n"
          "For -p and -m, Turtle files are appended to (not overwritten),\n"
          "and @prefix directives are only written if the file was empty.\n"
          "This allows several plugins to be added to a single file.\n");
@@ -351,12 +351,12 @@ main(int argc, char** argv)
   const char* manifest_file = NULL;
   const char* plugin_uri    = NULL;
   for (int i = 1; i < argc; ++i) {
-    if (!strcmp(argv[i], "--version")) {
+    if (!strcmp(argv[i], "-V") || !strcmp(argv[i], "--version")) {
       print_version();
       return 0;
     }
 
-    if (!strcmp(argv[i], "--help")) {
+    if (!strcmp(argv[i], "-h") || !strcmp(argv[i], "--help")) {
       print_usage();
       return 0;
     }

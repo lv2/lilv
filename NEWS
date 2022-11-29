@@ -1,10 +1,11 @@
 lilv (0.24.21) unstable; urgency=medium
 
+  * Clean up inconsistent tool command line interfaces
   * Fix dependencies in pkg-config file
   * Fix potential crash when writing state files fails
   * Override pkg-config dependency within meson
 
- -- David Robillard <d@drobilla.net>  Tue, 15 Nov 2022 20:21:29 +0000
+ -- David Robillard <d@drobilla.net>  Tue, 29 Nov 2022 20:17:07 +0000
 
 lilv (0.24.20) stable; urgency=medium
 
