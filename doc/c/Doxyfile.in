@@ -26,6 +26,6 @@ PREDEFINED             = LILV_API LILV_DEPRECATED
 
 RECURSIVE              = YES
 STRIP_FROM_PATH        = @LILV_SRCDIR@
-INPUT                  = @LILV_SRCDIR@/include
+INPUT                  = @LILV_SRCDIR@/include/lilv/lilv.h
 
 OUTPUT_DIRECTORY       = @DOX_OUTPUT@
