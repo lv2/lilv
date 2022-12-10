@@ -116,10 +116,9 @@ lilv_get_lang(void)
       lang[i] = '-'; // Convert _ to -
     } else if (env_lang[i] >= 'A' && env_lang[i] <= 'Z') {
       lang[i] = env_lang[i] + ('a' - 'A'); // Convert to lowercase
-    } else if (env_lang[i] >= 'a' && env_lang[i] <= 'z') {
-      lang[i] = env_lang[i]; // Lowercase letter, copy verbatim
-    } else if (env_lang[i] >= '0' && env_lang[i] <= '9') {
-      lang[i] = env_lang[i]; // Digit, copy verbatim
+    } else if ((env_lang[i] >= 'a' && env_lang[i] <= 'z') ||
+               (env_lang[i] >= '0' && env_lang[i] <= '9')) {
+      lang[i] = env_lang[i]; // Lowercase letter or digit, copy verbatim
     } else if (env_lang[i] == '\0' || env_lang[i] == '.') {
       // End, or start of suffix (e.g. en_CA.utf-8), finished
       lang[i] = '\0';

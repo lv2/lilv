@@ -83,12 +83,7 @@ lilv_nodes_from_stream_objects_i18n(LilvWorld*    world,
   }
 
   const SordNode* best = nolang;
-  if (syslang && partial) {
-    // Partial language match for system language
-    best = partial;
-  } else if (!best) {
-    // No languages matches at all, and no untranslated value
-    // Use any value, if possible
+  if ((syslang && partial) || !best) {
     best = partial;
   }
 
