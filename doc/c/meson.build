@@ -4,13 +4,17 @@
 config = configuration_data()
 config.set('LILV_VERSION', meson.project_version())
 
-conf_py = configure_file(configuration: config,
-                         input: files('../conf.py.in'),
-                         output: 'conf.py')
+conf_py = configure_file(
+  configuration: config,
+  input: files('../conf.py.in'),
+  output: 'conf.py',
+)
 
-configure_file(copy: true,
-               input: files('../summary.rst'),
-               output: 'summary.rst')
+configure_file(
+  copy: true,
+  input: files('../summary.rst'),
+  output: 'summary.rst',
+)
 
 c_rst_files = files(
   'index.rst',

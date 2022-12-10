@@ -17,9 +17,11 @@ if get_option('strict')
   # Check licensing metadata
   reuse = find_program('reuse', required: false)
   if reuse.found()
-    test('REUSE', reuse,
-         args: ['--root', lilv_src_root, 'lint'],
-         suite: 'data')
+    test(
+      'REUSE', reuse,
+      args: ['--root', lilv_src_root, 'lint'],
+      suite: 'data',
+    )
   endif
 endif
 
@@ -88,11 +90,15 @@ define_args = [
 ]
 
 foreach unit : unit_tests
-  test(unit,
-       executable('test_@0@'.format(unit),
-                  files('lilv_test_utils.c', 'test_@0@.c'.format(unit)),
-                  c_args: define_args + test_args + c_suppressions,
-                  include_directories: include_directories('../src'),
-                  dependencies: [lv2_dep, lilv_static_dep]),
-       suite: 'unit')
+  test(
+    unit,
+    executable(
+      'test_@0@'.format(unit),
+      files('lilv_test_utils.c', 'test_@0@.c'.format(unit)),
+      c_args: define_args + test_args + c_suppressions,
+      include_directories: include_directories('../src'),
+      dependencies: [lv2_dep, lilv_static_dep],
+    ),
+    suite: 'unit',
+  )
 endforeach
