@@ -47,20 +47,35 @@ uri_to_path(const char* uri)
 #  pragma GCC diagnostic pop
 #endif
 
-#define LILV_WRAP0(RT, prefix, name) \
-  inline RT name() { return lilv_##prefix##_##name(me); }
+#define LILV_WRAP0(RT, prefix, name)   \
+  inline RT name()                     \
+  {                                    \
+    return lilv_##prefix##_##name(me); \
+  }
 
 #define LILV_WRAP0_VOID(prefix, name) \
-  inline void name() { lilv_##prefix##_##name(me); }
+  inline void name()                  \
+  {                                   \
+    lilv_##prefix##_##name(me);       \
+  }
 
 #define LILV_WRAP1(RT, prefix, name, T1, a1) \
-  inline RT name(T1 a1) { return lilv_##prefix##_##name(me, a1); }
+  inline RT name(T1 a1)                      \
+  {                                          \
+    return lilv_##prefix##_##name(me, a1);   \
+  }
 
 #define LILV_WRAP1_VOID(prefix, name, T1, a1) \
-  inline void name(T1 a1) { lilv_##prefix##_##name(me, a1); }
+  inline void name(T1 a1)                     \
+  {                                           \
+    lilv_##prefix##_##name(me, a1);           \
+  }
 
 #define LILV_WRAP2(RT, prefix, name, T1, a1, T2, a2) \
-  inline RT name(T1 a1, T2 a2) { return lilv_##prefix##_##name(me, a1, a2); }
+  inline RT name(T1 a1, T2 a2)                       \
+  {                                                  \
+    return lilv_##prefix##_##name(me, a1, a2);       \
+  }
 
 #define LILV_WRAP3(RT, prefix, name, T1, a1, T2, a2, T3, a3) \
   inline RT name(T1 a1, T2 a2, T3 a3)                        \
@@ -69,11 +84,17 @@ uri_to_path(const char* uri)
   }
 
 #define LILV_WRAP2_VOID(prefix, name, T1, a1, T2, a2) \
-  inline void name(T1 a1, T2 a2) { lilv_##prefix##_##name(me, a1, a2); }
+  inline void name(T1 a1, T2 a2)                      \
+  {                                                   \
+    lilv_##prefix##_##name(me, a1, a2);               \
+  }
 
 #ifndef SWIG
 #  define LILV_WRAP_CONVERSION(CT) \
-    inline operator CT*() const { return me; }
+    inline operator CT*() const    \
+    {                              \
+      return me;                   \
+    }
 #else
 #  define LILV_WRAP_CONVERSION(CT)
 #endif
@@ -227,11 +248,17 @@ struct Port {
 
   LILV_WRAP_CONVERSION(const LilvPort);
 
-#define LILV_PORT_WRAP0(RT, name) \
-  inline RT name() { return lilv_port_##name(parent, me); }
+#define LILV_PORT_WRAP0(RT, name)        \
+  inline RT name()                       \
+  {                                      \
+    return lilv_port_##name(parent, me); \
+  }
 
-#define LILV_PORT_WRAP1(RT, name, T1, a1) \
-  inline RT name(T1 a1) { return lilv_port_##name(parent, me, a1); }
+#define LILV_PORT_WRAP1(RT, name, T1, a1)    \
+  inline RT name(T1 a1)                      \
+  {                                          \
+    return lilv_port_##name(parent, me, a1); \
+  }
 
   LILV_PORT_WRAP1(LilvNodes*, get_value, LilvNode*, predicate);
   LILV_PORT_WRAP0(LilvNodes*, get_properties)
@@ -378,10 +405,10 @@ struct World {
 
   inline ~World() { lilv_world_free(me); }
 
-  World(const World&) = delete;
+  World(const World&)            = delete;
   World& operator=(const World&) = delete;
 
-  World(World&&) = delete;
+  World(World&&)            = delete;
   World& operator=(World&&) = delete;
 
   inline LilvNode* new_uri(const char* uri) const
