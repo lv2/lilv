@@ -2,17 +2,19 @@
 # SPDX-License-Identifier: 0BSD OR ISC
 
 Checks: >
-  -*-else-after-return,
   -*-magic-numbers,
+  -*-uppercase-literal-suffix,
   -android-cloexec-fopen,
   -bugprone-branch-clone,
   -bugprone-narrowing-conversions,
   -bugprone-suspicious-string-compare,
   -cert-err33-c,
+  -cert-err34-c,
   -clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling,
+  -clang-analyzer-valist.Uninitialized,
   -concurrency-mt-unsafe,
-  -cppcoreguidelines-avoid-non-const-global-variables,
   -cppcoreguidelines-narrowing-conversions,
+  -google-readability-todo,
   -hicpp-multiway-paths-covered,
   -hicpp-signed-bitwise,
   -readability-function-cognitive-complexity,
