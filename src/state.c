@@ -1204,7 +1204,7 @@ lilv_state_make_links(const LilvState* state, const char* dir)
     char* const          path = zix_path_join(NULL, dir, pm->rel);
 
     if (path_is_child(pm->abs, state->copy_dir) &&
-        strcmp(state->copy_dir, dir)) {
+        !!strcmp(state->copy_dir, dir)) {
       // Link directly to snapshot in the copy directory
       maybe_symlink(pm->abs, path);
     } else if (!path_is_child(pm->abs, dir)) {
@@ -1486,7 +1486,7 @@ lilv_state_equals(const LilvState* a, const LilvState* b)
 {
   if (!lilv_node_equals(a->plugin_uri, b->plugin_uri) ||
       (a->label && !b->label) || (b->label && !a->label) ||
-      (a->label && b->label && strcmp(a->label, b->label)) ||
+      (a->label && b->label && !!strcmp(a->label, b->label)) ||
       a->props.n != b->props.n || a->n_values != b->n_values) {
     return false;
   }
@@ -1495,8 +1495,8 @@ lilv_state_equals(const LilvState* a, const LilvState* b)
     PortValue* const av = &a->values[i];
     PortValue* const bv = &b->values[i];
     if (av->atom->size != bv->atom->size || av->atom->type != bv->atom->type ||
-        strcmp(av->symbol, bv->symbol) ||
-        memcmp(av->atom + 1, bv->atom + 1, av->atom->size)) {
+        !!strcmp(av->symbol, bv->symbol) ||
+        !!memcmp(av->atom + 1, bv->atom + 1, av->atom->size)) {
       return false;
     }
   }
@@ -1514,7 +1514,8 @@ lilv_state_equals(const LilvState* a, const LilvState* b)
                            lilv_state_rel2abs(b, (char*)bp->value))) {
         return false;
       }
-    } else if (ap->size != bp->size || memcmp(ap->value, bp->value, ap->size)) {
+    } else if (ap->size != bp->size ||
+               !!memcmp(ap->value, bp->value, ap->size)) {
       return false;
     }
   }

@@ -1093,11 +1093,11 @@ lilv_world_load_file(LilvWorld* world, SerdReader* reader, const LilvNode* uri)
   size_t               uri_len = 0;
   const uint8_t* const uri_str =
     sord_node_get_string_counted(uri->node, &uri_len);
-  if (strncmp((const char*)uri_str, "file:", 5)) {
+  if (!!strncmp((const char*)uri_str, "file:", 5)) {
     return SERD_FAILURE; // Not a local file
   }
 
-  if (strcmp((const char*)uri_str + uri_len - 4, ".ttl")) {
+  if (!!strcmp((const char*)uri_str + uri_len - 4, ".ttl")) {
     return SERD_FAILURE; // Not a Turtle file
   }
 

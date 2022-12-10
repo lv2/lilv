@@ -6,7 +6,6 @@ Checks: >
   -android-cloexec-fopen,
   -bugprone-branch-clone,
   -bugprone-narrowing-conversions,
-  -bugprone-suspicious-string-compare,
   -cert-err33-c,
   -cert-err34-c,
   -clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling,

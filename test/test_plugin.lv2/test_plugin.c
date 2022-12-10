@@ -305,7 +305,7 @@ save(LV2_Handle                instance,
     char* apath  = map_path->abstract_path(map_path->handle, tmp_file_path);
     char* apath2 = map_path->abstract_path(map_path->handle, tmp_file_path);
     free(tmp_file_path);
-    if (strcmp(apath, apath2)) {
+    if (!!strcmp(apath, apath2)) {
       fprintf(stderr, "error: Path %s != %s\n", apath, apath2);
     }
 
@@ -407,7 +407,7 @@ restore(LV2_Handle                  instance,
     char   str[8];
     size_t n_read = fread(str, 1, sizeof(str), f);
     fclose(f);
-    if (strncmp(str, "Hello\n", n_read)) {
+    if (!!strncmp(str, "Hello\n", n_read)) {
       fprintf(
         stderr, "error: Restored bad file contents `%s' != `Hello'\n", str);
     }
