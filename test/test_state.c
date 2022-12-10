@@ -182,20 +182,24 @@ get_port_value(const char* port_symbol,
     *size = sizeof(float);
     *type = ctx->atom_Float;
     return &ctx->in;
-  } else if (!strcmp(port_symbol, "output")) {
+  }
+
+  if (!strcmp(port_symbol, "output")) {
     *size = sizeof(float);
     *type = ctx->atom_Float;
     return &ctx->out;
-  } else if (!strcmp(port_symbol, "control")) {
+  }
+
+  if (!strcmp(port_symbol, "control")) {
     *size = sizeof(float);
     *type = ctx->atom_Float;
     return &ctx->control;
-  } else {
-    fprintf(
-      stderr, "error: get_port_value for nonexistent port `%s'\n", port_symbol);
-    *size = *type = 0;
-    return NULL;
   }
+
+  fprintf(
+    stderr, "error: get_port_value for nonexistent port `%s'\n", port_symbol);
+  *size = *type = 0;
+  return NULL;
 }
 
 static void
