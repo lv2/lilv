@@ -4,14 +4,13 @@
 Checks: >
   -*-magic-numbers,
   -android-cloexec-fopen,
-  -bugprone-easily-swappable-parameters,
   -bugprone-narrowing-conversions,
   -cert-err33-c,
   -cert-err34-c,
   -cppcoreguidelines-avoid-non-const-global-variables,
   -cppcoreguidelines-narrowing-conversions,
   -hicpp-signed-bitwise,
+  -llvm-header-guard,
   -misc-no-recursion,
   -readability-function-cognitive-complexity,
-  -readability-identifier-length,
 InheritParentConfig: true

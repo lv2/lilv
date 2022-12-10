@@ -13,7 +13,7 @@ Checks: >
   -cppcoreguidelines-narrowing-conversions,
   -hicpp-multiway-paths-covered,
   -hicpp-signed-bitwise,
+  -llvm-header-guard,
   -readability-function-cognitive-complexity,
-  -readability-identifier-length,
   -readability-suspicious-call-argument,
 InheritParentConfig: true
