@@ -141,22 +141,22 @@ struct Node {
 
   inline bool operator==(const Node& other) const { return equals(other); }
 
-  LILV_WRAP_CONVERSION(LilvNode);
+  LILV_WRAP_CONVERSION(LilvNode)
 
-  LILV_WRAP0(char*, node, get_turtle_token);
-  LILV_WRAP0(bool, node, is_uri);
-  LILV_WRAP0(const char*, node, as_uri);
-  LILV_WRAP0(bool, node, is_blank);
-  LILV_WRAP0(const char*, node, as_blank);
-  LILV_WRAP0(bool, node, is_literal);
-  LILV_WRAP0(bool, node, is_string);
-  LILV_WRAP0(const char*, node, as_string);
-  LILV_WRAP0(bool, node, is_float);
-  LILV_WRAP0(float, node, as_float);
-  LILV_WRAP0(bool, node, is_int);
-  LILV_WRAP0(int, node, as_int);
-  LILV_WRAP0(bool, node, is_bool);
-  LILV_WRAP0(bool, node, as_bool);
+  LILV_WRAP0(char*, node, get_turtle_token)
+  LILV_WRAP0(bool, node, is_uri)
+  LILV_WRAP0(const char*, node, as_uri)
+  LILV_WRAP0(bool, node, is_blank)
+  LILV_WRAP0(const char*, node, as_blank)
+  LILV_WRAP0(bool, node, is_literal)
+  LILV_WRAP0(bool, node, is_string)
+  LILV_WRAP0(const char*, node, as_string)
+  LILV_WRAP0(bool, node, is_float)
+  LILV_WRAP0(float, node, as_float)
+  LILV_WRAP0(bool, node, is_int)
+  LILV_WRAP0(int, node, as_int)
+  LILV_WRAP0(bool, node, is_bool)
+  LILV_WRAP0(bool, node, as_bool)
 
   LilvNode* me;
 };
@@ -166,10 +166,10 @@ struct ScalePoint {
     : me(c_obj)
   {}
 
-  LILV_WRAP_CONVERSION(const LilvScalePoint);
+  LILV_WRAP_CONVERSION(const LilvScalePoint)
 
-  LILV_WRAP0(const LilvNode*, scale_point, get_label);
-  LILV_WRAP0(const LilvNode*, scale_point, get_value);
+  LILV_WRAP0(const LilvNode*, scale_point, get_label)
+  LILV_WRAP0(const LilvNode*, scale_point, get_value)
 
   const LilvScalePoint* me;
 };
@@ -179,41 +179,41 @@ struct PluginClass {
     : me(c_obj)
   {}
 
-  LILV_WRAP_CONVERSION(const LilvPluginClass);
+  LILV_WRAP_CONVERSION(const LilvPluginClass)
 
-  LILV_WRAP0(Node, plugin_class, get_parent_uri);
-  LILV_WRAP0(Node, plugin_class, get_uri);
-  LILV_WRAP0(Node, plugin_class, get_label);
-  LILV_WRAP0(LilvPluginClasses*, plugin_class, get_children);
+  LILV_WRAP0(Node, plugin_class, get_parent_uri)
+  LILV_WRAP0(Node, plugin_class, get_uri)
+  LILV_WRAP0(Node, plugin_class, get_label)
+  LILV_WRAP0(LilvPluginClasses*, plugin_class, get_children)
 
   const LilvPluginClass* me;
 };
 
-#define LILV_WRAP_COLL(CT, ET, prefix)               \
-  inline CT(const Lilv##CT* c_obj)                   \
-    : me(c_obj)                                      \
-  {}                                                 \
-  LILV_WRAP_CONVERSION(const Lilv##CT);              \
-  LILV_WRAP0(unsigned, prefix, size);                \
-  LILV_WRAP1(ET, prefix, get, LilvIter*, i);         \
-  LILV_WRAP0(LilvIter*, prefix, begin);              \
-  LILV_WRAP1(LilvIter*, prefix, next, LilvIter*, i); \
-  LILV_WRAP1(bool, prefix, is_end, LilvIter*, i);    \
+#define LILV_WRAP_COLL(CT, ET, prefix)              \
+  inline CT(const Lilv##CT* c_obj)                  \
+    : me(c_obj)                                     \
+  {}                                                \
+  LILV_WRAP_CONVERSION(const Lilv##CT)              \
+  LILV_WRAP0(unsigned, prefix, size)                \
+  LILV_WRAP1(ET, prefix, get, LilvIter*, i)         \
+  LILV_WRAP0(LilvIter*, prefix, begin)              \
+  LILV_WRAP1(LilvIter*, prefix, next, LilvIter*, i) \
+  LILV_WRAP1(bool, prefix, is_end, LilvIter*, i)    \
   const Lilv##CT* me;
 
 struct PluginClasses {
-  LILV_WRAP_COLL(PluginClasses, PluginClass, plugin_classes);
-  LILV_WRAP1(PluginClass, plugin_classes, get_by_uri, const LilvNode*, uri);
+  LILV_WRAP_COLL(PluginClasses, PluginClass, plugin_classes)
+  LILV_WRAP1(PluginClass, plugin_classes, get_by_uri, const LilvNode*, uri)
 };
 
 struct ScalePoints {
-  LILV_WRAP_COLL(ScalePoints, ScalePoint, scale_points);
+  LILV_WRAP_COLL(ScalePoints, ScalePoint, scale_points)
 };
 
 struct Nodes {
-  LILV_WRAP_COLL(Nodes, Node, nodes);
-  LILV_WRAP1(bool, nodes, contains, const Node&, node);
-  LILV_WRAP0(Node, nodes, get_first);
+  LILV_WRAP_COLL(Nodes, Node, nodes)
+  LILV_WRAP1(bool, nodes, contains, const Node&, node)
+  LILV_WRAP0(Node, nodes, get_first)
 };
 
 struct UI {
@@ -221,23 +221,23 @@ struct UI {
     : me(c_obj)
   {}
 
-  LILV_WRAP_CONVERSION(const LilvUI);
+  LILV_WRAP_CONVERSION(const LilvUI)
 
-  LILV_WRAP0(const LilvNode*, ui, get_uri);
-  LILV_WRAP0(const LilvNode*, ui, get_bundle_uri);
-  LILV_WRAP0(const LilvNode*, ui, get_binary_uri);
-  LILV_WRAP0(const LilvNodes*, ui, get_classes);
+  LILV_WRAP0(const LilvNode*, ui, get_uri)
+  LILV_WRAP0(const LilvNode*, ui, get_bundle_uri)
+  LILV_WRAP0(const LilvNode*, ui, get_binary_uri)
+  LILV_WRAP0(const LilvNodes*, ui, get_classes)
   /*LILV_WRAP3(bool, ui, is_supported,
              LilvUISupportedFunc, supported_func,
              const LilvNode*,     container_type,
              const LilvNode**,    ui_type);*/
-  LILV_WRAP1(bool, ui, is_a, const LilvNode*, class_uri);
+  LILV_WRAP1(bool, ui, is_a, const LilvNode*, class_uri)
 
   const LilvUI* me;
 };
 
 struct UIs {
-  LILV_WRAP_COLL(UIs, UI, uis);
+  LILV_WRAP_COLL(UIs, UI, uis)
 };
 
 struct Port {
@@ -246,7 +246,7 @@ struct Port {
     , me(c_obj)
   {}
 
-  LILV_WRAP_CONVERSION(const LilvPort);
+  LILV_WRAP_CONVERSION(const LilvPort)
 
 #define LILV_PORT_WRAP0(RT, name)        \
   inline RT name()                       \
@@ -260,15 +260,15 @@ struct Port {
     return lilv_port_##name(parent, me, a1); \
   }
 
-  LILV_PORT_WRAP1(LilvNodes*, get_value, LilvNode*, predicate);
+  LILV_PORT_WRAP1(LilvNodes*, get_value, LilvNode*, predicate)
   LILV_PORT_WRAP0(LilvNodes*, get_properties)
-  LILV_PORT_WRAP1(bool, has_property, LilvNode*, property_uri);
-  LILV_PORT_WRAP1(bool, supports_event, LilvNode*, event_uri);
-  LILV_PORT_WRAP0(const LilvNode*, get_symbol);
-  LILV_PORT_WRAP0(LilvNode*, get_name);
-  LILV_PORT_WRAP0(const LilvNodes*, get_classes);
-  LILV_PORT_WRAP1(bool, is_a, LilvNode*, port_class);
-  LILV_PORT_WRAP0(LilvScalePoints*, get_scale_points);
+  LILV_PORT_WRAP1(bool, has_property, LilvNode*, property_uri)
+  LILV_PORT_WRAP1(bool, supports_event, LilvNode*, event_uri)
+  LILV_PORT_WRAP0(const LilvNode*, get_symbol)
+  LILV_PORT_WRAP0(LilvNode*, get_name)
+  LILV_PORT_WRAP0(const LilvNodes*, get_classes)
+  LILV_PORT_WRAP1(bool, is_a, LilvNode*, port_class)
+  LILV_PORT_WRAP0(LilvScalePoints*, get_scale_points)
 
   // TODO: get_range (output parameters)
 
@@ -281,30 +281,30 @@ struct Plugin {
     : me(c_obj)
   {}
 
-  LILV_WRAP_CONVERSION(const LilvPlugin);
+  LILV_WRAP_CONVERSION(const LilvPlugin)
 
-  LILV_WRAP0(bool, plugin, verify);
-  LILV_WRAP0(Node, plugin, get_uri);
-  LILV_WRAP0(Node, plugin, get_bundle_uri);
-  LILV_WRAP0(Nodes, plugin, get_data_uris);
-  LILV_WRAP0(Node, plugin, get_library_uri);
-  LILV_WRAP0(Node, plugin, get_name);
-  LILV_WRAP0(PluginClass, plugin, get_class);
-  LILV_WRAP1(Nodes, plugin, get_value, const Node&, pred);
-  LILV_WRAP1(bool, plugin, has_feature, const Node&, feature_uri);
-  LILV_WRAP0(Nodes, plugin, get_supported_features);
-  LILV_WRAP0(Nodes, plugin, get_required_features);
-  LILV_WRAP0(Nodes, plugin, get_optional_features);
-  LILV_WRAP0(unsigned, plugin, get_num_ports);
-  LILV_WRAP0(bool, plugin, has_latency);
-  LILV_WRAP0(unsigned, plugin, get_latency_port_index);
-  LILV_WRAP0(Node, plugin, get_author_name);
-  LILV_WRAP0(Node, plugin, get_author_email);
-  LILV_WRAP0(Node, plugin, get_author_homepage);
-  LILV_WRAP0(bool, plugin, is_replaced);
-  LILV_WRAP0(Nodes, plugin, get_extension_data);
-  LILV_WRAP0(UIs, plugin, get_uis);
-  LILV_WRAP1(Nodes, plugin, get_related, const Node&, type);
+  LILV_WRAP0(bool, plugin, verify)
+  LILV_WRAP0(Node, plugin, get_uri)
+  LILV_WRAP0(Node, plugin, get_bundle_uri)
+  LILV_WRAP0(Nodes, plugin, get_data_uris)
+  LILV_WRAP0(Node, plugin, get_library_uri)
+  LILV_WRAP0(Node, plugin, get_name)
+  LILV_WRAP0(PluginClass, plugin, get_class)
+  LILV_WRAP1(Nodes, plugin, get_value, const Node&, pred)
+  LILV_WRAP1(bool, plugin, has_feature, const Node&, feature_uri)
+  LILV_WRAP0(Nodes, plugin, get_supported_features)
+  LILV_WRAP0(Nodes, plugin, get_required_features)
+  LILV_WRAP0(Nodes, plugin, get_optional_features)
+  LILV_WRAP0(unsigned, plugin, get_num_ports)
+  LILV_WRAP0(bool, plugin, has_latency)
+  LILV_WRAP0(unsigned, plugin, get_latency_port_index)
+  LILV_WRAP0(Node, plugin, get_author_name)
+  LILV_WRAP0(Node, plugin, get_author_email)
+  LILV_WRAP0(Node, plugin, get_author_homepage)
+  LILV_WRAP0(bool, plugin, is_replaced)
+  LILV_WRAP0(Nodes, plugin, get_extension_data)
+  LILV_WRAP0(UIs, plugin, get_uis)
+  LILV_WRAP1(Nodes, plugin, get_related, const Node&, type)
 
   inline Port get_port_by_index(unsigned index) const
   {
@@ -340,8 +340,8 @@ struct Plugin {
 };
 
 struct Plugins {
-  LILV_WRAP_COLL(Plugins, Plugin, plugins);
-  LILV_WRAP1(Plugin, plugins, get_by_uri, const LilvNode*, uri);
+  LILV_WRAP_COLL(Plugins, Plugin, plugins)
+  LILV_WRAP1(Plugin, plugins, get_by_uri, const LilvNode*, uri)
 };
 
 struct Instance {
@@ -370,18 +370,18 @@ struct Instance {
     return me ? new Instance(me) : nullptr;
   }
 
-  LILV_WRAP_CONVERSION(LilvInstance);
+  LILV_WRAP_CONVERSION(LilvInstance)
 
   LILV_WRAP2_VOID(instance,
                   connect_port,
                   unsigned,
                   port_index,
                   void*,
-                  data_location);
+                  data_location)
 
-  LILV_WRAP0_VOID(instance, activate);
-  LILV_WRAP1_VOID(instance, run, unsigned, sample_count);
-  LILV_WRAP0_VOID(instance, deactivate);
+  LILV_WRAP0_VOID(instance, activate)
+  LILV_WRAP1_VOID(instance, run, unsigned, sample_count)
+  LILV_WRAP0_VOID(instance, deactivate)
 
   inline const void* get_extension_data(const char* uri) const
   {
@@ -437,13 +437,13 @@ struct World {
     return lilv_world_find_nodes(me, subject, predicate, object);
   }
 
-  LILV_WRAP2_VOID(world, set_option, const char*, uri, LilvNode*, value);
-  LILV_WRAP0_VOID(world, load_all);
-  LILV_WRAP1_VOID(world, load_bundle, LilvNode*, bundle_uri);
-  LILV_WRAP0(const LilvPluginClass*, world, get_plugin_class);
-  LILV_WRAP0(const LilvPluginClasses*, world, get_plugin_classes);
-  LILV_WRAP0(Plugins, world, get_all_plugins);
-  LILV_WRAP1(int, world, load_resource, const LilvNode*, resource);
+  LILV_WRAP2_VOID(world, set_option, const char*, uri, LilvNode*, value)
+  LILV_WRAP0_VOID(world, load_all)
+  LILV_WRAP1_VOID(world, load_bundle, LilvNode*, bundle_uri)
+  LILV_WRAP0(const LilvPluginClass*, world, get_plugin_class)
+  LILV_WRAP0(const LilvPluginClasses*, world, get_plugin_classes)
+  LILV_WRAP0(Plugins, world, get_all_plugins)
+  LILV_WRAP1(int, world, load_resource, const LilvNode*, resource)
 
   LilvWorld* me;
 };
