@@ -3,8 +3,10 @@
 
 Checks: >
   *,
+  -*-vararg,
   -altera-*,
   -bugprone-easily-swappable-parameters,
+  -bugprone-macro-parentheses,
   -llvmlibc-*,
 CheckOptions:
   - key:   hicpp-uppercase-literal-suffix.NewSuffixes

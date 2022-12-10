@@ -20,9 +20,16 @@ versioned_name = 'lilv' + version_suffix
 # Compilers and Flags #
 #######################
 
-# Load build tools
+# Required tools
 pkg = import('pkgconfig')
 cc = meson.get_compiler('c')
+
+# Enable C++ support if bindings aren't disabled
+if not get_option('bindings_cpp').disabled()
+  if add_languages(['cpp'], native: false, required: false)
+    cpp = meson.get_compiler('cpp')
+  endif
+endif
 
 # Set global warning flags
 if get_option('strict') and not meson.is_subproject()

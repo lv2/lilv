@@ -55,6 +55,14 @@ subdir('new_version.lv2')
 subdir('old_version.lv2')
 subdir('test_plugin.lv2')
 
+################
+# C++ Bindings #
+################
+
+if not get_option('bindings_cpp').disabled()
+  subdir('cpp')
+endif
+
 ##############
 # Unit Tests #
 ##############

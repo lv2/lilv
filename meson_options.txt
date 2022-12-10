@@ -4,6 +4,9 @@
 option('bindings_py', type: 'feature', value: 'auto', yield: true,
        description: 'Build Python bindings')
 
+option('bindings_cpp', type: 'feature', value: 'auto', yield: true,
+       description: 'Build C++ bindings')
+
 option('default_lv2_path', type: 'string', value: '', yield: true,
        description: 'Default LV2_PATH to use if it is unset')
 
