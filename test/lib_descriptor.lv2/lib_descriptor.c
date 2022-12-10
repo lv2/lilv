@@ -82,12 +82,7 @@ get_plugin(LV2_Lib_Handle handle, uint32_t index)
 {
   (void)handle;
 
-  switch (index) {
-  case 0:
-    return &descriptor;
-  default:
-    return NULL;
-  }
+  return index ? NULL : &descriptor;
 }
 
 static const LV2_Lib_Descriptor lib = {NULL,
