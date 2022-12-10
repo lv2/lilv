@@ -64,7 +64,7 @@ bench(const LilvPlugin* p, uint32_t sample_count, uint32_t block_size)
   LV2_Feature        unmap_feature = {LV2_URID_UNMAP_URI, &unmap};
   const LV2_Feature* features[]    = {&map_feature, &unmap_feature, NULL};
 
-  float* const buf = (float*)calloc(block_size * 2ul, sizeof(float));
+  float* const buf = (float*)calloc(block_size * 2UL, sizeof(float));
   float* const in  = buf;
   float* const out = buf + block_size;
   if (!buf) {
