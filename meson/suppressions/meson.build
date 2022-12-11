@@ -69,7 +69,7 @@ if is_variable('cc')
         '-Wno-vla',
       ]
 
-      if host_machine.system() =='windows'
+      if host_machine.system() == 'windows'
         c_suppressions += [
           '-Wno-bad-function-cast',
           '-Wno-unused-macros',
