@@ -1,12 +1,29 @@
 # Copyright 2020-2022 David Robillard <d@drobilla.net>
 # SPDX-License-Identifier: 0BSD OR ISC
 
+cpp_suppressions = []
+if cpp.get_id() == 'gcc'
+  cpp_suppressions += [
+    '-Wno-cast-align',
+    '-Wno-padded',
+    '-Wno-cast-align',
+  ]
+elif cpp.get_id() == 'clang'
+  cpp_suppressions += [
+    '-Wno-cast-align',
+    '-Wno-cast-qual',
+    '-Wno-documentation-unknown-command',
+    '-Wno-padded',
+    '-Wno-reserved-id-macro',
+  ]
+endif
+
 test(
   'lilv_hpp',
   executable(
     'test_lilv_hpp',
     files('test_lilv_hpp.cpp'),
-    c_args: test_args + c_suppressions,
+    cpp_args: test_args + cpp_suppressions,
     dependencies: [lv2_dep, lilv_static_dep],
     include_directories: include_directories('../../src'),
   ),
