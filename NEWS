@@ -1,11 +1,16 @@
 lilv (0.24.21) unstable; urgency=medium
 
+  * Clean up code
   * Clean up inconsistent tool command line interfaces
+  * Clean up inconsistent tool command line interfaces
+  * Convert man pages to mdoc
   * Fix dependencies in pkg-config file
   * Fix potential crash when writing state files fails
   * Override pkg-config dependency within meson
+  * Replace duplicated dox_to_sphinx script with sphinxygen dependency
+  * Switch to external zix dependency
 
- -- David Robillard <d@drobilla.net>  Tue, 29 Nov 2022 20:17:07 +0000
+ -- David Robillard <d@drobilla.net>  Sun, 11 Dec 2022 16:32:26 +0000
 
 lilv (0.24.20) stable; urgency=medium
 
