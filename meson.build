@@ -42,13 +42,8 @@ subdir('meson/suppressions')
 ##########################
 
 platform_defines = ['-DLILV_VERSION="@0@"'.format(meson.project_version())]
-if host_machine.system() == 'darwin'
+if host_machine.system() in ['gnu', 'linux']
   platform_defines += [
-    '-D_DARWIN_C_SOURCE',
-  ]
-elif host_machine.system() in ['gnu', 'linux']
-  platform_defines += [
-    '-D_DEFAULT_SOURCE',
     '-D_POSIX_C_SOURCE=200809L',
   ]
 endif
