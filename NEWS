@@ -2,7 +2,6 @@ lilv (0.24.21) unstable; urgency=medium
 
   * Clean up code
   * Clean up inconsistent tool command line interfaces
-  * Clean up inconsistent tool command line interfaces
   * Convert man pages to mdoc
   * Fix dependencies in pkg-config file
   * Fix potential crash when writing state files fails
