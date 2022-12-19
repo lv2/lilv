@@ -1,5 +1,6 @@
 lilv (0.24.21) unstable; urgency=medium
 
+  * Allow LILV_API to be defined by the user
   * Clean up code
   * Clean up inconsistent tool command line interfaces
   * Convert man pages to mdoc
@@ -9,7 +10,7 @@ lilv (0.24.21) unstable; urgency=medium
   * Replace duplicated dox_to_sphinx script with sphinxygen dependency
   * Switch to external zix dependency
 
- -- David Robillard <d@drobilla.net>  Sun, 11 Dec 2022 16:32:26 +0000
+ -- David Robillard <d@drobilla.net>  Mon, 19 Dec 2022 23:52:50 +0000
 
 lilv (0.24.20) stable; urgency=medium
 

@@ -14,14 +14,17 @@
 #include <stdint.h>
 #include <stdio.h>
 
-#if defined(_WIN32) && !defined(LILV_STATIC) && defined(LILV_INTERNAL)
-#  define LILV_API __declspec(dllexport)
-#elif defined(_WIN32) && !defined(LILV_STATIC)
-#  define LILV_API __declspec(dllimport)
-#elif defined(__GNUC__)
-#  define LILV_API __attribute__((visibility("default")))
-#else
-#  define LILV_API
+// LILV_API must be used to decorate things in the public API
+#ifndef LILV_API
+#  if defined(_WIN32) && !defined(LILV_STATIC) && defined(LILV_INTERNAL)
+#    define LILV_API __declspec(dllexport)
+#  elif defined(_WIN32) && !defined(LILV_STATIC)
+#    define LILV_API __declspec(dllimport)
+#  elif defined(__GNUC__)
+#    define LILV_API __attribute__((visibility("default")))
+#  else
+#    define LILV_API
+#  endif
 #endif
 
 #if defined(__GNUC__) && \
