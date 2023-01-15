@@ -83,6 +83,16 @@ platform_defines += [
   '-DLILV_DEFAULT_LV2_PATH="@0@"'.format(default_lv2_path)
 ]
 
+# Use versioned name everywhere to support parallel major version installations
+if host_machine.system() == 'windows'
+  if get_option('default_library') == 'both'
+    error('default_library=both is not supported on Windows')
+  endif
+  soversion = ''
+else
+  soversion = meson.project_version().split('.')[0]
+endif
+
 add_project_arguments(platform_defines, language: ['c'])
 
 ################
@@ -133,20 +143,20 @@ common_dependencies = [
 
 # Set appropriate arguments for building against the library type
 extra_c_args = []
-subdir('meson/library')
 if get_option('default_library') == 'static'
   extra_c_args = ['-DLILV_STATIC']
 endif
 
 # Build main shared and/or static library
 liblilv = library(
-  meson.project_name() + library_suffix,
+  versioned_name,
   sources,
   c_args: c_suppressions +  extra_c_args + ['-DLILV_INTERNAL'],
   dependencies: common_dependencies,
   gnu_symbol_visibility: 'hidden',
   include_directories: include_directories('include', 'src'),
   install: true,
+  soversion: soversion,
   version: meson.project_version(),
 )
 
@@ -207,7 +217,7 @@ if not get_option('tests').disabled()
     liblilv_static = liblilv.get_static_lib()
   elif get_option('default_library') == 'shared'
     liblilv_static = static_library(
-      meson.project_name() + library_suffix,
+      versioned_name,
       sources,
       include_directories: include_directories('include', 'src'),
       c_args: c_suppressions + ['-DLILV_INTERNAL', '-DLILV_STATIC'],
