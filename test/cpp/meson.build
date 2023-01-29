@@ -16,6 +16,11 @@ elif cpp.get_id() == 'clang'
     '-Wno-padded',
     '-Wno-reserved-id-macro',
   ]
+elif cpp.get_id() == 'msvc'
+  cpp_suppressions += [
+    '/wd4514', # unreferenced inline function has been removed
+    '/wd4820', # padding added after construct
+  ]
 endif
 
 test(
