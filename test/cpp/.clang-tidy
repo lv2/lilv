@@ -12,6 +12,7 @@ Checks: >
   -hicpp-no-array-decay,
   -misc-non-private-member-variables-in-classes,
   -modernize-return-braced-init-list,
+  -modernize-use-nodiscard,
   -modernize-use-trailing-return-type,
   -readability-implicit-bool-conversion,
 HeaderFilterRegex: '.*/lilvmm\.hpp'

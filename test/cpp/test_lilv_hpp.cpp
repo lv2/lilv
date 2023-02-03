@@ -6,7 +6,7 @@
 int
 main()
 {
-  Lilv::World world{};
+  const Lilv::World world{};
 
   return 0;
 }

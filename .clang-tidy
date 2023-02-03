@@ -11,6 +11,7 @@ Checks: >
   -clang-diagnostic-unused-macros,
   -llvmlibc-*,
   -readability-identifier-length,
+  -bugprone-assignment-in-if-condition,
 CheckOptions:
   - key:   hicpp-uppercase-literal-suffix.NewSuffixes
     value: 'L;U;UL;ULL'
