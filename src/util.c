@@ -37,7 +37,7 @@ lilv_strjoin(const char* first, ...)
 
   memcpy(result, first, len);
 
-  va_list args;
+  va_list args; // NOLINT(cppcoreguidelines-init-variables)
   va_start(args, first);
   while (1) {
     const char* const s = va_arg(args, const char*);

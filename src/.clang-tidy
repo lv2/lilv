@@ -15,6 +15,7 @@ Checks: >
   -hicpp-multiway-paths-covered,
   -hicpp-signed-bitwise,
   -llvm-header-guard,
+  -performance-no-int-to-ptr,
   -readability-function-cognitive-complexity,
   -readability-suspicious-call-argument,
 InheritParentConfig: true

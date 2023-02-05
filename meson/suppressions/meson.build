@@ -44,6 +44,12 @@ if is_variable('cc')
         c_suppressions += [
           '-Wno-c11-extensions',
         ]
+      elif host_machine.system() == 'windows'
+        c_suppressions += [
+          '-Wno-deprecated-declarations',
+          '-Wno-nonportable-system-include-path',
+          '-Wno-unused-macros',
+        ]
       endif
 
     elif cc.get_id() == 'gcc'

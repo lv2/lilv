@@ -567,9 +567,11 @@ lilv_plugin_get_port_ranges_float(const LilvPlugin* plugin,
 }
 
 uint32_t
-lilv_plugin_get_num_ports_of_class_va(const LilvPlugin* plugin,
-                                      const LilvNode*   class_1,
-                                      va_list           args)
+lilv_plugin_get_num_ports_of_class_va(
+  const LilvPlugin* plugin,
+  const LilvNode*   class_1,
+  va_list           args // NOLINT(readability-non-const-parameter)
+)
 {
   lilv_plugin_load_ports_if_necessary(plugin);
 
@@ -611,7 +613,7 @@ lilv_plugin_get_num_ports_of_class(const LilvPlugin* plugin,
                                    const LilvNode*   class_1,
                                    ...)
 {
-  va_list args;
+  va_list args; // NOLINT(cppcoreguidelines-init-variables)
   va_start(args, class_1);
 
   uint32_t count = lilv_plugin_get_num_ports_of_class_va(plugin, class_1, args);

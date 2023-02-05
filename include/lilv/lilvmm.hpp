@@ -326,7 +326,7 @@ struct Plugin {
 
   inline unsigned get_num_ports_of_class(LilvNode* class_1, ...) const
   {
-    va_list args;
+    va_list args; // NOLINT(cppcoreguidelines-init-variables)
     va_start(args, class_1);
 
     const uint32_t count =

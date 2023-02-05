@@ -5,13 +5,14 @@ Checks: >
   *,
   -*-vararg,
   -altera-*,
+  -bugprone-assignment-in-if-condition,
   -bugprone-easily-swappable-parameters,
   -bugprone-macro-parentheses,
   -clang-diagnostic-unused-function,
   -clang-diagnostic-unused-macros,
   -llvmlibc-*,
+  -modernize-macro-to-enum,
   -readability-identifier-length,
-  -bugprone-assignment-in-if-condition,
 CheckOptions:
   - key:   hicpp-uppercase-literal-suffix.NewSuffixes
     value: 'L;U;UL;ULL'

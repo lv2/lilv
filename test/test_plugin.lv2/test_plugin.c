@@ -7,7 +7,7 @@
 #include "lv2/urid/urid.h"
 
 #ifdef _WIN32
-#  define _WIN32_LEAN_AND_MEAN
+#  define WIN32_LEAN_AND_MEAN
 #  include <windows.h>
 #endif
 
