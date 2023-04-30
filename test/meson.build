@@ -5,7 +5,7 @@
 # Project Metadata #
 ####################
 
-if get_option('strict')
+if get_option('warning_level') == 'everything'
   # Check release metadata
   if not meson.is_subproject()
     autoship = find_program('autoship', required: false)

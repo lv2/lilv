@@ -10,6 +10,7 @@ if cpp.get_id() == 'gcc'
   ]
 elif cpp.get_id() == 'clang'
   cpp_suppressions += [
+    '-Wno-c++98-compat',
     '-Wno-cast-align',
     '-Wno-cast-qual',
     '-Wno-documentation-unknown-command',

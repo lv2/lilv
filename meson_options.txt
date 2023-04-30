@@ -13,9 +13,6 @@ option('default_lv2_path', type: 'string', value: '', yield: true,
 option('docs', type: 'feature', value: 'auto', yield: true,
        description: 'Build documentation')
 
-option('strict', type: 'boolean', value: false, yield: true,
-       description: 'Enable ultra-strict warnings')
-
 option('tests', type: 'feature', value: 'auto', yield: true,
        description: 'Build tests')
 

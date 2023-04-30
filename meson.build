@@ -32,9 +32,6 @@ if not get_option('bindings_cpp').disabled()
 endif
 
 # Set global warning flags
-if get_option('strict') and not meson.is_subproject()
-  subdir('meson/warnings')
-endif
 subdir('meson/suppressions')
 
 ##########################
