@@ -16,12 +16,11 @@
 #include <errno.h>
 #include <stdarg.h>
 #include <stdbool.h>
-#include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <time.h>
+#include <time.h> // IWYU pragma: keep
 
 void
 lilv_free(void* ptr)
