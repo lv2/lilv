@@ -6,7 +6,6 @@ if cpp.get_id() == 'gcc'
   cpp_suppressions += [
     '-Wno-cast-align',
     '-Wno-padded',
-    '-Wno-cast-align',
   ]
 elif cpp.get_id() == 'clang'
   cpp_suppressions += [
@@ -15,6 +14,7 @@ elif cpp.get_id() == 'clang'
     '-Wno-cast-qual',
     '-Wno-documentation-unknown-command',
     '-Wno-padded',
+    '-Wno-poison-system-directories',
     '-Wno-reserved-id-macro',
   ]
 elif cpp.get_id() == 'msvc'
