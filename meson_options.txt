@@ -13,6 +13,12 @@ option('default_lv2_path', type: 'string', value: '', yield: true,
 option('docs', type: 'feature', value: 'auto', yield: true,
        description: 'Build documentation')
 
+option('html', type: 'feature', value: 'auto', yield: true,
+       description: 'Build paginated HTML documentation')
+
+option('singlehtml', type: 'feature', value: 'auto', yield: true,
+       description: 'Build single-page HTML documentation')
+
 option('tests', type: 'feature', value: 'auto', yield: true,
        description: 'Build tests')
 

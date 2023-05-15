@@ -184,6 +184,31 @@ meson.override_dependency(versioned_name, lilv_dep)
 install_headers(c_headers, subdir: versioned_name / 'lilv')
 install_headers(cpp_headers, subdir: versioned_name / 'lilv')
 
+# Display top-level summary (before subdirectories to appear first)
+if not meson.is_subproject()
+  summary(
+    {
+      'Tests': not get_option('tests').disabled(),
+      'Tools': not get_option('tools').disabled(),
+    },
+    bool_yn: true,
+    section: 'Components',
+  )
+
+  summary('Default LV2_PATH', default_lv2_path, section: 'Configuration')
+
+  summary(
+    {
+      'Install prefix':  get_option('prefix'),
+      'Headers':  get_option('prefix') / get_option('includedir'),
+      'Libraries':  get_option('prefix') / get_option('libdir'),
+      'Executables': get_option('prefix') / get_option('bindir'),
+      'Man pages': get_option('prefix') / get_option('mandir'),
+    },
+    section: 'Directories',
+  )
+endif
+
 #########
 # Tools #
 #########
@@ -233,20 +258,4 @@ if not get_option('tests').disabled()
 
   # Build and run tests against static library
   subdir('test')
-endif
-
-if not meson.is_subproject()
-  summary('Tests', not get_option('tests').disabled(), bool_yn: true)
-  summary('Tools', not get_option('tools').disabled(), bool_yn: true)
-
-  summary('Install prefix', get_option('prefix'))
-  summary('Default LV2_PATH', default_lv2_path)
-
-  summary('Headers', get_option('prefix') / get_option('includedir'))
-  summary('Libraries', get_option('prefix') / get_option('libdir'))
-
-  if not get_option('tools').disabled()
-    summary('Executables', get_option('prefix') / get_option('bindir'))
-    summary('Man pages', get_option('prefix') / get_option('mandir'))
-  endif
 endif

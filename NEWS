@@ -7,10 +7,11 @@ lilv (0.24.21) unstable; urgency=medium
   * Fix dependencies in pkg-config file
   * Fix potential crash when writing state files fails
   * Override pkg-config dependency within meson
+  * Remove junk files from documentation install
   * Replace duplicated dox_to_sphinx script with sphinxygen dependency
   * Switch to external zix dependency
 
- -- David Robillard <d@drobilla.net>  Mon, 19 Dec 2022 23:52:50 +0000
+ -- David Robillard <d@drobilla.net>  Mon, 15 May 2023 00:02:51 +0000
 
 lilv (0.24.20) stable; urgency=medium
 

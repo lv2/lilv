@@ -3,10 +3,12 @@
 
 # Project information
 
-project = "Lilv"
-copyright = "2020, David Robillard"
+project = "@LILV_TITLE@"
+copyright = "2020-2023, David Robillard"
 author = "David Robillard"
 release = "@LILV_VERSION@"
+version = "@LILV_VERSION@"
+desc = "A library for loading LV2 plugins"
 
 # General configuration
 
@@ -14,6 +16,13 @@ exclude_patterns = ["xml"]
 language = "en"
 nitpicky = True
 pygments_style = "friendly"
+
+try:
+    import sphinx_lv2_theme
+
+    have_lv2_theme = True
+except ModuleNotFoundError:
+    have_lv2_theme = False
 
 # Ignore everything opaque or external for nitpicky mode
 _opaque = [
@@ -41,42 +50,78 @@ nitpick_ignore = list(map(lambda x: ("c:identifier", x), _opaque))
 
 # HTML output
 
-html_theme = "sphinx_lv2_theme"
 html_copy_source = False
-html_short_title = "Lilv"
+html_secnumber_suffix = " "
+html_short_title = "@LILV_TITLE@"
 
-if tags.has('singlehtml'):
-    html_sidebars = {
-        "**": [
-        "globaltoc.html",
-        ]
-    }
+html_theme_options = {
+    "description": desc,
+    "logo_name": True,
+    "logo_width": "8em",
+}
 
-    html_theme_options = {
-        "body_max_width": "65em",
-        "body_min_width": "50em",
-        "description": "A library for loading LV2 plugins",
-        "show_footer_version": True,
-        "show_logo_version": False,
-        "logo_name": True,
-        "nosidebar": False,
-        "page_width": "80em",
-        "sidebar_width": "11em",
-        "globaltoc_maxdepth": 3,
-        "globaltoc_collapse": False,
-    }
+if tags.has("singlehtml"):
+    html_sidebars = {"**": ["globaltoc.html"]}
+    html_theme_options.update(
+        {
+            "globaltoc_collapse": False,
+            "globaltoc_maxdepth": 3,
+            "nosidebar": False,
+            "page_width": "80em",
+        }
+    )
+else:
+    html_theme_options.update(
+        {
+            "globaltoc_collapse": True,
+            "globaltoc_maxdepth": 1,
+            "nosidebar": True,
+            "page_width": "60em",
+        }
+    )
+
+if have_lv2_theme:
+    html_theme = "sphinx_lv2_theme"
+
+    html_theme_options.update(
+        {
+            "show_footer_version": True,
+            "show_logo_version": True,
+        }
+    )
+
+    if tags.has("singlehtml"):
+        html_theme_options.update(
+            {
+                "body_max_width": "64em",
+                "body_min_width": "64em",
+                "nosidebar": False,
+                "sidebar_width": "12em",
+            }
+        )
+
+    else:
+        html_theme_options.update(
+            {
+                "body_max_width": "60em",
+                "body_min_width": "40em",
+            }
+        )
 
 else:
-    html_theme_options = {
-        "body_max_width": "60em",
-        "body_min_width": "40em",
-        "description": "A library for loading LV2 plugins",
-        "show_footer_version": True,
-        "show_logo_version": False,
-        "logo_name": True,
-        "nosidebar": True,
-        "page_width": "60em",
-        "sidebar_width": "14em",
-        "globaltoc_maxdepth": 1,
-        "globaltoc_collapse": True,
-    }
+    html_theme = "alabaster"
+
+    if tags.has("singlehtml"):
+        html_theme_options = {
+            "body_max_width": "58em",
+            "body_min_width": "40em",
+            "sidebar_width": "16em",
+        }
+
+    else:
+        html_theme_options = {
+            "body_max_width": "60em",
+            "body_min_width": "40em",
+            "nosidebar": True,
+            "show_relbars": True,
+        }
