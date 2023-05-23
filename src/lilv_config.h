@@ -16,15 +16,6 @@
 #  endif
 #endif
 
-// Separator between directories in a path
-#ifndef LILV_DIR_SEP
-#  ifdef _WIN32
-#    define LILV_DIR_SEP "\\"
-#  else
-#    define LILV_DIR_SEP "/"
-#  endif
-#endif
-
 // Default value for LV2_PATH environment variable
 #ifndef LILV_DEFAULT_LV2_PATH
 #  ifdef _WIN32
