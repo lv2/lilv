@@ -18,7 +18,12 @@
 
 // Default value for LV2_PATH environment variable
 #ifndef LILV_DEFAULT_LV2_PATH
-#  ifdef _WIN32
+#  if defined(__APPLE__)
+#    define LILV_DEFAULT_LV2_PATH            \
+      "~/.lv2:~/Library/Audio/Plug-Ins/LV2:" \
+      "/usr/local/lib/lv2:/usr/lib/lv2:"     \
+      "/Library/Audio/Plug-Ins/LV2"
+#  elif defined(_WIN32)
 #    define LILV_DEFAULT_LV2_PATH "%APPDATA%\\LV2;%COMMONPROGRAMFILES%\\LV2"
 #  else
 #    define LILV_DEFAULT_LV2_PATH "~/.lv2:/usr/local/lib/lv2:/usr/lib/lv2"
