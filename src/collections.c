@@ -47,7 +47,7 @@ lilv_collection_new(ZixTreeCompareFunc cmp, LilvFreeFunc free_func)
   return zix_tree_new(NULL, false, cmp, NULL, destroy, (const void*)free_func);
 }
 
-void
+static void
 lilv_collection_free(LilvCollection* collection)
 {
   if (collection) {
@@ -55,13 +55,13 @@ lilv_collection_free(LilvCollection* collection)
   }
 }
 
-unsigned
+static unsigned
 lilv_collection_size(const LilvCollection* collection)
 {
   return (collection ? zix_tree_size((const ZixTree*)collection) : 0);
 }
 
-LilvIter*
+static LilvIter*
 lilv_collection_begin(const LilvCollection* collection)
 {
   return collection ? (LilvIter*)zix_tree_begin((ZixTree*)collection) : NULL;

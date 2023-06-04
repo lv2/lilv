@@ -254,15 +254,6 @@ lilv_plugin_get_unique(const LilvPlugin* plugin,
                        const SordNode*   subject,
                        const SordNode*   predicate);
 
-void
-lilv_collection_free(LilvCollection* collection);
-
-unsigned
-lilv_collection_size(const LilvCollection* collection);
-
-LilvIter*
-lilv_collection_begin(const LilvCollection* collection);
-
 void*
 lilv_collection_get(const LilvCollection* collection, const LilvIter* i);
 
@@ -311,9 +302,6 @@ lilv_world_blank_node_prefix(LilvWorld* world);
 SerdStatus
 lilv_world_load_file(LilvWorld* world, SerdReader* reader, const LilvNode* uri);
 
-SerdStatus
-lilv_world_load_graph(LilvWorld* world, SordNode* graph, const LilvNode* uri);
-
 LilvUI*
 lilv_ui_new(LilvWorld* world,
             LilvNode*  uri,
@@ -331,9 +319,6 @@ lilv_node_new_from_node(LilvWorld* world, const SordNode* node);
 
 int
 lilv_header_compare_by_uri(const void* a, const void* b, const void* user_data);
-
-int
-lilv_lib_compare(const void* a, const void* b, const void* user_data);
 
 int
 lilv_ptr_cmp(const void* a, const void* b, const void* user_data);

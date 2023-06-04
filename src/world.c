@@ -27,6 +27,9 @@
 static int
 lilv_world_drop_graph(LilvWorld* world, const SordNode* graph);
 
+static int
+lilv_lib_compare(const void* a, const void* b, const void* user_data);
+
 static void
 destroy_node(void* const ptr, const void* const user_data)
 {
@@ -367,7 +370,7 @@ lilv_header_compare_by_uri(const void* a, const void* b, const void* user_data)
    handle the case where the same library is loaded with different bundles, and
    consequently different contents (mainly plugins).
  */
-int
+static int
 lilv_lib_compare(const void* a, const void* b, const void* user_data)
 {
   (void)user_data;
@@ -499,7 +502,7 @@ lilv_world_add_plugin(LilvWorld*      world,
   sord_iter_free(files);
 }
 
-SerdStatus
+static SerdStatus
 lilv_world_load_graph(LilvWorld* world, SordNode* graph, const LilvNode* uri)
 {
   const SerdNode* base = sord_node_to_serd_node(uri->node);
