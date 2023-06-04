@@ -333,15 +333,6 @@ lilv_world_find_nodes_internal(LilvWorld*      world,
     (object == NULL) ? SORD_OBJECT : SORD_SUBJECT);
 }
 
-static SerdNode
-lilv_new_uri_relative_to_base(const uint8_t* uri_str,
-                              const uint8_t* base_uri_str)
-{
-  SerdURI base_uri;
-  serd_uri_parse(base_uri_str, &base_uri);
-  return serd_node_new_uri_from_string(uri_str, &base_uri, NULL);
-}
-
 const uint8_t*
 lilv_world_blank_node_prefix(LilvWorld* world)
 {
@@ -670,10 +661,23 @@ lilv_dynmanifest_free(LilvDynManifest* dynmanifest)
 LilvNode*
 lilv_world_get_manifest_uri(LilvWorld* world, const LilvNode* bundle_uri)
 {
-  SerdNode manifest_uri = lilv_new_uri_relative_to_base(
-    (const uint8_t*)"manifest.ttl", sord_node_get_string(bundle_uri->node));
-  LilvNode* manifest = lilv_new_uri(world, (const char*)manifest_uri.buf);
-  serd_node_free(&manifest_uri);
+  // Get the string and length of the given bundle URI
+  size_t            bundle_uri_length = 0U;
+  const char* const bundle_uri_string =
+    sord_node_get_string_counted(bundle_uri->node, &bundle_uri_length);
+  if (!bundle_uri_length) {
+    return NULL;
+  }
+
+  // Build the manifest URI by inserting a separating "/" if necessary
+  const char  last = bundle_uri_string[bundle_uri_length - 1U];
+  char* const manifest_uri_string =
+    (last == '/') ? lilv_strjoin(bundle_uri_string, "manifest.ttl", NULL)
+                  : lilv_strjoin(bundle_uri_string, "/", "manifest.ttl", NULL);
+
+  // Make a node from the manifeset URI to return
+  LilvNode* const manifest = lilv_new_uri(world, manifest_uri_string);
+  free(manifest_uri_string);
   return manifest;
 }
 
