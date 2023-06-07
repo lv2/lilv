@@ -4,6 +4,7 @@
 .meson-subproject-wrap-hash.txt
 __pycache__
 build/**
+.vscode/**
 subprojects/packagecache/
 subprojects/sphinxygen-1.0.0/
 subprojects/sphinxygen/
