@@ -62,7 +62,7 @@ lilv_plugin_class_get_children(const LilvPluginClass* plugin_class)
   // Returned list doesn't own categories
   LilvPluginClasses* all = plugin_class->world->plugin_classes;
   LilvPluginClasses* result =
-    zix_tree_new(NULL, false, lilv_ptr_cmp, NULL, NULL, NULL);
+    zix_tree_new(NULL, false, lilv_header_compare_by_uri, NULL, NULL, NULL);
 
   for (ZixTreeIter* i = zix_tree_begin((ZixTree*)all);
        i != zix_tree_end((ZixTree*)all);

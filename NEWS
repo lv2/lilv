@@ -6,12 +6,13 @@ lilv (0.24.21) unstable; urgency=medium
   * Convert man pages to mdoc
   * Fix dependencies in pkg-config file
   * Fix potential crash when writing state files fails
+  * Order plugin classes by URI
   * Override pkg-config dependency within meson
   * Remove junk files from documentation install
   * Replace duplicated dox_to_sphinx script with sphinxygen dependency
   * Switch to external zix dependency
 
- -- David Robillard <d@drobilla.net>  Mon, 15 May 2023 00:02:51 +0000
+ -- David Robillard <d@drobilla.net>  Tue, 27 Jun 2023 04:08:59 +0000
 
 lilv (0.24.20) stable; urgency=medium
 
