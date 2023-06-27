@@ -664,7 +664,8 @@ lilv_world_get_manifest_uri(LilvWorld* world, const LilvNode* bundle_uri)
   // Get the string and length of the given bundle URI
   size_t            bundle_uri_length = 0U;
   const char* const bundle_uri_string =
-    sord_node_get_string_counted(bundle_uri->node, &bundle_uri_length);
+    (const char*)sord_node_get_string_counted(bundle_uri->node,
+                                              &bundle_uri_length);
   if (!bundle_uri_length) {
     return NULL;
   }
@@ -749,6 +750,9 @@ lilv_world_load_bundle(LilvWorld* world, const LilvNode* bundle_uri)
 
   SordNode* bundle_node = bundle_uri->node;
   LilvNode* manifest    = lilv_world_get_manifest_uri(world, bundle_uri);
+  if (!manifest) {
+    return;
+  }
 
   // Read manifest into model with graph = bundle_node
   SerdStatus st = lilv_world_load_graph(world, bundle_node, manifest);
