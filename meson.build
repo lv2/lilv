@@ -101,7 +101,7 @@ dl_dep = cc.find_library('dl', required: false)
 
 zix_dep = dependency('zix-0', fallback: 'zix', version: '>= 0.3.0')
 serd_dep = dependency('serd-0', fallback: 'serd', version: '>= 0.30.10')
-sord_dep = dependency('sord-0', fallback: 'sord', version: '>= 0.16.10')
+sord_dep = dependency('sord-0', fallback: 'sord', version: '>= 0.16.15')
 lv2_dep = dependency('lv2', fallback: 'lv2', version: '>= 1.18.2')
 sratom_dep = dependency('sratom-0', fallback: 'sratom', version: '>= 0.6.10')
 
