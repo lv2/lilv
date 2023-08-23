@@ -386,6 +386,7 @@ lilv_node_as_bool(const LilvNode* value);
    @endcode
 */
 #define LILV_FOREACH(colltype, iter, collection)             \
+  /* NOLINTNEXTLINE(bugprone-macro-parentheses) */           \
   for (LilvIter* iter = lilv_##colltype##_begin(collection); \
        !lilv_##colltype##_is_end(collection, iter);          \
        (iter) = lilv_##colltype##_next(collection, iter))
