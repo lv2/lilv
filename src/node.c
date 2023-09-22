@@ -9,7 +9,6 @@
 #include "zix/allocator.h"
 #include "zix/filesystem.h"
 #include "zix/path.h"
-#include "zix/string_view.h"
 
 #include <math.h>
 #include <stdbool.h>
