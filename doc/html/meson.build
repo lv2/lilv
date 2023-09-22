@@ -12,7 +12,7 @@ custom_target(
     sphinx_build, '-M', 'html', '@OUTDIR@' / '..', '@OUTDIR@' / '..',
     '-t', 'html',
   ] + sphinx_flags,
-  input: [c_rst_files, c_lilv_rst, c_index_xml, conf_py],
+  input: [c_lilv_rst, c_rst_files, conf_py],
   install: true,
   install_dir: html_dir,
   output: [

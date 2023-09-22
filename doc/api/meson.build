@@ -4,6 +4,6 @@
 c_lilv_rst = custom_target(
   'lilv.rst',
   command: [sphinxygen, '-f', '@INPUT0@', '@OUTDIR@'],
-  input: [c_index_xml] + c_rst_files,
+  input: [c_index_xml],
   output: 'lilv.rst',
 )
