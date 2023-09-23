@@ -226,9 +226,15 @@ retrieve_callback(LV2_State_Handle handle,
   const Property* const prop = find_property((const LilvState*)handle, key);
 
   if (prop) {
-    *size  = prop->size;
-    *type  = prop->type;
-    *flags = prop->flags;
+    if (size) {
+      *size = prop->size;
+    }
+    if (type) {
+      *type = prop->type;
+    }
+    if (flags) {
+      *flags = prop->flags;
+    }
     return prop->value;
   }
   return NULL;

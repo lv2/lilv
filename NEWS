@@ -4,6 +4,7 @@ lilv (0.24.21) unstable; urgency=medium
   * Clean up code
   * Clean up inconsistent tool command line interfaces
   * Convert man pages to mdoc
+  * Fix crash when plugins pass NULL to the LV2_State_Retrieve_Function
   * Fix dependencies in pkg-config file
   * Fix potential crash when writing state files fails
   * Order plugin classes by URI
@@ -12,7 +13,7 @@ lilv (0.24.21) unstable; urgency=medium
   * Replace duplicated dox_to_sphinx script with sphinxygen dependency
   * Switch to external zix dependency
 
- -- David Robillard <d@drobilla.net>  Tue, 27 Jun 2023 04:08:59 +0000
+ -- David Robillard <d@drobilla.net>  Sat, 23 Sep 2023 23:52:00 +0000
 
 lilv (0.24.20) stable; urgency=medium
 
