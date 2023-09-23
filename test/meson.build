@@ -18,7 +18,8 @@ if get_option('warning_level') == 'everything'
   reuse = find_program('reuse', required: false)
   if reuse.found()
     test(
-      'REUSE', reuse,
+      'REUSE',
+      reuse,
       args: ['--root', lilv_src_root, 'lint'],
       suite: 'data',
     )
@@ -93,7 +94,9 @@ unit_tests = [
 ]
 
 define_args = [
-  '-DLILV_TEST_BUNDLE="@0@/"'.format(meson.current_build_dir() / 'test_plugin.lv2'),
+  '-DLILV_TEST_BUNDLE="@0@/"'.format(
+    meson.current_build_dir() / 'test_plugin.lv2',
+  ),
   '-DLILV_TEST_DIR="@0@/"'.format(meson.current_build_dir()),
 ]
 

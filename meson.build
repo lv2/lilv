@@ -1,15 +1,18 @@
 # Copyright 2021-2022 David Robillard <d@drobilla.net>
 # SPDX-License-Identifier: 0BSD OR ISC
 
-project('lilv', ['c'],
-        version: '0.24.21',
-        license: 'ISC',
-        meson_version: '>= 0.56.0',
-        default_options: [
-          'b_ndebug=if-release',
-          'buildtype=release',
-          'c_std=c99',
-        ])
+project(
+  'lilv',
+  ['c'],
+  default_options: [
+    'b_ndebug=if-release',
+    'buildtype=release',
+    'c_std=c99',
+  ],
+  license: 'ISC',
+  meson_version: '>= 0.56.0',
+  version: '0.24.21',
+)
 
 lilv_src_root = meson.current_source_dir()
 major_version = meson.project_version().split('.')[0]
@@ -76,9 +79,7 @@ if default_lv2_path == ''
   endif
 endif
 
-platform_defines += [
-  '-DLILV_DEFAULT_LV2_PATH="@0@"'.format(default_lv2_path)
-]
+platform_defines += ['-DLILV_DEFAULT_LV2_PATH="@0@"'.format(default_lv2_path)]
 
 # Use versioned name everywhere to support parallel major version installations
 if host_machine.system() == 'windows'
@@ -148,7 +149,7 @@ endif
 liblilv = library(
   versioned_name,
   sources,
-  c_args: c_suppressions +  extra_c_args + ['-DLILV_INTERNAL'],
+  c_args: c_suppressions + extra_c_args + ['-DLILV_INTERNAL'],
   dependencies: common_dependencies,
   gnu_symbol_visibility: 'hidden',
   include_directories: include_directories('include', 'src'),
@@ -199,9 +200,9 @@ if not meson.is_subproject()
 
   summary(
     {
-      'Install prefix':  get_option('prefix'),
-      'Headers':  get_option('prefix') / get_option('includedir'),
-      'Libraries':  get_option('prefix') / get_option('libdir'),
+      'Install prefix': get_option('prefix'),
+      'Headers': get_option('prefix') / get_option('includedir'),
+      'Libraries': get_option('prefix') / get_option('libdir'),
       'Executables': get_option('prefix') / get_option('bindir'),
       'Man pages': get_option('prefix') / get_option('mandir'),
     },
@@ -244,7 +245,8 @@ if not get_option('tests').disabled()
       include_directories: include_directories('include', 'src'),
       c_args: c_suppressions + ['-DLILV_INTERNAL', '-DLILV_STATIC'],
       dependencies: common_dependencies,
-      gnu_symbol_visibility: 'default')
+      gnu_symbol_visibility: 'default',
+    )
   else
     liblilv_static = liblilv
   endif

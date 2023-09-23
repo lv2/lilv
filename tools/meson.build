@@ -69,10 +69,12 @@ if host_machine.system() != 'windows'
 int main(void) { struct timespec t; return clock_gettime(CLOCK_MONOTONIC, &t); }
 '''
 
-  if cc.compiles(clock_gettime_code,
-                 args: platform_defines,
-                 dependencies: [rt_dep],
-                 name: 'clock_gettime')
+  if cc.compiles(
+    clock_gettime_code,
+    args: platform_defines,
+    dependencies: [rt_dep],
+    name: 'clock_gettime',
+  )
     lv2bench = executable(
       'lv2bench',
       files('lv2bench.c'),
