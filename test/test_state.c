@@ -1,4 +1,4 @@
-// Copyright 2007-2020 David Robillard <d@drobilla.net>
+// Copyright 2007-2023 David Robillard <d@drobilla.net>
 // SPDX-License-Identifier: ISC
 
 #undef NDEBUG
@@ -7,6 +7,7 @@
 #include "lilv_test_utils.h"
 
 #include "lilv/lilv.h"
+#include "lv2/atom/atom.h"
 #include "lv2/core/lv2.h"
 #include "lv2/state/state.h"
 #include "lv2/urid/urid.h"
@@ -273,6 +274,64 @@ state_from_instance(const LilvPlugin* const      plugin,
                                       NULL);
 }
 
+typedef struct {
+  unsigned n_entries;
+  unsigned n_basic_types;
+
+  unsigned n_false;
+  unsigned n_greeting;
+  unsigned n_true;
+  unsigned n_two;
+
+  LV2_URID atom_Bool;
+  LV2_URID atom_Float;
+  LV2_URID atom_Int;
+  LV2_URID atom_String;
+  LV2_URID atom_URID;
+  LV2_URID eg_false;
+  LV2_URID eg_greeting;
+  LV2_URID eg_true;
+  LV2_URID eg_two;
+} EmitPropertiesTestContext;
+
+static void
+on_emit_property(void* const       user_data,
+                 const uint32_t    key,
+                 const void* const value,
+                 const uint32_t    size,
+                 const uint32_t    type,
+                 const uint32_t    flags)
+{
+  EmitPropertiesTestContext* context = (EmitPropertiesTestContext*)user_data;
+
+  ++context->n_entries;
+
+  if (type == context->atom_Bool || type == context->atom_Int ||
+      type == context->atom_Float || type == context->atom_URID) {
+    assert(flags == (LV2_STATE_IS_POD | LV2_STATE_IS_PORTABLE));
+    assert(size == 4U);
+    ++context->n_basic_types;
+  }
+
+  if (key == context->eg_false) {
+    const bool bool_value = (*(int32_t*)value) != 0;
+    assert(!bool_value);
+    ++context->n_false;
+  } else if (key == context->eg_greeting) {
+    assert(type == context->atom_String);
+    assert(flags == (LV2_STATE_IS_POD | LV2_STATE_IS_PORTABLE));
+    ++context->n_greeting;
+  } else if (key == context->eg_true) {
+    const bool bool_value = (*(int32_t*)value) != 0;
+    assert(bool_value);
+    ++context->n_true;
+  } else if (key == context->eg_two) {
+    const float float_value = (*(const float*)value);
+    assert(float_value == 2.0f);
+    ++context->n_two;
+  }
+}
+
 static void
 test_instance_state(void)
 {
@@ -290,6 +349,36 @@ test_instance_state(void)
 
   // Check that state contains properties saved by the plugin
   assert(lilv_state_get_num_properties(state) == 8);
+
+  // Check that we can enumerate properties saved by the plugin.
+
+  EmitPropertiesTestContext emit_properties_context = {
+    0U,
+    0U,
+    0U,
+    0U,
+    0U,
+    0U,
+    map_uri(&ctx->uri_map, LV2_ATOM__Bool),
+    map_uri(&ctx->uri_map, LV2_ATOM__Float),
+    map_uri(&ctx->uri_map, LV2_ATOM__Int),
+    map_uri(&ctx->uri_map, LV2_ATOM__String),
+    map_uri(&ctx->uri_map, LV2_ATOM__URID),
+    map_uri(&ctx->uri_map, "http://example.org/false"),
+    map_uri(&ctx->uri_map, "http://example.org/greeting"),
+    map_uri(&ctx->uri_map, "http://example.org/true"),
+    map_uri(&ctx->uri_map, "http://example.org/two"),
+  };
+
+  lilv_state_emit_properties(
+    state, &on_emit_property, &emit_properties_context);
+
+  assert(emit_properties_context.n_entries == 8U);
+  assert(emit_properties_context.n_basic_types == 5U);
+  assert(emit_properties_context.n_false == 1U);
+  assert(emit_properties_context.n_greeting == 1U);
+  assert(emit_properties_context.n_true == 1U);
+  assert(emit_properties_context.n_two == 1U);
 
   // Check that state has no URI
   assert(!lilv_state_get_uri(state));

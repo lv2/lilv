@@ -1529,6 +1529,23 @@ lilv_state_get_num_properties(const LilvState* state)
   return state->props.n;
 }
 
+void
+lilv_state_emit_properties(const LilvState* const    state,
+                           const LilvSetPropertyFunc set_property,
+                           void* const               user_data)
+{
+  for (size_t i = 0U; i < state->props.n; ++i) {
+    Property* const property = state->props.props + i;
+
+    set_property(user_data,
+                 property->key,
+                 property->value,
+                 property->size,
+                 property->type,
+                 property->flags);
+  }
+}
+
 const LilvNode*
 lilv_state_get_plugin_uri(const LilvState* state)
 {

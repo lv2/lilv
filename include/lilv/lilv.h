@@ -1,4 +1,4 @@
-// Copyright 2007-2019 David Robillard <d@drobilla.net>
+// Copyright 2007-2023 David Robillard <d@drobilla.net>
 // SPDX-License-Identifier: ISC
 
 /// @file lilv.h API for Lilv, a lightweight LV2 host library.
@@ -1653,6 +1653,46 @@ void
 lilv_state_emit_port_values(const LilvState*     state,
                             LilvSetPortValueFunc set_value,
                             void*                user_data);
+
+/**
+   Function to set a state property.
+
+   This is like #LilvSetPortValueFunc, except it receives state properties
+   rather than port values.  Unlike that function, it isn't used by the usual
+   state restoration API, but only by hosts that want to enumerate the
+   properties of a state with lilv_state_emit_properties().
+
+   @param user_data The user_data passed to lilv_state_enum_properties().
+   @param key The URID of the property.
+   @param value Pointer to the property value (body, without an atom header).
+   @param size The size of `value`.
+   @param type The URID of the type of `value`.
+   @param flags LV2_State_Flags for this property value.
+*/
+typedef void (*LilvSetPropertyFunc)(void*       user_data,
+                                    uint32_t    key,
+                                    const void* value,
+                                    uint32_t    size,
+                                    uint32_t    type,
+                                    uint32_t    flags);
+
+/**
+   Enumerate the property values in a state snapshot.
+
+   The `set_property` callback will be called once for every metadata property
+   set on the state.  This is useful for enumerating properties set on a
+   LilvState, although note that metadata of saved state can be read like any
+   other data without first loading the entire state.
+
+   @param state The state to retrieve property values from.
+   @param set_property A function to receive property values.
+   @param user_data User data to pass to `set_property`.
+*/
+LILV_API
+void
+lilv_state_emit_properties(const LilvState*    state,
+                           LilvSetPropertyFunc set_property,
+                           void*               user_data);
 
 /**
    Restore a plugin instance from a state snapshot.

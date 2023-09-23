@@ -1,5 +1,6 @@
-lilv (0.24.21) unstable; urgency=medium
+lilv (0.25.1) unstable; urgency=medium
 
+  * Add lilv_state_emit_properties()
   * Allow LILV_API to be defined by the user
   * Clean up code
   * Clean up inconsistent tool command line interfaces
@@ -12,7 +13,7 @@ lilv (0.24.21) unstable; urgency=medium
   * Replace duplicated dox_to_sphinx script with sphinxygen dependency
   * Switch to external zix dependency
 
- -- David Robillard <d@drobilla.net>  Tue, 27 Jun 2023 04:08:59 +0000
+ -- David Robillard <d@drobilla.net>  Sat, 23 Sep 2023 18:58:50 +0000
 
 lilv (0.24.20) stable; urgency=medium
 
