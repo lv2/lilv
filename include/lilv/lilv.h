@@ -1866,6 +1866,9 @@ struct LilvInstanceImpl {
    `features` is a NULL-terminated array of features the host supports.
    NULL may be passed if the host supports no additional features.
 
+   This function is in the "discovery" threading class: it isn't real-time
+   safe, and may not be called concurrently with itself for the same plugin.
+
    @return NULL if instantiation failed.
 */
 LILV_API
@@ -1877,8 +1880,12 @@ lilv_plugin_instantiate(const LilvPlugin*         plugin,
 /**
    Free a plugin instance.
 
-   It is safe to call this function on NULL.
-   `instance` is invalid after this call.
+   It is safe to call this function on NULL.  The `instance` is invalid after
+   this call.
+
+   This function is in the "discovery" threading class: it isn't real-time
+   safe, and may not be called concurrently with any other function for the
+   same instance, or with lilv_plugin_instantiate() for the same plugin.
 */
 LILV_API
 void
@@ -1889,7 +1896,8 @@ lilv_instance_free(LilvInstance* instance);
 /**
    Get the URI of the plugin which `instance` is an instance of.
 
-   Returned string is shared and must not be modified or deleted.
+   This function is a simple accessor and may be called at any time.  The
+   returned string is shared and must not be modified or deleted.
 */
 static inline const char*
 lilv_instance_get_uri(const LilvInstance* instance)
@@ -1902,6 +1910,10 @@ lilv_instance_get_uri(const LilvInstance* instance)
 
    This may be called regardless of whether the plugin is activated,
    activation and deactivation does not destroy port connections.
+
+   This function is in the "audio" threading class: it's real-time safe if the
+   plugin is <http://lv2plug.in/ns/lv2core#hardRTCapable>, but may not be
+   called concurrently with any other function for the same instance.
 */
 static inline void
 lilv_instance_connect_port(LilvInstance* instance,
@@ -1918,6 +1930,10 @@ lilv_instance_connect_port(LilvInstance* instance,
    This resets all state information in the plugin, except for port data
    locations (as set by lilv_instance_connect_port()).  This MUST be called
    before calling lilv_instance_run().
+
+   This function is in the "instantiation" threading class: it isn't real-time
+   safe, and may not be called concurrently with any other function for the
+   same instance.
 */
 static inline void
 lilv_instance_activate(LilvInstance* instance)
@@ -1932,6 +1948,10 @@ lilv_instance_activate(LilvInstance* instance)
 
    If the hint lv2:hardRTCapable is set for this plugin, this function is
    guaranteed not to block.
+
+   This function is in the "audio" threading class: it's real-time safe if the
+   plugin is <http://lv2plug.in/ns/lv2core#hardRTCapable>, but may not be
+   called concurrently with any other function for the same instance.
 */
 static inline void
 lilv_instance_run(LilvInstance* instance, uint32_t sample_count)
@@ -1944,6 +1964,10 @@ lilv_instance_run(LilvInstance* instance, uint32_t sample_count)
 
    Note that to run the plugin after this you must activate it, which will
    reset all state information (except port connections).
+
+   This function is in the "instantiation" threading class: it isn't real-time
+   safe and may not be called concurrently with any other function for the same
+   instance.
 */
 static inline void
 lilv_instance_deactivate(LilvInstance* instance)
@@ -1958,6 +1982,10 @@ lilv_instance_deactivate(LilvInstance* instance)
 
    The type and semantics of the data returned is specific to the particular
    extension, though in all cases it is shared and must not be deleted.
+
+   This function is in the "discovery" threading class: it isn't real-time safe
+   and may not be called concurrently with any other function for the same
+   instance.
 */
 static inline const void*
 lilv_instance_get_extension_data(const LilvInstance* instance, const char* uri)
@@ -1976,6 +2004,8 @@ lilv_instance_get_extension_data(const LilvInstance* instance, const char* uri)
    use the lilv_instance_* functions.
 
    The returned descriptor is shared and must not be deleted.
+
+   This function is a simple accessor and may be called at any time.
 */
 static inline const LV2_Descriptor*
 lilv_instance_get_descriptor(const LilvInstance* instance)
@@ -1990,6 +2020,8 @@ lilv_instance_get_descriptor(const LilvInstance* instance)
    use the lilv_instance_* functions.
 
    The returned handle is shared and must not be deleted.
+
+   This function is a simple accessor and may be called at any time.
 */
 static inline LV2_Handle
 lilv_instance_get_handle(const LilvInstance* instance)
