@@ -32,15 +32,18 @@ if build_docs
   )
 
   # Copy hand-written documentation files
-  c_rst_files = files(
+  rst_sources = files(
     'index.rst',
     'overview.rst',
     'plugins.rst',
     'uis.rst',
     'world.rst',
   )
-  foreach f : c_rst_files
-    configure_file(copy: true, input: f, output: '@PLAINNAME@')
+  sphinx_input = []
+  foreach f : rst_sources
+    sphinx_input += [
+      configure_file(copy: true, input: f, output: '@PLAINNAME@'),
+    ]
   endforeach
 
   # Generate reference documentation input with Doxygen and Sphinxygen

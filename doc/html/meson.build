@@ -15,14 +15,15 @@ custom_target(
     '@OUTDIR@' / '..',
     '-t', 'html',
   ] + sphinx_flags,
-  input: [c_lilv_rst, c_rst_files, conf_py],
+  input: [api_lilv_rst, conf_py, sphinx_input],
   install: true,
   install_dir: html_dir,
   output: [
+    'index.html',
+
     '_static',
     'api',
     'genindex.html',
-    'index.html',
     'overview.html',
     'plugins.html',
     'uis.html',

@@ -15,12 +15,13 @@ custom_target(
     '@OUTDIR@' / '..',
     '-t', 'singlehtml',
   ] + sphinx_flags,
-  input: [c_lilv_rst, c_rst_files, conf_py],
+  input: [api_lilv_rst, conf_py, sphinx_input],
   install: true,
   install_dir: singlehtml_dir,
   output: [
-    '_static',
     'index.html',
+
+    '_static',
   ],
 )
 

@@ -1,9 +1,9 @@
 # Copyright 2021-2022 David Robillard <d@drobilla.net>
 # SPDX-License-Identifier: 0BSD OR ISC
 
-c_lilv_rst = custom_target(
+api_lilv_rst = custom_target(
   'lilv.rst',
   command: [sphinxygen, '-f', '@INPUT0@', '@OUTDIR@'],
-  input: [c_index_xml],
+  input: doxygen_xml,
   output: 'lilv.rst',
 )

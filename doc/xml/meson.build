@@ -7,15 +7,30 @@ config = configuration_data()
 config.set('LILV_SRCDIR', lilv_src_root)
 config.set('DOX_OUTPUT', meson.current_build_dir() / '..')
 
-c_doxyfile = configure_file(
+doxyfile = configure_file(
   configuration: config,
   input: files('../Doxyfile.in'),
   output: 'Doxyfile',
 )
 
-c_index_xml = custom_target(
+doxygen_xml = custom_target(
   'index.xml',
   command: [doxygen, '@INPUT0@'],
-  input: [c_doxyfile] + c_headers,
-  output: 'index.xml',
+  input: [doxyfile] + c_headers,
+  output: [
+    'index.xml',
+
+    'group__lilv.xml',
+    'group__lilv__class.xml',
+    'group__lilv__collections.xml',
+    'group__lilv__instance.xml',
+    'group__lilv__node.xml',
+    'group__lilv__plugin.xml',
+    'group__lilv__port.xml',
+    'group__lilv__scalepoint.xml',
+    'group__lilv__state.xml',
+    'group__lilv__ui.xml',
+    'group__lilv__world.xml',
+    'lilv_8h.xml',
+  ],
 )
