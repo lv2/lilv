@@ -378,6 +378,15 @@ add_features(const LV2_Feature* const* features,
 {
   size_t n_features = 0;
   for (; features && features[n_features]; ++n_features) {
+    if (!strcmp(features[n_features]->URI, LV2_STATE__mapPath)) {
+      map = NULL;
+    }
+    if (!strcmp(features[n_features]->URI, LV2_STATE__makePath)) {
+      make = NULL;
+    }
+    if (!strcmp(features[n_features]->URI, LV2_STATE__freePath)) {
+      free = NULL;
+    }
   }
 
   const LV2_Feature** ret =
