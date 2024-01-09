@@ -756,11 +756,15 @@ lilv_state_new_from_file(LilvWorld*      world,
     return NULL;
   }
 
-  uint8_t*    abs_path = (uint8_t*)zix_canonical_path(NULL, path);
-  SerdNode    node     = serd_node_new_file_uri(abs_path, NULL, NULL, true);
-  SerdEnv*    env      = serd_env_new(&node);
-  SordModel*  model    = sord_new(world->world, SORD_SPO, false);
-  SerdReader* reader   = sord_new_reader(model, env, SERD_TURTLE, NULL);
+  uint8_t* const abs_path = (uint8_t*)zix_canonical_path(NULL, path);
+  if (!abs_path) {
+    return NULL;
+  }
+
+  SerdNode    node   = serd_node_new_file_uri(abs_path, NULL, NULL, true);
+  SerdEnv*    env    = serd_env_new(&node);
+  SordModel*  model  = sord_new(world->world, SORD_SPO, false);
+  SerdReader* reader = sord_new_reader(model, env, SERD_TURTLE, NULL);
 
   serd_reader_read_file(reader, node.buf);
 

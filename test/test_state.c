@@ -1018,6 +1018,18 @@ test_bad_subject(void)
 }
 
 static void
+test_missing_path(void)
+{
+  TestContext* const ctx   = test_context_new();
+  LilvState* const   state = lilv_state_new_from_file(
+    ctx->env->world, &ctx->map, NULL, "/does/not/exist");
+
+  assert(!state);
+
+  test_context_free(ctx);
+}
+
+static void
 count_file(const char* path, const char* name, void* data)
 {
   (void)path;
@@ -1105,6 +1117,7 @@ main(void)
   test_world_round_trip();
   test_label_round_trip();
   test_bad_subject();
+  test_missing_path();
   test_delete();
 
   return 0;

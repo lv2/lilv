@@ -1,3 +1,9 @@
+lilv (0.24.23) unstable; urgency=medium
+
+  * Fix null dereference when trying to load state from a missing file
+
+ -- David Robillard <d@drobilla.net>  Tue, 09 Jan 2024 22:24:29 +0000
+
 lilv (0.24.22) stable; urgency=medium
 
   * Allow LILV_API to be defined by the user
