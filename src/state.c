@@ -766,7 +766,7 @@ lilv_state_new_from_file(LilvWorld*      world,
   SordModel*  model  = sord_new(world->world, SORD_SPO, false);
   SerdReader* reader = sord_new_reader(model, env, SERD_TURTLE, NULL);
 
-  serd_reader_read_file(reader, node.buf);
+  serd_reader_read_file(reader, (const uint8_t*)node.buf);
 
   SordNode* subject_node =
     (subject) ? subject->node
@@ -837,7 +837,7 @@ ttl_writer(SerdSink sink, void* stream, const SerdNode* base, SerdEnv** new_env)
 {
   SerdURI base_uri = SERD_URI_NULL;
   if (base && base->buf) {
-    serd_uri_parse(base->buf, &base_uri);
+    serd_uri_parse((const uint8_t*)base->buf, &base_uri);
   }
 
   SerdEnv* env = *new_env ? *new_env : serd_env_new(base);
@@ -914,11 +914,12 @@ write_manifest(LilvWorld*      world,
 {
   (void)world;
 
-  char* const path = (char*)serd_file_uri_parse(file_uri->buf, NULL);
-  FILE* const wfd  = fopen(path, "w");
+  char* const path =
+    (char*)serd_file_uri_parse((const uint8_t*)file_uri->buf, NULL);
+
+  FILE* const wfd = path ? fopen(path, "w") : NULL;
   if (!wfd) {
     LILV_ERRORF("Failed to open %s for writing (%s)\n", path, strerror(errno));
-
     serd_free(path);
     return 1;
   }
@@ -944,10 +945,11 @@ add_state_to_manifest(LilvWorld*      lworld,
   SerdEnv*   env      = serd_env_new(&manifest);
   SordModel* model    = sord_new(world, SORD_SPO, false);
 
-  if (zix_file_type(manifest_path) == ZIX_FILE_TYPE_REGULAR) {
+  const uint8_t* const manifest_uri = manifest.buf;
+  if (manifest_uri && zix_file_type(manifest_path) == ZIX_FILE_TYPE_REGULAR) {
     // Read manifest into model
     SerdReader* reader = sord_new_reader(model, env, SERD_TURTLE, NULL);
-    SerdStatus  st     = serd_reader_read_file(reader, manifest.buf);
+    SerdStatus  st     = serd_reader_read_file(reader, manifest_uri);
     if (st) {
       LILV_WARNF("Failed to read manifest (%s)\n", serd_strerror(st));
     }
@@ -1032,8 +1034,8 @@ link_exists(const char* path, const void* data)
     return false;
   }
 
-  char* real_path = zix_canonical_path(NULL, path);
-  bool  matches   = !strcmp(real_path, target);
+  char* const real_path = zix_canonical_path(NULL, path);
+  const bool  matches   = real_path && !strcmp(real_path, target);
   zix_free(NULL, real_path);
   return !matches;
 }
@@ -1213,7 +1215,7 @@ lilv_state_make_links(const LilvState* state, const char* dir)
     const PathMap* const pm   = (const PathMap*)zix_tree_get(i);
     char* const          path = zix_path_join(NULL, dir, pm->rel);
 
-    if (path_is_child(pm->abs, state->copy_dir) &&
+    if (state->copy_dir && path_is_child(pm->abs, state->copy_dir) &&
         !!strcmp(state->copy_dir, dir)) {
       // Link directly to snapshot in the copy directory
       maybe_symlink(pm->abs, path);
@@ -1263,9 +1265,13 @@ lilv_state_save(LilvWorld*       world,
     return 1;
   }
 
-  char*       abs_dir = zix_canonical_path(NULL, dir);
-  char* const path    = zix_path_join(NULL, abs_dir, filename);
-  FILE*       fd      = fopen(path, "w");
+  char* const abs_dir = zix_canonical_path(NULL, dir);
+  if (!abs_dir) {
+    return 2;
+  }
+
+  char* const path = zix_path_join(NULL, abs_dir, filename);
+  FILE*       fd   = path ? fopen(path, "w") : NULL;
   if (!fd) {
     LILV_ERRORF("Failed to open %s (%s)\n", path, strerror(errno));
     zix_free(NULL, abs_dir);

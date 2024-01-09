@@ -122,6 +122,12 @@ create_test_directories(void)
   dirs.copy    = zix_path_join(NULL, dirs.shared, "copy");
   dirs.link    = zix_path_join(NULL, dirs.shared, "link");
 
+  assert(dirs.top);
+  assert(dirs.shared);
+  assert(dirs.scratch);
+  assert(dirs.copy);
+  assert(dirs.link);
+
   assert(!mkdir(dirs.shared, 0700));
   assert(!mkdir(dirs.scratch, 0700));
   assert(!mkdir(dirs.copy, 0700));
@@ -553,7 +559,8 @@ count_statements(const char* path)
 
   SerdNode uri = serd_node_new_file_uri((const uint8_t*)path, NULL, NULL, true);
 
-  assert(!serd_reader_read_file(reader, uri.buf));
+  assert(uri.buf);
+  assert(!serd_reader_read_file(reader, (const uint8_t*)uri.buf));
 
   serd_node_free(&uri);
   serd_reader_free(reader);

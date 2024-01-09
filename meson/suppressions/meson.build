@@ -24,7 +24,6 @@ if cc.get_id() in ['clang', 'emscripten']
       '-Wno-format-nonliteral',
       '-Wno-implicit-float-conversion',
       '-Wno-implicit-int-conversion',
-      '-Wno-nullable-to-nonnull-conversion',
       '-Wno-padded',
       '-Wno-reserved-id-macro',
       '-Wno-shorten-64-to-32',
