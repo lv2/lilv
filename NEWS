@@ -1,10 +1,10 @@
-lilv (0.24.23) unstable; urgency=medium
+lilv (0.24.24) stable; urgency=medium
 
   * Avoid overriding state features passed by the host
   * Fix null dereference when trying to load state from a missing file
   * Fix potential null dereferences and conversion warnings
 
- -- David Robillard <d@drobilla.net>  Sat, 20 Jan 2024 22:28:18 +0000
+ -- David Robillard <d@drobilla.net>  Tue, 23 Jan 2024 19:39:29 +0000
 
 lilv (0.24.22) stable; urgency=medium
 
