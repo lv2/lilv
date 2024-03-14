@@ -11,7 +11,7 @@ project(
   ],
   license: 'ISC',
   meson_version: '>= 0.56.0',
-  version: '0.24.24',
+  version: '0.24.25',
 )
 
 lilv_src_root = meson.current_source_dir()
@@ -150,6 +150,7 @@ liblilv = library(
   versioned_name,
   sources,
   c_args: c_suppressions + extra_c_args + ['-DLILV_INTERNAL'],
+  darwin_versions: [major_version + '.0.0', meson.project_version()],
   dependencies: common_dependencies,
   gnu_symbol_visibility: 'hidden',
   include_directories: include_directories('include', 'src'),
