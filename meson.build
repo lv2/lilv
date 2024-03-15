@@ -8,6 +8,7 @@ project(
     'b_ndebug=if-release',
     'buildtype=release',
     'c_std=c99',
+    'cpp_std=c++11',
   ],
   license: 'ISC',
   meson_version: '>= 0.56.0',
