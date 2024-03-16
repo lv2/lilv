@@ -5,7 +5,7 @@ module = shared_module(
   'test_plugin',
   files('test_plugin.c'),
   c_args: c_suppressions,
-  dependencies: lv2_dep,
+  dependencies: [lv2_dep, zix_dep],
   gnu_symbol_visibility: 'hidden',
   name_prefix: '',
 )

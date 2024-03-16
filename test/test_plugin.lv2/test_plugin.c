@@ -5,11 +5,8 @@
 #include "lv2/core/lv2.h"
 #include "lv2/state/state.h"
 #include "lv2/urid/urid.h"
-
-#ifdef _WIN32
-#  define WIN32_LEAN_AND_MEAN
-#  include <windows.h>
-#endif
+#include "zix/filesystem.h"
+#include "zix/path.h"
 
 #include <stdint.h>
 #include <stdio.h>
@@ -36,35 +33,6 @@ typedef struct {
   float*   output;
   unsigned num_runs;
 } Test;
-
-static char*
-temp_directory_path(void)
-{
-#ifdef _WIN32
-  const DWORD len = GetTempPath(0, NULL);
-  char* const buf = (char*)calloc(len, 1);
-  if (GetTempPath(len, buf) == 0) {
-    free(buf);
-    return NULL;
-  }
-
-  return buf;
-#else
-  const char* const tmpdir = getenv("TMPDIR");
-  if (tmpdir) {
-    const size_t tmpdir_len = strlen(tmpdir);
-    char* const  result     = (char*)calloc(tmpdir_len + 1, 1);
-
-    memcpy(result, tmpdir, tmpdir_len + 1);
-    return result;
-  }
-
-  char* const result = (char*)calloc(6, 1);
-
-  memcpy(result, "/tmp/", 6);
-  return result;
-#endif
-}
 
 static void
 cleanup(LV2_Handle instance)
@@ -116,7 +84,7 @@ instantiate(const LV2_Descriptor*     descriptor,
     return NULL;
   }
 
-  test->tmp_dir_path = temp_directory_path();
+  test->tmp_dir_path = zix_temp_directory_path(NULL);
 
   LV2_State_Make_Path* make_path = NULL;
 
@@ -284,14 +252,10 @@ save(LV2_Handle                instance,
         LV2_STATE_IS_POD | LV2_STATE_IS_PORTABLE);
 
   if (map_path) {
-    const char* const file_name     = "temp_file.txt";
-    const size_t      file_name_len = strlen(file_name);
-    const size_t      dir_path_len  = strlen(plugin->tmp_dir_path);
-    char* const       tmp_file_path =
-      (char*)calloc(dir_path_len + file_name_len + 1, 1);
+    const char* const file_name = "temp_file.txt";
 
-    memcpy(tmp_file_path, plugin->tmp_dir_path, dir_path_len);
-    memcpy(tmp_file_path + dir_path_len, file_name, file_name_len + 1);
+    char* const tmp_file_path =
+      zix_path_join(NULL, plugin->tmp_dir_path, file_name);
 
     FILE* file = fopen(tmp_file_path, "w");
     if (!file) {

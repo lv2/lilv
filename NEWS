@@ -2,8 +2,9 @@ lilv (0.24.25) unstable; urgency=medium
 
   * Fix C++ test build on MacOS
   * Fix library current_version on MacOS
+  * Fix test suite when TMPDIR has no trailing slash
 
- -- David Robillard <d@drobilla.net>  Fri, 15 Mar 2024 16:42:11 +0000
+ -- David Robillard <d@drobilla.net>  Sat, 16 Mar 2024 13:51:02 +0000
 
 lilv (0.24.24) stable; urgency=medium
 
