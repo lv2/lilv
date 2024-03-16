@@ -148,8 +148,9 @@ instantiate(const LV2_Descriptor*     descriptor,
     test->rec_file_path = make_path->path(make_path->handle, "recfile");
     if (!(test->rec_file = fopen(test->rec_file_path, "w"))) {
       fprintf(stderr, "ERROR: Failed to open rec file\n");
+    } else {
+      fprintf(test->rec_file, "instantiate\n");
     }
-    fprintf(test->rec_file, "instantiate\n");
   }
 
   return (LV2_Handle)test;
