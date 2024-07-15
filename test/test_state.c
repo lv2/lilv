@@ -10,6 +10,7 @@
 #include "lv2/core/lv2.h"
 #include "lv2/state/state.h"
 #include "lv2/urid/urid.h"
+#include "lv2/atom/atom.h"
 #include "serd/serd.h"
 #include "zix/allocator.h"
 #include "zix/filesystem.h"
@@ -279,6 +280,102 @@ state_from_instance(const LilvPlugin* const      plugin,
                                       NULL);
 }
 
+typedef struct {
+  TestContext *ctx;
+
+  int n_entries;
+  int n_basic_types;
+  bool saw_greeting;
+
+  LV2_URID atom__URID;
+  LV2_URID atom__Int;
+  LV2_URID atom__Float;
+  LV2_URID atom__Bool;
+  LV2_URID atom__String;
+
+  LV2_URID prop__greeting;
+  LV2_URID prop__true;
+  LV2_URID prop__false;
+  LV2_URID prop__two;
+
+} EmitPropertiesTestContext;
+
+
+void emit_properties_test_context_init(TestContext *ctx,EmitPropertiesTestContext*context)
+{
+  context->ctx = ctx;
+  context->n_entries = 0;
+  context->n_basic_types = 0;
+  context->saw_greeting = false;
+
+  context->atom__Int = map_uri(&ctx->uri_map,LV2_ATOM__Int);
+  context->atom__Float = map_uri(&ctx->uri_map,LV2_ATOM__Float);
+  context->atom__URID = map_uri(&ctx->uri_map,LV2_ATOM__URID);
+  context->atom__Bool = map_uri(&ctx->uri_map,LV2_ATOM__Bool);
+  context->atom__String = map_uri(&ctx->uri_map,LV2_ATOM__String);
+
+  context->prop__greeting = map_uri(&ctx->uri_map,"http://example.org/greeting");
+  context->prop__true = map_uri(&ctx->uri_map,"http://example.org/true");
+  context->prop__false = map_uri(&ctx->uri_map,"http://example.org/false");
+  context->prop__two = map_uri(&ctx->uri_map,"http://example.org/false");
+
+}
+
+static void emit_properties_test_check_result(EmitPropertiesTestContext*test_context)
+{
+  assert(test_context->n_entries == 8);
+  assert(test_context->n_basic_types == 5);
+  assert(test_context->saw_greeting);
+}
+
+static void emit_properties_test_callback(
+  void*       user_data,
+  uint32_t    key,
+  const void* atom_data,
+  uint32_t    size,
+  uint32_t    type,
+  uint32_t    flags
+)
+{
+  EmitPropertiesTestContext *context = (EmitPropertiesTestContext*)user_data;
+  
+  ++context->n_entries;
+
+  // Run tests against each of key, atom-dta, size, and type.
+
+  if (type == context->atom__Bool || type == context->atom__Int || type == context->atom__Float || type == context->atom__URID)
+  {
+    assert(size == 4);
+    ++context->n_basic_types;
+  }
+  if (key == context->prop__greeting)
+  {
+    context->saw_greeting = true;
+    assert(type == context->atom__String);
+  } else if (key == context->prop__true)
+  {
+    bool value = (*(int32_t*)atom_data) != 0;
+    assert(value);
+  } else if (key == context->prop__false)
+  {
+    bool value = (*(int32_t*)atom_data) != 0;
+    assert(!value);
+  } else if (key == context->prop__two)
+  {
+    float value = (*(float*)atom_data) != 0;
+    assert(value == 2);
+  }
+
+  TestContext*ctx = context->ctx;
+  fprintf(
+    stderr,
+    "name: %s size: %d type: %s\n",
+    ctx->unmap.unmap(ctx->unmap.handle,key),
+    (int)size,
+    ctx->unmap.unmap(ctx->unmap.handle,type)
+    );
+}
+
 static void
 test_instance_state(void)
 {
@@ -296,6 +393,17 @@ test_instance_state(void)
 
   // Check that state contains properties saved by the plugin
   assert(lilv_state_get_num_properties(state) == 8);
+
+  // Check that we can enumerate properties saved by the plugin.
+
+  EmitPropertiesTestContext emit_properties_context;
+  emit_properties_test_context_init(ctx,&emit_properties_context);
+
+  lilv_state_emit_properties(state,&emit_properties_test_callback,&emit_properties_context);
+
+  emit_properties_test_check_result(&emit_properties_context);
+
+
 
   // Check that state has no URI
   assert(!lilv_state_get_uri(state));
