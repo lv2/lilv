@@ -314,8 +314,7 @@ struct Plugin {
                              float* max_values,
                              float* def_values) const
   {
-    return lilv_plugin_get_port_ranges_float(
-      me, min_values, max_values, def_values);
+    lilv_plugin_get_port_ranges_float(me, min_values, max_values, def_values);
   }
 
   unsigned get_num_ports_of_class(LilvNode* class_1, ...) const

@@ -14,7 +14,6 @@ Checks: >
   -modernize-return-braced-init-list,
   -modernize-use-nodiscard,
   -modernize-use-trailing-return-type,
-  -readability-avoid-return-with-void-value,
   -readability-implicit-bool-conversion,
 HeaderFilterRegex: '.*/lilvmm\.hpp'
 InheritParentConfig: true
