@@ -21,9 +21,9 @@ main(void)
 #ifndef _WIN32
   char* s = NULL;
 
-  const char* const home = getenv("HOME");
-
   setenv("LILV_TEST_1", "test", 1);
+
+  const char* const home = getenv("HOME");
 
   assert(!strcmp((s = lilv_expand("$LILV_TEST_1")), "test"));
   free(s);
