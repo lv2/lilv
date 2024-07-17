@@ -3,17 +3,18 @@
 
 Checks: >
   *,
+  -*-macro-to-enum,
   -*-vararg,
   -altera-*,
   -bugprone-assignment-in-if-condition,
   -bugprone-easily-swappable-parameters,
   -bugprone-macro-parentheses,
+  -bugprone-multi-level-implicit-pointer-conversion,
   -bugprone-suspicious-realloc-usage,
   -clang-diagnostic-unused-function,
   -clang-diagnostic-unused-macros,
   -llvmlibc-*,
   -misc-include-cleaner,
-  -modernize-macro-to-enum,
   -readability-identifier-length,
 CheckOptions:
   - key:   hicpp-uppercase-literal-suffix.NewSuffixes
