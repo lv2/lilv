@@ -16,6 +16,5 @@ Checks: >
   -modernize-use-trailing-return-type,
   -readability-avoid-return-with-void-value,
   -readability-implicit-bool-conversion,
-  -readability-redundant-inline-specifier,
 HeaderFilterRegex: '.*/lilvmm\.hpp'
 InheritParentConfig: true

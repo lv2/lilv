@@ -100,15 +100,15 @@ uri_to_path(const char* uri)
 #endif
 
 struct Node {
-  inline Node(const LilvNode* node)
+  Node(const LilvNode* node)
     : me(lilv_node_duplicate(node))
   {}
 
-  inline Node(const Node& copy)
+  Node(const Node& copy)
     : me(lilv_node_duplicate(copy.me))
   {}
 
-  inline Node& operator=(const Node& rhs)
+  Node& operator=(const Node& rhs)
   {
     if (&rhs != this) {
       lilv_node_free(me);
@@ -117,13 +117,13 @@ struct Node {
     return *this;
   }
 
-  inline Node(Node&& other) noexcept
+  Node(Node&& other) noexcept
     : me(other.me)
   {
     other.me = nullptr;
   }
 
-  inline Node& operator=(Node&& rhs) noexcept
+  Node& operator=(Node&& rhs) noexcept
   {
     if (&rhs != this) {
       me     = rhs.me;
@@ -132,14 +132,14 @@ struct Node {
     return *this;
   }
 
-  inline ~Node() { lilv_node_free(me); }
+  ~Node() { lilv_node_free(me); }
 
-  inline bool equals(const Node& other) const
+  bool equals(const Node& other) const
   {
     return lilv_node_equals(me, other.me);
   }
 
-  inline bool operator==(const Node& other) const { return equals(other); }
+  bool operator==(const Node& other) const { return equals(other); }
 
   LILV_WRAP_CONVERSION(LilvNode)
 
@@ -162,7 +162,7 @@ struct Node {
 };
 
 struct ScalePoint {
-  inline ScalePoint(const LilvScalePoint* c_obj)
+  ScalePoint(const LilvScalePoint* c_obj)
     : me(c_obj)
   {}
 
@@ -175,7 +175,7 @@ struct ScalePoint {
 };
 
 struct PluginClass {
-  inline PluginClass(const LilvPluginClass* c_obj)
+  PluginClass(const LilvPluginClass* c_obj)
     : me(c_obj)
   {}
 
@@ -217,7 +217,7 @@ struct Nodes {
 };
 
 struct UI {
-  inline UI(const LilvUI* c_obj)
+  UI(const LilvUI* c_obj)
     : me(c_obj)
   {}
 
@@ -241,24 +241,18 @@ struct UIs {
 };
 
 struct Port {
-  inline Port(const LilvPlugin* p, const LilvPort* c_obj)
+  Port(const LilvPlugin* p, const LilvPort* c_obj)
     : parent(p)
     , me(c_obj)
   {}
 
   LILV_WRAP_CONVERSION(const LilvPort)
 
-#define LILV_PORT_WRAP0(RT, name)        \
-  inline RT name()                       \
-  {                                      \
-    return lilv_port_##name(parent, me); \
-  }
+#define LILV_PORT_WRAP0(RT, name) \
+  inline RT name() { return lilv_port_##name(parent, me); }
 
-#define LILV_PORT_WRAP1(RT, name, T1, a1)    \
-  inline RT name(T1 a1)                      \
-  {                                          \
-    return lilv_port_##name(parent, me, a1); \
-  }
+#define LILV_PORT_WRAP1(RT, name, T1, a1) \
+  inline RT name(T1 a1) { return lilv_port_##name(parent, me, a1); }
 
   LILV_PORT_WRAP1(LilvNodes*, get_value, LilvNode*, predicate)
   LILV_PORT_WRAP0(LilvNodes*, get_properties)
@@ -277,7 +271,7 @@ struct Port {
 };
 
 struct Plugin {
-  inline Plugin(const LilvPlugin* c_obj)
+  Plugin(const LilvPlugin* c_obj)
     : me(c_obj)
   {}
 
@@ -306,25 +300,25 @@ struct Plugin {
   LILV_WRAP0(UIs, plugin, get_uis)
   LILV_WRAP1(Nodes, plugin, get_related, const Node&, type)
 
-  inline Port get_port_by_index(unsigned index) const
+  Port get_port_by_index(unsigned index) const
   {
     return Port(me, lilv_plugin_get_port_by_index(me, index));
   }
 
-  inline Port get_port_by_symbol(LilvNode* symbol) const
+  Port get_port_by_symbol(LilvNode* symbol) const
   {
     return Port(me, lilv_plugin_get_port_by_symbol(me, symbol));
   }
 
-  inline void get_port_ranges_float(float* min_values,
-                                    float* max_values,
-                                    float* def_values) const
+  void get_port_ranges_float(float* min_values,
+                             float* max_values,
+                             float* def_values) const
   {
     return lilv_plugin_get_port_ranges_float(
       me, min_values, max_values, def_values);
   }
 
-  inline unsigned get_num_ports_of_class(LilvNode* class_1, ...) const
+  unsigned get_num_ports_of_class(LilvNode* class_1, ...) const
   {
     va_list args; // NOLINT(cppcoreguidelines-init-variables)
     va_start(args, class_1);
@@ -345,25 +339,23 @@ struct Plugins {
 };
 
 struct Instance {
-  inline Instance(LilvInstance* instance)
+  Instance(LilvInstance* instance)
     : me(instance)
   {}
 
   LILV_DEPRECATED
-  inline Instance(Plugin plugin, double sample_rate)
+  Instance(Plugin plugin, double sample_rate)
     : me(lilv_plugin_instantiate(plugin, sample_rate, nullptr))
   {}
 
   LILV_DEPRECATED
-  inline Instance(Plugin              plugin,
-                  double              sample_rate,
-                  LV2_Feature* const* features)
+  Instance(Plugin plugin, double sample_rate, LV2_Feature* const* features)
     : me(lilv_plugin_instantiate(plugin, sample_rate, features))
   {}
 
-  static inline Instance* create(Plugin              plugin,
-                                 double              sample_rate,
-                                 LV2_Feature* const* features)
+  static Instance* create(Plugin              plugin,
+                          double              sample_rate,
+                          LV2_Feature* const* features)
   {
     LilvInstance* me = lilv_plugin_instantiate(plugin, sample_rate, features);
 
@@ -383,27 +375,27 @@ struct Instance {
   LILV_WRAP1_VOID(instance, run, unsigned, sample_count)
   LILV_WRAP0_VOID(instance, deactivate)
 
-  inline const void* get_extension_data(const char* uri) const
+  const void* get_extension_data(const char* uri) const
   {
     return lilv_instance_get_extension_data(me, uri);
   }
 
-  inline const LV2_Descriptor* get_descriptor() const
+  const LV2_Descriptor* get_descriptor() const
   {
     return lilv_instance_get_descriptor(me);
   }
 
-  inline LV2_Handle get_handle() const { return lilv_instance_get_handle(me); }
+  LV2_Handle get_handle() const { return lilv_instance_get_handle(me); }
 
   LilvInstance* me;
 };
 
 struct World {
-  inline World()
+  World()
     : me(lilv_world_new())
   {}
 
-  inline ~World() { lilv_world_free(me); }
+  ~World() { lilv_world_free(me); }
 
   World(const World&)            = delete;
   World& operator=(const World&) = delete;
@@ -411,28 +403,22 @@ struct World {
   World(World&&)            = delete;
   World& operator=(World&&) = delete;
 
-  inline LilvNode* new_uri(const char* uri) const
-  {
-    return lilv_new_uri(me, uri);
-  }
+  LilvNode* new_uri(const char* uri) const { return lilv_new_uri(me, uri); }
 
-  inline LilvNode* new_string(const char* str) const
+  LilvNode* new_string(const char* str) const
   {
     return lilv_new_string(me, str);
   }
 
-  inline LilvNode* new_int(int val) const { return lilv_new_int(me, val); }
+  LilvNode* new_int(int val) const { return lilv_new_int(me, val); }
 
-  inline LilvNode* new_float(float val) const
-  {
-    return lilv_new_float(me, val);
-  }
+  LilvNode* new_float(float val) const { return lilv_new_float(me, val); }
 
-  inline LilvNode* new_bool(bool val) const { return lilv_new_bool(me, val); }
+  LilvNode* new_bool(bool val) const { return lilv_new_bool(me, val); }
 
-  inline Nodes find_nodes(const LilvNode* subject,
-                          const LilvNode* predicate,
-                          const LilvNode* object) const
+  Nodes find_nodes(const LilvNode* subject,
+                   const LilvNode* predicate,
+                   const LilvNode* object) const
   {
     return lilv_world_find_nodes(me, subject, predicate, object);
   }
