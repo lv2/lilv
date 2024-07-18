@@ -5,6 +5,7 @@
 #define LILV_TEST_UTILS_H
 
 #include "lilv/lilv.h"
+#include "zix/attributes.h"
 
 #define MANIFEST_PREFIXES \
   "\
@@ -80,6 +81,7 @@ void
 set_env(const char* name, const char* value);
 
 // Create a unique temporary directory
+ZIX_MALLOC_FUNC
 char*
 lilv_create_temporary_directory(const char* pattern);
 
