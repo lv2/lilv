@@ -212,7 +212,7 @@ lilv_plugin_load(LilvPlugin* plugin)
   // Load and parse dynamic manifest data, if this is a library
   if (plugin->dynmanifest) {
     typedef int (*GetDataFunc)(
-      LV2_Dyn_Manifest_Handle handle, FILE * fp, const char* uri);
+      LV2_Dyn_Manifest_Handle handle, FILE* fp, const char* uri);
     GetDataFunc get_data_func = (GetDataFunc)lilv_dlfunc(
       plugin->dynmanifest->lib, "lv2_dyn_manifest_get_data");
     if (get_data_func) {

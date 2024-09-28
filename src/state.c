@@ -781,7 +781,7 @@ lilv_state_new_from_file(LilvWorld*      world,
     (subject) ? subject->node
               : sord_node_from_serd_node(world->world, env, &node, NULL, NULL);
 
-  char* const dirname   = zix_string_view_copy(NULL, zix_path_parent_path(path));
+  char* const dirname = zix_string_view_copy(NULL, zix_path_parent_path(path));
   char* const real_path = zix_canonical_path(NULL, dirname);
   char* const dir_path  = zix_path_join(NULL, real_path, NULL);
 
