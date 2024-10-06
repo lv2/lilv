@@ -391,7 +391,7 @@ lilv_collection_find_by_uri(const ZixTree* seq, const LilvNode* uri)
 struct LilvHeader*
 lilv_collection_get_by_uri(const ZixTree* seq, const LilvNode* uri)
 {
-  ZixTreeIter* const i = lilv_collection_find_by_uri(seq, uri);
+  const ZixTreeIter* const i = lilv_collection_find_by_uri(seq, uri);
 
   return i ? (struct LilvHeader*)zix_tree_get(i) : NULL;
 }
@@ -688,10 +688,10 @@ load_plugin_model(LilvWorld*      world,
                   const LilvNode* plugin_uri)
 {
   // Create model and reader for loading into it
-  SordNode*   bundle_node = bundle_uri->node;
-  SordModel*  model       = sord_new(world->world, SORD_SPO | SORD_OPS, false);
-  SerdEnv*    env         = serd_env_new(sord_node_to_serd_node(bundle_node));
-  SerdReader* reader      = sord_new_reader(model, env, SERD_TURTLE, NULL);
+  const SordNode* bundle_node = bundle_uri->node;
+  SordModel*      model  = sord_new(world->world, SORD_SPO | SORD_OPS, false);
+  SerdEnv*        env    = serd_env_new(sord_node_to_serd_node(bundle_node));
+  SerdReader*     reader = sord_new_reader(model, env, SERD_TURTLE, NULL);
 
   // Load manifest
   LilvNode* manifest_uri = lilv_world_get_manifest_uri(world, bundle_uri);
@@ -723,7 +723,7 @@ load_plugin_model(LilvWorld*      world,
 }
 
 static LilvVersion
-get_version(LilvWorld* world, SordModel* model, const LilvNode* subject)
+get_version(const LilvWorld* world, SordModel* model, const LilvNode* subject)
 {
   const SordNode* minor_node =
     sord_get(model, subject->node, world->uris.lv2_minorVersion, NULL, NULL);
@@ -1014,7 +1014,8 @@ lilv_world_load_specifications(LilvWorld* world)
 {
   for (LilvSpec* spec = world->specs; spec; spec = spec->next) {
     LILV_FOREACH (nodes, f, spec->data_uris) {
-      LilvNode* file = (LilvNode*)lilv_collection_get(spec->data_uris, f);
+      const LilvNode* file =
+        (const LilvNode*)lilv_collection_get(spec->data_uris, f);
       lilv_world_load_graph(world, NULL, file);
     }
   }

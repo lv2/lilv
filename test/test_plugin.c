@@ -101,7 +101,7 @@ main(void)
   const LilvNodes* data_uris = lilv_plugin_get_data_uris(plug);
   assert(lilv_nodes_size(data_uris) == 2);
 
-  LilvNode* project = lilv_plugin_get_project(plug);
+  const LilvNode* project = lilv_plugin_get_project(plug);
   assert(!project);
 
   char* manifest_uri =
@@ -218,7 +218,7 @@ main(void)
   LilvNode*  blank_p = lilv_new_uri(world, "http://example.org/blank");
   LilvNodes* blanks  = lilv_plugin_get_value(plug, blank_p);
   assert(lilv_nodes_size(blanks) == 1);
-  LilvNode* blank = lilv_nodes_get_first(blanks);
+  const LilvNode* blank = lilv_nodes_get_first(blanks);
   assert(lilv_node_is_blank(blank));
   const char* blank_str = lilv_node_as_blank(blank);
   char*       blank_tok = lilv_node_get_turtle_token(blank);

@@ -407,7 +407,7 @@ lilv_plugin_classes_begin(const LilvPluginClasses* collection);
 
 LILV_API
 const LilvPluginClass*
-lilv_plugin_classes_get(const LilvPluginClasses* collection, LilvIter* i);
+lilv_plugin_classes_get(const LilvPluginClasses* collection, const LilvIter* i);
 
 LILV_API
 LilvIter*
@@ -415,7 +415,8 @@ lilv_plugin_classes_next(const LilvPluginClasses* collection, LilvIter* i);
 
 LILV_API
 bool
-lilv_plugin_classes_is_end(const LilvPluginClasses* collection, LilvIter* i);
+lilv_plugin_classes_is_end(const LilvPluginClasses* collection,
+                           const LilvIter*          i);
 
 /**
    Get a plugin class from `classes` by URI.
@@ -446,7 +447,7 @@ lilv_scale_points_begin(const LilvScalePoints* collection);
 
 LILV_API
 const LilvScalePoint*
-lilv_scale_points_get(const LilvScalePoints* collection, LilvIter* i);
+lilv_scale_points_get(const LilvScalePoints* collection, const LilvIter* i);
 
 LILV_API
 LilvIter*
@@ -454,7 +455,7 @@ lilv_scale_points_next(const LilvScalePoints* collection, LilvIter* i);
 
 LILV_API
 bool
-lilv_scale_points_is_end(const LilvScalePoints* collection, LilvIter* i);
+lilv_scale_points_is_end(const LilvScalePoints* collection, const LilvIter* i);
 
 /* UIs */
 
@@ -472,7 +473,7 @@ lilv_uis_begin(const LilvUIs* collection);
 
 LILV_API
 const LilvUI*
-lilv_uis_get(const LilvUIs* collection, LilvIter* i);
+lilv_uis_get(const LilvUIs* collection, const LilvIter* i);
 
 LILV_API
 LilvIter*
@@ -480,7 +481,7 @@ lilv_uis_next(const LilvUIs* collection, LilvIter* i);
 
 LILV_API
 bool
-lilv_uis_is_end(const LilvUIs* collection, LilvIter* i);
+lilv_uis_is_end(const LilvUIs* collection, const LilvIter* i);
 
 /**
    Get a UI from `uis` by URI.
@@ -510,7 +511,7 @@ lilv_nodes_begin(const LilvNodes* collection);
 
 LILV_API
 const LilvNode*
-lilv_nodes_get(const LilvNodes* collection, LilvIter* i);
+lilv_nodes_get(const LilvNodes* collection, const LilvIter* i);
 
 LILV_API
 LilvIter*
@@ -518,7 +519,7 @@ lilv_nodes_next(const LilvNodes* collection, LilvIter* i);
 
 LILV_API
 bool
-lilv_nodes_is_end(const LilvNodes* collection, LilvIter* i);
+lilv_nodes_is_end(const LilvNodes* collection, const LilvIter* i);
 
 LILV_API
 LilvNode*
@@ -550,7 +551,7 @@ lilv_plugins_begin(const LilvPlugins* collection);
 
 LILV_API
 const LilvPlugin*
-lilv_plugins_get(const LilvPlugins* collection, LilvIter* i);
+lilv_plugins_get(const LilvPlugins* collection, const LilvIter* i);
 
 LILV_API
 LilvIter*
@@ -558,7 +559,7 @@ lilv_plugins_next(const LilvPlugins* collection, LilvIter* i);
 
 LILV_API
 bool
-lilv_plugins_is_end(const LilvPlugins* collection, LilvIter* i);
+lilv_plugins_is_end(const LilvPlugins* collection, const LilvIter* i);
 
 /**
    Get a plugin from `plugins` by URI.

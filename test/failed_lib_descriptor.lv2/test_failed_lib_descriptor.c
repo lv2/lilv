@@ -31,7 +31,7 @@ main(int argc, char** argv)
   const LilvPlugin*  plugin     = lilv_plugins_get_by_uri(plugins, plugin_uri);
   assert(plugin);
 
-  LilvInstance* instance = lilv_plugin_instantiate(plugin, 48000.0, NULL);
+  const LilvInstance* instance = lilv_plugin_instantiate(plugin, 48000.0, NULL);
   assert(!instance);
 
   lilv_node_free(plugin_uri);

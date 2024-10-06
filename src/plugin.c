@@ -489,7 +489,7 @@ lilv_plugin_get_name(const LilvPlugin* plugin)
 
   LilvNode* ret = NULL;
   if (results) {
-    LilvNode* val = lilv_nodes_get_first(results);
+    const LilvNode* val = lilv_nodes_get_first(results);
     if (lilv_node_is_string(val)) {
       ret = lilv_node_duplicate(val);
     }
@@ -588,7 +588,7 @@ lilv_plugin_get_num_ports_of_class_va(
 
   // Check each port against every type
   for (unsigned i = 0; i < plugin->num_ports; ++i) {
-    LilvPort* port = plugin->ports[i];
+    const LilvPort* port = plugin->ports[i];
     if (port && lilv_port_is_a(plugin, port, class_1)) {
       bool matches = true;
       for (size_t j = 0; j < n_classes; ++j) {
@@ -997,7 +997,7 @@ lilv_plugin_get_related(const LilvPlugin* plugin, const LilvNode* type)
 
   LilvNodes* matches = lilv_nodes_new();
   LILV_FOREACH (nodes, i, related) {
-    LilvNode* node = (LilvNode*)lilv_collection_get((ZixTree*)related, i);
+    const LilvNode* node = (LilvNode*)lilv_collection_get((ZixTree*)related, i);
     if (lilv_world_ask_internal(
           world, node->node, world->uris.rdf_a, type->node)) {
       zix_tree_insert(
@@ -1028,7 +1028,7 @@ new_lv2_env(const SerdNode* base)
 }
 
 static void
-maybe_write_prefixes(SerdWriter* writer, SerdEnv* env, FILE* file)
+maybe_write_prefixes(SerdWriter* writer, const SerdEnv* env, FILE* file)
 {
   fseek(file, 0, SEEK_END);
   if (ftell(file) == 0) {

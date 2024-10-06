@@ -82,8 +82,8 @@ bench(const LilvPlugin* p, uint32_t sample_count, uint32_t block_size)
   LV2_Atom_Sequence* seq_out =
     (LV2_Atom_Sequence*)malloc(sizeof(LV2_Atom_Sequence) + atom_capacity);
 
-  const char* uri      = lilv_node_as_string(lilv_plugin_get_uri(p));
-  LilvNodes*  required = lilv_plugin_get_required_features(p);
+  const char*      uri      = lilv_node_as_string(lilv_plugin_get_uri(p));
+  const LilvNodes* required = lilv_plugin_get_required_features(p);
   LILV_FOREACH (nodes, i, required) {
     const LilvNode* feature = lilv_nodes_get(required, i);
     if (!lilv_node_equals(feature, urid_map)) {

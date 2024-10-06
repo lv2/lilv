@@ -92,8 +92,8 @@ main(void)
   lilv_node_free(nopsym);
 
   // Try getting an invalid property
-  LilvNode*  num     = lilv_new_int(world, 1);
-  LilvNodes* nothing = lilv_port_get_value(plug, p, num);
+  LilvNode*        num     = lilv_new_int(world, 1);
+  const LilvNodes* nothing = lilv_port_get_value(plug, p, num);
   assert(!nothing);
   lilv_node_free(num);
 

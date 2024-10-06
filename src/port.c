@@ -160,7 +160,7 @@ lilv_port_get_name(const LilvPlugin* plugin, const LilvPort* port)
 
   LilvNode* ret = NULL;
   if (results) {
-    LilvNode* val = lilv_nodes_get_first(results);
+    const LilvNode* val = lilv_nodes_get_first(results);
     if (lilv_node_is_string(val)) {
       ret = lilv_node_duplicate(val);
     }

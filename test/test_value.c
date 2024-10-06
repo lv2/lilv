@@ -133,7 +133,7 @@ main(void)
   assert(!lilv_node_equals(ival, ifval));
   lilv_node_free(ifval);
 
-  LilvNode* nil = NULL;
+  const LilvNode* nil = NULL;
   assert(!lilv_node_equals(uval, nil));
   assert(!lilv_node_equals(nil, uval));
   assert(lilv_node_equals(nil, nil));

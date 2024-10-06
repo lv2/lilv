@@ -43,8 +43,8 @@ discovery_verify_plugin(const LilvTestEnv* env, const LilvPlugin* plugin)
 int
 main(void)
 {
-  LilvTestEnv* const env   = lilv_test_env_new();
-  LilvWorld* const   world = env->world;
+  LilvTestEnv* const     env   = lilv_test_env_new();
+  const LilvWorld* const world = env->world;
 
   if (create_bundle(env, "discovery.lv2", SIMPLE_MANIFEST_TTL, plugin_ttl)) {
     return 1;

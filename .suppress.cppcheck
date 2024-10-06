@@ -1,6 +1,4 @@
 CastIntegerToAddressAtReturn
-constParameterPointer
-constVariablePointer
 knownConditionTrueFalse
 memleakOnRealloc
 noExplicitConstructor

@@ -167,33 +167,33 @@ lilv_nodes_merge(const LilvNodes* a, const LilvNodes* b)
 
 /* Iterator */
 
-#define LILV_COLLECTION_IMPL(prefix, CT, ET)                 \
-                                                             \
-  unsigned prefix##_size(const CT* collection)               \
-  {                                                          \
-    return lilv_collection_size(collection);                 \
-  }                                                          \
-                                                             \
-  LilvIter* prefix##_begin(const CT* collection)             \
-  {                                                          \
-    return lilv_collection_begin(collection);                \
-  }                                                          \
-                                                             \
-  const ET* prefix##_get(const CT* collection, LilvIter* i)  \
-  {                                                          \
-    return (ET*)lilv_collection_get(collection, i);          \
-  }                                                          \
-                                                             \
-  LilvIter* prefix##_next(const CT* collection, LilvIter* i) \
-  {                                                          \
-    (void)collection;                                        \
-    return zix_tree_iter_next((ZixTreeIter*)i);              \
-  }                                                          \
-                                                             \
-  bool prefix##_is_end(const CT* collection, LilvIter* i)    \
-  {                                                          \
-    (void)collection;                                        \
-    return zix_tree_iter_is_end((ZixTreeIter*)i);            \
+#define LILV_COLLECTION_IMPL(prefix, CT, ET)                      \
+                                                                  \
+  unsigned prefix##_size(const CT* collection)                    \
+  {                                                               \
+    return lilv_collection_size(collection);                      \
+  }                                                               \
+                                                                  \
+  LilvIter* prefix##_begin(const CT* collection)                  \
+  {                                                               \
+    return lilv_collection_begin(collection);                     \
+  }                                                               \
+                                                                  \
+  const ET* prefix##_get(const CT* collection, const LilvIter* i) \
+  {                                                               \
+    return (ET*)lilv_collection_get(collection, i);               \
+  }                                                               \
+                                                                  \
+  LilvIter* prefix##_next(const CT* collection, LilvIter* i)      \
+  {                                                               \
+    (void)collection;                                             \
+    return zix_tree_iter_next((ZixTreeIter*)i);                   \
+  }                                                               \
+                                                                  \
+  bool prefix##_is_end(const CT* collection, const LilvIter* i)   \
+  {                                                               \
+    (void)collection;                                             \
+    return zix_tree_iter_is_end((const ZixTreeIter*)i);           \
   }
 
 LILV_COLLECTION_IMPL(lilv_plugin_classes, LilvPluginClasses, LilvPluginClass)

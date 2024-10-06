@@ -153,13 +153,13 @@ lilv_state_rel2abs(const LilvState* state, const char* path)
 }
 
 static void
-append_property(LilvState*     state,
-                PropertyArray* array,
-                uint32_t       key,
-                const void*    value,
-                size_t         size,
-                uint32_t       type,
-                uint32_t       flags)
+append_property(const LilvState* state,
+                PropertyArray*   array,
+                uint32_t         key,
+                const void*      value,
+                size_t           size,
+                uint32_t         type,
+                uint32_t         flags)
 {
   array->props =
     (Property*)realloc(array->props, (++array->n) * sizeof(Property));
@@ -257,7 +257,7 @@ lilv_state_has_path(const char* path, const void* state)
 static char*
 make_path(LV2_State_Make_Path_Handle handle, const char* path)
 {
-  LilvState* state = (LilvState*)handle;
+  const LilvState* state = (const LilvState*)handle;
   zix_create_directories(NULL, state->dir);
 
   return zix_path_join(NULL, state->dir, path);
@@ -269,7 +269,7 @@ path_is_child(const char* path, const char* dir)
   if (path && dir) {
     const size_t path_len = strlen(path);
     const size_t dir_len  = strlen(dir);
-    return dir && path_len >= dir_len && !strncmp(path, dir, dir_len);
+    return path_len >= dir_len && !strncmp(path, dir, dir_len);
   }
   return false;
 }
@@ -293,7 +293,7 @@ abstract_path(LV2_State_Map_Path_Handle handle, const char* abs_path)
 
   if (!zix_tree_find(state->abs2rel, &key, &iter)) {
     // Already mapped path in a previous call
-    PathMap* pm = (PathMap*)zix_tree_get(iter);
+    const PathMap* pm = (const PathMap*)zix_tree_get(iter);
     zix_free(NULL, real_path);
     return lilv_strdup(pm->rel);
   }
@@ -353,8 +353,8 @@ abstract_path(LV2_State_Map_Path_Handle handle, const char* abs_path)
 static char*
 absolute_path(LV2_State_Map_Path_Handle handle, const char* state_path)
 {
-  LilvState* state = (LilvState*)handle;
-  char*      path  = NULL;
+  const LilvState* state = (const LilvState*)handle;
+  char*            path  = NULL;
   if (zix_path_is_absolute(state_path)) {
     // Absolute path, return identical path
     path = lilv_strdup(state_path);
@@ -777,7 +777,7 @@ lilv_state_new_from_file(LilvWorld*      world,
 
   serd_reader_read_file(reader, (const uint8_t*)node.buf);
 
-  SordNode* subject_node =
+  const SordNode* subject_node =
     (subject) ? subject->node
               : sord_node_from_serd_node(world->world, env, &node, NULL, NULL);
 
@@ -1148,7 +1148,7 @@ lilv_state_write(LilvWorld*       world,
     serd_writer_write_statement(writer, 0, NULL, &subject, &p, &o, NULL, NULL);
   }
 
-  SerdEnv*        env  = serd_writer_get_env(writer);
+  const SerdEnv*  env  = serd_writer_get_env(writer);
   const SerdNode* base = serd_env_get_base_uri(env, NULL);
 
   Sratom* sratom = sratom_new(map);
@@ -1166,7 +1166,7 @@ lilv_state_write(LilvWorld*       world,
   // Write port values
   sratom_set_pretty_numbers(sratom, true); // Use pretty numbers
   for (uint32_t i = 0; i < state->n_values; ++i) {
-    PortValue* const value = &state->values[i];
+    const PortValue* const value = &state->values[i];
 
     const SerdNode port =
       serd_node_from_string(SERD_BLANK, USTR(value->symbol));
@@ -1399,7 +1399,7 @@ lilv_state_delete(LilvWorld* world, const LilvState* state)
   }
 
   if (state->uri) {
-    SordNode* file =
+    const SordNode* file =
       sord_get(model, state->uri->node, world->uris.rdfs_seeAlso, NULL, NULL);
     if (file) {
       // Remove state file
@@ -1472,7 +1472,7 @@ lilv_state_delete(LilvWorld* world, const LilvState* state)
 }
 
 static void
-free_property_array(LilvState* state, PropertyArray* array)
+free_property_array(const LilvState* state, PropertyArray* array)
 {
   for (uint32_t i = 0; i < array->n; ++i) {
     Property* prop = &array->props[i];
@@ -1518,8 +1518,8 @@ lilv_state_equals(const LilvState* a, const LilvState* b)
   }
 
   for (uint32_t i = 0; i < a->n_values; ++i) {
-    PortValue* const av = &a->values[i];
-    PortValue* const bv = &b->values[i];
+    const PortValue* const av = &a->values[i];
+    const PortValue* const bv = &b->values[i];
     if (av->atom->size != bv->atom->size || av->atom->type != bv->atom->type ||
         !!strcmp(av->symbol, bv->symbol) ||
         !!memcmp(av->atom + 1, bv->atom + 1, av->atom->size)) {
@@ -1528,8 +1528,8 @@ lilv_state_equals(const LilvState* a, const LilvState* b)
   }
 
   for (uint32_t i = 0; i < a->props.n; ++i) {
-    Property* const ap = &a->props.props[i];
-    Property* const bp = &b->props.props[i];
+    const Property* const ap = &a->props.props[i];
+    const Property* const bp = &b->props.props[i];
     if (ap->key != bp->key || ap->type != bp->type || ap->flags != bp->flags) {
       return false;
     }

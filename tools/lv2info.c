@@ -28,9 +28,9 @@ static LilvNode* supports_event_pred = NULL;
 static void
 print_port(const LilvPlugin* p,
            uint32_t          index,
-           float*            mins,
-           float*            maxes,
-           float*            defaults)
+           const float*      mins,
+           const float*      maxes,
+           const float*      defaults)
 {
   const LilvPort* port = lilv_plugin_get_port_by_index(p, index);
 

@@ -19,7 +19,7 @@ main(void)
   LilvNode* num = lilv_new_int(env->world, 4);
   LilvNode* uri = lilv_new_uri(env->world, "http://example.org/object");
 
-  LilvNodes* matches = lilv_world_find_nodes(world, num, NULL, NULL);
+  const LilvNodes* matches = lilv_world_find_nodes(world, num, NULL, NULL);
   assert(!matches);
 
   matches = lilv_world_find_nodes(world, NULL, num, NULL);

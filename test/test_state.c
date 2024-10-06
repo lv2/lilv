@@ -235,7 +235,7 @@ set_port_value(const char* port_symbol,
 static char*
 make_scratch_path(LV2_State_Make_Path_Handle handle, const char* path)
 {
-  TestDirectories* dirs = (TestDirectories*)handle;
+  const TestDirectories* dirs = (TestDirectories*)handle;
 
   return zix_path_join(NULL, dirs->scratch, path);
 }
@@ -1010,12 +1010,12 @@ test_bad_subject(void)
   TestContext* const ctx    = test_context_new();
   LilvNode* const    string = lilv_new_string(ctx->env->world, "Not a URI");
 
-  LilvState* const file_state = lilv_state_new_from_file(
+  const LilvState* const file_state = lilv_state_new_from_file(
     ctx->env->world, &ctx->map, string, "/I/do/not/matter");
 
   assert(!file_state);
 
-  LilvState* const world_state =
+  const LilvState* const world_state =
     lilv_state_new_from_world(ctx->env->world, &ctx->map, string);
 
   assert(!world_state);
@@ -1027,8 +1027,8 @@ test_bad_subject(void)
 static void
 test_missing_path(void)
 {
-  TestContext* const ctx   = test_context_new();
-  LilvState* const   state = lilv_state_new_from_file(
+  TestContext* const     ctx   = test_context_new();
+  const LilvState* const state = lilv_state_new_from_file(
     ctx->env->world, &ctx->map, NULL, "/does/not/exist");
 
   assert(!state);

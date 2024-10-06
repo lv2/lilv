@@ -97,9 +97,9 @@ lilv_node_new_from_node(LilvWorld* world, const SordNode* node)
     return NULL;
   }
 
-  LilvNode*    result       = NULL;
-  SordNode*    datatype_uri = NULL;
-  LilvNodeType type         = LILV_VALUE_STRING;
+  LilvNode*       result       = NULL;
+  const SordNode* datatype_uri = NULL;
+  LilvNodeType    type         = LILV_VALUE_STRING;
 
   switch (sord_node_get_type(node)) {
   case SORD_URI:
