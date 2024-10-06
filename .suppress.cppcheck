@@ -6,5 +6,4 @@ memleakOnRealloc
 noExplicitConstructor
 normalCheckLevelMaxBranches
 redundantInitialization
-unusedStructMember
 varFuncNullUB

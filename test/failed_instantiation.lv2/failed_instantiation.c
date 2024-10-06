@@ -8,13 +8,6 @@
 
 #define PLUGIN_URI "http://example.org/failed-instantiation"
 
-enum { TEST_INPUT = 0, TEST_OUTPUT = 1 };
-
-typedef struct {
-  float* input;
-  float* output;
-} Test;
-
 static void
 cleanup(LV2_Handle instance)
 {
