@@ -16,6 +16,9 @@ option('docs', type: 'feature', yield: true,
 option('html', type: 'feature', yield: true,
        description: 'Build paginated HTML documentation')
 
+option('lint', type: 'boolean', value: false, yield: true,
+       description: 'Run code quality checks')
+
 option('singlehtml', type: 'feature', yield: true,
        description: 'Build single-page HTML documentation')
 
