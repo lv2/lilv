@@ -5,7 +5,6 @@ knownConditionTrueFalse
 memleakOnRealloc
 noExplicitConstructor
 normalCheckLevelMaxBranches
-nullPointerArithmeticRedundantCheck
 redundantInitialization
 unusedStructMember
 varFuncNullUB

@@ -65,12 +65,13 @@ bench(const LilvPlugin* p, uint32_t sample_count, uint32_t block_size)
   const LV2_Feature* features[]    = {&map_feature, &unmap_feature, NULL};
 
   float* const buf = (float*)calloc(block_size * 2UL, sizeof(float));
-  float* const in  = buf;
-  float* const out = buf + block_size;
   if (!buf) {
     fprintf(stderr, "Out of memory\n");
     return 0.0;
   }
+
+  float* const in  = buf;
+  float* const out = buf + block_size;
 
   const size_t atom_capacity = 1024;
 
