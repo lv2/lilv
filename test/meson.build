@@ -1,27 +1,6 @@
 # Copyright 2020-2022 David Robillard <d@drobilla.net>
 # SPDX-License-Identifier: 0BSD OR ISC
 
-####################
-# Project Metadata #
-####################
-
-if get_option('lint')
-  if not meson.is_subproject()
-    # Check release metadata
-    autoship = find_program('autoship', required: false)
-    if autoship.found()
-      test('autoship', autoship, args: ['test', lilv_src_root], suite: 'data')
-    endif
-  endif
-
-  # Check licensing metadata
-  reuse = find_program('reuse', required: false)
-  if reuse.found()
-    reuse_args = ['--root', lilv_src_root, 'lint']
-    test('REUSE', reuse, args: reuse_args, suite: 'data')
-  endif
-endif
-
 ##############
 # Test Setup #
 ##############
@@ -109,3 +88,24 @@ foreach unit : unit_tests
     suite: 'unit',
   )
 endforeach
+
+########
+# Lint #
+########
+
+if get_option('lint')
+  if not meson.is_subproject()
+    # Check release metadata
+    autoship = find_program('autoship', required: false)
+    if autoship.found()
+      test('autoship', autoship, args: ['test', lilv_src_root], suite: 'data')
+    endif
+  endif
+
+  # Check licensing metadata
+  reuse = find_program('reuse', required: false)
+  if reuse.found()
+    reuse_args = ['--root', lilv_src_root, 'lint']
+    test('REUSE', reuse, args: reuse_args, suite: 'data')
+  endif
+endif
