@@ -264,7 +264,7 @@ lilv_world_get(LilvWorld*      world,
   SordNode* snode = sord_get(world->model,
                              subject ? subject->node : NULL,
                              predicate ? predicate->node : NULL,
-                             object ? object->node : NULL,
+                             object->node,
                              NULL);
   LilvNode* lnode = lilv_node_new_from_node(world, snode);
   sord_node_free(world->world, snode);
