@@ -16,6 +16,7 @@ project(
 )
 
 lilv_src_root = meson.current_source_dir()
+lilv_build_root = meson.current_build_dir()
 major_version = meson.project_version().split('.')[0]
 version_suffix = '-@0@'.format(major_version)
 versioned_name = 'lilv' + version_suffix

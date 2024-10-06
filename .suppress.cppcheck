@@ -1,0 +1,12 @@
+CastIntegerToAddressAtReturn
+assignmentInAssert
+constParameterPointer
+constVariablePointer
+knownConditionTrueFalse
+memleakOnRealloc
+noExplicitConstructor
+normalCheckLevelMaxBranches
+nullPointerArithmeticRedundantCheck
+redundantInitialization
+unusedStructMember
+varFuncNullUB
