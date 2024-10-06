@@ -1,29 +1,29 @@
 # Copyright 2021-2022 David Robillard <d@drobilla.net>
 # SPDX-License-Identifier: 0BSD OR ISC
 
-option('bindings_py', type: 'feature', value: 'auto', yield: true,
+option('bindings_py', type: 'feature', yield: true,
        description: 'Build Python bindings')
 
-option('bindings_cpp', type: 'feature', value: 'auto', yield: true,
+option('bindings_cpp', type: 'feature', yield: true,
        description: 'Build C++ bindings')
 
 option('default_lv2_path', type: 'string', value: '', yield: true,
        description: 'Default LV2_PATH to use if it is unset')
 
-option('docs', type: 'feature', value: 'auto', yield: true,
+option('docs', type: 'feature', yield: true,
        description: 'Build documentation')
 
-option('html', type: 'feature', value: 'auto', yield: true,
+option('html', type: 'feature', yield: true,
        description: 'Build paginated HTML documentation')
 
-option('singlehtml', type: 'feature', value: 'auto', yield: true,
+option('singlehtml', type: 'feature', yield: true,
        description: 'Build single-page HTML documentation')
 
-option('tests', type: 'feature', value: 'auto', yield: true,
+option('tests', type: 'feature', yield: true,
        description: 'Build tests')
 
 option('title', type: 'string', value: 'Lilv',
        description: 'Project title')
 
-option('tools', type: 'feature', value: 'auto', yield: true,
+option('tools', type: 'feature', yield: true,
        description: 'Build command line utilities')
