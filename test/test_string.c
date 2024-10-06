@@ -1,4 +1,4 @@
-// Copyright 2007-2020 David Robillard <d@drobilla.net>
+// Copyright 2007-2024 David Robillard <d@drobilla.net>
 // SPDX-License-Identifier: ISC
 
 #undef NDEBUG
@@ -15,32 +15,35 @@
 #include <stdlib.h>
 #include <string.h>
 
+#ifndef _WIN32
+static void
+check_expansion(const char* const path, const char* const expected)
+{
+  char* const expanded = lilv_expand(path);
+  assert(!strcmp(expanded, expected));
+  free(expanded);
+}
+#endif
+
 int
 main(void)
 {
 #ifndef _WIN32
-  char* s = NULL;
-
   setenv("LILV_TEST_1", "test", 1);
 
   const char* const home = getenv("HOME");
 
-  assert(!strcmp((s = lilv_expand("$LILV_TEST_1")), "test"));
-  free(s);
-  if (home) {
-    assert(!strcmp((s = lilv_expand("~")), home));
-    free(s);
-    assert(!strcmp((s = lilv_expand("~foo")), "~foo"));
-    free(s);
+  check_expansion("$LILV_TEST_1", "test");
 
+  if (home) {
     char* const home_foo = lilv_strjoin(home, "/foo", NULL);
-    assert(!strcmp((s = lilv_expand("~/foo")), home_foo));
-    free(s);
+    check_expansion("~", home);
+    check_expansion("~foo", "~foo");
+    check_expansion("~/foo", home_foo);
     free(home_foo);
   }
 
-  assert(!strcmp((s = lilv_expand("$NOT_A_VAR")), "$NOT_A_VAR"));
-  free(s);
+  check_expansion("$NOT_A_VAR", "$NOT_A_VAR");
 
   unsetenv("LILV_TEST_1");
 #endif
