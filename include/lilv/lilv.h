@@ -1561,12 +1561,7 @@ LILV_API
 bool
 lilv_state_equals(const LilvState* a, const LilvState* b);
 
-/**
-   Return the number of properties in `state`.
-*/
-LILV_API
-unsigned
-lilv_state_get_num_properties(const LilvState* state);
+
 
 /**
    Get the URI of the plugin `state` applies to.
@@ -1654,6 +1649,61 @@ void
 lilv_state_emit_port_values(const LilvState*     state,
                             LilvSetPortValueFunc set_value,
                             void*                user_data);
+
+
+/**
+   Return the number of properties in `state`.
+*/
+LILV_API
+unsigned
+lilv_state_get_num_properties(const LilvState* state);
+
+
+/**
+   Function to enumerate property values.
+
+   @param user_data The user_data passed to lilv_state_enum_properties().
+   @param key The URID of the property.
+   @param atom_data  A pointer to the atom data of the property, excluding the atom header.
+   @param size The size of `atom_data`.
+   @param type The URID of the type of `atom_data`.
+*/
+typedef void (*LilvEmitPropertyFunc)(void*       user_data,
+                                     uint32_t    key,
+                                     const void* atom_data,
+                                     uint32_t    size,
+                                     uint32_t    type,
+                                     uint32_t    flags);
+
+
+/**
+   Defined if `lilv_state_emit_properties` is defined.
+
+   `lilv_state_emit_properties` was introduced in version 0.24.21 of lilv. 
+   This macro is undefined in older versions.
+  
+*/
+#define LILV_STATE_EMIT_PROPERITES_DEFINED 1
+/**
+   Enumerate the port values in a state snapshot.
+
+   This function is a subset of lilv_state_restore() that only fires the
+   `enum_property` callback and does not directly affect a plugin instance.  This
+   is useful in hosts that need to retrieve the property values in a state snapshot
+   for special handling.
+
+   @param unmap URID unmapper.
+   @param state The state to retrieve property values from.
+   @param enum_property A function to receive property values.
+   @param user_data User data to pass to `enum_property`.
+*/
+LILV_API
+void
+lilv_state_emit_properties( const LilvState*     state,
+                            LilvEmitPropertyFunc enum_property,
+                            void*                user_data);
+
+
 
 /**
    Restore a plugin instance from a state snapshot.
