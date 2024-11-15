@@ -112,8 +112,7 @@ cleanup(int status, LV2Apply* self)
 }
 
 /** Print a fatal error and clean up for exit. */
-LILV_LOG_FUNC(3, 4)
-static int
+LILV_LOG_FUNC(3, 4) static int
 fatal(LV2Apply* self, int status, const char* fmt, ...)
 {
   va_list args;

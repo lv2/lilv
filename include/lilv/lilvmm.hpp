@@ -34,8 +34,7 @@ struct UI;
 struct UIs;
 struct World;
 
-LILV_DEPRECATED
-static inline const char*
+LILV_DEPRECATED static inline const char*
 uri_to_path(const char* uri)
 {
   return lilv_uri_to_path(uri);
@@ -342,13 +341,13 @@ struct Instance {
     : me(instance)
   {}
 
-  LILV_DEPRECATED
-  Instance(Plugin plugin, double sample_rate)
+  LILV_DEPRECATED Instance(Plugin plugin, double sample_rate)
     : me(lilv_plugin_instantiate(plugin, sample_rate, nullptr))
   {}
 
-  LILV_DEPRECATED
-  Instance(Plugin plugin, double sample_rate, LV2_Feature* const* features)
+  LILV_DEPRECATED Instance(Plugin              plugin,
+                           double              sample_rate,
+                           LV2_Feature* const* features)
     : me(lilv_plugin_instantiate(plugin, sample_rate, features))
   {}
 

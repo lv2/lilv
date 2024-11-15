@@ -93,8 +93,7 @@ typedef void LilvNodes;         /**< A set of #LilvNode. */
    library to be freed by code in the same library.  It is otherwise equivalent
    to the standard C free() function.
 */
-LILV_API
-void
+LILV_API void
 lilv_free(void* ptr);
 
 /**
@@ -112,9 +111,7 @@ lilv_free(void* ptr);
 
    @return `uri` converted to a path, or NULL on failure (URI is not local).
 */
-LILV_API
-LILV_DEPRECATED
-const char*
+LILV_API LILV_DEPRECATED const char*
 lilv_uri_to_path(const char* uri);
 
 /**
@@ -127,8 +124,7 @@ lilv_uri_to_path(const char* uri);
    @param hostname If non-NULL, set to the hostname in the URI, if any.
    @return `uri` converted to a path, or NULL on failure (URI is not local).
 */
-LILV_API
-char*
+LILV_API char*
 lilv_file_uri_parse(const char* uri, char** hostname);
 
 /**
@@ -136,8 +132,7 @@ lilv_file_uri_parse(const char* uri, char** hostname);
 
    Returned value must be freed by caller with lilv_node_free().
 */
-LILV_API
-LilvNode*
+LILV_API LilvNode*
 lilv_new_uri(LilvWorld* world, const char* uri);
 
 /**
@@ -151,8 +146,7 @@ lilv_new_uri(LilvWorld* world, const char* uri);
    @param path Path on host.
    @return A new node that must be freed by caller.
 */
-LILV_API
-LilvNode*
+LILV_API LilvNode*
 lilv_new_file_uri(LilvWorld* world, const char* host, const char* path);
 
 /**
@@ -160,8 +154,7 @@ lilv_new_file_uri(LilvWorld* world, const char* host, const char* path);
 
    Returned value must be freed by caller with lilv_node_free().
 */
-LILV_API
-LilvNode*
+LILV_API LilvNode*
 lilv_new_string(LilvWorld* world, const char* str);
 
 /**
@@ -169,8 +162,7 @@ lilv_new_string(LilvWorld* world, const char* str);
 
    Returned value must be freed by caller with lilv_node_free().
 */
-LILV_API
-LilvNode*
+LILV_API LilvNode*
 lilv_new_int(LilvWorld* world, int val);
 
 /**
@@ -178,8 +170,7 @@ lilv_new_int(LilvWorld* world, int val);
 
    Returned value must be freed by caller with lilv_node_free().
 */
-LILV_API
-LilvNode*
+LILV_API LilvNode*
 lilv_new_float(LilvWorld* world, float val);
 
 /**
@@ -187,8 +178,7 @@ lilv_new_float(LilvWorld* world, float val);
 
    Returned value must be freed by caller with lilv_node_free().
 */
-LILV_API
-LilvNode*
+LILV_API LilvNode*
 lilv_new_bool(LilvWorld* world, bool val);
 
 /**
@@ -196,22 +186,19 @@ lilv_new_bool(LilvWorld* world, bool val);
 
    It is safe to call this function on NULL.
 */
-LILV_API
-void
+LILV_API void
 lilv_node_free(LilvNode* val);
 
 /**
    Duplicate a LilvNode.
 */
-LILV_API
-LilvNode*
+LILV_API LilvNode*
 lilv_node_duplicate(const LilvNode* val);
 
 /**
    Return whether two values are equivalent.
 */
-LILV_API
-bool
+LILV_API bool
 lilv_node_equals(const LilvNode* value, const LilvNode* other);
 
 /**
@@ -228,15 +215,13 @@ lilv_node_equals(const LilvNode* value, const LilvNode* other);
    - Integer: 1
    - Boolean: true
 */
-LILV_API
-char*
+LILV_API char*
 lilv_node_get_turtle_token(const LilvNode* value);
 
 /**
    Return whether the value is a URI (resource).
 */
-LILV_API
-bool
+LILV_API bool
 lilv_node_is_uri(const LilvNode* value);
 
 /**
@@ -245,15 +230,13 @@ lilv_node_is_uri(const LilvNode* value);
    Valid to call only if `lilv_node_is_uri(value)` returns true.
    Returned value is owned by `value` and must not be freed by caller.
 */
-LILV_API
-const char*
+LILV_API const char*
 lilv_node_as_uri(const LilvNode* value);
 
 /**
    Return whether the value is a blank node (resource with no URI).
 */
-LILV_API
-bool
+LILV_API bool
 lilv_node_is_blank(const LilvNode* value);
 
 /**
@@ -262,8 +245,7 @@ lilv_node_is_blank(const LilvNode* value);
    Valid to call only if `lilv_node_is_blank(value)` returns true.
    Returned value is owned by `value` and must not be freed by caller.
 */
-LILV_API
-const char*
+LILV_API const char*
 lilv_node_as_blank(const LilvNode* value);
 
 /**
@@ -271,8 +253,7 @@ lilv_node_as_blank(const LilvNode* value);
 
    Returns true if `value` is a string or numeric value.
 */
-LILV_API
-bool
+LILV_API bool
 lilv_node_is_literal(const LilvNode* value);
 
 /**
@@ -280,15 +261,13 @@ lilv_node_is_literal(const LilvNode* value);
 
    Returns true if `value` is a string value (and not numeric).
 */
-LILV_API
-bool
+LILV_API bool
 lilv_node_is_string(const LilvNode* value);
 
 /**
    Return `value` as a string.
 */
-LILV_API
-const char*
+LILV_API const char*
 lilv_node_as_string(const LilvNode* value);
 
 /**
@@ -297,15 +276,13 @@ lilv_node_as_string(const LilvNode* value);
    Returns NULL if `value` is not a file URI.
    Returned value must be freed by caller with lilv_free().
 */
-LILV_API
-char*
+LILV_API char*
 lilv_node_get_path(const LilvNode* value, char** hostname);
 
 /**
    Return whether this value is a decimal literal.
 */
-LILV_API
-bool
+LILV_API bool
 lilv_node_is_float(const LilvNode* value);
 
 /**
@@ -314,15 +291,13 @@ lilv_node_is_float(const LilvNode* value);
    Valid to call only if `lilv_node_is_float(value)` or
    `lilv_node_is_int(value)` returns true.
 */
-LILV_API
-float
+LILV_API float
 lilv_node_as_float(const LilvNode* value);
 
 /**
    Return whether this value is an integer literal.
 */
-LILV_API
-bool
+LILV_API bool
 lilv_node_is_int(const LilvNode* value);
 
 /**
@@ -330,15 +305,13 @@ lilv_node_is_int(const LilvNode* value);
 
    Valid to call only if `lilv_node_is_int(value)` returns true.
 */
-LILV_API
-int
+LILV_API int
 lilv_node_as_int(const LilvNode* value);
 
 /**
    Return whether this value is a boolean.
 */
-LILV_API
-bool
+LILV_API bool
 lilv_node_is_bool(const LilvNode* value);
 
 /**
@@ -346,8 +319,7 @@ lilv_node_is_bool(const LilvNode* value);
 
    Valid to call only if `lilv_node_is_bool(value)` returns true.
 */
-LILV_API
-bool
+LILV_API bool
 lilv_node_as_bool(const LilvNode* value);
 
 /**
@@ -393,28 +365,22 @@ lilv_node_as_bool(const LilvNode* value);
 
 /* LilvPluginClasses */
 
-LILV_API
-void
+LILV_API void
 lilv_plugin_classes_free(LilvPluginClasses* collection);
 
-LILV_API
-unsigned
+LILV_API unsigned
 lilv_plugin_classes_size(const LilvPluginClasses* collection);
 
-LILV_API
-LilvIter*
+LILV_API LilvIter*
 lilv_plugin_classes_begin(const LilvPluginClasses* collection);
 
-LILV_API
-const LilvPluginClass*
+LILV_API const LilvPluginClass*
 lilv_plugin_classes_get(const LilvPluginClasses* collection, const LilvIter* i);
 
-LILV_API
-LilvIter*
+LILV_API LilvIter*
 lilv_plugin_classes_next(const LilvPluginClasses* collection, LilvIter* i);
 
-LILV_API
-bool
+LILV_API bool
 lilv_plugin_classes_is_end(const LilvPluginClasses* collection,
                            const LilvIter*          i);
 
@@ -426,61 +392,48 @@ lilv_plugin_classes_is_end(const LilvPluginClasses* collection,
 
    @return NULL if no plugin class with `uri` is found in `classes`.
 */
-LILV_API
-const LilvPluginClass*
+LILV_API const LilvPluginClass*
 lilv_plugin_classes_get_by_uri(const LilvPluginClasses* classes,
                                const LilvNode*          uri);
 
 /* ScalePoints */
 
-LILV_API
-void
+LILV_API void
 lilv_scale_points_free(LilvScalePoints* collection);
 
-LILV_API
-unsigned
+LILV_API unsigned
 lilv_scale_points_size(const LilvScalePoints* collection);
 
-LILV_API
-LilvIter*
+LILV_API LilvIter*
 lilv_scale_points_begin(const LilvScalePoints* collection);
 
-LILV_API
-const LilvScalePoint*
+LILV_API const LilvScalePoint*
 lilv_scale_points_get(const LilvScalePoints* collection, const LilvIter* i);
 
-LILV_API
-LilvIter*
+LILV_API LilvIter*
 lilv_scale_points_next(const LilvScalePoints* collection, LilvIter* i);
 
-LILV_API
-bool
+LILV_API bool
 lilv_scale_points_is_end(const LilvScalePoints* collection, const LilvIter* i);
 
 /* UIs */
 
-LILV_API
-void
+LILV_API void
 lilv_uis_free(LilvUIs* collection);
 
-LILV_API
-unsigned
+LILV_API unsigned
 lilv_uis_size(const LilvUIs* collection);
 
-LILV_API
-LilvIter*
+LILV_API LilvIter*
 lilv_uis_begin(const LilvUIs* collection);
 
-LILV_API
-const LilvUI*
+LILV_API const LilvUI*
 lilv_uis_get(const LilvUIs* collection, const LilvIter* i);
 
-LILV_API
-LilvIter*
+LILV_API LilvIter*
 lilv_uis_next(const LilvUIs* collection, LilvIter* i);
 
-LILV_API
-bool
+LILV_API bool
 lilv_uis_is_end(const LilvUIs* collection, const LilvIter* i);
 
 /**
@@ -491,74 +444,59 @@ lilv_uis_is_end(const LilvUIs* collection, const LilvIter* i);
 
    @return NULL if no UI with `uri` is found in `list`.
 */
-LILV_API
-const LilvUI*
+LILV_API const LilvUI*
 lilv_uis_get_by_uri(const LilvUIs* uis, const LilvNode* uri);
 
 /* Nodes */
 
-LILV_API
-void
+LILV_API void
 lilv_nodes_free(LilvNodes* collection);
 
-LILV_API
-unsigned
+LILV_API unsigned
 lilv_nodes_size(const LilvNodes* collection);
 
-LILV_API
-LilvIter*
+LILV_API LilvIter*
 lilv_nodes_begin(const LilvNodes* collection);
 
-LILV_API
-const LilvNode*
+LILV_API const LilvNode*
 lilv_nodes_get(const LilvNodes* collection, const LilvIter* i);
 
-LILV_API
-LilvIter*
+LILV_API LilvIter*
 lilv_nodes_next(const LilvNodes* collection, LilvIter* i);
 
-LILV_API
-bool
+LILV_API bool
 lilv_nodes_is_end(const LilvNodes* collection, const LilvIter* i);
 
-LILV_API
-LilvNode*
+LILV_API LilvNode*
 lilv_nodes_get_first(const LilvNodes* collection);
 
 /**
    Return whether `values` contains `value`.
 */
-LILV_API
-bool
+LILV_API bool
 lilv_nodes_contains(const LilvNodes* nodes, const LilvNode* value);
 
 /**
    Return a new LilvNodes that contains all nodes from both `a` and `b`.
 */
-LILV_API
-LilvNodes*
+LILV_API LilvNodes*
 lilv_nodes_merge(const LilvNodes* a, const LilvNodes* b);
 
 /* Plugins */
 
-LILV_API
-unsigned
+LILV_API unsigned
 lilv_plugins_size(const LilvPlugins* collection);
 
-LILV_API
-LilvIter*
+LILV_API LilvIter*
 lilv_plugins_begin(const LilvPlugins* collection);
 
-LILV_API
-const LilvPlugin*
+LILV_API const LilvPlugin*
 lilv_plugins_get(const LilvPlugins* collection, const LilvIter* i);
 
-LILV_API
-LilvIter*
+LILV_API LilvIter*
 lilv_plugins_next(const LilvPlugins* collection, LilvIter* i);
 
-LILV_API
-bool
+LILV_API bool
 lilv_plugins_is_end(const LilvPlugins* collection, const LilvIter* i);
 
 /**
@@ -569,8 +507,7 @@ lilv_plugins_is_end(const LilvPlugins* collection, const LilvIter* i);
 
    @return NULL if no plugin with `uri` is found in `plugins`.
 */
-LILV_API
-const LilvPlugin*
+LILV_API const LilvPlugin*
 lilv_plugins_get_by_uri(const LilvPlugins* plugins, const LilvNode* uri);
 
 /**
@@ -590,8 +527,7 @@ lilv_plugins_get_by_uri(const LilvPlugins* plugins, const LilvNode* uri);
 
    If initialization fails, NULL is returned.
 */
-LILV_API
-LilvWorld*
+LILV_API LilvWorld*
 lilv_world_new(void);
 
 /**
@@ -629,8 +565,7 @@ lilv_world_new(void);
    - #LILV_OPTION_DYN_MANIFEST
    - #LILV_OPTION_LV2_PATH
 */
-LILV_API
-void
+LILV_API void
 lilv_world_set_option(LilvWorld* world, const char* uri, const LilvNode* value);
 
 /**
@@ -640,8 +575,7 @@ lilv_world_set_option(LilvWorld* world, const char* uri, const LilvNode* value);
    destroy all the objects it contains.  Do not destroy the world until you are
    finished with all objects that came from it.
 */
-LILV_API
-void
+LILV_API void
 lilv_world_free(LilvWorld* world);
 
 /**
@@ -656,8 +590,7 @@ lilv_world_free(LilvWorld* world);
    in special circumstances such as development utilities, or hosts that ship
    with special plugin bundles which are installed to a known location.
 */
-LILV_API
-void
+LILV_API void
 lilv_world_load_all(LilvWorld* world);
 
 /**
@@ -673,8 +606,7 @@ lilv_world_load_all(LilvWorld* world);
    unchanged between (or even during) program invocations. Plugins (among
    other things) MUST be identified by URIs (not paths) in save files.
 */
-LILV_API
-void
+LILV_API void
 lilv_world_load_bundle(LilvWorld* world, const LilvNode* bundle_uri);
 
 /**
@@ -684,8 +616,7 @@ lilv_world_load_bundle(LilvWorld* world, const LilvNode* bundle_uri);
    necessary when using lilv_world_load_all().  This function parses the
    specifications and adds them to the model.
 */
-LILV_API
-void
+LILV_API void
 lilv_world_load_specifications(LilvWorld* world);
 
 /**
@@ -695,8 +626,7 @@ lilv_world_load_specifications(LilvWorld* world);
    that explicitly load specific bundles, its use is not necessary when using
    lilv_world_load_all().
 */
-LILV_API
-void
+LILV_API void
 lilv_world_load_plugin_classes(LilvWorld* world);
 
 /**
@@ -707,8 +637,7 @@ lilv_world_load_plugin_classes(LilvWorld* world);
    have been separately loaded with lilv_world_load_resource(), they must be
    separately unloaded with lilv_world_unload_resource().
 */
-LILV_API
-int
+LILV_API int
 lilv_world_unload_bundle(LilvWorld* world, const LilvNode* bundle_uri);
 
 /**
@@ -721,8 +650,7 @@ lilv_world_unload_bundle(LilvWorld* world, const LilvNode* bundle_uri);
    @param resource Must be a subject (a URI or a blank node).
    @return The number of files parsed, or -1 on error
 */
-LILV_API
-int
+LILV_API int
 lilv_world_load_resource(LilvWorld* world, const LilvNode* resource);
 
 /**
@@ -734,15 +662,13 @@ lilv_world_load_resource(LilvWorld* world, const LilvNode* resource);
    @param world The world.
    @param resource Must be a subject (a URI or a blank node).
 */
-LILV_API
-int
+LILV_API int
 lilv_world_unload_resource(LilvWorld* world, const LilvNode* resource);
 
 /**
    Get the parent of all other plugin classes, lv2:Plugin.
 */
-LILV_API
-const LilvPluginClass*
+LILV_API const LilvPluginClass*
 lilv_world_get_plugin_class(const LilvWorld* world);
 
 /**
@@ -750,8 +676,7 @@ lilv_world_get_plugin_class(const LilvWorld* world);
 
    Returned list is owned by world and must not be freed by the caller.
 */
-LILV_API
-const LilvPluginClasses*
+LILV_API const LilvPluginClasses*
 lilv_world_get_plugin_classes(const LilvWorld* world);
 
 /**
@@ -766,8 +691,7 @@ lilv_world_get_plugin_classes(const LilvWorld* world);
    The returned list and the plugins it contains are owned by `world`
    and must not be freed by caller.
 */
-LILV_API
-const LilvPlugins*
+LILV_API const LilvPlugins*
 lilv_world_get_all_plugins(const LilvWorld* world);
 
 /**
@@ -777,8 +701,7 @@ lilv_world_get_all_plugins(const LilvWorld* world);
 
    @return All matches for the wildcard field, or NULL.
 */
-LILV_API
-LilvNodes*
+LILV_API LilvNodes*
 lilv_world_find_nodes(LilvWorld*      world,
                       const LilvNode* subject,
                       const LilvNode* predicate,
@@ -794,8 +717,7 @@ lilv_world_find_nodes(LilvWorld*      world,
 
    @return The first matching node, or NULL if no matches are found.
 */
-LILV_API
-LilvNode*
+LILV_API LilvNode*
 lilv_world_get(LilvWorld*      world,
                const LilvNode* subject,
                const LilvNode* predicate,
@@ -812,8 +734,7 @@ lilv_world_get(LilvWorld*      world,
    @param predicate Predicate (key) of statement, or NULL for anything.
    @param object Object (value) of statement, or NULL for anything.
 */
-LILV_API
-bool
+LILV_API bool
 lilv_world_ask(LilvWorld*      world,
                const LilvNode* subject,
                const LilvNode* predicate,
@@ -827,8 +748,7 @@ lilv_world_ask(LilvWorld*      world,
 
    @return A string node that is a valid LV2 symbol, or NULL on error.
 */
-LILV_API
-LilvNode*
+LILV_API LilvNode*
 lilv_world_get_symbol(LilvWorld* world, const LilvNode* subject);
 
 /**
@@ -850,8 +770,7 @@ lilv_world_get_symbol(LilvWorld* world, const LilvNode* subject);
 
    @return True iff `plugin` is valid.
 */
-LILV_API
-bool
+LILV_API bool
 lilv_plugin_verify(const LilvPlugin* plugin);
 
 /**
@@ -869,8 +788,7 @@ lilv_plugin_verify(const LilvPlugin* plugin);
 
    @return A shared URI value which must not be modified or freed.
 */
-LILV_API
-const LilvNode*
+LILV_API const LilvNode*
 lilv_plugin_get_uri(const LilvPlugin* plugin);
 
 /**
@@ -887,8 +805,7 @@ lilv_plugin_get_uri(const LilvPlugin* plugin);
 
    @return A shared string which must not be modified or freed.
 */
-LILV_API
-const LilvNode*
+LILV_API const LilvNode*
 lilv_plugin_get_bundle_uri(const LilvPlugin* plugin);
 
 /**
@@ -901,8 +818,7 @@ lilv_plugin_get_bundle_uri(const LilvPlugin* plugin);
    @return A list of complete URLs eg. "file:///foo/ABundle.lv2/aplug.ttl",
    which is shared and must not be modified or freed.
 */
-LILV_API
-const LilvNodes*
+LILV_API const LilvNodes*
 lilv_plugin_get_data_uris(const LilvPlugin* plugin);
 
 /**
@@ -913,8 +829,7 @@ lilv_plugin_get_data_uris(const LilvPlugin* plugin);
 
    @return A shared string which must not be modified or freed.
 */
-LILV_API
-const LilvNode*
+LILV_API const LilvNode*
 lilv_plugin_get_library_uri(const LilvPlugin* plugin);
 
 /**
@@ -926,15 +841,13 @@ lilv_plugin_get_library_uri(const LilvPlugin* plugin);
 
    Returned value must be freed by the caller.
 */
-LILV_API
-LilvNode*
+LILV_API LilvNode*
 lilv_plugin_get_name(const LilvPlugin* plugin);
 
 /**
    Get the class this plugin belongs to (like "Filters" or "Effects").
 */
-LILV_API
-const LilvPluginClass*
+LILV_API const LilvPluginClass*
 lilv_plugin_get_class(const LilvPlugin* plugin);
 
 /**
@@ -951,8 +864,7 @@ lilv_plugin_get_class(const LilvPlugin* plugin);
 
    Return value must be freed by caller with lilv_nodes_free().
 */
-LILV_API
-LilvNodes*
+LILV_API LilvNodes*
 lilv_plugin_get_value(const LilvPlugin* plugin, const LilvNode* predicate);
 
 /**
@@ -961,8 +873,7 @@ lilv_plugin_get_value(const LilvPlugin* plugin, const LilvNode* predicate);
    This will return true if the feature is an optional or required feature
    of the plugin.
 */
-LILV_API
-bool
+LILV_API bool
 lilv_plugin_has_feature(const LilvPlugin* plugin, const LilvNode* feature);
 
 /**
@@ -977,8 +888,7 @@ lilv_plugin_has_feature(const LilvPlugin* plugin, const LilvNode* feature);
 
    Returned value must be freed by caller with lilv_nodes_free().
 */
-LILV_API
-LilvNodes*
+LILV_API LilvNodes*
 lilv_plugin_get_supported_features(const LilvPlugin* plugin);
 
 /**
@@ -993,8 +903,7 @@ lilv_plugin_get_supported_features(const LilvPlugin* plugin);
 
    Return value must be freed by caller with lilv_nodes_free().
 */
-LILV_API
-LilvNodes*
+LILV_API LilvNodes*
 lilv_plugin_get_required_features(const LilvPlugin* plugin);
 
 /**
@@ -1006,15 +915,13 @@ lilv_plugin_get_required_features(const LilvPlugin* plugin);
 
    Return value must be freed by caller with lilv_nodes_free().
 */
-LILV_API
-LilvNodes*
+LILV_API LilvNodes*
 lilv_plugin_get_optional_features(const LilvPlugin* plugin);
 
 /**
    Return whether or not a plugin provides a specific extension data.
 */
-LILV_API
-bool
+LILV_API bool
 lilv_plugin_has_extension_data(const LilvPlugin* plugin, const LilvNode* uri);
 
 /**
@@ -1023,15 +930,13 @@ lilv_plugin_has_extension_data(const LilvPlugin* plugin, const LilvNode* uri);
    This can be used to find which URIs lilv_instance_get_extension_data()
    will return a value for without instantiating the plugin.
 */
-LILV_API
-LilvNodes*
+LILV_API LilvNodes*
 lilv_plugin_get_extension_data(const LilvPlugin* plugin);
 
 /**
    Get the number of ports on this plugin.
 */
-LILV_API
-uint32_t
+LILV_API uint32_t
 lilv_plugin_get_num_ports(const LilvPlugin* plugin);
 
 /**
@@ -1049,8 +954,7 @@ lilv_plugin_get_num_ports(const LilvPlugin* plugin);
    all float ports on a plugin, and may be significantly faster than
    repeated calls to lilv_port_get_range().
 */
-LILV_API
-void
+LILV_API void
 lilv_plugin_get_port_ranges_float(const LilvPlugin* plugin,
                                   float*            min_values,
                                   float*            max_values,
@@ -1063,8 +967,7 @@ lilv_plugin_get_port_ranges_float(const LilvPlugin* plugin,
    desired can be found quickly.  REMEMBER TO TERMINATE THE PARAMETER LIST
    OF THIS FUNCTION WITH NULL OR VERY NASTY THINGS WILL HAPPEN.
 */
-LILV_API
-uint32_t
+LILV_API uint32_t
 lilv_plugin_get_num_ports_of_class(const LilvPlugin* plugin,
                                    const LilvNode*   class_1,
                                    ...);
@@ -1074,8 +977,7 @@ lilv_plugin_get_num_ports_of_class(const LilvPlugin* plugin,
 
    This function calls va_arg() on `args` but does not call va_end().
 */
-LILV_API
-uint32_t
+LILV_API uint32_t
 lilv_plugin_get_num_ports_of_class_va(const LilvPlugin* plugin,
                                       const LilvNode*   class_1,
                                       va_list           args);
@@ -1086,8 +988,7 @@ lilv_plugin_get_num_ports_of_class_va(const LilvPlugin* plugin,
    The index of the latency port can be found with
    lilv_plugin_get_latency_port() ONLY if this function returns true.
 */
-LILV_API
-bool
+LILV_API bool
 lilv_plugin_has_latency(const LilvPlugin* plugin);
 
 /**
@@ -1100,15 +1001,13 @@ lilv_plugin_has_latency(const LilvPlugin* plugin);
    (by hosts with the ability/need) MUST provide this port, which is a control
    rate output port that reports the latency for each cycle in frames.
 */
-LILV_API
-uint32_t
+LILV_API uint32_t
 lilv_plugin_get_latency_port_index(const LilvPlugin* plugin);
 
 /**
    Get a port on `plugin` by `index`.
 */
-LILV_API
-const LilvPort*
+LILV_API const LilvPort*
 lilv_plugin_get_port_by_index(const LilvPlugin* plugin, uint32_t index);
 
 /**
@@ -1117,8 +1016,7 @@ lilv_plugin_get_port_by_index(const LilvPlugin* plugin, uint32_t index);
    Note this function is slower than lilv_plugin_get_port_by_index(),
    especially on plugins with a very large number of ports.
 */
-LILV_API
-const LilvPort*
+LILV_API const LilvPort*
 lilv_plugin_get_port_by_symbol(const LilvPlugin* plugin,
                                const LilvNode*   symbol);
 
@@ -1132,8 +1030,7 @@ lilv_plugin_get_port_by_symbol(const LilvPlugin* plugin,
    ports for a particular designation.  If `port_class` is NULL, any port with
    the given designation will be returned.
 */
-LILV_API
-const LilvPort*
+LILV_API const LilvPort*
 lilv_plugin_get_port_by_designation(const LilvPlugin* plugin,
                                     const LilvNode*   port_class,
                                     const LilvNode*   designation);
@@ -1144,8 +1041,7 @@ lilv_plugin_get_port_by_designation(const LilvPlugin* plugin,
    More information about the project can be read via lilv_world_find_nodes(),
    typically using properties from DOAP (such as doap:name).
 */
-LILV_API
-LilvNode*
+LILV_API LilvNode*
 lilv_plugin_get_project(const LilvPlugin* plugin);
 
 /**
@@ -1154,8 +1050,7 @@ lilv_plugin_get_project(const LilvPlugin* plugin);
    Returns NULL if author name is not present.
    Returned value must be freed by caller.
 */
-LILV_API
-LilvNode*
+LILV_API LilvNode*
 lilv_plugin_get_author_name(const LilvPlugin* plugin);
 
 /**
@@ -1164,8 +1059,7 @@ lilv_plugin_get_author_name(const LilvPlugin* plugin);
    Returns NULL if author email address is not present.
    Returned value must be freed by caller.
 */
-LILV_API
-LilvNode*
+LILV_API LilvNode*
 lilv_plugin_get_author_email(const LilvPlugin* plugin);
 
 /**
@@ -1174,8 +1068,7 @@ lilv_plugin_get_author_email(const LilvPlugin* plugin);
    Returns NULL if author homepage is not present.
    Returned value must be freed by caller.
 */
-LILV_API
-LilvNode*
+LILV_API LilvNode*
 lilv_plugin_get_author_homepage(const LilvPlugin* plugin);
 
 /**
@@ -1184,8 +1077,7 @@ lilv_plugin_get_author_homepage(const LilvPlugin* plugin);
    The plugin will still be usable, but hosts should hide them from their
    user interfaces to prevent users from using deprecated plugins.
 */
-LILV_API
-bool
+LILV_API bool
 lilv_plugin_is_replaced(const LilvPlugin* plugin);
 
 /**
@@ -1194,8 +1086,7 @@ lilv_plugin_is_replaced(const LilvPlugin* plugin);
    This function is particularly useful for porting plugins in conjunction with
    an LV2 bridge such as NASPRO.
 */
-LILV_API
-void
+LILV_API void
 lilv_plugin_write_description(LilvWorld*        world,
                               const LilvPlugin* plugin,
                               const LilvNode*   base_uri,
@@ -1207,8 +1098,7 @@ lilv_plugin_write_description(LilvWorld*        world,
    This function is intended for use with lilv_plugin_write_description() to
    write a complete description of a plugin to a bundle.
 */
-LILV_API
-void
+LILV_API void
 lilv_plugin_write_manifest_entry(LilvWorld*        world,
                                  const LilvPlugin* plugin,
                                  const LilvNode*   base_uri,
@@ -1228,8 +1118,7 @@ lilv_plugin_write_manifest_entry(LilvWorld*        world,
    To actually load the data for each returned resource, use
    lilv_world_load_resource().
 */
-LILV_API
-LilvNodes*
+LILV_API LilvNodes*
 lilv_plugin_get_related(const LilvPlugin* plugin, const LilvNode* type);
 
 /**
@@ -1245,15 +1134,13 @@ lilv_plugin_get_related(const LilvPlugin* plugin, const LilvNode* type);
 
    @return A shared node which must not be modified or freed.
 */
-LILV_API
-const LilvNode*
+LILV_API const LilvNode*
 lilv_port_get_node(const LilvPlugin* plugin, const LilvPort* port);
 
 /**
    Port analog of lilv_plugin_get_value().
 */
-LILV_API
-LilvNodes*
+LILV_API LilvNodes*
 lilv_port_get_value(const LilvPlugin* plugin,
                     const LilvPort*   port,
                     const LilvNode*   predicate);
@@ -1265,8 +1152,7 @@ lilv_port_get_value(const LilvPlugin* plugin,
    simpler to use in the common case of only caring about one value.  The
    caller is responsible for freeing the returned node.
 */
-LILV_API
-LilvNode*
+LILV_API LilvNode*
 lilv_port_get(const LilvPlugin* plugin,
               const LilvPort*   port,
               const LilvNode*   predicate);
@@ -1274,15 +1160,13 @@ lilv_port_get(const LilvPlugin* plugin,
 /**
    Return the LV2 port properties of a port.
 */
-LILV_API
-LilvNodes*
+LILV_API LilvNodes*
 lilv_port_get_properties(const LilvPlugin* plugin, const LilvPort* port);
 
 /**
    Return whether a port has a certain property.
 */
-LILV_API
-bool
+LILV_API bool
 lilv_port_has_property(const LilvPlugin* plugin,
                        const LilvPort*   port,
                        const LilvNode*   property);
@@ -1293,8 +1177,7 @@ lilv_port_has_property(const LilvPlugin* plugin,
    More precisely, this returns true iff the port has an atom:supports or an
    ev:supportsEvent property with `event_type` as the value.
 */
-LILV_API
-bool
+LILV_API bool
 lilv_port_supports_event(const LilvPlugin* plugin,
                          const LilvPort*   port,
                          const LilvNode*   event_type);
@@ -1305,8 +1188,7 @@ lilv_port_supports_event(const LilvPlugin* plugin,
    The index is only valid for the life of the plugin and may change between
    versions.  For a stable identifier, use the symbol.
 */
-LILV_API
-uint32_t
+LILV_API uint32_t
 lilv_port_get_index(const LilvPlugin* plugin, const LilvPort* port);
 
 /**
@@ -1315,8 +1197,7 @@ lilv_port_get_index(const LilvPlugin* plugin, const LilvPort* port);
    The 'symbol' is a short string, a valid C identifier.
    Returned value is owned by `port` and must not be freed.
 */
-LILV_API
-const LilvNode*
+LILV_API const LilvNode*
 lilv_port_get_symbol(const LilvPlugin* plugin, const LilvPort* port);
 
 /**
@@ -1326,8 +1207,7 @@ lilv_port_get_symbol(const LilvPlugin* plugin, const LilvPort* port);
    data file without a language tag).  Returned value must be freed by
    the caller.
 */
-LILV_API
-LilvNode*
+LILV_API LilvNode*
 lilv_port_get_name(const LilvPlugin* plugin, const LilvPort* port);
 
 /**
@@ -1338,8 +1218,7 @@ lilv_port_get_name(const LilvPlugin* plugin, const LilvPort* port);
    The returned list does not include lv2:Port, which is implied.
    Returned value is shared and must not be destroyed by caller.
 */
-LILV_API
-const LilvNodes*
+LILV_API const LilvNodes*
 lilv_port_get_classes(const LilvPlugin* plugin, const LilvPort* port);
 
 /**
@@ -1351,8 +1230,7 @@ lilv_port_get_classes(const LilvPlugin* plugin, const LilvPort* port);
    this function is designed so that Lilv is usable with any port types
    without requiring explicit support in Lilv.
 */
-LILV_API
-bool
+LILV_API bool
 lilv_port_is_a(const LilvPlugin* plugin,
                const LilvPort*   port,
                const LilvNode*   port_class);
@@ -1365,8 +1243,7 @@ lilv_port_is_a(const LilvPlugin* plugin,
    be freed by the caller using lilv_node_free()), or NULL if the value does
    not exist.
 */
-LILV_API
-void
+LILV_API void
 lilv_port_get_range(const LilvPlugin* plugin,
                     const LilvPort*   port,
                     LilvNode**        def,
@@ -1382,8 +1259,7 @@ lilv_port_get_range(const LilvPlugin* plugin,
    Returned value may be NULL if `port` has no scale points, otherwise it
    must be freed by caller with lilv_scale_points_free().
 */
-LILV_API
-LilvScalePoints*
+LILV_API LilvScalePoints*
 lilv_port_get_scale_points(const LilvPlugin* plugin, const LilvPort* port);
 
 /**
@@ -1403,8 +1279,7 @@ lilv_port_get_scale_points(const LilvPlugin* plugin, const LilvPort* port);
    @param node The subject of the state description (such as a preset URI).
    @return A new LilvState which must be freed with lilv_state_free(), or NULL.
 */
-LILV_API
-LilvState*
+LILV_API LilvState*
 lilv_state_new_from_world(LilvWorld*      world,
                           LV2_URID_Map*   map,
                           const LilvNode* node);
@@ -1425,8 +1300,7 @@ lilv_state_new_from_world(LilvWorld*      world,
    @param path The path of the file containing the state description.
    @return A new LilvState which must be freed with lilv_state_free().
 */
-LILV_API
-LilvState*
+LILV_API LilvState*
 lilv_state_new_from_file(LilvWorld*      world,
                          LV2_URID_Map*   map,
                          const LilvNode* subject,
@@ -1435,8 +1309,7 @@ lilv_state_new_from_file(LilvWorld*      world,
 /**
    Load a state snapshot from a string made by lilv_state_to_string().
 */
-LILV_API
-LilvState*
+LILV_API LilvState*
 lilv_state_new_from_string(LilvWorld*    world,
                            LV2_URID_Map* map,
                            const char*   str);
@@ -1533,8 +1406,7 @@ typedef const void* (*LilvGetPortValueFunc)(const char* port_symbol,
 
    @return A new LilvState which must be freed with lilv_state_free().
 */
-LILV_API
-LilvState*
+LILV_API LilvState*
 lilv_state_new_from_instance(const LilvPlugin*         plugin,
                              LilvInstance*             instance,
                              LV2_URID_Map*             map,
@@ -1550,29 +1422,25 @@ lilv_state_new_from_instance(const LilvPlugin*         plugin,
 /**
    Free `state`.
 */
-LILV_API
-void
+LILV_API void
 lilv_state_free(LilvState* state);
 
 /**
    Return true iff `a` is equivalent to `b`.
 */
-LILV_API
-bool
+LILV_API bool
 lilv_state_equals(const LilvState* a, const LilvState* b);
 
 /**
    Return the number of properties in `state`.
 */
-LILV_API
-unsigned
+LILV_API unsigned
 lilv_state_get_num_properties(const LilvState* state);
 
 /**
    Get the URI of the plugin `state` applies to.
 */
-LILV_API
-const LilvNode*
+LILV_API const LilvNode*
 lilv_state_get_plugin_uri(const LilvState* state);
 
 /**
@@ -1580,22 +1448,19 @@ lilv_state_get_plugin_uri(const LilvState* state);
 
    This may return NULL if the state has not been saved and has no URI.
 */
-LILV_API
-const LilvNode*
+LILV_API const LilvNode*
 lilv_state_get_uri(const LilvState* state);
 
 /**
    Get the label of `state`.
 */
-LILV_API
-const char*
+LILV_API const char*
 lilv_state_get_label(const LilvState* state);
 
 /**
    Set the label of `state`.
 */
-LILV_API
-void
+LILV_API void
 lilv_state_set_label(LilvState* state, const char* label);
 
 /**
@@ -1613,8 +1478,7 @@ lilv_state_set_label(LilvState* state, const char* label);
    @param flags LV2_State_Flags for `value`.
    @return Zero on success.
 */
-LILV_API
-int
+LILV_API int
 lilv_state_set_metadata(LilvState*  state,
                         uint32_t    key,
                         const void* value,
@@ -1649,8 +1513,7 @@ typedef void (*LilvSetPortValueFunc)(const char* port_symbol,
    @param set_value A function to receive port values.
    @param user_data User data to pass to `set_value`.
 */
-LILV_API
-void
+LILV_API void
 lilv_state_emit_port_values(const LilvState*     state,
                             LilvSetPortValueFunc set_value,
                             void*                user_data);
@@ -1679,8 +1542,7 @@ lilv_state_emit_port_values(const LilvState*     state,
    @param flags Bitwise OR of LV2_State_Flags values.
    @param features Features to pass LV2_State_Interface.restore().
 */
-LILV_API
-void
+LILV_API void
 lilv_state_restore(const LilvState*          state,
                    LilvInstance*             instance,
                    LilvSetPortValueFunc      set_value,
@@ -1706,8 +1568,7 @@ lilv_state_restore(const LilvState*          state,
    @param dir Path of the bundle directory to save into.
    @param filename Path of the state file relative to `dir`.
 */
-LILV_API
-int
+LILV_API int
 lilv_state_save(LilvWorld*       world,
                 LV2_URID_Map*    map,
                 LV2_URID_Unmap*  unmap,
@@ -1735,8 +1596,7 @@ lilv_state_save(LilvWorld*       world,
    doing, pass NULL for this, otherwise the state may not be restorable via
    lilv_state_new_from_string().
 */
-LILV_API
-char*
+LILV_API char*
 lilv_state_to_string(LilvWorld*       world,
                      LV2_URID_Map*    map,
                      LV2_URID_Unmap*  unmap,
@@ -1759,8 +1619,7 @@ lilv_state_to_string(LilvWorld*       world,
    @param world The world.
    @param state State to remove from the system.
 */
-LILV_API
-int
+LILV_API int
 lilv_state_delete(LilvWorld* world, const LilvState* state);
 
 /**
@@ -1774,8 +1633,7 @@ lilv_state_delete(LilvWorld* world, const LilvState* state);
 
    Returned value is owned by `point` and must not be freed.
 */
-LILV_API
-const LilvNode*
+LILV_API const LilvNode*
 lilv_scale_point_get_label(const LilvScalePoint* point);
 
 /**
@@ -1783,8 +1641,7 @@ lilv_scale_point_get_label(const LilvScalePoint* point);
 
    Returned value is owned by `point` and must not be freed.
 */
-LILV_API
-const LilvNode*
+LILV_API const LilvNode*
 lilv_scale_point_get_value(const LilvScalePoint* point);
 
 /**
@@ -1799,8 +1656,7 @@ lilv_scale_point_get_value(const LilvScalePoint* point);
    Returned value is owned by `plugin_class` and must not be freed by caller.
    Returned value may be NULL, if class has no parent.
 */
-LILV_API
-const LilvNode*
+LILV_API const LilvNode*
 lilv_plugin_class_get_parent_uri(const LilvPluginClass* plugin_class);
 
 /**
@@ -1808,8 +1664,7 @@ lilv_plugin_class_get_parent_uri(const LilvPluginClass* plugin_class);
 
    Returned value is owned by `plugin_class` and must not be freed by caller.
 */
-LILV_API
-const LilvNode*
+LILV_API const LilvNode*
 lilv_plugin_class_get_uri(const LilvPluginClass* plugin_class);
 
 /**
@@ -1817,8 +1672,7 @@ lilv_plugin_class_get_uri(const LilvPluginClass* plugin_class);
 
    Returned value is owned by `plugin_class` and must not be freed by caller.
 */
-LILV_API
-const LilvNode*
+LILV_API const LilvNode*
 lilv_plugin_class_get_label(const LilvPluginClass* plugin_class);
 
 /**
@@ -1826,8 +1680,7 @@ lilv_plugin_class_get_label(const LilvPluginClass* plugin_class);
 
    Returned value must be freed by caller with lilv_plugin_classes_free().
 */
-LILV_API
-LilvPluginClasses*
+LILV_API LilvPluginClasses*
 lilv_plugin_class_get_children(const LilvPluginClass* plugin_class);
 
 /**
@@ -1872,8 +1725,7 @@ struct LilvInstanceImpl {
 
    @return NULL if instantiation failed.
 */
-LILV_API
-LilvInstance*
+LILV_API LilvInstance*
 lilv_plugin_instantiate(const LilvPlugin*         plugin,
                         double                    sample_rate,
                         const LV2_Feature* const* features);
@@ -1888,8 +1740,7 @@ lilv_plugin_instantiate(const LilvPlugin*         plugin,
    safe, and may not be called concurrently with any other function for the
    same instance, or with lilv_plugin_instantiate() for the same plugin.
 */
-LILV_API
-void
+LILV_API void
 lilv_instance_free(LilvInstance* instance);
 
 #ifndef LILV_INTERNAL
@@ -2043,8 +1894,7 @@ lilv_instance_get_handle(const LilvInstance* instance)
 
    Returned value must be freed by caller using lilv_uis_free().
 */
-LILV_API
-LilvUIs*
+LILV_API LilvUIs*
 lilv_plugin_get_uis(const LilvPlugin* plugin);
 
 /**
@@ -2052,8 +1902,7 @@ lilv_plugin_get_uis(const LilvPlugin* plugin);
 
    @return A shared value which must not be modified or freed.
 */
-LILV_API
-const LilvNode*
+LILV_API const LilvNode*
 lilv_ui_get_uri(const LilvUI* ui);
 
 /**
@@ -2064,8 +1913,7 @@ lilv_ui_get_uri(const LilvUI* ui);
 
    @return A shared value which must not be modified or freed.
 */
-LILV_API
-const LilvNodes*
+LILV_API const LilvNodes*
 lilv_ui_get_classes(const LilvUI* ui);
 
 /**
@@ -2074,8 +1922,7 @@ lilv_ui_get_classes(const LilvUI* ui);
    @param ui        The Plugin UI
    @param class_uri The URI of the LV2 UI type to check this UI against
 */
-LILV_API
-bool
+LILV_API bool
 lilv_ui_is_a(const LilvUI* ui, const LilvNode* class_uri);
 
 /**
@@ -2101,8 +1948,7 @@ typedef unsigned (*LilvUISupportedFunc)(const char* container_type_uri,
 
    @return The embedding quality level returned by `supported_func`.
 */
-LILV_API
-unsigned
+LILV_API unsigned
 lilv_ui_is_supported(const LilvUI*       ui,
                      LilvUISupportedFunc supported_func,
                      const LilvNode*     container_type,
@@ -2113,8 +1959,7 @@ lilv_ui_is_supported(const LilvUI*       ui,
 
    @return A shared value which must not be modified or freed.
 */
-LILV_API
-const LilvNode*
+LILV_API const LilvNode*
 lilv_ui_get_bundle_uri(const LilvUI* ui);
 
 /**
@@ -2122,8 +1967,7 @@ lilv_ui_get_bundle_uri(const LilvUI* ui);
 
    @return A shared value which must not be modified or freed.
 */
-LILV_API
-const LilvNode*
+LILV_API const LilvNode*
 lilv_ui_get_binary_uri(const LilvUI* ui);
 
 /**
