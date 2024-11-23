@@ -46,9 +46,9 @@ print_usage(void)
   printf("Usage: lv2bench [OPTIONS] [PLUGIN_URI]\n");
   printf("\n");
   printf("  -V, --version  Display version information and exit\n");
-  printf("  -b BLOCK_SIZE  Specify block size, in audio frames.\n");
-  printf("  -f, --full     Full plottable output.\n");
-  printf("  -h, --help     Display this help and exit.\n");
+  printf("  -b BLOCK_SIZE  Specify block size, in audio frames\n");
+  printf("  -f, --full     Full plottable output\n");
+  printf("  -h, --help     Display this help and exit\n");
   printf("  -n FRAMES      Total number of audio frames to process\n");
 }
 
