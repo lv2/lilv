@@ -85,4 +85,8 @@ ZIX_MALLOC_FUNC
 char*
 lilv_create_temporary_directory(const char* pattern);
 
+// Return a new string that is a concatenation of two given strings
+char*
+string_concat(const char* head, const char* tail);
+
 #endif // LILV_TEST_UTILS_H

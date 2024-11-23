@@ -5,8 +5,6 @@
 
 #include "lilv_test_utils.h"
 
-#include "../src/lilv_internal.h"
-
 #include "lilv/lilv.h"
 
 #include <assert.h>
@@ -105,10 +103,10 @@ main(void)
   assert(!project);
 
   char* manifest_uri =
-    lilv_strjoin(lilv_node_as_string(plug_bundle_uri), "manifest.ttl", NULL);
+    string_concat(lilv_node_as_string(plug_bundle_uri), "manifest.ttl");
 
   char* data_uri =
-    lilv_strjoin(lilv_node_as_string(plug_bundle_uri), "plugin.ttl", NULL);
+    string_concat(lilv_node_as_string(plug_bundle_uri), "plugin.ttl");
 
   LilvNode* manifest_uri_val = lilv_new_uri(world, manifest_uri);
   assert(lilv_nodes_contains(data_uris, manifest_uri_val));

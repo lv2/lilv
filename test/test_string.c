@@ -3,6 +3,8 @@
 
 #undef NDEBUG
 
+#include "lilv_test_utils.h"
+
 #include "../src/lilv_internal.h"
 
 #ifdef _WIN32
@@ -36,7 +38,7 @@ main(void)
   check_expansion("$LILV_TEST_1", "test");
 
   if (home) {
-    char* const home_foo = lilv_strjoin(home, "/foo", NULL);
+    char* const home_foo = string_concat(home, "/foo");
     check_expansion("~", home);
     check_expansion("~foo", "~foo");
     check_expansion("~/foo", home_foo);

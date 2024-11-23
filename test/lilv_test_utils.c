@@ -189,3 +189,16 @@ lilv_create_temporary_directory(const char* pattern)
 
   return result;
 }
+
+char*
+string_concat(const char* const head, const char* const tail)
+{
+  const size_t head_len = strlen(head);
+  const size_t tail_len = strlen(tail);
+  char* const  result   = (char*)calloc(1U, head_len + tail_len + 1U);
+  if (result) {
+    memcpy(result, head, head_len + 1U);
+    memcpy(result + head_len, tail, tail_len + 1U);
+  }
+  return result;
+}

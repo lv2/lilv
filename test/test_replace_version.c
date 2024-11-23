@@ -5,8 +5,6 @@
 
 #include "lilv_test_utils.h"
 
-#include "../src/lilv_internal.h"
-
 #include "lilv/lilv.h"
 #include "lv2/core/lv2.h"
 
@@ -26,7 +24,7 @@ main(void)
   LilvNode* minor            = NULL;
   LilvNode* micro            = NULL;
 
-  char* old_bundle_path = lilv_strjoin(LILV_TEST_DIR, "old_version.lv2/", 0);
+  char* old_bundle_path = string_concat(LILV_TEST_DIR, "old_version.lv2/");
 
   // Load plugin from old bundle
   LilvNode* old_bundle = lilv_new_file_uri(world, NULL, old_bundle_path);
@@ -44,7 +42,7 @@ main(void)
   lilv_node_free(micro);
   lilv_node_free(minor);
 
-  char* new_bundle_path = lilv_strjoin(LILV_TEST_DIR, "new_version.lv2/", 0);
+  char* new_bundle_path = string_concat(LILV_TEST_DIR, "new_version.lv2/");
 
   // Load plugin from new bundle
   LilvNode* new_bundle = lilv_new_file_uri(world, NULL, new_bundle_path);

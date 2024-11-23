@@ -4,8 +4,6 @@
 #ifndef LILV_TEST_URI_MAP_H
 #define LILV_TEST_URI_MAP_H
 
-#include "../src/lilv_internal.h"
-
 #include "lv2/urid/urid.h"
 #include "serd/serd.h"
 
@@ -49,10 +47,12 @@ map_uri(LV2_URID_Map_Handle handle, const char* uri)
     }
   }
 
+  const size_t uri_len = strlen(uri);
   assert(serd_uri_string_has_scheme((const uint8_t*)uri));
 
   map->uris = (char**)realloc(map->uris, ++map->n_uris * sizeof(char*));
-  map->uris[map->n_uris - 1] = lilv_strdup(uri);
+  map->uris[map->n_uris - 1] = calloc(1, uri_len + 1);
+  memcpy(map->uris[map->n_uris - 1], uri, uri_len + 1);
   return map->n_uris;
 }
 
