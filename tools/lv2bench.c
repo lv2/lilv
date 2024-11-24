@@ -7,7 +7,6 @@
 #include "lv2/urid/urid.h"
 
 #include "bench.h"
-#include "lilv_config.h"
 #include "uri_table.h"
 
 #include <math.h>

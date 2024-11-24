@@ -1,8 +1,6 @@
 // Copyright 2007-2019 David Robillard <d@drobilla.net>
 // SPDX-License-Identifier: ISC
 
-#include "lilv_config.h"
-
 #include "lilv/lilv.h"
 #include "lv2/core/lv2.h"
 #include "lv2/event/event.h"

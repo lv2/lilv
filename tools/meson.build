@@ -1,7 +1,7 @@
 # Copyright 2021-2022 David Robillard <d@drobilla.net>
 # SPDX-License-Identifier: 0BSD OR ISC
 
-include_dirs = include_directories('../src')
+tool_args = ['-DLILV_VERSION=@0@'.format(meson.project_version())]
 
 #############################
 # "Basic" (Lilv-Only) Tools #
@@ -18,7 +18,6 @@ foreach tool : basic_tools
     files(tool + '.c'),
     c_args: c_suppressions,
     dependencies: lilv_dep,
-    include_directories: include_dirs,
     install: true,
   )
 
@@ -49,7 +48,6 @@ if sndfile_dep.found()
     files('lv2apply.c'),
     c_args: c_suppressions,
     dependencies: [lilv_dep, sndfile_dep],
-    include_directories: include_dirs,
     install: true,
   )
 
@@ -80,7 +78,6 @@ int main(void) { struct timespec t; return clock_gettime(CLOCK_MONOTONIC, &t); }
       files('lv2bench.c'),
       c_args: c_suppressions,
       dependencies: [lilv_dep, rt_dep, sndfile_dep],
-      include_directories: include_dirs,
       install: true,
     )
 
