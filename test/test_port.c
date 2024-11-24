@@ -5,7 +5,7 @@
 
 #include "lilv_test_utils.h"
 
-#include "lilv/lilv.h"
+#include <lilv/lilv.h>
 
 #include <assert.h>
 #include <stdbool.h>

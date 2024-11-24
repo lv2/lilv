@@ -3,12 +3,12 @@
 
 #include "lilv_internal.h"
 
-#include "lilv/lilv.h"
-#include "serd/serd.h"
-#include "sord/sord.h"
-#include "zix/allocator.h"
-#include "zix/filesystem.h"
-#include "zix/path.h"
+#include <lilv/lilv.h>
+#include <serd/serd.h>
+#include <sord/sord.h>
+#include <zix/allocator.h>
+#include <zix/filesystem.h>
+#include <zix/path.h>
 
 #include <math.h>
 #include <stdbool.h>

@@ -6,14 +6,14 @@
 #include "lilv_test_uri_map.h"
 #include "lilv_test_utils.h"
 
-#include "lilv/lilv.h"
-#include "lv2/core/lv2.h"
-#include "lv2/state/state.h"
-#include "lv2/urid/urid.h"
-#include "serd/serd.h"
-#include "zix/allocator.h"
-#include "zix/filesystem.h"
-#include "zix/path.h"
+#include <lilv/lilv.h>
+#include <lv2/core/lv2.h>
+#include <lv2/state/state.h>
+#include <lv2/urid/urid.h>
+#include <serd/serd.h>
+#include <zix/allocator.h>
+#include <zix/filesystem.h>
+#include <zix/path.h>
 
 #ifdef _WIN32
 #  include <direct.h>

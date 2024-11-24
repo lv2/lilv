@@ -4,8 +4,8 @@
 #ifndef LILV_TEST_UTILS_H
 #define LILV_TEST_UTILS_H
 
-#include "lilv/lilv.h"
-#include "zix/attributes.h"
+#include <lilv/lilv.h>
+#include <zix/attributes.h>
 
 #define MANIFEST_PREFIXES \
   "\

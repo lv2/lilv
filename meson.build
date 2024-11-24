@@ -275,7 +275,7 @@ liblilv = library(
   darwin_versions: [major_version + '.0.0', meson.project_version()],
   dependencies: common_dependencies,
   gnu_symbol_visibility: 'hidden',
-  include_directories: include_directories('include', 'src'),
+  include_directories: include_directories('include'),
   install: true,
   soversion: soversion,
   version: meson.project_version(),

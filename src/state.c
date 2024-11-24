@@ -3,23 +3,22 @@
 
 #include "lilv_internal.h"
 
-#include "lilv/lilv.h"
-#include "serd/serd.h"
-#include "sord/sord.h"
-#include "sratom/sratom.h"
-#include "zix/allocator.h"
-#include "zix/filesystem.h"
-#include "zix/path.h"
-#include "zix/status.h"
-#include "zix/string_view.h"
-#include "zix/tree.h"
-
-#include "lv2/atom/atom.h"
-#include "lv2/atom/forge.h"
-#include "lv2/core/lv2.h"
-#include "lv2/presets/presets.h"
-#include "lv2/state/state.h"
-#include "lv2/urid/urid.h"
+#include <lilv/lilv.h>
+#include <lv2/atom/atom.h>
+#include <lv2/atom/forge.h>
+#include <lv2/core/lv2.h>
+#include <lv2/presets/presets.h>
+#include <lv2/state/state.h>
+#include <lv2/urid/urid.h>
+#include <serd/serd.h>
+#include <sord/sord.h>
+#include <sratom/sratom.h>
+#include <zix/allocator.h>
+#include <zix/filesystem.h>
+#include <zix/path.h>
+#include <zix/status.h>
+#include <zix/string_view.h>
+#include <zix/tree.h>
 
 #include <assert.h>
 #include <errno.h>

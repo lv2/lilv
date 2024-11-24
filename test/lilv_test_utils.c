@@ -3,11 +3,11 @@
 
 #include "lilv_test_utils.h"
 
-#include "lilv/lilv.h"
-#include "serd/serd.h"
-#include "zix/allocator.h"
-#include "zix/filesystem.h"
-#include "zix/path.h"
+#include <lilv/lilv.h>
+#include <serd/serd.h>
+#include <zix/allocator.h>
+#include <zix/filesystem.h>
+#include <zix/path.h>
 
 #include <errno.h>
 #include <stdbool.h>

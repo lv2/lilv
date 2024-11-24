@@ -1,12 +1,12 @@
 // Copyright 2011-2022 David Robillard <d@drobilla.net>
 // SPDX-License-Identifier: ISC
 
-#include "lv2/atom/atom.h"
-#include "lv2/core/lv2.h"
-#include "lv2/state/state.h"
-#include "lv2/urid/urid.h"
-#include "zix/filesystem.h"
-#include "zix/path.h"
+#include <lv2/atom/atom.h>
+#include <lv2/core/lv2.h>
+#include <lv2/state/state.h>
+#include <lv2/urid/urid.h>
+#include <zix/filesystem.h>
+#include <zix/path.h>
 
 #include <stdint.h>
 #include <stdio.h>

@@ -5,8 +5,8 @@
 
 #include "lilv_test_utils.h"
 
-#include "lilv/lilv.h"
-#include "lv2/core/lv2.h"
+#include <lilv/lilv.h>
+#include <lv2/core/lv2.h>
 
 #include <assert.h>
 #include <stdlib.h>

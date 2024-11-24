@@ -1,13 +1,13 @@
 // Copyright 2012-2019 David Robillard <d@drobilla.net>
 // SPDX-License-Identifier: ISC
 
-#include "lilv/lilv.h"
-#include "lv2/atom/atom.h"
-#include "lv2/core/lv2.h"
-#include "lv2/urid/urid.h"
-
 #include "bench.h"
 #include "uri_table.h"
+
+#include <lilv/lilv.h>
+#include <lv2/atom/atom.h>
+#include <lv2/core/lv2.h>
+#include <lv2/urid/urid.h>
 
 #include <math.h>
 #include <stdbool.h>

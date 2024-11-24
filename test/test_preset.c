@@ -5,8 +5,8 @@
 
 #include "lilv_test_utils.h"
 
-#include "lilv/lilv.h"
-#include "lv2/presets/presets.h"
+#include <lilv/lilv.h>
+#include <lv2/presets/presets.h>
 
 #include <assert.h>
 

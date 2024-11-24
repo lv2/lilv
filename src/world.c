@@ -4,18 +4,17 @@
 #include "lilv_config.h" // IWYU pragma: keep
 #include "lilv_internal.h"
 
-#include "lilv/lilv.h"
-#include "serd/serd.h"
-#include "sord/sord.h"
-#include "zix/environment.h"
-#include "zix/filesystem.h"
-#include "zix/tree.h"
-
-#include "lv2/core/lv2.h"
-#include "lv2/presets/presets.h"
+#include <lilv/lilv.h>
+#include <lv2/core/lv2.h>
+#include <lv2/presets/presets.h>
+#include <serd/serd.h>
+#include <sord/sord.h>
+#include <zix/environment.h>
+#include <zix/filesystem.h>
+#include <zix/tree.h>
 
 #ifdef LILV_DYN_MANIFEST
-#  include "lv2/dynmanifest/dynmanifest.h"
+#  include <lv2/dynmanifest/dynmanifest.h>
 #endif
 
 #include <assert.h>

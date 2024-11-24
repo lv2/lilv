@@ -5,9 +5,9 @@
 
 #include "lilv_test_utils.h"
 
-#include "lilv/lilv.h"
-#include "zix/filesystem.h"
-#include "zix/path.h"
+#include <lilv/lilv.h>
+#include <zix/filesystem.h>
+#include <zix/path.h>
 
 #include <assert.h>
 #include <stdio.h>

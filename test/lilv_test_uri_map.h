@@ -4,8 +4,8 @@
 #ifndef LILV_TEST_URI_MAP_H
 #define LILV_TEST_URI_MAP_H
 
-#include "lv2/urid/urid.h"
-#include "serd/serd.h"
+#include <lv2/urid/urid.h>
+#include <serd/serd.h>
 
 #include <assert.h>
 #include <stdint.h>

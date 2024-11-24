@@ -10,7 +10,7 @@
 #ifndef URI_TABLE_H
 #define URI_TABLE_H
 
-#include "lv2/urid/urid.h"
+#include <lv2/urid/urid.h>
 
 #include <stdlib.h>
 #include <string.h>

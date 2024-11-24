@@ -10,11 +10,11 @@ extern "C" {
 
 #include "lilv_config.h" // IWYU pragma: keep
 
-#include "lilv/lilv.h"
-#include "lv2/core/lv2.h"
-#include "serd/serd.h"
-#include "sord/sord.h"
-#include "zix/tree.h"
+#include <lilv/lilv.h>
+#include <lv2/core/lv2.h>
+#include <serd/serd.h>
+#include <sord/sord.h>
+#include <zix/tree.h>
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -40,7 +40,7 @@ dlerror(void)
 #endif
 
 #ifdef LILV_DYN_MANIFEST
-#  include "lv2/dynmanifest/dynmanifest.h"
+#  include <lv2/dynmanifest/dynmanifest.h>
 #endif
 
 /*
@@ -390,9 +390,6 @@ lilv_strdup(const char* str);
 
 char*
 lilv_get_lang(void);
-
-char*
-lilv_expand(const char* path);
 
 char*
 lilv_get_latest_copy(const char* path, const char* copy_path);

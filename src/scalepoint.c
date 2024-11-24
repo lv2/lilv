@@ -3,7 +3,7 @@
 
 #include "lilv_internal.h"
 
-#include "lilv/lilv.h"
+#include <lilv/lilv.h>
 
 #include <stdlib.h>
 

@@ -3,10 +3,10 @@
 
 #include "lilv_internal.h"
 
-#include "lilv/lilv.h"
-#include "lv2/core/lv2.h"
-#include "serd/serd.h"
-#include "zix/tree.h"
+#include <lilv/lilv.h>
+#include <lv2/core/lv2.h>
+#include <serd/serd.h>
+#include <zix/tree.h>
 
 #ifndef _WIN32
 #  include <dlfcn.h>

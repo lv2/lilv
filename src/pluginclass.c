@@ -3,9 +3,9 @@
 
 #include "lilv_internal.h"
 
-#include "lilv/lilv.h"
-#include "sord/sord.h"
-#include "zix/tree.h"
+#include <lilv/lilv.h>
+#include <sord/sord.h>
+#include <zix/tree.h>
 
 #include <stdbool.h>
 #include <stdlib.h>

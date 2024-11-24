@@ -3,16 +3,15 @@
 
 #include "lilv_internal.h"
 
-#include "lilv/lilv.h"
-#include "serd/serd.h"
-#include "sord/sord.h"
-#include "zix/tree.h"
-
-#include "lv2/core/lv2.h"
-#include "lv2/ui/ui.h"
+#include <lilv/lilv.h>
+#include <lv2/core/lv2.h>
+#include <lv2/ui/ui.h>
+#include <serd/serd.h>
+#include <sord/sord.h>
+#include <zix/tree.h>
 
 #ifdef LILV_DYN_MANIFEST
-#  include "lv2/dynmanifest/dynmanifest.h"
+#  include <lv2/dynmanifest/dynmanifest.h>
 #endif
 
 #include <math.h>

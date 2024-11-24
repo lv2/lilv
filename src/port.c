@@ -3,13 +3,12 @@
 
 #include "lilv_internal.h"
 
-#include "lv2/atom/atom.h"
-#include "lv2/core/lv2.h"
-#include "lv2/event/event.h"
-
-#include "lilv/lilv.h"
-#include "sord/sord.h"
-#include "zix/tree.h"
+#include <lilv/lilv.h>
+#include <lv2/atom/atom.h>
+#include <lv2/core/lv2.h>
+#include <lv2/event/event.h>
+#include <sord/sord.h>
+#include <zix/tree.h>
 
 #include <assert.h>
 #include <stdbool.h>

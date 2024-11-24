@@ -3,8 +3,8 @@
 
 #include "lilv_internal.h"
 
-#include "lilv/lilv.h"
-#include "zix/tree.h"
+#include <lilv/lilv.h>
+#include <zix/tree.h>
 
 #include <assert.h>
 #include <stdbool.h>

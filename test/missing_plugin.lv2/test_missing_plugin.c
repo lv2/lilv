@@ -3,7 +3,7 @@
 
 #undef NDEBUG
 
-#include "lilv/lilv.h"
+#include <lilv/lilv.h>
 
 #include <assert.h>
 #include <stdio.h>

@@ -1,7 +1,7 @@
 // Copyright 2007-2019 David Robillard <d@drobilla.net>
 // SPDX-License-Identifier: ISC
 
-#include "lilv/lilv.h"
+#include <lilv/lilv.h>
 
 #include <stdbool.h>
 #include <stdio.h>
