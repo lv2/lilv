@@ -28,7 +28,7 @@ test(
     'test_bad_syntax',
     files('test_bad_syntax.c'),
     c_args: c_suppressions + test_args,
-    dependencies: [lv2_dep, lilv_static_dep],
+    dependencies: [lv2_dep, lilv_dep],
   ),
   args: [meson.current_build_dir() / ''],
   suite: 'plugin',

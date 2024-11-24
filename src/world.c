@@ -1,4 +1,4 @@
-// Copyright 2007-2019 David Robillard <d@drobilla.net>
+// Copyright 2007-2024 David Robillard <d@drobilla.net>
 // SPDX-License-Identifier: ISC
 
 #include "lilv_config.h" // IWYU pragma: keep
@@ -7,6 +7,7 @@
 #include "lilv/lilv.h"
 #include "serd/serd.h"
 #include "sord/sord.h"
+#include "zix/environment.h"
 #include "zix/filesystem.h"
 #include "zix/tree.h"
 
@@ -966,7 +967,7 @@ load_dir_entry(const char* dir, const char* name, void* data)
 static void
 lilv_world_load_directory(LilvWorld* world, const char* dir_path)
 {
-  char* path = lilv_expand(dir_path);
+  char* const path = zix_expand_environment_strings(NULL, dir_path);
   if (path) {
     zix_dir_for_each(path, world, load_dir_entry);
     free(path);

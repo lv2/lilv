@@ -222,7 +222,7 @@ add_project_arguments(platform_defines, language: ['c'])
 m_dep = cc.find_library('m', required: false)
 dl_dep = cc.find_library('dl', required: false)
 
-zix_dep = dependency('zix-0', fallback: 'zix', version: '>= 0.4.0')
+zix_dep = dependency('zix-0', fallback: 'zix', version: '>= 0.5.1')
 serd_dep = dependency('serd-0', fallback: 'serd', version: '>= 0.30.10')
 sord_dep = dependency('sord-0', fallback: 'sord', version: '>= 0.16.15')
 lv2_dep = dependency('lv2', fallback: 'lv2', version: '>= 1.18.2')
@@ -358,29 +358,5 @@ if not get_option('docs').disabled()
 endif
 
 if not get_option('tests').disabled()
-  # Get or build a static library for linking internal tests
-  if get_option('default_library') == 'both'
-    liblilv_static = liblilv.get_static_lib()
-  elif get_option('default_library') == 'shared'
-    liblilv_static = static_library(
-      versioned_name,
-      sources,
-      include_directories: include_directories('include', 'src'),
-      c_args: c_suppressions + ['-DLILV_INTERNAL', '-DLILV_STATIC'],
-      dependencies: common_dependencies,
-      gnu_symbol_visibility: 'default',
-    )
-  else
-    liblilv_static = liblilv
-  endif
-
-  lilv_static_dep = declare_dependency(
-    compile_args: extra_c_args,
-    dependencies: common_dependencies,
-    include_directories: include_directories('include'),
-    link_with: liblilv_static,
-  )
-
-  # Build and run tests against static library
   subdir('test')
 endif

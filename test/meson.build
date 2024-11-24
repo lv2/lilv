@@ -5,7 +5,7 @@
 # Test Setup #
 ##############
 
-test_args = ['-DLILV_STATIC']
+test_args = []
 if cc.get_id() == 'msvc'
   test_args += [
     '/wd4464', # relative include path contains '..'
@@ -60,7 +60,6 @@ unit_tests = [
   'reload_bundle',
   'replace_version',
   'state',
-  'string',
   'ui',
   'util',
   'value',
@@ -83,7 +82,7 @@ foreach unit : unit_tests
       files('lilv_test_utils.c', 'test_@0@.c'.format(unit)),
       c_args: define_args + test_args + c_suppressions,
       include_directories: include_directories('../src'),
-      dependencies: [lv2_dep, lilv_static_dep],
+      dependencies: [lv2_dep, lilv_dep],
     ),
     suite: 'unit',
   )

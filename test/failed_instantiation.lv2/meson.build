@@ -28,7 +28,7 @@ test(
     'test_failed_instantiation',
     files('test_failed_instantiation.c'),
     c_args: c_suppressions + test_args,
-    dependencies: [lv2_dep, lilv_static_dep],
+    dependencies: [lv2_dep, lilv_dep],
   ),
   args: [meson.current_build_dir() / ''],
   suite: 'plugin',

@@ -12,7 +12,6 @@
 
 #include <sys/stat.h>
 
-#include <ctype.h>
 #include <errno.h>
 #include <stdarg.h>
 #include <stdbool.h>
@@ -131,83 +130,6 @@ lilv_get_lang(void)
   }
 
   return lang;
-}
-
-#ifndef _WIN32
-
-/** Append suffix to dst, update dst_len, and return the realloc'd result. */
-static char*
-strappend(char* dst, size_t* dst_len, const char* suffix, size_t suffix_len)
-{
-  dst = (char*)realloc(dst, *dst_len + suffix_len + 1);
-  memcpy(dst + *dst_len, suffix, suffix_len);
-  dst[(*dst_len += suffix_len)] = '\0';
-  return dst;
-}
-
-/** Append the value of the environment variable var to dst. */
-static char*
-append_var(char* dst, size_t* dst_len, const char* var)
-{
-  // Get value from environment
-  const char* val = getenv(var);
-  if (val) { // Value found, append it
-    return strappend(dst, dst_len, val, strlen(val));
-  }
-
-  // No value found, append variable reference as-is
-  return strappend(strappend(dst, dst_len, "$", 1), dst_len, var, strlen(var));
-}
-
-#endif
-
-/** Expand variables (e.g. POSIX ~ or $FOO, Windows %FOO%) in `path`. */
-char*
-lilv_expand(const char* path)
-{
-#ifdef _WIN32
-  char* out = (char*)malloc(MAX_PATH);
-  ExpandEnvironmentStrings(path, out, MAX_PATH);
-#else
-  char*  out = NULL;
-  size_t len = 0;
-
-  const char* start = path; // Start of current chunk to copy
-  for (const char* s = path; *s;) {
-    if (*s == '$') {
-      // Hit $ (variable reference, e.g. $VAR_NAME)
-      for (const char* t = s + 1;; ++t) {
-        if (!*t || (!isupper(*t) && !isdigit(*t) && *t != '_')) {
-          // Append preceding chunk
-          out = strappend(out, &len, start, s - start);
-
-          // Append variable value (or $VAR_NAME if not found)
-          char* var = (char*)calloc(t - s, 1);
-          memcpy(var, s + 1, t - s - 1);
-          out = append_var(out, &len, var);
-          free(var);
-
-          // Continue after variable reference
-          start = s = t;
-          break;
-        }
-      }
-    } else if (*s == '~' && (*(s + 1) == '/' || !*(s + 1))) {
-      // Hit ~ before slash or end of string (home directory reference)
-      out   = strappend(out, &len, start, s - start);
-      out   = append_var(out, &len, "HOME");
-      start = ++s;
-    } else {
-      ++s;
-    }
-  }
-
-  if (*start) {
-    out = strappend(out, &len, start, strlen(start));
-  }
-#endif
-
-  return out;
 }
 
 char*

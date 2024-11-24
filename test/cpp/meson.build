@@ -30,7 +30,7 @@ test(
     'test_lilv_hpp',
     files('test_lilv_hpp.cpp'),
     cpp_args: test_args + cpp_suppressions,
-    dependencies: [lv2_dep, lilv_static_dep],
+    dependencies: [lv2_dep, lilv_dep],
     include_directories: include_directories('../../src'),
   ),
   suite: 'unit',
