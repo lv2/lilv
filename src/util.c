@@ -19,7 +19,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <time.h> // IWYU pragma: keep
+#include <time.h>
 
 void
 lilv_free(void* ptr)

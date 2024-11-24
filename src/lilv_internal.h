@@ -8,7 +8,7 @@
 extern "C" {
 #endif
 
-#include "lilv_config.h" // IWYU pragma: keep
+#include "lilv_config.h"
 
 #include <lilv/lilv.h>
 #include <lv2/core/lv2.h>

@@ -1,7 +1,7 @@
 // Copyright 2007-2024 David Robillard <d@drobilla.net>
 // SPDX-License-Identifier: ISC
 
-#include "lilv_config.h" // IWYU pragma: keep
+#include "lilv_config.h"
 #include "lilv_internal.h"
 
 #include <lilv/lilv.h>
