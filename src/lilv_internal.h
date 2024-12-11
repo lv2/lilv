@@ -20,16 +20,6 @@ extern "C" {
 #include <stdint.h>
 #include <stdio.h>
 
-#ifdef _WIN32
-#  include <direct.h>
-#  include <windows.h>
-#  ifdef _MSC_VER
-#    ifndef snprintf
-#      define snprintf _snprintf
-#    endif
-#  endif
-#endif
-
 #ifdef LILV_DYN_MANIFEST
 #  include <lv2/dynmanifest/dynmanifest.h>
 #endif

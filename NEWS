@@ -1,6 +1,7 @@
 lilv (0.24.25) unstable; urgency=medium
 
   * Add lint option with project metadata and code quality tests
+  * Clean up and isolate platform-specific code
   * Fix C++ test build on MacOS
   * Fix library current_version on MacOS
   * Fix test suite when TMPDIR has no trailing slash
@@ -8,7 +9,7 @@ lilv (0.24.25) unstable; urgency=medium
   * Improve const correctness
   * Replace more platform-specific code with use of zix
 
- -- David Robillard <d@drobilla.net>  Mon, 25 Nov 2024 01:04:00 +0000
+ -- David Robillard <d@drobilla.net>  Wed, 11 Dec 2024 19:33:58 +0000
 
 lilv (0.24.24) stable; urgency=medium
 
