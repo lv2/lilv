@@ -8,6 +8,7 @@
 #include <zix/allocator.h>
 #include <zix/filesystem.h>
 #include <zix/path.h>
+#include <zix/status.h>
 
 #include <errno.h>
 #include <stdbool.h>
@@ -136,19 +137,28 @@ start_bundle(LilvTestEnv* env,
   return 0;
 }
 
+static void
+remove_temporary(const char* const path)
+{
+  const ZixStatus st = zix_remove(path);
+  if (st) {
+    fprintf(stderr, "Failed to remove '%s' (%s)\n", path, zix_strerror(st));
+  }
+}
+
 void
 delete_bundle(LilvTestEnv* env)
 {
   if (env->test_content_path) {
-    zix_remove(env->test_content_path);
+    remove_temporary(env->test_content_path);
   }
 
   if (env->test_manifest_path) {
-    zix_remove(env->test_manifest_path);
+    remove_temporary(env->test_manifest_path);
   }
 
   if (env->test_bundle_path) {
-    remove(env->test_bundle_path);
+    remove_temporary(env->test_bundle_path);
   }
 
   zix_free(NULL, env->test_content_path);

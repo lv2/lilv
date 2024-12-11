@@ -744,7 +744,7 @@ test_multi_save(void)
 
   lilv_instance_free(instance);
   zix_dir_for_each(bundle_1_path, NULL, remove_file);
-  zix_remove(bundle_1_path);
+  assert(!zix_remove(bundle_1_path));
   cleanup_test_directories(dirs);
 
   free(state_path);
@@ -852,9 +852,9 @@ test_files_round_trip(void)
   zix_dir_for_each(bundle_1_1_path, NULL, remove_file);
   zix_dir_for_each(bundle_1_2_path, NULL, remove_file);
   zix_dir_for_each(bundle_2_path, NULL, remove_file);
-  zix_remove(bundle_1_1_path);
-  zix_remove(bundle_1_2_path);
-  zix_remove(bundle_2_path);
+  assert(!zix_remove(bundle_1_1_path));
+  assert(!zix_remove(bundle_1_2_path));
+  assert(!zix_remove(bundle_2_path));
   cleanup_test_directories(dirs);
 
   lilv_state_free(state_2_loaded);

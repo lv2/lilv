@@ -1234,7 +1234,7 @@ lilv_state_make_links(const LilvState* state, const char* dir)
 
       if (!strcmp(dir, link_dir)) {
         // Link directory is save directory, make link at exact path
-        remove(pat);
+        (void)zix_remove(pat);
         maybe_symlink(pm->abs, pat);
       } else {
         // Make a link in the link directory to external file
