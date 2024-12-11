@@ -23,20 +23,11 @@ extern "C" {
 #ifdef _WIN32
 #  include <direct.h>
 #  include <windows.h>
-#  define dlopen(path, flags) LoadLibrary(path)
-#  define dlclose(lib) FreeLibrary((HMODULE)lib)
 #  ifdef _MSC_VER
 #    ifndef snprintf
 #      define snprintf _snprintf
 #    endif
 #  endif
-static inline const char*
-dlerror(void)
-{
-  return "Unknown error";
-}
-#else
-#  include <dlfcn.h>
 #endif
 
 #ifdef LILV_DYN_MANIFEST
@@ -398,21 +389,6 @@ char*
 lilv_find_free_path(const char* in_path,
                     bool (*exists)(const char*, const void*),
                     const void* user_data);
-
-typedef void (*LilvVoidFunc)(void);
-
-/** dlsym wrapper to return a function pointer (without annoying warning) */
-static inline LilvVoidFunc
-lilv_dlfunc(void* handle, const char* symbol)
-{
-#ifdef _WIN32
-  return (LilvVoidFunc)GetProcAddress((HMODULE)handle, symbol);
-#else
-  typedef LilvVoidFunc (*VoidFuncGetter)(void*, const char*);
-  VoidFuncGetter dlfunc = (VoidFuncGetter)dlsym;
-  return dlfunc(handle, symbol);
-#endif
-}
 
 #ifdef LILV_DYN_MANIFEST
 static const LV2_Feature* const dman_features = {NULL};

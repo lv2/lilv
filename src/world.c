@@ -4,6 +4,11 @@
 #include "lilv_config.h"
 #include "lilv_internal.h"
 
+#ifdef LILV_DYN_MANIFEST
+#  include "dylib.h"
+#  include <lv2/dynmanifest/dynmanifest.h>
+#endif
+
 #include <lilv/lilv.h>
 #include <lv2/core/lv2.h>
 #include <lv2/presets/presets.h>
@@ -12,10 +17,6 @@
 #include <zix/environment.h>
 #include <zix/filesystem.h>
 #include <zix/tree.h>
-
-#ifdef LILV_DYN_MANIFEST
-#  include <lv2/dynmanifest/dynmanifest.h>
-#endif
 
 #include <assert.h>
 #include <stdbool.h>
@@ -551,8 +552,8 @@ lilv_world_load_dyn_manifest(LilvWorld*      world,
     }
 
     // Open library
-    dlerror();
-    void* lib = dlopen(lib_path, RTLD_LAZY);
+    dylib_error();
+    void* lib = dylib_open(lib_path, DYLIB_LAZY);
     if (!lib) {
       LILV_ERRORF(
         "Failed to open dynmanifest library `%s' (%s)\n", lib_path, dlerror());
@@ -564,11 +565,11 @@ lilv_world_load_dyn_manifest(LilvWorld*      world,
     // Open dynamic manifest
     typedef int (*OpenFunc)(LV2_Dyn_Manifest_Handle*,
                             const LV2_Feature* const*);
-    OpenFunc dmopen = (OpenFunc)lilv_dlfunc(lib, "lv2_dyn_manifest_open");
+    OpenFunc dmopen = (OpenFunc)dylib_func(lib, "lv2_dyn_manifest_open");
     if (!dmopen || dmopen(&handle, &dman_features)) {
       LILV_ERRORF("No `lv2_dyn_manifest_open' in `%s'\n", lib_path);
       sord_iter_free(binaries);
-      dlclose(lib);
+      dylib_close(lib);
       lilv_free(lib_path);
       continue;
     }
@@ -576,11 +577,11 @@ lilv_world_load_dyn_manifest(LilvWorld*      world,
     // Get subjects (the data that would be in manifest.ttl)
     typedef int (*GetSubjectsFunc)(LV2_Dyn_Manifest_Handle, FILE*);
     GetSubjectsFunc get_subjects_func =
-      (GetSubjectsFunc)lilv_dlfunc(lib, "lv2_dyn_manifest_get_subjects");
+      (GetSubjectsFunc)dylib_func(lib, "lv2_dyn_manifest_get_subjects");
     if (!get_subjects_func) {
       LILV_ERRORF("No `lv2_dyn_manifest_get_subjects' in `%s'\n", lib_path);
       sord_iter_free(binaries);
-      dlclose(lib);
+      dylib_close(lib);
       lilv_free(lib_path);
       continue;
     }
@@ -647,12 +648,12 @@ lilv_dynmanifest_free(LilvDynManifest* dynmanifest)
 {
   typedef int (*CloseFunc)(LV2_Dyn_Manifest_Handle);
   CloseFunc close_func =
-    (CloseFunc)lilv_dlfunc(dynmanifest->lib, "lv2_dyn_manifest_close");
+    (CloseFunc)dylib_func(dynmanifest->lib, "lv2_dyn_manifest_close");
   if (close_func) {
     close_func(dynmanifest->handle);
   }
 
-  dlclose(dynmanifest->lib);
+  dylib_close(dynmanifest->lib);
   lilv_node_free(dynmanifest->bundle);
   free(dynmanifest);
 }

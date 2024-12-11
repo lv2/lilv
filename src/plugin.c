@@ -3,16 +3,17 @@
 
 #include "lilv_internal.h"
 
+#ifdef LILV_DYN_MANIFEST
+#  include "dylib.h"
+#  include <lv2/dynmanifest/dynmanifest.h>
+#endif
+
 #include <lilv/lilv.h>
 #include <lv2/core/lv2.h>
 #include <lv2/ui/ui.h>
 #include <serd/serd.h>
 #include <sord/sord.h>
 #include <zix/tree.h>
-
-#ifdef LILV_DYN_MANIFEST
-#  include <lv2/dynmanifest/dynmanifest.h>
-#endif
 
 #include <math.h>
 #include <stdarg.h>
@@ -212,7 +213,7 @@ lilv_plugin_load(LilvPlugin* plugin)
   if (plugin->dynmanifest) {
     typedef int (*GetDataFunc)(
       LV2_Dyn_Manifest_Handle handle, FILE* fp, const char* uri);
-    GetDataFunc get_data_func = (GetDataFunc)lilv_dlfunc(
+    GetDataFunc get_data_func = (GetDataFunc)dylib_func(
       plugin->dynmanifest->lib, "lv2_dyn_manifest_get_data");
     if (get_data_func) {
       const SordNode* bundle = plugin->dynmanifest->bundle->node;
