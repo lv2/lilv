@@ -214,9 +214,15 @@ main(int argc, char** argv)
     if (!strcmp(argv[a], "-f")) {
       full_output = true;
     } else if (!strcmp(argv[a], "-n") && (a + 1 < argc)) {
-      sample_count = atoi(argv[++a]);
+      const long l = strtol(argv[++a], NULL, 10);
+      if (l > 0 && l < (1L << 28L)) {
+        sample_count = (uint32_t)l;
+      }
     } else if (!strcmp(argv[a], "-b") && (a + 1 < argc)) {
-      block_size = atoi(argv[++a]);
+      const long l = strtol(argv[++a], NULL, 10);
+      if (l > 0 && l < 16384) {
+        block_size = (uint32_t)l;
+      }
     } else if (argv[a][0] != '-') {
       break;
     } else {

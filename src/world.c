@@ -19,6 +19,7 @@
 #include <zix/tree.h>
 
 #include <assert.h>
+#include <limits.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -733,8 +734,14 @@ get_version(const LilvWorld* world, SordModel* model, const LilvNode* subject)
 
   LilvVersion version = {0, 0};
   if (minor_node && micro_node) {
-    version.minor = atoi((const char*)sord_node_get_string(minor_node));
-    version.micro = atoi((const char*)sord_node_get_string(micro_node));
+    const char* const minor_str = (const char*)sord_node_get_string(minor_node);
+    const char* const micro_str = (const char*)sord_node_get_string(micro_node);
+    const long        minor     = strtol(minor_str, NULL, 10);
+    const long        micro     = strtol(micro_str, NULL, 10);
+    if (minor >= 0 && minor < INT_MAX && micro >= 0 && micro < INT_MAX) {
+      version.minor = (int)minor;
+      version.micro = (int)micro;
+    }
   }
 
   return version;

@@ -6,7 +6,6 @@ Checks: >
   -android-cloexec-fopen,
   -bugprone-narrowing-conversions,
   -cert-err33-c,
-  -cert-err34-c,
   -cppcoreguidelines-avoid-non-const-global-variables,
   -cppcoreguidelines-narrowing-conversions,
   -hicpp-signed-bitwise,
