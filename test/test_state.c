@@ -15,13 +15,6 @@
 #include <zix/filesystem.h>
 #include <zix/path.h>
 
-#ifdef _WIN32
-#  include <direct.h>
-#  define mkdir(path, flags) _mkdir(path)
-#else
-#  include <sys/stat.h>
-#endif
-
 #include <assert.h>
 #include <stdbool.h>
 #include <stdint.h>
@@ -128,10 +121,10 @@ create_test_directories(void)
   assert(dirs.copy);
   assert(dirs.link);
 
-  assert(!mkdir(dirs.shared, 0700));
-  assert(!mkdir(dirs.scratch, 0700));
-  assert(!mkdir(dirs.copy, 0700));
-  assert(!mkdir(dirs.link, 0700));
+  assert(!zix_create_directory(dirs.shared));
+  assert(!zix_create_directory(dirs.scratch));
+  assert(!zix_create_directory(dirs.copy));
+  assert(!zix_create_directory(dirs.link));
 
   free(top);
 
