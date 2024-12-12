@@ -223,7 +223,7 @@ lilv_port_get_scale_points(const LilvPlugin* plugin, const LilvPort* port)
     sord_new_uri(plugin->world->world, (const uint8_t*)LV2_CORE__scalePoint),
     NULL);
 
-  if (sord_iter_end(points)) {
+  if (!points) {
     return NULL;
   }
 
@@ -240,6 +240,9 @@ lilv_port_get_scale_points(const LilvPlugin* plugin, const LilvPort* port)
 
     if (value && label) {
       zix_tree_insert((ZixTree*)ret, lilv_scale_point_new(value, label), NULL);
+    } else {
+      lilv_node_free(label);
+      lilv_node_free(value);
     }
   }
   sord_iter_free(points);

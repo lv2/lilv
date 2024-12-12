@@ -884,6 +884,7 @@ lilv_world_drop_graph(LilvWorld* world, const SordNode* graph)
   while (!sord_iter_end(i)) {
     const SerdStatus st = sord_erase(world->model, i);
     if (st) {
+      sord_iter_free(i);
       LILV_ERRORF("Error removing statement from <%s> (%s)\n",
                   sord_node_get_string(graph),
                   serd_strerror(st));
