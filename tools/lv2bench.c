@@ -51,7 +51,7 @@ print_usage(void)
   printf("  -n FRAMES      Total number of audio frames to process\n");
 }
 
-static double
+static int
 bench(const LilvPlugin* p, uint32_t sample_count, uint32_t block_size)
 {
   URITable uri_table;
@@ -66,7 +66,7 @@ bench(const LilvPlugin* p, uint32_t sample_count, uint32_t block_size)
   float* const buf = (float*)calloc(block_size * 2UL, sizeof(float));
   if (!buf) {
     fprintf(stderr, "Out of memory\n");
-    return 0.0;
+    return 1;
   }
 
   float* const in  = buf;
@@ -93,7 +93,7 @@ bench(const LilvPlugin* p, uint32_t sample_count, uint32_t block_size)
       free(seq_out);
       free(buf);
       uri_table_destroy(&uri_table);
-      return 0.0;
+      return 1;
     }
   }
 
@@ -105,7 +105,7 @@ bench(const LilvPlugin* p, uint32_t sample_count, uint32_t block_size)
     free(seq_out);
     free(buf);
     uri_table_destroy(&uri_table);
-    return 0.0;
+    return 1;
   }
 
   const uint32_t n_ports  = lilv_plugin_get_num_ports(p);
@@ -114,7 +114,8 @@ bench(const LilvPlugin* p, uint32_t sample_count, uint32_t block_size)
   float* const   controls = (float*)calloc(n_ports, sizeof(float));
   lilv_plugin_get_port_ranges_float(p, mins, maxes, controls);
 
-  for (uint32_t index = 0; index < n_ports; ++index) {
+  bool skip_plugin = false;
+  for (uint32_t index = 0; !skip_plugin && index < n_ports; ++index) {
     const LilvPort* port = lilv_plugin_get_port_by_index(p, index);
     if (lilv_port_is_a(p, port, lv2_ControlPort)) {
       if (isnan(controls[index])) {
@@ -138,12 +139,7 @@ bench(const LilvPlugin* p, uint32_t sample_count, uint32_t block_size)
                 "<%s> port %u neither input nor output, skipping\n",
                 uri,
                 index);
-        lilv_instance_free(instance);
-        free(seq_out);
-        free(buf);
-        free(controls);
-        uri_table_destroy(&uri_table);
-        return 0.0;
+        skip_plugin = true;
       }
     } else if (lilv_port_is_a(p, port, atom_AtomPort)) {
       if (lilv_port_is_a(p, port, lv2_InputPort)) {
@@ -153,44 +149,41 @@ bench(const LilvPlugin* p, uint32_t sample_count, uint32_t block_size)
       }
     } else {
       fprintf(stderr, "<%s> port %u has unknown type, skipping\n", uri, index);
-      lilv_instance_free(instance);
-      free(seq_out);
-      free(buf);
-      free(controls);
-      uri_table_destroy(&uri_table);
-      return 0.0;
+      skip_plugin = true;
     }
   }
 
-  lilv_instance_activate(instance);
+  double elapsed = 0.0;
+  if (!skip_plugin) {
+    lilv_instance_activate(instance);
 
-  struct timespec ts = bench_start();
-  for (uint32_t i = 0; i < (sample_count / block_size); ++i) {
-    seq_in.atom.size   = sizeof(LV2_Atom_Sequence_Body);
-    seq_in.atom.type   = uri_table_map(&uri_table, LV2_ATOM__Sequence);
-    seq_out->atom.size = atom_capacity;
-    seq_out->atom.type = uri_table_map(&uri_table, LV2_ATOM__Chunk);
+    struct timespec ts = bench_start();
+    for (uint32_t i = 0; i < (sample_count / block_size); ++i) {
+      seq_in.atom.size   = sizeof(LV2_Atom_Sequence_Body);
+      seq_in.atom.type   = uri_table_map(&uri_table, LV2_ATOM__Sequence);
+      seq_out->atom.size = atom_capacity;
+      seq_out->atom.type = uri_table_map(&uri_table, LV2_ATOM__Chunk);
 
-    lilv_instance_run(instance, block_size);
+      lilv_instance_run(instance, block_size);
+    }
+    elapsed = bench_end(&ts);
+
+    if (full_output) {
+      printf("%u %u ", block_size, sample_count);
+    }
+    printf("%lf %s\n", elapsed, uri);
+
+    lilv_instance_deactivate(instance);
   }
-  const double elapsed = bench_end(&ts);
 
-  lilv_instance_deactivate(instance);
-  lilv_instance_free(instance);
   free(controls);
   free(maxes);
   free(mins);
+  lilv_instance_free(instance);
   free(seq_out);
-
-  uri_table_destroy(&uri_table);
-
-  if (full_output) {
-    printf("%u %u ", block_size, sample_count);
-  }
-  printf("%lf %s\n", elapsed, uri);
-
   free(buf);
-  return elapsed;
+  uri_table_destroy(&uri_table);
+  return 0;
 }
 
 int
