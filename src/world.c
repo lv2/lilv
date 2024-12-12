@@ -668,7 +668,7 @@ lilv_world_get_manifest_uri(LilvWorld* world, const LilvNode* bundle_uri)
   const char* const bundle_uri_string =
     (const char*)sord_node_get_string_counted(bundle_uri->node,
                                               &bundle_uri_length);
-  if (!bundle_uri_length) {
+  if (bundle_uri_length < 1U) {
     return NULL;
   }
 
