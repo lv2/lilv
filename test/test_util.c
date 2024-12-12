@@ -22,6 +22,8 @@ main(void)
 
   FILE* const fa = fopen(a_path, "w");
   FILE* const fb = fopen(b_path, "w");
+  assert(fa);
+  assert(fb);
   fprintf(fa, "AA\n");
   fprintf(fb, "AB\n");
   fclose(fb);

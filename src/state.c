@@ -669,12 +669,13 @@ new_state_from_model(LilvWorld*      world,
       chunk.len = 0;
       sratom_read(sratom, &forge, world->world, model, value);
       const LV2_Atom* atom = (const LV2_Atom*)chunk.buf;
-
-      append_port_value(state,
-                        (const char*)sord_node_get_string(symbol),
-                        LV2_ATOM_BODY_CONST(atom),
-                        atom->size,
-                        atom->type);
+      if (atom) {
+        append_port_value(state,
+                          (const char*)sord_node_get_string(symbol),
+                          LV2_ATOM_BODY_CONST(atom),
+                          atom->size,
+                          atom->type);
+      }
 
       if (label) {
         lilv_state_set_label(state, (const char*)sord_node_get_string(label));
@@ -704,6 +705,9 @@ new_state_from_model(LilvWorld*      world,
       const LV2_Atom* atom  = (const LV2_Atom*)chunk.buf;
       uint32_t        flags = LV2_STATE_IS_POD | LV2_STATE_IS_PORTABLE;
       Property        prop  = {NULL, 0, 0, 0, flags};
+      if (!atom) {
+        continue;
+      }
 
       prop.key   = map->map(map->handle, key);
       prop.type  = atom->type;

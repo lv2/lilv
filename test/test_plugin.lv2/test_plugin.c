@@ -301,8 +301,10 @@ save(LV2_Handle                instance,
     if (make_path) {
       char* spath = make_path->path(make_path->handle, "save");
       FILE* sfile = fopen(spath, "w");
-      fprintf(sfile, "save");
-      fclose(sfile);
+      if (sfile) {
+        fprintf(sfile, "save");
+        fclose(sfile);
+      }
 
       apath = map_path->abstract_path(map_path->handle, spath);
       store(callback_data,
@@ -367,14 +369,16 @@ restore(LV2_Handle                  instance,
   }
 
   if (apath) {
-    char*  path = map_path->absolute_path(map_path->handle, apath);
-    FILE*  f    = fopen(path, "r");
-    char   str[8];
-    size_t n_read = fread(str, 1, sizeof(str), f);
-    fclose(f);
-    if (!!strncmp(str, "Hello\n", n_read)) {
-      fprintf(
-        stderr, "error: Restored bad file contents `%s' != `Hello'\n", str);
+    char* path = map_path->absolute_path(map_path->handle, apath);
+    FILE* f    = fopen(path, "r");
+    if (f) {
+      char   str[8] = {'\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0'};
+      size_t n_read = fread(str, 1, 6, f);
+      fclose(f);
+
+      if (!!strncmp(str, "Hello\n", n_read)) {
+        fprintf(stderr, "error: Restored bad file `%s' != `Hello'\n", str);
+      }
     }
     free_path->free_path(free_path->handle, path);
   }
