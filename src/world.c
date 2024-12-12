@@ -384,7 +384,7 @@ lilv_collection_find_by_uri(const ZixTree* seq, const LilvNode* uri)
   ZixTreeIter* i = NULL;
   if (lilv_node_is_uri(uri)) {
     struct LilvHeader key = {NULL, (LilvNode*)uri};
-    zix_tree_find(seq, &key, &i);
+    (void)zix_tree_find(seq, &key, &i);
   }
   return i;
 }

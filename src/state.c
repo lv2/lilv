@@ -257,9 +257,9 @@ static char*
 make_path(LV2_State_Make_Path_Handle handle, const char* path)
 {
   const LilvState* state = (const LilvState*)handle;
-  zix_create_directories(NULL, state->dir);
-
-  return zix_path_join(NULL, state->dir, path);
+  return !zix_create_directories(NULL, state->dir)
+           ? zix_path_join(NULL, state->dir, path)
+           : NULL;
 }
 
 static bool
@@ -913,7 +913,7 @@ remove_manifest_entry(SordWorld* world, SordModel* model, const char* subject)
   SordNode* s = sord_new_uri(world, USTR(subject));
   SordIter* i = sord_search(model, s, NULL, NULL, NULL);
   while (!sord_iter_end(i)) {
-    sord_erase(model, i);
+    (void)sord_erase(model, i);
   }
   sord_iter_free(i);
   sord_node_free(world, s);
