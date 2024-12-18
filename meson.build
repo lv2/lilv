@@ -59,7 +59,6 @@ if cc.get_id() in ['clang', 'emscripten']
       '-Wno-switch-default',
       '-Wno-switch-enum',
       '-Wno-unsafe-buffer-usage',
-      '-Wno-vla',
     ]
 
     if not meson.is_cross_build()
@@ -104,7 +103,6 @@ elif cc.get_id() == 'gcc'
       '-Wno-unsuffixed-float-constants',
       '-Wno-unused-const-variable',
       '-Wno-unused-parameter',
-      '-Wno-vla',
     ]
   endif
 

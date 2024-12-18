@@ -212,6 +212,12 @@ print_usage(int status)
   return status;
 }
 
+static float*
+alloc_audio_buffer(size_t n_channels)
+{
+  return (float*)calloc(n_channels ? n_channels : 1, sizeof(float));
+}
+
 int
 main(int argc, char** argv)
 {
@@ -319,8 +325,8 @@ main(int argc, char** argv)
 
   /* Instantiate plugin and connect ports */
   const uint32_t n_ports = lilv_plugin_get_num_ports(plugin);
-  float          in_buf[self.n_audio_in > 0 ? self.n_audio_in : 1];
-  float          out_buf[self.n_audio_out > 0 ? self.n_audio_out : 1];
+  float* const   in_buf  = alloc_audio_buffer(self.n_audio_in);
+  float* const   out_buf = alloc_audio_buffer(self.n_audio_out);
   self.instance = lilv_plugin_instantiate(self.plugin, in_fmt.samplerate, NULL);
   for (uint32_t p = 0, i = 0, o = 0; p < n_ports; ++p) {
     if (self.ports[p].type == TYPE_CONTROL) {
@@ -341,13 +347,16 @@ main(int argc, char** argv)
      read/write from/to sndfile. */
 
   lilv_instance_activate(self.instance);
+  int st = 0;
   while (sread(self.in_file, in_fmt.channels, in_buf, self.n_audio_in)) {
     lilv_instance_run(self.instance, 1);
     if (sf_writef_float(self.out_file, out_buf, 1) != 1) {
-      return fatal(&self, 9, "Failed to write to output file\n");
+      st = fatal(&self, 9, "Failed to write to output file\n");
     }
   }
   lilv_instance_deactivate(self.instance);
 
-  return cleanup(0, &self);
+  free(out_buf);
+  free(in_buf);
+  return st ? st : cleanup(0, &self);
 }
