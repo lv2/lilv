@@ -153,11 +153,11 @@ bench(const LilvPlugin* p, uint32_t sample_count, uint32_t block_size)
     }
   }
 
-  double elapsed = 0.0;
   if (!skip_plugin) {
     lilv_instance_activate(instance);
 
     struct timespec ts = bench_start();
+
     for (uint32_t i = 0; i < (sample_count / block_size); ++i) {
       seq_in.atom.size   = sizeof(LV2_Atom_Sequence_Body);
       seq_in.atom.type   = uri_table_map(&uri_table, LV2_ATOM__Sequence);
@@ -166,7 +166,8 @@ bench(const LilvPlugin* p, uint32_t sample_count, uint32_t block_size)
 
       lilv_instance_run(instance, block_size);
     }
-    elapsed = bench_end(&ts);
+
+    const double elapsed = bench_end(&ts);
 
     if (full_output) {
       printf("%u %u ", block_size, sample_count);
