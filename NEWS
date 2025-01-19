@@ -1,4 +1,4 @@
-lilv (0.24.25) unstable; urgency=medium
+lilv (0.24.26) stable; urgency=medium
 
   * Add lint option with project metadata and code quality tests
   * Avoid use of VLAs in lv2apply
@@ -10,7 +10,7 @@ lilv (0.24.25) unstable; urgency=medium
   * Improve const correctness
   * Replace more platform-specific code with use of zix
 
- -- David Robillard <d@drobilla.net>  Wed, 18 Dec 2024 17:57:56 +0000
+ -- David Robillard <d@drobilla.net>  Sun, 19 Jan 2025 13:53:31 +0000
 
 lilv (0.24.24) stable; urgency=medium
 
