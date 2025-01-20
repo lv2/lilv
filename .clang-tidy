@@ -3,7 +3,6 @@
 
 Checks: >
   *,
-  -*-macro-to-enum,
   -*-vararg,
   -altera-*,
   -bugprone-assignment-in-if-condition,

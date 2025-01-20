@@ -1,6 +1,12 @@
 # Copyright 2020-2022 David Robillard <d@drobilla.net>
 # SPDX-License-Identifier: 0BSD OR ISC
 
+###################
+# Header Warnings #
+###################
+
+subdir('headers')
+
 ##############
 # Test Setup #
 ##############

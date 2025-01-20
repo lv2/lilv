@@ -38,8 +38,9 @@ install_data(
 
 sndfile_dep = dependency(
   'sndfile',
-  version: '>= 1.0.0',
+  include_type: 'system',
   required: get_option('tools'),
+  version: '>= 1.0.0',
 )
 
 if sndfile_dep.found()

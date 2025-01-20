@@ -12,7 +12,7 @@ project(
   ],
   license: 'ISC',
   meson_version: '>= 0.56.0',
-  version: '0.24.26',
+  version: '0.24.27',
 )
 
 lilv_src_root = meson.current_source_dir()
@@ -220,11 +220,36 @@ add_project_arguments(platform_defines, language: ['c'])
 m_dep = cc.find_library('m', required: false)
 dl_dep = cc.find_library('dl', required: false)
 
-zix_dep = dependency('zix-0', fallback: 'zix', version: '>= 0.6.0')
-serd_dep = dependency('serd-0', fallback: 'serd', version: '>= 0.30.10')
-sord_dep = dependency('sord-0', fallback: 'sord', version: '>= 0.16.16')
-lv2_dep = dependency('lv2', fallback: 'lv2', version: '>= 1.18.2')
-sratom_dep = dependency('sratom-0', fallback: 'sratom', version: '>= 0.6.10')
+zix_dep = dependency(
+  'zix-0',
+  include_type: 'system',
+  fallback: 'zix',
+  version: '>= 0.6.0',
+)
+serd_dep = dependency(
+  'serd-0',
+  include_type: 'system',
+  fallback: 'serd',
+  version: '>= 0.30.10',
+)
+sord_dep = dependency(
+  'sord-0',
+  include_type: 'system',
+  fallback: 'sord',
+  version: '>= 0.16.16',
+)
+lv2_dep = dependency(
+  'lv2',
+  include_type: 'system',
+  fallback: 'lv2',
+  version: '>= 1.18.2',
+)
+sratom_dep = dependency(
+  'sratom-0',
+  include_type: 'system',
+  fallback: 'sratom',
+  version: '>= 0.6.10',
+)
 
 ###########
 # Library #
