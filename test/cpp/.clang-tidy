@@ -1,7 +1,8 @@
-# Copyright 2020-2022 David Robillard <d@drobilla.net>
+# Copyright 2020-2025 David Robillard <d@drobilla.net>
 # SPDX-License-Identifier: 0BSD OR ISC
 
 Checks: >
+  -*-nullptr,
   -cert-dcl50-cpp,
   -cppcoreguidelines-macro-usage,
   -cppcoreguidelines-pro-bounds-array-to-pointer-decay,
@@ -14,6 +15,7 @@ Checks: >
   -modernize-return-braced-init-list,
   -modernize-use-nodiscard,
   -modernize-use-trailing-return-type,
+  -modernize-use-using,
   -readability-implicit-bool-conversion,
 HeaderFilterRegex: '.*/lilvmm\.hpp'
 InheritParentConfig: true
