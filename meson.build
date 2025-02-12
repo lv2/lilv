@@ -308,7 +308,7 @@ lilv_dep = declare_dependency(
   link_with: liblilv,
 )
 
-# Generage pkg-config file for external dependants
+# Generate pkg-config file for external dependants
 pkg.generate(
   liblilv,
   description: 'Library for hosting LV2 plugins',
