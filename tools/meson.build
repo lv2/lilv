@@ -18,6 +18,7 @@ foreach tool : basic_tools
     files(tool + '.c'),
     c_args: c_suppressions,
     dependencies: lilv_dep,
+    implicit_include_directories: false,
     install: true,
   )
 
@@ -49,6 +50,7 @@ if sndfile_dep.found()
     files('lv2apply.c'),
     c_args: c_suppressions,
     dependencies: [lilv_dep, sndfile_dep],
+    implicit_include_directories: false,
     install: true,
   )
 
@@ -79,6 +81,7 @@ int main(void) { struct timespec t; return clock_gettime(CLOCK_MONOTONIC, &t); }
       files('lv2bench.c'),
       c_args: c_suppressions,
       dependencies: [lilv_dep, rt_dep, sndfile_dep],
+      implicit_include_directories: false,
       install: true,
     )
 

@@ -26,6 +26,7 @@ test(
     files('test_headers.c'),
     c_args: header_c_suppressions,
     dependencies: lilv_dep,
+    implicit_include_directories: false,
   ),
   suite: 'unit',
 )

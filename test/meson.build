@@ -88,6 +88,7 @@ foreach unit : unit_tests
       files('lilv_test_utils.c', 'test_@0@.c'.format(unit)),
       c_args: define_args + test_args + c_suppressions,
       dependencies: [lv2_dep, lilv_dep],
+      implicit_include_directories: false,
     ),
     suite: 'unit',
   )
