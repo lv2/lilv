@@ -39,7 +39,7 @@ For example, to set the LV2 path to only load plugins bundled in the application
 
 .. code-block:: c
 
-   LilvNode* lv2_path = lilv_new_file_uri(world, NULL, "/myapp/lv2");
+   LilvNode* lv2_path = lilv_new_string(world, "/myapp/lv2");
 
    lilv_world_set_option(world, LILV_OPTION_LV2_PATH, lv2_path);
 
