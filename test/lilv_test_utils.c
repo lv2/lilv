@@ -10,6 +10,7 @@
 #include <zix/path.h>
 #include <zix/status.h>
 
+#include <assert.h>
 #include <errno.h>
 #include <stdbool.h>
 #include <stdint.h>
@@ -26,6 +27,7 @@ lilv_test_env_new(void)
   }
 
   LilvTestEnv* env = (LilvTestEnv*)calloc(1, sizeof(LilvTestEnv));
+  assert(env);
 
   env->world       = world;
   env->plugin1_uri = lilv_new_uri(world, "http://example.org/plug");
@@ -179,6 +181,7 @@ set_env(const char* name, const char* value)
   // setenv on Windows does not modify the current process' environment
   const size_t len = strlen(name) + 1 + strlen(value) + 1;
   char*        str = (char*)calloc(1, len);
+  assert(str);
   snprintf(str, len, "%s=%s", name, value);
   putenv(str);
   free(str);

@@ -60,6 +60,7 @@ static TestContext*
 test_context_new(void)
 {
   TestContext* ctx = (TestContext*)calloc(1, sizeof(TestContext));
+  assert(ctx);
 
   lilv_test_uri_map_init(&ctx->uri_map);
 

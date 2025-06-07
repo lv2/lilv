@@ -51,7 +51,9 @@ map_uri(LV2_URID_Map_Handle handle, const char* uri)
   assert(serd_uri_string_has_scheme((const uint8_t*)uri));
 
   map->uris = (char**)realloc(map->uris, ++map->n_uris * sizeof(char*));
+  assert(map->uris);
   map->uris[map->n_uris - 1] = (char*)calloc(1, uri_len + 1);
+  assert(map->uris[map->n_uris - 1]);
   memcpy(map->uris[map->n_uris - 1], uri, uri_len + 1);
   return map->n_uris;
 }

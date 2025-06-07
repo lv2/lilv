@@ -143,6 +143,7 @@ main(void)
     strlen(lilv_node_as_string(plug_bundle_uri)) + strlen("ui" SHLIB_EXT);
 
   char* ui_binary_uri_str = (char*)calloc(1, ui_binary_uri_str_len + 1);
+  assert(ui_binary_uri_str);
   snprintf(ui_binary_uri_str,
            ui_binary_uri_str_len + 1,
            "%s%s",
