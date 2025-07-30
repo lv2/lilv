@@ -1,8 +1,9 @@
 lilv (0.24.27) unstable; urgency=medium
 
   * Add header warnings test
+  * Avoid over-use of yielding meson options
 
- -- David Robillard <d@drobilla.net>  Mon, 20 Jan 2025 18:14:00 +0000
+ -- David Robillard <d@drobilla.net>  Wed, 30 Jul 2025 18:30:04 +0000
 
 lilv (0.24.26) stable; urgency=medium
 
