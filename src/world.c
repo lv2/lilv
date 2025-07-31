@@ -20,6 +20,7 @@
 #include <sord/sord.h>
 #include <zix/environment.h>
 #include <zix/filesystem.h>
+#include <zix/path.h>
 #include <zix/tree.h>
 
 #include <assert.h>
@@ -976,14 +977,22 @@ lilv_world_unload_bundle(LilvWorld* world, const LilvNode* bundle_uri)
 static void
 load_dir_entry(const char* dir, const char* name, void* data)
 {
-  LilvWorld* world = (LilvWorld*)data;
-  char*      path  = lilv_strjoin(dir, "/", name, "/", NULL);
-  SerdNode   suri  = serd_node_new_file_uri((const uint8_t*)path, 0, 0, true);
-  LilvNode*  node  = lilv_new_uri(world, (const char*)suri.buf);
+  LilvWorld* const world = (LilvWorld*)data;
+  char* const      path  = zix_path_join(NULL, dir, name);
+  if (zix_file_type(path) != ZIX_FILE_TYPE_DIRECTORY) {
+    LILV_WARNF("Skipping non-directory `%s' within path entry\n", path);
+    free(path);
+    return;
+  }
+
+  char* const base = zix_path_join(NULL, path, NULL);
+  SerdNode    suri = serd_node_new_file_uri((const uint8_t*)base, 0, 0, true);
+  LilvNode*   node = lilv_new_uri(world, (const char*)suri.buf);
 
   lilv_world_load_bundle(world, node);
   lilv_node_free(node);
   serd_node_free(&suri);
+  free(base);
   free(path);
 }
 
@@ -993,7 +1002,11 @@ lilv_world_load_directory(LilvWorld* world, const char* dir_path)
 {
   char* const path = zix_expand_environment_strings(NULL, dir_path);
   if (path) {
-    zix_dir_for_each(path, world, load_dir_entry);
+    if (zix_file_type(path) == ZIX_FILE_TYPE_DIRECTORY) {
+      zix_dir_for_each(path, world, load_dir_entry);
+    } else {
+      LILV_WARNF("Skipping non-directory `%s' in path\n", path);
+    }
     free(path);
   }
 }
