@@ -1,12 +1,9 @@
-// Copyright 2007-2019 David Robillard <d@drobilla.net>
+// Copyright 2007-2025 David Robillard <d@drobilla.net>
 // SPDX-License-Identifier: ISC
 
 #include "lilv_internal.h"
 
 #include <lilv/lilv.h>
-#include <lv2/atom/atom.h>
-#include <lv2/core/lv2.h>
-#include <lv2/event/event.h>
 #include <sord/sord.h>
 #include <zix/tree.h>
 
@@ -75,18 +72,17 @@ lilv_port_supports_event(const LilvPlugin* plugin,
                          const LilvPort*   port,
                          const LilvNode*   event_type)
 {
-  const uint8_t* predicates[] = {(const uint8_t*)LV2_EVENT__supportsEvent,
-                                 (const uint8_t*)LV2_ATOM__supports,
-                                 NULL};
+  const SordNode* predicates[] = {plugin->world->uris.event_supportsEvent,
+                                  plugin->world->uris.atom_supports,
+                                  NULL};
 
-  for (const uint8_t** pred = predicates; *pred; ++pred) {
-    if (lilv_world_ask_internal(plugin->world,
-                                port->node->node,
-                                sord_new_uri(plugin->world->world, *pred),
-                                event_type->node)) {
+  for (const SordNode** pred = predicates; *pred; ++pred) {
+    if (lilv_world_ask_internal(
+          plugin->world, port->node->node, *pred, event_type->node)) {
       return true;
     }
   }
+
   return false;
 }
 
@@ -218,10 +214,7 @@ LilvScalePoints*
 lilv_port_get_scale_points(const LilvPlugin* plugin, const LilvPort* port)
 {
   SordIter* points = lilv_world_query_internal(
-    plugin->world,
-    port->node->node,
-    sord_new_uri(plugin->world->world, (const uint8_t*)LV2_CORE__scalePoint),
-    NULL);
+    plugin->world, port->node->node, plugin->world->uris.lv2_scalePoint, NULL);
 
   if (!points) {
     return NULL;

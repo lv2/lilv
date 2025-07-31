@@ -1,4 +1,4 @@
-// Copyright 2007-2022 David Robillard <d@drobilla.net>
+// Copyright 2007-2025 David Robillard <d@drobilla.net>
 // SPDX-License-Identifier: ISC
 
 #include "lilv_internal.h"
@@ -688,8 +688,8 @@ new_state_from_model(LilvWorld*      world,
   sord_iter_free(ports);
 
   // Get properties
-  SordNode* statep     = sord_new_uri(world->world, USTR(LV2_STATE__state));
-  SordNode* state_node = sord_get(model, node, statep, NULL, NULL);
+  SordNode* state_node =
+    sord_get(model, node, world->uris.state_state, NULL, NULL);
   if (state_node) {
     SordIter* props = sord_search(model, state_node, 0, 0, 0);
     FOREACH_MATCH (props) {
@@ -727,7 +727,6 @@ new_state_from_model(LilvWorld*      world,
     sord_iter_free(props);
   }
   sord_node_free(world->world, state_node);
-  sord_node_free(world->world, statep);
 
   serd_free((void*)chunk.buf);
   sratom_free(sratom);
@@ -831,13 +830,12 @@ lilv_state_new_from_string(LilvWorld* world, LV2_URID_Map* map, const char* str)
   set_prefixes(env);
   serd_reader_read_string(reader, USTR(str));
 
-  SordNode* o = sord_new_uri(world->world, USTR(LV2_PRESETS__Preset));
-  SordNode* s = sord_get(model, NULL, world->uris.rdf_a, o, NULL);
+  SordNode* s =
+    sord_get(model, NULL, world->uris.rdf_a, world->uris.pset_Preset, NULL);
 
   LilvState* state = new_state_from_model(world, map, model, s, NULL);
 
   sord_node_free(world->world, s);
-  sord_node_free(world->world, o);
   serd_reader_free(reader);
   sord_free(model);
   serd_env_free(env);

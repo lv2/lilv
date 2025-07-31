@@ -2,6 +2,7 @@ lilv (0.24.27) unstable; urgency=medium
 
   * Add header warnings test
   * Avoid over-use of yielding meson options
+  * Reduce temporary node allocations during query operations
 
  -- David Robillard <d@drobilla.net>  Wed, 30 Jul 2025 18:30:04 +0000
 

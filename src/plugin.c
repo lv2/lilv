@@ -1,4 +1,4 @@
-// Copyright 2007-2019 David Robillard <d@drobilla.net>
+// Copyright 2007-2025 David Robillard <d@drobilla.net>
 // SPDX-License-Identifier: ISC
 
 #include "lilv_internal.h"
@@ -10,7 +10,6 @@
 
 #include <lilv/lilv.h>
 #include <lv2/core/lv2.h>
-#include <lv2/ui/ui.h>
 #include <serd/serd.h>
 #include <sord/sord.h>
 #include <zix/tree.h>
@@ -22,9 +21,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
-#define NS_DOAP (const uint8_t*)"http://usefulinc.com/ns/doap#"
-#define NS_FOAF (const uint8_t*)"http://xmlns.com/foaf/0.1/"
 
 static void
 lilv_plugin_init(LilvPlugin* plugin, LilvNode* bundle_uri)
@@ -835,13 +831,11 @@ lilv_plugin_get_project(const LilvPlugin* plugin)
 {
   lilv_plugin_load_if_necessary(plugin);
 
-  SordNode* lv2_project =
-    sord_new_uri(plugin->world->world, (const uint8_t*)LV2_CORE__project);
-
-  SordIter* projects = lilv_world_query_internal(
-    plugin->world, plugin->plugin_uri->node, lv2_project, NULL);
-
-  sord_node_free(plugin->world->world, lv2_project);
+  SordIter* projects =
+    lilv_world_query_internal(plugin->world,
+                              plugin->plugin_uri->node,
+                              plugin->world->uris.lv2_project,
+                              NULL);
 
   if (sord_iter_end(projects)) {
     sord_iter_free(projects);
@@ -859,8 +853,7 @@ lilv_plugin_get_author(const LilvPlugin* plugin)
 {
   lilv_plugin_load_if_necessary(plugin);
 
-  SordNode* doap_maintainer =
-    sord_new_uri(plugin->world->world, NS_DOAP "maintainer");
+  const SordNode* doap_maintainer = plugin->world->uris.doap_maintainer;
 
   SordIter* maintainers = lilv_world_query_internal(
     plugin->world, plugin->plugin_uri->node, doap_maintainer, NULL);
@@ -870,7 +863,6 @@ lilv_plugin_get_author(const LilvPlugin* plugin)
 
     LilvNode* project = lilv_plugin_get_project(plugin);
     if (!project) {
-      sord_node_free(plugin->world->world, doap_maintainer);
       return NULL;
     }
 
@@ -879,8 +871,6 @@ lilv_plugin_get_author(const LilvPlugin* plugin)
 
     lilv_node_free(project);
   }
-
-  sord_node_free(plugin->world->world, doap_maintainer);
 
   if (sord_iter_end(maintainers)) {
     sord_iter_free(maintainers);
@@ -894,35 +884,30 @@ lilv_plugin_get_author(const LilvPlugin* plugin)
 }
 
 static LilvNode*
-lilv_plugin_get_author_property(const LilvPlugin* plugin, const uint8_t* uri)
+lilv_plugin_get_author_property(const LilvPlugin* plugin, const SordNode* pred)
 {
   const SordNode* author = lilv_plugin_get_author(plugin);
-  if (author) {
-    SordWorld* sworld = plugin->world->world;
-    SordNode*  pred   = sord_new_uri(sworld, uri);
-    LilvNode*  ret    = lilv_plugin_get_one(plugin, author, pred);
-    sord_node_free(sworld, pred);
-    return ret;
-  }
-  return NULL;
+
+  return author ? lilv_plugin_get_one(plugin, author, pred) : NULL;
 }
 
 LilvNode*
 lilv_plugin_get_author_name(const LilvPlugin* plugin)
 {
-  return lilv_plugin_get_author_property(plugin, NS_FOAF "name");
+  return lilv_plugin_get_author_property(plugin, plugin->world->uris.foaf_name);
 }
 
 LilvNode*
 lilv_plugin_get_author_email(const LilvPlugin* plugin)
 {
-  return lilv_plugin_get_author_property(plugin, NS_FOAF "mbox");
+  return lilv_plugin_get_author_property(plugin, plugin->world->uris.foaf_mbox);
 }
 
 LilvNode*
 lilv_plugin_get_author_homepage(const LilvPlugin* plugin)
 {
-  return lilv_plugin_get_author_property(plugin, NS_FOAF "homepage");
+  return lilv_plugin_get_author_property(plugin,
+                                         plugin->world->uris.foaf_homepage);
 }
 
 bool
@@ -936,14 +921,9 @@ lilv_plugin_get_uis(const LilvPlugin* plugin)
 {
   lilv_plugin_load_if_necessary(plugin);
 
-  SordNode* ui_ui_node =
-    sord_new_uri(plugin->world->world, (const uint8_t*)LV2_UI__ui);
-  SordNode* ui_binary_node =
-    sord_new_uri(plugin->world->world, (const uint8_t*)LV2_UI__binary);
-
   LilvUIs*  result = lilv_uis_new();
   SordIter* uis    = lilv_world_query_internal(
-    plugin->world, plugin->plugin_uri->node, ui_ui_node, NULL);
+    plugin->world, plugin->plugin_uri->node, plugin->world->uris.ui_ui, NULL);
 
   FOREACH_MATCH (uis) {
     const SordNode* ui = sord_iter_get_node(uis, SORD_OBJECT);
@@ -953,7 +933,8 @@ lilv_plugin_get_uis(const LilvPlugin* plugin)
     LilvNode* binary =
       lilv_plugin_get_one(plugin, ui, plugin->world->uris.lv2_binary);
     if (!binary) {
-      binary = lilv_plugin_get_unique(plugin, ui, ui_binary_node);
+      binary =
+        lilv_plugin_get_unique(plugin, ui, plugin->world->uris.ui_binary);
     }
 
     if (sord_node_get_type(ui) != SORD_URI || !lilv_node_is_uri(type) ||
@@ -970,9 +951,6 @@ lilv_plugin_get_uis(const LilvPlugin* plugin)
     zix_tree_insert((ZixTree*)result, lilv_ui, NULL);
   }
   sord_iter_free(uis);
-
-  sord_node_free(plugin->world->world, ui_binary_node);
-  sord_node_free(plugin->world->world, ui_ui_node);
 
   if (lilv_uis_size(result) > 0) {
     return result;

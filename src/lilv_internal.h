@@ -1,4 +1,4 @@
-// Copyright 2007-2019 David Robillard <d@drobilla.net>
+// Copyright 2007-2025 David Robillard <d@drobilla.net>
 // SPDX-License-Identifier: ISC
 
 #ifndef LILV_INTERNAL_H
@@ -120,10 +120,17 @@ struct LilvWorldImpl {
   LilvPlugins*       zombies;
   LilvNodes*         loaded_files;
   ZixTree*           libs;
+
   struct {
+    SordNode* atom_supports;
     SordNode* dc_replaces;
     SordNode* dman_DynManifest;
+    SordNode* doap_maintainer;
     SordNode* doap_name;
+    SordNode* event_supportsEvent;
+    SordNode* foaf_homepage;
+    SordNode* foaf_mbox;
+    SordNode* foaf_name;
     SordNode* lv2_Plugin;
     SordNode* lv2_Specification;
     SordNode* lv2_appliesTo;
@@ -141,11 +148,14 @@ struct LilvWorldImpl {
     SordNode* lv2_optionalFeature;
     SordNode* lv2_port;
     SordNode* lv2_portProperty;
+    SordNode* lv2_project;
+    SordNode* lv2_prototype;
     SordNode* lv2_reportsLatency;
     SordNode* lv2_requiredFeature;
+    SordNode* lv2_scalePoint;
     SordNode* lv2_symbol;
-    SordNode* lv2_prototype;
     SordNode* owl_Ontology;
+    SordNode* pset_Preset;
     SordNode* pset_value;
     SordNode* rdf_a;
     SordNode* rdf_value;
@@ -153,11 +163,15 @@ struct LilvWorldImpl {
     SordNode* rdfs_label;
     SordNode* rdfs_seeAlso;
     SordNode* rdfs_subClassOf;
+    SordNode* state_state;
+    SordNode* ui_binary;
+    SordNode* ui_ui;
     SordNode* xsd_base64Binary;
     SordNode* xsd_boolean;
     SordNode* xsd_decimal;
     SordNode* xsd_double;
     SordNode* xsd_integer;
+
     SordNode* null_uri;
   } uris;
   LilvOptions opt;

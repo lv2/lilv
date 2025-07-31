@@ -1,4 +1,4 @@
-// Copyright 2007-2024 David Robillard <d@drobilla.net>
+// Copyright 2007-2025 David Robillard <d@drobilla.net>
 // SPDX-License-Identifier: ISC
 
 #include "lilv_config.h"
@@ -10,8 +10,12 @@
 #endif
 
 #include <lilv/lilv.h>
+#include <lv2/atom/atom.h>
 #include <lv2/core/lv2.h>
+#include <lv2/event/event.h>
 #include <lv2/presets/presets.h>
+#include <lv2/state/state.h>
+#include <lv2/ui/ui.h>
 #include <serd/serd.h>
 #include <sord/sord.h>
 #include <zix/environment.h>
@@ -70,9 +74,15 @@ lilv_world_new(void)
 
 #define NEW_URI(uri) sord_new_uri(world->world, (const uint8_t*)(uri))
 
+  world->uris.atom_supports       = NEW_URI(LV2_ATOM__supports);
   world->uris.dc_replaces         = NEW_URI(NS_DCTERMS "replaces");
   world->uris.dman_DynManifest    = NEW_URI(NS_DYNMAN "DynManifest");
+  world->uris.doap_maintainer     = NEW_URI(LILV_NS_DOAP "maintainer");
   world->uris.doap_name           = NEW_URI(LILV_NS_DOAP "name");
+  world->uris.event_supportsEvent = NEW_URI(LV2_EVENT__supportsEvent);
+  world->uris.foaf_homepage       = NEW_URI(LILV_NS_FOAF "homepage");
+  world->uris.foaf_mbox           = NEW_URI(LILV_NS_FOAF "mbox");
+  world->uris.foaf_name           = NEW_URI(LILV_NS_FOAF "name");
   world->uris.lv2_Plugin          = NEW_URI(LV2_CORE__Plugin);
   world->uris.lv2_Specification   = NEW_URI(LV2_CORE__Specification);
   world->uris.lv2_appliesTo       = NEW_URI(LV2_CORE__appliesTo);
@@ -90,11 +100,14 @@ lilv_world_new(void)
   world->uris.lv2_optionalFeature = NEW_URI(LV2_CORE__optionalFeature);
   world->uris.lv2_port            = NEW_URI(LV2_CORE__port);
   world->uris.lv2_portProperty    = NEW_URI(LV2_CORE__portProperty);
+  world->uris.lv2_project         = NEW_URI(LV2_CORE__project);
+  world->uris.lv2_prototype       = NEW_URI(LV2_CORE__prototype);
   world->uris.lv2_reportsLatency  = NEW_URI(LV2_CORE__reportsLatency);
   world->uris.lv2_requiredFeature = NEW_URI(LV2_CORE__requiredFeature);
+  world->uris.lv2_scalePoint      = NEW_URI(LV2_CORE__scalePoint);
   world->uris.lv2_symbol          = NEW_URI(LV2_CORE__symbol);
-  world->uris.lv2_prototype       = NEW_URI(LV2_CORE__prototype);
   world->uris.owl_Ontology        = NEW_URI(NS_OWL "Ontology");
+  world->uris.pset_Preset         = NEW_URI(LV2_PRESETS__Preset);
   world->uris.pset_value          = NEW_URI(LV2_PRESETS__value);
   world->uris.rdf_a               = NEW_URI(LILV_NS_RDF "type");
   world->uris.rdf_value           = NEW_URI(LILV_NS_RDF "value");
@@ -102,6 +115,9 @@ lilv_world_new(void)
   world->uris.rdfs_label          = NEW_URI(LILV_NS_RDFS "label");
   world->uris.rdfs_seeAlso        = NEW_URI(LILV_NS_RDFS "seeAlso");
   world->uris.rdfs_subClassOf     = NEW_URI(LILV_NS_RDFS "subClassOf");
+  world->uris.state_state         = NEW_URI(LV2_STATE__state);
+  world->uris.ui_binary           = NEW_URI(LV2_UI__binary);
+  world->uris.ui_ui               = NEW_URI(LV2_UI__ui);
   world->uris.xsd_base64Binary    = NEW_URI(LILV_NS_XSD "base64Binary");
   world->uris.xsd_boolean         = NEW_URI(LILV_NS_XSD "boolean");
   world->uris.xsd_decimal         = NEW_URI(LILV_NS_XSD "decimal");
