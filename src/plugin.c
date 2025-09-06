@@ -138,15 +138,8 @@ lilv_plugin_get_unique(const LilvPlugin* plugin,
 }
 
 static void
-lilv_plugin_load(LilvPlugin* plugin)
+load_prototypes(LilvPlugin* const plugin)
 {
-  SordNode*       bundle_uri_node  = plugin->bundle_uri->node;
-  const SerdNode* bundle_uri_snode = sord_node_to_serd_node(bundle_uri_node);
-
-  SerdEnv*    env = serd_env_new(bundle_uri_snode);
-  SerdReader* reader =
-    sord_new_reader(plugin->world->model, env, SERD_TURTLE, bundle_uri_node);
-
   SordModel* prots = lilv_world_filter_model(plugin->world,
                                              plugin->world->model,
                                              plugin->plugin_uri->node,
@@ -183,6 +176,17 @@ lilv_plugin_load(LilvPlugin* plugin)
   sord_iter_free(iter);
   sord_free(skel);
   sord_free(prots);
+}
+
+static void
+lilv_plugin_load(LilvPlugin* plugin)
+{
+  load_prototypes(plugin);
+
+  SordNode*   bundle_node = plugin->bundle_uri->node;
+  SerdEnv*    env         = serd_env_new(sord_node_to_serd_node(bundle_node));
+  SerdReader* reader =
+    sord_new_reader(plugin->world->model, env, SERD_TURTLE, bundle_node);
 
   // Parse all the plugin's data files into RDF model
   SerdStatus st = SERD_SUCCESS;
