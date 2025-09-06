@@ -356,7 +356,7 @@ lilv_world_add_spec(LilvWorld*      world,
 static void
 lilv_world_add_plugin(LilvWorld*      world,
                       const SordNode* plugin_node,
-                      const LilvNode* manifest_uri,
+                      const SordNode* manifest_node,
                       void*           dynmanifest,
                       const SordNode* bundle)
 {
@@ -397,8 +397,9 @@ lilv_world_add_plugin(LilvWorld*      world,
       world, plugin_uri, lilv_node_new_from_node(world, bundle));
 
     // Add manifest as plugin data file (as if it were rdfs:seeAlso)
-    zix_tree_insert(
-      (ZixTree*)plugin->data_uris, lilv_node_duplicate(manifest_uri), NULL);
+    zix_tree_insert((ZixTree*)plugin->data_uris,
+                    lilv_node_new_from_node(world, manifest_node),
+                    NULL);
 
     // Add plugin to world plugin sequence
     zix_tree_insert((ZixTree*)world->plugins, plugin, NULL);
@@ -436,7 +437,7 @@ lilv_world_load_graph(LilvWorld*      world,
 static void
 lilv_world_load_dyn_manifest(LilvWorld*      world,
                              SordNode*       bundle_node,
-                             const LilvNode* manifest)
+                             const SordNode* manifest_node)
 {
 #ifdef LILV_DYN_MANIFEST
   if (!world->opt.dyn_manifest) {
@@ -546,7 +547,7 @@ lilv_world_load_dyn_manifest(LilvWorld*      world,
                                                      dmanifest);
     NODE_HASH_FOREACH (p, plugins) {
       const SordNode* plug = lilv_node_hash_get(plugins, p);
-      lilv_world_add_plugin(world, plug, manifest, desc, bundle_node);
+      lilv_world_add_plugin(world, plug, manifest_node, desc, bundle_node);
     }
     lilv_node_hash_free(plugins, world->world);
 
@@ -560,7 +561,7 @@ lilv_world_load_dyn_manifest(LilvWorld*      world,
 #else // LILV_DYN_MANIFEST
   (void)world;
   (void)bundle_node;
-  (void)manifest;
+  (void)manifest_node;
 #endif
 }
 
@@ -809,11 +810,11 @@ lilv_world_load_bundle(LilvWorld* world, const LilvNode* bundle_uri)
 
   FOREACH_MATCH (plug_results) {
     const SordNode* plug = sord_iter_get_node(plug_results, SORD_SUBJECT);
-    lilv_world_add_plugin(world, plug, manifest, NULL, bundle_node);
+    lilv_world_add_plugin(world, plug, manifest->node, NULL, bundle_node);
   }
   sord_iter_free(plug_results);
 
-  lilv_world_load_dyn_manifest(world, bundle_node, manifest);
+  lilv_world_load_dyn_manifest(world, bundle_node, manifest->node);
 
   // ?spec a lv2:Specification
   // ?spec a owl:Ontology
