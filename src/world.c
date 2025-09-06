@@ -421,6 +421,21 @@ lilv_collection_get_by_uri(const ZixTree* seq, const LilvNode* uri)
   return i ? (struct LilvHeader*)zix_tree_get(i) : NULL;
 }
 
+/// Add all rdfs:seeAlso files of subject to tree
+static void
+lilv_world_collect_data_files(LilvWorld*            world,
+                              const SordNode* const subject,
+                              ZixTree* const        tree)
+{
+  SordIter* files =
+    sord_search(world->model, subject, world->uris.rdfs_seeAlso, NULL, NULL);
+  FOREACH_MATCH (files) {
+    const SordNode* file_node = sord_iter_get_node(files, SORD_OBJECT);
+    zix_tree_insert(tree, lilv_node_new_from_node(world, file_node), NULL);
+  }
+  sord_iter_free(files);
+}
+
 static void
 lilv_world_add_spec(LilvWorld*      world,
                     const SordNode* specification_node,
@@ -432,15 +447,8 @@ lilv_world_add_spec(LilvWorld*      world,
   spec->data_uris = lilv_nodes_new();
 
   // Add all data files (rdfs:seeAlso)
-  SordIter* files = sord_search(
-    world->model, specification_node, world->uris.rdfs_seeAlso, NULL, NULL);
-  FOREACH_MATCH (files) {
-    const SordNode* file_node = sord_iter_get_node(files, SORD_OBJECT);
-    zix_tree_insert((ZixTree*)spec->data_uris,
-                    lilv_node_new_from_node(world, file_node),
-                    NULL);
-  }
-  sord_iter_free(files);
+  lilv_world_collect_data_files(
+    world, specification_node, (ZixTree*)spec->data_uris);
 
   // Add specification to world specification list
   spec->next   = world->specs;
@@ -507,15 +515,8 @@ lilv_world_add_plugin(LilvWorld*      world,
 #endif
 
   // Add all plugin data files (rdfs:seeAlso)
-  SordIter* files = sord_search(
-    world->model, plugin_node, world->uris.rdfs_seeAlso, NULL, NULL);
-  FOREACH_MATCH (files) {
-    const SordNode* file_node = sord_iter_get_node(files, SORD_OBJECT);
-    zix_tree_insert((ZixTree*)plugin->data_uris,
-                    lilv_node_new_from_node(world, file_node),
-                    NULL);
-  }
-  sord_iter_free(files);
+  lilv_world_collect_data_files(
+    world, plugin_node, (ZixTree*)plugin->data_uris);
 }
 
 static SerdStatus
