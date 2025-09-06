@@ -14,6 +14,7 @@
 #include <sord/sord.h>
 #include <zix/tree.h>
 
+#include <assert.h>
 #include <math.h>
 #include <stdarg.h>
 #include <stdbool.h>
@@ -216,10 +217,11 @@ lilv_plugin_load(LilvPlugin* plugin)
       const SordNode* bundle = plugin->dynmanifest->bundle->node;
       serd_env_set_base_uri(env, sord_node_to_serd_node(bundle));
       FILE* fd = tmpfile();
+      assert(fd);
       get_data_func(plugin->dynmanifest->handle,
                     fd,
                     lilv_node_as_string(plugin->plugin_uri));
-      rewind(fd);
+      fseek(fd, 0, SEEK_SET);
       serd_reader_add_blank_prefix(reader,
                                    lilv_world_blank_node_prefix(plugin->world));
       serd_reader_read_file_handle(
@@ -348,6 +350,7 @@ lilv_plugin_load_ports_if_necessary(const LilvPlugin* const_plugin)
 void
 lilv_plugin_load_if_necessary(const LilvPlugin* plugin)
 {
+  assert(plugin);
   if (!plugin->loaded) {
     lilv_plugin_load((LilvPlugin*)plugin);
   }

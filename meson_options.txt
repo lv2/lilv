@@ -13,6 +13,9 @@ option('default_lv2_path', type: 'string', value: '',
 option('docs', type: 'feature',
        description: 'Build documentation')
 
+option('dynmanifest', type: 'feature', value: 'disabled',
+       description: 'Build dynamic manifest support')
+
 option('html', type: 'feature',
        description: 'Build paginated HTML documentation')
 

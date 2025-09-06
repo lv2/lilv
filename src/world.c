@@ -601,8 +601,9 @@ lilv_world_load_dyn_manifest(LilvWorld*      world,
     dylib_error();
     void* lib = dylib_open(lib_path, DYLIB_LAZY);
     if (!lib) {
-      LILV_ERRORF(
-        "Failed to open dynmanifest library `%s' (%s)\n", lib_path, dlerror());
+      LILV_ERRORF("Failed to open dynmanifest library `%s' (%s)\n",
+                  lib_path,
+                  dylib_error());
       sord_iter_free(binaries);
       lilv_free(lib_path);
       continue;
@@ -642,8 +643,9 @@ lilv_world_load_dyn_manifest(LilvWorld*      world,
 
     // Generate data file
     FILE* fd = tmpfile();
+    assert(fd);
     get_subjects_func(handle, fd);
-    rewind(fd);
+    fseek(fd, 0, SEEK_SET);
 
     // Parse generated data file into temporary model
     // FIXME

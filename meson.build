@@ -288,11 +288,17 @@ if get_option('default_library') == 'static'
   extra_c_args = ['-DLILV_STATIC']
 endif
 
+# Set arguments for building library internals
+lib_c_args = c_suppressions + extra_c_args + ['-DLILV_INTERNAL']
+if not get_option('dynmanifest').disabled()
+  lib_c_args += ['-DLILV_DYN_MANIFEST']
+endif
+
 # Build main shared and/or static library
 liblilv = library(
   versioned_name,
   sources,
-  c_args: c_suppressions + extra_c_args + ['-DLILV_INTERNAL'],
+  c_args: lib_c_args,
   darwin_versions: [major_version + '.0.0', meson.project_version()],
   dependencies: common_dependencies,
   gnu_symbol_visibility: 'hidden',
