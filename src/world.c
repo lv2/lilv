@@ -24,6 +24,7 @@
 #include <zix/environment.h>
 #include <zix/filesystem.h>
 #include <zix/path.h>
+#include <zix/status.h>
 #include <zix/tree.h>
 
 #include <assert.h>
@@ -975,6 +976,30 @@ lilv_world_load_specifications(LilvWorld* world)
   }
 }
 
+static ZixStatus
+lilv_world_add_plugin_class(LilvWorld* const      world,
+                            const SordNode* const node,
+                            const SordNode* const parent)
+{
+  ZixStatus       st = ZIX_STATUS_NOT_FOUND;
+  SordNode* const label =
+    sord_get(world->model, node, world->uris.rdfs_label, NULL, NULL);
+
+  if (label) {
+    LilvPluginClass* const klass = lilv_plugin_class_new(
+      world, parent, node, (const char*)sord_node_get_string(label));
+    if (klass) {
+      st = zix_tree_insert((ZixTree*)world->plugin_classes, klass, NULL);
+      if (st) {
+        lilv_plugin_class_free(klass);
+      }
+    }
+  }
+
+  sord_node_free(world->world, label);
+  return st;
+}
+
 void
 lilv_world_load_plugin_classes(LilvWorld* world)
 {
@@ -991,26 +1016,11 @@ lilv_world_load_plugin_classes(LilvWorld* world)
 
     SordNode* parent = sord_get(
       world->model, class_node, world->uris.rdfs_subClassOf, NULL, NULL);
-    if (!parent || sord_node_get_type(parent) != SORD_URI) {
-      continue;
+
+    if (parent && sord_node_get_type(parent) == SORD_URI) {
+      lilv_world_add_plugin_class(world, class_node, parent);
     }
 
-    SordNode* label =
-      sord_get(world->model, class_node, world->uris.rdfs_label, NULL, NULL);
-    if (!label) {
-      sord_node_free(world->world, parent);
-      continue;
-    }
-
-    LilvPluginClass* pclass = lilv_plugin_class_new(
-      world, parent, class_node, (const char*)sord_node_get_string(label));
-    if (pclass) {
-      if (zix_tree_insert((ZixTree*)world->plugin_classes, pclass, NULL)) {
-        lilv_plugin_class_free(pclass);
-      }
-    }
-
-    sord_node_free(world->world, label);
     sord_node_free(world->world, parent);
   }
   sord_iter_free(classes);
