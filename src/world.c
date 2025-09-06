@@ -9,6 +9,7 @@
 #include "string_util.h"
 #include "syntax_skimmer.h"
 #include "sys_util.h"
+#include "uris.h"
 
 #ifdef LILV_DYN_MANIFEST
 #  include "dylib.h"
@@ -16,12 +17,6 @@
 #endif
 
 #include <lilv/lilv.h>
-#include <lv2/atom/atom.h>
-#include <lv2/core/lv2.h>
-#include <lv2/event/event.h>
-#include <lv2/presets/presets.h>
-#include <lv2/state/state.h>
-#include <lv2/ui/ui.h>
 #include <serd/serd.h>
 #include <sord/sord.h>
 #include <zix/allocator.h>
@@ -69,62 +64,7 @@ lilv_world_new(void)
 
   world->libs = zix_tree_new(NULL, false, lilv_lib_compare, NULL, NULL, NULL);
 
-#define NS_DCTERMS "http://purl.org/dc/terms/"
-#define NS_DYNMAN "http://lv2plug.in/ns/ext/dynmanifest#"
-#define NS_OWL "http://www.w3.org/2002/07/owl#"
-
-#define NEW_URI(uri) sord_new_uri(world->world, (const uint8_t*)(uri))
-
-  world->uris.atom_supports       = NEW_URI(LV2_ATOM__supports);
-  world->uris.dc_replaces         = NEW_URI(NS_DCTERMS "replaces");
-  world->uris.dman_DynManifest    = NEW_URI(NS_DYNMAN "DynManifest");
-  world->uris.doap_maintainer     = NEW_URI(LILV_NS_DOAP "maintainer");
-  world->uris.doap_name           = NEW_URI(LILV_NS_DOAP "name");
-  world->uris.event_supportsEvent = NEW_URI(LV2_EVENT__supportsEvent);
-  world->uris.foaf_homepage       = NEW_URI(LILV_NS_FOAF "homepage");
-  world->uris.foaf_mbox           = NEW_URI(LILV_NS_FOAF "mbox");
-  world->uris.foaf_name           = NEW_URI(LILV_NS_FOAF "name");
-  world->uris.lv2_Plugin          = NEW_URI(LV2_CORE__Plugin);
-  world->uris.lv2_Specification   = NEW_URI(LV2_CORE__Specification);
-  world->uris.lv2_appliesTo       = NEW_URI(LV2_CORE__appliesTo);
-  world->uris.lv2_binary          = NEW_URI(LV2_CORE__binary);
-  world->uris.lv2_default         = NEW_URI(LV2_CORE__default);
-  world->uris.lv2_designation     = NEW_URI(LV2_CORE__designation);
-  world->uris.lv2_extensionData   = NEW_URI(LV2_CORE__extensionData);
-  world->uris.lv2_index           = NEW_URI(LV2_CORE__index);
-  world->uris.lv2_latency         = NEW_URI(LV2_CORE__latency);
-  world->uris.lv2_maximum         = NEW_URI(LV2_CORE__maximum);
-  world->uris.lv2_microVersion    = NEW_URI(LV2_CORE__microVersion);
-  world->uris.lv2_minimum         = NEW_URI(LV2_CORE__minimum);
-  world->uris.lv2_minorVersion    = NEW_URI(LV2_CORE__minorVersion);
-  world->uris.lv2_name            = NEW_URI(LV2_CORE__name);
-  world->uris.lv2_optionalFeature = NEW_URI(LV2_CORE__optionalFeature);
-  world->uris.lv2_port            = NEW_URI(LV2_CORE__port);
-  world->uris.lv2_portProperty    = NEW_URI(LV2_CORE__portProperty);
-  world->uris.lv2_project         = NEW_URI(LV2_CORE__project);
-  world->uris.lv2_prototype       = NEW_URI(LV2_CORE__prototype);
-  world->uris.lv2_reportsLatency  = NEW_URI(LV2_CORE__reportsLatency);
-  world->uris.lv2_requiredFeature = NEW_URI(LV2_CORE__requiredFeature);
-  world->uris.lv2_scalePoint      = NEW_URI(LV2_CORE__scalePoint);
-  world->uris.lv2_symbol          = NEW_URI(LV2_CORE__symbol);
-  world->uris.owl_Ontology        = NEW_URI(NS_OWL "Ontology");
-  world->uris.pset_Preset         = NEW_URI(LV2_PRESETS__Preset);
-  world->uris.pset_value          = NEW_URI(LV2_PRESETS__value);
-  world->uris.rdf_type            = NEW_URI(LILV_NS_RDF "type");
-  world->uris.rdf_value           = NEW_URI(LILV_NS_RDF "value");
-  world->uris.rdfs_Class          = NEW_URI(LILV_NS_RDFS "Class");
-  world->uris.rdfs_label          = NEW_URI(LILV_NS_RDFS "label");
-  world->uris.rdfs_seeAlso        = NEW_URI(LILV_NS_RDFS "seeAlso");
-  world->uris.rdfs_subClassOf     = NEW_URI(LILV_NS_RDFS "subClassOf");
-  world->uris.state_state         = NEW_URI(LV2_STATE__state);
-  world->uris.ui_binary           = NEW_URI(LV2_UI__binary);
-  world->uris.ui_ui               = NEW_URI(LV2_UI__ui);
-  world->uris.xsd_base64Binary    = NEW_URI(LILV_NS_XSD "base64Binary");
-  world->uris.xsd_boolean         = NEW_URI(LILV_NS_XSD "boolean");
-  world->uris.xsd_decimal         = NEW_URI(LILV_NS_XSD "decimal");
-  world->uris.xsd_double          = NEW_URI(LILV_NS_XSD "double");
-  world->uris.xsd_integer         = NEW_URI(LILV_NS_XSD "integer");
-  world->uris.null_uri            = NULL;
+  lilv_uris_init(&world->uris, world->world);
 
   world->lv2_plugin_class =
     lilv_plugin_class_new(world, NULL, world->uris.lv2_Plugin, "Plugin");
@@ -151,9 +91,7 @@ lilv_world_free(LilvWorld* world)
   lilv_plugin_class_free(world->lv2_plugin_class);
   world->lv2_plugin_class = NULL;
 
-  for (SordNode** n = (SordNode**)&world->uris; *n; ++n) {
-    sord_node_free(world->world, *n);
-  }
+  lilv_uris_cleanup(&world->uris, world->world);
 
   for (LilvSpec* spec = world->specs; spec;) {
     LilvSpec* next = spec->next;

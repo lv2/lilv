@@ -272,6 +272,7 @@ sources = files(
   'src/syntax_skimmer.c',
   'src/sys_util.c',
   'src/ui.c',
+  'src/uris.c',
   'src/world.c',
 )
 

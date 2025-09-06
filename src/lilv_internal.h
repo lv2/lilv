@@ -9,6 +9,7 @@ extern "C" {
 #endif
 
 #include "node_hash.h"
+#include "uris.h"
 
 #include <lilv/lilv.h>
 #include <lv2/core/lv2.h>
@@ -122,61 +123,8 @@ struct LilvWorldImpl {
   LilvPlugins*       zombies;
   NodeHash*          loaded_files;
   ZixTree*           libs;
-
-  struct {
-    SordNode* atom_supports;
-    SordNode* dc_replaces;
-    SordNode* dman_DynManifest;
-    SordNode* doap_maintainer;
-    SordNode* doap_name;
-    SordNode* event_supportsEvent;
-    SordNode* foaf_homepage;
-    SordNode* foaf_mbox;
-    SordNode* foaf_name;
-    SordNode* lv2_Plugin;
-    SordNode* lv2_Specification;
-    SordNode* lv2_appliesTo;
-    SordNode* lv2_binary;
-    SordNode* lv2_default;
-    SordNode* lv2_designation;
-    SordNode* lv2_extensionData;
-    SordNode* lv2_index;
-    SordNode* lv2_latency;
-    SordNode* lv2_maximum;
-    SordNode* lv2_microVersion;
-    SordNode* lv2_minimum;
-    SordNode* lv2_minorVersion;
-    SordNode* lv2_name;
-    SordNode* lv2_optionalFeature;
-    SordNode* lv2_port;
-    SordNode* lv2_portProperty;
-    SordNode* lv2_project;
-    SordNode* lv2_prototype;
-    SordNode* lv2_reportsLatency;
-    SordNode* lv2_requiredFeature;
-    SordNode* lv2_scalePoint;
-    SordNode* lv2_symbol;
-    SordNode* owl_Ontology;
-    SordNode* pset_Preset;
-    SordNode* pset_value;
-    SordNode* rdf_type;
-    SordNode* rdf_value;
-    SordNode* rdfs_Class;
-    SordNode* rdfs_label;
-    SordNode* rdfs_seeAlso;
-    SordNode* rdfs_subClassOf;
-    SordNode* state_state;
-    SordNode* ui_binary;
-    SordNode* ui_ui;
-    SordNode* xsd_base64Binary;
-    SordNode* xsd_boolean;
-    SordNode* xsd_decimal;
-    SordNode* xsd_double;
-    SordNode* xsd_integer;
-
-    SordNode* null_uri;
-  } uris;
-  LilvOptions opt;
+  LilvURIs           uris;
+  LilvOptions        opt;
 };
 
 typedef enum {
