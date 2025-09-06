@@ -1173,9 +1173,14 @@ lilv_world_load_resource(LilvWorld* world, const LilvNode* resource)
                 sord_node_get_string(resource->node));
     return -1;
   }
+  return lilv_world_load_resource_internal(world, resource->node);
+}
 
+int
+lilv_world_load_resource_internal(LilvWorld* world, const SordNode* resource)
+{
   SordModel* files = lilv_world_filter_model(
-    world, world->model, resource->node, world->uris.rdfs_seeAlso, NULL, NULL);
+    world, world->model, resource, world->uris.rdfs_seeAlso, NULL, NULL);
 
   SordIter* f      = sord_begin(files);
   int       n_read = 0;

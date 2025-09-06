@@ -292,6 +292,9 @@ lilv_world_get_manifest_uri(LilvWorld* world, const LilvNode* bundle_uri);
 const uint8_t*
 lilv_world_blank_node_prefix(LilvWorld* world);
 
+int
+lilv_world_load_resource_internal(LilvWorld* world, const SordNode* resource);
+
 SerdStatus
 lilv_world_load_file(LilvWorld* world, SerdReader* reader, const LilvNode* uri);
 

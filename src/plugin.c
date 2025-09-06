@@ -149,22 +149,19 @@ load_prototypes(LilvPlugin* const plugin)
   SordModel* skel  = sord_new(plugin->world->world, SORD_SPO, false);
   SordIter*  iter  = sord_begin(prots);
   for (; !sord_iter_end(iter); sord_iter_next(iter)) {
-    const SordNode* t         = sord_iter_get_node(iter, SORD_OBJECT);
-    LilvNode*       prototype = lilv_node_new_from_node(plugin->world, t);
+    const SordNode* prototype = sord_iter_get_node(iter, SORD_OBJECT);
 
-    lilv_world_load_resource(plugin->world, prototype);
+    lilv_world_load_resource_internal(plugin->world, prototype);
 
     SordIter* statements =
-      sord_search(plugin->world->model, prototype->node, NULL, NULL, NULL);
+      sord_search(plugin->world->model, prototype, NULL, NULL, NULL);
     FOREACH_MATCH (statements) {
       SordQuad quad;
       sord_iter_get(statements, quad);
       quad[0] = plugin->plugin_uri->node;
       sord_add(skel, quad);
     }
-
     sord_iter_free(statements);
-    lilv_node_free(prototype);
   }
   sord_iter_free(iter);
 
