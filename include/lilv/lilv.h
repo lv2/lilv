@@ -541,6 +541,13 @@ lilv_world_new(void);
 #define LILV_OPTION_FILTER_LANG "http://drobilla.net/ns/lilv#filter-lang"
 
 /**
+   Set application-specific LANG.
+
+   This overrides the LANG from the environment.
+*/
+#define LILV_OPTION_LANG "http://drobilla.net/ns/lilv#lang"
+
+/**
    Enable/disable dynamic manifest support.
 
    Dynamic manifest data will only be loaded if this option is true.
@@ -562,6 +569,7 @@ lilv_world_new(void);
    Currently recognized options:
 
    - #LILV_OPTION_FILTER_LANG
+   - #LILV_OPTION_LANG
    - #LILV_OPTION_DYN_MANIFEST
    - #LILV_OPTION_LV2_PATH
 */

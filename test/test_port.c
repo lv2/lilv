@@ -61,6 +61,14 @@ static const char* const plugin_ttl = "\
 		lv2:name \"Audio Output\" ;\n\
 	] .\n";
 
+static void
+set_world_lang(LilvWorld* const world, const char* const lang)
+{
+  LilvNode* const lang_node = lilv_new_string(world, lang);
+  lilv_world_set_option(world, LILV_OPTION_LANG, lang_node);
+  lilv_node_free(lang_node);
+}
+
 int
 main(void)
 {
@@ -123,43 +131,43 @@ main(void)
   lilv_node_free(name);
 
   // Exact language match
-  set_env("LANG", "de_DE");
+  set_world_lang(world, "de_DE");
   name = lilv_port_get_name(plug, p);
   assert(!strcmp(lilv_node_as_string(name), "Laden"));
   lilv_node_free(name);
 
   // Exact language match (with charset suffix)
-  set_env("LANG", "de_AT.utf8");
+  set_world_lang(world, "de_AT.utf8");
   name = lilv_port_get_name(plug, p);
   assert(!strcmp(lilv_node_as_string(name), "Geschaeft"));
   lilv_node_free(name);
 
   // Partial language match (choose value translated for different country)
-  set_env("LANG", "de_CH");
+  set_world_lang(world, "de_CH");
   name = lilv_port_get_name(plug, p);
   assert((!strcmp(lilv_node_as_string(name), "Laden")) ||
          (!strcmp(lilv_node_as_string(name), "Geschaeft")));
   lilv_node_free(name);
 
   // Partial language match (choose country-less language tagged value)
-  set_env("LANG", "es_MX");
+  set_world_lang(world, "es_MX");
   name = lilv_port_get_name(plug, p);
   assert(!strcmp(lilv_node_as_string(name), "tienda"));
   lilv_node_free(name);
 
   // No language match (choose untranslated value)
-  set_env("LANG", "cn");
+  set_world_lang(world, "cn");
   name = lilv_port_get_name(plug, p);
   assert(!strcmp(lilv_node_as_string(name), "store"));
   lilv_node_free(name);
 
   // Invalid language
-  set_env("LANG", "1!");
+  set_world_lang(world, "1!");
   name = lilv_port_get_name(plug, p);
   assert(!strcmp(lilv_node_as_string(name), "store"));
   lilv_node_free(name);
 
-  set_env("LANG", "en_CA.utf-8");
+  set_world_lang(world, "en_CA.utf-8");
 
   // Language tagged value with no untranslated values
   LilvNode*  rdfs_comment = lilv_new_uri(world, LILV_NS_RDFS "comment");
@@ -171,14 +179,14 @@ main(void)
   lilv_node_free(comment);
   lilv_nodes_free(comments);
 
-  set_env("LANG", "fr");
+  set_world_lang(world, "fr");
 
   comments = lilv_port_get_value(plug, p, rdfs_comment);
   assert(!strcmp(lilv_node_as_string(lilv_nodes_get_first(comments)),
                  "commentaires"));
   lilv_nodes_free(comments);
 
-  set_env("LANG", "cn");
+  set_world_lang(world, "cn");
 
   comments = lilv_port_get_value(plug, p, rdfs_comment);
   assert(!comments);
@@ -186,7 +194,7 @@ main(void)
 
   lilv_node_free(rdfs_comment);
 
-  set_env("LANG", "C"); // Reset locale
+  set_world_lang(world, "C"); // Reset locale
 
   LilvScalePoints* points = lilv_port_get_scale_points(plug, p);
   assert(lilv_scale_points_size(points) == 2);

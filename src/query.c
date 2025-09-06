@@ -47,7 +47,7 @@ lilv_nodes_from_matches_i18n(LilvWorld* const    world,
   LilvNodes*      values  = lilv_nodes_new();
   const SordNode* nolang  = NULL; // Untranslated value
   const SordNode* partial = NULL; // Partial language match
-  char*           syslang = lilv_get_lang();
+  const char*     syslang = world->lang;
   FOREACH_MATCH (stream) {
     const SordNode* value = sord_iter_get_node(stream, field);
     if (sord_node_get_type(value) == SORD_LITERAL) {
@@ -76,7 +76,6 @@ lilv_nodes_from_matches_i18n(LilvWorld* const    world,
     }
   }
   sord_iter_free(stream);
-  free(syslang);
 
   if (lilv_nodes_size(values) > 0) {
     return values;

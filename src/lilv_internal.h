@@ -111,6 +111,7 @@ typedef struct {
 struct LilvWorldImpl {
   SordWorld*         world;
   SordModel*         model;
+  char*              lang;
   SerdReader*        reader;
   unsigned           n_read_files;
   LilvPluginClass*   lv2_plugin_class;
@@ -391,6 +392,9 @@ lilv_strdup(const char* str);
 
 char*
 lilv_get_lang(void);
+
+char*
+lilv_normalize_lang(const char* env_lang);
 
 char*
 lilv_get_latest_copy(const char* path, const char* copy_path);

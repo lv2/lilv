@@ -108,6 +108,12 @@ lilv_get_lang(void)
     return NULL;
   }
 
+  return lilv_normalize_lang(env_lang);
+}
+
+char*
+lilv_normalize_lang(const char* env_lang)
+{
   const size_t env_lang_len = strlen(env_lang);
   char* const  lang         = (char*)malloc(env_lang_len + 1);
   for (size_t i = 0; i < env_lang_len + 1; ++i) {

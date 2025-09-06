@@ -2,6 +2,7 @@ lilv (0.24.27) unstable; urgency=medium
 
   * Add header warnings test
   * Avoid over-use of yielding meson options
+  * Cache LANG value and add option to override it
   * Fix loading plugins that haven't been loaded yet as state
   * Fix loading plugins with invalid lv2:appliesTo properties as state
   * Fix potential memory leak in lilv_world_load_plugin_classes()
@@ -9,7 +10,7 @@ lilv (0.24.27) unstable; urgency=medium
   * Gracefully ignore and warn about non-directories in LV2_PATH
   * Reduce temporary node allocations during query operations
 
- -- David Robillard <d@drobilla.net>  Sat, 06 Sep 2025 19:31:41 +0000
+ -- David Robillard <d@drobilla.net>  Sat, 06 Sep 2025 19:36:13 +0000
 
 lilv (0.24.26) stable; urgency=medium
 
