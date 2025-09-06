@@ -638,10 +638,10 @@ skim_version(SkimmedVersion* const       skimmed,
 
 static LilvVersion
 load_version(LilvWorld* const      world,
-             const LilvNode* const bundle_uri,
+             const SordNode* const bundle_node,
              const SordNode* const resource)
 {
-  SerdEnv* const env = serd_env_new(sord_node_to_serd_node(bundle_uri->node));
+  SerdEnv* const env     = serd_env_new(sord_node_to_serd_node(bundle_node));
   SkimmedVersion skimmed = {
     world->world,
     sord_node_to_serd_node(world->uris.lv2_minorVersion),
@@ -660,7 +660,7 @@ load_version(LilvWorld* const      world,
 
   // Read file, recording version numbers and seeAlso files as we go
   SerdReader* const reader       = skimmer->reader;
-  uint8_t* const    manifest_uri = lilv_manifest_uri(bundle_uri->node);
+  uint8_t* const    manifest_uri = lilv_manifest_uri(bundle_node);
   serd_reader_read_file(reader, manifest_uri);
   zix_free(NULL, manifest_uri);
 
@@ -676,6 +676,39 @@ load_version(LilvWorld* const      world,
   lilv_node_hash_free(skimmed.see_also, world->world);
   serd_env_free(env);
   return skimmed.version;
+}
+
+static int
+lilv_world_compare_versions(LilvWorld* const      world,
+                            const SordNode* const old_bundle,
+                            const SordNode* const new_bundle,
+                            const SordNode* const resource)
+{
+  LilvVersion old_version = load_version(world, old_bundle, resource);
+  LilvVersion new_version = load_version(world, new_bundle, resource);
+  const int   cmp         = lilv_version_cmp(&new_version, &old_version);
+  if (cmp > 0) {
+    LILV_WARNF("Loading new version %d.%d of <%s> from <%s>\n",
+               new_version.minor,
+               new_version.micro,
+               sord_node_get_string(resource),
+               sord_node_get_string(new_bundle));
+    LILV_NOTEF("Replaces version %d.%d from <%s>\n",
+               old_version.minor,
+               old_version.micro,
+               sord_node_get_string(old_bundle));
+  } else if (cmp < 0) {
+    LILV_WARNF("Ignoring version %d.%d of <%s> from <%s>\n",
+               old_version.minor,
+               old_version.micro,
+               sord_node_get_string(resource),
+               sord_node_get_string(old_bundle));
+    LILV_NOTEF("Newer version %d.%d loaded from <%s>\n",
+               new_version.minor,
+               new_version.micro,
+               sord_node_get_string(new_bundle));
+  }
+  return cmp;
 }
 
 void
@@ -728,28 +761,12 @@ lilv_world_load_bundle(LilvWorld* world, const LilvNode* bundle_uri)
     }
 
     // Compare versions
-    LilvVersion this_version =
-      load_version(world, bundle_uri, plugin_uri->node);
-    LilvVersion last_version =
-      load_version(world, last_bundle, plugin_uri->node);
-    const int cmp = lilv_version_cmp(&this_version, &last_version);
+    const int cmp = lilv_world_compare_versions(
+      world, last_bundle->node, bundle_uri->node, plugin_uri->node);
     if (cmp > 0) {
       zix_tree_insert(
         (ZixTree*)unload_uris, lilv_node_duplicate(plugin_uri), NULL);
-      LILV_WARNF("Replacing version %d.%d of <%s> from <%s>\n",
-                 last_version.minor,
-                 last_version.micro,
-                 sord_node_get_string(plug),
-                 sord_node_get_string(last_bundle->node));
-      LILV_NOTEF("New version %d.%d found in <%s>\n",
-                 this_version.minor,
-                 this_version.micro,
-                 sord_node_get_string(bundle_node));
     } else if (cmp < 0) {
-      LILV_WARNF("Ignoring bundle <%s>\n", sord_node_get_string(bundle_node));
-      LILV_NOTEF("Newer version of <%s> loaded from <%s>\n",
-                 sord_node_get_string(plug),
-                 sord_node_get_string(last_bundle->node));
       lilv_node_free(plugin_uri);
       sord_iter_free(plug_results);
       lilv_world_drop_graph(world, bundle_node);
