@@ -984,25 +984,35 @@ lilv_plugin_get_related(const LilvPlugin* plugin, const LilvNode* type)
 {
   lilv_plugin_load_if_necessary(plugin);
 
-  LilvWorld* const world   = plugin->world;
-  LilvNodes* const related = lilv_world_find_nodes_internal(
-    world, NULL, world->uris.lv2_appliesTo, lilv_plugin_get_uri(plugin)->node);
+  LilvWorld* const world = plugin->world;
 
   if (!type) {
-    return related;
+    return lilv_world_find_nodes_internal(world,
+                                          NULL,
+                                          world->uris.lv2_appliesTo,
+                                          lilv_plugin_get_uri(plugin)->node);
+  }
+
+  SordIter* const i = sord_search(world->model,
+                                  NULL,
+                                  world->uris.lv2_appliesTo,
+                                  lilv_plugin_get_uri(plugin)->node,
+                                  NULL);
+  if (sord_iter_end(i)) {
+    return NULL;
   }
 
   LilvNodes* matches = lilv_nodes_new();
-  LILV_FOREACH (nodes, i, related) {
-    const LilvNode* node = (LilvNode*)lilv_collection_get((ZixTree*)related, i);
+  FOREACH_MATCH (i) {
+    const SordNode* node = sord_iter_get_node(i, SORD_SUBJECT);
     if (lilv_world_ask_internal(
-          world, node->node, world->uris.rdf_type, type->node)) {
+          world, node, world->uris.rdf_type, type->node)) {
       zix_tree_insert(
-        (ZixTree*)matches, lilv_node_new_from_node(world, node->node), NULL);
+        (ZixTree*)matches, lilv_node_new_from_node(world, node), NULL);
     }
   }
 
-  lilv_nodes_free(related);
+  sord_iter_free(i);
   return matches;
 }
 
