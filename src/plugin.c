@@ -128,7 +128,7 @@ lilv_plugin_get_unique(const LilvPlugin* plugin,
                        const SordNode*   subject,
                        const SordNode*   predicate)
 {
-  LilvNode* ret = lilv_plugin_get_one(plugin, subject, predicate);
+  LilvNode* ret = lilv_world_get_unique(plugin->world, subject, predicate);
   if (!ret) {
     LILV_ERRORF("No value found for (%s %s ...) property\n",
                 sord_node_get_string(subject),
@@ -930,9 +930,9 @@ lilv_plugin_get_uis(const LilvPlugin* plugin)
     const SordNode* ui = sord_iter_get_node(uis, SORD_OBJECT);
 
     LilvNode* type =
-      lilv_plugin_get_unique(plugin, ui, plugin->world->uris.rdf_a);
+      lilv_world_get_unique(plugin->world, ui, plugin->world->uris.rdf_a);
     LilvNode* binary =
-      lilv_plugin_get_one(plugin, ui, plugin->world->uris.lv2_binary);
+      lilv_world_get_unique(plugin->world, ui, plugin->world->uris.lv2_binary);
     if (!binary) {
       binary =
         lilv_plugin_get_unique(plugin, ui, plugin->world->uris.ui_binary);

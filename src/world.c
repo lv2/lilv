@@ -256,6 +256,26 @@ lilv_world_find_nodes(LilvWorld*      world,
 }
 
 LilvNode*
+lilv_world_get_unique(LilvWorld* const world,
+                      const SordNode*  subject,
+                      const SordNode*  predicate)
+{
+  SordIter* stream = lilv_world_query_internal(world, subject, predicate, NULL);
+  if (!stream) {
+    return NULL;
+  }
+
+  const SordNode* object = sord_iter_get_node(stream, SORD_OBJECT);
+  sord_iter_next(stream);
+  if (!sord_iter_end(stream)) {
+    object = NULL; // Multiple matches => no match
+  }
+
+  sord_iter_free(stream);
+  return lilv_node_new_from_node(world, object);
+}
+
+LilvNode*
 lilv_world_get(LilvWorld*      world,
                const LilvNode* subject,
                const LilvNode* predicate,

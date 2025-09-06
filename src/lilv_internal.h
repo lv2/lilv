@@ -287,6 +287,11 @@ LilvUIs*
 lilv_uis_new(void);
 
 LilvNode*
+lilv_world_get_unique(LilvWorld*      world,
+                      const SordNode* subject,
+                      const SordNode* predicate);
+
+LilvNode*
 lilv_world_get_manifest_uri(LilvWorld* world, const LilvNode* bundle_uri);
 
 const uint8_t*
