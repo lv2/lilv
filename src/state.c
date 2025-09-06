@@ -622,6 +622,13 @@ new_state_from_model(LilvWorld*      world,
   if (sord_ask(model, node, world->uris.rdf_a, world->uris.lv2_Plugin, 0)) {
     // Loading plugin description as state (default state)
     state->plugin_uri = lilv_node_new_from_node(world, node);
+
+    // Load plugin data if necessary
+    const LilvPlugin* const plugin =
+      lilv_plugins_get_by_uri(world->plugins, state->plugin_uri);
+    if (plugin) {
+      lilv_plugin_load_if_necessary(plugin);
+    }
   } else if ((i = sord_search(model, node, world->uris.lv2_appliesTo, 0, 0))) {
     const SordNode* object = sord_iter_get_node(i, SORD_OBJECT);
     const SordNode* graph  = sord_iter_get_node(i, SORD_GRAPH);
