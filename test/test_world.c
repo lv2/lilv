@@ -28,6 +28,19 @@ test_set_option(void)
 }
 
 static void
+test_load_plugin_classes(void)
+{
+  LilvTestEnv* const env = lilv_test_env_new();
+
+  lilv_world_load_all(env->world);
+
+  // Rely on sanitizers to catch a potential memory leak here
+  lilv_world_load_plugin_classes(env->world);
+
+  lilv_test_env_free(env);
+}
+
+static void
 test_search(void)
 {
   LilvTestEnv* const env   = lilv_test_env_new();
@@ -56,5 +69,6 @@ int
 main(void)
 {
   test_set_option();
+  test_load_plugin_classes();
   test_search();
 }

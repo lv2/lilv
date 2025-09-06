@@ -2,11 +2,12 @@ lilv (0.24.27) unstable; urgency=medium
 
   * Add header warnings test
   * Avoid over-use of yielding meson options
+  * Fix potential memory leak in lilv_world_load_plugin_classes()
   * Fix potential memory leak in lilv_world_set_option()
   * Gracefully ignore and warn about non-directories in LV2_PATH
   * Reduce temporary node allocations during query operations
 
- -- David Robillard <d@drobilla.net>  Sat, 06 Sep 2025 19:21:28 +0000
+ -- David Robillard <d@drobilla.net>  Sat, 06 Sep 2025 19:30:32 +0000
 
 lilv (0.24.26) stable; urgency=medium
 
