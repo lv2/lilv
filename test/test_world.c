@@ -1,4 +1,4 @@
-// Copyright 2007-2020 David Robillard <d@drobilla.net>
+// Copyright 2007-2025 David Robillard <d@drobilla.net>
 // SPDX-License-Identifier: ISC
 
 #undef NDEBUG
@@ -10,8 +10,25 @@
 #include <assert.h>
 #include <stddef.h>
 
-int
-main(void)
+static void
+test_set_option(void)
+{
+  LilvTestEnv* const env        = lilv_test_env_new();
+  LilvNode* const    not_leaked = lilv_new_string(env->world, "/not/leaked");
+  LilvNode* const    new_path   = lilv_new_string(env->world, "/new/path");
+
+  lilv_world_set_option(env->world, LILV_OPTION_LV2_PATH, not_leaked);
+
+  // Rely on sanitizers to catch a potential memory leak here
+  lilv_world_set_option(env->world, LILV_OPTION_LV2_PATH, new_path);
+
+  lilv_node_free(new_path);
+  lilv_node_free(not_leaked);
+  lilv_test_env_free(env);
+}
+
+static void
+test_search(void)
 {
   LilvTestEnv* const env   = lilv_test_env_new();
   LilvWorld* const   world = env->world;
@@ -33,6 +50,11 @@ main(void)
 
   lilv_world_unload_bundle(world, NULL);
   lilv_test_env_free(env);
+}
 
-  return 0;
+int
+main(void)
+{
+  test_set_option();
+  test_search();
 }
