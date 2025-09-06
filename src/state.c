@@ -618,17 +618,16 @@ new_state_from_model(LilvWorld*      world,
   state->uri             = lilv_node_new_from_node(world, node);
 
   // Get the plugin URI this state applies to
-  SordIter* i = sord_search(model, node, world->uris.lv2_appliesTo, 0, 0);
-  if (i) {
+  SordIter* i = NULL;
+  if (sord_ask(model, node, world->uris.rdf_a, world->uris.lv2_Plugin, 0)) {
+    // Loading plugin description as state (default state)
+    state->plugin_uri = lilv_node_new_from_node(world, node);
+  } else if ((i = sord_search(model, node, world->uris.lv2_appliesTo, 0, 0))) {
     const SordNode* object = sord_iter_get_node(i, SORD_OBJECT);
     const SordNode* graph  = sord_iter_get_node(i, SORD_GRAPH);
     state->plugin_uri      = lilv_node_new_from_node(world, object);
     set_state_dir_from_model(state, graph);
     sord_iter_free(i);
-  } else if (sord_ask(
-               model, node, world->uris.rdf_a, world->uris.lv2_Plugin, 0)) {
-    // Loading plugin description as state (default state)
-    state->plugin_uri = lilv_node_new_from_node(world, node);
   } else {
     LILV_ERRORF("State %s missing lv2:appliesTo property\n",
                 sord_node_get_string(node));
