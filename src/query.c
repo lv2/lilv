@@ -45,7 +45,6 @@ static LilvNodes*
 lilv_nodes_from_matches_i18n(LilvWorld* const world, SordIter* const stream)
 {
   LilvNodes*      values  = lilv_nodes_new();
-  const SordNode* nolang  = NULL; // Untranslated value
   const SordNode* partial = NULL; // Partial language match
   const char*     syslang = world->lang;
   FOREACH_MATCH (stream) {
@@ -54,7 +53,9 @@ lilv_nodes_from_matches_i18n(LilvWorld* const world, SordIter* const stream)
       const char* lang = sord_node_get_language(value);
 
       if (!lang) {
-        nolang = value;
+        if (!partial) {
+          partial = value;
+        }
       } else {
         switch (lilv_lang_matches(lang, syslang)) {
         case LILV_LANG_MATCH_EXACT:
@@ -81,14 +82,9 @@ lilv_nodes_from_matches_i18n(LilvWorld* const world, SordIter* const stream)
     return values;
   }
 
-  const SordNode* best = nolang;
-  if ((syslang && partial) || !best) {
-    best = partial;
-  }
-
-  if (best) {
+  if (partial) {
     zix_tree_insert(
-      (ZixTree*)values, lilv_node_new_from_node(world, best), NULL);
+      (ZixTree*)values, lilv_node_new_from_node(world, partial), NULL);
   } else {
     // No matches whatsoever
     lilv_nodes_free(values);
