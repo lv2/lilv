@@ -1,19 +1,21 @@
-// Copyright 2007-2019 David Robillard <d@drobilla.net>
+// Copyright 2007-2025 David Robillard <d@drobilla.net>
 // SPDX-License-Identifier: ISC
 
 #include "lilv_internal.h"
 
 #include <lilv/lilv.h>
+#include <sord/sord.h>
 
 #include <stdlib.h>
 
-/** Ownership of value and label is taken */
 LilvScalePoint*
-lilv_scale_point_new(LilvNode* value, LilvNode* label)
+lilv_scale_point_new(LilvWorld* const      world,
+                     const SordNode* const value,
+                     const SordNode* const label)
 {
   LilvScalePoint* point = (LilvScalePoint*)malloc(sizeof(LilvScalePoint));
-  point->value          = value;
-  point->label          = label;
+  point->value          = lilv_node_new_from_node(world, value);
+  point->label          = lilv_node_new_from_node(world, label);
   return point;
 }
 

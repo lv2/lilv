@@ -127,18 +127,28 @@ lilv_plugin_get_one(const LilvPlugin* plugin,
   return NULL;
 }
 
-LilvNode*
-lilv_plugin_get_unique(const LilvPlugin* plugin,
-                       const SordNode*   subject,
-                       const SordNode*   predicate)
+const SordNode*
+lilv_plugin_get_unique_internal(const LilvPlugin* const plugin,
+                                const SordNode* const   subject,
+                                const SordNode* const   predicate)
 {
-  LilvNode* ret = lilv_world_get_unique(plugin->world, subject, predicate);
+  const SordNode* const ret =
+    lilv_world_get_unique(plugin->world, subject, predicate);
   if (!ret) {
     LILV_ERRORF("No value found for (%s %s ...) property\n",
                 sord_node_get_string(subject),
                 sord_node_get_string(predicate));
   }
   return ret;
+}
+
+LilvNode*
+lilv_plugin_get_unique(const LilvPlugin* plugin,
+                       const SordNode*   subject,
+                       const SordNode*   predicate)
+{
+  return lilv_node_new_from_node(
+    plugin->world, lilv_plugin_get_unique_internal(plugin, subject, predicate));
 }
 
 static void
@@ -275,34 +285,36 @@ lilv_plugin_load_ports_if_necessary(const LilvPlugin* const_plugin)
     FOREACH_MATCH (ports) {
       const SordNode* port = sord_iter_get_node(ports, SORD_OBJECT);
 
-      LilvNode* index =
-        lilv_plugin_get_unique(plugin, port, plugin->world->uris.lv2_index);
+      const SordNode* symbol = lilv_plugin_get_unique_internal(
+        plugin, port, plugin->world->uris.lv2_symbol);
 
-      LilvNode* symbol =
-        lilv_plugin_get_unique(plugin, port, plugin->world->uris.lv2_symbol);
+      const char* const symbol_str =
+        symbol ? (const char*)sord_node_get_string(symbol) : "";
 
-      if (!lilv_node_is_string(symbol) ||
-          !is_symbol((const char*)sord_node_get_string(symbol->node))) {
+      if (!symbol || sord_node_get_type(symbol) != SORD_LITERAL ||
+          !is_symbol(symbol_str)) {
         LILV_ERRORF("Plugin <%s> port symbol `%s' is invalid\n",
                     lilv_node_as_uri(plugin->plugin_uri),
-                    lilv_node_as_string(symbol));
-        lilv_node_free(symbol);
-        lilv_node_free(index);
+                    symbol_str);
         lilv_plugin_free_ports(plugin);
         break;
       }
 
-      if (!lilv_node_is_int(index)) {
+      const SordNode* index = lilv_plugin_get_unique_internal(
+        plugin, port, plugin->world->uris.lv2_index);
+
+      if (!index || sord_node_get_type(index) != SORD_LITERAL ||
+          !sord_node_equals(sord_node_get_datatype(index),
+                            plugin->world->uris.xsd_integer)) {
         LILV_ERRORF("Plugin <%s> port index is not an integer\n",
                     lilv_node_as_uri(plugin->plugin_uri));
-        lilv_node_free(symbol);
-        lilv_node_free(index);
         lilv_plugin_free_ports(plugin);
         break;
       }
 
-      uint32_t  this_index = lilv_node_as_int(index);
-      LilvPort* this_port  = NULL;
+      const char* const index_str  = (const char*)sord_node_get_string(index);
+      const uint32_t    this_index = (uint32_t)strtol(index_str, NULL, 10);
+      LilvPort*         this_port  = NULL;
       if (plugin->num_ports > this_index) {
         this_port = plugin->ports[this_index];
       } else {
@@ -316,8 +328,7 @@ lilv_plugin_load_ports_if_necessary(const LilvPlugin* const_plugin)
 
       // Haven't seen this port yet, add it to array
       if (!this_port) {
-        this_port = lilv_port_new(
-          plugin->world, port, this_index, lilv_node_as_string(symbol));
+        this_port = lilv_port_new(plugin->world, port, this_index, symbol_str);
         plugin->ports[this_index] = this_port;
       }
 
@@ -335,9 +346,6 @@ lilv_plugin_load_ports_if_necessary(const LilvPlugin* const_plugin)
         }
       }
       sord_iter_free(types);
-
-      lilv_node_free(symbol);
-      lilv_node_free(index);
     }
     sord_iter_free(ports);
 
@@ -942,26 +950,23 @@ lilv_plugin_get_uis(const LilvPlugin* plugin)
   FOREACH_MATCH (uis) {
     const SordNode* ui = sord_iter_get_node(uis, SORD_OBJECT);
 
-    LilvNode* type =
+    const SordNode* const type =
       lilv_world_get_unique(plugin->world, ui, plugin->world->uris.rdf_type);
-    LilvNode* binary =
+    const SordNode* binary =
       lilv_world_get_unique(plugin->world, ui, plugin->world->uris.lv2_binary);
     if (!binary) {
       binary =
-        lilv_plugin_get_unique(plugin, ui, plugin->world->uris.ui_binary);
+        lilv_world_get_unique(plugin->world, ui, plugin->world->uris.ui_binary);
     }
 
-    if (sord_node_get_type(ui) != SORD_URI || !lilv_node_is_uri(type) ||
-        !lilv_node_is_uri(binary)) {
-      lilv_node_free(binary);
-      lilv_node_free(type);
+    if (sord_node_get_type(ui) != SORD_URI ||
+        sord_node_get_type(type) != SORD_URI ||
+        sord_node_get_type(binary) != SORD_URI) {
       LILV_ERRORF("Corrupt UI <%s>\n", sord_node_get_string(ui));
       continue;
     }
 
-    LilvUI* lilv_ui = lilv_ui_new(
-      plugin->world, lilv_node_new_from_node(plugin->world, ui), type, binary);
-
+    LilvUI* const lilv_ui = lilv_ui_new(plugin->world, ui, type, binary);
     zix_tree_insert((ZixTree*)result, lilv_ui, NULL);
   }
   sord_iter_free(uis);

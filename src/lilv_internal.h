@@ -244,6 +244,11 @@ lilv_plugin_load_if_necessary(const LilvPlugin* plugin);
 void
 lilv_plugin_free(LilvPlugin* plugin);
 
+const SordNode*
+lilv_plugin_get_unique_internal(const LilvPlugin* plugin,
+                                const SordNode*   subject,
+                                const SordNode*   predicate);
+
 LilvNode*
 lilv_plugin_get_unique(const LilvPlugin* plugin,
                        const SordNode*   subject,
@@ -288,7 +293,7 @@ lilv_plugin_classes_new(void);
 LilvUIs*
 lilv_uis_new(void);
 
-LilvNode*
+const SordNode*
 lilv_world_get_unique(LilvWorld*      world,
                       const SordNode* subject,
                       const SordNode* predicate);
@@ -303,10 +308,10 @@ SerdStatus
 lilv_world_load_file(LilvWorld* world, SerdReader* reader, const SordNode* uri);
 
 LilvUI*
-lilv_ui_new(LilvWorld* world,
-            LilvNode*  uri,
-            LilvNode*  type_uri,
-            LilvNode*  binary_uri);
+lilv_ui_new(LilvWorld*      world,
+            const SordNode* uri,
+            const SordNode* type_uri,
+            const SordNode* binary_uri);
 
 void
 lilv_ui_free(LilvUI* ui);
@@ -344,7 +349,9 @@ struct LilvHeader*
 lilv_collection_get_by_uri(const ZixTree* seq, const LilvNode* uri);
 
 LilvScalePoint*
-lilv_scale_point_new(LilvNode* value, LilvNode* label);
+lilv_scale_point_new(LilvWorld*      world,
+                     const SordNode* value,
+                     const SordNode* label);
 
 void
 lilv_scale_point_free(LilvScalePoint* point);

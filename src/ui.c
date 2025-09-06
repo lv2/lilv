@@ -1,10 +1,11 @@
-// Copyright 2007-2019 David Robillard <d@drobilla.net>
+// Copyright 2007-2025 David Robillard <d@drobilla.net>
 // SPDX-License-Identifier: ISC
 
 #include "lilv_internal.h"
 #include "string_util.h"
 
 #include <lilv/lilv.h>
+#include <sord/sord.h>
 #include <zix/tree.h>
 
 #include <assert.h>
@@ -13,10 +14,10 @@
 #include <string.h>
 
 LilvUI*
-lilv_ui_new(LilvWorld* world,
-            LilvNode*  uri,
-            LilvNode*  type_uri,
-            LilvNode*  binary_uri)
+lilv_ui_new(LilvWorld* const      world,
+            const SordNode* const uri,
+            const SordNode* const type_uri,
+            const SordNode* const binary_uri)
 {
   assert(uri);
   assert(type_uri);
@@ -24,8 +25,8 @@ lilv_ui_new(LilvWorld* world,
 
   LilvUI* ui     = (LilvUI*)malloc(sizeof(LilvUI));
   ui->world      = world;
-  ui->uri        = uri;
-  ui->binary_uri = binary_uri;
+  ui->uri        = lilv_node_new_from_node(world, uri);
+  ui->binary_uri = lilv_node_new_from_node(world, binary_uri);
 
   // FIXME: kludge
   char* bundle     = lilv_strdup(lilv_node_as_string(ui->binary_uri));
@@ -35,7 +36,8 @@ lilv_ui_new(LilvWorld* world,
   free(bundle);
 
   ui->classes = lilv_nodes_new();
-  zix_tree_insert((ZixTree*)ui->classes, type_uri, NULL);
+  zix_tree_insert(
+    (ZixTree*)ui->classes, lilv_node_new_from_node(world, type_uri), NULL);
 
   return ui;
 }

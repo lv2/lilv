@@ -260,7 +260,7 @@ lilv_world_find_nodes(LilvWorld*      world,
                                         object ? object->node : NULL);
 }
 
-LilvNode*
+const SordNode*
 lilv_world_get_unique(LilvWorld* const world,
                       const SordNode*  subject,
                       const SordNode*  predicate)
@@ -277,7 +277,7 @@ lilv_world_get_unique(LilvWorld* const world,
   }
 
   sord_iter_free(stream);
-  return lilv_node_new_from_node(world, object);
+  return object;
 }
 
 LilvNode*

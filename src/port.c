@@ -227,17 +227,15 @@ lilv_port_get_scale_points(const LilvPlugin* plugin, const LilvPort* port)
   FOREACH_MATCH (points) {
     const SordNode* point = sord_iter_get_node(points, SORD_OBJECT);
 
-    LilvNode* value =
-      lilv_plugin_get_unique(plugin, point, plugin->world->uris.rdf_value);
+    const SordNode* value = lilv_plugin_get_unique_internal(
+      plugin, point, plugin->world->uris.rdf_value);
 
-    LilvNode* label =
-      lilv_plugin_get_unique(plugin, point, plugin->world->uris.rdfs_label);
+    const SordNode* label = lilv_plugin_get_unique_internal(
+      plugin, point, plugin->world->uris.rdfs_label);
 
     if (value && label) {
-      zix_tree_insert((ZixTree*)ret, lilv_scale_point_new(value, label), NULL);
-    } else {
-      lilv_node_free(label);
-      lilv_node_free(value);
+      zix_tree_insert(
+        (ZixTree*)ret, lilv_scale_point_new(plugin->world, value, label), NULL);
     }
   }
   sord_iter_free(points);
