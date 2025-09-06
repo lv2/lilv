@@ -371,9 +371,9 @@ lilv_world_filter_model(LilvWorld*      world,
 #define FOREACH_MATCH(iter) for (; !sord_iter_end(iter); sord_iter_next(iter))
 
 LilvNodes*
-lilv_nodes_from_stream_objects(LilvWorld*    world,
-                               SordIter*     stream,
-                               SordQuadIndex field);
+lilv_nodes_from_matches(LilvWorld*    world,
+                        SordIter*     stream,
+                        SordQuadIndex field);
 
 char*
 lilv_strjoin(const char* first, ...);

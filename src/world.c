@@ -269,8 +269,7 @@ lilv_world_get(LilvWorld*      world,
                                    NULL,
                                    NULL);
 
-    LilvNodes* nodes =
-      lilv_nodes_from_stream_objects(world, stream, SORD_OBJECT);
+    LilvNodes* nodes = lilv_nodes_from_matches(world, stream, SORD_OBJECT);
 
     if (nodes) {
       LilvNode* value = lilv_node_duplicate(lilv_nodes_get_first(nodes));
@@ -347,10 +346,10 @@ lilv_world_find_nodes_internal(LilvWorld*      world,
                                const SordNode* predicate,
                                const SordNode* object)
 {
-  return lilv_nodes_from_stream_objects(
+  return lilv_nodes_from_matches(
     world,
     lilv_world_query_internal(world, subject, predicate, object),
-    (object == NULL) ? SORD_OBJECT : SORD_SUBJECT);
+    object ? SORD_SUBJECT : SORD_OBJECT);
 }
 
 const uint8_t*

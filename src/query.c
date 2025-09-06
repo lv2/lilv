@@ -40,9 +40,9 @@ lilv_lang_matches(const char* a, const char* b)
 }
 
 static LilvNodes*
-lilv_nodes_from_stream_objects_i18n(LilvWorld*    world,
-                                    SordIter*     stream,
-                                    SordQuadIndex field)
+lilv_nodes_from_matches_i18n(LilvWorld* const    world,
+                             SordIter* const     stream,
+                             const SordQuadIndex field)
 {
   LilvNodes*      values  = lilv_nodes_new();
   const SordNode* nolang  = NULL; // Untranslated value
@@ -99,21 +99,12 @@ lilv_nodes_from_stream_objects_i18n(LilvWorld*    world,
   return values;
 }
 
-LilvNodes*
-lilv_nodes_from_stream_objects(LilvWorld*    world,
-                               SordIter*     stream,
-                               SordQuadIndex field)
+static LilvNodes*
+lilv_nodes_from_matches_all(LilvWorld* const    world,
+                            SordIter* const     stream,
+                            const SordQuadIndex field)
 {
-  if (sord_iter_end(stream)) {
-    sord_iter_free(stream);
-    return NULL;
-  }
-
-  if (world->opt.filter_language) {
-    return lilv_nodes_from_stream_objects_i18n(world, stream, field);
-  }
-
-  LilvNodes* values = lilv_nodes_new();
+  LilvNodes* const values = lilv_nodes_new();
   FOREACH_MATCH (stream) {
     const SordNode* value = sord_iter_get_node(stream, field);
     LilvNode*       node  = lilv_node_new_from_node(world, value);
@@ -123,4 +114,17 @@ lilv_nodes_from_stream_objects(LilvWorld*    world,
   }
   sord_iter_free(stream);
   return values;
+}
+
+LilvNodes*
+lilv_nodes_from_matches(LilvWorld* world, SordIter* stream, SordQuadIndex field)
+{
+  if (sord_iter_end(stream)) {
+    sord_iter_free(stream);
+    return NULL;
+  }
+
+  return world->opt.filter_language
+           ? lilv_nodes_from_matches_i18n(world, stream, field)
+           : lilv_nodes_from_matches_all(world, stream, field);
 }

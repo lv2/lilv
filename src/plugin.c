@@ -112,7 +112,7 @@ lilv_plugin_get_one(const LilvPlugin* plugin,
     lilv_world_query_internal(plugin->world, subject, predicate, NULL);
 
   LilvNodes* nodes =
-    lilv_nodes_from_stream_objects(plugin->world, stream, SORD_OBJECT);
+    lilv_nodes_from_matches(plugin->world, stream, SORD_OBJECT);
 
   if (nodes) {
     LilvNode* value = lilv_node_duplicate(lilv_nodes_get_first(nodes));
