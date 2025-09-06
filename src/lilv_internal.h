@@ -159,7 +159,7 @@ struct LilvWorldImpl {
     SordNode* owl_Ontology;
     SordNode* pset_Preset;
     SordNode* pset_value;
-    SordNode* rdf_a;
+    SordNode* rdf_type;
     SordNode* rdf_value;
     SordNode* rdfs_Class;
     SordNode* rdfs_label;

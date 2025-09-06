@@ -322,7 +322,7 @@ lilv_plugin_load_ports_if_necessary(const LilvPlugin* const_plugin)
       }
 
       SordIter* types = lilv_world_query_internal(
-        plugin->world, port, plugin->world->uris.rdf_a, NULL);
+        plugin->world, port, plugin->world->uris.rdf_type, NULL);
       FOREACH_MATCH (types) {
         const SordNode* type = sord_iter_get_node(types, SORD_OBJECT);
         if (sord_node_get_type(type) == SORD_URI) {
@@ -415,8 +415,10 @@ lilv_plugin_get_class(const LilvPlugin* plugin)
   lilv_plugin_load_if_necessary((LilvPlugin*)plugin);
   if (!plugin->plugin_class) {
     // <plugin> a ?class
-    SordIter* c = lilv_world_query_internal(
-      plugin->world, plugin->plugin_uri->node, plugin->world->uris.rdf_a, NULL);
+    SordIter* c = lilv_world_query_internal(plugin->world,
+                                            plugin->plugin_uri->node,
+                                            plugin->world->uris.rdf_type,
+                                            NULL);
     FOREACH_MATCH (c) {
       const SordNode* class_node = sord_iter_get_node(c, SORD_OBJECT);
       if (sord_node_get_type(class_node) != SORD_URI) {
@@ -941,7 +943,7 @@ lilv_plugin_get_uis(const LilvPlugin* plugin)
     const SordNode* ui = sord_iter_get_node(uis, SORD_OBJECT);
 
     LilvNode* type =
-      lilv_world_get_unique(plugin->world, ui, plugin->world->uris.rdf_a);
+      lilv_world_get_unique(plugin->world, ui, plugin->world->uris.rdf_type);
     LilvNode* binary =
       lilv_world_get_unique(plugin->world, ui, plugin->world->uris.lv2_binary);
     if (!binary) {
@@ -989,7 +991,7 @@ lilv_plugin_get_related(const LilvPlugin* plugin, const LilvNode* type)
   LILV_FOREACH (nodes, i, related) {
     const LilvNode* node = (LilvNode*)lilv_collection_get((ZixTree*)related, i);
     if (lilv_world_ask_internal(
-          world, node->node, world->uris.rdf_a, type->node)) {
+          world, node->node, world->uris.rdf_type, type->node)) {
       zix_tree_insert(
         (ZixTree*)matches, lilv_node_new_from_node(world, node->node), NULL);
     }
@@ -1097,7 +1099,7 @@ lilv_plugin_write_manifest_entry(LilvWorld*        world,
     0,
     NULL,
     sord_node_to_serd_node(subject->node),
-    sord_node_to_serd_node(plugin->world->uris.rdf_a),
+    sord_node_to_serd_node(plugin->world->uris.rdf_type),
     sord_node_to_serd_node(plugin->world->uris.lv2_Plugin),
     0,
     0);

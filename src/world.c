@@ -108,7 +108,7 @@ lilv_world_new(void)
   world->uris.owl_Ontology        = NEW_URI(NS_OWL "Ontology");
   world->uris.pset_Preset         = NEW_URI(LV2_PRESETS__Preset);
   world->uris.pset_value          = NEW_URI(LV2_PRESETS__value);
-  world->uris.rdf_a               = NEW_URI(LILV_NS_RDF "type");
+  world->uris.rdf_type            = NEW_URI(LILV_NS_RDF "type");
   world->uris.rdf_value           = NEW_URI(LILV_NS_RDF "value");
   world->uris.rdfs_Class          = NEW_URI(LILV_NS_RDFS "Class");
   world->uris.rdfs_label          = NEW_URI(LILV_NS_RDFS "label");
@@ -550,7 +550,7 @@ lilv_world_load_dyn_manifest(LilvWorld*      world,
   NodeHash* const manifests =
     lilv_hash_from_matches(world->model,
                            NULL,
-                           world->uris.rdf_a,
+                           world->uris.rdf_type,
                            world->uris.dman_DynManifest,
                            bundle_node);
   NODE_HASH_FOREACH (m, manifests) {
@@ -640,8 +640,11 @@ lilv_world_load_dyn_manifest(LilvWorld*      world,
     fclose(fd);
 
     // ?plugin a lv2:Plugin
-    NodeHash* const plugins = lilv_hash_from_matches(
-      world->model, NULL, world->uris.rdf_a, world->uris.lv2_Plugin, dmanifest);
+    NodeHash* const plugins = lilv_hash_from_matches(world->model,
+                                                     NULL,
+                                                     world->uris.rdf_type,
+                                                     world->uris.lv2_Plugin,
+                                                     dmanifest);
     NODE_HASH_FOREACH (p, plugins) {
       const SordNode* plug = lilv_node_hash_get(plugins, p);
       lilv_world_add_plugin(world, plug, manifest, desc, bundle_node);
@@ -765,8 +768,11 @@ lilv_world_load_bundle(LilvWorld* world, const LilvNode* bundle_uri)
   }
 
   // ?plugin a lv2:Plugin
-  SordIter* plug_results = sord_search(
-    world->model, NULL, world->uris.rdf_a, world->uris.lv2_Plugin, bundle_node);
+  SordIter* plug_results = sord_search(world->model,
+                                       NULL,
+                                       world->uris.rdf_type,
+                                       world->uris.lv2_Plugin,
+                                       bundle_node);
 
   // Find any loaded plugins that will be replaced with a newer version
   LilvNodes* unload_uris = lilv_nodes_new();
@@ -843,8 +849,11 @@ lilv_world_load_bundle(LilvWorld* world, const LilvNode* bundle_uri)
   lilv_nodes_free(unload_bundles);
 
   // Re-search for plugin results now that old plugins are gone
-  plug_results = sord_search(
-    world->model, NULL, world->uris.rdf_a, world->uris.lv2_Plugin, bundle_node);
+  plug_results = sord_search(world->model,
+                             NULL,
+                             world->uris.rdf_type,
+                             world->uris.lv2_Plugin,
+                             bundle_node);
 
   FOREACH_MATCH (plug_results) {
     const SordNode* plug = sord_iter_get_node(plug_results, SORD_SUBJECT);
@@ -860,7 +869,7 @@ lilv_world_load_bundle(LilvWorld* world, const LilvNode* bundle_uri)
     world->uris.lv2_Specification, world->uris.owl_Ontology, NULL};
   for (const SordNode** p = spec_preds; *p; ++p) {
     SordIter* i =
-      sord_search(world->model, NULL, world->uris.rdf_a, *p, bundle_node);
+      sord_search(world->model, NULL, world->uris.rdf_type, *p, bundle_node);
     FOREACH_MATCH (i) {
       const SordNode* spec = sord_iter_get_node(i, SORD_SUBJECT);
       lilv_world_add_spec(world, spec, bundle_node);
@@ -1023,7 +1032,7 @@ lilv_world_load_plugin_classes(LilvWorld* world)
   */
 
   SordIter* classes = sord_search(
-    world->model, NULL, world->uris.rdf_a, world->uris.rdfs_Class, NULL);
+    world->model, NULL, world->uris.rdf_type, world->uris.rdfs_Class, NULL);
   FOREACH_MATCH (classes) {
     const SordNode* class_node = sord_iter_get_node(classes, SORD_SUBJECT);
 

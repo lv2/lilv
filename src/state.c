@@ -623,7 +623,7 @@ new_state_from_model(LilvWorld*      world,
 
   // Get the plugin URI this state applies to
   SordIter* i = NULL;
-  if (sord_ask(model, node, world->uris.rdf_a, world->uris.lv2_Plugin, 0)) {
+  if (sord_ask(model, node, world->uris.rdf_type, world->uris.lv2_Plugin, 0)) {
     // Loading plugin description as state (default state)
     state->plugin_uri = lilv_node_new_from_node(world, node);
 
@@ -837,7 +837,7 @@ lilv_state_new_from_string(LilvWorld* world, LV2_URID_Map* map, const char* str)
   serd_reader_read_string(reader, USTR(str));
 
   SordNode* s =
-    sord_get(model, NULL, world->uris.rdf_a, world->uris.pset_Preset, NULL);
+    sord_get(model, NULL, world->uris.rdf_type, world->uris.pset_Preset, NULL);
 
   LilvState* state = new_state_from_model(world, map, model, s, NULL);
 
