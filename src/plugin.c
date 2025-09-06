@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: ISC
 
 #include "lilv_internal.h"
+#include "node_hash.h"
 
 #ifdef LILV_DYN_MANIFEST
 #  include "dylib.h"
@@ -141,16 +142,20 @@ lilv_plugin_get_unique(const LilvPlugin* plugin,
 static void
 load_prototypes(LilvPlugin* const plugin)
 {
-  SordModel* prots = lilv_world_filter_model(plugin->world,
-                                             plugin->world->model,
-                                             plugin->plugin_uri->node,
-                                             plugin->world->uris.lv2_prototype,
-                                             NULL,
-                                             NULL);
-  SordModel* skel  = sord_new(plugin->world->world, SORD_SPO, false);
-  SordIter*  iter  = sord_begin(prots);
-  for (; !sord_iter_end(iter); sord_iter_next(iter)) {
-    const SordNode* prototype = sord_iter_get_node(iter, SORD_OBJECT);
+  NodeHash* const prots =
+    lilv_hash_from_matches(plugin->world->model,
+                           plugin->plugin_uri->node,
+                           plugin->world->uris.lv2_prototype,
+                           NULL,
+                           NULL);
+  if (!prots) {
+    return;
+  }
+
+  SordModel* skel = sord_new(plugin->world->world, SORD_SPO, false);
+
+  NODE_HASH_FOREACH (p, prots) {
+    const SordNode* prototype = lilv_node_hash_get(prots, p);
 
     lilv_world_load_resource_internal(plugin->world, prototype);
 
@@ -164,8 +169,10 @@ load_prototypes(LilvPlugin* const plugin)
     }
     sord_iter_free(statements);
   }
-  sord_iter_free(iter);
 
+  lilv_node_hash_free(prots, plugin->world->world);
+
+  SordIter* iter = NULL;
   for (iter = sord_begin(skel); !sord_iter_end(iter); sord_iter_next(iter)) {
     SordQuad quad;
     sord_iter_get(iter, quad);
@@ -173,7 +180,6 @@ load_prototypes(LilvPlugin* const plugin)
   }
   sord_iter_free(iter);
   sord_free(skel);
-  sord_free(prots);
 }
 
 static void
@@ -192,7 +198,7 @@ lilv_plugin_load(LilvPlugin* plugin)
     const LilvNode* data_uri = lilv_nodes_get(plugin->data_uris, i);
 
     serd_env_set_base_uri(env, sord_node_to_serd_node(data_uri->node));
-    st = lilv_world_load_file(plugin->world, reader, data_uri);
+    st = lilv_world_load_file(plugin->world, reader, data_uri->node);
     if (st > SERD_FAILURE) {
       break;
     }

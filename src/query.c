@@ -1,7 +1,8 @@
-// Copyright 2007-2019 David Robillard <d@drobilla.net>
+// Copyright 2007-2025 David Robillard <d@drobilla.net>
 // SPDX-License-Identifier: ISC
 
 #include "lilv_internal.h"
+#include "node_hash.h"
 
 #include <lilv/lilv.h>
 #include <sord/sord.h>
@@ -124,4 +125,26 @@ lilv_nodes_from_matches(LilvWorld* world, SordIter* stream, SordQuadIndex field)
   return (field == SORD_OBJECT && world->opt.filter_language)
            ? lilv_nodes_from_matches_i18n(world, stream)
            : lilv_nodes_from_matches_all(world, stream, field);
+}
+
+NodeHash*
+lilv_hash_from_matches(SordModel* const      model,
+                       const SordNode* const s,
+                       const SordNode* const p,
+                       const SordNode* const o,
+                       const SordNode* const g)
+{
+  NodeHash*       hash = NULL;
+  SordIter* const i    = sord_search(model, s, p, o, g);
+  if (!sord_iter_end(i)) {
+    if ((hash = lilv_node_hash_new(NULL))) {
+      const SordQuadIndex field = s ? SORD_OBJECT : SORD_SUBJECT;
+      FOREACH_MATCH (i) {
+        lilv_node_hash_insert_copy(hash, sord_iter_get_node(i, field));
+      }
+    }
+  }
+
+  sord_iter_free(i);
+  return hash;
 }

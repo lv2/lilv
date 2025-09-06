@@ -24,6 +24,7 @@ Cpp11BracedListStyle: true
 FixNamespaceComments: true
 ForEachMacros:
   - FOREACH_MATCH
+  - NODE_HASH_FOREACH
   - LILV_FOREACH
   - LV2_ATOM_OBJECT_BODY_FOREACH
   - LV2_ATOM_OBJECT_FOREACH
