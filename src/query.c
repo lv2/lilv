@@ -116,16 +116,40 @@ lilv_node_from_object(LilvWorld* const      world,
                       const SordNode* const s,
                       const SordNode* const p)
 {
-  SordIter* const  i     = sord_search(world->model, s, p, NULL, NULL);
-  LilvNodes* const nodes = lilv_nodes_from_matches(world, i, SORD_OBJECT);
-
-  if (nodes) {
-    LilvNode* result = lilv_node_duplicate(lilv_nodes_get_first(nodes));
-    lilv_nodes_free(nodes);
-    return result;
+  SordIter* const i = sord_search(world->model, s, p, NULL, NULL);
+  if (sord_iter_end(i)) {
+    return NULL;
   }
 
-  return NULL;
+  const char* const syslang = world->lang;
+  const SordNode*   best    = NULL;
+  const SordNode*   partial = NULL;
+  FOREACH_MATCH (i) {
+    const SordNode* const node = sord_iter_get_node(i, SORD_OBJECT);
+    if (sord_node_get_type(node) != SORD_LITERAL) {
+      best = node;
+      break; // Treat a non-literal as an exact match
+    }
+
+    const char* lang = sord_node_get_language(node);
+    if (!lang) {
+      if (!partial) {
+        partial = node;
+      }
+    } else {
+      const LilvLangMatch match = lilv_lang_matches(lang, syslang);
+      if (match == LILV_LANG_MATCH_PARTIAL) {
+        partial = node;
+      } else if (match == LILV_LANG_MATCH_EXACT) {
+        best = node;
+        break;
+      }
+    }
+  }
+
+  sord_iter_free(i);
+
+  return lilv_node_new_from_node(world, best ? best : partial);
 }
 
 LilvNodes*
