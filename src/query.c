@@ -111,6 +111,23 @@ lilv_nodes_from_matches_all(LilvWorld* const    world,
   return values;
 }
 
+LilvNode*
+lilv_node_from_object(LilvWorld* const      world,
+                      const SordNode* const s,
+                      const SordNode* const p)
+{
+  SordIter* const  i     = sord_search(world->model, s, p, NULL, NULL);
+  LilvNodes* const nodes = lilv_nodes_from_matches(world, i, SORD_OBJECT);
+
+  if (nodes) {
+    LilvNode* result = lilv_node_duplicate(lilv_nodes_get_first(nodes));
+    lilv_nodes_free(nodes);
+    return result;
+  }
+
+  return NULL;
+}
+
 LilvNodes*
 lilv_nodes_from_matches(LilvWorld* world, SordIter* stream, SordQuadIndex field)
 {

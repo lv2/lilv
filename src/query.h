@@ -11,6 +11,9 @@
 
 #define FOREACH_MATCH(iter) for (; !sord_iter_end(iter); sord_iter_next(iter))
 
+LilvNode*
+lilv_node_from_object(LilvWorld* world, const SordNode* s, const SordNode* p);
+
 LilvNodes*
 lilv_nodes_from_matches(LilvWorld*    world,
                         SordIter*     stream,

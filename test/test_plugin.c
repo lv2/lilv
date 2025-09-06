@@ -59,7 +59,50 @@ static const char* const plugin_ttl = "\
 		lv2:designation lv2:latency\n\
 ] .\n\
 \n\
-:thing doap:name \"Something else\" .\n";
+:thing doap:name \"Another\"@en , \"Andere\"@de .\n";
+
+static void
+set_language(LilvWorld* const world, const char* const lang)
+{
+  LilvNode* node = lilv_new_string(world, lang);
+  lilv_world_set_option(world, LILV_OPTION_LANG, node);
+  lilv_node_free(node);
+}
+
+static void
+check_thing_name(LilvWorld* const  world,
+                 const char* const subject_uri,
+                 const char* const expected)
+{
+  LilvNode*  thing_uri = lilv_new_uri(world, subject_uri);
+  LilvNode*  name_p = lilv_new_uri(world, "http://usefulinc.com/ns/doap#name");
+  LilvNodes* thing_names =
+    lilv_world_find_nodes(world, thing_uri, name_p, NULL);
+
+  if (lilv_nodes_size(thing_names) == 1) {
+    assert(expected);
+
+    // Check name in nodes collection
+    const LilvNode* thing_name = lilv_nodes_get_first(thing_names);
+    assert(thing_name);
+    assert(lilv_node_is_string(thing_name));
+    assert(expected);
+    assert(!strcmp(lilv_node_as_string(thing_name), expected));
+
+    // Check that it matches the name via lilv_world_get()
+    LilvNode* thing_name2 = lilv_world_get(world, thing_uri, name_p, NULL);
+    assert(lilv_node_equals(thing_name, thing_name2));
+    lilv_node_free(thing_name2);
+
+  } else {
+    assert(!expected);
+    assert(!lilv_nodes_size(thing_names));
+  }
+
+  lilv_nodes_free(thing_names);
+  lilv_node_free(name_p);
+  lilv_node_free(thing_uri);
+}
 
 int
 main(void)
@@ -78,6 +121,7 @@ main(void)
 
   const LilvPlugins* plugins = lilv_world_get_all_plugins(world);
   const LilvPlugin*  plug = lilv_plugins_get_by_uri(plugins, env->plugin1_uri);
+  const LilvNode*    plug_uri = lilv_plugin_get_uri(plug);
   assert(plug);
 
   const LilvPluginClass* klass     = lilv_plugin_get_class(plug);
@@ -87,7 +131,7 @@ main(void)
 
   LilvNode* rdf_type =
     lilv_new_uri(world, "http://www.w3.org/1999/02/22-rdf-syntax-ns#type");
-  assert(lilv_world_ask(world, lilv_plugin_get_uri(plug), rdf_type, klass_uri));
+  assert(lilv_world_ask(world, plug_uri, rdf_type, klass_uri));
   lilv_node_free(rdf_type);
 
   assert(!lilv_plugin_is_replaced(plug));
@@ -238,17 +282,17 @@ main(void)
   assert(!strcmp(lilv_node_as_string(author_homepage), "http://drobilla.net"));
   lilv_node_free(author_homepage);
 
-  LilvNode*  thing_uri = lilv_new_uri(world, "http://example.org/thing");
-  LilvNode*  name_p = lilv_new_uri(world, "http://usefulinc.com/ns/doap#name");
-  LilvNodes* thing_names =
-    lilv_world_find_nodes(world, thing_uri, name_p, NULL);
-  assert(lilv_nodes_size(thing_names) == 1);
-  LilvNode* thing_name = lilv_nodes_get_first(thing_names);
-  assert(thing_name);
-  assert(lilv_node_is_string(thing_name));
-  assert(!strcmp(lilv_node_as_string(thing_name), "Something else"));
-  LilvNode* thing_name2 = lilv_world_get(world, thing_uri, name_p, NULL);
-  assert(lilv_node_equals(thing_name, thing_name2));
+  set_language(world, "C");
+  check_thing_name(world, "http://example.org/plug", "Test plugin");
+  set_language(world, "en_CA");
+  check_thing_name(world, "http://example.org/plug", "Test plugin");
+  check_thing_name(world, "http://example.org/thing", "Another");
+  set_language(world, "de");
+  check_thing_name(world, "http://example.org/plug", "Test plugin");
+  check_thing_name(world, "http://example.org/thing", "Andere");
+  set_language(world, "es");
+  check_thing_name(world, "http://example.org/plug", "Test plugin");
+  check_thing_name(world, "http://example.org/thing", NULL);
 
   LilvUIs* uis = lilv_plugin_get_uis(plug);
   assert(lilv_uis_size(uis) == 0);
@@ -265,10 +309,10 @@ main(void)
   lilv_node_free(extdata);
   lilv_nodes_free(extdatas);
 
-  lilv_nodes_free(thing_names);
-  lilv_node_free(thing_uri);
-  lilv_node_free(thing_name2);
-  lilv_node_free(name_p);
+  LilvNode* unknown_p = lilv_new_uri(world, "http://example.org/unknown");
+  assert(!lilv_world_get(world, plug_uri, unknown_p, NULL));
+  lilv_node_free(unknown_p);
+
   lilv_node_free(control_class);
   lilv_node_free(audio_class);
   lilv_node_free(in_class);
