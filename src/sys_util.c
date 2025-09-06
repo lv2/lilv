@@ -1,10 +1,10 @@
-// Copyright 2007-2019 David Robillard <d@drobilla.net>
+// Copyright 2007-2025 David Robillard <d@drobilla.net>
 // SPDX-License-Identifier: ISC
 
-#include "lilv_internal.h"
+#include "sys_util.h"
+#include "log.h"
+#include "string_util.h"
 
-#include <lilv/lilv.h>
-#include <serd/serd.h>
 #include <zix/allocator.h>
 #include <zix/filesystem.h>
 #include <zix/path.h>
@@ -13,92 +13,11 @@
 #include <sys/stat.h>
 
 #include <errno.h>
-#include <stdarg.h>
-#include <stdbool.h>
-#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
 
-void
-lilv_free(void* ptr)
-{
-  free(ptr);
-}
-
-char*
-lilv_strjoin(const char* first, ...)
-{
-  size_t len    = strlen(first);
-  char*  result = (char*)malloc(len + 1);
-
-  memcpy(result, first, len);
-
-  va_list args; // NOLINT(cppcoreguidelines-init-variables)
-  va_start(args, first);
-  while (1) {
-    const char* const s = va_arg(args, const char*);
-    if (s == NULL) {
-      break;
-    }
-
-    const size_t this_len   = strlen(s);
-    char*        new_result = (char*)realloc(result, len + this_len + 1);
-    if (!new_result) {
-      va_end(args);
-      free(result);
-      return NULL;
-    }
-
-    result = new_result;
-    memcpy(result + len, s, this_len);
-    len += this_len;
-  }
-  va_end(args);
-
-  result[len] = '\0';
-
-  return result;
-}
-
-char*
-lilv_strdup(const char* str)
-{
-  if (!str) {
-    return NULL;
-  }
-
-  const size_t len  = strlen(str);
-  char*        copy = (char*)malloc(len + 1);
-  memcpy(copy, str, len + 1);
-  return copy;
-}
-
-const char*
-lilv_uri_to_path(const char* uri)
-{
-#if defined(__GNUC__) && __GNUC__ > 4
-#  pragma GCC diagnostic push
-#  pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-#endif
-
-  return (const char*)serd_uri_to_path((const uint8_t*)uri);
-
-#if defined(__GNUC__) && __GNUC__ > 4
-#  pragma GCC diagnostic pop
-#endif
-}
-
-char*
-lilv_file_uri_parse(const char* uri, char** hostname)
-{
-  return (char*)serd_file_uri_parse((const uint8_t*)uri, (uint8_t**)hostname);
-}
-
-/** Return the current LANG converted to Turtle (i.e. RFC3066) style.
- * For example, if LANG is set to "en_CA.utf-8", this returns "en-ca".
- */
 char*
 lilv_get_lang(void)
 {
@@ -112,7 +31,7 @@ lilv_get_lang(void)
 }
 
 char*
-lilv_normalize_lang(const char* env_lang)
+lilv_normalize_lang(const char* const env_lang)
 {
   const size_t env_lang_len = strlen(env_lang);
   char* const  lang         = (char*)malloc(env_lang_len + 1);
@@ -139,9 +58,9 @@ lilv_normalize_lang(const char* env_lang)
 }
 
 char*
-lilv_find_free_path(const char* in_path,
-                    bool (*exists)(const char*, const void*),
-                    const void* user_data)
+lilv_find_free_path(const char*              in_path,
+                    const LilvPathExistsFunc exists,
+                    const void*              user_data)
 {
   const size_t in_path_len = strlen(in_path);
   char*        path        = (char*)malloc(in_path_len + 7);
@@ -185,7 +104,6 @@ update_latest(const char* path, const char* name, void* data)
   }
 }
 
-/** Return the latest copy of the file at `path` that is newer. */
 char*
 lilv_get_latest_copy(const char* path, const char* copy_path)
 {

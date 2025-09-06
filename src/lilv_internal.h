@@ -18,7 +18,6 @@ extern "C" {
 
 #include <stdbool.h>
 #include <stdint.h>
-#include <stdio.h>
 
 #ifdef LILV_DYN_MANIFEST
 #  include <lv2/dynmanifest/dynmanifest.h>
@@ -371,56 +370,12 @@ lilv_world_find_nodes_internal(LilvWorld*      world,
                                const SordNode* predicate,
                                const SordNode* object);
 
-#define FOREACH_MATCH(iter) for (; !sord_iter_end(iter); sord_iter_next(iter))
-
-LilvNodes*
-lilv_nodes_from_matches(LilvWorld*    world,
-                        SordIter*     stream,
-                        SordQuadIndex field);
-
-NodeHash*
-lilv_hash_from_matches(SordModel*      model,
-                       const SordNode* s,
-                       const SordNode* p,
-                       const SordNode* o,
-                       const SordNode* g);
-
-char*
-lilv_strjoin(const char* first, ...);
-
-char*
-lilv_strdup(const char* str);
-
-char*
-lilv_get_lang(void);
-
-char*
-lilv_normalize_lang(const char* env_lang);
-
-char*
-lilv_get_latest_copy(const char* path, const char* copy_path);
-
-char*
-lilv_find_free_path(const char* in_path,
-                    bool (*exists)(const char*, const void*),
-                    const void* user_data);
-
 #ifdef LILV_DYN_MANIFEST
 static const LV2_Feature* const dman_features = {NULL};
 
 void
 lilv_dynmanifest_free(LilvDynManifest* dynmanifest);
 #endif
-
-#define LILV_ERROR(str) fprintf(stderr, "%s(): error: " str, __func__)
-#define LILV_ERRORF(fmt, ...) \
-  fprintf(stderr, "%s(): error: " fmt, __func__, __VA_ARGS__)
-#define LILV_WARN(str) fprintf(stderr, "%s(): warning: " str, __func__)
-#define LILV_WARNF(fmt, ...) \
-  fprintf(stderr, "%s(): warning: " fmt, __func__, __VA_ARGS__)
-#define LILV_NOTE(str) fprintf(stderr, "%s(): note: " str, __func__)
-#define LILV_NOTEF(fmt, ...) \
-  fprintf(stderr, "%s(): note: " fmt, __func__, __VA_ARGS__)
 
 #ifdef __cplusplus
 }

@@ -3,7 +3,11 @@
 
 #include "lilv_config.h"
 #include "lilv_internal.h"
+#include "log.h"
 #include "node_hash.h"
+#include "query.h"
+#include "string_util.h"
+#include "sys_util.h"
 
 #ifdef LILV_DYN_MANIFEST
 #  include "dylib.h"

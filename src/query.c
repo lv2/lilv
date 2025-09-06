@@ -1,6 +1,7 @@
 // Copyright 2007-2025 David Robillard <d@drobilla.net>
 // SPDX-License-Identifier: ISC
 
+#include "query.h"
 #include "lilv_internal.h"
 #include "node_hash.h"
 

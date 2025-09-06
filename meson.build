@@ -268,8 +268,9 @@ sources = files(
   'src/query.c',
   'src/scalepoint.c',
   'src/state.c',
+  'src/string_util.c',
+  'src/sys_util.c',
   'src/ui.c',
-  'src/util.c',
   'src/world.c',
 )
 

@@ -2,7 +2,9 @@
 // SPDX-License-Identifier: ISC
 
 #include "lilv_internal.h"
+#include "log.h"
 #include "node_hash.h"
+#include "query.h"
 
 #ifdef LILV_DYN_MANIFEST
 #  include "dylib.h"

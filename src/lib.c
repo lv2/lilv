@@ -3,6 +3,8 @@
 
 #include "dylib.h"
 #include "lilv_internal.h"
+#include "log.h"
+#include "string_util.h"
 
 #include <lilv/lilv.h>
 #include <lv2/core/lv2.h>

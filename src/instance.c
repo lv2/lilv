@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: ISC
 
 #include "lilv_internal.h"
+#include "log.h"
 
 #include <lilv/lilv.h>
 #include <lv2/core/lv2.h>
