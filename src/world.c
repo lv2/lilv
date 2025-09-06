@@ -7,6 +7,7 @@
 #include "node_hash.h"
 #include "query.h"
 #include "string_util.h"
+#include "syntax_skimmer.h"
 #include "sys_util.h"
 
 #ifdef LILV_DYN_MANIFEST
@@ -24,6 +25,7 @@
 #include <serd/serd.h>
 #include <sord/sord.h>
 #include <zix/allocator.h>
+#include <zix/attributes.h>
 #include <zix/environment.h>
 #include <zix/filesystem.h>
 #include <zix/path.h>
@@ -641,63 +643,101 @@ lilv_dynmanifest_free(LilvDynManifest* dynmanifest)
 }
 #endif // LILV_DYN_MANIFEST
 
-static SordModel*
-load_plugin_model(LilvWorld*      world,
-                  const LilvNode* bundle_uri,
-                  const LilvNode* plugin_uri)
+typedef struct {
+  SordWorld*      world;
+  const SerdNode* lv2_minorVersion;
+  const SerdNode* lv2_microVersion;
+  const SerdNode* rdfs_seeAlso;
+  NodeHash*       see_also;
+  LilvVersion     version;
+} SkimmedVersion;
+
+static int
+int_from_node(const SerdNode* const node)
 {
-  // Create model and reader for loading into it
-  const SordNode* bundle_node = bundle_uri->node;
-  SordModel*      model  = sord_new(world->world, SORD_SPO | SORD_OPS, false);
-  SerdEnv*        env    = serd_env_new(sord_node_to_serd_node(bundle_node));
-  SerdReader*     reader = sord_new_reader(model, env, SERD_TURTLE, NULL);
-
-  // Load manifest
-  uint8_t* const manifest_uri = lilv_manifest_uri(bundle_uri->node);
-  serd_reader_add_blank_prefix(reader, lilv_world_blank_node_prefix(world));
-  serd_reader_read_file(reader, manifest_uri);
-  zix_free(NULL, manifest_uri);
-
-  // Load any seeAlso files
-  NodeHash* const files = lilv_hash_from_matches(
-    model, plugin_uri->node, world->uris.rdfs_seeAlso, NULL, NULL);
-  NODE_HASH_FOREACH (f, files) {
-    const SordNode* file     = lilv_node_hash_get(files, f);
-    const uint8_t*  file_str = sord_node_get_string(file);
-    if (sord_node_get_type(file) == SORD_URI) {
-      serd_reader_add_blank_prefix(reader, lilv_world_blank_node_prefix(world));
-      serd_reader_read_file(reader, file_str);
+  if (node->type == SERD_LITERAL) {
+    const long value = strtol((const char*)node->buf, NULL, 10);
+    if (value >= 0 && value < INT_MAX) {
+      return (int)value;
     }
   }
-  lilv_node_hash_free(files, world->world);
+  return 0;
+}
 
-  serd_reader_free(reader);
-  serd_env_free(env);
+static SerdStatus
+skim_version(SkimmedVersion* const       skimmed,
+             SerdEnv* const              env,
+             const SerdNode* ZIX_NONNULL subject,
+             const SerdNode* ZIX_NONNULL predicate,
+             const SerdNode* ZIX_NONNULL object,
+             const SerdNode* ZIX_NONNULL object_datatype,
+             const SerdNode* ZIX_NONNULL object_lang)
+{
+  (void)subject;
+  (void)object_datatype;
+  (void)object_lang;
 
-  return model;
+  SerdNode pred = serd_env_expand_node(env, predicate);
+
+  if (serd_node_equals(&pred, skimmed->rdfs_seeAlso)) {
+    if (!skimmed->see_also) {
+      skimmed->see_also = lilv_node_hash_new(NULL);
+    }
+    if (skimmed->see_also) {
+      lilv_node_hash_insert(
+        skimmed->see_also,
+        sord_node_from_serd_node(skimmed->world, env, object, NULL, NULL));
+    }
+  } else if (serd_node_equals(&pred, skimmed->lv2_minorVersion)) {
+    skimmed->version.minor = int_from_node(object);
+  } else if (serd_node_equals(&pred, skimmed->lv2_microVersion)) {
+    skimmed->version.micro = int_from_node(object);
+  }
+
+  serd_node_free(&pred);
+  return SERD_SUCCESS;
 }
 
 static LilvVersion
-get_version(const LilvWorld* world, SordModel* model, const LilvNode* subject)
+load_version(LilvWorld* const      world,
+             const LilvNode* const bundle_uri,
+             const SordNode* const resource)
 {
-  const SordNode* minor_node =
-    sord_get(model, subject->node, world->uris.lv2_minorVersion, NULL, NULL);
-  const SordNode* micro_node =
-    sord_get(model, subject->node, world->uris.lv2_microVersion, NULL, NULL);
+  SerdEnv* const env = serd_env_new(sord_node_to_serd_node(bundle_uri->node));
+  SkimmedVersion skimmed = {
+    world->world,
+    sord_node_to_serd_node(world->uris.lv2_minorVersion),
+    sord_node_to_serd_node(world->uris.lv2_microVersion),
+    sord_node_to_serd_node(world->uris.rdfs_seeAlso),
+    NULL,
+    {0, 0}};
 
-  LilvVersion version = {0, 0};
-  if (minor_node && micro_node) {
-    const char* const minor_str = (const char*)sord_node_get_string(minor_node);
-    const char* const micro_str = (const char*)sord_node_get_string(micro_node);
-    const long        minor     = strtol(minor_str, NULL, 10);
-    const long        micro     = strtol(micro_str, NULL, 10);
-    if (minor >= 0 && minor < INT_MAX && micro >= 0 && micro < INT_MAX) {
-      version.minor = (int)minor;
-      version.micro = (int)micro;
+  SyntaxSkimmer* const skimmer =
+    syntax_skimmer_new(NULL,
+                       env,
+                       SORD_SUBJECT,
+                       sord_node_to_serd_node(resource),
+                       &skimmed,
+                       (SyntaxSkimmerFunc)skim_version);
+
+  // Read file, recording version numbers and seeAlso files as we go
+  SerdReader* const reader       = skimmer->reader;
+  uint8_t* const    manifest_uri = lilv_manifest_uri(bundle_uri->node);
+  serd_reader_read_file(reader, manifest_uri);
+  zix_free(NULL, manifest_uri);
+
+  if (!skimmed.version.minor && !skimmed.version.micro && skimmed.see_also) {
+    NODE_HASH_FOREACH (i, skimmed.see_also) {
+      const SordNode* file = lilv_node_hash_get(skimmed.see_also, i);
+      serd_reader_add_blank_prefix(reader, lilv_world_blank_node_prefix(world));
+      serd_reader_read_file(reader, sord_node_get_string(file));
     }
   }
 
-  return version;
+  syntax_skimmer_free(skimmer);
+  lilv_node_hash_free(skimmed.see_also, world->world);
+  serd_env_free(env);
+  return skimmed.version;
 }
 
 void
@@ -750,12 +790,10 @@ lilv_world_load_bundle(LilvWorld* world, const LilvNode* bundle_uri)
     }
 
     // Compare versions
-    SordModel*  this_model   = load_plugin_model(world, bundle_uri, plugin_uri);
-    LilvVersion this_version = get_version(world, this_model, plugin_uri);
-    SordModel*  last_model = load_plugin_model(world, last_bundle, plugin_uri);
-    LilvVersion last_version = get_version(world, last_model, plugin_uri);
-    sord_free(this_model);
-    sord_free(last_model);
+    LilvVersion this_version =
+      load_version(world, bundle_uri, plugin_uri->node);
+    LilvVersion last_version =
+      load_version(world, last_bundle, plugin_uri->node);
     const int cmp = lilv_version_cmp(&this_version, &last_version);
     if (cmp > 0) {
       zix_tree_insert(

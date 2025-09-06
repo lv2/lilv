@@ -269,6 +269,7 @@ sources = files(
   'src/scalepoint.c',
   'src/state.c',
   'src/string_util.c',
+  'src/syntax_skimmer.c',
   'src/sys_util.c',
   'src/ui.c',
   'src/world.c',
