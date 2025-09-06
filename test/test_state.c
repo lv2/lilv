@@ -505,6 +505,7 @@ test_string_round_trip(void)
     lilv_state_new_from_string(ctx->env->world, &ctx->map, string);
 
   // Ensure they are equal
+  assert(restored);
   assert(lilv_state_equals(initial_state, restored));
 
   // Check that the restored state refers to the correct plugin
@@ -927,6 +928,7 @@ test_world_round_trip(void)
   // Ensure the state loaded from the world matches
   LilvState* const restored =
     lilv_state_new_from_world(world, &ctx->map, state_node);
+  assert(restored);
   assert(lilv_state_equals(start_state, restored));
 
   // Unload state from world
