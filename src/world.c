@@ -1030,21 +1030,6 @@ lilv_world_load_all(LilvWorld* world)
   // Discover bundles and read all manifest files into model
   lilv_world_load_path(world, lv2_path);
 
-  LILV_FOREACH (plugins, p, world->plugins) {
-    const LilvPlugin* plugin =
-      (const LilvPlugin*)lilv_collection_get((ZixTree*)world->plugins, p);
-
-    // ?new dc:replaces plugin
-    if (sord_ask(world->model,
-                 NULL,
-                 world->uris.dc_replaces,
-                 lilv_plugin_get_uri(plugin)->node,
-                 NULL)) {
-      // TODO: Check if replacement is a known plugin? (expensive)
-      ((LilvPlugin*)plugin)->replaced = true;
-    }
-  }
-
   // Query out things to cache
   lilv_world_load_specifications(world);
   lilv_world_load_plugin_classes(world);

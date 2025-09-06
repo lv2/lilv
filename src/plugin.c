@@ -40,7 +40,6 @@ lilv_plugin_init(LilvPlugin* plugin, LilvNode* bundle_uri)
   plugin->num_ports    = 0;
   plugin->loaded       = false;
   plugin->parse_errors = false;
-  plugin->replaced     = false;
 }
 
 /** Ownership of `uri` and `bundle` is taken */
@@ -928,7 +927,11 @@ lilv_plugin_get_author_homepage(const LilvPlugin* plugin)
 bool
 lilv_plugin_is_replaced(const LilvPlugin* plugin)
 {
-  return plugin->replaced;
+  return sord_ask(plugin->world->model,
+                  NULL,
+                  plugin->world->uris.dc_replaces,
+                  lilv_plugin_get_uri(plugin)->node,
+                  NULL);
 }
 
 LilvUIs*
