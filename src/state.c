@@ -1371,12 +1371,11 @@ try_unlink(const char* state_dir, const char* path)
 }
 
 static char*
-get_canonical_path(const LilvNode* const node)
+get_canonical_path(const uint8_t* const manifest_uri)
 {
-  char* const path      = lilv_node_get_path(node, NULL);
-  char* const real_path = zix_canonical_path(NULL, path);
-
-  free(path);
+  char* const path      = (char*)serd_file_uri_parse(manifest_uri, NULL);
+  char* const real_path = path ? zix_canonical_path(NULL, path) : NULL;
+  serd_free(path);
   return real_path;
 }
 
@@ -1388,17 +1387,20 @@ lilv_state_delete(LilvWorld* world, const LilvState* state)
     return -1;
   }
 
-  LilvNode*  bundle        = lilv_new_file_uri(world, NULL, state->dir);
-  LilvNode*  manifest      = lilv_world_get_manifest_uri(world, bundle);
-  char*      manifest_path = get_canonical_path(manifest);
-  const bool has_manifest =
+  LilvNode*      bundle        = lilv_new_file_uri(world, NULL, state->dir);
+  uint8_t* const manifest_uri  = lilv_manifest_uri(bundle->node);
+  char* const    manifest_path = get_canonical_path(manifest_uri);
+  const bool     has_manifest =
     manifest_path && zix_file_type(manifest_path) == ZIX_FILE_TYPE_REGULAR;
+
+  const SerdNode manifest_node =
+    serd_node_from_string(SERD_URI, (const uint8_t*)manifest_uri);
 
   SordModel* model = sord_new(world->world, SORD_SPO, false);
 
   if (has_manifest) {
     // Read manifest into temporary local model
-    SerdEnv*    env = serd_env_new(sord_node_to_serd_node(manifest->node));
+    SerdEnv*    env = serd_env_new(&manifest_node);
     SerdReader* ttl = sord_new_reader(model, env, SERD_TURTLE, NULL);
     serd_reader_read_file(ttl, USTR(manifest_path));
     serd_reader_free(ttl);
@@ -1462,17 +1464,15 @@ lilv_state_delete(LilvWorld* world, const LilvState* state)
     }
   } else {
     // Still something in the manifest, update and reload bundle
-    const SerdNode* manifest_node = sord_node_to_serd_node(manifest->node);
-    SerdEnv*        env           = serd_env_new(manifest_node);
-
-    write_manifest(world, env, model, manifest_node);
+    SerdEnv* env = serd_env_new(&manifest_node);
+    write_manifest(world, env, model, &manifest_node);
     lilv_world_load_bundle(world, bundle);
     serd_env_free(env);
   }
 
   sord_free(model);
   zix_free(NULL, manifest_path);
-  lilv_node_free(manifest);
+  zix_free(NULL, manifest_uri);
   lilv_node_free(bundle);
 
   return 0;

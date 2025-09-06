@@ -23,6 +23,7 @@
 #include <lv2/ui/ui.h>
 #include <serd/serd.h>
 #include <sord/sord.h>
+#include <zix/allocator.h>
 #include <zix/environment.h>
 #include <zix/filesystem.h>
 #include <zix/path.h>
@@ -678,30 +679,6 @@ lilv_dynmanifest_free(LilvDynManifest* dynmanifest)
 }
 #endif // LILV_DYN_MANIFEST
 
-LilvNode*
-lilv_world_get_manifest_uri(LilvWorld* world, const LilvNode* bundle_uri)
-{
-  // Get the string and length of the given bundle URI
-  size_t            bundle_uri_length = 0U;
-  const char* const bundle_uri_string =
-    (const char*)sord_node_get_string_counted(bundle_uri->node,
-                                              &bundle_uri_length);
-  if (bundle_uri_length < 1U) {
-    return NULL;
-  }
-
-  // Build the manifest URI by inserting a separating "/" if necessary
-  const char  last = bundle_uri_string[bundle_uri_length - 1U];
-  char* const manifest_uri_string =
-    (last == '/') ? lilv_strjoin(bundle_uri_string, "manifest.ttl", NULL)
-                  : lilv_strjoin(bundle_uri_string, "/", "manifest.ttl", NULL);
-
-  // Make a node from the manifeset URI to return
-  LilvNode* const manifest = lilv_new_uri(world, manifest_uri_string);
-  free(manifest_uri_string);
-  return manifest;
-}
-
 static SordModel*
 load_plugin_model(LilvWorld*      world,
                   const LilvNode* bundle_uri,
@@ -714,10 +691,10 @@ load_plugin_model(LilvWorld*      world,
   SerdReader*     reader = sord_new_reader(model, env, SERD_TURTLE, NULL);
 
   // Load manifest
-  LilvNode* manifest_uri = lilv_world_get_manifest_uri(world, bundle_uri);
+  uint8_t* const manifest_uri = lilv_manifest_uri(bundle_uri->node);
   serd_reader_add_blank_prefix(reader, lilv_world_blank_node_prefix(world));
-  serd_reader_read_file(reader,
-                        (const uint8_t*)lilv_node_as_string(manifest_uri));
+  serd_reader_read_file(reader, manifest_uri);
+  zix_free(NULL, manifest_uri);
 
   // Load any seeAlso files
   NodeHash* const files = lilv_hash_from_matches(
@@ -734,7 +711,6 @@ load_plugin_model(LilvWorld*      world,
 
   serd_reader_free(reader);
   serd_env_free(env);
-  lilv_node_free(manifest_uri);
 
   return model;
 }
@@ -771,11 +747,14 @@ lilv_world_load_bundle(LilvWorld* world, const LilvNode* bundle_uri)
     return;
   }
 
-  SordNode* bundle_node = bundle_uri->node;
-  LilvNode* manifest    = lilv_world_get_manifest_uri(world, bundle_uri);
-  if (!manifest) {
+  SordNode* bundle_node  = bundle_uri->node;
+  uint8_t*  manifest_uri = lilv_manifest_uri(bundle_node);
+  if (!manifest_uri) {
     return;
   }
+
+  LilvNode* const manifest = lilv_new_uri(world, (const char*)manifest_uri);
+  zix_free(NULL, manifest_uri);
 
   // Read manifest into model with graph = bundle_node
   SerdStatus st = lilv_world_load_graph(world, bundle_node, manifest->node);

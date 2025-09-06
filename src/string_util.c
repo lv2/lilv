@@ -5,6 +5,8 @@
 
 #include <lilv/lilv.h>
 #include <serd/serd.h>
+#include <sord/sord.h>
+#include <zix/string_view.h>
 
 #include <stdarg.h>
 #include <stdint.h>
@@ -63,6 +65,33 @@ lilv_strdup(const char* str)
   char*        copy = (char*)malloc(len + 1);
   memcpy(copy, str, len + 1);
   return copy;
+}
+
+ZixStringView
+lilv_node_string_view(const SordNode* const node)
+{
+  if (!node) {
+    return zix_empty_string();
+  }
+
+  size_t               len = 0U;
+  const uint8_t* const str = sord_node_get_string_counted(node, &len);
+
+  return zix_substring((const char*)str, len);
+}
+
+uint8_t*
+lilv_manifest_uri(const SordNode* const node)
+{
+  size_t               len = 0U;
+  const uint8_t* const str = sord_node_get_string_counted(node, &len);
+  if (!len) {
+    return NULL;
+  }
+
+  const char        last = str[len - 1U];
+  const char* const sep  = (last == '/') ? "" : "/";
+  return (uint8_t*)lilv_strjoin((const char*)str, sep, "manifest.ttl", NULL);
 }
 
 const char*
