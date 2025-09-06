@@ -254,10 +254,11 @@ lilv_world_find_nodes(LilvWorld*      world,
     return NULL;
   }
 
-  return lilv_world_find_nodes_internal(world,
-                                        subject ? subject->node : NULL,
-                                        predicate->node,
-                                        object ? object->node : NULL);
+  return lilv_nodes_from_matches(world,
+                                 subject ? subject->node : NULL,
+                                 predicate->node,
+                                 object ? object->node : NULL,
+                                 NULL);
 }
 
 const SordNode*
@@ -265,7 +266,7 @@ lilv_world_get_unique(LilvWorld* const world,
                       const SordNode*  subject,
                       const SordNode*  predicate)
 {
-  SordIter* stream = lilv_world_query_internal(world, subject, predicate, NULL);
+  SordIter* stream = sord_search(world->model, subject, predicate, NULL, NULL);
   if (!stream) {
     return NULL;
   }
@@ -302,24 +303,6 @@ lilv_world_get(LilvWorld*      world,
   return lnode;
 }
 
-SordIter*
-lilv_world_query_internal(LilvWorld*      world,
-                          const SordNode* subject,
-                          const SordNode* predicate,
-                          const SordNode* object)
-{
-  return sord_search(world->model, subject, predicate, object, NULL);
-}
-
-bool
-lilv_world_ask_internal(LilvWorld*      world,
-                        const SordNode* subject,
-                        const SordNode* predicate,
-                        const SordNode* object)
-{
-  return sord_ask(world->model, subject, predicate, object, NULL);
-}
-
 bool
 lilv_world_ask(LilvWorld*      world,
                const LilvNode* subject,
@@ -331,18 +314,6 @@ lilv_world_ask(LilvWorld*      world,
                   predicate ? predicate->node : NULL,
                   object ? object->node : NULL,
                   NULL);
-}
-
-LilvNodes*
-lilv_world_find_nodes_internal(LilvWorld*      world,
-                               const SordNode* subject,
-                               const SordNode* predicate,
-                               const SordNode* object)
-{
-  return lilv_nodes_from_matches(
-    world,
-    lilv_world_query_internal(world, subject, predicate, object),
-    object ? SORD_SUBJECT : SORD_OBJECT);
 }
 
 const uint8_t*

@@ -356,24 +356,6 @@ lilv_scale_point_new(LilvWorld*      world,
 void
 lilv_scale_point_free(LilvScalePoint* point);
 
-SordIter*
-lilv_world_query_internal(LilvWorld*      world,
-                          const SordNode* subject,
-                          const SordNode* predicate,
-                          const SordNode* object);
-
-bool
-lilv_world_ask_internal(LilvWorld*      world,
-                        const SordNode* subject,
-                        const SordNode* predicate,
-                        const SordNode* object);
-
-LilvNodes*
-lilv_world_find_nodes_internal(LilvWorld*      world,
-                               const SordNode* subject,
-                               const SordNode* predicate,
-                               const SordNode* object);
-
 #ifdef LILV_DYN_MANIFEST
 static const LV2_Feature* const dman_features = {NULL};
 

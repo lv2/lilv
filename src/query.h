@@ -15,9 +15,11 @@ LilvNode*
 lilv_node_from_object(LilvWorld* world, const SordNode* s, const SordNode* p);
 
 LilvNodes*
-lilv_nodes_from_matches(LilvWorld*    world,
-                        SordIter*     stream,
-                        SordQuadIndex field);
+lilv_nodes_from_matches(LilvWorld*      world,
+                        const SordNode* s,
+                        const SordNode* p,
+                        const SordNode* o,
+                        const SordNode* g);
 
 NodeHash*
 lilv_hash_from_matches(SordModel*      model,

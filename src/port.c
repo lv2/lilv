@@ -63,10 +63,11 @@ lilv_port_has_property(const LilvPlugin* plugin,
                        const LilvPort*   port,
                        const LilvNode*   property)
 {
-  return lilv_world_ask_internal(plugin->world,
-                                 port->node->node,
-                                 plugin->world->uris.lv2_portProperty,
-                                 property->node);
+  return sord_ask(plugin->world->model,
+                  port->node->node,
+                  plugin->world->uris.lv2_portProperty,
+                  property->node,
+                  NULL);
 }
 
 bool
@@ -79,8 +80,11 @@ lilv_port_supports_event(const LilvPlugin* plugin,
                                   NULL};
 
   for (const SordNode** pred = predicates; *pred; ++pred) {
-    if (lilv_world_ask_internal(
-          plugin->world, port->node->node, *pred, event_type->node)) {
+    if (sord_ask(plugin->world->model,
+                 port->node->node,
+                 *pred,
+                 event_type->node,
+                 NULL)) {
       return true;
     }
   }
@@ -93,8 +97,8 @@ lilv_port_get_value_by_node(const LilvPlugin* plugin,
                             const LilvPort*   port,
                             const SordNode*   predicate)
 {
-  return lilv_world_find_nodes_internal(
-    plugin->world, port->node->node, predicate, NULL);
+  return lilv_nodes_from_matches(
+    plugin->world, port->node->node, predicate, NULL, NULL);
 }
 
 const LilvNode*
@@ -215,8 +219,11 @@ lilv_port_get_range(const LilvPlugin* plugin,
 LilvScalePoints*
 lilv_port_get_scale_points(const LilvPlugin* plugin, const LilvPort* port)
 {
-  SordIter* points = lilv_world_query_internal(
-    plugin->world, port->node->node, plugin->world->uris.lv2_scalePoint, NULL);
+  SordIter* points = sord_search(plugin->world->model,
+                                 port->node->node,
+                                 plugin->world->uris.lv2_scalePoint,
+                                 NULL,
+                                 NULL);
 
   if (!points) {
     return NULL;

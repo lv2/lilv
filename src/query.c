@@ -153,12 +153,19 @@ lilv_node_from_object(LilvWorld* const      world,
 }
 
 LilvNodes*
-lilv_nodes_from_matches(LilvWorld* world, SordIter* stream, SordQuadIndex field)
+lilv_nodes_from_matches(LilvWorld* const      world,
+                        const SordNode* const s,
+                        const SordNode* const p,
+                        const SordNode* const o,
+                        const SordNode* const g)
 {
+  SordIter* const stream = sord_search(world->model, s, p, o, g);
   if (sord_iter_end(stream)) {
     sord_iter_free(stream);
     return NULL;
   }
+
+  const SordQuadIndex field = o ? SORD_SUBJECT : SORD_OBJECT;
 
   return (field == SORD_OBJECT && world->opt.filter_language)
            ? lilv_nodes_from_matches_i18n(world, stream)
