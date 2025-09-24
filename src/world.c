@@ -67,8 +67,11 @@ lilv_world_new(void)
 
   lilv_uris_init(&world->uris, world->world);
 
-  world->lv2_plugin_class =
-    lilv_plugin_class_new(world, NULL, world->uris.lv2_Plugin, "Plugin");
+  world->lv2_plugin_class = lilv_plugin_class_new(
+    world,
+    NULL,
+    lilv_node_new_from_node(world, world->uris.lv2_Plugin),
+    "Plugin");
   assert(world->lv2_plugin_class);
 
   world->n_read_files        = 0;
@@ -981,13 +984,20 @@ lilv_world_add_plugin_class(LilvWorld* const      world,
                             const SordNode* const node,
                             const SordNode* const parent)
 {
-  ZixStatus       st = ZIX_STATUS_NOT_FOUND;
+  ZixStatus st = ZIX_STATUS_NOT_FOUND;
+
+  LilvNode* const uri = lilv_node_new_from_node(world, node);
+  if (lilv_plugin_classes_get_by_uri(world->plugin_classes, uri)) {
+    lilv_node_free(uri);
+    return ZIX_STATUS_EXISTS;
+  }
+
   SordNode* const label =
     sord_get(world->model, node, world->uris.rdfs_label, NULL, NULL);
 
   if (label) {
     LilvPluginClass* const klass = lilv_plugin_class_new(
-      world, parent, node, (const char*)sord_node_get_string(label));
+      world, parent, uri, (const char*)sord_node_get_string(label));
     if (klass) {
       st = zix_tree_insert((ZixTree*)world->plugin_classes, klass, NULL);
       if (st) {

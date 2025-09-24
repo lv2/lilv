@@ -13,12 +13,12 @@
 LilvPluginClass*
 lilv_plugin_class_new(LilvWorld*      world,
                       const SordNode* parent_node,
-                      const SordNode* uri,
+                      LilvNode*       uri,
                       const char*     label)
 {
   LilvPluginClass* pc = (LilvPluginClass*)malloc(sizeof(LilvPluginClass));
   pc->world           = world;
-  pc->uri             = lilv_node_new_from_node(world, uri);
+  pc->uri             = uri;
   pc->label           = lilv_node_new(world, LILV_VALUE_STRING, label);
   pc->parent_uri =
     (parent_node ? lilv_node_new_from_node(world, parent_node) : NULL);

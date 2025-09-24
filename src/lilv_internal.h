@@ -208,7 +208,7 @@ lilv_collection_get(const LilvCollection* collection, const LilvIter* i);
 LilvPluginClass*
 lilv_plugin_class_new(LilvWorld*      world,
                       const SordNode* parent_node,
-                      const SordNode* uri,
+                      LilvNode*       uri,
                       const char*     label);
 
 void
