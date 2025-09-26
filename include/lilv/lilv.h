@@ -531,6 +531,13 @@ LILV_API LilvWorld*
 lilv_world_new(void);
 
 /**
+   Enable/disable dynamic manifest support.
+
+   Dynamic manifest data will only be loaded if this option is true.
+*/
+#define LILV_OPTION_DYN_MANIFEST "http://drobilla.net/ns/lilv#dyn-manifest"
+
+/**
    Enable/disable language filtering.
 
    Language filtering applies to any functions that return (a) value(s).
@@ -548,13 +555,6 @@ lilv_world_new(void);
 #define LILV_OPTION_LANG "http://drobilla.net/ns/lilv#lang"
 
 /**
-   Enable/disable dynamic manifest support.
-
-   Dynamic manifest data will only be loaded if this option is true.
-*/
-#define LILV_OPTION_DYN_MANIFEST "http://drobilla.net/ns/lilv#dyn-manifest"
-
-/**
    Set application-specific LV2_PATH.
 
    This overrides the LV2_PATH from the environment, so that lilv will only
@@ -568,9 +568,9 @@ lilv_world_new(void);
 
    Currently recognized options:
 
+   - #LILV_OPTION_DYN_MANIFEST
    - #LILV_OPTION_FILTER_LANG
    - #LILV_OPTION_LANG
-   - #LILV_OPTION_DYN_MANIFEST
    - #LILV_OPTION_LV2_PATH
 */
 LILV_API void

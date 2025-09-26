@@ -19,8 +19,8 @@ from ctypes import c_char, c_char_p, c_void_p
 from ctypes import byref, cast
 
 # Option constants
-OPTION_FILTER_LANG = "http://drobilla.net/ns/lilv#filter-lang"
 OPTION_DYN_MANIFEST = "http://drobilla.net/ns/lilv#dyn-manifest"
+OPTION_FILTER_LANG = "http://drobilla.net/ns/lilv#filter-lang"
 
 
 class _LilvLib:
@@ -1209,8 +1209,8 @@ class World(Structure):
         """Set a world option.
 
         Currently recognized options:
-        lilv.OPTION_FILTER_LANG
         lilv.OPTION_DYN_MANIFEST
+        lilv.OPTION_FILTER_LANG
         """
         return c.world_set_option(self.world, uri, value.node)
 
@@ -1873,5 +1873,5 @@ LILV_URI_INPUT_PORT = "http://lv2plug.in/ns/lv2core#InputPort"
 LILV_URI_MIDI_EVENT = "http://lv2plug.in/ns/ext/midi#MidiEvent"
 LILV_URI_OUTPUT_PORT = "http://lv2plug.in/ns/lv2core#OutputPort"
 LILV_URI_PORT = "http://lv2plug.in/ns/lv2core#Port"
-LILV_OPTION_FILTER_LANG = "http://drobilla.net/ns/lilv#filter-lang"
 LILV_OPTION_DYN_MANIFEST = "http://drobilla.net/ns/lilv#dyn-manifest"
+LILV_OPTION_FILTER_LANG = "http://drobilla.net/ns/lilv#filter-lang"

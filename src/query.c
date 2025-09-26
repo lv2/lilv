@@ -167,7 +167,7 @@ lilv_nodes_from_matches(LilvWorld* const      world,
 
   const SordQuadIndex field = o ? SORD_SUBJECT : SORD_OBJECT;
 
-  return (field == SORD_OBJECT && world->opt.filter_language)
+  return (field == SORD_OBJECT && world->opt.filter_lang)
            ? lilv_nodes_from_matches_i18n(world, stream)
            : lilv_nodes_from_matches_all(world, stream, field);
 }

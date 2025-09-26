@@ -74,9 +74,9 @@ lilv_world_new(void)
     "Plugin");
   assert(world->lv2_plugin_class);
 
-  world->n_read_files        = 0;
-  world->opt.filter_language = true;
-  world->opt.dyn_manifest    = true;
+  world->n_read_files     = 0;
+  world->opt.filter_lang  = true;
+  world->opt.dyn_manifest = true;
 
   return world;
 
@@ -157,7 +157,7 @@ lilv_world_set_option(LilvWorld* world, const char* uri, const LilvNode* value)
     }
   } else if (!strcmp(uri, LILV_OPTION_FILTER_LANG)) {
     if (lilv_node_is_bool(value)) {
-      world->opt.filter_language = lilv_node_as_bool(value);
+      world->opt.filter_lang = lilv_node_as_bool(value);
       return;
     }
   } else if (!strcmp(uri, LILV_OPTION_LV2_PATH)) {
