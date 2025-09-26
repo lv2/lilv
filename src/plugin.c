@@ -986,14 +986,6 @@ lilv_plugin_get_related(const LilvPlugin* plugin, const LilvNode* type)
 
   LilvWorld* const world = plugin->world;
 
-  if (!type) {
-    return lilv_nodes_from_matches(world,
-                                   NULL,
-                                   world->uris.lv2_appliesTo,
-                                   lilv_plugin_get_uri(plugin)->node,
-                                   NULL);
-  }
-
   SordIter* const i = sord_search(world->model,
                                   NULL,
                                   world->uris.lv2_appliesTo,
@@ -1006,7 +998,8 @@ lilv_plugin_get_related(const LilvPlugin* plugin, const LilvNode* type)
   LilvNodes* matches = lilv_nodes_new();
   FOREACH_MATCH (i) {
     const SordNode* node = sord_iter_get_node(i, SORD_SUBJECT);
-    if (sord_ask(world->model, node, world->uris.rdf_type, type->node, NULL)) {
+    if (!type ||
+        sord_ask(world->model, node, world->uris.rdf_type, type->node, NULL)) {
       zix_tree_insert(
         (ZixTree*)matches, lilv_node_new_from_node(world, node), NULL);
     }
