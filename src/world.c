@@ -231,17 +231,13 @@ lilv_world_get(LilvWorld*      world,
                const LilvNode* predicate,
                const LilvNode* object)
 {
+  const SordNode* const s = subject ? subject->node : NULL;
+  const SordNode* const p = predicate ? predicate->node : NULL;
   if (!object) {
-    return lilv_node_from_object(world,
-                                 subject ? subject->node : NULL,
-                                 predicate ? predicate->node : NULL);
+    return lilv_node_from_object(world, s, p);
   }
 
-  SordNode* snode = sord_get(world->model,
-                             subject ? subject->node : NULL,
-                             predicate ? predicate->node : NULL,
-                             object->node,
-                             NULL);
+  SordNode* snode = sord_get(world->model, s, p, object->node, NULL);
   LilvNode* lnode = lilv_node_new_from_node(world, snode);
   sord_node_free(world->world, snode);
   return lnode;

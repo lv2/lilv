@@ -718,10 +718,9 @@ lilv_world_find_nodes(LilvWorld*      world,
 /**
    Find a single node that matches a pattern.
 
-   Exactly one of `subject`, `predicate`, `object` must be NULL.
-   This function is equivalent to
-   lilv_nodes_get_first(lilv_world_find_nodes(...)) but simplifies the common
-   case of only wanting a single value.
+   Either `subject` or `object` may be NULL (a wildcard), but not both.  This
+   is simplified alternative to lilv_world_find_nodes() and
+   lilv_nodes_get_first() for when only a single value is needed.
 
    @return The first matching node, or NULL if no matches are found.
 */
