@@ -149,7 +149,14 @@ class PluginTests(unittest.TestCase):
     def setUp(self):
         self.world = lilv.World()
         self.world.set_option(
+            lilv.OPTION_DYN_MANIFEST, self.world.new_bool(False)
+        )
+        self.world.set_option(
             lilv.OPTION_FILTER_LANG, self.world.new_bool(True)
+        )
+        self.world.set_option(lilv.OPTION_LANG, self.world.new_string("en"))
+        self.world.set_option(
+            lilv.OPTION_LV2_PATH, self.world.new_string("")
         )
         self.bundle_uri = self.world.new_uri(location)
         self.assertIsNotNone(
@@ -280,7 +287,8 @@ class PluginTests(unittest.TestCase):
             ),
         )
         self.assertEqual(
-            0, len(self.plugin.get_related("http://example.org/Type")),
+            0,
+            len(self.plugin.get_related("http://example.org/Type")),
         )
         self.assertEqual(
             1,

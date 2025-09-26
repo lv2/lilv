@@ -21,6 +21,8 @@ from ctypes import byref, cast
 # Option constants
 OPTION_DYN_MANIFEST = "http://drobilla.net/ns/lilv#dyn-manifest"
 OPTION_FILTER_LANG = "http://drobilla.net/ns/lilv#filter-lang"
+OPTION_LANG = "http://drobilla.net/ns/lilv#lang"
+OPTION_LV2_PATH = "http://drobilla.net/ns/lilv#lv2-path"
 
 
 class _LilvLib:
@@ -1211,6 +1213,8 @@ class World(Structure):
         Currently recognized options:
         lilv.OPTION_DYN_MANIFEST
         lilv.OPTION_FILTER_LANG
+        lilv.OPTION_LANG
+        lilv.OPTION_LV2_PATH
         """
         return c.world_set_option(self.world, uri, value.node)
 

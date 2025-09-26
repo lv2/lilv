@@ -3,6 +3,7 @@ lilv (0.24.27) unstable; urgency=medium
   * Add header warnings test
   * Avoid over-use of yielding meson options
   * Cache LANG value and add option to override it
+  * Fix Python tests
   * Fix build with dynmanifest support
   * Fix loading plugins that haven't been loaded yet as state
   * Fix loading plugins with invalid lv2:appliesTo properties as state
@@ -13,7 +14,7 @@ lilv (0.24.27) unstable; urgency=medium
   * Improve performance when loading and deleting state
   * Reduce temporary node allocations during query operations
 
- -- David Robillard <d@drobilla.net>  Fri, 26 Sep 2025 02:42:00 +0000
+ -- David Robillard <d@drobilla.net>  Fri, 26 Sep 2025 07:40:08 +0000
 
 lilv (0.24.26) stable; urgency=medium
 

@@ -380,7 +380,9 @@ endif
 ############
 
 if not get_option('bindings_py').disabled()
+  subdir('bindings/bindings_test_plugin.lv2')
   subdir('bindings/python')
+  subdir('bindings/test')
 endif
 
 ###########
