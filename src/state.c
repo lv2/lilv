@@ -3,6 +3,8 @@
 
 #include "lilv_internal.h"
 #include "log.h"
+#include "node_hash.h"
+#include "node_skimmer.h"
 #include "query.h"
 #include "string_util.h"
 #include "sys_util.h"
@@ -828,23 +830,29 @@ lilv_state_new_from_string(LilvWorld* world, LV2_URID_Map* map, const char* str)
     return NULL;
   }
 
-  SerdNode    base   = SERD_NODE_NULL;
-  SerdEnv*    env    = serd_env_new(&base);
-  SordModel*  model  = sord_new(world->world, SORD_SPO | SORD_OPS, false);
-  SerdReader* reader = sord_new_reader(model, env, SERD_TURTLE, NULL);
+  SordModel* model = sord_new(world->world, SORD_SPO, false);
 
-  set_prefixes(env);
-  serd_reader_read_string(reader, USTR(str));
+  NodeSkimmer* skimmer = node_skimmer_new(world->world,
+                                          &SERD_NODE_NULL,
+                                          model,
+                                          SORD_OBJECT,
+                                          world->uris.pset_Preset,
+                                          world->uris.rdf_type,
+                                          false);
 
-  SordNode* s =
-    sord_get(model, NULL, world->uris.rdf_type, world->uris.pset_Preset, NULL);
+  set_prefixes(skimmer->base.env);
+  serd_reader_read_string(skimmer->base.reader, USTR(str));
 
-  LilvState* state = new_state_from_model(world, map, model, s, NULL);
+  NodeHash* const nodes = node_skimmer_free(skimmer);
+  LilvState*      state = NULL;
+  if (nodes && lilv_node_hash_size(nodes) == 1U) {
+    const SordNode* const node =
+      lilv_node_hash_get(nodes, lilv_node_hash_begin(nodes));
+    state = new_state_from_model(world, map, model, node, NULL);
+  }
 
-  sord_node_free(world->world, s);
-  serd_reader_free(reader);
+  lilv_node_hash_free(nodes, world->world);
   sord_free(model);
-  serd_env_free(env);
 
   return state;
 }
@@ -1396,25 +1404,30 @@ lilv_state_delete(LilvWorld* world, const LilvState* state)
   const SerdNode manifest_node =
     serd_node_from_string(SERD_URI, (const uint8_t*)manifest_uri);
 
-  SordModel* model = sord_new(world->world, SORD_SPO, false);
+  SordModel* model    = sord_new(world->world, SORD_SPO, false);
+  NodeHash*  see_also = NULL;
 
-  if (has_manifest) {
+  if (state->uri && has_manifest) {
     // Read manifest into temporary local model
-    SerdEnv*    env = serd_env_new(&manifest_node);
-    SerdReader* ttl = sord_new_reader(model, env, SERD_TURTLE, NULL);
-    serd_reader_read_file(ttl, USTR(manifest_path));
-    serd_reader_free(ttl);
-    serd_env_free(env);
+    NodeSkimmer* const skimmer = node_skimmer_new(world->world,
+                                                  &manifest_node,
+                                                  model,
+                                                  SORD_SUBJECT,
+                                                  state->uri->node,
+                                                  world->uris.rdfs_seeAlso,
+                                                  true);
+
+    serd_reader_read_file(skimmer->base.reader, USTR(manifest_path));
+    see_also = node_skimmer_free(skimmer);
   }
 
   if (state->uri) {
-    const SordNode* file =
-      sord_get(model, state->uri->node, world->uris.rdfs_seeAlso, NULL, NULL);
-    if (file) {
-      // Remove state file
-      const uint8_t* uri       = sord_node_get_string(file);
-      char*          path      = (char*)serd_file_uri_parse(uri, NULL);
-      char*          real_path = zix_canonical_path(NULL, path);
+    // Remove state rdfs:seeAlso files
+    NODE_HASH_FOREACH (s, see_also) {
+      const SordNode* node      = lilv_node_hash_get(see_also, s);
+      const uint8_t*  uri       = sord_node_get_string(node);
+      char* const     path      = (char*)serd_file_uri_parse(uri, NULL);
+      char* const     real_path = zix_canonical_path(NULL, path);
       if (real_path) {
         try_unlink(state->dir, real_path);
       }
@@ -1424,9 +1437,10 @@ lilv_state_delete(LilvWorld* world, const LilvState* state)
 
     // Remove any existing manifest entries for this state
     const char* state_uri_str = lilv_node_as_string(state->uri);
-    remove_manifest_entry(world->world, model, state_uri_str);
     remove_manifest_entry(world->world, world->model, state_uri_str);
   }
+
+  lilv_node_hash_free(see_also, world->world);
 
   // Drop bundle from model
   lilv_world_unload_bundle(world, bundle);
