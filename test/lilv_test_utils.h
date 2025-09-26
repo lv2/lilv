@@ -24,12 +24,6 @@
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .\n\
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .\n"
 
-#define SIMPLE_MANIFEST_TTL \
-  "\
-:plug a lv2:Plugin ;\n\
-	lv2:binary <foo" SHLIB_EXT "> ;\n\
-	rdfs:seeAlso <plugin.ttl> .\n"
-
 #if defined(__APPLE__)
 #  define SHLIB_EXT ".dylib"
 #elif defined(_WIN32)
@@ -37,6 +31,12 @@
 #else
 #  define SHLIB_EXT ".so"
 #endif
+
+#define SIMPLE_MANIFEST_TTL \
+  "\
+:plug a lv2:Plugin ;\n\
+	lv2:binary <foo" SHLIB_EXT "> ;\n\
+	rdfs:seeAlso <plugin.ttl> .\n"
 
 typedef struct {
   LilvWorld* world;
