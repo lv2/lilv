@@ -1278,8 +1278,9 @@ lilv_port_get_scale_points(const LilvPlugin* plugin, const LilvPort* port);
 /**
    Load a state snapshot from the world RDF model.
 
-   This function can be used to load the default state of a plugin by passing
-   the plugin URI as the `subject` parameter.
+   If `node` is a known plugin URI, then that plugin's default state is
+   returned.  Otherwise, the saved state or preset `node` (which lv2:appliesTo
+   some plugin, has an rdfs:label, and so on) is returned.
 
    @param world The world.
    @param map URID mapper.
