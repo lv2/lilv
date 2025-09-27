@@ -307,6 +307,23 @@ test_instance_state(void)
 }
 
 static void
+test_default_state(void)
+{
+  TestContext* const      ctx        = test_context_new();
+  const LilvPlugin* const plugin     = load_test_plugin(ctx);
+  const LilvNode* const   plugin_uri = lilv_plugin_get_uri(plugin);
+
+  LilvState* const state =
+    lilv_state_new_from_world(ctx->env->world, &ctx->map, plugin_uri);
+
+  assert(lilv_state_get_num_properties(state) == 0);
+  assert(lilv_node_equals(lilv_state_get_uri(state), plugin_uri));
+
+  lilv_state_free(state);
+  test_context_free(ctx);
+}
+
+static void
 test_equal(void)
 {
   TestContext* const      ctx    = test_context_new();
@@ -1109,6 +1126,7 @@ int
 main(void)
 {
   test_instance_state();
+  test_default_state();
   test_equal();
   test_changed_plugin_data();
   test_changed_metadata();
