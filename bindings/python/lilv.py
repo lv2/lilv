@@ -6,7 +6,7 @@
 __author__ = "David Robillard"
 __copyright__ = "Copyright 2016-2024 David Robillard"
 __license__ = "ISC"
-__version__ = "0.24.27"
+__version__ = "0.25.1"
 __maintainer__ = "David Robillard"
 __email__ = "d@drobilla.net"
 __status__ = "Production"
@@ -23,6 +23,7 @@ OPTION_DYN_MANIFEST = "http://drobilla.net/ns/lilv#dyn-manifest"
 OPTION_FILTER_LANG = "http://drobilla.net/ns/lilv#filter-lang"
 OPTION_LANG = "http://drobilla.net/ns/lilv#lang"
 OPTION_LV2_PATH = "http://drobilla.net/ns/lilv#lv2-path"
+OPTION_OBJECT_INDEX = "http://drobilla.net/ns/lilv#object-index"
 
 
 class _LilvLib:
@@ -1215,6 +1216,7 @@ class World(Structure):
         lilv.OPTION_FILTER_LANG
         lilv.OPTION_LANG
         lilv.OPTION_LV2_PATH
+        lilv.OPTION_OBJECT_INDEX
         """
         return c.world_set_option(self.world, uri, value.node)
 

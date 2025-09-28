@@ -10,6 +10,16 @@
 
 #include <assert.h>
 
+static const char* const manifest_ttl = "\
+:plug a lv2:Plugin ;\n\
+	lv2:binary <foo" SHLIB_EXT "> ;\n\
+	rdfs:seeAlso <plugin.ttl> .\n\
+\n\
+<http://example.org/preset>\n\
+	a <http://lv2plug.in/ns/ext/presets#Preset> ;\n\
+	lv2:appliesTo :plug ;\n\
+	rdfs:label \"some preset\" .\n";
+
 static const char* const plugin_ttl = "\
 :plug\n\
 	a lv2:Plugin ;\n\
@@ -44,12 +54,7 @@ static const char* const plugin_ttl = "\
 		lv2:name \"Latency\" ;\n\
 		lv2:portProperty lv2:reportsLatency ;\n\
 		lv2:designation lv2:latency\n\
-	] .\n\
-\n\
-<http://example.org/preset>\n\
-	a pset:Preset ;\n\
-	lv2:appliesTo :plug ;\n\
-	rdfs:label \"some preset\" .\n";
+	] .\n";
 
 int
 main(void)
@@ -57,7 +62,7 @@ main(void)
   LilvTestEnv* const env   = lilv_test_env_new();
   LilvWorld* const   world = env->world;
 
-  if (create_bundle(env, "preset.lv2", SIMPLE_MANIFEST_TTL, plugin_ttl)) {
+  if (create_bundle(env, "preset.lv2", manifest_ttl, plugin_ttl)) {
     return 1;
   }
 

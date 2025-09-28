@@ -564,6 +564,20 @@ lilv_world_new(void);
 #define LILV_OPTION_LV2_PATH "http://drobilla.net/ns/lilv#lv2-path"
 
 /**
+   Enable/disable object-first index for queries with subject wildcards.
+
+   This enables additional indexing so that arbitrary query functions like
+   lilv_world_find_nodes() efficiently support queries with subject wildcards,
+   at the cost of increased load time and memory consumption.
+
+   This option is disabled by default for good performance in the
+   common/default case.  Before it was introduced, the object-first index was
+   always present, so applications must explicitly enable this option to
+   preserve the old behaviour.
+*/
+#define LILV_OPTION_OBJECT_INDEX "http://drobilla.net/ns/lilv#object-index"
+
+/**
    Set an option for `world`.
 
    Currently recognized options:
@@ -572,6 +586,7 @@ lilv_world_new(void);
    - #LILV_OPTION_FILTER_LANG
    - #LILV_OPTION_LANG
    - #LILV_OPTION_LV2_PATH
+   - #LILV_OPTION_OBJECT_INDEX
 */
 LILV_API void
 lilv_world_set_option(LilvWorld* world, const char* uri, const LilvNode* value);

@@ -9,6 +9,7 @@
 #include "string_util.h"
 #include "syntax_skimmer.h"
 #include "sys_util.h"
+#include "type_skimmer.h"
 #include "uris.h"
 
 #ifdef LILV_DYN_MANIFEST
@@ -51,7 +52,12 @@ lilv_world_new(void)
     goto fail;
   }
 
-  world->model = sord_new(world->world, SORD_SPO | SORD_OPS, true);
+  unsigned indices = SORD_SPO;
+  if (world->opt.object_index) {
+    indices |= SORD_OPS;
+  }
+
+  world->model = sord_new(world->world, indices, true);
   if (!world->model) {
     goto fail;
   }
@@ -62,8 +68,12 @@ lilv_world_new(void)
   world->plugins        = lilv_plugins_new();
   world->zombies        = lilv_plugins_new();
   world->loaded_files   = lilv_node_hash_new(NULL);
+  world->replaced       = lilv_node_hash_new(NULL);
 
   world->libs = zix_tree_new(NULL, false, lilv_lib_compare, NULL, NULL, NULL);
+
+  world->applications = sord_new(world->world, SORD_OPS, false);
+  world->subclasses   = sord_new(world->world, SORD_OPS, false);
 
   lilv_uris_init(&world->uris, world->world);
 
@@ -97,6 +107,9 @@ lilv_world_free(LilvWorld* world)
 
   lilv_uris_cleanup(&world->uris, world->world);
 
+  sord_free(world->subclasses);
+  sord_free(world->applications);
+
   for (LilvSpec* spec = world->specs; spec;) {
     LilvSpec* next = spec->next;
     sord_node_free(world->world, spec->spec);
@@ -120,6 +133,9 @@ lilv_world_free(LilvWorld* world)
   }
   zix_tree_free((ZixTree*)world->zombies);
   world->zombies = NULL;
+
+  lilv_node_hash_free(world->replaced, world->world);
+  world->replaced = NULL;
 
   lilv_node_hash_free(world->loaded_files, world->world);
   world->loaded_files = NULL;
@@ -166,9 +182,21 @@ lilv_world_set_option(LilvWorld* world, const char* uri, const LilvNode* value)
       world->opt.lv2_path = lilv_strdup(lilv_node_as_string(value));
       return;
     }
+  } else if (!strcmp(uri, LILV_OPTION_OBJECT_INDEX)) {
+    if (lilv_node_is_bool(value)) {
+      world->opt.object_index = lilv_node_as_bool(value);
+      return;
+    }
   }
   LILV_WARNF("Unrecognized or invalid option `%s'\n", uri);
 }
+
+#define WARN_INDEX(w, s, p, o)                                          \
+  do {                                                                  \
+    if (!s && !world->opt.object_index) {                               \
+      LILV_WARN("Subject wildcard without LILV_OPTION_OBJECT_INDEX\n"); \
+    }                                                                   \
+  } while (0)
 
 LilvNodes*
 lilv_world_find_nodes(LilvWorld*      world,
@@ -176,6 +204,8 @@ lilv_world_find_nodes(LilvWorld*      world,
                       const LilvNode* predicate,
                       const LilvNode* object)
 {
+  WARN_INDEX(world, subject, predicate, object);
+
   if (subject && !lilv_node_is_uri(subject) && !lilv_node_is_blank(subject)) {
     LILV_ERRORF("Subject `%s' is not a resource\n",
                 sord_node_get_string(subject->node));
@@ -231,6 +261,8 @@ lilv_world_get(LilvWorld*      world,
                const LilvNode* predicate,
                const LilvNode* object)
 {
+  WARN_INDEX(world, subject, predicate, object);
+
   const SordNode* const s = subject ? subject->node : NULL;
   const SordNode* const p = predicate ? predicate->node : NULL;
   if (!object) {
@@ -249,6 +281,8 @@ lilv_world_ask(LilvWorld*      world,
                const LilvNode* predicate,
                const LilvNode* object)
 {
+  WARN_INDEX(world, subject, predicate, object);
+
   return sord_ask(world->model,
                   subject ? subject->node : NULL,
                   predicate ? predicate->node : NULL,
@@ -423,14 +457,23 @@ lilv_world_load_graph(LilvWorld*      world,
                       const SordNode* graph,
                       const SordNode* uri)
 {
-  const SerdNode* base = sord_node_to_serd_node(uri);
-  SerdEnv*        env  = serd_env_new(base);
-  SerdReader* reader   = sord_new_reader(world->model, env, SERD_TURTLE, graph);
+  TypeSkimmer* const skimmer = type_skimmer_new(world->world,
+                                                &world->uris,
+                                                sord_node_to_serd_node(uri),
+                                                world->model,
+                                                NULL,
+                                                NULL,
+                                                NULL,
+                                                &world->replaced,
+                                                world->applications,
+                                                world->subclasses);
+
+  SerdReader* const reader = skimmer->base.reader;
+  serd_reader_set_default_graph(reader, sord_node_to_serd_node(graph));
 
   const SerdStatus st = lilv_world_load_file(world, reader, uri);
 
-  serd_env_free(env);
-  serd_reader_free(reader);
+  type_skimmer_free(skimmer);
   return st;
 }
 
@@ -527,24 +570,27 @@ lilv_world_load_dyn_manifest(LilvWorld*      world,
     fseek(fd, 0, SEEK_SET);
 
     // Parse generated data file into the world model
-    const SerdNode* base = sord_node_to_serd_node(dmanifest);
-    SerdEnv*        env  = serd_env_new(base);
-    SerdReader*     reader =
-      sord_new_reader(world->model, env, SERD_TURTLE, dmanifest);
+    NodeHash*          plugins = NULL;
+    NodeSkimmer* const skimmer =
+      node_skimmer_new(world->world,
+                       sord_node_to_serd_node(dmanifest),
+                       world->model,
+                       SORD_OBJECT,
+                       world->uris.lv2_Plugin,
+                       world->uris.rdf_type,
+                       false);
+
+    SerdReader* reader = skimmer->base.reader;
+    serd_reader_set_default_graph(reader, sord_node_to_serd_node(dmanifest));
     serd_reader_add_blank_prefix(reader, lilv_world_blank_node_prefix(world));
     serd_reader_read_file_handle(reader, fd, (const uint8_t*)"(dyn-manifest)");
-    serd_reader_free(reader);
-    serd_env_free(env);
+
+    plugins = node_skimmer_free(skimmer);
 
     // Close (and automatically delete) temporary data file
     fclose(fd);
 
     // ?plugin a lv2:Plugin
-    NodeHash* const plugins = lilv_hash_from_matches(world->model,
-                                                     NULL,
-                                                     world->uris.rdf_type,
-                                                     world->uris.lv2_Plugin,
-                                                     dmanifest);
     NODE_HASH_FOREACH (p, plugins) {
       const SordNode* plug = lilv_node_hash_get(plugins, p);
       lilv_world_add_plugin(world, plug, manifest_node, desc, bundle_node);
@@ -730,58 +776,67 @@ lilv_world_load_bundle(LilvWorld* world, const LilvNode* bundle_uri)
   LilvNode* const manifest = lilv_new_uri(world, (const char*)manifest_uri);
   zix_free(NULL, manifest_uri);
 
-  // Read manifest into model with graph = bundle_node
-  SerdStatus st = lilv_world_load_graph(world, bundle_node, manifest->node);
+  // Set up a skimmer to skim for supported types as the manifest is loaded
+  NodeHash*          plugins = NULL;
+  NodeHash*          specs   = NULL;
+  TypeSkimmer* const skimmer =
+    type_skimmer_new(world->world,
+                     &world->uris,
+                     sord_node_to_serd_node(bundle_node),
+                     world->model,
+                     &plugins,
+                     NULL,
+                     &specs,
+                     &world->replaced,
+                     world->applications,
+                     world->subclasses);
+
+  // Set up reader so statements have the bundle node as graph
+  SerdReader* reader = skimmer->base.reader;
+  serd_reader_set_default_graph(reader, sord_node_to_serd_node(bundle_node));
+
+  // Read manifest into model and skim for any plugins
+  const SerdStatus st = lilv_world_load_file(world, reader, manifest->node);
   if (st > SERD_FAILURE) {
     LILV_ERRORF("Error reading %s\n", lilv_node_as_string(manifest));
     lilv_node_free(manifest);
+    type_skimmer_free(skimmer);
+    lilv_node_hash_free(specs, world->world);
+    lilv_node_hash_free(plugins, world->world);
     return;
   }
 
-  // ?plugin a lv2:Plugin
-  SordIter* plug_results = sord_search(world->model,
-                                       NULL,
-                                       world->uris.rdf_type,
-                                       world->uris.lv2_Plugin,
-                                       bundle_node);
-
   // Find any loaded plugins that will be replaced with a newer version
-  LilvNodes* unload_uris = lilv_nodes_new();
-  FOREACH_MATCH (plug_results) {
-    const SordNode* plug = sord_iter_get_node(plug_results, SORD_SUBJECT);
-
-    LilvNode*         plugin_uri = lilv_node_new_from_node(world, plug);
-    const LilvPlugin* plugin =
-      lilv_plugins_get_by_uri(world->plugins, plugin_uri);
-    const LilvNode* last_bundle =
-      plugin ? lilv_plugin_get_bundle_uri(plugin) : NULL;
-    if (!plugin || sord_node_equals(bundle_node, last_bundle->node)) {
-      // No previously loaded version, or it's from the same bundle
-      lilv_node_free(plugin_uri);
-      continue;
+  LilvNodes* const unload_uris = lilv_nodes_new();
+  NODE_HASH_FOREACH (p, plugins) {
+    const SordNode*   node   = lilv_node_hash_get(plugins, p);
+    LilvNode*         uri    = lilv_node_new_from_node(world, node);
+    const LilvPlugin* plugin = lilv_plugins_get_by_uri(world->plugins, uri);
+    if (plugin) {
+      const LilvNode* last_bundle = lilv_plugin_get_bundle_uri(plugin);
+      if (!sord_node_equals(bundle_node, last_bundle->node)) {
+        // Some version was previously loaded from a different bundle
+        const int cmp = lilv_world_compare_versions(
+          world, last_bundle->node, bundle_uri->node, uri->node);
+        if (cmp > 0) {
+          zix_tree_insert(
+            (ZixTree*)unload_uris, lilv_node_duplicate(uri), NULL);
+        } else if (cmp < 0) {
+          lilv_node_free(uri);
+          lilv_world_drop_graph(world, bundle_node);
+          lilv_node_free(manifest);
+          lilv_nodes_free(unload_uris);
+          type_skimmer_free(skimmer);
+          lilv_node_hash_free(specs, world->world);
+          lilv_node_hash_free(plugins, world->world);
+        }
+      }
     }
-
-    // Compare versions
-    const int cmp = lilv_world_compare_versions(
-      world, last_bundle->node, bundle_uri->node, plugin_uri->node);
-    if (cmp > 0) {
-      zix_tree_insert(
-        (ZixTree*)unload_uris, lilv_node_duplicate(plugin_uri), NULL);
-    } else if (cmp < 0) {
-      lilv_node_free(plugin_uri);
-      sord_iter_free(plug_results);
-      lilv_world_drop_graph(world, bundle_node);
-      lilv_node_free(manifest);
-      lilv_nodes_free(unload_uris);
-      return;
-    }
-    lilv_node_free(plugin_uri);
+    lilv_node_free(uri);
   }
 
-  sord_iter_free(plug_results);
-
   // Unload any old conflicting plugins
-  LilvNodes* unload_bundles = lilv_nodes_new();
+  LilvNodes* const unload_bundles = lilv_nodes_new();
   LILV_FOREACH (nodes, i, unload_uris) {
     const LilvNode*   uri    = lilv_nodes_get(unload_uris, i);
     const LilvPlugin* plugin = lilv_plugins_get_by_uri(world->plugins, uri);
@@ -794,42 +849,30 @@ lilv_world_load_bundle(LilvWorld* world, const LilvNode* bundle_uri)
   }
   lilv_nodes_free(unload_uris);
 
-  // Now unload the associated bundles
-  // This must be done last since several plugins could be in the same bundle
+  // Unload the associated bundles (now that no plugins should refer to them)
   LILV_FOREACH (nodes, i, unload_bundles) {
     lilv_world_unload_bundle(world, lilv_nodes_get(unload_bundles, i));
   }
   lilv_nodes_free(unload_bundles);
 
-  // Re-search for plugin results now that old plugins are gone
-  plug_results = sord_search(world->model,
-                             NULL,
-                             world->uris.rdf_type,
-                             world->uris.lv2_Plugin,
-                             bundle_node);
-
-  FOREACH_MATCH (plug_results) {
-    const SordNode* plug = sord_iter_get_node(plug_results, SORD_SUBJECT);
+  // Add discovered plugins to world
+  NODE_HASH_FOREACH (p, plugins) {
+    const SordNode* const plug = lilv_node_hash_get(plugins, p);
     lilv_world_add_plugin(world, plug, manifest->node, NULL, bundle_node);
   }
-  sord_iter_free(plug_results);
 
+  // Load dynamic manifest and its data if available
   lilv_world_load_dyn_manifest(world, bundle_node, manifest->node);
 
-  // ?spec a lv2:Specification
-  // ?spec a owl:Ontology
-  const SordNode* spec_preds[] = {
-    world->uris.lv2_Specification, world->uris.owl_Ontology, NULL};
-  for (const SordNode** p = spec_preds; *p; ++p) {
-    SordIter* i =
-      sord_search(world->model, NULL, world->uris.rdf_type, *p, bundle_node);
-    FOREACH_MATCH (i) {
-      const SordNode* spec = sord_iter_get_node(i, SORD_SUBJECT);
-      lilv_world_add_spec(world, spec, bundle_node);
-    }
-    sord_iter_free(i);
+  // Load specifications (lv2:Specification or owl:Ontology)
+  NODE_HASH_FOREACH (s, specs) {
+    const SordNode* const spec = lilv_node_hash_get(specs, s);
+    lilv_world_add_spec(world, spec, bundle_node);
   }
 
+  lilv_node_hash_free(specs, world->world);
+  lilv_node_hash_free(plugins, world->world);
+  type_skimmer_free(skimmer);
   lilv_node_free(manifest);
 }
 
@@ -970,7 +1013,23 @@ lilv_world_load_specifications(LilvWorld* world)
     LILV_FOREACH (nodes, f, spec->data_uris) {
       const LilvNode* file =
         (const LilvNode*)lilv_collection_get(spec->data_uris, f);
-      lilv_world_load_graph(world, NULL, file->node);
+
+      const SerdNode* const base = sord_node_to_serd_node(file->node);
+
+      TypeSkimmer* const skimmer = type_skimmer_new(world->world,
+                                                    &world->uris,
+                                                    base,
+                                                    world->model,
+                                                    NULL,
+                                                    NULL,
+                                                    NULL,
+                                                    &world->replaced,
+                                                    world->applications,
+                                                    world->subclasses);
+
+      lilv_world_load_file(world, skimmer->base.reader, file->node);
+
+      type_skimmer_free(skimmer);
     }
   }
 }
@@ -1009,27 +1068,43 @@ lilv_world_add_plugin_class(LilvWorld* const      world,
 void
 lilv_world_load_plugin_classes(LilvWorld* world)
 {
-  /* FIXME: This loads all classes, not just lv2:Plugin subclasses.
-     However, if the host gets all the classes via
-     lilv_plugin_class_get_children starting with lv2:Plugin as the root (which
-     is e.g. how a host would build a menu), they won't be seen anyway...
-  */
+  const size_t     n_subclasses = sord_num_quads(world->subclasses);
+  const SordNode** scratch =
+    (const SordNode**)zix_calloc(NULL, 2U * n_subclasses, sizeof(SordNode*));
 
-  SordIter* classes = sord_search(
-    world->model, NULL, world->uris.rdf_type, world->uris.rdfs_Class, NULL);
-  FOREACH_MATCH (classes) {
-    const SordNode* class_node = sord_iter_get_node(classes, SORD_SUBJECT);
+  size_t           n_work = 0U;
+  const SordNode** work   = scratch;
+  size_t           n_next = 0U;
+  const SordNode** next   = scratch + n_subclasses;
 
-    SordNode* parent = sord_get(
-      world->model, class_node, world->uris.rdfs_subClassOf, NULL, NULL);
+  work[n_work++] = world->lv2_plugin_class->uri->node;
 
-    if (parent && sord_node_get_type(parent) == SORD_URI) {
-      lilv_world_add_plugin_class(world, class_node, parent);
+  lilv_world_add_plugin_class(world, world->lv2_plugin_class->uri->node, NULL);
+  size_t n_added = 0U;
+  do {
+    n_added = 0U;
+
+    for (size_t i = 0U; i < n_work; ++i) {
+      const SordNode* const parent   = work[i];
+      SordIter* const       children = sord_search(
+        world->subclasses, NULL, world->uris.rdfs_subClassOf, parent, NULL);
+      FOREACH_MATCH (children) {
+        const SordNode* child = sord_iter_get_node(children, SORD_SUBJECT);
+        lilv_world_add_plugin_class(world, child, parent);
+        next[n_next++] = child;
+        ++n_added;
+      }
+      sord_iter_free(children);
     }
 
-    sord_node_free(world->world, parent);
-  }
-  sord_iter_free(classes);
+    const SordNode** const swap = work;
+    work                        = next;
+    next                        = swap;
+    n_work                      = n_next;
+    n_next                      = 0U;
+  } while (n_added);
+
+  zix_free(NULL, scratch);
 }
 
 void

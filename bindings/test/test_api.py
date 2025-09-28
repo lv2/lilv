@@ -155,6 +155,7 @@ class PluginTests(unittest.TestCase):
             lilv.OPTION_FILTER_LANG, self.world.new_bool(True)
         )
         self.world.set_option(lilv.OPTION_LANG, self.world.new_string("en"))
+        self.world.set_option(lilv.OPTION_OBJECT_INDEX, self.world.new_bool(False))
         self.world.set_option(
             lilv.OPTION_LV2_PATH, self.world.new_string("")
         )

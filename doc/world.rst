@@ -33,7 +33,9 @@ Setting Options
 
 Various options to control Lilv's behavior can be set with :func:`lilv_world_set_option`.
 The currently supported options are :c:macro:`LILV_OPTION_FILTER_LANG`,
-:c:macro:`LILV_OPTION_DYN_MANIFEST`, and :c:macro:`LILV_OPTION_LV2_PATH`.
+:c:macro:`LILV_OPTION_DYN_MANIFEST`,
+:c:macro:`LILV_OPTION_LV2_PATH`,
+and :c:macro:`LILV_OPTION_OBJECT_INDEX`.
 
 For example, to set the LV2 path to only load plugins bundled in the application:
 

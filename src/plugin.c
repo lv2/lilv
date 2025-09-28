@@ -927,11 +927,9 @@ lilv_plugin_get_author_homepage(const LilvPlugin* plugin)
 bool
 lilv_plugin_is_replaced(const LilvPlugin* plugin)
 {
-  return sord_ask(plugin->world->model,
-                  NULL,
-                  plugin->world->uris.dc_replaces,
-                  lilv_plugin_get_uri(plugin)->node,
-                  NULL);
+  return lilv_node_hash_find(plugin->world->replaced,
+                             lilv_plugin_get_uri(plugin)->node) !=
+         lilv_node_hash_end(plugin->world->replaced);
 }
 
 LilvUIs*
@@ -986,7 +984,7 @@ lilv_plugin_get_related(const LilvPlugin* plugin, const LilvNode* type)
 
   LilvWorld* const world = plugin->world;
 
-  SordIter* const i = sord_search(world->model,
+  SordIter* const i = sord_search(world->applications,
                                   NULL,
                                   world->uris.lv2_appliesTo,
                                   lilv_plugin_get_uri(plugin)->node,

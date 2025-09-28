@@ -107,6 +107,7 @@ struct LilvInstancePimpl {
 typedef struct {
   bool  dyn_manifest;
   bool  filter_lang;
+  bool  object_index;
   char* lv2_path;
 } LilvOptions;
 
@@ -122,7 +123,10 @@ struct LilvWorldImpl {
   LilvPlugins*       plugins;
   LilvPlugins*       zombies;
   NodeHash*          loaded_files;
+  NodeHash*          replaced;
   ZixTree*           libs;
+  SordModel*         applications;
+  SordModel*         subclasses;
   LilvURIs           uris;
   LilvOptions        opt;
 };

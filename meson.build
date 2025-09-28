@@ -14,7 +14,7 @@ project(
   ],
   license: 'ISC',
   meson_version: '>= 0.56.0',
-  version: '0.24.27',
+  version: '0.25.1',
 )
 
 lilv_src_root = meson.current_source_dir()
@@ -273,6 +273,7 @@ sources = files(
   'src/string_util.c',
   'src/syntax_skimmer.c',
   'src/sys_util.c',
+  'src/type_skimmer.c',
   'src/ui.c',
   'src/uris.c',
   'src/world.c',
