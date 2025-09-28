@@ -319,6 +319,16 @@ test_default_state(void)
   assert(lilv_state_get_num_properties(state) == 0);
   assert(lilv_node_equals(lilv_state_get_uri(state), plugin_uri));
 
+  char* const bundle_path = lilv_file_uri_parse(
+    lilv_node_as_string(lilv_plugin_get_bundle_uri(plugin)), NULL);
+
+  LilvState* const bundle_state =
+    lilv_state_new_from_file(ctx->env->world, &ctx->map, NULL, bundle_path);
+  assert(bundle_state);
+  assert(lilv_state_equals(bundle_state, state));
+
+  lilv_state_free(bundle_state);
+  lilv_free(bundle_path);
   lilv_state_free(state);
   test_context_free(ctx);
 }
@@ -859,10 +869,8 @@ test_files_round_trip(void)
                           "state.ttl"));
 
   // Load updated state bundle and check that it differs from the others
-  char* const state_2_path = zix_path_join(NULL, bundle_2_path, "state.ttl");
-
   LilvState* state_2_loaded =
-    lilv_state_new_from_file(ctx->env->world, &ctx->map, NULL, state_2_path);
+    lilv_state_new_from_file(ctx->env->world, &ctx->map, NULL, bundle_2_path);
 
   assert(state_2_loaded);
   assert(!lilv_state_equals(state_1_1_loaded, state_2_loaded));
@@ -877,7 +885,6 @@ test_files_round_trip(void)
   cleanup_test_directories(dirs);
 
   lilv_state_free(state_2_loaded);
-  free(state_2_path);
   lilv_state_free(state_2);
   free(bundle_2_path);
   lilv_state_free(state_1_2_loaded);

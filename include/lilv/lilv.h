@@ -1308,14 +1308,11 @@ lilv_state_new_from_world(LilvWorld*      world,
                           const LilvNode* node);
 
 /**
-   Load a state snapshot from a file.
+   Load a state snapshot from a file or directory.
 
-   If `subject` is NULL, it is taken to be the URI of the file (`<>` in
-   Turtle).
-
-   This function parses the file separately to create the state, it does not
-   parse the file into the world model, that is, the returned state is the only
-   new memory consumed once this function returns.
+   If no `subject` is given, then it will be automatically determined from
+   `path`, possibly by loading the file and investigating its contents for a
+   unique instance of a plugin or preset.
 
    @param world The world.
    @param map URID mapper.

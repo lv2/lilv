@@ -8,6 +8,7 @@
 #include "query.h"
 #include "string_util.h"
 #include "sys_util.h"
+#include "type_skimmer.h"
 
 #include <lilv/lilv.h>
 #include <lv2/atom/atom.h>
@@ -779,34 +780,72 @@ lilv_state_new_from_file(LilvWorld*      world,
     return NULL;
   }
 
-  uint8_t* const abs_path = (uint8_t*)zix_canonical_path(NULL, path);
+  char* const abs_path = zix_canonical_path(NULL, path);
   if (!abs_path) {
     return NULL;
   }
 
-  SerdNode    node   = serd_node_new_file_uri(abs_path, NULL, NULL, true);
-  SerdEnv*    env    = serd_env_new(&node);
-  SordModel*  model  = sord_new(world->world, SORD_SPO, false);
-  SerdReader* reader = sord_new_reader(model, env, SERD_TURTLE, NULL);
+  const uint8_t* file_path     = (const uint8_t*)abs_path;
+  const char*    dir_path      = abs_path;
+  char*          manifest_path = NULL;
+  if (zix_file_type(abs_path) == ZIX_FILE_TYPE_DIRECTORY) {
+    manifest_path = zix_path_join(NULL, dir_path, "manifest.ttl");
+    file_path     = (uint8_t*)manifest_path;
+  } else {
+    dir_path = zix_path_parent_path(path).data;
+  }
 
-  serd_reader_read_file(reader, (const uint8_t*)node.buf);
+  SordModel* model    = sord_new(world->world, SORD_SPO, false);
+  SerdNode   file_uri = serd_node_new_file_uri(file_path, NULL, NULL, true);
 
-  const SordNode* subject_node =
-    (subject) ? subject->node
-              : sord_node_from_serd_node(world->world, env, &node, NULL, NULL);
+  NodeHash*          plugins = NULL;
+  NodeHash*          presets = NULL;
+  TypeSkimmer* const skimmer = type_skimmer_new(world->world,
+                                                &world->uris,
+                                                &file_uri,
+                                                model,
+                                                &plugins,
+                                                &presets,
+                                                NULL,
+                                                NULL,
+                                                NULL,
+                                                NULL);
 
-  char* const dir_path = zix_string_view_copy(NULL, zix_path_parent_path(path));
+  serd_reader_read_file(skimmer->base.reader, (const uint8_t*)file_uri.buf);
+
+  const SordNode* subject_node = subject ? subject->node : NULL;
+  if (!subject_node) {
+    if (presets && lilv_node_hash_size(presets) == 1U) {
+      subject_node = lilv_node_hash_get(presets, lilv_node_hash_begin(presets));
+    } else if (plugins && lilv_node_hash_size(plugins) == 1U) {
+      subject_node = lilv_node_hash_get(plugins, lilv_node_hash_begin(plugins));
+    }
+  }
+
+  // Load any rdfs:seeAlso files
+  NodeHash* const files = lilv_hash_from_matches(
+    model, subject_node, world->uris.rdfs_seeAlso, NULL, NULL);
+  NODE_HASH_FOREACH (f, files) {
+    const SordNode* const link      = lilv_node_hash_get(files, f);
+    const char* const     link_uri  = (const char*)sord_node_get_string(link);
+    char* const           link_path = lilv_file_uri_parse(link_uri, NULL);
+
+    serd_env_set_base_uri(skimmer->base.env, sord_node_to_serd_node(link));
+    serd_reader_read_file(skimmer->base.reader, (const uint8_t*)link_path);
+    lilv_free(link_path);
+  }
+  lilv_node_hash_free(files, world->world);
 
   LilvState* const state =
     new_state_from_model(world, map, model, subject_node, dir_path);
 
-  zix_free(NULL, dir_path);
-
-  serd_node_free(&node);
+  type_skimmer_free(skimmer);
+  lilv_node_hash_free(presets, world->world);
+  lilv_node_hash_free(plugins, world->world);
+  serd_node_free(&file_uri);
+  zix_free(NULL, manifest_path);
   zix_free(NULL, abs_path);
-  serd_reader_free(reader);
   sord_free(model);
-  serd_env_free(env);
   return state;
 }
 
