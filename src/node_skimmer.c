@@ -12,14 +12,18 @@
 #include <assert.h>
 #include <stddef.h>
 
+static bool
+node_equals(const SordNode* const lhs, const SordNode* const rhs)
+{
+  return lhs == rhs; // Nodes are interned
+}
+
 static SerdStatus
 skim_nodes(NodeSkimmer*          skimmer,
            const SordNode* const subject,
            const SordNode* const predicate,
            const SordNode* const object)
 {
-  (void)subject;
-
   // Get the node from this statement that corresponds to our topic field
   const SordNode* const topic =
     ((skimmer->topic_field == SORD_SUBJECT)     ? subject
@@ -27,11 +31,11 @@ skim_nodes(NodeSkimmer*          skimmer,
                                                 : object);
 
   // Pass through any statements that aren't about our topic
-  if (!sord_node_equals(topic, skimmer->topic)) {
+  if (!node_equals(topic, skimmer->topic)) {
     return SERD_SUCCESS;
   }
 
-  if (sord_node_equals(predicate, skimmer->predicate)) {
+  if (node_equals(predicate, skimmer->predicate)) {
     // Add matching node (opposite the topic) to result set
     if (!skimmer->nodes) {
       skimmer->nodes = lilv_node_hash_new(NULL);

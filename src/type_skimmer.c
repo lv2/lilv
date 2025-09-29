@@ -11,6 +11,12 @@
 
 #include <stddef.h>
 
+static bool
+node_equals(const SordNode* const lhs, const SordNode* const rhs)
+{
+  return lhs == rhs; // Nodes are interned
+}
+
 static void
 add_node(NodeHash** const field, const SordNode* const node)
 {
@@ -30,24 +36,24 @@ skim_type(TypeSkimmer* const    skimmer,
           const SordNode* const predicate,
           const SordNode* const object)
 {
-  if (sord_node_equals(predicate, skimmer->uris->rdf_type)) {
-    if (sord_node_equals(object, skimmer->uris->lv2_Plugin)) {
+  if (node_equals(predicate, skimmer->uris->rdf_type)) {
+    if (node_equals(object, skimmer->uris->lv2_Plugin)) {
       add_node(skimmer->plugins, subject);
-    } else if (sord_node_equals(object, skimmer->uris->pset_Preset)) {
+    } else if (node_equals(object, skimmer->uris->pset_Preset)) {
       add_node(skimmer->presets, subject);
-    } else if (sord_node_equals(object, skimmer->uris->lv2_Specification) ||
-               sord_node_equals(object, skimmer->uris->owl_Ontology)) {
+    } else if (node_equals(object, skimmer->uris->lv2_Specification) ||
+               node_equals(object, skimmer->uris->owl_Ontology)) {
       add_node(skimmer->specs, subject);
     }
   } else if (skimmer->replaced &&
-             sord_node_equals(predicate, skimmer->uris->dc_replaces)) {
+             node_equals(predicate, skimmer->uris->dc_replaces)) {
     add_node(skimmer->replaced, object);
   } else if (skimmer->applications &&
-             sord_node_equals(predicate, skimmer->uris->lv2_appliesTo)) {
+             node_equals(predicate, skimmer->uris->lv2_appliesTo)) {
     const SordQuad tup = {subject, predicate, object, NULL};
     sord_add(skimmer->applications, tup);
   } else if (skimmer->subclasses &&
-             sord_node_equals(predicate, skimmer->uris->rdfs_subClassOf)) {
+             node_equals(predicate, skimmer->uris->rdfs_subClassOf)) {
     const SordQuad tup = {subject, predicate, object, NULL};
     sord_add(skimmer->subclasses, tup);
   }
