@@ -9,6 +9,7 @@
 #include <sord/sord.h>
 #include <zix/allocator.h>
 
+#include <stdbool.h>
 #include <stddef.h>
 
 static bool
