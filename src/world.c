@@ -248,6 +248,9 @@ lilv_world_get_unique(LilvWorld* const world,
   const SordNode* object = sord_iter_get_node(stream, SORD_OBJECT);
   sord_iter_next(stream);
   if (!sord_iter_end(stream)) {
+    LILV_WARNF("Subject <%s> has multiple <%s> properties\n",
+               sord_node_get_string(subject),
+               sord_node_get_string(predicate));
     object = NULL; // Multiple matches => no match
   }
 
