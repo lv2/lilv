@@ -301,7 +301,7 @@ lilv_world_blank_node_prefix(LilvWorld* world)
   return (const uint8_t*)str;
 }
 
-/** Comparator for sequences (e.g. world->plugins). */
+// Comparator for sequences (e.g. world->plugins)
 int
 lilv_header_compare_by_uri(const void* a, const void* b, const void* user_data)
 {
@@ -320,7 +320,7 @@ lilv_header_compare_by_uri(const void* a, const void* b, const void* user_data)
    Libraries do have a LilvHeader, but we must also compare the bundle to
    handle the case where the same library is loaded with different bundles, and
    consequently different contents (mainly plugins).
- */
+*/
 static int
 lilv_lib_compare(const void* a, const void* b, const void* user_data)
 {
@@ -335,7 +335,7 @@ lilv_lib_compare(const void* a, const void* b, const void* user_data)
   return cmp ? cmp : strcmp(lib_a->bundle_path, lib_b->bundle_path);
 }
 
-/** Get an element of a collection of any object with an LilvHeader by URI. */
+// Get an element of a collection of any object with an LilvHeader by URI
 static ZixTreeIter*
 lilv_collection_find_by_uri(const ZixTree* seq, const LilvNode* uri)
 {
@@ -347,7 +347,7 @@ lilv_collection_find_by_uri(const ZixTree* seq, const LilvNode* uri)
   return i;
 }
 
-/** Get an element of a collection of any object with an LilvHeader by URI. */
+// Get an element of a collection of any object with an LilvHeader by URI
 struct LilvHeader*
 lilv_collection_get_by_uri(const ZixTree* seq, const LilvNode* uri)
 {
@@ -356,7 +356,7 @@ lilv_collection_get_by_uri(const ZixTree* seq, const LilvNode* uri)
   return i ? (struct LilvHeader*)zix_tree_get(i) : NULL;
 }
 
-/// Add all rdfs:seeAlso files of subject to tree
+// Add all rdfs:seeAlso files of subject to tree
 static void
 lilv_world_collect_data_files(LilvWorld*            world,
                               const SordNode* const subject,
@@ -958,7 +958,7 @@ load_dir_entry(const char* dir, const char* name, void* data)
   free(path);
 }
 
-/** Load all bundles in the directory at `dir_path`. */
+// Load all bundles in the directory at `dir_path`
 static void
 lilv_world_load_directory(LilvWorld* world, const char* dir_path)
 {

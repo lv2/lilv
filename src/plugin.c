@@ -42,7 +42,7 @@ lilv_plugin_init(LilvPlugin* plugin, LilvNode* bundle_uri)
   plugin->parse_errors = false;
 }
 
-/** Ownership of `uri` and `bundle` is taken */
+// Ownership of `uri` and `bundle` is taken
 LilvPlugin*
 lilv_plugin_new(LilvWorld* world, LilvNode* uri, LilvNode* bundle_uri)
 {

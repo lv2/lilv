@@ -375,7 +375,7 @@ absolute_path(LV2_State_Map_Path_Handle handle, const char* state_path)
   return path;
 }
 
-/** Return a new features array with built-in features added to `features`. */
+// Return a new features array with built-in features added to `features`
 static const LV2_Feature**
 add_features(const LV2_Feature* const* features,
              const LV2_Feature*        map,
@@ -416,7 +416,7 @@ add_features(const LV2_Feature* const* features,
   return ret;
 }
 
-/// Return a normal path for a directory with a trailing separator
+// Return a normal path for a directory with a trailing separator
 static char*
 normal_dir(const char* path)
 {

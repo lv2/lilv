@@ -91,7 +91,7 @@ lilv_node_new(LilvWorld* world, LilvNodeType type, const char* str)
   return val;
 }
 
-/** Create a new LilvNode from `node`, or return NULL if impossible */
+// Create a new LilvNode from `node`, or return NULL if impossible
 LilvNode*
 lilv_node_new_from_node(LilvWorld* world, const SordNode* node)
 {
