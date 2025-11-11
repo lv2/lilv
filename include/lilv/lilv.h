@@ -580,6 +580,10 @@ lilv_world_new(void);
 /**
    Set an option for `world`.
 
+   For boolean options, passing a null value sets the option to false.  For
+   options of any other type, null is considered invalid and will produce a
+   warning.
+
    Currently recognized options:
 
    - #LILV_OPTION_DYN_MANIFEST

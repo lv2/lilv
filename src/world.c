@@ -161,7 +161,7 @@ void
 lilv_world_set_option(LilvWorld* world, const char* uri, const LilvNode* value)
 {
   if (!strcmp(uri, LILV_OPTION_DYN_MANIFEST)) {
-    if (lilv_node_is_bool(value)) {
+    if (!value || value->type == LILV_VALUE_BOOL) {
       world->opt.dyn_manifest = lilv_node_as_bool(value);
       return;
     }
@@ -172,7 +172,7 @@ lilv_world_set_option(LilvWorld* world, const char* uri, const LilvNode* value)
       return;
     }
   } else if (!strcmp(uri, LILV_OPTION_FILTER_LANG)) {
-    if (lilv_node_is_bool(value)) {
+    if (!value || value->type == LILV_VALUE_BOOL) {
       world->opt.filter_lang = lilv_node_as_bool(value);
       return;
     }
