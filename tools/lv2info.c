@@ -374,6 +374,7 @@ main(int argc, char** argv)
   int ret = 0;
 
   LilvWorld* world = lilv_world_new();
+  lilv_world_set_option(world, LILV_OPTION_OBJECT_INDEX, NULL);
   lilv_world_load_all(world);
 
   LilvNode* uri = lilv_new_uri(world, plugin_uri);

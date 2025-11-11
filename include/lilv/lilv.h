@@ -570,10 +570,8 @@ lilv_world_new(void);
    lilv_world_find_nodes() efficiently support queries with subject wildcards,
    at the cost of increased load time and memory consumption.
 
-   This option is disabled by default for good performance in the
-   common/default case.  Before it was introduced, the object-first index was
-   always present, so applications must explicitly enable this option to
-   preserve the old behaviour.
+   This option is enabled by default for backwards compatibility, although most
+   applications can and should disable it to improve performance.
 */
 #define LILV_OPTION_OBJECT_INDEX "http://drobilla.net/ns/lilv#object-index"
 

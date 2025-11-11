@@ -228,6 +228,7 @@ main(int argc, char** argv)
   const char* const plugin_uri_str = (a < argc ? argv[a++] : NULL);
 
   LilvWorld* world = lilv_world_new();
+  lilv_world_set_option(world, LILV_OPTION_OBJECT_INDEX, NULL);
   lilv_world_load_all(world);
 
   atom_AtomPort   = lilv_new_uri(world, LV2_ATOM__AtomPort);

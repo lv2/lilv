@@ -272,6 +272,7 @@ main(int argc, char** argv)
   }
 
   /* Discover world */
+  lilv_world_set_option(self.world, LILV_OPTION_OBJECT_INDEX, NULL);
   lilv_world_load_all(self.world);
 
   /* Get plugin */

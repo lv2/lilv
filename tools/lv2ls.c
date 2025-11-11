@@ -67,6 +67,7 @@ main(int argc, char** argv)
   }
 
   LilvWorld* world = lilv_world_new();
+  lilv_world_set_option(world, LILV_OPTION_OBJECT_INDEX, NULL);
   lilv_world_load_all(world);
 
   const LilvPlugins* plugins = lilv_world_get_all_plugins(world);

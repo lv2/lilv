@@ -52,16 +52,6 @@ lilv_world_new(void)
     goto fail;
   }
 
-  unsigned indices = SORD_SPO;
-  if (world->opt.object_index) {
-    indices |= SORD_OPS;
-  }
-
-  world->model = sord_new(world->world, indices, true);
-  if (!world->model) {
-    goto fail;
-  }
-
   world->lang           = lilv_get_lang();
   world->specs          = NULL;
   world->plugin_classes = lilv_plugin_classes_new();
@@ -87,6 +77,7 @@ lilv_world_new(void)
   world->n_read_files     = 0;
   world->opt.filter_lang  = true;
   world->opt.dyn_manifest = true;
+  world->opt.object_index = true;
 
   return world;
 
@@ -183,12 +174,25 @@ lilv_world_set_option(LilvWorld* world, const char* uri, const LilvNode* value)
       return;
     }
   } else if (!strcmp(uri, LILV_OPTION_OBJECT_INDEX)) {
-    if (lilv_node_is_bool(value)) {
+    if (!value || value->type == LILV_VALUE_BOOL) {
       world->opt.object_index = lilv_node_as_bool(value);
       return;
     }
   }
   LILV_WARNF("Unrecognized or invalid option `%s'\n", uri);
+}
+
+static void
+allocate_model_if_necessary(LilvWorld* world)
+{
+  if (!world->model) {
+    unsigned indices = SORD_SPO;
+    if (world->opt.object_index) {
+      indices |= SORD_OPS;
+    }
+
+    world->model = sord_new(world->world, indices, true);
+  }
 }
 
 #define WARN_INDEX(w, s, p, o)                                          \
@@ -204,6 +208,7 @@ lilv_world_find_nodes(LilvWorld*      world,
                       const LilvNode* predicate,
                       const LilvNode* object)
 {
+  allocate_model_if_necessary(world);
   WARN_INDEX(world, subject, predicate, object);
 
   if (subject && !lilv_node_is_uri(subject) && !lilv_node_is_blank(subject)) {
@@ -264,13 +269,14 @@ lilv_world_get(LilvWorld*      world,
                const LilvNode* predicate,
                const LilvNode* object)
 {
-  WARN_INDEX(world, subject, predicate, object);
-
   const SordNode* const s = subject ? subject->node : NULL;
   const SordNode* const p = predicate ? predicate->node : NULL;
   if (!object) {
     return lilv_node_from_object(world, s, p);
   }
+
+  allocate_model_if_necessary(world);
+  WARN_INDEX(world, subject, predicate, object);
 
   SordNode* snode = sord_get(world->model, s, p, object->node, NULL);
   LilvNode* lnode = lilv_node_new_from_node(world, snode);
@@ -284,6 +290,7 @@ lilv_world_ask(LilvWorld*      world,
                const LilvNode* predicate,
                const LilvNode* object)
 {
+  allocate_model_if_necessary(world);
   WARN_INDEX(world, subject, predicate, object);
 
   return sord_ask(world->model,
@@ -460,6 +467,8 @@ lilv_world_load_graph(LilvWorld*      world,
                       const SordNode* graph,
                       const SordNode* uri)
 {
+  allocate_model_if_necessary(world);
+
   TypeSkimmer* const skimmer = type_skimmer_new(world->world,
                                                 &world->uris,
                                                 sord_node_to_serd_node(uri),
@@ -764,6 +773,8 @@ lilv_world_compare_versions(LilvWorld* const      world,
 void
 lilv_world_load_bundle(LilvWorld* world, const LilvNode* bundle_uri)
 {
+  allocate_model_if_necessary(world);
+
   if (!lilv_node_is_uri(bundle_uri)) {
     LILV_ERRORF("Bundle URI `%s' is not a URI\n",
                 sord_node_get_string(bundle_uri->node));
@@ -1012,6 +1023,8 @@ lilv_world_load_path(LilvWorld* world, const char* lv2_path)
 void
 lilv_world_load_specifications(LilvWorld* world)
 {
+  allocate_model_if_necessary(world);
+
   for (LilvSpec* spec = world->specs; spec; spec = spec->next) {
     LILV_FOREACH (nodes, f, spec->data_uris) {
       const LilvNode* file =
@@ -1071,6 +1084,8 @@ lilv_world_add_plugin_class(LilvWorld* const      world,
 void
 lilv_world_load_plugin_classes(LilvWorld* world)
 {
+  allocate_model_if_necessary(world);
+
   const size_t     n_subclasses = sord_num_quads(world->subclasses);
   const SordNode** scratch =
     (const SordNode**)zix_calloc(NULL, 2U * n_subclasses, sizeof(SordNode*));
@@ -1132,6 +1147,8 @@ lilv_world_load_all(LilvWorld* world)
 SerdStatus
 lilv_world_load_file(LilvWorld* world, SerdReader* reader, const SordNode* uri)
 {
+  allocate_model_if_necessary(world);
+
   assert(uri);
   if (lilv_node_hash_find(world->loaded_files, uri) !=
       lilv_node_hash_end(world->loaded_files)) {
@@ -1173,6 +1190,8 @@ lilv_world_load_resource(LilvWorld* world, const LilvNode* resource)
 int
 lilv_world_load_resource_internal(LilvWorld* world, const SordNode* resource)
 {
+  allocate_model_if_necessary(world);
+
   NodeHash* const files = lilv_hash_from_matches(
     world->model, resource, world->uris.rdfs_seeAlso, NULL, NULL);
 
