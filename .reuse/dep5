@@ -18,6 +18,6 @@ Copyright: 2024 David Robillard <d@drobilla.net>
 Comment: Contributed to the Commons as a tool configuration
 License: 0BSD OR ISC
 
-Files: bindings/test/*.ttl.in test/*/*.ttl.in test/lv2/core.lv2/*.ttl
+Files: bindings/bindings_test_plugin.lv2/*.ttl.in test/*/*.ttl.in test/lv2/core.lv2/*.ttl
 Copyright: 2015-2022 David Robillard <d@drobilla.net>
 License: ISC
