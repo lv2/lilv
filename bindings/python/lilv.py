@@ -1,12 +1,12 @@
 """Lilv Python interface"""
 
-# Copyright 2016-2022 David Robillard <d@drobilla.net>
+# Copyright 2016-2025 David Robillard <d@drobilla.net>
 # SPDX-License-Identifier: ISC
 
 __author__ = "David Robillard"
 __copyright__ = "Copyright 2016-2024 David Robillard"
 __license__ = "ISC"
-__version__ = "0.25.1"
+__version__ = "0.26.0"
 __maintainer__ = "David Robillard"
 __email__ = "d@drobilla.net"
 __status__ = "Production"

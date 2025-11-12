@@ -1,4 +1,4 @@
-lilv (0.25.1) unstable; urgency=medium
+lilv (0.26.0) stable; urgency=medium
 
   * Add header warnings test
   * Add option to control indexing overhead for subject queries
@@ -17,7 +17,7 @@ lilv (0.25.1) unstable; urgency=medium
   * Print a warning when a property unexpectedly has several values
   * Reduce temporary node allocations during query operations
 
- -- David Robillard <d@drobilla.net>  Tue, 30 Sep 2025 02:55:25 +0000
+ -- David Robillard <d@drobilla.net>  Wed, 12 Nov 2025 19:15:00 +0000
 
 lilv (0.24.26) stable; urgency=medium
 

@@ -14,7 +14,7 @@ project(
   ],
   license: 'ISC',
   meson_version: '>= 0.56.0',
-  version: '0.25.1',
+  version: '0.26.0',
 )
 
 lilv_src_root = meson.current_source_dir()
@@ -235,7 +235,7 @@ serd_dep = dependency(
 sord_dep = dependency(
   'sord-0',
   include_type: 'system',
-  version: '>= 0.16.19',
+  version: '>= 0.16.20',
 )
 lv2_dep = dependency(
   'lv2',

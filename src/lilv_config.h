@@ -1,11 +1,11 @@
-// Copyright 2021-2024 David Robillard <d@drobilla.net>
+// Copyright 2021-2025 David Robillard <d@drobilla.net>
 // SPDX-License-Identifier: ISC
 
 #ifndef LILV_CONFIG_H
 #define LILV_CONFIG_H
 
 // Define version unconditionally so a warning will catch a mismatch
-#define LILV_VERSION "0.25.1"
+#define LILV_VERSION "0.26.0"
 
 // Separator between entries in variables like PATH
 #ifndef LILV_PATH_SEP
