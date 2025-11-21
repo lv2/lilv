@@ -758,14 +758,14 @@ lilv_world_compare_versions(LilvWorld* const      world,
                sord_node_get_string(old_bundle));
   } else if (cmp < 0) {
     LILV_WARNF("Ignoring version %d.%d of <%s> from <%s>\n",
-               old_version.minor,
-               old_version.micro,
-               sord_node_get_string(resource),
-               sord_node_get_string(old_bundle));
-    LILV_NOTEF("Newer version %d.%d loaded from <%s>\n",
                new_version.minor,
                new_version.micro,
+               sord_node_get_string(resource),
                sord_node_get_string(new_bundle));
+    LILV_NOTEF("Newer version %d.%d loaded from <%s>\n",
+               old_version.minor,
+               old_version.micro,
+               sord_node_get_string(old_bundle));
   }
   return cmp;
 }
