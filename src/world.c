@@ -950,10 +950,13 @@ lilv_world_unload_bundle(LilvWorld* world, const LilvNode* bundle_uri)
 static void
 load_dir_entry(const char* dir, const char* name, void* data)
 {
-  LilvWorld* const world = (LilvWorld*)data;
-  char* const      path  = zix_path_join(NULL, dir, name);
-  if (zix_file_type(path) != ZIX_FILE_TYPE_DIRECTORY) {
-    LILV_WARNF("Skipping non-directory `%s' within path entry\n", path);
+  LilvWorld* const  world = (LilvWorld*)data;
+  char* const       path  = zix_path_join(NULL, dir, name);
+  const ZixFileType type  = zix_file_type(path);
+  if (type != ZIX_FILE_TYPE_DIRECTORY) {
+    if (type != ZIX_FILE_TYPE_NONE) {
+      LILV_WARNF("Skipping non-directory `%s' within path entry\n", path);
+    }
     free(path);
     return;
   }
@@ -975,9 +978,10 @@ lilv_world_load_directory(LilvWorld* world, const char* dir_path)
 {
   char* const path = zix_expand_environment_strings(NULL, dir_path);
   if (path) {
-    if (zix_file_type(path) == ZIX_FILE_TYPE_DIRECTORY) {
+    const ZixFileType type = zix_file_type(path);
+    if (type == ZIX_FILE_TYPE_DIRECTORY) {
       zix_dir_for_each(path, world, load_dir_entry);
-    } else {
+    } else if (type != ZIX_FILE_TYPE_NONE) {
       LILV_WARNF("Skipping non-directory `%s' in path\n", path);
     }
     free(path);
