@@ -843,6 +843,7 @@ lilv_world_load_bundle(LilvWorld* world, const LilvNode* bundle_uri)
           type_skimmer_free(skimmer);
           lilv_node_hash_free(specs, world->world);
           lilv_node_hash_free(plugins, world->world);
+          return;
         }
       }
     }
