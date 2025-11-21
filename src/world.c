@@ -917,13 +917,34 @@ lilv_world_unload_bundle(LilvWorld* world, const LilvNode* bundle_uri)
     return 0;
   }
 
-  // Remove loaded files entries (the actual file data is dropped below)
+  // Collect loaded files from this bundle (the actual data is dropped below)
+  NodeHash* unload_files = lilv_node_hash_new(NULL);
   NODE_HASH_FOREACH (i, world->loaded_files) {
     const SordNode* const file = lilv_node_hash_get(world->loaded_files, i);
-    if (file && sord_node_equals(file, bundle_uri->node)) {
-      lilv_node_hash_remove(world->loaded_files, world->world, file);
+
+    size_t               file_len = 0U;
+    const uint8_t* const file_str =
+      sord_node_get_string_counted(file, &file_len);
+
+    size_t               bundle_len = 0U;
+    const uint8_t* const bundle_str =
+      sord_node_get_string_counted(bundle_uri->node, &bundle_len);
+
+    if (file && (sord_node_equals(file, bundle_uri->node) ||
+                 (file_len > bundle_len && !strncmp((const char*)file_str,
+                                                    (const char*)bundle_str,
+                                                    bundle_len)))) {
+      lilv_node_hash_insert(unload_files, sord_node_copy(file));
     }
   }
+
+  // Remove files from world records so they'll be read again if loaded
+  NODE_HASH_FOREACH (i, unload_files) {
+    const SordNode* const file = lilv_node_hash_get(unload_files, i);
+    lilv_node_hash_remove(world->loaded_files, world->world, file);
+  }
+
+  lilv_node_hash_free(unload_files, world->world);
 
   /* Remove any plugins in the bundle from the plugin list.  Since the
      application may still have a pointer to the LilvPlugin, it can not be

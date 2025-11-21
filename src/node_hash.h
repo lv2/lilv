@@ -51,7 +51,7 @@ ZIX_PURE_FUNC NodeHashIter
 lilv_node_hash_end(const NodeHash* ZIX_NONNULL hash);
 
 /// Return the node pointer at the given position or null
-ZIX_PURE_FUNC const SordNode* ZIX_NULLABLE
+ZIX_PURE_FUNC const SordNode* ZIX_UNSPECIFIED
 lilv_node_hash_get(const NodeHash* ZIX_NONNULL hash, NodeHashIter i);
 
 /// Return an iterator that has been advanced to the next node pointer

@@ -62,6 +62,7 @@ main(void)
   lilv_node_free(minor);
 
   // Try to load the old version again
+  lilv_world_unload_bundle(world, old_bundle);
   lilv_world_load_bundle(world, old_bundle);
   lilv_world_load_resource(world, plug_uri);
 
