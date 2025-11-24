@@ -77,7 +77,7 @@ sclose(const char* path, SNDFILE* file)
 {
   int st = 0;
   if (file && (st = sf_close(file))) {
-    fatal(NULL, 1, "Failed to close %s (%s)\n", path, sf_error_number(st));
+    fprintf(stderr, "Failed to close %s (%s)\n", path, sf_error_number(st));
   }
 }
 

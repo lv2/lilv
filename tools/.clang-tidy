@@ -3,7 +3,6 @@
 
 Checks: >
   -cppcoreguidelines-avoid-non-const-global-variables,
-  -misc-no-recursion,
 CheckOptions:
   - key:   readability-function-cognitive-complexity.Threshold
     value: '42'
