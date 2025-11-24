@@ -1,4 +1,4 @@
-// Copyright 2007-2019 David Robillard <d@drobilla.net>
+// Copyright 2007-2025 David Robillard <d@drobilla.net>
 // SPDX-License-Identifier: ISC
 
 #include "lilv_internal.h"
@@ -333,19 +333,8 @@ lilv_node_as_blank(const LilvNode* value)
 bool
 lilv_node_is_literal(const LilvNode* value)
 {
-  if (!value) {
-    return false;
-  }
-
-  switch (value->type) {
-  case LILV_VALUE_STRING:
-  case LILV_VALUE_INT:
-  case LILV_VALUE_FLOAT:
-  case LILV_VALUE_BLOB:
-    return true;
-  default:
-    return false;
-  }
+  return value && value->type != LILV_VALUE_URI &&
+         value->type != LILV_VALUE_BLANK;
 }
 
 bool

@@ -1,4 +1,4 @@
-// Copyright 2007-2020 David Robillard <d@drobilla.net>
+// Copyright 2007-2025 David Robillard <d@drobilla.net>
 // SPDX-License-Identifier: ISC
 
 #undef NDEBUG
@@ -10,6 +10,7 @@
 #include <assert.h>
 #include <float.h>
 #include <math.h>
+#include <stdbool.h>
 #include <string.h>
 
 static const char* const plugin_ttl = "\
@@ -40,17 +41,20 @@ main(void)
   LilvNode* sval = lilv_new_string(world, "Foo");
   LilvNode* ival = lilv_new_int(world, 42);
   LilvNode* fval = lilv_new_float(world, 1.6180f);
+  LilvNode* bval = lilv_new_bool(world, true);
 
   assert(lilv_node_is_uri(uval));
   assert(lilv_node_is_string(sval));
   assert(lilv_node_is_int(ival));
   assert(lilv_node_is_float(fval));
+  assert(lilv_node_is_bool(bval));
 
   assert(!lilv_node_is_literal(NULL));
   assert(!lilv_node_is_literal(uval));
   assert(lilv_node_is_literal(sval));
   assert(lilv_node_is_literal(ival));
   assert(lilv_node_is_literal(fval));
+  assert(lilv_node_is_literal(bval));
   assert(!lilv_node_get_path(fval, NULL));
 
   assert(!strcmp(lilv_node_as_uri(uval), "http://example.org"));
@@ -107,24 +111,29 @@ main(void)
   LilvNode* sval_e  = lilv_new_string(world, "Foo");
   LilvNode* ival_e  = lilv_new_int(world, 42);
   LilvNode* fval_e  = lilv_new_float(world, 1.6180f);
+  LilvNode* bval_e  = lilv_new_bool(world, true);
   LilvNode* uval_ne = lilv_new_uri(world, "http://no-example.org");
   LilvNode* sval_ne = lilv_new_string(world, "Bar");
   LilvNode* ival_ne = lilv_new_int(world, 24);
   LilvNode* fval_ne = lilv_new_float(world, 3.14159f);
+  LilvNode* bval_ne = lilv_new_bool(world, false);
 
   assert(lilv_node_equals(uval, uval_e));
   assert(lilv_node_equals(sval, sval_e));
   assert(lilv_node_equals(ival, ival_e));
   assert(lilv_node_equals(fval, fval_e));
+  assert(lilv_node_equals(bval, bval_e));
 
   assert(!lilv_node_equals(uval, uval_ne));
   assert(!lilv_node_equals(sval, sval_ne));
   assert(!lilv_node_equals(ival, ival_ne));
   assert(!lilv_node_equals(fval, fval_ne));
+  assert(!lilv_node_equals(bval, bval_ne));
 
   assert(!lilv_node_equals(uval, sval));
   assert(!lilv_node_equals(sval, ival));
   assert(!lilv_node_equals(ival, fval));
+  assert(!lilv_node_equals(ival, bval));
 
   LilvNode* uval_dup = lilv_node_duplicate(uval);
   assert(lilv_node_equals(uval, uval_dup));
@@ -149,10 +158,12 @@ main(void)
   lilv_node_free(sval_e);
   lilv_node_free(ival_e);
   lilv_node_free(fval_e);
+  lilv_node_free(bval_e);
   lilv_node_free(uval_ne);
   lilv_node_free(sval_ne);
   lilv_node_free(ival_ne);
   lilv_node_free(fval_ne);
+  lilv_node_free(bval_ne);
   lilv_node_free(uval_dup);
   lilv_node_free(nil2);
 
