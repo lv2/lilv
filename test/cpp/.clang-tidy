@@ -17,5 +17,8 @@ Checks: >
   -modernize-use-trailing-return-type,
   -modernize-use-using,
   -readability-implicit-bool-conversion,
+CheckOptions:
+  - key:   readability-function-cognitive-complexity.Threshold
+    value: '1'
 HeaderFilterRegex: '.*/lilvmm\.hpp'
 InheritParentConfig: true

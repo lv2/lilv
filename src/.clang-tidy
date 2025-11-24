@@ -18,7 +18,9 @@ Checks: >
   -llvm-header-guard,
   -performance-no-int-to-ptr,
   -readability-avoid-nested-conditional-operator,
-  -readability-function-cognitive-complexity,
   -readability-redundant-casting,
   -readability-suspicious-call-argument,
+CheckOptions:
+  - key:   readability-function-cognitive-complexity.Threshold
+    value: '25'
 InheritParentConfig: true

@@ -1,4 +1,4 @@
-# Copyright 2020-2024 David Robillard <d@drobilla.net>
+# Copyright 2020-2025 David Robillard <d@drobilla.net>
 # SPDX-License-Identifier: 0BSD OR ISC
 
 Checks: >
@@ -15,6 +15,8 @@ Checks: >
   -hicpp-multiway-paths-covered,
   -hicpp-signed-bitwise,
   -llvm-header-guard,
-  -readability-function-cognitive-complexity,
   -readability-suspicious-call-argument,
+CheckOptions:
+  - key:   readability-function-cognitive-complexity.Threshold
+    value: '22'
 InheritParentConfig: true
