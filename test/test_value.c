@@ -24,44 +24,11 @@ static const char* const plugin_ttl = "\
 		lv2:name \"Foo\" ;\n\
 	] .";
 
-int
-main(void)
+static void
+test_file_uris(void)
 {
   LilvTestEnv* const env   = lilv_test_env_new();
   LilvWorld* const   world = env->world;
-
-  if (create_bundle(env, "value.lv2", SIMPLE_MANIFEST_TTL, plugin_ttl)) {
-    return 1;
-  }
-
-  lilv_world_load_specifications(env->world);
-  lilv_world_load_bundle(env->world, env->test_bundle_uri);
-
-  LilvNode* uval = lilv_new_uri(world, "http://example.org");
-  LilvNode* sval = lilv_new_string(world, "Foo");
-  LilvNode* ival = lilv_new_int(world, 42);
-  LilvNode* fval = lilv_new_float(world, 1.6180f);
-  LilvNode* bval = lilv_new_bool(world, true);
-
-  assert(lilv_node_is_uri(uval));
-  assert(lilv_node_is_string(sval));
-  assert(lilv_node_is_int(ival));
-  assert(lilv_node_is_float(fval));
-  assert(lilv_node_is_bool(bval));
-
-  assert(!lilv_node_is_literal(NULL));
-  assert(!lilv_node_is_literal(uval));
-  assert(lilv_node_is_literal(sval));
-  assert(lilv_node_is_literal(ival));
-  assert(lilv_node_is_literal(fval));
-  assert(lilv_node_is_literal(bval));
-  assert(!lilv_node_get_path(fval, NULL));
-
-  assert(!strcmp(lilv_node_as_uri(uval), "http://example.org"));
-  assert(!strcmp(lilv_node_as_string(sval), "Foo"));
-  assert(lilv_node_as_int(ival) == 42);
-  assert(fabs(lilv_node_as_float(fval) - 1.6180) < FLT_EPSILON);
-  assert(isnan(lilv_node_as_float(sval)));
 
 #if defined(__clang__)
 #  pragma clang diagnostic push
@@ -93,6 +60,49 @@ main(void)
   lilv_node_free(host_abs);
   lilv_node_free(loc_rel);
   lilv_node_free(loc_abs);
+  lilv_test_env_free(env);
+}
+
+static void
+test_constructed(void)
+{
+  LilvTestEnv* const env   = lilv_test_env_new();
+  LilvWorld* const   world = env->world;
+
+  assert(!create_bundle(env, "value.lv2", SIMPLE_MANIFEST_TTL, plugin_ttl));
+
+  assert(!lilv_node_is_uri(NULL));
+  assert(!lilv_node_is_blank(NULL));
+  assert(!lilv_node_is_string(NULL));
+  assert(!lilv_node_is_float(NULL));
+  assert(!lilv_node_is_int(NULL));
+  assert(!lilv_node_is_bool(NULL));
+
+  LilvNode* uval = lilv_new_uri(world, "http://example.org");
+  LilvNode* sval = lilv_new_string(world, "Foo");
+  LilvNode* ival = lilv_new_int(world, 42);
+  LilvNode* fval = lilv_new_float(world, 1.6180f);
+  LilvNode* bval = lilv_new_bool(world, true);
+
+  assert(lilv_node_is_uri(uval));
+  assert(lilv_node_is_string(sval));
+  assert(lilv_node_is_int(ival));
+  assert(lilv_node_is_float(fval));
+  assert(lilv_node_is_bool(bval));
+
+  assert(!lilv_node_is_literal(NULL));
+  assert(!lilv_node_is_literal(uval));
+  assert(lilv_node_is_literal(sval));
+  assert(lilv_node_is_literal(ival));
+  assert(lilv_node_is_literal(fval));
+  assert(lilv_node_is_literal(bval));
+  assert(!lilv_node_get_path(fval, NULL));
+
+  assert(!strcmp(lilv_node_as_uri(uval), "http://example.org"));
+  assert(!strcmp(lilv_node_as_string(sval), "Foo"));
+  assert(lilv_node_as_int(ival) == 42);
+  assert(fabs(lilv_node_as_float(fval) - 1.6180) < FLT_EPSILON);
+  assert(isnan(lilv_node_as_float(sval)));
 
   char* tok = lilv_node_get_turtle_token(uval);
   assert(!strcmp(tok, "<http://example.org>"));
@@ -154,6 +164,7 @@ main(void)
   lilv_node_free(sval);
   lilv_node_free(ival);
   lilv_node_free(fval);
+  lilv_node_free(bval);
   lilv_node_free(uval_e);
   lilv_node_free(sval_e);
   lilv_node_free(ival_e);
@@ -169,6 +180,12 @@ main(void)
 
   delete_bundle(env);
   lilv_test_env_free(env);
+}
 
+int
+main(void)
+{
+  test_file_uris();
+  test_constructed();
   return 0;
 }

@@ -16,7 +16,7 @@
 #define PLUGIN_PREFIXES \
   "\
 @prefix : <http://example.org/> .\n\
-@prefix atom: <http://lv2plug.in/ns/ext/atom#> . \n\
+@prefix atom: <http://lv2plug.in/ns/ext/atom#> .\n\
 @prefix doap: <http://usefulinc.com/ns/doap#> .\n\
 @prefix foaf: <http://xmlns.com/foaf/0.1/> .\n\
 @prefix lv2: <http://lv2plug.in/ns/lv2core#> .\n\
