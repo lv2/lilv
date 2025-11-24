@@ -56,6 +56,7 @@ typedef struct {
   SordNode* ZIX_ALLOCATED xsd_boolean;
   SordNode* ZIX_ALLOCATED xsd_decimal;
   SordNode* ZIX_ALLOCATED xsd_double;
+  SordNode* ZIX_ALLOCATED xsd_float;
   SordNode* ZIX_ALLOCATED xsd_integer;
 
   SordNode* ZIX_ALLOCATED terminator;

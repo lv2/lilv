@@ -1,11 +1,12 @@
 lilv (0.26.1) unstable; urgency=medium
 
   * Actually reload files if bundles are unloaded then reloaded
+  * Add support for loading xsd:float literals, "INF", and "NaN"
   * Avoid warning about non-existent entries in LV2_PATH
   * Fix crash when duplicate plugins are discovered
   * Fix lilv_node_is_literal() with booleans
 
- -- David Robillard <d@drobilla.net>  Mon, 24 Nov 2025 15:13:38 +0000
+ -- David Robillard <d@drobilla.net>  Mon, 24 Nov 2025 15:44:24 +0000
 
 lilv (0.26.0) stable; urgency=medium
 

@@ -17,6 +17,15 @@ static const char* const plugin_ttl = "\
 :plug a lv2:Plugin ;\n\
 	a lv2:CompressorPlugin ;\n\
 	doap:name \"Test plugin\" ;\n\
+	:a-bool true ;\n\
+	:a-integer 234 ;\n\
+	:a-decimal 1.5 ;\n\
+	:a-float \"5.65E1\"^^<http://www.w3.org/2001/XMLSchema#float> ;\n\
+	:a-double \"7.8025E2\"^^<http://www.w3.org/2001/XMLSchema#double> ;\n\
+	:a-inf \"INF\"^^<http://www.w3.org/2001/XMLSchema#float> ;\n\
+	:a-p-inf \"+INF\"^^<http://www.w3.org/2001/XMLSchema#float> ;\n\
+	:a-n-inf \"-INF\"^^<http://www.w3.org/2001/XMLSchema#float> ;\n\
+	:a-nan \"NaN\"^^<http://www.w3.org/2001/XMLSchema#float> ;\n\
 	lv2:port [\n\
 		a lv2:ControlPort ; a lv2:InputPort ;\n\
 		lv2:index 0 ;\n\
@@ -178,6 +187,73 @@ test_constructed(void)
   lilv_node_free(uval_dup);
   lilv_node_free(nil2);
 
+  lilv_test_env_free(env);
+}
+
+static LilvNode*
+load_node(LilvWorld* const        world,
+          const LilvPlugin* const plug,
+          const char* const       predicate_uri)
+{
+  LilvNode* const  predicate = lilv_new_uri(world, predicate_uri);
+  LilvNodes* const values    = lilv_plugin_get_value(plug, predicate);
+
+  assert(lilv_nodes_size(values) == 1);
+
+  LilvNode* const node = lilv_node_duplicate(lilv_nodes_get_first(values));
+  lilv_node_free(predicate);
+  lilv_nodes_free(values);
+  return node;
+}
+
+static void
+test_loaded(void)
+{
+  LilvTestEnv* const env   = lilv_test_env_new();
+  LilvWorld* const   world = env->world;
+
+  assert(!create_bundle(env, "value.lv2", SIMPLE_MANIFEST_TTL, plugin_ttl));
+
+  lilv_world_load_specifications(env->world);
+  lilv_world_load_bundle(env->world, env->test_bundle_uri);
+
+  const LilvPlugins* plugins = lilv_world_get_all_plugins(world);
+  const LilvPlugin*  plug = lilv_plugins_get_by_uri(plugins, env->plugin1_uri);
+
+  LilvNode* const a_bool = load_node(world, plug, "http://example.org/a-bool");
+  assert(lilv_node_is_bool(a_bool));
+  assert(lilv_node_as_bool(a_bool));
+  lilv_node_free(a_bool);
+
+  LilvNode* const a_integer =
+    load_node(world, plug, "http://example.org/a-integer");
+  assert(lilv_node_is_int(a_integer));
+  assert(lilv_node_as_int(a_integer) == 234);
+  lilv_node_free(a_integer);
+
+  LilvNode* const a_decimal =
+    load_node(world, plug, "http://example.org/a-decimal");
+  assert(lilv_node_is_float(a_decimal));
+  assert(lilv_node_as_float(a_decimal) == 1.5);
+  lilv_node_free(a_decimal);
+
+  LilvNode* const a_float =
+    load_node(world, plug, "http://example.org/a-float");
+  assert(lilv_node_is_float(a_float));
+  assert(lilv_node_as_float(a_float) == 56.5);
+  lilv_node_free(a_float);
+
+  LilvNode* const a_double =
+    load_node(world, plug, "http://example.org/a-double");
+  assert(lilv_node_is_float(a_double));
+  assert(lilv_node_as_float(a_double) == 780.25);
+  lilv_node_free(a_double);
+
+  LilvNode* const a_inf = load_node(world, plug, "http://example.org/a-inf");
+  assert(lilv_node_is_float(a_inf));
+  assert(isinf(lilv_node_as_float(a_inf)));
+  lilv_node_free(a_inf);
+
   delete_bundle(env);
   lilv_test_env_free(env);
 }
@@ -187,5 +263,6 @@ main(void)
 {
   test_file_uris();
   test_constructed();
+  test_loaded();
   return 0;
 }

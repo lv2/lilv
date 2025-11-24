@@ -34,7 +34,15 @@ lilv_node_set_numerics_from_string(LilvNode* val)
     val->val.int_val = strtol(str, NULL, 10);
     break;
   case LILV_VALUE_FLOAT:
-    val->val.float_val = serd_strtod(str, NULL);
+    if (!strcmp(str, "INF") || !strcmp(str, "+INF")) {
+      val->val.float_val = INFINITY;
+    } else if (!strcmp(str, "-INF")) {
+      val->val.float_val = -INFINITY;
+    } else if (!strcmp(str, "NaN")) {
+      val->val.float_val = NAN;
+    } else {
+      val->val.float_val = serd_strtod(str, NULL);
+    }
     break;
   case LILV_VALUE_BOOL:
     val->val.bool_val = !strcmp(str, "true");
@@ -122,7 +130,8 @@ lilv_node_new_from_node(LilvWorld* world, const SordNode* node)
       if (sord_node_equals(datatype_uri, world->uris.xsd_boolean)) {
         type = LILV_VALUE_BOOL;
       } else if (sord_node_equals(datatype_uri, world->uris.xsd_decimal) ||
-                 sord_node_equals(datatype_uri, world->uris.xsd_double)) {
+                 sord_node_equals(datatype_uri, world->uris.xsd_double) ||
+                 sord_node_equals(datatype_uri, world->uris.xsd_float)) {
         type = LILV_VALUE_FLOAT;
       } else if (sord_node_equals(datatype_uri, world->uris.xsd_integer)) {
         type = LILV_VALUE_INT;

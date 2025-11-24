@@ -76,6 +76,7 @@ lilv_uris_init(LilvURIs* const uris, SordWorld* const world)
   uris->xsd_boolean         = NEW_URI(NS_XSD "boolean");
   uris->xsd_decimal         = NEW_URI(NS_XSD "decimal");
   uris->xsd_double          = NEW_URI(NS_XSD "double");
+  uris->xsd_float           = NEW_URI(NS_XSD "float");
   uris->xsd_integer         = NEW_URI(NS_XSD "integer");
   uris->terminator          = NULL;
 }
