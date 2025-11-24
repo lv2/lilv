@@ -16,7 +16,6 @@ Checks: >
   -cert-err33-c,
   -clang-diagnostic-unused-function,
   -clang-diagnostic-unused-macros,
-  -hicpp-signed-bitwise,
   -llvm-header-guard,
   -llvmlibc-*,
   -misc-include-cleaner,

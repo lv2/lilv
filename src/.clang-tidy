@@ -10,6 +10,7 @@ Checks: >
   -concurrency-mt-unsafe,
   -google-readability-todo,
   -hicpp-multiway-paths-covered,
+  -hicpp-signed-bitwise,
   -performance-no-int-to-ptr,
   -readability-avoid-nested-conditional-operator,
   -readability-redundant-casting,

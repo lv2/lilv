@@ -191,7 +191,7 @@ int
 main(int argc, char** argv)
 {
   uint32_t block_size   = 512;
-  uint32_t sample_count = (1 << 19);
+  uint32_t sample_count = (1U << 19U);
 
   int a = 1;
   for (; a < argc; ++a) {
@@ -209,7 +209,7 @@ main(int argc, char** argv)
       full_output = true;
     } else if (!strcmp(argv[a], "-n") && (a + 1 < argc)) {
       const long l = strtol(argv[++a], NULL, 10);
-      if (l > 0 && l < (1L << 28L)) {
+      if (l > 0 && (unsigned long)l < (1UL << 28UL)) {
         sample_count = (uint32_t)l;
       }
     } else if (!strcmp(argv[a], "-b") && (a + 1 < argc)) {
