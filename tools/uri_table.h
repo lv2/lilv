@@ -1,12 +1,6 @@
 // Copyright 2011-2019 David Robillard <d@drobilla.net>
 // SPDX-License-Identifier: ISC
 
-/**
-   @file uri_table.h A toy URI map/unmap implementation.
-
-   This file contains function definitions and must only be included once.
-*/
-
 #ifndef URI_TABLE_H
 #define URI_TABLE_H
 

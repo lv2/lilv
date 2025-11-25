@@ -1,10 +1,6 @@
 // Copyright 2011-2019 David Robillard <d@drobilla.net>
 // SPDX-License-Identifier: ISC
 
-/**
-   @file bench.h A simple real-time benchmarking API.
-*/
-
 #ifndef BENCH_H
 #define BENCH_H
 
