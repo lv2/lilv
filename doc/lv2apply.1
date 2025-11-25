@@ -12,6 +12,7 @@
 .Op Fl c Ar symbol value
 .Op Fl i Ar in_file
 .Op Fl o Ar out_file
+.Op Fl Fl control Ar symbol value
 .Op Fl Fl help
 .Op Fl Fl version
 .Ar plugin_uri
@@ -23,16 +24,16 @@ The options are as follows:
 .Pp
 .Bl -tag -compact -width 3n
 .It Fl V , Fl Fl version
-Display version information and exit.
+Print version information and exit.
 .Pp
-.It Fl c Ar symbol value
+.It Fl c , Fl Fl control Ar symbol value
 Set control port
 .Ar symbol
 to
 .Ar value.
 .Pp
 .It Fl h , Fl Fl help
-Print the command line options.
+Print usage information and exit.
 .Pp
 .It Fl i Ar in_file
 Input file path.

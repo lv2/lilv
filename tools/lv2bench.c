@@ -31,24 +31,22 @@ static bool full_output = false;
 static void
 print_version(void)
 {
-  printf("lv2bench (lilv) " LILV_VERSION "\n"
-         "Copyright 2012-2025 David Robillard <d@drobilla.net>\n"
-         "License: <http://www.opensource.org/licenses/isc-license>\n"
-         "This is free software: you are free to change and redistribute it.\n"
-         "There is NO WARRANTY, to the extent permitted by law.\n");
+  printf("lv2bench (lilv) " LILV_VERSION "\n");
 }
 
-static void
-print_usage(void)
+static int
+print_usage(const char* const name, const int status)
 {
-  printf("lv2bench - Benchmark all installed and supported LV2 plugins.\n");
-  printf("Usage: lv2bench [OPTIONS] [PLUGIN_URI]\n");
-  printf("\n");
-  printf("  -V, --version  Display version information and exit\n");
-  printf("  -b BLOCK_SIZE  Specify block size, in audio frames\n");
-  printf("  -f, --full     Full plottable output\n");
-  printf("  -h, --help     Display this help and exit\n");
-  printf("  -n FRAMES      Total number of audio frames to process\n");
+  FILE* const out = status ? stderr : stdout;
+  fprintf(out, "Usage: %s [OPTION]... [PLUGIN_URI]\n", name);
+  fprintf(out,
+          "Benchmark installed LV2 plugins.\n\n"
+          "  -V, --version        Print version information and exit\n"
+          "  -b, --block FRAMES   Block length to run, in audio frames\n"
+          "  -f, --full           Full plottable output\n"
+          "  -h, --help           Print this help and exit\n"
+          "  -n, --length FRAMES  Total number of frames to process\n");
+  return status;
 }
 
 static int
@@ -201,13 +199,13 @@ main(int argc, char** argv)
     }
 
     if (!strcmp(argv[a], "-h") || !strcmp(argv[a], "--help")) {
-      print_usage();
-      return 0;
+      return print_usage(argv[0], 0);
     }
 
     if (!strcmp(argv[a], "-f")) {
       full_output = true;
-    } else if (!strcmp(argv[a], "-n") && (a + 1 < argc)) {
+    } else if ((!strcmp(argv[a], "-n") || !strcmp(argv[a], "--frames")) &&
+               (a + 1 < argc)) {
       const long l = strtol(argv[++a], NULL, 10);
       if (l > 0 && (unsigned long)l < (1UL << 28UL)) {
         sample_count = (uint32_t)l;
@@ -217,11 +215,8 @@ main(int argc, char** argv)
       if (l > 0 && l < 16384) {
         block_size = (uint32_t)l;
       }
-    } else if (argv[a][0] != '-') {
-      break;
-    } else {
-      print_usage();
-      return 1;
+    } else if (argv[a][0] == '-') {
+      return print_usage(argv[0], 1);
     }
   }
 

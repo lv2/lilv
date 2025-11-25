@@ -5,7 +5,7 @@
 .Os
 .Sh NAME
 .Nm lv2bench
-.Nd benchmark all installed and supported LV2 plugins
+.Nd benchmark installed and supported LV2 plugins
 .Sh SYNOPSIS
 .Nm lv2bench
 .Op Fl fhV
@@ -16,25 +16,26 @@
 .Op Fl Fl version
 .Sh DESCRIPTION
 .Nm
-is a simple utility for running basic benchmarks of installed LV2 plugins.
+runs a simple benchmark of installed LV2 plugins.
+The results are written to stdout as a simple tab-delimited table.
 .Pp
 The options are as follows:
 .Pp
 .Bl -tag -compact -width 3n
 .It Fl V , Fl Fl version
-Display version information and exit.
+Print version information and exit.
 .Pp
-.It Fl b Ar block_size
-Block size, in audio frames.
+.It Fl b , Fl Fl block Ar frames
+Block length to run, in audio frames.
 .Pp
 .It Fl f , Fl Fl full
 Emit full plottable output with values for every block.
 .Pp
 .It Fl h , Fl Fl help
-Print the command line options.
+Print usage information and exit.
 .Pp
-.It Fl n Ar frames
-Total number of audio frames to process.
+.It Fl n , Fl Fl length Ar frames
+Total number of frames to process.
 .El
 .Sh EXIT STATUS
 .Nm

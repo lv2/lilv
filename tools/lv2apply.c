@@ -191,24 +191,21 @@ create_ports(LV2Apply* self)
 static void
 print_version(void)
 {
-  printf("lv2apply (lilv) " LILV_VERSION "\n"
-         "Copyright 2007-2025 David Robillard <d@drobilla.net>\n"
-         "License: <http://www.opensource.org/licenses/isc-license>\n"
-         "This is free software: you are free to change and redistribute it.\n"
-         "There is NO WARRANTY, to the extent permitted by law.\n");
+  printf("lv2apply (lilv) " LILV_VERSION "\n");
 }
 
 static int
-print_usage(int status)
+print_usage(const char* const name, const int status)
 {
-  fprintf(status ? stderr : stdout,
-          "Usage: lv2apply [OPTION]... PLUGIN_URI\n"
+  FILE* const out = status ? stderr : stdout;
+  fprintf(out, "Usage: %s [OPTION]... PLUGIN_URI\n", name);
+  fprintf(out,
           "Apply an LV2 plugin to an audio file.\n\n"
-          "  -V, --version  Display version information and exit\n"
-          "  -c SYM VAL     Control value\n"
-          "  -h, --help     Display this help and exit\n"
-          "  -i IN_FILE     Input file\n"
-          "  -o OUT_FILE    Output file\n");
+          "  -V, --version               Print version information and exit\n"
+          "  -c, --control SYMBOL VALUE  Control value\n"
+          "  -h, --help                  Print this help and exit\n"
+          "  -i IN_FILE                  Input file\n"
+          "  -o OUT_FILE                 Output file\n");
   return status;
 }
 
@@ -235,33 +232,34 @@ main(int argc, char** argv)
 
     if (!strcmp(argv[i], "-h") || !strcmp(argv[i], "--help")) {
       free(self.params);
-      return print_usage(0);
+      return print_usage(argv[0], 0);
     }
 
     if (!strcmp(argv[i], "-i")) {
       self.in_path = argv[++i];
     } else if (!strcmp(argv[i], "-o")) {
       self.out_path = argv[++i];
-    } else if (!strcmp(argv[i], "-c")) {
+    } else if (!strcmp(argv[i], "-c") || !strcmp(argv[i], "--control")) {
       if (argc < i + 3) {
         return fatal(&self, 1, "Missing argument for -c\n");
       }
+
       self.params =
         (Param*)realloc(self.params, ++self.n_params * sizeof(Param));
       self.params[self.n_params - 1].sym   = argv[++i];
       self.params[self.n_params - 1].value = strtof(argv[++i], NULL);
-    } else if (argv[i][0] == '-') {
-      free(self.params);
-      return print_usage(1);
-    } else if (i == argc - 1) {
+    } else if (argv[i][0] != '-' && (i == argc - 1)) {
       plugin_uri = argv[i];
+    } else {
+      free(self.params);
+      return print_usage(argv[0], 1);
     }
   }
 
   /* Check that required arguments are given */
   if (!self.in_path || !self.out_path || !plugin_uri) {
     free(self.params);
-    return print_usage(1);
+    return print_usage(argv[0], 1);
   }
 
   /* Create world and plugin URI */

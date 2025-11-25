@@ -316,33 +316,31 @@ print_plugin(LilvWorld* world, const LilvPlugin* p)
 static void
 print_version(void)
 {
-  printf("lv2info (lilv) " LILV_VERSION "\n"
-         "Copyright 2007-2025 David Robillard <d@drobilla.net>\n"
-         "License: <http://www.opensource.org/licenses/isc-license>\n"
-         "This is free software: you are free to change and redistribute it.\n"
-         "There is NO WARRANTY, to the extent permitted by law.\n");
+  printf("lv2info (lilv) " LILV_VERSION "\n");
 }
 
-static void
-print_usage(void)
+static int
+print_usage(const char* const name, const int status)
 {
-  printf("Usage: lv2info [OPTION]... PLUGIN_URI\n"
-         "Print information about an installed LV2 plugin.\n\n"
-         "  -V, --version  Display version information and exit\n"
-         "  -h, --help     Display this help and exit\n"
-         "  -m FILE        Add record of plugin to manifest FILE\n"
-         "  -p FILE        Write Turtle description of plugin to FILE\n\n"
-         "For -p and -m, Turtle files are appended to (not overwritten),\n"
-         "and @prefix directives are only written if the file was empty.\n"
-         "This allows several plugins to be added to a single file.\n");
+  FILE* const out = status ? stderr : stdout;
+  fprintf(out, "Usage: %s [OPTION]... PLUGIN_URI\n", name);
+  fprintf(out,
+          "Print information about an installed LV2 plugin.\n\n"
+          "  -V, --version  Print version information and exit\n"
+          "  -h, --help     Print this help and exit\n"
+          "  -m FILE        Add record of plugin to manifest FILE\n"
+          "  -p FILE        Write description of plugin to FILE\n\n"
+          "Data is loaded from directories in LV2_PATH.\n"
+          "For -p and -m, Turtle files are created or appended to, and\n"
+          "@prefix directives are only written if the file was empty.\n");
+  return status;
 }
 
 int
 main(int argc, char** argv)
 {
   if (argc == 1) {
-    print_usage();
-    return 1;
+    return print_usage(argv[0], 1);
   }
 
   const char* plugin_file   = NULL;
@@ -355,19 +353,17 @@ main(int argc, char** argv)
     }
 
     if (!strcmp(argv[i], "-h") || !strcmp(argv[i], "--help")) {
-      print_usage();
-      return 0;
+      return print_usage(argv[0], 0);
     }
 
     if (!strcmp(argv[i], "-p")) {
       plugin_file = argv[++i];
     } else if (!strcmp(argv[i], "-m")) {
       manifest_file = argv[++i];
-    } else if (argv[i][0] == '-') {
-      print_usage();
-      return 1;
-    } else if (i == argc - 1) {
+    } else if (argv[i][0] != '-' && (i == argc - 1)) {
       plugin_uri = argv[i];
+    } else {
+      return print_usage(argv[0], 1);
     }
   }
 

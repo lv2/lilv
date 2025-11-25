@@ -5,7 +5,7 @@
 .Os
 .Sh NAME
 .Nm lv2ls
-.Nd list all installed LV2 plugins
+.Nd list installed LV2 plugins
 .Sh SYNOPSIS
 .Nm lv2ls
 .Op Fl Vhn
@@ -17,18 +17,15 @@
 prints the URI of every installed LV2 plugin to stdout.
 .Pp
 Plugins are discovered with the same mechanism used by most hosts.
-The default path can be overridden by setting the
-.Ev LV2_PATH
-environment variable.
 .Pp
 The options are as follows:
 .Pp
 .Bl -tag -compact -width 3n
 .It Fl V , Fl Fl version
-Display version information and exit.
+Print version information and exit.
 .Pp
 .It Fl h , Fl Fl help
-Print the command line options.
+Print usage information and exit.
 .Pp
 .It Fl n , Fl Fl names
 Show names instead of URIs.

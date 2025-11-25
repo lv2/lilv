@@ -25,44 +25,40 @@ list_plugins(const LilvPlugins* list, bool show_names)
 static void
 print_version(void)
 {
-  printf("lv2ls (lilv) " LILV_VERSION "\n"
-         "Copyright 2007-2025 David Robillard <d@drobilla.net>\n"
-         "License: <http://www.opensource.org/licenses/isc-license>\n"
-         "This is free software: you are free to change and redistribute it.\n"
-         "There is NO WARRANTY, to the extent permitted by law.\n");
+  printf("lv2ls (lilv) " LILV_VERSION "\n");
 }
 
-static void
-print_usage(void)
+static int
+print_usage(const char* const name, const int status)
 {
-  printf("Usage: lv2ls [OPTION]...\n");
-  printf("List all installed LV2 plugins.\n");
-  printf("\n");
-  printf("  -V, --version  Display version information and exit\n");
-  printf("  -h, --help     Display this help and exit\n");
-  printf("  -n, --names    Show names instead of URIs\n");
-  printf("\n");
-  printf("The environment variable LV2_PATH can be used to control where\n");
-  printf(
-    "this (and all other lilv based LV2 hosts) will search for plugins.\n");
+  FILE* const out = status ? stderr : stdout;
+  fprintf(out, "Usage: %s [OPTION]...\n", name);
+  fprintf(out,
+          "List installed LV2 plugins.\n\n"
+          "  -V, --version  Print version information and exit\n"
+          "  -h, --help     Print this help and exit\n"
+          "  -n, --names    Show names instead of URIs\n");
+  return status;
 }
 
 int
 main(int argc, char** argv)
 {
   bool show_names = false;
-  for (int i = 1; i < argc; ++i) {
-    if (!strcmp(argv[i], "--names") || !strcmp(argv[i], "-n")) {
-      show_names = true;
-    } else if (!strcmp(argv[i], "-V") || !strcmp(argv[i], "--version")) {
+  for (int a = 1; a < argc; ++a) {
+    if (!strcmp(argv[a], "-V") || !strcmp(argv[a], "--version")) {
       print_version();
       return 0;
-    } else if (!strcmp(argv[i], "-h") || !strcmp(argv[i], "--help")) {
-      print_usage();
-      return 0;
+    }
+
+    if (!strcmp(argv[a], "-h") || !strcmp(argv[a], "--help")) {
+      return print_usage(argv[0], 0);
+    }
+
+    if (!strcmp(argv[a], "--names") || !strcmp(argv[a], "-n")) {
+      show_names = true;
     } else {
-      print_usage();
-      return 1;
+      return print_usage(argv[0], 1);
     }
   }
 

@@ -5,8 +5,9 @@ lilv (0.26.1) unstable; urgency=medium
   * Avoid warning about non-existent entries in LV2_PATH
   * Fix crash when duplicate plugins are discovered
   * Fix lilv_node_is_literal() with booleans
+  * Refine command line tool interfaces and documentation
 
- -- David Robillard <d@drobilla.net>  Mon, 24 Nov 2025 15:44:24 +0000
+ -- David Robillard <d@drobilla.net>  Tue, 25 Nov 2025 02:16:28 +0000
 
 lilv (0.26.0) stable; urgency=medium
 
