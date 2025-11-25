@@ -1,4 +1,4 @@
-lilv (0.26.1) unstable; urgency=medium
+lilv (0.26.2) stable; urgency=medium
 
   * Actually reload files if bundles are unloaded then reloaded
   * Add support for loading xsd:float literals, "INF", and "NaN"
@@ -6,9 +6,10 @@ lilv (0.26.1) unstable; urgency=medium
   * Fix crash when duplicate plugins are discovered
   * Fix lilv_node_is_literal() with booleans
   * Refine command line tool interfaces and documentation
+  * lv2bench: Add support for common features and options
   * lv2bench: Use more realistic real-time scheduling
 
- -- David Robillard <d@drobilla.net>  Tue, 25 Nov 2025 15:55:49 +0000
+ -- David Robillard <d@drobilla.net>  Tue, 25 Nov 2025 19:49:02 +0000
 
 lilv (0.26.0) stable; urgency=medium
 
