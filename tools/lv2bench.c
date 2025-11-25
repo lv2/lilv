@@ -37,11 +37,12 @@
 #endif
 
 typedef struct {
-  uint32_t block_size;
-  uint32_t sample_count;
-  uint32_t skip_buffers;
-  int      realtime_priority;
-  bool     lock_memory;
+  const char* output_path;
+  uint32_t    block_size;
+  uint32_t    sample_count;
+  uint32_t    skip_buffers;
+  int         realtime_priority;
+  bool        lock_memory;
 } Options;
 
 static LilvNode* atom_AtomPort   = NULL;
@@ -71,13 +72,14 @@ print_usage(const char* const name, const int status)
           "  -h, --help           Print this help and exit\n"
           "  -l, --lock           Lock memory into RAM\n"
           "  -n, --length FRAMES  Total number of frames to process\n"
+          "  -o, --output FILE    Output file path\n"
           "  -p, --priority NUM   Real-time process priority\n"
           "  -s, --skip BUFFERS   Skip initial buffers before timing\n");
   return status;
 }
 
 static int
-bench(const LilvPlugin* const p, const Options options)
+bench(const LilvPlugin* const p, const Options options, FILE* const results)
 {
   static const size_t atom_capacity = 2097152;
   static const double sample_rate   = 48000.0;
@@ -291,14 +293,16 @@ bench(const LilvPlugin* const p, const Options options)
     const double benchmark_elapsed = bench_end(&benchmark_start);
     const double buffer_mean       = buffer_total / n_blocks;
 
-    printf("%u\t%u\t%.9g\t%.9g\t%.9g\t%.9g\t%s\n",
-           options.block_size,
-           options.sample_count,
-           buffer_min,
-           buffer_mean,
-           buffer_max,
-           benchmark_elapsed,
-           uri);
+    fprintf(results,
+            "%u\t%u\t%f\t%.9g\t%.9g\t%.9g\t%.9g\t%s\n",
+            options.block_size,
+            options.sample_count,
+            sample_rate,
+            buffer_min,
+            buffer_mean,
+            buffer_max,
+            benchmark_elapsed,
+            uri);
 
     lilv_instance_deactivate(instance);
   }
@@ -322,7 +326,7 @@ is_option(const char* const arg, const char* const flag, const char* const name)
 int
 main(const int argc, char** const argv)
 {
-  Options options = {512U, (1U << 19U), 0U, -1, false};
+  Options options = {NULL, 512U, (1U << 19U), 0U, -1, false};
 
   int a = 1;
   for (; a < argc; ++a) {
@@ -347,6 +351,8 @@ main(const int argc, char** const argv)
       if (l > 0 && (unsigned long)l < (1UL << 28UL)) {
         options.sample_count = (uint32_t)l;
       }
+    } else if (is_option(argv[a], "-o", "--output") && (a + 1 < argc)) {
+      options.output_path = argv[++a];
     } else if (is_option(argv[a], "-p", "--priority") && (a + 1 < argc)) {
       const long l = strtol(argv[++a], NULL, 10);
       if (l > 0 && l < 100) {
@@ -360,6 +366,15 @@ main(const int argc, char** const argv)
     } else if (argv[a][0] == '-') {
       return print_usage(argv[0], 1);
     }
+  }
+
+  FILE* out = stdout;
+  if (options.output_path) {
+    out = fopen(options.output_path, "w");
+  }
+
+  if (!out) {
+    return 1;
   }
 
   const char* const plugin_uri_str = (a < argc ? argv[a++] : NULL);
@@ -377,22 +392,26 @@ main(const int argc, char** const argv)
   lv2_OutputPort  = lilv_new_uri(world, LV2_CORE__OutputPort);
   urid_map        = lilv_new_uri(world, LV2_URID__map);
 
-  printf("Block\tFrames\tMin\tMean\tMax\tTotal\tPlugin\n");
+  fprintf(out, "Block\tFrames\tRate\tMin\tMean\tMax\tTotal\tPlugin\n");
 
   const LilvPlugins* const plugins     = lilv_world_get_all_plugins(world);
   int                      exit_status = 0;
   if (plugin_uri_str) {
     LilvNode* const uri = lilv_new_uri(world, plugin_uri_str);
 
-    exit_status = bench(lilv_plugins_get_by_uri(plugins, uri), options);
+    exit_status = bench(lilv_plugins_get_by_uri(plugins, uri), options, out);
 
     lilv_node_free(uri);
   } else {
     LILV_FOREACH (plugins, i, plugins) {
-      const int st = bench(lilv_plugins_get(plugins, i), options);
+      const int st = bench(lilv_plugins_get(plugins, i), options, out);
 
       exit_status = exit_status ? exit_status : st;
     }
+  }
+
+  if (options.output_path) {
+    fclose(out);
   }
 
   lilv_node_free(urid_map);
