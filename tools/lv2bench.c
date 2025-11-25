@@ -6,7 +6,10 @@
 
 #include <lilv/lilv.h>
 #include <lv2/atom/atom.h>
+#include <lv2/buf-size/buf-size.h>
 #include <lv2/core/lv2.h>
+#include <lv2/options/options.h>
+#include <lv2/parameters/parameters.h>
 #include <lv2/urid/urid.h>
 
 #include <sched.h>
@@ -77,19 +80,56 @@ static int
 bench(const LilvPlugin* const p, const Options options)
 {
   static const size_t atom_capacity = 2097152;
+  static const double sample_rate   = 48000.0;
 
   URITable uri_table;
   uri_table_init(&uri_table);
 
-  LV2_URID_Map       map           = {&uri_table, uri_table_map};
-  LV2_URID_Unmap     unmap         = {&uri_table, uri_table_unmap};
-  const LV2_Feature  map_feature   = {LV2_URID_MAP_URI, &map};
-  const LV2_Feature  unmap_feature = {LV2_URID_UNMAP_URI, &unmap};
-  const LV2_Feature* features[]    = {&map_feature, &unmap_feature, NULL};
+  LV2_Options_Option lv2_options[] = {
+    {LV2_OPTIONS_INSTANCE,
+     0,
+     uri_table_map(&uri_table, LV2_PARAMETERS__sampleRate),
+     sizeof(float),
+     uri_table_map(&uri_table, LV2_ATOM__Float),
+     &sample_rate},
+    {LV2_OPTIONS_INSTANCE,
+     0,
+     uri_table_map(&uri_table, LV2_BUF_SIZE__minBlockLength),
+     sizeof(int32_t),
+     uri_table_map(&uri_table, LV2_ATOM__Int),
+     &options.block_size},
+    {LV2_OPTIONS_INSTANCE,
+     0,
+     uri_table_map(&uri_table, LV2_BUF_SIZE__maxBlockLength),
+     sizeof(int32_t),
+     uri_table_map(&uri_table, LV2_ATOM__Int),
+     &options.block_size},
+    {LV2_OPTIONS_INSTANCE,
+     0,
+     uri_table_map(&uri_table, LV2_BUF_SIZE__sequenceSize),
+     sizeof(int32_t),
+     uri_table_map(&uri_table, LV2_ATOM__Int),
+     &atom_capacity},
+    {LV2_OPTIONS_INSTANCE, 0, 0, 0, 0, NULL}};
+
+  LV2_URID_Map       map             = {&uri_table, uri_table_map};
+  LV2_URID_Unmap     unmap           = {&uri_table, uri_table_unmap};
+  const LV2_Feature  map_feature     = {LV2_URID_MAP_URI, &map};
+  const LV2_Feature  unmap_feature   = {LV2_URID_UNMAP_URI, &unmap};
+  const LV2_Feature  options_feature = {LV2_OPTIONS__options, lv2_options};
+  const LV2_Feature  fixed_feature   = {LV2_BUF_SIZE__fixedBlockLength, NULL};
+  const LV2_Feature  bounded_feature = {LV2_BUF_SIZE__boundedBlockLength, NULL};
+  const LV2_Feature* features[]      = {&map_feature,
+                                        &unmap_feature,
+                                        &options_feature,
+                                        &bounded_feature,
+                                        &fixed_feature,
+                                        NULL};
 
   float* const buf = (float*)calloc(options.block_size * 2UL, sizeof(float));
   if (!buf) {
     fprintf(stderr, "error: Out of memory\n");
+    uri_table_destroy(&uri_table);
     return 1;
   }
 
@@ -106,8 +146,16 @@ bench(const LilvPlugin* const p, const Options options)
   const char* const uri      = lilv_node_as_string(lilv_plugin_get_uri(p));
   LilvNodes* const  required = lilv_plugin_get_required_features(p);
   LILV_FOREACH (nodes, i, required) {
-    const LilvNode* const feature = lilv_nodes_get(required, i);
-    if (!lilv_node_equals(feature, urid_map)) {
+    const LilvNode* const feature   = lilv_nodes_get(required, i);
+    bool                  supported = false;
+    for (const LV2_Feature** f = features; *f; ++f) {
+      if (!strcmp((*f)->URI, lilv_node_as_string(feature))) {
+        supported = true;
+        break;
+      }
+    }
+
+    if (!supported) {
       fprintf(stderr,
               "warning: <%s> requires feature <%s>, skipping\n",
               uri,
@@ -120,7 +168,8 @@ bench(const LilvPlugin* const p, const Options options)
   }
   lilv_nodes_free(required);
 
-  LilvInstance* const instance = lilv_plugin_instantiate(p, 48000.0, features);
+  LilvInstance* const instance =
+    lilv_plugin_instantiate(p, sample_rate, features);
   if (!instance) {
     fprintf(stderr,
             "warning: Failed to instantiate <%s>\n",
