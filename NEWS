@@ -1,3 +1,9 @@
+lilv (0.26.3) unstable; urgency=medium
+
+  * Address new warnings in clang and clang-tidy 21
+
+ -- David Robillard <d@drobilla.net>  Sat, 20 Dec 2025 22:52:53 +0000
+
 lilv (0.26.2) stable; urgency=medium
 
   * Actually reload files if bundles are unloaded then reloaded

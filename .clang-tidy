@@ -20,6 +20,7 @@ Checks: >
   -llvmlibc-*,
   -misc-include-cleaner,
   -readability-identifier-length,
+  -readability-use-concise-preprocessor-directives,
 CheckOptions:
   - key:   hicpp-uppercase-literal-suffix.NewSuffixes
     value: 'L;U;UL;ULL'

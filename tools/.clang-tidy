@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: 0BSD OR ISC
 
 Checks: >
+  -clang-analyzer-unix.Malloc,
   -concurrency-mt-unsafe,
   -cppcoreguidelines-avoid-non-const-global-variables,
 CheckOptions:

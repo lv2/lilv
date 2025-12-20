@@ -60,7 +60,7 @@ copyright = u'2016, David Robillard'
 # built documents.
 #
 # The short X.Y version.
-version = '0.26.2'
+version = '0.26.3'
 # The full version, including alpha/beta/rc tags.
 release = version
 
