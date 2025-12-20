@@ -1010,15 +1010,15 @@ lilv_world_load_directory(LilvWorld* world, const char* dir_path)
   }
 }
 
-static const char*
-first_path_sep(const char* path)
+static size_t
+first_path_len(const char* path)
 {
-  for (const char* p = path; *p != '\0'; ++p) {
-    if (*p == LILV_PATH_SEP[0]) {
-      return p;
+  for (size_t i = 0U; path[i]; ++i) {
+    if (path[i] == LILV_PATH_SEP[0]) {
+      return i;
     }
   }
-  return NULL;
+  return 0U;
 }
 
 /** Load all bundles found in `lv2_path`.
@@ -1030,10 +1030,9 @@ static void
 lilv_world_load_path(LilvWorld* world, const char* lv2_path)
 {
   while (lv2_path[0] != '\0') {
-    const char* const sep = first_path_sep(lv2_path);
-    if (sep) {
-      const size_t dir_len = sep - lv2_path;
-      char* const  dir     = (char*)malloc(dir_len + 1);
+    const size_t dir_len = first_path_len(lv2_path);
+    if (dir_len) {
+      char* const dir = (char*)malloc(dir_len + 1U);
       memcpy(dir, lv2_path, dir_len);
       dir[dir_len] = '\0';
       lilv_world_load_directory(world, dir);
