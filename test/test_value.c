@@ -39,7 +39,7 @@ test_file_uris(void)
   LilvTestEnv* const env   = lilv_test_env_new();
   LilvWorld* const   world = env->world;
 
-#if defined(__clang__)
+#ifdef __clang__
 #  pragma clang diagnostic push
 #  pragma clang diagnostic ignored "-Wdeprecated-declarations"
 #elif defined(__GNUC__) && __GNUC__ > 4
@@ -49,7 +49,7 @@ test_file_uris(void)
 
   assert(!strcmp(lilv_uri_to_path("file:///foo"), "/foo"));
 
-#if defined(__clang__)
+#ifdef __clang__
 #  pragma clang diagnostic pop
 #elif defined(__GNUC__) && __GNUC__ > 4
 #  pragma GCC diagnostic pop

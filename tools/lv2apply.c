@@ -13,7 +13,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#if defined(__GNUC__)
+#ifdef __GNUC__
 #  define LILV_LOG_FUNC(fmt, arg1) __attribute__((format(printf, fmt, arg1)))
 #else
 #  define LILV_LOG_FUNC(fmt, arg1)

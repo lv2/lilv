@@ -12,7 +12,7 @@
 
 namespace Lilv {
 
-#if defined(__clang__)
+#ifdef __clang__
 #  pragma clang diagnostic push
 #  pragma clang diagnostic ignored "-Wdeprecated-declarations"
 #elif defined(__GNUC__) && __GNUC__ > 4
@@ -40,7 +40,7 @@ uri_to_path(const char* uri)
   return lilv_uri_to_path(uri);
 }
 
-#if defined(__clang__)
+#ifdef __clang__
 #  pragma clang diagnostic pop
 #elif defined(__GNUC__) && __GNUC__ > 4
 #  pragma GCC diagnostic pop
