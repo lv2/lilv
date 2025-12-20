@@ -231,7 +231,6 @@ bench(const LilvPlugin* const p, const Options options, FILE* const results)
     if (options.lock_memory) {
       if (mlockall(MCL_CURRENT) != 0) {
         fprintf(stderr, "Failed to lock memory: %s\n", strerror(errno));
-        return 1;
       }
     }
 
@@ -246,7 +245,6 @@ bench(const LilvPlugin* const p, const Options options, FILE* const results)
           "Failed to set realtime scheduling SCHED_FIFO at priority %d: %s\n",
           options.realtime_priority,
           strerror(errno));
-        return 1;
       }
     }
 
