@@ -786,13 +786,18 @@ lilv_state_new_from_file(LilvWorld*      world,
   }
 
   const uint8_t* file_path     = (const uint8_t*)abs_path;
-  const char*    dir_path      = abs_path;
+  char*          dir_path      = NULL;
   char*          manifest_path = NULL;
   if (zix_file_type(abs_path) == ZIX_FILE_TYPE_DIRECTORY) {
+    dir_path      = zix_path_join(NULL, abs_path, NULL);
     manifest_path = zix_path_join(NULL, dir_path, "manifest.ttl");
     file_path     = (uint8_t*)manifest_path;
   } else {
-    dir_path = zix_path_parent_path(path).data;
+    char* const parent = zix_string_view_copy(NULL, zix_path_parent_path(path));
+
+    dir_path = zix_path_join(NULL, parent, NULL);
+
+    zix_free(NULL, parent);
   }
 
   SordModel* model    = sord_new(world->world, SORD_SPO, false);
@@ -844,6 +849,7 @@ lilv_state_new_from_file(LilvWorld*      world,
   lilv_node_hash_free(plugins, world->world);
   serd_node_free(&file_uri);
   zix_free(NULL, manifest_path);
+  zix_free(NULL, dir_path);
   zix_free(NULL, abs_path);
   sord_free(model);
   return state;
