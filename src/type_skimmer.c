@@ -1,4 +1,4 @@
-// Copyright 2025 David Robillard <d@drobilla.net>
+// Copyright 2025-2026 David Robillard <d@drobilla.net>
 // SPDX-License-Identifier: ISC
 
 #include "type_skimmer.h"
@@ -31,6 +31,12 @@ add_node(NodeHash** const field, const SordNode* const node)
   }
 }
 
+static void
+add_statement(SordModel* const model, const SordQuad tup)
+{
+  sord_add(model, tup);
+}
+
 static SerdStatus
 skim_type(TypeSkimmer* const    skimmer,
           const SordNode* const subject,
@@ -52,11 +58,11 @@ skim_type(TypeSkimmer* const    skimmer,
   } else if (skimmer->applications &&
              node_equals(predicate, skimmer->uris->lv2_appliesTo)) {
     const SordQuad tup = {subject, predicate, object, NULL};
-    sord_add(skimmer->applications, tup);
+    add_statement(skimmer->applications, tup);
   } else if (skimmer->subclasses &&
              node_equals(predicate, skimmer->uris->rdfs_subClassOf)) {
     const SordQuad tup = {subject, predicate, object, NULL};
-    sord_add(skimmer->subclasses, tup);
+    add_statement(skimmer->subclasses, tup);
   }
 
   return SERD_SUCCESS;
