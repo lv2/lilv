@@ -11,6 +11,12 @@
 #include <stddef.h>
 
 static void
+test_free(void)
+{
+  lilv_world_free(NULL);
+}
+
+static void
 test_set_option(void)
 {
   LilvTestEnv* const env        = lilv_test_env_new();
@@ -58,6 +64,9 @@ test_search(void)
   matches = lilv_world_find_nodes(world, NULL, uri, NULL);
   assert(!matches);
 
+  matches = lilv_world_find_nodes(world, uri, NULL, uri);
+  assert(!matches);
+
   lilv_node_free(uri);
   lilv_node_free(num);
 
@@ -68,6 +77,7 @@ test_search(void)
 int
 main(void)
 {
+  test_free();
   test_set_option();
   test_load_plugin_classes();
   test_search();
