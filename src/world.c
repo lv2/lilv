@@ -49,7 +49,8 @@ lilv_world_new(void)
 
   world->world = sord_world_new();
   if (!world->world) {
-    goto fail;
+    free(world);
+    return NULL;
   }
 
   world->lang           = lilv_get_lang();
@@ -80,10 +81,6 @@ lilv_world_new(void)
   world->opt.object_index = true;
 
   return world;
-
-fail:
-  /* keep on rockin' in the */ free(world);
-  return NULL;
 }
 
 void
