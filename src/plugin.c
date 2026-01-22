@@ -1,4 +1,4 @@
-// Copyright 2007-2025 David Robillard <d@drobilla.net>
+// Copyright 2007-2026 David Robillard <d@drobilla.net>
 // SPDX-License-Identifier: ISC
 
 #include "lilv_internal.h"
@@ -957,7 +957,7 @@ lilv_plugin_get_uis(const LilvPlugin* plugin)
         lilv_world_get_unique(plugin->world, ui, plugin->world->uris.ui_binary);
     }
 
-    if (!ui || !type || !binary || sord_node_get_type(ui) != SORD_URI ||
+    if (!type || !binary || sord_node_get_type(ui) != SORD_URI ||
         sord_node_get_type(type) != SORD_URI ||
         sord_node_get_type(binary) != SORD_URI) {
       LILV_ERRORF("Corrupt UI <%s>\n", sord_node_get_string(ui));
