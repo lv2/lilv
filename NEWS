@@ -1,9 +1,10 @@
 lilv (0.26.3) unstable; urgency=medium
 
   * Address new warnings in clang and clang-tidy 21
+  * Fix loading of duplicate bundles with equivalent versions
   * Fix potential crash when UIs have multiple types or binaries
 
- -- David Robillard <d@drobilla.net>  Wed, 21 Jan 2026 20:47:23 +0000
+ -- David Robillard <d@drobilla.net>  Thu, 22 Jan 2026 19:09:35 +0000
 
 lilv (0.26.2) stable; urgency=medium
 

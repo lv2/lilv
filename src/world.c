@@ -406,29 +406,15 @@ lilv_world_add_plugin(LilvWorld*      world,
 {
   (void)dynmanifest;
 
-  LilvNode*    plugin_uri = lilv_node_new_from_node(world, plugin_node);
-  ZixTreeIter* z          = NULL;
-  LilvPlugin*  plugin =
-    (LilvPlugin*)lilv_plugins_get_by_uri(world->plugins, plugin_uri);
+  // The caller needs to have handled existing plugin cases
+  LilvNode* const plugin_uri = lilv_node_new_from_node(world, plugin_node);
+  assert(!lilv_plugins_get_by_uri(world->plugins, plugin_uri));
 
-  if (plugin) {
-    // Existing plugin, if this is different bundle, ignore it
-    // (use the first plugin found in LV2_PATH)
-    const LilvNode* last_bundle    = lilv_plugin_get_bundle_uri(plugin);
-    const char*     plugin_uri_str = lilv_node_as_uri(plugin_uri);
-    if (sord_node_equals(bundle, last_bundle->node)) {
-      LILV_WARNF("Reloading plugin <%s>\n", plugin_uri_str);
-      plugin->loaded = false;
-      lilv_node_free(plugin_uri);
-    } else {
-      LILV_WARNF("Duplicate plugin <%s>\n", plugin_uri_str);
-      LILV_WARNF("... found in %s\n", lilv_node_as_string(last_bundle));
-      LILV_WARNF("... and      %s (ignored)\n", sord_node_get_string(bundle));
-      lilv_node_free(plugin_uri);
-      return;
-    }
-  } else if ((z = lilv_collection_find_by_uri((const ZixTree*)world->zombies,
-                                              plugin_uri))) {
+  ZixTreeIter* const z =
+    lilv_collection_find_by_uri((const ZixTree*)world->zombies, plugin_uri);
+
+  LilvPlugin* plugin = NULL;
+  if (z) {
     // Plugin bundle has been re-loaded, move from zombies to plugins
     plugin = (LilvPlugin*)zix_tree_get(z);
     zix_tree_remove((ZixTree*)world->zombies, z);
@@ -766,6 +752,14 @@ lilv_world_compare_versions(LilvWorld* const      world,
                old_version.minor,
                old_version.micro,
                sord_node_get_string(old_bundle));
+  } else {
+    LILV_WARNF("Ignoring duplicate version %d.%d of <%s> from <%s>\n",
+               new_version.minor,
+               new_version.micro,
+               sord_node_get_string(resource),
+               sord_node_get_string(new_bundle));
+    LILV_NOTEF("Previously loaded from <%s>\n",
+               sord_node_get_string(old_bundle));
   }
   return cmp;
 }
@@ -820,7 +814,7 @@ lilv_world_load_bundle(LilvWorld* world, const LilvNode* bundle_uri)
     return;
   }
 
-  // Find any loaded plugins that will be replaced with a newer version
+  // Check for any already-loaded plugins
   LilvNodes* const unload_uris = lilv_nodes_new();
   NODE_HASH_FOREACH (p, plugins) {
     const SordNode*   node   = lilv_node_hash_get(plugins, p);
@@ -832,10 +826,10 @@ lilv_world_load_bundle(LilvWorld* world, const LilvNode* bundle_uri)
         // Some version was previously loaded from a different bundle
         const int cmp = lilv_world_compare_versions(
           world, last_bundle->node, bundle_uri->node, uri->node);
-        if (cmp > 0) {
+        if (cmp > 0) { // Enqueue replacement with newer version
           zix_tree_insert(
             (ZixTree*)unload_uris, lilv_node_duplicate(uri), NULL);
-        } else if (cmp < 0) {
+        } else if (cmp <= 0) { // Ignore older or equivalent version
           lilv_node_free(uri);
           lilv_world_drop_graph(world, bundle_node);
           lilv_node_free(manifest);
@@ -866,7 +860,9 @@ lilv_world_load_bundle(LilvWorld* world, const LilvNode* bundle_uri)
 
   // Unload the associated bundles (now that no plugins should refer to them)
   LILV_FOREACH (nodes, i, unload_bundles) {
-    lilv_world_unload_bundle(world, lilv_nodes_get(unload_bundles, i));
+    const LilvNode* const bundle = lilv_nodes_get(unload_bundles, i);
+    LILV_WARNF("Dropping old bundle <%s>\n", lilv_node_as_string(bundle));
+    lilv_world_unload_bundle(world, bundle);
   }
   lilv_nodes_free(unload_bundles);
 
