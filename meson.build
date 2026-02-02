@@ -187,7 +187,11 @@ if default_lv2_path == ''
     default_lv2_path = ':'.join(['~/.lv2', '/boot/common/add-ons/lv2'])
 
   elif host_machine.system() == 'windows'
-    lv2_dirs = ['%%APPDATA%%\\\\LV2', '%%COMMONPROGRAMFILES%%\\\\LV2']
+    if build_machine.system() == 'windows'
+      lv2_dirs = ['%%APPDATA%%\\\\LV2', '%%COMMONPROGRAMFILES%%\\\\LV2']
+    else
+      lv2_dirs = ['%APPDATA%\\\\LV2', '%COMMONPROGRAMFILES%\\\\LV2']
+    endif
     default_lv2_path = ';'.join(lv2_dirs)
 
   else
