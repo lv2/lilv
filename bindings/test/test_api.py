@@ -18,7 +18,7 @@ else:
     from urllib.parse import urljoin
     from urllib.request import pathname2url
 
-    location = urljoin("file:", pathname2url(path) + "/")
+    location = urljoin("file://", pathname2url(path) + "/")
 
 
 class NodeTests(unittest.TestCase):
