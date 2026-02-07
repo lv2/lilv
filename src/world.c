@@ -209,7 +209,7 @@ lilv_world_find_nodes(LilvWorld*      world,
   WARN_INDEX(world, subject, predicate, object);
 
   if (subject && !lilv_node_is_uri(subject) && !lilv_node_is_blank(subject)) {
-    LILV_ERRORF("Subject `%s' is not a resource\n",
+    LILV_ERRORF("Subject \"%s\" is not a resource\n",
                 sord_node_get_string(subject->node));
     return NULL;
   }
@@ -220,7 +220,7 @@ lilv_world_find_nodes(LilvWorld*      world,
   }
 
   if (!lilv_node_is_uri(predicate)) {
-    LILV_ERRORF("Predicate `%s' is not a URI\n",
+    LILV_ERRORF("Predicate \"%s\" is not a URI\n",
                 sord_node_get_string(predicate->node));
     return NULL;
   }
@@ -518,7 +518,7 @@ lilv_world_load_dyn_manifest(LilvWorld*      world,
     dylib_error();
     void* lib = dylib_open(lib_path, DYLIB_LAZY);
     if (!lib) {
-      LILV_ERRORF("Failed to open dynmanifest library `%s' (%s)\n",
+      LILV_ERRORF("Failed to open dynmanifest library \"%s\" (%s)\n",
                   lib_path,
                   dylib_error());
       sord_iter_free(binaries);
@@ -531,7 +531,7 @@ lilv_world_load_dyn_manifest(LilvWorld*      world,
                             const LV2_Feature* const*);
     OpenFunc dmopen = (OpenFunc)dylib_func(lib, "lv2_dyn_manifest_open");
     if (!dmopen || dmopen(&handle, &dman_features)) {
-      LILV_ERRORF("No `lv2_dyn_manifest_open' in `%s'\n", lib_path);
+      LILV_ERRORF("No lv2_dyn_manifest_open in \"%s\"\n", lib_path);
       sord_iter_free(binaries);
       dylib_close(lib);
       lilv_free(lib_path);
@@ -543,7 +543,7 @@ lilv_world_load_dyn_manifest(LilvWorld*      world,
     GetSubjectsFunc get_subjects_func =
       (GetSubjectsFunc)dylib_func(lib, "lv2_dyn_manifest_get_subjects");
     if (!get_subjects_func) {
-      LILV_ERRORF("No `lv2_dyn_manifest_get_subjects' in `%s'\n", lib_path);
+      LILV_ERRORF("No lv2_dyn_manifest_get_subjects in \"%s\"\n", lib_path);
       sord_iter_free(binaries);
       dylib_close(lib);
       lilv_free(lib_path);
@@ -767,7 +767,7 @@ lilv_world_load_bundle(LilvWorld* world, const LilvNode* bundle_uri)
   allocate_model_if_necessary(world);
 
   if (!lilv_node_is_uri(bundle_uri)) {
-    LILV_ERRORF("Bundle URI `%s' is not a URI\n",
+    LILV_ERRORF("Bundle URI <%s> is not a URI\n",
                 sord_node_get_string(bundle_uri->node));
     return;
   }
@@ -803,7 +803,7 @@ lilv_world_load_bundle(LilvWorld* world, const LilvNode* bundle_uri)
   // Read manifest into model and skim for any plugins
   const SerdStatus st = lilv_world_load_file(world, reader, manifest->node);
   if (st > SERD_FAILURE) {
-    LILV_ERRORF("Error reading %s\n", lilv_node_as_string(manifest));
+    LILV_ERRORF("Error reading <%s>\n", lilv_node_as_string(manifest));
     lilv_node_free(manifest);
     type_skimmer_free(skimmer);
     lilv_node_hash_free(specs, world->world);
@@ -1186,7 +1186,9 @@ lilv_world_load_file(LilvWorld* world, SerdReader* reader, const SordNode* uri)
   serd_reader_add_blank_prefix(reader, lilv_world_blank_node_prefix(world));
   const SerdStatus st = serd_reader_read_file(reader, uri_str);
   if (st) {
-    LILV_ERRORF("Error loading file `%s'\n", sord_node_get_string(uri));
+    LILV_ERRORF("Error loading file <%s> (%s)\n",
+                sord_node_get_string(uri),
+                serd_strerror(st));
     return st;
   }
 
@@ -1198,7 +1200,7 @@ int
 lilv_world_load_resource(LilvWorld* world, const LilvNode* resource)
 {
   if (!lilv_node_is_uri(resource) && !lilv_node_is_blank(resource)) {
-    LILV_ERRORF("Node `%s' is not a resource\n",
+    LILV_ERRORF("Node \"%s\" is not a resource\n",
                 sord_node_get_string(resource->node));
     return -1;
   }
@@ -1217,7 +1219,7 @@ lilv_world_load_resource_internal(LilvWorld* world, const SordNode* resource)
   NODE_HASH_FOREACH (f, files) {
     const SordNode* file = lilv_node_hash_get(files, f);
     if (sord_node_get_type(file) != SORD_URI) {
-      LILV_ERRORF("rdfs:seeAlso node `%s' is not a URI\n",
+      LILV_ERRORF("rdfs:seeAlso node \"%s\" is not a URI\n",
                   sord_node_get_string(file));
     } else if (!lilv_world_load_graph(world, file, file)) {
       ++n_read;
@@ -1232,7 +1234,7 @@ int
 lilv_world_unload_resource(LilvWorld* world, const LilvNode* resource)
 {
   if (!lilv_node_is_uri(resource) && !lilv_node_is_blank(resource)) {
-    LILV_ERRORF("Node `%s' is not a resource\n",
+    LILV_ERRORF("Node \"%s\" is not a resource\n",
                 sord_node_get_string(resource->node));
     return -1;
   }
@@ -1245,7 +1247,7 @@ lilv_world_unload_resource(LilvWorld* world, const LilvNode* resource)
     const SordNode* file      = lilv_node_hash_get(files, f);
     LilvNode*       file_node = lilv_node_new_from_node(world, file);
     if (sord_node_get_type(file) != SORD_URI) {
-      LILV_ERRORF("rdfs:seeAlso node `%s' is not a URI\n",
+      LILV_ERRORF("rdfs:seeAlso node \"%s\" is not a URI\n",
                   sord_node_get_string(file));
     } else if (!lilv_world_drop_graph(world, file_node->node)) {
       lilv_node_hash_remove(world->loaded_files, world->world, file_node->node);

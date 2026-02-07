@@ -643,7 +643,7 @@ new_state_from_model(LilvWorld*      world,
     set_state_dir_from_model(state, graph);
     sord_iter_free(i);
   } else {
-    LILV_ERRORF("State %s missing lv2:appliesTo property\n",
+    LILV_ERRORF("State <%s> missing lv2:appliesTo property\n",
                 sord_node_get_string(node));
   }
 
@@ -676,7 +676,7 @@ new_state_from_model(LilvWorld*      world,
       value = sord_get(model, port, world->uris.lv2_default, 0, 0);
     }
     if (!symbol) {
-      LILV_ERRORF("State `%s' port missing symbol.\n",
+      LILV_ERRORF("State <%s> port missing symbol\n",
                   sord_node_get_string(node));
     } else if (value) {
       chunk.len = 0;
@@ -760,7 +760,7 @@ lilv_state_new_from_world(LilvWorld*      world,
                           const LilvNode* node)
 {
   if (!lilv_node_is_uri(node) && !lilv_node_is_blank(node)) {
-    LILV_ERRORF("Subject `%s' is not a URI or blank node.\n",
+    LILV_ERRORF("Subject \"%s\" is not a URI or blank node\n",
                 lilv_node_as_string(node));
     return NULL;
   }
@@ -775,7 +775,7 @@ lilv_state_new_from_file(LilvWorld*      world,
                          const char*     path)
 {
   if (subject && !lilv_node_is_uri(subject) && !lilv_node_is_blank(subject)) {
-    LILV_ERRORF("Subject `%s' is not a URI or blank node.\n",
+    LILV_ERRORF("Subject \"%s\" is not a URI or blank node\n",
                 lilv_node_as_string(subject));
     return NULL;
   }
@@ -989,7 +989,8 @@ write_manifest(LilvWorld*      world,
 
   FILE* const wfd = path ? fopen(path, "w") : NULL;
   if (!wfd) {
-    LILV_ERRORF("Failed to open %s for writing (%s)\n", path, strerror(errno));
+    LILV_ERRORF(
+      "Failed to open \"%s\" for writing (%s)\n", path, strerror(errno));
     serd_free(path);
     return 1;
   }
@@ -1076,8 +1077,9 @@ add_state_to_manifest(LilvWorld*      lworld,
   FILE* wfd = fopen(manifest_path, "wb");
   int   r   = 0;
   if (!wfd) {
-    LILV_ERRORF(
-      "Failed to open %s for writing (%s)\n", manifest_path, strerror(errno));
+    LILV_ERRORF("Failed to open \"%s\" for writing (%s)\n",
+                manifest_path,
+                strerror(errno));
     r = 1;
   } else {
     SerdWriter* writer = ttl_file_writer(wfd, &manifest, &env);
@@ -1121,8 +1123,10 @@ create_link(const char* oldpath, const char* newpath)
   ZixStatus st = ZIX_STATUS_SUCCESS;
   if ((st = zix_create_symlink(relpath, newpath))) {
     if ((st = zix_create_hard_link(oldpath, newpath))) {
-      LILV_ERRORF(
-        "Failed to link %s => %s (%s)\n", newpath, oldpath, zix_strerror(st));
+      LILV_ERRORF("Failed to link \"%s\" => \"%s\" (%s)\n",
+                  newpath,
+                  oldpath,
+                  zix_strerror(st));
     }
   }
 
@@ -1303,7 +1307,7 @@ lilv_state_make_links(const LilvState* state, const char* dir)
         if (zix_file_type(lpath) == ZIX_FILE_TYPE_NONE) {
           const ZixStatus st = create_link(pm->abs, lpath);
           if (st) {
-            LILV_ERRORF("Failed to link %s => %s (%s)\n",
+            LILV_ERRORF("Failed to link \"%s\" => \"%s\" (%s)\n",
                         pm->abs,
                         lpath,
                         zix_strerror(st));
@@ -1343,7 +1347,7 @@ lilv_state_save(LilvWorld*       world,
   char* const path = zix_path_join(NULL, abs_dir, filename);
   FILE*       fd   = path ? fopen(path, "w") : NULL;
   if (!fd) {
-    LILV_ERRORF("Failed to open %s (%s)\n", path, strerror(errno));
+    LILV_ERRORF("Failed to open \"%s\" (%s)\n", path, strerror(errno));
     zix_free(NULL, abs_dir);
     zix_free(NULL, path);
     return 4;
@@ -1418,7 +1422,7 @@ try_unlink(const char* state_dir, const char* path)
 {
   if (!strncmp(state_dir, path, strlen(state_dir))) {
     if (zix_file_type(path) != ZIX_FILE_TYPE_NONE && zix_remove(path)) {
-      LILV_ERRORF("Failed to remove %s (%s)\n", path, strerror(errno));
+      LILV_ERRORF("Failed to remove \"%s\" (%s)\n", path, strerror(errno));
     }
   }
 }
@@ -1518,8 +1522,9 @@ lilv_state_delete(LilvWorld* world, const LilvState* state)
     }
 
     if (zix_remove(state->dir)) {
-      LILV_ERRORF(
-        "Failed to remove directory %s (%s)\n", state->dir, strerror(errno));
+      LILV_ERRORF("Failed to remove directory \"%s\" (%s)\n",
+                  state->dir,
+                  strerror(errno));
     }
   } else {
     // Still something in the manifest, update and reload bundle

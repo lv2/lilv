@@ -270,7 +270,7 @@ lilv_plugin_load_ports_if_necessary(const LilvPlugin* const_plugin)
 
       if (!symbol || sord_node_get_type(symbol) != SORD_LITERAL ||
           !is_symbol(symbol_str)) {
-        LILV_ERRORF("Plugin <%s> port symbol `%s' is invalid\n",
+        LILV_ERRORF("Plugin <%s> port symbol \"%s\" is invalid\n",
                     lilv_node_as_uri(plugin->plugin_uri),
                     symbol_str);
         lilv_plugin_free_ports(plugin);
@@ -792,7 +792,7 @@ bool
 lilv_plugin_has_extension_data(const LilvPlugin* plugin, const LilvNode* uri)
 {
   if (!lilv_node_is_uri(uri)) {
-    LILV_ERRORF("Extension data `%s' is not a URI\n",
+    LILV_ERRORF("Extension data \"%s\" is not a URI\n",
                 sord_node_get_string(uri->node));
     return false;
   }

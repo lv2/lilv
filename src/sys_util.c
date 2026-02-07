@@ -48,7 +48,7 @@ lilv_normalize_lang(const char* const env_lang)
       lang[i] = '\0';
       break;
     } else {
-      LILV_ERRORF("Illegal LANG `%s' ignored\n", env_lang);
+      LILV_ERRORF("Illegal LANG \"%s\" ignored\n", env_lang);
       free(lang);
       return NULL;
     }

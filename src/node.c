@@ -138,7 +138,7 @@ lilv_node_new_from_node(LilvWorld* world, const SordNode* node)
       } else if (sord_node_equals(datatype_uri, world->uris.xsd_base64Binary)) {
         type = LILV_VALUE_BLOB;
       } else {
-        LILV_ERRORF("Unknown datatype `%s'\n",
+        LILV_ERRORF("Unknown datatype <%s>\n",
                     sord_node_get_string(datatype_uri));
       }
     }

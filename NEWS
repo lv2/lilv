@@ -4,8 +4,9 @@ lilv (0.26.3) unstable; urgency=medium
   * Fix default LV2 path on cross-compiled Windows builds
   * Fix loading of duplicate bundles with equivalent versions
   * Fix potential crash when UIs have multiple types or binaries
+  * Use consistent quoting and punctuation in log messages
 
- -- David Robillard <d@drobilla.net>  Wed, 04 Feb 2026 14:38:51 +0000
+ -- David Robillard <d@drobilla.net>  Sat, 07 Feb 2026 14:37:02 +0000
 
 lilv (0.26.2) stable; urgency=medium
 

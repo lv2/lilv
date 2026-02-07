@@ -114,7 +114,7 @@ lilv_port_get_value(const LilvPlugin* plugin,
                     const LilvNode*   predicate)
 {
   if (!lilv_node_is_uri(predicate)) {
-    LILV_ERRORF("Predicate `%s' is not a URI\n",
+    LILV_ERRORF("Predicate \"%s\" is not a URI\n",
                 sord_node_get_string(predicate->node));
     return NULL;
   }

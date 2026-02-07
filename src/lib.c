@@ -60,8 +60,7 @@ lilv_lib_open(LilvWorld*                world,
       return NULL;
     }
   } else if (!df) {
-    LILV_ERRORF("No `lv2_descriptor' or `lv2_lib_descriptor' in %s\n",
-                lib_path);
+    LILV_ERRORF("No lv2_descriptor or lv2_lib_descriptor in %s\n", lib_path);
     dylib_close(lib);
     serd_free(lib_path);
     return NULL;
