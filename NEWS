@@ -1,4 +1,4 @@
-lilv (0.26.3) unstable; urgency=medium
+lilv (0.26.4) stable; urgency=medium
 
   * Add clang nullability annotations
   * Address new warnings in clang and clang-tidy 21
@@ -7,7 +7,7 @@ lilv (0.26.3) unstable; urgency=medium
   * Fix potential crash when UIs have multiple types or binaries
   * Use consistent quoting and punctuation in log messages
 
- -- David Robillard <d@drobilla.net>  Sat, 07 Feb 2026 22:24:22 +0000
+ -- David Robillard <d@drobilla.net>  Tue, 10 Feb 2026 18:47:11 +0000
 
 lilv (0.26.2) stable; urgency=medium
 
