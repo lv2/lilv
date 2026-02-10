@@ -47,7 +47,9 @@ test_file_uris(void)
 #  pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 #endif
 
-  assert(!strcmp(lilv_uri_to_path("file:///foo"), "/foo"));
+  const char* const path = lilv_uri_to_path("file:///foo");
+  assert(path);
+  assert(!strcmp(path, "/foo"));
 
 #ifdef __clang__
 #  pragma clang diagnostic pop

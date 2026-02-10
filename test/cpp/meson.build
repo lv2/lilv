@@ -13,6 +13,7 @@ elif cpp.get_id() == 'clang'
     '-Wno-cast-align',
     '-Wno-cast-qual',
     '-Wno-documentation-unknown-command',
+    '-Wno-nullability-extension',
     '-Wno-padded',
     '-Wno-poison-system-directories',
     '-Wno-reserved-id-macro',

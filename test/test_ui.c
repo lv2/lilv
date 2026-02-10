@@ -94,6 +94,7 @@ main(void)
   assert(plug);
 
   LilvUIs* uis = lilv_plugin_get_uis(plug);
+  assert(uis);
   assert(lilv_uis_size(uis) == 4);
 
   const LilvUI* ui0 = lilv_uis_get(uis, lilv_uis_begin(uis));

@@ -1,4 +1,4 @@
-# Copyright 2020-2024 David Robillard <d@drobilla.net>
+# Copyright 2020-2026 David Robillard <d@drobilla.net>
 # SPDX-License-Identifier: 0BSD OR ISC
 
 ---
@@ -6,9 +6,13 @@ AlignConsecutiveAssignments: true
 AlignConsecutiveDeclarations: true
 AlignEscapedNewlines: Left
 AttributeMacros:
+  - LILV_ALLOCATED
   - LILV_API
   - LILV_DEPRECATED
   - LILV_LOG_FUNC
+  - LILV_NONNULL
+  - LILV_NULLABLE
+  - LILV_UNSPECIFIED
 BasedOnStyle: Mozilla
 BraceWrapping:
   AfterClass: true

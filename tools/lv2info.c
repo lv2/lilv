@@ -339,10 +339,6 @@ print_usage(const char* const name, const int status)
 int
 main(int argc, char** argv)
 {
-  if (argc == 1) {
-    return print_usage(argv[0], 1);
-  }
-
   const char* plugin_file   = NULL;
   const char* manifest_file = NULL;
   const char* plugin_uri    = NULL;
@@ -365,6 +361,10 @@ main(int argc, char** argv)
     } else {
       return print_usage(argv[0], 1);
     }
+  }
+
+  if (!plugin_uri) {
+    return print_usage(argv[0], 1);
   }
 
   int ret = 0;
