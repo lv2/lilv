@@ -5,7 +5,7 @@
 #define LILV_CONFIG_H
 
 // Define version unconditionally so a warning will catch a mismatch
-#define LILV_VERSION "0.26.4"
+#define LILV_VERSION "0.26.5"
 
 // Separator between entries in variables like PATH
 #ifndef LILV_PATH_SEP

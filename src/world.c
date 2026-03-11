@@ -14,6 +14,7 @@
 
 #ifdef LILV_DYN_MANIFEST
 #  include "dylib.h"
+#  include "node_skimmer.h"
 #  include <lv2/dynmanifest/dynmanifest.h>
 #endif
 

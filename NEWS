@@ -1,3 +1,9 @@
+lilv (0.26.5) unstable; urgency=medium
+
+  * Fix build with dynmanifest support
+
+ -- David Robillard <d@drobilla.net>  Wed, 11 Mar 2026 21:49:01 +0000
+
 lilv (0.26.4) stable; urgency=medium
 
   * Add clang nullability annotations
