@@ -990,6 +990,7 @@ lilv_plugin_get_related(const LilvPlugin* plugin, const LilvNode* type)
                                   lilv_plugin_get_uri(plugin)->node,
                                   NULL);
   if (sord_iter_end(i)) {
+    sord_iter_free(i);
     return NULL;
   }
 

@@ -117,6 +117,7 @@ lilv_node_from_object(LilvWorld* const      world,
 {
   SordIter* const i = sord_search(world->model, s, p, NULL, NULL);
   if (sord_iter_end(i)) {
+    sord_iter_free(i);
     return NULL;
   }
 
