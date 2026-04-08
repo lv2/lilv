@@ -1,9 +1,10 @@
-# Copyright 2020-2025 David Robillard <d@drobilla.net>
+# Copyright 2020-2026 David Robillard <d@drobilla.net>
 # SPDX-License-Identifier: 0BSD OR ISC
 
 Checks: >
   -concurrency-mt-unsafe,
   -cppcoreguidelines-avoid-non-const-global-variables,
+  -readability-implicit-bool-conversion,
 CheckOptions:
   - key:   readability-function-cognitive-complexity.Threshold
     value: '46'

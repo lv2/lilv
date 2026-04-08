@@ -1,4 +1,4 @@
-# Copyright 2020-2025 David Robillard <d@drobilla.net>
+# Copyright 2020-2026 David Robillard <d@drobilla.net>
 # SPDX-License-Identifier: 0BSD OR ISC
 
 Checks: >
@@ -14,6 +14,7 @@ Checks: >
   -hicpp-signed-bitwise,
   -performance-no-int-to-ptr,
   -readability-avoid-nested-conditional-operator,
+  -readability-implicit-bool-conversion,
   -readability-redundant-casting,
   -readability-suspicious-call-argument,
 CheckOptions:
