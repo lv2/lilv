@@ -1,6 +1,7 @@
 lilv (0.26.5) unstable; urgency=medium
 
   * Fix build with dynmanifest support
+  * Fix crash when loading plugin classes on Windows
   * Fix potential iterator leaks and resulting log message flood
 
  -- David Robillard <d@drobilla.net>  Fri, 13 Mar 2026 01:16:23 +0000

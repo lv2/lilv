@@ -1107,7 +1107,9 @@ lilv_world_load_plugin_classes(LilvWorld* world)
 
   const size_t     n_subclasses = sord_num_quads(world->subclasses);
   const SordNode** scratch =
-    (const SordNode**)zix_calloc(NULL, 2U * n_subclasses, sizeof(SordNode*));
+    n_subclasses
+      ? (const SordNode**)zix_calloc(NULL, 2U * n_subclasses, sizeof(SordNode*))
+      : NULL;
 
   size_t           n_work = 0U;
   const SordNode** work   = scratch;
