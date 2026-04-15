@@ -1106,11 +1106,10 @@ lilv_world_load_plugin_classes(LilvWorld* world)
   allocate_model_if_necessary(world);
 
   const size_t     n_subclasses = sord_num_quads(world->subclasses);
-  const SordNode** scratch =
-    n_subclasses
-      ? (const SordNode**)zix_calloc(NULL, 2U * n_subclasses, sizeof(SordNode*))
-      : NULL;
+  const SordNode** scratch      = (const SordNode**)zix_calloc(
+    NULL, (2U * n_subclasses) + 1U, sizeof(SordNode*));
 
+  assert(scratch);
   size_t           n_work = 0U;
   const SordNode** work   = scratch;
   size_t           n_next = 0U;
