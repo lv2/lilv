@@ -1327,13 +1327,7 @@ lilv_state_make_links(const LilvState* state, const char* dir)
         // Make a link in the link directory to external file
         char* lpath = lilv_find_free_path(pat, link_exists, pm->abs);
         if (zix_file_type(lpath) == ZIX_FILE_TYPE_NONE) {
-          const ZixStatus st = create_link(pm->abs, lpath);
-          if (st) {
-            LILV_ERRORF("Failed to link \"%s\" => \"%s\" (%s)\n",
-                        pm->abs,
-                        lpath,
-                        zix_strerror(st));
-          }
+          create_link(pm->abs, lpath);
         }
 
         // Make a link in the save directory to the external link
