@@ -270,13 +270,35 @@ make_path(LV2_State_Make_Path_Handle handle, const char* path)
 }
 
 static bool
+is_dir_sep(const char c)
+{
+  if (c == '/') {
+    return true;
+  }
+
+#ifdef _WIN32
+  return c == '\\';
+#endif
+
+  return false;
+}
+
+static bool
 path_is_child(const char* path, const char* dir)
 {
   if (path && dir) {
-    const size_t path_len = strlen(path);
-    const size_t dir_len  = strlen(dir);
-    return path_len >= dir_len && !strncmp(path, dir, dir_len);
+    size_t i        = 0U;
+    char   dir_last = '\0';
+    for (; dir[i]; ++i) {
+      dir_last = dir[i];
+      if (path[i] != dir[i]) {
+        return false;
+      }
+    }
+
+    return is_dir_sep(dir_last) || is_dir_sep(path[i]);
   }
+
   return false;
 }
 
@@ -1420,7 +1442,7 @@ lilv_state_to_string(LilvWorld*       world,
 static void
 try_unlink(const char* state_dir, const char* path)
 {
-  if (!strncmp(state_dir, path, strlen(state_dir))) {
+  if (path_is_child(path, state_dir)) {
     if (zix_file_type(path) != ZIX_FILE_TYPE_NONE && zix_remove(path)) {
       LILV_ERRORF("Failed to remove \"%s\" (%s)\n", path, strerror(errno));
     }
