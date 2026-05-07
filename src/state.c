@@ -1331,9 +1331,7 @@ lilv_state_make_links(const LilvState* state, const char* dir)
         }
 
         // Make a link in the save directory to the external link
-        char* target = zix_path_lexically_relative(NULL, lpath, dir);
         maybe_symlink(lpath, path);
-        free(target);
         free(lpath);
       }
       free(pat);
