@@ -1460,12 +1460,10 @@ lilv_state_delete(LilvWorld* world, const LilvState* state)
 
   LilvNode*      bundle        = lilv_new_file_uri(world, NULL, state->dir);
   uint8_t* const manifest_uri  = lilv_manifest_uri(bundle->node);
+  const SerdNode manifest_node = serd_node_from_string(SERD_URI, manifest_uri);
   char* const    manifest_path = get_canonical_path(manifest_uri);
   const bool     has_manifest =
     manifest_path && zix_file_type(manifest_path) == ZIX_FILE_TYPE_REGULAR;
-
-  const SerdNode manifest_node =
-    serd_node_from_string(SERD_URI, (const uint8_t*)manifest_uri);
 
   SordModel* model    = sord_new(world->world, SORD_SPO, false);
   NodeHash*  see_also = NULL;
@@ -1621,8 +1619,8 @@ lilv_state_equals(const LilvState* a, const LilvState* b)
 
     if (ap->type == a->atom_Path) {
       if (!zix_file_equals(NULL,
-                           lilv_state_rel2abs(a, (char*)ap->value),
-                           lilv_state_rel2abs(b, (char*)bp->value))) {
+                           lilv_state_rel2abs(a, (const char*)ap->value),
+                           lilv_state_rel2abs(b, (const char*)bp->value))) {
         return false;
       }
     } else if (ap->size != bp->size ||
