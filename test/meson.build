@@ -41,7 +41,7 @@ subdir('test_plugin.lv2')
 # C++ Bindings #
 ################
 
-if not get_option('bindings_cpp').disabled()
+if is_variable('cpp')
   subdir('cpp')
 endif
 
