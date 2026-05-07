@@ -1113,33 +1113,33 @@ link_exists(const char* path, const void* data)
 }
 
 static ZixStatus
-create_link(const char* oldpath, const char* newpath)
+create_link(const char* target_path, const char* link_path)
 {
-  const ZixStringView parent_path = zix_path_parent_path(newpath);
+  ZixStatus           st          = ZIX_STATUS_SUCCESS;
+  const ZixStringView parent_path = zix_path_parent_path(link_path);
   char* const         parent      = zix_string_view_copy(NULL, parent_path);
 
-  char* const relpath = zix_path_lexically_relative(NULL, oldpath, parent);
-
-  ZixStatus st = ZIX_STATUS_SUCCESS;
-  if ((st = zix_create_symlink(relpath, newpath))) {
-    if ((st = zix_create_hard_link(oldpath, newpath))) {
+  char* const rel = zix_path_lexically_relative(NULL, target_path, parent);
+  if ((st = zix_create_symlink(rel, link_path))) {
+    if ((st = zix_create_hard_link(target_path, link_path))) {
       LILV_ERRORF("Failed to link \"%s\" => \"%s\" (%s)\n",
-                  newpath,
-                  oldpath,
+                  link_path,
+                  target_path,
                   zix_strerror(st));
     }
   }
 
-  zix_free(NULL, relpath);
+  zix_free(NULL, rel);
   zix_free(NULL, parent);
   return st;
 }
 
 static ZixStatus
-maybe_symlink(const char* oldpath, const char* newpath)
+maybe_symlink(const char* target_path, const char* link_path)
 {
-  return link_exists(newpath, oldpath) ? ZIX_STATUS_SUCCESS
-                                       : create_link(oldpath, newpath);
+  return link_exists(link_path, target_path)
+           ? ZIX_STATUS_SUCCESS
+           : create_link(target_path, link_path);
 }
 
 static void
