@@ -257,18 +257,20 @@ retrieve_callback(LV2_State_Handle handle,
   return NULL;
 }
 
-static bool
+static LilvPathStatus
 file_path_exists(const char* path, const void* handle)
 {
   (void)handle;
 
-  return zix_file_type(path) != ZIX_FILE_TYPE_NONE;
+  return (zix_file_type(path) != ZIX_FILE_TYPE_NONE) ? LILV_PATH_IS_TAKEN
+                                                     : LILV_PATH_IS_FREE;
 }
 
-static bool
+static LilvPathStatus
 state_path_exists(const char* path, const void* handle)
 {
-  return !!find_path((const LilvState*)handle, path);
+  return !!find_path((const LilvState*)handle, path) ? LILV_PATH_IS_TAKEN
+                                                     : LILV_PATH_IS_FREE;
 }
 
 static char*
@@ -1130,18 +1132,19 @@ add_state_to_manifest(LilvWorld*      lworld,
   return r;
 }
 
-static bool
+static LilvPathStatus
 link_exists_to(const char* path, const void* data)
 {
-  const char* target = (const char*)data;
-  if (zix_file_type(path) == ZIX_FILE_TYPE_NONE) {
-    return false;
+  if (zix_symlink_type(path) == ZIX_FILE_TYPE_NONE) {
+    return LILV_PATH_IS_FREE;
   }
 
+  const char* target    = (const char*)data;
   char* const real_path = zix_canonical_path(NULL, path);
   const bool  matches   = real_path && !strcmp(real_path, target);
   zix_free(NULL, real_path);
-  return !matches;
+
+  return matches ? LILV_PATH_SHOULD_REUSE : LILV_PATH_IS_TAKEN;
 }
 
 static ZixStatus
@@ -1169,9 +1172,18 @@ create_link(const char* target_path, const char* link_path)
 static ZixStatus
 maybe_symlink(const char* target_path, const char* link_path)
 {
-  return link_exists_to(link_path, target_path)
-           ? ZIX_STATUS_SUCCESS
-           : create_link(target_path, link_path);
+  ZixStatus            st  = ZIX_STATUS_SUCCESS;
+  const LilvPathStatus pst = link_exists_to(link_path, target_path);
+
+  if (pst == LILV_PATH_SHOULD_REUSE) {
+    return ZIX_STATUS_SUCCESS; // Link exists and points to the correct target
+  }
+
+  if (pst == LILV_PATH_IS_TAKEN) {
+    st = zix_remove(link_path);
+  }
+
+  return st ? st : create_link(target_path, link_path);
 }
 
 static void

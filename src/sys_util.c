@@ -1,4 +1,4 @@
-// Copyright 2007-2025 David Robillard <d@drobilla.net>
+// Copyright 2007-2026 David Robillard <d@drobilla.net>
 // SPDX-License-Identifier: ISC
 
 #include "sys_util.h"
@@ -58,16 +58,16 @@ lilv_normalize_lang(const char* const env_lang)
 }
 
 char*
-lilv_find_path(const char*              in_path,
-               const LilvPathExistsFunc exists,
-               const void*              user_data)
+lilv_find_path(const char*             in_path,
+               const LilvPathCheckFunc predicate,
+               const void*             user_data)
 {
   const size_t in_path_len = strlen(in_path);
   char*        path        = (char*)malloc(in_path_len + 7);
   memcpy(path, in_path, in_path_len + 1);
 
   for (unsigned i = 2U; i < 1000000U; ++i) {
-    if (!exists(path, user_data)) {
+    if (predicate(path, user_data) != LILV_PATH_IS_TAKEN) {
       return path;
     }
     snprintf(path, in_path_len + 7, "%s.%u", in_path, i);
