@@ -1434,13 +1434,24 @@ lilv_state_to_string(LilvWorld*       world,
 }
 
 static void
-try_remove(const char* state_dir, const char* path)
+try_remove(const char* const state_dir, const char* const path)
 {
-  if (path_is_child(path, state_dir)) {
-    if (zix_file_type(path) != ZIX_FILE_TYPE_NONE && zix_remove(path)) {
-      LILV_ERRORF("Failed to remove \"%s\" (%s)\n", path, strerror(errno));
+  // Resolve relative path in state directory if necessary
+  // Note that this must be purely lexical, not canonicalized!
+  char* resolved_path = NULL;
+  if (zix_path_is_relative(path)) {
+    resolved_path = zix_path_join(NULL, state_dir, path);
+  }
+
+  // Only try to remove the file if it's a child of the state directory
+  const char* const abs_path = resolved_path ? resolved_path : path;
+  if (path_is_child(abs_path, state_dir)) {
+    if (zix_symlink_type(abs_path) != ZIX_FILE_TYPE_NONE && zix_remove(abs_path)) {
+      LILV_ERRORF("Failed to remove \"%s\" (%s)\n", abs_path, strerror(errno));
     }
   }
+
+  zix_free(NULL, resolved_path);
 }
 
 int
@@ -1507,10 +1518,8 @@ lilv_state_delete(LilvWorld* world, const LilvState* state)
       for (ZixTreeIter* i = zix_tree_begin(state->abs2rel);
            i != zix_tree_end(state->abs2rel);
            i = zix_tree_iter_next(i)) {
-        const PathMap* pm   = (const PathMap*)zix_tree_get(i);
-        char*          path = zix_path_join(NULL, state->dir, pm->rel);
-        try_remove(state->dir, path);
-        zix_free(NULL, path);
+        const PathMap* pm = (const PathMap*)zix_tree_get(i);
+        try_remove(state->dir, pm->rel);
       }
     } else {
       // State loaded from model, get paths from loaded properties
