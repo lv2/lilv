@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: 0BSD OR ISC
 
 Checks: >
+  -android-cloexec-fopen,
   -concurrency-mt-unsafe,
   -cppcoreguidelines-avoid-non-const-global-variables,
   -readability-implicit-bool-conversion,

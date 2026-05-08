@@ -2,7 +2,6 @@
 # SPDX-License-Identifier: 0BSD OR ISC
 
 Checks: >
-  -android-cloexec-fopen,
   -clang-analyzer-optin.core.EnumCastOutOfRange,
   -clang-analyzer-optin.taint.TaintedAlloc,
   -clang-analyzer-security.ArrayBound,

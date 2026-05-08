@@ -1,6 +1,7 @@
-// Copyright 2007-2025 David Robillard <d@drobilla.net>
+// Copyright 2007-2026 David Robillard <d@drobilla.net>
 // SPDX-License-Identifier: ISC
 
+#include "lilv_config.h"
 #include "lilv_internal.h"
 #include "log.h"
 #include "node_hash.h"
@@ -34,6 +35,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+#if USE_FOPEN_E_MODE
+#  define FOPEN_MODE(m) m "e"
+#else
+#  define FOPEN_MODE(m) m
+#endif
 
 #define USTR(s) ((const uint8_t*)(s))
 
@@ -1012,7 +1019,7 @@ write_manifest(LilvWorld*      world,
   char* const path =
     (char*)serd_file_uri_parse((const uint8_t*)file_uri->buf, NULL);
 
-  FILE* const wfd = path ? fopen(path, "w") : NULL;
+  FILE* const wfd = path ? fopen(path, FOPEN_MODE("wb")) : NULL;
   if (!wfd) {
     LILV_ERRORF(
       "Failed to open \"%s\" for writing (%s)\n", path, strerror(errno));
@@ -1099,8 +1106,8 @@ add_state_to_manifest(LilvWorld*      lworld,
   /* Re-open manifest for locked writing.  We need to do this because it may
      need to be truncated, and the file can only be open once on Windows. */
 
-  FILE* wfd = fopen(manifest_path, "wb");
-  int   r   = 0;
+  FILE* const wfd = fopen(manifest_path, FOPEN_MODE("wb"));
+  int         r   = 0;
   if (!wfd) {
     LILV_ERRORF("Failed to open \"%s\" for writing (%s)\n",
                 manifest_path,
@@ -1361,7 +1368,7 @@ lilv_state_save(LilvWorld*       world,
   }
 
   char* const path = zix_path_join(NULL, abs_dir, filename);
-  FILE*       fd   = path ? fopen(path, "w") : NULL;
+  FILE* const fd   = path ? fopen(path, FOPEN_MODE("wb")) : NULL;
   if (!fd) {
     LILV_ERRORF("Failed to open \"%s\" (%s)\n", path, strerror(errno));
     zix_free(NULL, abs_dir);
