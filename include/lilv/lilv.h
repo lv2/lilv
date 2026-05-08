@@ -1458,13 +1458,14 @@ typedef const void* LILV_NULLABLE (*LilvGetPortValueFunc)(
    which allows multiple state snapshots to share a single copy if the file has
    not changed.
 
-   @param link_dir Directory of links to external files, or NULL.  A link will
-   be made in this directory to any external files referred to in plugin state.
-   In turn, links will be created in the save directory to these links (like
-   save_dir/file => link_dir/file => /foo/bar/file).  This allows many state
-   snapshots to share a single link to an external file, so archival (for
-   example, with `tar -h`) will not create several copies of the file.  If this
-   is not required, it can be the same as `save_dir`.
+   @param link_dir Directory of links to external files, or NULL.  Links will
+   be made here to any external file referred to in plugin state.  In turn,
+   these will be linked to from `save_dir` (like save_dir/file => link_dir/file
+   => /some/file).  This allows several state snapshots to share links to
+   external files, so an archive (created by naive tools like `tar`) will only
+   contain one copy of the file.  This can be the same as `save_dir` to link
+   directly from there (without sharing).  If NULL, the state will contain
+   absolute paths to any any external files.
 
    @param save_dir Directory of files created by plugin during save (or NULL).
    This is typically the bundle directory later passed to lilv_state_save().

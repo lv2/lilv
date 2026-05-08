@@ -3,10 +3,11 @@ lilv (0.26.5) unstable; urgency=medium
   * Always create state files with O_CLOEXEC on glibc >= 2.7
   * Fix build with dynmanifest support
   * Fix crash when loading plugin classes on Windows
+  * Fix potential file loss when saving state with no link directory
   * Fix potential iterator leaks and resulting log message flood
   * Fix test build when no C++ compiler is available
 
- -- David Robillard <d@drobilla.net>  Fri, 08 May 2026 01:00:17 +0000
+ -- David Robillard <d@drobilla.net>  Fri, 08 May 2026 01:31:06 +0000
 
 lilv (0.26.4) stable; urgency=medium
 

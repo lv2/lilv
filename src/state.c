@@ -1318,17 +1318,21 @@ make_links(const LilvState* state, const char* dir)
   for (ZixTreeIter* i = zix_tree_begin(state->abs2rel);
        i != zix_tree_end(state->abs2rel);
        i = zix_tree_iter_next(i)) {
-    const PathMap* const pm        = (const PathMap*)zix_tree_get(i);
-    char* const          save_path = zix_path_join(NULL, dir, pm->rel);
+    const PathMap* const pm = (const PathMap*)zix_tree_get(i);
+    if (zix_path_is_absolute(pm->rel)) {
+      continue; // Ignore absolute path in state
+    }
+
+    char* const save_path = zix_path_join(NULL, dir, pm->rel);
     if (state->copy_dir && path_is_child(pm->abs, state->copy_dir) &&
         !!strcmp(state->copy_dir, dir)) {
       // Link directly to snapshot in the copy directory
       maybe_symlink(pm->abs, save_path);
-    } else if (!path_is_child(pm->abs, dir)) {
-      const char* link_dir        = state->link_dir ? state->link_dir : dir;
-      char* const ideal_link_path = zix_path_join(NULL, link_dir, pm->rel);
+    } else if (state->link_dir && !path_is_child(pm->abs, dir)) {
+      char* const ideal_link_path =
+        zix_path_join(NULL, state->link_dir, pm->rel);
 
-      if (!strcmp(dir, link_dir)) {
+      if (!strcmp(dir, state->link_dir)) {
         // Link directory is save directory, make link at exact path
         (void)zix_remove(ideal_link_path);
         maybe_symlink(pm->abs, ideal_link_path);
@@ -1453,7 +1457,8 @@ try_remove(const char* const state_dir, const char* const path)
   // Only try to remove the file if it's a child of the state directory
   const char* const abs_path = resolved_path ? resolved_path : path;
   if (path_is_child(abs_path, state_dir)) {
-    if (zix_symlink_type(abs_path) != ZIX_FILE_TYPE_NONE && zix_remove(abs_path)) {
+    if (zix_symlink_type(abs_path) != ZIX_FILE_TYPE_NONE &&
+        zix_remove(abs_path)) {
       LILV_ERRORF("Failed to remove \"%s\" (%s)\n", abs_path, strerror(errno));
     }
   }
