@@ -1190,7 +1190,7 @@ write_property_array(const LilvState*     state,
                    prop->type,
                    strlen(abs_path) + 1,
                    abs_path);
-    } else if (prop->flags & LV2_STATE_IS_POD ||
+    } else if ((prop->flags & LV2_STATE_IS_POD) ||
                prop->type == state->atom_Path) {
       sratom_write(
         sratom, unmap, flags, subject, &p, prop->type, prop->size, prop->value);
