@@ -1439,15 +1439,6 @@ try_remove(const char* state_dir, const char* path)
   }
 }
 
-static char*
-get_canonical_path(const uint8_t* const manifest_uri)
-{
-  char* const path      = (char*)serd_file_uri_parse(manifest_uri, NULL);
-  char* const real_path = path ? zix_canonical_path(NULL, path) : NULL;
-  serd_free(path);
-  return real_path;
-}
-
 int
 lilv_state_delete(LilvWorld* world, const LilvState* state)
 {
@@ -1459,7 +1450,7 @@ lilv_state_delete(LilvWorld* world, const LilvState* state)
   LilvNode*      bundle        = lilv_new_file_uri(world, NULL, state->dir);
   uint8_t* const manifest_uri  = lilv_manifest_uri(bundle->node);
   const SerdNode manifest_node = serd_node_from_string(SERD_URI, manifest_uri);
-  char* const    manifest_path = get_canonical_path(manifest_uri);
+  char* const    manifest_path = (char*)serd_file_uri_parse(manifest_uri, NULL);
   const bool     has_manifest =
     manifest_path && zix_file_type(manifest_path) == ZIX_FILE_TYPE_REGULAR;
 
@@ -1483,14 +1474,10 @@ lilv_state_delete(LilvWorld* world, const LilvState* state)
   if (state->uri) {
     // Remove state rdfs:seeAlso files
     NODE_HASH_FOREACH (s, see_also) {
-      const SordNode* node      = lilv_node_hash_get(see_also, s);
-      const uint8_t*  uri       = sord_node_get_string(node);
-      char* const     path      = (char*)serd_file_uri_parse(uri, NULL);
-      char* const     real_path = zix_canonical_path(NULL, path);
-      if (real_path) {
-        try_remove(state->dir, real_path);
-      }
-      zix_free(NULL, real_path);
+      const SordNode* node = lilv_node_hash_get(see_also, s);
+      const uint8_t*  uri  = sord_node_get_string(node);
+      char* const     path = (char*)serd_file_uri_parse(uri, NULL);
+      try_remove(state->dir, path);
       serd_free(path);
     }
 
