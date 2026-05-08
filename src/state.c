@@ -147,15 +147,19 @@ append_port_value(LilvState*  state,
   return pv;
 }
 
+static ZixTreeIter*
+find_path(const LilvState* state, const char* path)
+{
+  ZixTreeIter*  i = NULL;
+  const PathMap k = {NULL, (char*)path};
+  return (state->rel2abs && !zix_tree_find(state->rel2abs, &k, &i)) ? i : NULL;
+}
+
 static const char*
 resolve_path(const LilvState* state, const char* path)
 {
-  ZixTreeIter*  iter = NULL;
-  const PathMap key  = {NULL, (char*)path};
-  if (state->rel2abs && !zix_tree_find(state->rel2abs, &key, &iter)) {
-    return ((const PathMap*)zix_tree_get(iter))->abs;
-  }
-  return path;
+  ZixTreeIter* const i = find_path(state, path);
+  return i ? ((const PathMap*)zix_tree_get(i))->abs : path;
 }
 
 static void
@@ -257,7 +261,7 @@ file_path_exists(const char* path, const void* handle)
 static bool
 state_path_exists(const char* path, const void* handle)
 {
-  return resolve_path((const LilvState*)handle, path) != path;
+  return !!find_path((const LilvState*)handle, path);
 }
 
 static char*
