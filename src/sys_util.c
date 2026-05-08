@@ -58,9 +58,9 @@ lilv_normalize_lang(const char* const env_lang)
 }
 
 char*
-lilv_find_free_path(const char*              in_path,
-                    const LilvPathExistsFunc exists,
-                    const void*              user_data)
+lilv_find_path(const char*              in_path,
+               const LilvPathExistsFunc exists,
+               const void*              user_data)
 {
   const size_t in_path_len = strlen(in_path);
   char*        path        = (char*)malloc(in_path_len + 7);

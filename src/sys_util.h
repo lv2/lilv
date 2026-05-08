@@ -21,9 +21,9 @@ lilv_normalize_lang(const char* ZIX_NONNULL env_lang);
 
 /// Find an available path by appending a numeric suffix if necessary
 char* ZIX_UNSPECIFIED
-lilv_find_free_path(const char* ZIX_NONNULL        in_path,
-                    LilvPathExistsFunc ZIX_NONNULL exists,
-                    const void* ZIX_UNSPECIFIED    user_data);
+lilv_find_path(const char* ZIX_NONNULL        in_path,
+               LilvPathExistsFunc ZIX_NONNULL exists,
+               const void* ZIX_UNSPECIFIED    user_data);
 
 /// Return the latest copy of the file at `path` that is newer
 char* ZIX_UNSPECIFIED
