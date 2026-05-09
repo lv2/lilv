@@ -1223,16 +1223,13 @@ write_property_array(const LilvState*     state,
 }
 
 static int
-write_state_description(LilvWorld*       world,
-                        LV2_URID_Map*    map,
+write_state_description(LV2_URID_Map*    map,
                         LV2_URID_Unmap*  unmap,
                         const LilvState* state,
                         SerdWriter*      writer,
                         const char*      uri,
                         const char*      dir)
 {
-  (void)world;
-
   SerdNode lv2_appliesTo =
     serd_node_from_string(SERD_CURIE, USTR("lv2:appliesTo"));
 
@@ -1400,8 +1397,8 @@ lilv_state_save(LilvWorld*       world,
   SerdNode    node = uri ? serd_node_from_string(SERD_URI, USTR(uri)) : file;
   SerdEnv*    env  = NULL;
   SerdWriter* ttl  = ttl_file_writer(fd, &file, &env);
-  int         ret  = write_state_description(
-    world, map, unmap, state, ttl, (const char*)node.buf, dir);
+  int         ret =
+    write_state_description(map, unmap, state, ttl, (const char*)node.buf, dir);
 
   // Set saved dir and uri (FIXME: const violation)
   zix_free(NULL, state->dir);
@@ -1436,6 +1433,8 @@ lilv_state_to_string(LilvWorld*       world,
                      const char*      uri,
                      const char*      base_uri)
 {
+  (void)world;
+
   if (!uri) {
     LILV_ERROR("Attempt to serialise state with no URI\n");
     return NULL;
@@ -1446,7 +1445,7 @@ lilv_state_to_string(LilvWorld*       world,
   SerdNode    base   = serd_node_from_string(SERD_URI, USTR(base_uri));
   SerdWriter* writer = ttl_writer(serd_chunk_sink, &chunk, &base, &env);
 
-  write_state_description(world, map, unmap, state, writer, uri, NULL);
+  write_state_description(map, unmap, state, writer, uri, NULL);
 
   serd_writer_free(writer);
   serd_env_free(env);
