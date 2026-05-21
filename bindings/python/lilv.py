@@ -6,7 +6,7 @@
 __author__ = "David Robillard"
 __copyright__ = "Copyright 2016-2025 David Robillard"
 __license__ = "ISC"
-__version__ = "0.26.4"
+__version__ = "0.27.0"
 __maintainer__ = "David Robillard"
 __email__ = "d@drobilla.net"
 __status__ = "Production"
@@ -1769,6 +1769,7 @@ _cfunc("state_equals", c_bool, P(State), P(State))
 _cfunc("state_get_num_properties", c_uint, P(State))
 _cfunc("state_get_plugin_uri", P(Node), P(State))
 _cfunc("state_get_uri", P(Node), P(State))
+_cfunc("state_get_bundle_path", c_char_p, P(State))
 _cfunc("state_get_label", c_char_p, P(State))
 _cfunc("state_set_label", None, P(State), String)
 

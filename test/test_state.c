@@ -1097,6 +1097,9 @@ test_delete(void)
   LilvState* const state =
     state_from_instance(plugin, instance, ctx, &dirs, bundle_path);
 
+  const char* const saved_bundle_path = lilv_state_get_bundle_path(state);
+  assert(saved_bundle_path);
+  assert(!strcmp(bundle_path, saved_bundle_path));
   assert(!lilv_state_save(ctx->env->world,
                           &ctx->map,
                           &ctx->unmap,

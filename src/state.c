@@ -1672,6 +1672,12 @@ lilv_state_get_uri(const LilvState* state)
 }
 
 const char*
+lilv_state_get_bundle_path(const LilvState* state)
+{
+  return state->dir;
+}
+
+const char*
 lilv_state_get_label(const LilvState* state)
 {
   return state->label;

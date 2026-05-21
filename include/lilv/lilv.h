@@ -1530,6 +1530,19 @@ LILV_API const LilvNode* LILV_UNSPECIFIED
 lilv_state_get_uri(const LilvState* LILV_NONNULL state);
 
 /**
+   Get the bundle that contains `state`, if any.
+
+   This will return a path for states loaded from the filesystem, or from an
+   instance using lilv_state_new_from_instance() with a `save_dir`.  Note that
+   this can return a directory for states that haven't been saved yet, so the
+   returned path isn't guaranteed to be a valid bundle with a `manifest.ttl`.
+
+   Returns NULL if the state isn't stored in a directory for whatever reason.
+*/
+LILV_API const char* LILV_NULLABLE
+lilv_state_get_bundle_path(const LilvState* LILV_NONNULL state);
+
+/**
    Get the label of `state`.
 */
 LILV_API const char* LILV_UNSPECIFIED

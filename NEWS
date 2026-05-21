@@ -1,5 +1,6 @@
-lilv (0.26.5) unstable; urgency=medium
+lilv (0.27.0) unstable; urgency=medium
 
+  * Add lilv_state_get_bundle_path()
   * Always create state files with O_CLOEXEC on glibc >= 2.7
   * Fix build with dynmanifest support
   * Fix crash when loading plugin classes on Windows
@@ -8,7 +9,7 @@ lilv (0.26.5) unstable; urgency=medium
   * Fix replacing links when saving over state
   * Fix test build when no C++ compiler is available
 
- -- David Robillard <d@drobilla.net>  Fri, 08 May 2026 02:57:16 +0000
+ -- David Robillard <d@drobilla.net>  Thu, 21 May 2026 23:54:17 +0000
 
 lilv (0.26.4) stable; urgency=medium
 
