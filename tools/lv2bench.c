@@ -198,7 +198,7 @@ bench(const LilvPlugin* const p, const Options options, FILE* const results)
         } else if (!isnan(maxes[index])) {
           controls[index] = maxes[index];
         } else {
-          controls[index] = 0.0;
+          controls[index] = 0.0f;
         }
       }
       lilv_instance_connect_port(instance, index, &controls[index]);

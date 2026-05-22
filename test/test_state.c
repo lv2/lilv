@@ -84,9 +84,9 @@ test_context_new(void)
   ctx->atom_Float =
     map_uri(&ctx->uri_map, "http://lv2plug.in/ns/ext/atom#Float");
 
-  ctx->in      = 1.0;
-  ctx->out     = 42.0;
-  ctx->control = 1234.0;
+  ctx->in      = 1.0f;
+  ctx->out     = 42.0f;
+  ctx->control = 1234.0f;
 
   return ctx;
 }

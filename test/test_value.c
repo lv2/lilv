@@ -159,7 +159,7 @@ test_constructed(void)
   LilvNode* uval_dup = lilv_node_duplicate(uval);
   assert(lilv_node_equals(uval, uval_dup));
 
-  LilvNode* ifval = lilv_new_float(world, 42.0);
+  LilvNode* ifval = lilv_new_float(world, 42.0f);
   assert(!lilv_node_equals(ival, ifval));
   lilv_node_free(ifval);
 

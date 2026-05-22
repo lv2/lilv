@@ -30,9 +30,11 @@ lilv_node_set_numerics_from_string(LilvNode* val)
   case LILV_VALUE_STRING:
   case LILV_VALUE_BLOB:
     break;
-  case LILV_VALUE_INT:
-    val->val.int_val = strtol(str, NULL, 10);
+  case LILV_VALUE_INT: {
+    const long l     = strtol(str, NULL, 10);
+    val->val.int_val = (int)l;
     break;
+  }
   case LILV_VALUE_FLOAT:
     if (!strcmp(str, "INF") || !strcmp(str, "+INF")) {
       val->val.float_val = INFINITY;
@@ -41,7 +43,8 @@ lilv_node_set_numerics_from_string(LilvNode* val)
     } else if (!strcmp(str, "NaN")) {
       val->val.float_val = NAN;
     } else {
-      val->val.float_val = serd_strtod(str, NULL);
+      const double d     = serd_strtod(str, NULL);
+      val->val.float_val = (float)d;
     }
     break;
   case LILV_VALUE_BOOL:

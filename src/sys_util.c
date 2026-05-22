@@ -39,7 +39,7 @@ lilv_normalize_lang(const char* const env_lang)
     if (env_lang[i] == '_') {
       lang[i] = '-'; // Convert _ to -
     } else if (env_lang[i] >= 'A' && env_lang[i] <= 'Z') {
-      lang[i] = env_lang[i] + ('a' - 'A'); // Convert to lowercase
+      lang[i] = (char)(env_lang[i] + ('a' - 'A')); // Convert to lowercase
     } else if ((env_lang[i] >= 'a' && env_lang[i] <= 'z') ||
                (env_lang[i] >= '0' && env_lang[i] <= '9')) {
       lang[i] = env_lang[i]; // Lowercase letter or digit, copy verbatim

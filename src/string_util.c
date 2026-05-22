@@ -89,7 +89,7 @@ lilv_manifest_uri(const SordNode* const node)
     return NULL;
   }
 
-  const char        last = str[len - 1U];
+  const uint8_t     last = str[len - 1U];
   const char* const sep  = (last == '/') ? "" : "/";
   return (uint8_t*)lilv_strjoin((const char*)str, sep, "manifest.ttl", NULL);
 }
