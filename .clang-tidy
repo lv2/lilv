@@ -4,11 +4,9 @@
 Checks: >
   *,
   -*-magic-numbers,
-  -*-vararg,
   -altera-*,
   -bugprone-assignment-in-if-condition,
   -bugprone-easily-swappable-parameters,
-  -bugprone-macro-parentheses,
   -bugprone-multi-level-implicit-pointer-conversion,
   -bugprone-suspicious-realloc-usage,
   -cert-err33-c,

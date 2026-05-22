@@ -3,10 +3,8 @@
 
 Checks: >
   -clang-analyzer-optin.core.EnumCastOutOfRange,
-  -clang-analyzer-optin.taint.TaintedAlloc,
   -clang-analyzer-security.ArrayBound,
   -clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling,
-  -clang-analyzer-valist.Uninitialized,
   -concurrency-mt-unsafe,
   -google-readability-todo,
   -hicpp-multiway-paths-covered,
@@ -15,7 +13,6 @@ Checks: >
   -readability-avoid-nested-conditional-operator,
   -readability-implicit-bool-conversion,
   -readability-redundant-casting,
-  -readability-suspicious-call-argument,
 CheckOptions:
   - key:   readability-function-cognitive-complexity.Threshold
     value: '25'

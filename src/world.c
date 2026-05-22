@@ -195,7 +195,7 @@ allocate_model_if_necessary(LilvWorld* world)
 
 #define WARN_INDEX(w, s, p, o)                                          \
   do {                                                                  \
-    if (!s && !world->opt.object_index) {                               \
+    if (!(s) && !world->opt.object_index) {                             \
       LILV_WARN("Subject wildcard without LILV_OPTION_OBJECT_INDEX\n"); \
     }                                                                   \
   } while (0)
