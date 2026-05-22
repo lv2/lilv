@@ -8,8 +8,9 @@ lilv (0.27.0) unstable; urgency=medium
   * Fix potential iterator leaks and resulting log message flood
   * Fix replacing links when saving over state
   * Fix test build when no C++ compiler is available
+  * Improve error handling when writing and deleting state
 
- -- David Robillard <d@drobilla.net>  Thu, 21 May 2026 23:54:17 +0000
+ -- David Robillard <d@drobilla.net>  Fri, 22 May 2026 19:12:44 +0000
 
 lilv (0.26.4) stable; urgency=medium
 

@@ -22,6 +22,7 @@
 #include <sord/sord.h>
 #include <sratom/sratom.h>
 #include <zix/allocator.h>
+#include <zix/attributes.h>
 #include <zix/filesystem.h>
 #include <zix/path.h>
 #include <zix/status.h>
@@ -360,8 +361,7 @@ abstract_path(LV2_State_Map_Path_Handle handle, const char* abs_path)
         free(copy);
         copy = lilv_find_path(copy_path, file_path_exists, NULL);
         if ((st = zix_copy_file(NULL, real_path, copy, 0U))) {
-          LILV_ERRORF(
-            "Error copying state file %s (%s)\n", copy, zix_strerror(st));
+          LILV_ERRORF("Error copying file %s (%s)\n", copy, zix_strerror(st));
         }
       }
       zix_free(NULL, real_path);
@@ -481,6 +481,13 @@ state_strerror(LV2_State_Status st)
   }
 }
 
+// Update a running status of serd operations (preserving older errors)
+static SerdStatus
+merge_status(const SerdStatus st0, const SerdStatus st1)
+{
+  return st0 ? st0 : st1;
+}
+
 static void
 free_path(LV2_State_Free_Path_Handle handle, char* path)
 {
@@ -553,7 +560,7 @@ lilv_state_new_from_instance(const LilvPlugin*         plugin,
     LV2_State_Status st =
       iface->save(instance->lv2_handle, store_callback, state, flags, features);
     if (st) {
-      LILV_ERRORF("Error saving plugin state: %s\n", state_strerror(st));
+      LILV_ERRORF("Error saving plugin state (%s)\n", state_strerror(st));
       free(state->props.props);
       state->props.props = NULL;
       state->props.n     = 0;
@@ -1010,7 +1017,7 @@ remove_manifest_entry(SordWorld* world, SordModel* model, const char* subject)
   sord_node_free(world, s);
 }
 
-static int
+ZIX_NODISCARD static int
 write_manifest(LilvWorld*      world,
                SerdEnv*        env,
                SordModel*      model,
@@ -1030,11 +1037,11 @@ write_manifest(LilvWorld*      world,
   }
 
   SerdWriter* writer = ttl_file_writer(wfd, file_uri, &env);
-  sord_write(model, writer, NULL);
+  const int   st0    = !sord_write(model, writer, NULL);
   serd_writer_free(writer);
-  fclose(wfd);
+  const int st1 = fclose(wfd);
   serd_free(path);
-  return 0;
+  return st0 ? st0 : st1;
 }
 
 static int
@@ -1109,19 +1116,20 @@ add_state_to_manifest(LilvWorld*      lworld,
      need to be truncated, and the file can only be open once on Windows. */
 
   FILE* const wfd = fopen(manifest_path, FOPEN_MODE("wb"));
-  int         r   = 0;
+  int         st0 = 0;
+  int         st1 = 0;
   if (!wfd) {
     LILV_ERRORF("Failed to open \"%s\" for writing (%s)\n",
                 manifest_path,
                 strerror(errno));
-    r = 1;
+    st0 = 1;
   } else {
     SerdWriter* writer = ttl_file_writer(wfd, &manifest, &env);
     zix_file_lock(wfd, ZIX_FILE_LOCK_BLOCK);
-    sord_write(model, writer, NULL);
+    st0 = !sord_write(model, writer, NULL);
     zix_file_unlock(wfd, ZIX_FILE_LOCK_BLOCK);
     serd_writer_free(writer);
-    fclose(wfd);
+    st1 = fclose(wfd);
   }
 
   sord_free(model);
@@ -1129,7 +1137,7 @@ add_state_to_manifest(LilvWorld*      lworld,
   serd_node_free(&manifest);
   serd_env_free(env);
 
-  return r;
+  return st0 ? st0 : st1;
 }
 
 static LilvPathStatus
@@ -1147,7 +1155,7 @@ link_exists_to(const char* path, const void* data)
   return matches ? LILV_PATH_SHOULD_REUSE : LILV_PATH_IS_TAKEN;
 }
 
-static ZixStatus
+ZIX_NODISCARD static ZixStatus
 create_link(const char* target_path, const char* link_path)
 {
   ZixStatus           st          = ZIX_STATUS_SUCCESS;
@@ -1169,7 +1177,7 @@ create_link(const char* target_path, const char* link_path)
   return st;
 }
 
-static ZixStatus
+ZIX_NODISCARD static ZixStatus
 maybe_symlink(const char* target_path, const char* link_path)
 {
   ZixStatus            st  = ZIX_STATUS_SUCCESS;
@@ -1186,7 +1194,7 @@ maybe_symlink(const char* target_path, const char* link_path)
   return st ? st : create_link(target_path, link_path);
 }
 
-static void
+ZIX_NODISCARD static SerdStatus
 write_property_array(const LilvState*     state,
                      const PropertyArray* array,
                      Sratom*              sratom,
@@ -1195,7 +1203,9 @@ write_property_array(const LilvState*     state,
                      LV2_URID_Unmap*      unmap,
                      const char*          dir)
 {
-  for (uint32_t i = 0; i < array->n; ++i) {
+  int st = 0;
+
+  for (uint32_t i = 0; !st && i < array->n; ++i) {
     Property*   prop = &array->props[i];
     const char* key  = unmap->unmap(unmap->handle, prop->key);
 
@@ -1203,26 +1213,28 @@ write_property_array(const LilvState*     state,
     if (prop->type == state->atom_Path && !dir) {
       const char* path     = (const char*)prop->value;
       const char* abs_path = resolve_path(state, path);
-      LILV_WARNF("Writing absolute path %s\n", abs_path);
-      sratom_write(sratom,
-                   unmap,
-                   flags,
-                   subject,
-                   &p,
-                   prop->type,
-                   strlen(abs_path) + 1,
-                   abs_path);
+      LILV_WARNF("Writing absolute path \"%s\"\n", abs_path);
+      st = sratom_write(sratom,
+                        unmap,
+                        flags,
+                        subject,
+                        &p,
+                        prop->type,
+                        strlen(abs_path) + 1,
+                        abs_path);
     } else if ((prop->flags & LV2_STATE_IS_POD) ||
                prop->type == state->atom_Path) {
-      sratom_write(
+      st = sratom_write(
         sratom, unmap, flags, subject, &p, prop->type, prop->size, prop->value);
     } else {
       LILV_WARNF("Lost non-POD property <%s> on save\n", key);
     }
   }
+
+  return (SerdStatus)st;
 }
 
-static int
+ZIX_NODISCARD static SerdStatus
 write_state_description(LV2_URID_Map*    map,
                         LV2_URID_Unmap*  unmap,
                         const LilvState* state,
@@ -1230,6 +1242,8 @@ write_state_description(LV2_URID_Map*    map,
                         const char*      uri,
                         const char*      dir)
 {
+  SerdStatus st = SERD_SUCCESS;
+
   SerdNode lv2_appliesTo =
     serd_node_from_string(SERD_CURIE, USTR("lv2:appliesTo"));
 
@@ -1243,14 +1257,16 @@ write_state_description(LV2_URID_Map*    map,
   serd_writer_write_statement(writer, 0, NULL, &subject, &p, &o, NULL, NULL);
 
   // <subject> lv2:appliesTo <http://example.org/plugin>
-  serd_writer_write_statement(
+  st = serd_writer_write_statement(
     writer, 0, NULL, &subject, &lv2_appliesTo, plugin_uri, NULL, NULL);
 
   // <subject> rdfs:label label
   if (state->label) {
-    p = serd_node_from_string(SERD_URI, USTR(LILV_NS_RDFS "label"));
-    o = serd_node_from_string(SERD_LITERAL, USTR(state->label));
-    serd_writer_write_statement(writer, 0, NULL, &subject, &p, &o, NULL, NULL);
+    p  = serd_node_from_string(SERD_URI, USTR(LILV_NS_RDFS "label"));
+    o  = serd_node_from_string(SERD_LITERAL, USTR(state->label));
+    st = merge_status(st,
+                      serd_writer_write_statement(
+                        writer, 0, NULL, &subject, &p, &o, NULL, NULL));
   }
 
   const SerdEnv*  env  = serd_writer_get_env(writer);
@@ -1265,8 +1281,10 @@ write_state_description(LV2_URID_Map*    map,
 
   // Write metadata
   sratom_set_pretty_numbers(sratom, false); // Use precise types
-  write_property_array(
-    state, &state->metadata, sratom, 0, &subject, unmap, dir);
+  st =
+    merge_status(st,
+                 write_property_array(
+                   state, &state->metadata, sratom, 0, &subject, unmap, dir));
 
   // Write port values
   sratom_set_pretty_numbers(sratom, true); // Use pretty numbers
@@ -1277,55 +1295,67 @@ write_state_description(LV2_URID_Map*    map,
       serd_node_from_string(SERD_BLANK, USTR(value->symbol));
 
     // <> lv2:port _:symbol
-    p = serd_node_from_string(SERD_URI, USTR(LV2_CORE__port));
-    serd_writer_write_statement(
-      writer, SERD_ANON_O_BEGIN, NULL, &subject, &p, &port, NULL, NULL);
+    p  = serd_node_from_string(SERD_URI, USTR(LV2_CORE__port));
+    st = merge_status(
+      st,
+      serd_writer_write_statement(
+        writer, SERD_ANON_O_BEGIN, NULL, &subject, &p, &port, NULL, NULL));
 
     // _:symbol lv2:symbol "symbol"
     p = serd_node_from_string(SERD_URI, USTR(LV2_CORE__symbol));
     o = serd_node_from_string(SERD_LITERAL, USTR(value->symbol));
-    serd_writer_write_statement(
-      writer, SERD_ANON_CONT, NULL, &port, &p, &o, NULL, NULL);
+    st =
+      merge_status(st,
+                   serd_writer_write_statement(
+                     writer, SERD_ANON_CONT, NULL, &port, &p, &o, NULL, NULL));
 
     // _:symbol pset:value value
-    p = serd_node_from_string(SERD_URI, USTR(LV2_PRESETS__value));
-    sratom_write(sratom,
-                 unmap,
-                 SERD_ANON_CONT,
-                 &port,
-                 &p,
-                 value->atom->type,
-                 value->atom->size,
-                 value->atom + 1);
+    p            = serd_node_from_string(SERD_URI, USTR(LV2_PRESETS__value));
+    const int rc = sratom_write(sratom,
+                                unmap,
+                                SERD_ANON_CONT,
+                                &port,
+                                &p,
+                                value->atom->type,
+                                value->atom->size,
+                                value->atom + 1);
 
-    serd_writer_end_anon(writer, &port);
+    // Note that sratom_write "secretly" returns SerdStatus
+    st = merge_status(st, (SerdStatus)rc);
+    st = merge_status(st, serd_writer_end_anon(writer, &port));
   }
 
   // Write properties
   const SerdNode body = serd_node_from_string(SERD_BLANK, USTR("body"));
   if (state->props.n > 0) {
-    p = serd_node_from_string(SERD_URI, USTR(LV2_STATE__state));
-    serd_writer_write_statement(
-      writer, SERD_ANON_O_BEGIN, NULL, &subject, &p, &body, NULL, NULL);
+    p  = serd_node_from_string(SERD_URI, USTR(LV2_STATE__state));
+    st = merge_status(
+      st,
+      serd_writer_write_statement(
+        writer, SERD_ANON_O_BEGIN, NULL, &subject, &p, &body, NULL, NULL));
   }
   sratom_set_pretty_numbers(sratom, false); // Use precise types
-  write_property_array(
-    state, &state->props, sratom, SERD_ANON_CONT, &body, unmap, dir);
+  st = merge_status(
+    st,
+    write_property_array(
+      state, &state->props, sratom, SERD_ANON_CONT, &body, unmap, dir));
 
-  if (state->props.n > 0) {
-    serd_writer_end_anon(writer, &body);
+  if (!st && state->props.n > 0) {
+    st = merge_status(st, serd_writer_end_anon(writer, &body));
   }
 
   sratom_free(sratom);
-  return 0;
+  return st;
 }
 
-static void
+ZIX_NODISCARD static ZixStatus
 make_links(const LilvState* state, const char* dir)
 {
+  ZixStatus st = ZIX_STATUS_SUCCESS;
+
   // Create symlinks to files
   for (ZixTreeIter* i = zix_tree_begin(state->abs2rel);
-       i != zix_tree_end(state->abs2rel);
+       !st && i != zix_tree_end(state->abs2rel);
        i = zix_tree_iter_next(i)) {
     const PathMap* const pm = (const PathMap*)zix_tree_get(i);
     if (zix_path_is_absolute(pm->rel)) {
@@ -1336,7 +1366,7 @@ make_links(const LilvState* state, const char* dir)
     if (state->copy_dir && path_is_child(pm->abs, state->copy_dir) &&
         !!strcmp(state->copy_dir, dir)) {
       // Link directly to snapshot in the copy directory
-      maybe_symlink(pm->abs, save_path);
+      st = maybe_symlink(pm->abs, save_path);
     } else if (state->link_dir && !path_is_child(pm->abs, dir)) {
       char* const ideal_link_path =
         zix_path_join(NULL, state->link_dir, pm->rel);
@@ -1344,22 +1374,26 @@ make_links(const LilvState* state, const char* dir)
       if (!strcmp(dir, state->link_dir)) {
         // Link directory is save directory, make link at exact path
         (void)zix_remove(ideal_link_path);
-        maybe_symlink(pm->abs, ideal_link_path);
+        st = maybe_symlink(pm->abs, ideal_link_path);
       } else {
         // Make a link in the link directory to external file
         char* lpath = lilv_find_path(ideal_link_path, link_exists_to, pm->abs);
         if (zix_file_type(lpath) == ZIX_FILE_TYPE_NONE) {
-          create_link(pm->abs, lpath);
+          st = create_link(pm->abs, lpath);
         }
 
         // Make a link in the save directory to the external link
-        maybe_symlink(lpath, save_path);
+        if (!st) {
+          st = maybe_symlink(lpath, save_path);
+        }
         free(lpath);
       }
       free(ideal_link_path);
     }
     free(save_path);
   }
+
+  return st;
 }
 
 int
@@ -1371,15 +1405,22 @@ lilv_state_save(LilvWorld*       world,
                 const char*      dir,
                 const char*      filename)
 {
-  if (!filename || !dir || zix_create_directories(NULL, dir)) {
-    return 1;
+  if (!filename || !dir) {
+    return ZIX_STATUS_BAD_ARG;
+  }
+
+  // Create save directory
+  ZixStatus st = zix_create_directories(NULL, dir);
+  if (st) {
+    return st;
   }
 
   char* const abs_dir = zix_canonical_path(NULL, dir);
   if (!abs_dir) {
-    return 2;
+    return 3;
   }
 
+  // Create state file
   char* const path = zix_path_join(NULL, abs_dir, filename);
   FILE* const fd   = path ? fopen(path, FOPEN_MODE("wb")) : NULL;
   if (!fd) {
@@ -1389,40 +1430,45 @@ lilv_state_save(LilvWorld*       world,
     return 4;
   }
 
-  // Create symlinks to files if necessary
-  make_links(state, abs_dir);
-
   // Write state to Turtle file
   SerdNode    file = serd_node_new_file_uri(USTR(path), NULL, NULL, true);
   SerdNode    node = uri ? serd_node_from_string(SERD_URI, USTR(uri)) : file;
   SerdEnv*    env  = NULL;
   SerdWriter* ttl  = ttl_file_writer(fd, &file, &env);
-  int         ret =
+  const int   wst0 =
     write_state_description(map, unmap, state, ttl, (const char*)node.buf, dir);
 
+  serd_writer_free(ttl);
+  serd_env_free(env);
+  const int wst1 = fclose(fd);
+  if (wst0 || wst1) {
+    // If writing the state file failed, return early without finalizing
+    serd_node_free(&file);
+    zix_free(NULL, abs_dir);
+    zix_free(NULL, path);
+    return wst0 ? wst0 : wst1;
+  }
+
+  // Otherwise, make a best effort to finish even if something goes wrong
   // Set saved dir and uri (FIXME: const violation)
   zix_free(NULL, state->dir);
   lilv_node_free(state->uri);
   ((LilvState*)state)->dir = zix_path_join(NULL, abs_dir, "");
   ((LilvState*)state)->uri = lilv_new_uri(world, (const char*)node.buf);
-
   serd_node_free(&file);
-  serd_writer_free(ttl);
-  serd_env_free(env);
-  fclose(fd);
+
+  // Create symlinks to files if necessary
+  st = make_links(state, abs_dir);
 
   // Add entry to manifest
-  if (!ret) {
-    char* const manifest = zix_path_join(NULL, abs_dir, "manifest.ttl");
-
-    ret = add_state_to_manifest(world, state->plugin_uri, manifest, uri, path);
-
-    zix_free(NULL, manifest);
-  }
+  char* const manifest = zix_path_join(NULL, abs_dir, "manifest.ttl");
+  const int   mst =
+    add_state_to_manifest(world, state->plugin_uri, manifest, uri, path);
+  zix_free(NULL, manifest);
 
   zix_free(NULL, abs_dir);
   zix_free(NULL, path);
-  return ret;
+  return st ? (int)st : mst;
 }
 
 char*
@@ -1445,19 +1491,27 @@ lilv_state_to_string(LilvWorld*       world,
   SerdNode    base   = serd_node_from_string(SERD_URI, USTR(base_uri));
   SerdWriter* writer = ttl_writer(serd_chunk_sink, &chunk, &base, &env);
 
-  write_state_description(map, unmap, state, writer, uri, NULL);
+  const int st = write_state_description(map, unmap, state, writer, uri, NULL);
 
   serd_writer_free(writer);
   serd_env_free(env);
+
   char* str    = (char*)serd_chunk_sink_finish(&chunk);
-  char* result = lilv_strdup(str);
+  char* result = (!st && str) ? lilv_strdup(str) : NULL;
   serd_free(str);
   return result;
 }
 
 static void
-try_remove(const char* const state_dir, const char* const path)
+try_remove(const char* const state_dir,
+           const char* const path,
+           int* const        first_error)
 {
+  ZixStatus st = ZIX_STATUS_SUCCESS;
+  if (!path) {
+    return;
+  }
+
   // Resolve relative path in state directory if necessary
   // Note that this must be purely lexical, not canonicalized!
   char* resolved_path = NULL;
@@ -1468,9 +1522,15 @@ try_remove(const char* const state_dir, const char* const path)
   // Only try to remove the file if it's a child of the state directory
   const char* const abs_path = resolved_path ? resolved_path : path;
   if (path_is_child(abs_path, state_dir)) {
-    if (zix_symlink_type(abs_path) != ZIX_FILE_TYPE_NONE &&
-        zix_remove(abs_path)) {
-      LILV_ERRORF("Failed to remove \"%s\" (%s)\n", abs_path, strerror(errno));
+    if (zix_symlink_type(abs_path) != ZIX_FILE_TYPE_NONE) {
+      if ((st = zix_remove(abs_path))) {
+        LILV_ERRORF(
+          "Failed to remove \"%s\" (%s)\n", abs_path, strerror(errno));
+
+        if (!*first_error) {
+          *first_error = (int)st;
+        }
+      }
     }
   }
 
@@ -1494,6 +1554,7 @@ lilv_state_delete(LilvWorld* world, const LilvState* state)
 
   SordModel* model    = sord_new(world->world, SORD_SPO, false);
   NodeHash*  see_also = NULL;
+  int        st       = 0;
 
   if (state->uri && has_manifest) {
     // Read manifest into temporary local model
@@ -1505,8 +1566,16 @@ lilv_state_delete(LilvWorld* world, const LilvState* state)
                                                   world->uris.rdfs_seeAlso,
                                                   true);
 
-    serd_reader_read_file(skimmer->base.reader, USTR(manifest_path));
+    st       = serd_reader_read_file(skimmer->base.reader, USTR(manifest_path));
     see_also = node_skimmer_free(skimmer);
+  }
+
+  if (st) {
+    sord_free(model);
+    zix_free(NULL, manifest_path);
+    zix_free(NULL, manifest_uri);
+    lilv_node_free(bundle);
+    return st;
   }
 
   if (state->uri) {
@@ -1515,7 +1584,7 @@ lilv_state_delete(LilvWorld* world, const LilvState* state)
       const SordNode* node = lilv_node_hash_get(see_also, s);
       const uint8_t*  uri  = sord_node_get_string(node);
       char* const     path = (char*)serd_file_uri_parse(uri, NULL);
-      try_remove(state->dir, path);
+      try_remove(state->dir, path, &st);
       serd_free(path);
     }
 
@@ -1531,9 +1600,7 @@ lilv_state_delete(LilvWorld* world, const LilvState* state)
 
   if (sord_num_quads(model) == 0) {
     // Manifest is empty, attempt to remove bundle entirely
-    if (has_manifest) {
-      try_remove(state->dir, manifest_path);
-    }
+    try_remove(state->dir, manifest_path, &st);
 
     // Remove all known files from state bundle
     if (state->abs2rel) {
@@ -1542,19 +1609,19 @@ lilv_state_delete(LilvWorld* world, const LilvState* state)
            i != zix_tree_end(state->abs2rel);
            i = zix_tree_iter_next(i)) {
         const PathMap* pm = (const PathMap*)zix_tree_get(i);
-        try_remove(state->dir, pm->rel);
+        try_remove(state->dir, pm->rel, &st);
       }
     } else {
       // State loaded from model, get paths from loaded properties
       for (uint32_t i = 0; i < state->props.n; ++i) {
         const Property* const p = &state->props.props[i];
         if (p->type == state->atom_Path) {
-          try_remove(state->dir, (const char*)p->value);
+          try_remove(state->dir, (const char*)p->value, &st);
         }
       }
     }
 
-    if (zix_remove(state->dir)) {
+    if (!st && (st = zix_remove(state->dir))) {
       LILV_ERRORF("Failed to remove directory \"%s\" (%s)\n",
                   state->dir,
                   strerror(errno));
@@ -1562,7 +1629,7 @@ lilv_state_delete(LilvWorld* world, const LilvState* state)
   } else {
     // Still something in the manifest, update and reload bundle
     SerdEnv* env = serd_env_new(&manifest_node);
-    write_manifest(world, env, model, &manifest_node);
+    st           = write_manifest(world, env, model, &manifest_node);
     lilv_world_load_bundle(world, bundle);
     serd_env_free(env);
   }
@@ -1572,7 +1639,7 @@ lilv_state_delete(LilvWorld* world, const LilvState* state)
   zix_free(NULL, manifest_uri);
   lilv_node_free(bundle);
 
-  return 0;
+  return st;
 }
 
 static void
