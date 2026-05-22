@@ -7,6 +7,7 @@
 #include <sord/sord.h>
 #include <zix/tree.h>
 
+#include <assert.h>
 #include <stdbool.h>
 #include <stddef.h>
 
@@ -138,6 +139,9 @@ lilv_plugins_get_by_uri(const LilvPlugins* plugins, const LilvNode* uri)
 bool
 lilv_nodes_contains(const LilvNodes* nodes, const LilvNode* value)
 {
+  assert(nodes);
+  assert(value);
+
   LILV_FOREACH (nodes, i, nodes) {
     if (lilv_node_equals(lilv_nodes_get(nodes, i), value)) {
       return true;

@@ -352,12 +352,14 @@ lilv_plugin_load_if_necessary(const LilvPlugin* plugin)
 const LilvNode*
 lilv_plugin_get_uri(const LilvPlugin* plugin)
 {
+  assert(plugin);
   return plugin->plugin_uri;
 }
 
 const LilvNode*
 lilv_plugin_get_bundle_uri(const LilvPlugin* plugin)
 {
+  assert(plugin);
   return plugin->bundle_uri;
 }
 
@@ -392,6 +394,7 @@ lilv_plugin_get_library_uri(const LilvPlugin* plugin)
 const LilvNodes*
 lilv_plugin_get_data_uris(const LilvPlugin* plugin)
 {
+  assert(plugin);
   return plugin->data_uris;
 }
 
@@ -481,6 +484,8 @@ lilv_plugin_verify(const LilvPlugin* plugin)
 LilvNode*
 lilv_plugin_get_name(const LilvPlugin* plugin)
 {
+  assert(plugin);
+
   LilvNodes* results =
     lilv_plugin_get_value_internal(plugin, plugin->world->uris.doap_name);
 
@@ -687,8 +692,9 @@ lilv_plugin_get_port_by_designation(const LilvPlugin* plugin,
                                     const LilvNode*   port_class,
                                     const LilvNode*   designation)
 {
-  LilvWorld* world = plugin->world;
   lilv_plugin_load_ports_if_necessary(plugin);
+
+  LilvWorld* world = plugin->world;
   for (uint32_t i = 0; i < plugin->num_ports; ++i) {
     LilvPort* port = plugin->ports[i];
     SordIter* iter = sord_search(world->model,
@@ -713,6 +719,8 @@ lilv_plugin_get_port_by_designation(const LilvPlugin* plugin,
 uint32_t
 lilv_plugin_get_latency_port_index(const LilvPlugin* plugin)
 {
+  assert(plugin);
+
   LilvNode* lv2_OutputPort = lilv_new_uri(plugin->world, LV2_CORE__OutputPort);
   LilvNode* lv2_latency    = lilv_new_uri(plugin->world, LV2_CORE__latency);
 
@@ -758,6 +766,8 @@ lilv_plugin_has_feature(const LilvPlugin* plugin, const LilvNode* feature)
 LilvNodes*
 lilv_plugin_get_supported_features(const LilvPlugin* plugin)
 {
+  assert(plugin);
+
   LilvNodes* optional = lilv_plugin_get_optional_features(plugin);
   LilvNodes* required = lilv_plugin_get_required_features(plugin);
   LilvNodes* result   = lilv_nodes_merge(optional, required);
@@ -808,6 +818,7 @@ lilv_plugin_has_extension_data(const LilvPlugin* plugin, const LilvNode* uri)
 LilvNodes*
 lilv_plugin_get_extension_data(const LilvPlugin* plugin)
 {
+  assert(plugin);
   return lilv_plugin_get_value_internal(plugin,
                                         plugin->world->uris.lv2_extensionData);
 }
@@ -927,6 +938,7 @@ lilv_plugin_get_author_homepage(const LilvPlugin* plugin)
 bool
 lilv_plugin_is_replaced(const LilvPlugin* plugin)
 {
+  assert(plugin);
   return lilv_node_hash_find(plugin->world->replaced,
                              lilv_plugin_get_uri(plugin)->node) !=
          lilv_node_hash_end(plugin->world->replaced);
@@ -1043,6 +1055,11 @@ lilv_plugin_write_description(LilvWorld*        world,
                               const LilvNode*   base_uri,
                               FILE*             plugin_file)
 {
+  assert(world);
+  assert(plugin);
+  assert(base_uri);
+  assert(plugin_file);
+
   const LilvNode* subject   = lilv_plugin_get_uri(plugin);
   const uint32_t  num_ports = lilv_plugin_get_num_ports(plugin);
   const SerdNode* base      = sord_node_to_serd_node(base_uri->node);
@@ -1084,6 +1101,11 @@ lilv_plugin_write_manifest_entry(LilvWorld*        world,
                                  const char*       plugin_file_path)
 {
   (void)world;
+
+  assert(plugin);
+  assert(base_uri);
+  assert(manifest_file);
+  assert(plugin_file_path);
 
   const LilvNode* subject = lilv_plugin_get_uri(plugin);
   const SerdNode* base    = sord_node_to_serd_node(base_uri->node);

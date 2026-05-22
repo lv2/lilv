@@ -582,6 +582,9 @@ lilv_state_emit_port_values(const LilvState*     state,
                             LilvSetPortValueFunc set_value,
                             void*                user_data)
 {
+  assert(state);
+  assert(set_value);
+
   for (uint32_t i = 0; i < state->n_values; ++i) {
     const PortValue* value = &state->values[i];
     const LV2_Atom*  atom  = value->atom;
@@ -597,10 +600,7 @@ lilv_state_restore(const LilvState*          state,
                    uint32_t                  flags,
                    const LV2_Feature* const* features)
 {
-  if (!state) {
-    LILV_ERROR("lilv_state_restore() called on NULL state\n");
-    return;
-  }
+  assert(state);
 
   void* const         handle           = (void*)state;
   LV2_State_Map_Path  map_path         = {handle, abstract_path, absolute_path};
@@ -912,9 +912,7 @@ set_prefixes(SerdEnv* env)
 LilvState*
 lilv_state_new_from_string(LilvWorld* world, LV2_URID_Map* map, const char* str)
 {
-  if (!str) {
-    return NULL;
-  }
+  assert(str);
 
   SordModel* model = sord_new(world->world, SORD_SPO, false);
 
@@ -1405,9 +1403,12 @@ lilv_state_save(LilvWorld*       world,
                 const char*      dir,
                 const char*      filename)
 {
-  if (!filename || !dir) {
-    return ZIX_STATUS_BAD_ARG;
-  }
+  assert(world);
+  assert(map);
+  assert(unmap);
+  assert(state);
+  assert(dir);
+  assert(filename);
 
   // Create save directory
   ZixStatus st = zix_create_directories(NULL, dir);
@@ -1480,6 +1481,9 @@ lilv_state_to_string(LilvWorld*       world,
                      const char*      base_uri)
 {
   (void)world;
+  assert(map);
+  assert(unmap);
+  assert(state);
 
   if (!uri) {
     LILV_ERROR("Attempt to serialise state with no URI\n");
@@ -1540,6 +1544,8 @@ try_remove(const char* const state_dir,
 int
 lilv_state_delete(LilvWorld* world, const LilvState* state)
 {
+  assert(world);
+  assert(state);
   if (!state->dir) {
     LILV_ERROR("Attempt to delete unsaved state\n");
     return -1;
@@ -1681,6 +1687,9 @@ lilv_state_free(LilvState* state)
 bool
 lilv_state_equals(const LilvState* a, const LilvState* b)
 {
+  assert(a);
+  assert(b);
+
   if (!lilv_node_equals(a->plugin_uri, b->plugin_uri) ||
       (a->label && !b->label) || (b->label && !a->label) ||
       (a->label && b->label && !!strcmp(a->label, b->label)) ||
@@ -1723,36 +1732,44 @@ lilv_state_equals(const LilvState* a, const LilvState* b)
 unsigned
 lilv_state_get_num_properties(const LilvState* state)
 {
+  assert(state);
   return state->props.n;
 }
 
 const LilvNode*
 lilv_state_get_plugin_uri(const LilvState* state)
 {
+  assert(state);
   return state->plugin_uri;
 }
 
 const LilvNode*
 lilv_state_get_uri(const LilvState* state)
 {
+  assert(state);
   return state->uri;
 }
 
 const char*
 lilv_state_get_bundle_path(const LilvState* state)
 {
+  assert(state);
   return state->dir;
 }
 
 const char*
 lilv_state_get_label(const LilvState* state)
 {
+  assert(state);
   return state->label;
 }
 
 void
 lilv_state_set_label(LilvState* state, const char* label)
 {
+  assert(state);
+  assert(label);
+
   const size_t len = strlen(label);
   state->label     = (char*)realloc(state->label, len + 1);
   memcpy(state->label, label, len + 1);
@@ -1766,6 +1783,8 @@ lilv_state_set_metadata(LilvState*  state,
                         uint32_t    type,
                         uint32_t    flags)
 {
+  assert(state);
+  assert(value);
   append_property(state, &state->metadata, key, value, size, type, flags);
   return LV2_STATE_SUCCESS;
 }

@@ -6,6 +6,7 @@
 #include <lilv/lilv.h>
 #include <sord/sord.h>
 
+#include <assert.h>
 #include <stdlib.h>
 
 LilvScalePoint*
@@ -32,11 +33,13 @@ lilv_scale_point_free(LilvScalePoint* point)
 const LilvNode*
 lilv_scale_point_get_value(const LilvScalePoint* point)
 {
+  assert(point);
   return point->value;
 }
 
 const LilvNode*
 lilv_scale_point_get_label(const LilvScalePoint* point)
 {
+  assert(point);
   return point->label;
 }

@@ -8,6 +8,7 @@
 #include <sord/sord.h>
 #include <zix/string_view.h>
 
+#include <assert.h>
 #include <stdarg.h>
 #include <stdint.h>
 #include <stdlib.h>
@@ -97,6 +98,8 @@ lilv_manifest_uri(const SordNode* const node)
 const char*
 lilv_uri_to_path(const char* uri)
 {
+  assert(uri);
+
 #if defined(__GNUC__) && __GNUC__ > 4
 #  pragma GCC diagnostic push
 #  pragma GCC diagnostic ignored "-Wdeprecated-declarations"
@@ -112,5 +115,6 @@ lilv_uri_to_path(const char* uri)
 char*
 lilv_file_uri_parse(const char* uri, char** hostname)
 {
+  assert(uri);
   return (char*)serd_file_uri_parse((const uint8_t*)uri, (uint8_t**)hostname);
 }

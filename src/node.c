@@ -12,6 +12,7 @@
 #include <zix/filesystem.h>
 #include <zix/path.h>
 
+#include <assert.h>
 #include <math.h>
 #include <stdbool.h>
 #include <stdint.h>
@@ -61,6 +62,8 @@ lilv_node_set_numerics_from_string(LilvNode* val)
 LilvNode*
 lilv_node_new(LilvWorld* world, LilvNodeType type, const char* str)
 {
+  assert(world);
+
   LilvNode* val = (LilvNode*)malloc(sizeof(LilvNode));
   val->world    = world;
   val->type     = type;
@@ -278,6 +281,8 @@ lilv_node_equals(const LilvNode* value, const LilvNode* other)
 char*
 lilv_node_get_turtle_token(const LilvNode* value)
 {
+  assert(value);
+
   const char* str    = (const char*)sord_node_get_string(value->node);
   size_t      len    = 0;
   char*       result = NULL;

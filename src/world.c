@@ -149,6 +149,9 @@ lilv_world_free(LilvWorld* world)
 void
 lilv_world_set_option(LilvWorld* world, const char* uri, const LilvNode* value)
 {
+  assert(world);
+  assert(uri);
+
   if (!strcmp(uri, LILV_OPTION_DYN_MANIFEST)) {
     if (!value || value->type == LILV_VALUE_BOOL) {
       world->opt.dyn_manifest = lilv_node_as_bool(value);
@@ -183,6 +186,8 @@ lilv_world_set_option(LilvWorld* world, const char* uri, const LilvNode* value)
 static void
 allocate_model_if_necessary(LilvWorld* world)
 {
+  assert(world);
+
   if (!world->model) {
     unsigned indices = SORD_SPO;
     if (world->opt.object_index) {
@@ -243,6 +248,8 @@ lilv_world_get_unique(LilvWorld* const world,
                       const SordNode*  subject,
                       const SordNode*  predicate)
 {
+  assert(world);
+
   SordIter* stream = sord_search(world->model, subject, predicate, NULL, NULL);
   if (!stream) {
     return NULL;
@@ -267,6 +274,8 @@ lilv_world_get(LilvWorld*      world,
                const LilvNode* predicate,
                const LilvNode* object)
 {
+  assert(world);
+
   const SordNode* const s = subject ? subject->node : NULL;
   const SordNode* const p = predicate ? predicate->node : NULL;
   if (!object) {
@@ -301,6 +310,8 @@ lilv_world_ask(LilvWorld*      world,
 const uint8_t*
 lilv_world_blank_node_prefix(LilvWorld* world)
 {
+  assert(world);
+
   static char str[32];
   snprintf(str, sizeof(str), "%u", world->n_read_files++);
   return (const uint8_t*)str;
@@ -344,6 +355,8 @@ lilv_lib_compare(const void* a, const void* b, const void* user_data)
 static ZixTreeIter*
 lilv_collection_find_by_uri(const ZixTree* seq, const LilvNode* uri)
 {
+  assert(seq);
+
   ZixTreeIter* i = NULL;
   if (lilv_node_is_uri(uri)) {
     struct LilvHeader key = {NULL, (LilvNode*)uri};
@@ -907,6 +920,7 @@ lilv_world_drop_graph(LilvWorld* world, const SordNode* graph)
 int
 lilv_world_unload_bundle(LilvWorld* world, const LilvNode* bundle_uri)
 {
+  assert(world);
   if (!bundle_uri) {
     return 0;
   }
@@ -1148,6 +1162,8 @@ lilv_world_load_plugin_classes(LilvWorld* world)
 void
 lilv_world_load_all(LilvWorld* world)
 {
+  assert(world);
+
   const char* lv2_path = world->opt.lv2_path;
   if (!lv2_path) {
     lv2_path = getenv("LV2_PATH");
@@ -1201,11 +1217,13 @@ lilv_world_load_file(LilvWorld* world, SerdReader* reader, const SordNode* uri)
 int
 lilv_world_load_resource(LilvWorld* world, const LilvNode* resource)
 {
+  assert(world);
   if (!lilv_node_is_uri(resource) && !lilv_node_is_blank(resource)) {
     LILV_ERRORF("Node \"%s\" is not a resource\n",
                 sord_node_get_string(resource->node));
     return -1;
   }
+
   return lilv_world_load_resource_internal(world, resource->node);
 }
 
@@ -1235,6 +1253,7 @@ lilv_world_load_resource_internal(LilvWorld* world, const SordNode* resource)
 int
 lilv_world_unload_resource(LilvWorld* world, const LilvNode* resource)
 {
+  assert(world);
   if (!lilv_node_is_uri(resource) && !lilv_node_is_blank(resource)) {
     LILV_ERRORF("Node \"%s\" is not a resource\n",
                 sord_node_get_string(resource->node));
@@ -1265,24 +1284,29 @@ lilv_world_unload_resource(LilvWorld* world, const LilvNode* resource)
 const LilvPluginClass*
 lilv_world_get_plugin_class(const LilvWorld* world)
 {
+  assert(world);
   return world->lv2_plugin_class;
 }
 
 const LilvPluginClasses*
 lilv_world_get_plugin_classes(const LilvWorld* world)
 {
+  assert(world);
   return world->plugin_classes;
 }
 
 const LilvPlugins*
 lilv_world_get_all_plugins(const LilvWorld* world)
 {
+  assert(world);
   return world->plugins;
 }
 
 LilvNode*
 lilv_world_get_symbol(LilvWorld* world, const LilvNode* subject)
 {
+  assert(world);
+
   // Check for explicitly given symbol
   SordNode* snode =
     sord_get(world->model, subject->node, world->uris.lv2_symbol, NULL, NULL);

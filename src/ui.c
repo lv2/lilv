@@ -55,6 +55,7 @@ lilv_ui_free(LilvUI* ui)
 const LilvNode*
 lilv_ui_get_uri(const LilvUI* ui)
 {
+  assert(ui);
   return ui->uri;
 }
 
@@ -64,6 +65,10 @@ lilv_ui_is_supported(const LilvUI*       ui,
                      const LilvNode*     container_type,
                      const LilvNode**    ui_type)
 {
+  assert(ui);
+  assert(supported_func);
+  assert(container_type);
+
   const LilvNodes* classes = lilv_ui_get_classes(ui);
   LILV_FOREACH (nodes, c, classes) {
     const LilvNode* type = lilv_nodes_get(classes, c);
@@ -83,23 +88,28 @@ lilv_ui_is_supported(const LilvUI*       ui,
 const LilvNodes*
 lilv_ui_get_classes(const LilvUI* ui)
 {
+  assert(ui);
   return ui->classes;
 }
 
 bool
 lilv_ui_is_a(const LilvUI* ui, const LilvNode* class_uri)
 {
+  assert(ui);
+  assert(class_uri);
   return lilv_nodes_contains(ui->classes, class_uri);
 }
 
 const LilvNode*
 lilv_ui_get_bundle_uri(const LilvUI* ui)
 {
+  assert(ui);
   return ui->bundle_uri;
 }
 
 const LilvNode*
 lilv_ui_get_binary_uri(const LilvUI* ui)
 {
+  assert(ui);
   return ui->binary_uri;
 }
