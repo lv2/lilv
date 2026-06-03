@@ -292,9 +292,9 @@ is_dir_sep(const char c)
 
 #ifdef _WIN32
   return c == '\\';
-#endif
-
+#else
   return false;
+#endif
 }
 
 static bool
