@@ -140,6 +140,15 @@ no_test_directories(void)
   return dirs;
 }
 
+static char*
+bundle_base_path(const char* const top, const char* name)
+{
+  char* const path = zix_path_join(NULL, top, name);
+  char* const base = zix_path_join(NULL, path, "");
+  zix_free(NULL, path);
+  return base;
+}
+
 static void
 remove_file(const char* path, const char* name, void* data)
 {
@@ -928,7 +937,7 @@ test_world_round_trip(void)
   assert(ctx->out == 1.0);
 
   // Save state to a bundle
-  char* const      bundle_path = zix_path_join(NULL, dirs.top, "state.lv2/");
+  char* const      bundle_path = bundle_base_path(dirs.top, "state.lv2");
   LilvState* const start_state =
     state_from_instance(plugin, instance, ctx, &dirs, bundle_path);
 
@@ -994,7 +1003,7 @@ test_label_round_trip(void)
   lilv_state_set_label(state, "Monopoly on violence");
 
   // Save to a bundle
-  char* const bundle_path = zix_path_join(NULL, dirs.top, "state.lv2/");
+  char* const bundle_path = bundle_base_path(dirs.top, "state.lv2");
   assert(!lilv_state_save(ctx->env->world,
                           &ctx->map,
                           &ctx->unmap,
@@ -1093,7 +1102,7 @@ test_delete(void)
   assert(ctx->out == 1.0);
 
   // Save state to a bundle
-  char* const      bundle_path = zix_path_join(NULL, dirs.top, "state.lv2/");
+  char* const      bundle_path = bundle_base_path(dirs.top, "state.lv2");
   LilvState* const state =
     state_from_instance(plugin, instance, ctx, &dirs, bundle_path);
 
