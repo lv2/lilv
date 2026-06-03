@@ -305,7 +305,7 @@ path_is_child(const char* path, const char* dir)
     char   dir_last = '\0';
     for (; dir[i]; ++i) {
       dir_last = dir[i];
-      if (path[i] != dir[i]) {
+      if (path[i] != dir[i] && !is_dir_sep(path[i]) && !is_dir_sep(dir[i])) {
         return false;
       }
     }
