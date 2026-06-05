@@ -139,7 +139,6 @@ lilv_plugins_get_by_uri(const LilvPlugins* plugins, const LilvNode* uri)
 bool
 lilv_nodes_contains(const LilvNodes* nodes, const LilvNode* value)
 {
-  assert(nodes);
   assert(value);
 
   LILV_FOREACH (nodes, i, nodes) {

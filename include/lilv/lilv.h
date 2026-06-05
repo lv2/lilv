@@ -501,7 +501,7 @@ lilv_nodes_get_first(const LilvNodes* LILV_NULLABLE collection);
    Return whether `values` contains `value`.
 */
 LILV_API bool
-lilv_nodes_contains(const LilvNodes* LILV_NONNULL nodes,
+lilv_nodes_contains(const LilvNodes* LILV_NULLABLE nodes,
                     const LilvNode* LILV_NONNULL  value);
 
 /**
