@@ -1653,6 +1653,14 @@ lilv_state_restore(
    If `uri` is NULL, the preset URI will be a file URI, but the bundle
    can safely be moved (the state file will use `<>` as the subject).
 
+   The given directory and its manifest.ttl will be created if necessary, and
+   file references in state will be linked to any special directories given to
+   lilv_state_new_from_instance() when it was created, if possible.  Links in
+   the saved bundle to any of those directories will be relative, any other
+   link (to external files) will be absolute.  The general idea is that all
+   these directories are part of some greater session which should be
+   relocatable.
+
    @param world The world.
    @param map URID mapper.
    @param unmap URID unmapper.

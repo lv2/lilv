@@ -3,6 +3,7 @@ lilv (0.27.0) unstable; urgency=medium
   * Add early assertions for non-null parameters in public API
   * Add lilv_state_get_bundle_path()
   * Always create state files with O_CLOEXEC on glibc >= 2.7
+  * Clarify relative symbolic link creation when saving state
   * Fix build with dynmanifest support
   * Fix crash when loading plugin classes on Windows
   * Fix potential file loss when saving state with no link directory

@@ -1154,14 +1154,15 @@ link_exists_to(const char* path, const void* data)
 }
 
 ZIX_NODISCARD static ZixStatus
-create_link(const char* target_path, const char* link_path)
+create_link(const char* target_path, const char* link_path, const bool relative)
 {
   ZixStatus           st          = ZIX_STATUS_SUCCESS;
   const ZixStringView parent_path = zix_path_parent_path(link_path);
   char* const         parent      = zix_string_view_copy(NULL, parent_path);
+  char* const         rel =
+    (relative) ? zix_path_lexically_relative(NULL, target_path, parent) : NULL;
 
-  char* const rel = zix_path_lexically_relative(NULL, target_path, parent);
-  if ((st = zix_create_symlink(rel, link_path))) {
+  if ((st = zix_create_symlink(rel ? rel : target_path, link_path))) {
     if ((st = zix_create_hard_link(target_path, link_path))) {
       LILV_ERRORF("Failed to link \"%s\" => \"%s\" (%s)\n",
                   link_path,
@@ -1176,7 +1177,9 @@ create_link(const char* target_path, const char* link_path)
 }
 
 ZIX_NODISCARD static ZixStatus
-maybe_symlink(const char* target_path, const char* link_path)
+maybe_symlink(const char* target_path,
+              const char* link_path,
+              const bool  relative)
 {
   ZixStatus            st  = ZIX_STATUS_SUCCESS;
   const LilvPathStatus pst = link_exists_to(link_path, target_path);
@@ -1189,7 +1192,7 @@ maybe_symlink(const char* target_path, const char* link_path)
     st = zix_remove(link_path);
   }
 
-  return st ? st : create_link(target_path, link_path);
+  return st ? st : create_link(target_path, link_path, relative);
 }
 
 ZIX_NODISCARD static SerdStatus
@@ -1364,7 +1367,7 @@ make_links(const LilvState* state, const char* dir)
     if (state->copy_dir && path_is_child(pm->abs, state->copy_dir) &&
         !!strcmp(state->copy_dir, dir)) {
       // Link directly to snapshot in the copy directory
-      st = maybe_symlink(pm->abs, save_path);
+      st = maybe_symlink(pm->abs, save_path, true);
     } else if (state->link_dir && !path_is_child(pm->abs, dir)) {
       char* const ideal_link_path =
         zix_path_join(NULL, state->link_dir, pm->rel);
@@ -1372,17 +1375,17 @@ make_links(const LilvState* state, const char* dir)
       if (!strcmp(dir, state->link_dir)) {
         // Link directory is save directory, make link at exact path
         (void)zix_remove(ideal_link_path);
-        st = maybe_symlink(pm->abs, ideal_link_path);
+        st = maybe_symlink(pm->abs, ideal_link_path, false);
       } else {
         // Make a link in the link directory to external file
         char* lpath = lilv_find_path(ideal_link_path, link_exists_to, pm->abs);
         if (zix_file_type(lpath) == ZIX_FILE_TYPE_NONE) {
-          st = create_link(pm->abs, lpath);
+          st = create_link(pm->abs, lpath, false);
         }
 
         // Make a link in the save directory to the external link
         if (!st) {
-          st = maybe_symlink(lpath, save_path);
+          st = maybe_symlink(lpath, save_path, true);
         }
         free(lpath);
       }
@@ -1459,7 +1462,7 @@ lilv_state_save(LilvWorld*       world,
   serd_node_free(&file);
 
   // Create symlinks to files if necessary
-  st = make_links(state, abs_dir);
+  st = make_links(state, state->dir);
 
   // Add entry to manifest
   char* const manifest = zix_path_join(NULL, abs_dir, "manifest.ttl");
