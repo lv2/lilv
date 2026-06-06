@@ -1160,7 +1160,7 @@ create_link(const char* target_path, const char* link_path, const bool relative)
   const ZixStringView parent_path = zix_path_parent_path(link_path);
   char* const         parent      = zix_string_view_copy(NULL, parent_path);
   char* const         rel =
-    (relative) ? zix_path_lexically_relative(NULL, target_path, parent) : NULL;
+    relative ? zix_path_lexically_relative(NULL, target_path, parent) : NULL;
 
   if ((st = zix_create_symlink(rel ? rel : target_path, link_path))) {
     if ((st = zix_create_hard_link(target_path, link_path))) {
