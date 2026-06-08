@@ -14,7 +14,7 @@ project(
   ],
   license: 'ISC',
   meson_version: '>= 0.56.0',
-  version: '0.27.0',
+  version: '0.28.0',
 )
 
 lilv_src_root = meson.current_source_dir()

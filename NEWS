@@ -1,4 +1,4 @@
-lilv (0.27.0) unstable; urgency=medium
+lilv (0.28.0) stable; urgency=medium
 
   * Add early assertions for non-null parameters in public API
   * Add lilv_state_get_bundle_path()
@@ -12,7 +12,7 @@ lilv (0.27.0) unstable; urgency=medium
   * Fix test build when no C++ compiler is available
   * Improve error handling when writing and deleting state
 
- -- David Robillard <d@drobilla.net>  Fri, 22 May 2026 19:42:17 +0000
+ -- David Robillard <d@drobilla.net>  Mon, 08 Jun 2026 22:25:07 +0000
 
 lilv (0.26.4) stable; urgency=medium
 
