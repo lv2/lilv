@@ -34,9 +34,11 @@ if bash_completion_dir == ''
     'bash-completion',
     required: get_option('bash_completion'),
   )
-  bash_completion_dir = bash_completion_dep.get_variable(
-    pkgconfig: 'completionsdir',
-  )
+  if bash_completion_dep.found()
+    bash_completion_dir = bash_completion_dep.get_variable(
+      pkgconfig: 'completionsdir',
+    )
+  endif
 endif
 if bash_completion_dir != ''
   install_data(
