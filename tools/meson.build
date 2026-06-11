@@ -1,4 +1,4 @@
-# Copyright 2021-2022 David Robillard <d@drobilla.net>
+# Copyright 2021-2026 David Robillard <d@drobilla.net>
 # SPDX-License-Identifier: 0BSD OR ISC
 
 tool_args = ['-DLILV_VERSION=@0@'.format(meson.project_version())]
@@ -27,11 +27,24 @@ foreach tool : basic_tools
   install_man(files('..' / 'doc' / tool + '.1'))
 endforeach
 
-install_data(
-  files('lilv.bash_completion'),
-  install_dir: get_option('sysconfdir') / 'bash_completion.d',
-  rename: 'lilv',
-)
+# Bash completions
+bash_completion_dir = get_option('bash_completion_dir')
+if bash_completion_dir == ''
+  bash_completion_dep = dependency(
+    'bash-completion',
+    required: get_option('bash_completion'),
+  )
+  bash_completion_dir = bash_completion_dep.get_variable(
+    pkgconfig: 'completionsdir',
+  )
+endif
+if bash_completion_dir != ''
+  install_data(
+    files('lilv.bash_completion'),
+    install_dir: bash_completion_dir,
+    rename: 'lilv',
+  )
+endif
 
 ###########################
 # lv2apply (uses sndfile) #
