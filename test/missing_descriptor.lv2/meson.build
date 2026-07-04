@@ -32,6 +32,6 @@ test(
     implicit_include_directories: false,
   ),
   args: [meson.current_build_dir() / ''],
+  depends: module,
   suite: 'plugin',
 )
-

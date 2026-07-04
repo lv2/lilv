@@ -90,6 +90,7 @@ foreach unit : unit_tests
       dependencies: [lv2_dep, lilv_dep],
       implicit_include_directories: false,
     ),
+    depends: [test_plugin_module],
     suite: 'unit',
   )
 endforeach

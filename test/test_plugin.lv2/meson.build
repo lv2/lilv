@@ -1,7 +1,7 @@
 # Copyright 2021-2022 David Robillard <d@drobilla.net>
 # SPDX-License-Identifier: 0BSD OR ISC
 
-module = shared_module(
+test_plugin_module = shared_module(
   'test_plugin',
   files('test_plugin.c'),
   c_args: c_suppressions,
@@ -10,7 +10,7 @@ module = shared_module(
   name_prefix: '',
 )
 
-extension = '.' + module.full_path().split('.')[-1]
+extension = '.' + test_plugin_module.full_path().split('.')[-1]
 config = configuration_data({'SHLIB_EXT': extension})
 ttl_files = ['manifest.ttl', 'test_plugin.ttl']
 
